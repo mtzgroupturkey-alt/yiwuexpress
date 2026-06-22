@@ -19,12 +19,25 @@ interface User {
   country: string | null
   phone: string | null
   role: string
+  roleId: string | null
+  permissionRole: {
+    id: string
+    name: string
+    description: string | null
+  } | null
   createdAt: string
   updatedAt: string
   _count: {
     quotes: number
     shipments: number
   }
+}
+
+interface PermissionRole {
+  id: string
+  name: string
+  description: string | null
+  isSystem: boolean
 }
 
 interface Pagination {
@@ -51,6 +64,7 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [permissionRoles, setPermissionRoles] = useState<PermissionRole[]>([])
   const [editFormData, setEditFormData] = useState({
     email: '',
     name: '',
@@ -61,6 +75,7 @@ export default function AdminUsersPage() {
     phone: '',
     role: 'USER',
     password: '',
+    permissionRoleId: '',
   })
 
   const [addFormData, setAddFormData] = useState({
@@ -73,11 +88,13 @@ export default function AdminUsersPage() {
     country: '',
     phone: '',
     role: 'USER',
+    permissionRoleId: '',
   })
 
   useEffect(() => {
     if (!authLoading && isAdmin && token) {
       fetchUsers()
+      fetchPermissionRoles()
     }
   }, [pagination.page, searchTerm, roleFilter, authLoading, isAdmin, token])
 
@@ -163,6 +180,24 @@ export default function AdminUsersPage() {
     }
   }
 
+  const fetchPermissionRoles = async () => {
+    if (!token) return
+    try {
+      const response = await fetch('/api/admin/permissions/roles', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPermissionRoles(data.roles || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch permission roles:', err)
+    }
+  }
+
   const handleEdit = (user: User) => {
     setSelectedUser(user)
     setEditFormData({
@@ -175,6 +210,7 @@ export default function AdminUsersPage() {
       phone: user.phone || '',
       role: user.role,
       password: '', // Don't populate password
+      permissionRoleId: user.roleId || '',
     })
     setShowEditModal(true)
   }
@@ -189,6 +225,30 @@ export default function AdminUsersPage() {
       if (!updateData.password) {
         delete updateData.password
       }
+
+      // Update permission role via permissions API if it changed
+      if (updateData.permissionRoleId !== selectedUser.roleId) {
+        const permResponse = await fetch(`/api/admin/permissions/users/${selectedUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            roleId: updateData.permissionRoleId || null,
+            customPermissions: []
+          }),
+        })
+
+        if (!permResponse.ok) {
+          const permError = await permResponse.json()
+          alert(permError.error || 'Failed to update permission role')
+          return
+        }
+      }
+
+      // Remove permissionRoleId before updating basic user info
+      delete updateData.permissionRoleId
 
       const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
         method: 'PUT',
@@ -217,18 +277,37 @@ export default function AdminUsersPage() {
     if (!token) return
 
     try {
+      const createData: any = { ...addFormData }
+      const permissionRoleId = createData.permissionRoleId
+      delete createData.permissionRoleId
+
       const response = await fetch('/api/admin/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(addFormData),
+        body: JSON.stringify(createData),
       })
 
       const data = await response.json()
 
       if (response.ok) {
+        // Assign permission role if selected
+        if (permissionRoleId) {
+          await fetch(`/api/admin/permissions/users/${data.user.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              roleId: permissionRoleId,
+              customPermissions: []
+            }),
+          })
+        }
+
         fetchUsers()
         setShowAddModal(false)
         setAddFormData({
@@ -241,6 +320,7 @@ export default function AdminUsersPage() {
           country: '',
           phone: '',
           role: 'USER',
+          permissionRoleId: '',
         })
       } else {
         alert(data.error || 'Creation failed')
@@ -292,6 +372,7 @@ export default function AdminUsersPage() {
       country: '',
       phone: '',
       role: 'USER',
+      permissionRoleId: '',
     })
     setShowAddModal(false)
   }
@@ -309,6 +390,7 @@ export default function AdminUsersPage() {
       phone: '',
       role: 'USER',
       password: '',
+      permissionRoleId: '',
     })
   }
 
@@ -403,6 +485,7 @@ export default function AdminUsersPage() {
                     <th className="text-left py-4 px-6 font-semibold text-gray-700">Company</th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700">Contact</th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700">Role</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Permissions</th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700">Activity</th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700">Joined</th>
                     <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
@@ -456,6 +539,15 @@ export default function AdminUsersPage() {
                         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${roleColors[user.role as keyof typeof roleColors]?.bg || 'bg-gray-50'} ${roleColors[user.role as keyof typeof roleColors]?.text || 'text-gray-600'} ${roleColors[user.role as keyof typeof roleColors]?.border || 'border-gray-200'}`}>
                           {user.role}
                         </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        {user.permissionRole ? (
+                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200">
+                            {user.permissionRole.name}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">No permissions</span>
+                        )}
                       </td>
                       <td className="py-4 px-6">
                         <div className="text-sm">
@@ -634,6 +726,25 @@ export default function AdminUsersPage() {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Permission Role
+                    <span className="text-xs text-gray-500 ml-2">(Optional - Controls access to admin panel features)</span>
+                  </label>
+                  <select
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    value={addFormData.permissionRoleId}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, permissionRoleId: e.target.value }))}
+                  >
+                    <option value="">No Permission Role</option>
+                    {permissionRoles.map(role => (
+                      <option key={role.id} value={role.id}>
+                        {role.name} {role.description && `- ${role.description}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
@@ -764,6 +875,30 @@ export default function AdminUsersPage() {
                   <option value="USER">User</option>
                   <option value="ADMIN">Admin</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Permission Role
+                  <span className="text-xs text-gray-500 ml-2">(Controls access to admin panel features)</span>
+                </label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  value={editFormData.permissionRoleId}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, permissionRoleId: e.target.value }))}
+                >
+                  <option value="">No Permission Role</option>
+                  {permissionRoles.map(role => (
+                    <option key={role.id} value={role.id}>
+                      {role.name} {role.description && `- ${role.description}`}
+                    </option>
+                  ))}
+                </select>
+                {selectedUser?.permissionRole && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Current: {selectedUser.permissionRole.name}
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

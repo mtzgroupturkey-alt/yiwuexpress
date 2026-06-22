@@ -64,6 +64,14 @@ export async function GET(request: NextRequest) {
           country: true,
           phone: true,
           role: true,
+          roleId: true,
+          permissionRole: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+            }
+          },
           createdAt: true,
           updatedAt: true,
           _count: {
@@ -156,12 +164,13 @@ export async function POST(request: NextRequest) {
         country: true,
         phone: true,
         role: true,
+        roleId: true,
         createdAt: true,
         updatedAt: true,
       }
     })
 
-    return NextResponse.json(user, { status: 201 })
+    return NextResponse.json({ user }, { status: 201 })
   } catch (error) {
     console.error('Create user error:', error)
     return NextResponse.json(

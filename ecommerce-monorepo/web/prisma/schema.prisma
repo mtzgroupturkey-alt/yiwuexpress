@@ -18,12 +18,15 @@ model User {
   country     String?   // For shipping destination
   phone       String?
   role        String   @default("USER")
+  roleId      String?  // Link to PermissionRole
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   quotes      Quote[]
   shipments   Shipment[]
   company     CompanyInfo?
+  permissionRole PermissionRole? @relation(fields: [roleId], references: [id])
+  customPermissions UserPermission[]
 }
 
 model Service {
@@ -123,4 +126,49 @@ model SystemSettings {
   updatedAt             DateTime @updatedAt
   
   @@map("system_settings")
+}
+
+// Permission System Models
+model PermissionRole {
+  id          String   @id @default(cuid())
+  name        String   @unique  // e.g., "Manager", "Staff", "Viewer"
+  description String?
+  isSystem    Boolean  @default(false) // System roles can't be deleted
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  permissions RolePermission[]
+  users       User[]
+}
+
+model RolePermission {
+  id         String   @id @default(cuid())
+  roleId     String
+  resource   String   // e.g., "dashboard", "users", "services", "quotes", "shipments", "settings"
+  canView    Boolean  @default(false)
+  canCreate  Boolean  @default(false)
+  canEdit    Boolean  @default(false)
+  canDelete  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  role PermissionRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  @@unique([roleId, resource])
+}
+
+model UserPermission {
+  id         String   @id @default(cuid())
+  userId     String
+  resource   String   // Override specific resource permissions for a user
+  canView    Boolean  @default(false)
+  canCreate  Boolean  @default(false)
+  canEdit    Boolean  @default(false)
+  canDelete  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, resource])
 }
