@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --foreground-rgb: 17, 24, 39;
+  --background-rgb: 249, 250, 251;
+  --primary: 26, 58, 92;
+  --secondary: 201, 168, 76;
+  --accent: 231, 76, 60;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 249, 250, 251;
+    --background-rgb: 17, 24, 39;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a3a5c;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #102a43;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(26, 58, 92, 0.2);
+  color: #1a3a5c;
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid rgba(201, 168, 76, 0.5);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .gradient-brand {
+    background: linear-gradient(135deg, #1a3a5c 0%, #102a43 100%);
+  }
+  
+  .gradient-gold {
+    background: linear-gradient(135deg, #c9a84c 0%, #a0843e 100%);
+  }
+  
+  .gradient-red {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  }
+  
+  .shadow-brand {
+    box-shadow: 0 4px 6px -1px rgba(26, 58, 92, 0.1), 0 2px 4px -1px rgba(26, 58, 92, 0.06);
+  }
+  
+  .shadow-brand-lg {
+    box-shadow: 0 10px 15px -3px rgba(26, 58, 92, 0.1), 0 4px 6px -2px rgba(26, 58, 92, 0.05);
+  }
+  
+  .border-brand {
+    border-color: rgba(26, 58, 92, 0.1);
+  }
+  
+  /* Chinese-inspired decorative elements */
+  .chinese-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(26, 58, 92, 0.1) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+  
+  /* Animated elements */
+  .pulse-gold {
+    animation: pulse-gold 2s infinite;
+  }
+  
+  @keyframes pulse-gold {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(201, 168, 76, 0);
+    }
+  }
+}
+
+/* Loading animation */
+.loading-spinner {
+  border: 3px solid rgba(26, 58, 92, 0.1);
+  border-radius: 50%;
+  border-top: 3px solid #1a3a5c;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Chinese-inspired decorative border */
+.border-chinese {
+  position: relative;
+}
+
+.border-chinese::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1a3a5c 0%, #c9a84c 50%, #e74c3c 100%);
+  border-radius: 1px;
+}

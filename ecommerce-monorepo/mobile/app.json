@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "YIWU EXPRESS",
+    "slug": "yiwu-express",
+    "scheme": "yiwuexpress",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a3a5c"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yiwuexpress.app",
+      "buildNumber": "1.0.0"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a3a5c"
+      },
+      "package": "com.yiwuexpress.app",
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "yiwu-express-project-id"
+      }
+    },
+    "description": "Global Trade & Logistics Platform from Yiwu, China",
+    "githubUrl": "https://github.com/yiwuexpress/mobile",
+    "owner": "yiwuexpress"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "YIWU EXPRESS Admin Panel",
+  "short_name": "YIWU EXPRESS",
+  "description": "Administrative panel for YIWU EXPRESS logistics services",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a3a5c",
+  "theme_color": "#c9a84c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

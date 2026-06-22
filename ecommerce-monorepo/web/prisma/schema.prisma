@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  companyName String?
+  businessType String?  // retailer, wholesaler, distributor
+  taxId       String?
+  country     String?   // For shipping destination
+  phone       String?
+  role        String   @default("USER")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  quotes      Quote[]
+  shipments   Shipment[]
+  company     CompanyInfo?
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Float
+  duration    String?  // "3-5 days"
+  coverage    String?  // "Global, Asia-Pacific"
+  type        String   // shipping/customs/warehousing/sourcing
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  quotes      Quote[]
+  shipments   Shipment[]
+}
+
+model Quote {
+  id          String   @id @default(cuid())
+  userId      String
+  serviceId   String
+  serviceType String   // shipping/customs/warehousing/sourcing
+  weight      Float?
+  dimensions  String?  // "LxWxH"
+  origin      String
+  destination String
+  price       Float?
+  validUntil  DateTime?
+  status      String   @default("PENDING") // PENDING, REVIEWED, APPROVED, REJECTED, EXPIRED
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+}
+
+model Shipment {
+  id                String   @id @default(cuid())
+  trackingNumber    String   @unique
+  userId            String
+  serviceId         String
+  origin            String
+  destination       String
+  status            String   @default("PREPARING") // PREPARING, IN_TRANSIT, IN_CUSTOMS, ARRIVED, DELIVERED
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  carrier           String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+}
+
+model CompanyInfo {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  name         String
+  address      String?
+  phone        String?
+  email        String?
+  licenseNumber String?
+  taxId        String?
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemSettings {
+  id                    String   @id @default(cuid())
+  companyName           String   @default("YIWU EXPRESS")
+  companyAddress        String?
+  companyPhone          String?
+  companyEmail          String?
+  companyWebsite        String?
+  businessLicense       String?
+  taxRegistrationNumber String?
+  companyDescription    String?
+  companyLogo           String?
+  primaryColor          String   @default("#1a3a5c")
+  accentColor           String   @default("#c9a84c")
+  currency              String   @default("USD")
+  timezone              String   @default("Asia/Shanghai")
+  language              String   @default("en")
+  emailNotifications    Boolean  @default(true)
+  smsNotifications      Boolean  @default(false)
+  maintenanceMode       Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("system_settings")
+}

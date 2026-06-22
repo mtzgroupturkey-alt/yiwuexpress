@@ -1,0 +1,48 @@
+{
+  "name": "yiwu-express-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "YIWU EXPRESS - Global Trade & Logistics Platform from Yiwu, China",
+  "author": "YIWU EXPRESS <info@yiwuexpress.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
+    "@prisma/client": "^6.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^1.21.0",
+    "next": "14.2.19",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook-form": "^7.51.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^7",
+    "@typescript-eslint/parser": "^7",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.19",
+    "postcss": "^8",
+    "prisma": "^6.0.0",
+    "tailwindcss": "^3.3.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5"
+  }
+}

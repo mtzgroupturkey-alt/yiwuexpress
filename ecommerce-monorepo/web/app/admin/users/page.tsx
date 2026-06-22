@@ -1,0 +1,712 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { 
+  Users, Plus, Search, Edit, Trash2, Eye,
+  Building, Mail, Phone, MapPin, Calendar, AlertTriangle
+} from 'lucide-react'
+import { useAdminAuth } from '../contexts/AdminAuthContext'
+
+interface User {
+  id: string
+  email: string
+  name: string
+  companyName: string | null
+  businessType: string | null
+  taxId: string | null
+  country: string | null
+  phone: string | null
+  role: string
+  createdAt: string
+  updatedAt: string
+  _count: {
+    quotes: number
+    shipments: number
+  }
+}
+
+interface Pagination {
+  page: number
+  limit: number
+  total: number
+  pages: number
+}
+
+const roleColors = {
+  ADMIN: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+  USER: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+}
+
+export default function AdminUsersPage() {
+  const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const [users, setUsers] = useState<User[]>([])
+  const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState('')
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    email: '',
+    name: '',
+    companyName: '',
+    businessType: '',
+    taxId: '',
+    country: '',
+    phone: '',
+    role: 'USER',
+    password: '',
+  })
+
+  const [addFormData, setAddFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    companyName: '',
+    businessType: '',
+    taxId: '',
+    country: '',
+    phone: '',
+    role: 'USER',
+  })
+
+  useEffect(() => {
+    if (!authLoading && isAdmin && token) {
+      fetchUsers()
+    }
+  }, [pagination.page, searchTerm, roleFilter, authLoading, isAdmin, token])
+
+  const fetchUsers = async () => {
+    if (!token) return
+    try {
+      setLoading(true)
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
+      })
+      
+      if (searchTerm) params.append('search', searchTerm)
+      if (roleFilter) params.append('role', roleFilter)
+
+      const response = await fetch(`/api/admin/users?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+      
+      if (response.ok) {
+        setUsers(data.users)
+        setPagination(data.pagination)
+        setError('')
+      } else {
+        setError(data.error || 'Failed to fetch users')
+      }
+    } catch (err) {
+      setError('Network error')
+    } finally {
+      setLoading(false)
+    }
+  }
+  const handleEdit = (user: User) => {
+    setSelectedUser(user)
+    setEditFormData({
+      email: user.email,
+      name: user.name,
+      companyName: user.companyName || '',
+      businessType: user.businessType || '',
+      taxId: user.taxId || '',
+      country: user.country || '',
+      phone: user.phone || '',
+      role: user.role,
+      password: '', // Don't populate password
+    })
+    setShowEditModal(true)
+  }
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedUser || !token) return
+
+    try {
+      // Remove empty password from data
+      const updateData = { ...editFormData }
+      if (!updateData.password) {
+        delete updateData.password
+      }
+
+      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        fetchUsers()
+        setShowEditModal(false)
+        setSelectedUser(null)
+      } else {
+        alert(data.error || 'Update failed')
+      }
+    } catch (err) {
+      alert('Network error')
+    }
+  }
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!token) return
+
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(addFormData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        fetchUsers()
+        setShowAddModal(false)
+        setAddFormData({
+          email: '',
+          password: '',
+          name: '',
+          companyName: '',
+          businessType: '',
+          taxId: '',
+          country: '',
+          phone: '',
+          role: 'USER',
+        })
+      } else {
+        alert(data.error || 'Creation failed')
+      }
+    } catch (err) {
+      alert('Network error')
+    }
+  }
+
+  const handleDelete = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`) || !token) return
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        fetchUsers()
+      } else {
+        alert(data.error || 'Delete failed')
+      }
+    } catch (err) {
+      alert('Network error')
+    }
+  }
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const resetAddForm = () => {
+    setAddFormData({
+      email: '',
+      password: '',
+      name: '',
+      companyName: '',
+      businessType: '',
+      taxId: '',
+      country: '',
+      phone: '',
+      role: 'USER',
+    })
+    setShowAddModal(false)
+  }
+
+  // Show loading state while auth is loading
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
+          <p className="text-sm text-gray-500">Authenticating...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Redirect handled by AdminAuthContext
+  if (!isAdmin) {
+    return null
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Manage customer accounts and admin users</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
+            <Users size={16} />
+            <span>{pagination.total} Total Users</span>
+          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
+            style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
+          >
+            <Plus size={18} />
+            Add User
+          </button>
+        </div>
+      </div>
+      {/* Filters */}
+      <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search size={20} className="absolute left-3 top-3 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search users by name, email, or company..."
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <select
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="">All Roles</option>
+            <option value="USER">Users</option>
+            <option value="ADMIN">Admins</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Users Table */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
+              <p className="text-sm text-gray-500">Loading users...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center h-64 text-red-500">
+            <div className="flex flex-col items-center gap-3">
+              <AlertTriangle size={40} />
+              <p>{error}</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">User</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Company</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Contact</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Role</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Activity</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Joined</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {users.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="py-4 px-6">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{user.name}</h4>
+                          <p className="text-xs text-gray-400">{user.email}</p>
+                          {user.taxId && (
+                            <p className="text-xs text-blue-600">Tax ID: {user.taxId}</p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div>
+                          {user.companyName ? (
+                            <>
+                              <p className="font-medium text-gray-900">{user.companyName}</p>
+                              {user.businessType && (
+                                <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 capitalize">
+                                  {user.businessType}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-gray-400 text-sm">No company</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm space-y-1">
+                          {user.phone && (
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <Phone size={12} />
+                              <span>{user.phone}</span>
+                            </div>
+                          )}
+                          {user.country && (
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <MapPin size={12} />
+                              <span>{user.country}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${roleColors[user.role as keyof typeof roleColors]?.bg || 'bg-gray-50'} ${roleColors[user.role as keyof typeof roleColors]?.text || 'text-gray-600'} ${roleColors[user.role as keyof typeof roleColors]?.border || 'border-gray-200'}`}>
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="text-sm">
+                          <p className="text-gray-900">{user._count.quotes} quotes</p>
+                          <p className="text-gray-500">{user._count.shipments} shipments</p>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-sm text-gray-600">
+                        {formatDate(user.createdAt)}
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete"
+                            disabled={user.role === 'ADMIN'}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {pagination.pages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
+                <p className="text-sm text-gray-500">
+                  Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                    disabled={pagination.page === 1}
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="px-3 py-1.5 text-sm">
+                    Page {pagination.page} of {pagination.pages}
+                  </span>
+                  <button
+                    onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                    disabled={pagination.page === pagination.pages}
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Add New User</h2>
+
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.name}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                  <input
+                    type="email"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.email}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                <input
+                  type="password"
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={addFormData.password}
+                  onChange={(e) => setAddFormData(prev => ({ ...prev, password: e.target.value }))}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.companyName}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                  <select
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.businessType}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, businessType: e.target.value }))}
+                  >
+                    <option value="">Select type</option>
+                    <option value="retailer">Retailer</option>
+                    <option value="wholesaler">Wholesaler</option>
+                    <option value="distributor">Distributor</option>
+                    <option value="manufacturer">Manufacturer</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.taxId}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, taxId: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.phone}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={addFormData.country}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, country: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={addFormData.role}
+                  onChange={(e) => setAddFormData(prev => ({ ...prev, role: e.target.value }))}
+                >
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={resetAddForm}
+                  className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
+                  style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
+                >
+                  Create User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Edit User</h2>
+
+            <form onSubmit={handleUpdateUser} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <input
+                    type="email"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <input
+                  type="password"
+                  placeholder="Leave blank to keep current password"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={editFormData.password}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, password: e.target.value }))}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.companyName}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                  <select
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.businessType}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, businessType: e.target.value }))}
+                  >
+                    <option value="">Select type</option>
+                    <option value="retailer">Retailer</option>
+                    <option value="wholesaler">Wholesaler</option>
+                    <option value="distributor">Distributor</option>
+                    <option value="manufacturer">Manufacturer</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.taxId}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, taxId: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.country}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, country: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={editFormData.role}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, role: e.target.value }))}
+                >
+                  <option value="USER">User</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}
+                >
+                  Update User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

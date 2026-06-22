@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Admin routes should not be indexed
+Disallow: /admin/
+Disallow: /auth/
+
+Sitemap: http://localhost:3000/sitemap.xml
