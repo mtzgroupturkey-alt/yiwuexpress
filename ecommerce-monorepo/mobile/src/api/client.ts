@@ -23,6 +23,7 @@ client.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
       console.log('🔐 API Request with token to:', config.url)
+      console.log('🔑 Token (first 20 chars):', token.substring(0, 20) + '...')
     } else {
       console.log('⚠️ API Request without token to:', config.url)
     }
@@ -30,6 +31,22 @@ client.interceptors.request.use(
   },
   (error) => {
     console.error('❌ API Request Error:', error)
+    return Promise.reject(error)
+  }
+)
+
+// Add response interceptor to log errors and handle auth issues
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      console.error('🚫 401 Unauthorized - Token may be invalid or expired')
+      console.error('Response:', error.response?.data)
+      
+      // Clear the invalid token
+      await AsyncStorage.removeItem('token')
+      console.log('🗑️ Cleared invalid token from storage')
+    }
     return Promise.reject(error)
   }
 )

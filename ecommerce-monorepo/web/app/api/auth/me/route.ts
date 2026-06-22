@@ -3,19 +3,7 @@ import { prisma } from '@/lib/db'
 import { withAuth } from '@/lib/api-middleware'
 import { z } from 'zod'
 
-// Add CORS headers to response
-function addCorsHeaders(response: NextResponse) {
-  response.headers.set('Access-Control-Allow-Origin', '*')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  return response
-}
-
-// Handle preflight requests
-export async function OPTIONS(request: NextRequest) {
-  const response = new NextResponse(null, { status: 200 })
-  return addCorsHeaders(response)
-}
+// Note: CORS is handled globally by middleware.ts, no need to duplicate headers here
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, 'Contact name must be at least 2 characters'),
@@ -47,16 +35,13 @@ async function getProfileHandler(request: any) {
     })
 
     if (!user) {
-      const response = NextResponse.json({ error: 'User not found' }, { status: 404 })
-      return addCorsHeaders(response)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const response = NextResponse.json({ user })
-    return addCorsHeaders(response)
+    return NextResponse.json({ user })
   } catch (error) {
     console.error('Get profile error:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    return addCorsHeaders(response)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -91,24 +76,21 @@ async function updateProfileHandler(request: any) {
       },
     })
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       user: updatedUser,
       message: 'Profile updated successfully',
     })
-    return addCorsHeaders(response)
   } catch (error) {
     console.error('Update profile error:', error)
 
     if (error instanceof z.ZodError) {
-      const response = NextResponse.json(
+      return NextResponse.json(
         { error: 'Validation error', details: error.errors },
         { status: 400 }
       )
-      return addCorsHeaders(response)
     }
 
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    return addCorsHeaders(response)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 

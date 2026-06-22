@@ -55,11 +55,16 @@ export default function QuotesPage() {
   // Submit Mutation
   const createQuoteMutation = useMutation({
     mutationFn: async (payload: any) => {
+      // Get fresh token from localStorage to avoid stale closure issue
+      const currentToken = localStorage.getItem('token')
+      if (!currentToken) {
+        throw new Error('Authentication required. Please log in again.')
+      }
       const res = await fetch('/api/quotes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${currentToken}`
         },
         body: JSON.stringify(payload)
       })

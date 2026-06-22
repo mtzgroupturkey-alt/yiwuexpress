@@ -50,8 +50,14 @@ export default function QuoteRequestScreen() {
 
   // Create Quote Mutation
   const createQuoteMutation = useMutation({
-    mutationFn: (payload: any) =>
-      apiClient.createQuote(
+    mutationFn: async (payload: any) => {
+      // Verify we have a fresh token
+      const currentToken = await AsyncStorage.getItem('token')
+      if (!currentToken) {
+        throw new Error('AUTH_REQUIRED')
+      }
+      
+      return apiClient.createQuote(
         payload.serviceId,
         payload.serviceType,
         payload.origin,
@@ -60,7 +66,8 @@ export default function QuoteRequestScreen() {
         payload.weight ? parseFloat(payload.weight) : undefined,
         payload.dimensions,
         payload.specialRequirements
-      ),
+      )
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] })
       setShowSuccess(true)
@@ -69,6 +76,18 @@ export default function QuoteRequestScreen() {
       }, 1500)
     },
     onError: (err: any) => {
+      console.error('Quote submission error:', err)
+      
+      // Handle auth errors specifically
+      if (err.message === 'AUTH_REQUIRED' || err.response?.status === 401) {
+        setErrorMsg('Your session has expired. Please log in again.')
+        setShowError(true)
+        setTimeout(() => {
+          router.push('/login')
+        }, 2000)
+        return
+      }
+      
       setErrorMsg(err.response?.data?.error || 'Failed to submit quote request.')
       setShowError(true)
     },
