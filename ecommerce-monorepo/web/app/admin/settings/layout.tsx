@@ -53,6 +53,20 @@ export default function SettingsLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  
+  // Pages that should not show the sidebar navigation (shown as submenu in main sidebar)
+  const directPages = [
+    '/admin/settings/company', 
+    '/admin/settings/permissions', 
+    '/admin/settings/backup',
+    '/admin/settings/notifications'
+  ]
+  const showSidebar = !directPages.includes(pathname)
+
+  // If it's a direct page, just show the content without sidebar
+  if (!showSidebar) {
+    return <>{children}</>
+  }
 
   return (
     <div className="space-y-6">
