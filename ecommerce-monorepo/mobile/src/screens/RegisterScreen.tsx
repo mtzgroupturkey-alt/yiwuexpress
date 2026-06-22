@@ -13,12 +13,12 @@ import {
   Button,
   Snackbar,
 } from 'react-native-paper'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import apiClient from '../api/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function RegisterScreen() {
-  const navigation = useNavigation()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -69,10 +69,7 @@ export default function RegisterScreen() {
 
       // Store token and reset navigation
       await AsyncStorage.setItem('token', response.token)
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      })
+      router.replace('/')
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.')
       setShowError(true)
@@ -168,7 +165,7 @@ export default function RegisterScreen() {
 
               <Button
                 mode="text"
-                onPress={() => navigation.navigate('login')}
+                onPress={() => router.push('/login')}
                 style={styles.loginButton}
                 textColor="#1a3a5c"
               >

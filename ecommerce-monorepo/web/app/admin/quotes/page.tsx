@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { 
   FileText, Search, Eye, Edit, Trash2, 
   Clock, CheckCircle, XCircle, AlertTriangle,
   Calendar, DollarSign, Package, User
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import ClientOnly from '@/components/ClientOnly'
 
 interface Quote {
   id: string
@@ -54,6 +56,7 @@ const statusColors = {
 
 export default function AdminQuotesPage() {
   const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const [mounted, setMounted] = useState(false)
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
@@ -69,6 +72,22 @@ export default function AdminQuotesPage() {
     validUntil: '',
     description: '',
   })
+
+  useEffect(() => {
+    setMounted(true)
+    return () => {
+      setShowEditModal(false)
+      setSelectedQuote(null)
+      setMounted(false)
+    }
+  }, [])
+
+  // Close modals on route change
+  const pathname = usePathname()
+  useEffect(() => {
+    setShowEditModal(false)
+    setSelectedQuote(null)
+  }, [pathname])
 
   useEffect(() => {
     if (!authLoading && isAdmin && token) {
@@ -373,117 +392,122 @@ export default function AdminQuotesPage() {
         )}
       </div>
 
-      {/* Edit Modal */}
-      {showEditModal && selectedQuote && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Quote</h2>
+      {/* Edit Quote Modal */}
+      <ClientOnly>
+        {mounted && showEditModal && selectedQuote && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false) }}
+          >
+            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Quote</h2>
 
-            <form onSubmit={handleUpdateQuote} className="space-y-4">
-              {/* Quote Details Display */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                <h3 className="font-medium text-gray-900">Quote Details</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">Customer:</span>
-                    <p className="font-medium">{selectedQuote.user.name}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Service:</span>
-                    <p className="font-medium">{selectedQuote.service.name}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">From:</span>
-                    <p className="font-medium">{selectedQuote.origin}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">To:</span>
-                    <p className="font-medium">{selectedQuote.destination}</p>
-                  </div>
-                  {selectedQuote.weight && (
+              <form onSubmit={handleUpdateQuote} className="space-y-4">
+                {/* Quote Details Display */}
+                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                  <h3 className="font-medium text-gray-900">Quote Details</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Weight:</span>
-                      <p className="font-medium">{selectedQuote.weight} kg</p>
+                      <span className="text-gray-500">Customer:</span>
+                      <p className="font-medium">{selectedQuote.user.name}</p>
                     </div>
-                  )}
-                  {selectedQuote.dimensions && (
                     <div>
-                      <span className="text-gray-500">Dimensions:</span>
-                      <p className="font-medium">{selectedQuote.dimensions}</p>
+                      <span className="text-gray-500">Service:</span>
+                      <p className="font-medium">{selectedQuote.service.name}</p>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Editable Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                  <select
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={editFormData.status}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, status: e.target.value }))}
-                  >
-                    <option value="PENDING">Pending</option>
-                    <option value="REVIEWED">Reviewed</option>
-                    <option value="APPROVED">Approved</option>
-                    <option value="REJECTED">Rejected</option>
-                    <option value="EXPIRED">Expired</option>
-                  </select>
+                    <div>
+                      <span className="text-gray-500">From:</span>
+                      <p className="font-medium">{selectedQuote.origin}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">To:</span>
+                      <p className="font-medium">{selectedQuote.destination}</p>
+                    </div>
+                    {selectedQuote.weight && (
+                      <div>
+                        <span className="text-gray-500">Weight:</span>
+                        <p className="font-medium">{selectedQuote.weight} kg</p>
+                      </div>
+                    )}
+                    {selectedQuote.dimensions && (
+                      <div>
+                        <span className="text-gray-500">Dimensions:</span>
+                        <p className="font-medium">{selectedQuote.dimensions}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
+                {/* Editable Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={editFormData.status}
+                      onChange={(e) => setEditFormData(prev => ({ ...prev, status: e.target.value }))}
+                    >
+                      <option value="PENDING">Pending</option>
+                      <option value="REVIEWED">Reviewed</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                      <option value="EXPIRED">Expired</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={editFormData.price}
+                      onChange={(e) => setEditFormData(prev => ({ ...prev, price: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Valid Until</label>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="date"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={editFormData.price}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, price: e.target.value }))}
+                    value={editFormData.validUntil}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, validUntil: e.target.value }))}
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Valid Until</label>
-                <input
-                  type="date"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={editFormData.validUntil}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, validUntil: e.target.value }))}
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                  <textarea
+                    rows={3}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                <textarea
-                  rows={3}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={editFormData.description}
-                  onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
-                  style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}
-                >
-                  Update Quote
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
+                    style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}
+                  >
+                    Update Quote
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </ClientOnly>
     </div>
   )
 }

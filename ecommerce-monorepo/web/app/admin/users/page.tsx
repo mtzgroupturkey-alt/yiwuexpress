@@ -1,11 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { 
   Users, Plus, Search, Edit, Trash2, Eye,
   Building, Mail, Phone, MapPin, Calendar, AlertTriangle
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import ClientOnly from '@/components/ClientOnly'
 
 interface User {
   id: string
@@ -39,6 +41,7 @@ const roleColors = {
 
 export default function AdminUsersPage() {
   const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const [mounted, setMounted] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
@@ -78,6 +81,54 @@ export default function AdminUsersPage() {
     }
   }, [pagination.page, searchTerm, roleFilter, authLoading, isAdmin, token])
 
+  // Cleanup effect to prevent DOM errors
+  useEffect(() => {
+    setMounted(true)
+    return () => {
+      // Clean up any pending state updates
+      setShowAddModal(false)
+      setShowEditModal(false)
+      setSelectedUser(null)
+      setLoading(false)
+      setError('')
+      setMounted(false)
+    }
+  }, [])
+
+  // Close modals on route change
+  const pathname = usePathname()
+  useEffect(() => {
+    setShowAddModal(false)
+    setShowEditModal(false)
+    setSelectedUser(null)
+  }, [pathname])
+
+  // Add keyboard event listener for ESC key
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showEditModal) {
+          closeEditModal()
+        } else if (showAddModal) {
+          resetAddForm()
+        }
+      }
+    }
+
+    if (showEditModal || showAddModal) {
+      document.addEventListener('keydown', handleEsc)
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc)
+      document.body.style.overflow = 'unset'
+    }
+  }, [showEditModal, showAddModal])
+
   const fetchUsers = async () => {
     if (!token) return
     try {
@@ -111,6 +162,7 @@ export default function AdminUsersPage() {
       setLoading(false)
     }
   }
+
   const handleEdit = (user: User) => {
     setSelectedUser(user)
     setEditFormData({
@@ -133,7 +185,7 @@ export default function AdminUsersPage() {
 
     try {
       // Remove empty password from data
-      const updateData = { ...editFormData }
+      const updateData: any = { ...editFormData }
       if (!updateData.password) {
         delete updateData.password
       }
@@ -151,8 +203,7 @@ export default function AdminUsersPage() {
 
       if (response.ok) {
         fetchUsers()
-        setShowEditModal(false)
-        setSelectedUser(null)
+        closeEditModal()
       } else {
         alert(data.error || 'Update failed')
       }
@@ -160,6 +211,7 @@ export default function AdminUsersPage() {
       alert('Network error')
     }
   }
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!token) return
@@ -220,6 +272,7 @@ export default function AdminUsersPage() {
       alert('Network error')
     }
   }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -241,6 +294,22 @@ export default function AdminUsersPage() {
       role: 'USER',
     })
     setShowAddModal(false)
+  }
+
+  const closeEditModal = () => {
+    setShowEditModal(false)
+    setSelectedUser(null)
+    setEditFormData({
+      email: '',
+      name: '',
+      companyName: '',
+      businessType: '',
+      taxId: '',
+      country: '',
+      phone: '',
+      role: 'USER',
+      password: '',
+    })
   }
 
   // Show loading state while auth is loading
@@ -454,137 +523,146 @@ export default function AdminUsersPage() {
         )}
       </div>
       {/* Add User Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Add New User</h2>
+      <ClientOnly>
+        {mounted && showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={(e) => {
+            if (e.target === e.currentTarget) resetAddForm()
+          }}>
+            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">Add New User</h2>
 
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.name}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                    <input
+                      type="email"
+                      required
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.email}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
                   <input
-                    type="text"
+                    type="password"
                     required
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.name}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, name: e.target.value }))}
+                    value={addFormData.password}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, password: e.target.value }))}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.email}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-                <input
-                  type="password"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={addFormData.password}
-                  onChange={(e) => setAddFormData(prev => ({ ...prev, password: e.target.value }))}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.companyName}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.companyName}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                    <select
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.businessType}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, businessType: e.target.value }))}
+                    >
+                      <option value="">Select type</option>
+                      <option value="retailer">Retailer</option>
+                      <option value="wholesaler">Wholesaler</option>
+                      <option value="distributor">Distributor</option>
+                      <option value="manufacturer">Manufacturer</option>
+                    </select>
+                  </div>
                 </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.taxId}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, taxId: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.phone}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={addFormData.country}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, country: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
                   <select
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.businessType}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, businessType: e.target.value }))}
+                    value={addFormData.role}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, role: e.target.value }))}
                   >
-                    <option value="">Select type</option>
-                    <option value="retailer">Retailer</option>
-                    <option value="wholesaler">Wholesaler</option>
-                    <option value="distributor">Distributor</option>
-                    <option value="manufacturer">Manufacturer</option>
+                    <option value="USER">User</option>
+                    <option value="ADMIN">Admin</option>
                   </select>
                 </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.taxId}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, taxId: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.phone}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.country}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, country: e.target.value }))}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                <select
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={addFormData.role}
-                  onChange={(e) => setAddFormData(prev => ({ ...prev, role: e.target.value }))}
-                >
-                  <option value="USER">User</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={resetAddForm}
-                  className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
-                  style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
-                >
-                  Create User
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={resetAddForm}
+                    className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
+                    style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
+                  >
+                    Create User
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </ClientOnly>
+
       {/* Edit User Modal */}
-      {showEditModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <ClientOnly>
+        {mounted && showEditModal && selectedUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={(e) => {
+            if (e.target === e.currentTarget) closeEditModal()
+          }}>
+            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold text-gray-900 mb-6">Edit User</h2>
 
             <form onSubmit={handleUpdateUser} className="space-y-4">
@@ -645,6 +723,7 @@ export default function AdminUsersPage() {
                   </select>
                 </div>
               </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
@@ -690,7 +769,7 @@ export default function AdminUsersPage() {
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowEditModal(false)}
+                  onClick={closeEditModal}
                   className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   Cancel
@@ -706,7 +785,8 @@ export default function AdminUsersPage() {
             </form>
           </div>
         </div>
-      )}
+        )}
+      </ClientOnly>
     </div>
   )
 }

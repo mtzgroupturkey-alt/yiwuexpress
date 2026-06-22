@@ -6,7 +6,34 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seed for YIWU EXPRESS...')
 
-  // 1. Create admin user
+  // 1. Create system settings first
+  const existingSettings = await prisma.systemSettings.findFirst()
+  if (!existingSettings) {
+    const systemSettings = await prisma.systemSettings.create({
+      data: {
+        companyName: 'YIWU EXPRESS',
+        companyAddress: 'Yiwu International Trade City, Yiwu, Zhejiang, China',
+        companyPhone: '+86 579 8555 1234',
+        companyEmail: 'info@yiwuexpress.com',
+        companyWebsite: 'https://yiwuexpress.com',
+        businessLicense: 'YW-2024-TRADE-001',
+        taxRegistrationNumber: '330782MA28X9Y64F',
+        companyDescription: 'Leading logistics and trade services provider connecting China to the world. Specializing in international shipping, customs clearance, and market sourcing from Yiwu.',
+        companyLogo: '',
+        companyFavicon: '',
+        primaryColor: '#1a3a5c',
+        accentColor: '#c9a84c',
+        currency: 'USD',
+        timezone: 'Asia/Shanghai',
+        language: 'en',
+      },
+    })
+    console.log('⚙️ Seeded system settings')
+  } else {
+    console.log('⚙️ System settings already exist')
+  }
+
+  // 2. Create admin user
   const adminPassword = await bcrypt.hash('admin123', 10)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@yiwuexpress.com' },
@@ -24,7 +51,7 @@ async function main() {
   })
   console.log('👤 Seeded admin user:', admin.email)
 
-  // Create a default customer user for testing
+  // 3. Create a default customer user for testing
   const userPassword = await bcrypt.hash('password123', 10)
   const customer = await prisma.user.upsert({
     where: { email: 'user@example.com' },
@@ -42,7 +69,7 @@ async function main() {
   })
   console.log('👤 Seeded customer user:', customer.email)
 
-  // 2. Seed Logistics Services
+  // 4. Seed Logistics Services
   const services = [
     {
       name: 'Air Freight Express',
@@ -115,7 +142,7 @@ async function main() {
   }
   console.log('🚚 Seeded services')
 
-  // 3. Seed Sample Quotes
+  // 5. Seed Sample Quotes
   const sampleUser = await prisma.user.findFirst({
     where: { email: 'user@example.com' }
   })
@@ -159,7 +186,7 @@ async function main() {
     }
     console.log('📋 Seeded quotes')
 
-    // 4. Seed Sample Shipments
+    // 6. Seed Sample Shipments
     const shipments = [
       {
         trackingNumber: 'YWE87349823CN',

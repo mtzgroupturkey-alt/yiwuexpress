@@ -14,12 +14,12 @@ import {
   Button,
   Snackbar,
 } from 'react-native-paper'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import apiClient from '../api/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function LoginScreen() {
-  const navigation = useNavigation()
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -59,10 +59,10 @@ export default function LoginScreen() {
       await AsyncStorage.setItem('token', response.token)
       
       // Navigate back to home
-      if (navigation.canGoBack()) {
-        navigation.goBack()
+      if (router.canGoBack()) {
+        router.back()
       } else {
-        navigation.navigate('HomeMain' as never)
+        router.replace('/')
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Login failed. Please try again.')
@@ -130,7 +130,7 @@ export default function LoginScreen() {
 
               <Button
                 mode="outlined"
-                onPress={() => navigation.navigate('register')}
+                onPress={() => router.push('/register')}
                 style={styles.registerButton}
                 textColor="#1a3a5c"
                 style={{ borderColor: '#1a3a5c' }}
@@ -141,10 +141,10 @@ export default function LoginScreen() {
               <Button
                 mode="text"
                 onPress={() => {
-                  if (navigation.canGoBack()) {
-                    navigation.goBack()
+                  if (router.canGoBack()) {
+                    router.back()
                   } else {
-                    navigation.navigate('HomeMain' as never)
+                    router.replace('/')
                   }
                 }}
                 style={styles.backButton}

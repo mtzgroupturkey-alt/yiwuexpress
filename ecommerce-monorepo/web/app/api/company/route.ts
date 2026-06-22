@@ -1,37 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
 import jwt from 'jsonwebtoken'
-
-// Add CORS headers to response
-function addCorsHeaders(response: NextResponse) {
-  response.headers.set('Access-Control-Allow-Origin', '*')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  return response
-}
 
 // Handle preflight requests
 export async function OPTIONS(request: NextRequest) {
-  const response = new NextResponse(null, { status: 200 })
-  return addCorsHeaders(response)
+  return handleOptions(request)
 }
 
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      const response = NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-      return addCorsHeaders(response)
+      return addCorsHeaders(
+        NextResponse.json({ error: 'Authentication required' }, { status: 401 }),
+        request
+      )
     }
 
     const token = authHeader.substring(7)
     let decoded: any
-    
+
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
-    } catch (error) {
-      const response = NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-      return addCorsHeaders(response)
+    } catch {
+      return addCorsHeaders(
+        NextResponse.json({ error: 'Invalid token' }, { status: 401 }),
+        request
+      )
     }
 
     // Get user company information from CompanyInfo table
@@ -67,16 +63,19 @@ export async function GET(request: NextRequest) {
     }
 
     if (!companyInfo) {
-      const response = NextResponse.json({ error: 'Company info not found' }, { status: 404 })
-      return addCorsHeaders(response)
+      return addCorsHeaders(
+        NextResponse.json({ error: 'Company info not found' }, { status: 404 }),
+        request
+      )
     }
 
-    const response = NextResponse.json({ company: companyInfo })
-    return addCorsHeaders(response)
+    return addCorsHeaders(NextResponse.json({ company: companyInfo }), request)
   } catch (error) {
     console.error('Get company info error:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    return addCorsHeaders(response)
+    return addCorsHeaders(
+      NextResponse.json({ error: 'Internal server error' }, { status: 500 }),
+      request
+    )
   }
 }
 
@@ -84,22 +83,26 @@ export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      const response = NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-      return addCorsHeaders(response)
+      return addCorsHeaders(
+        NextResponse.json({ error: 'Authentication required' }, { status: 401 }),
+        request
+      )
     }
 
     const token = authHeader.substring(7)
     let decoded: any
-    
+
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
-    } catch (error) {
-      const response = NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-      return addCorsHeaders(response)
+    } catch {
+      return addCorsHeaders(
+        NextResponse.json({ error: 'Invalid token' }, { status: 401 }),
+        request
+      )
     }
 
     const body = await request.json()
-    
+
     // Upsert company information
     const companyInfo = await prisma.companyInfo.upsert({
       where: { userId: decoded.userId },
@@ -124,11 +127,15 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    const response = NextResponse.json({ company: companyInfo, message: 'Company info updated successfully' })
-    return addCorsHeaders(response)
+    return addCorsHeaders(
+      NextResponse.json({ company: companyInfo, message: 'Company info updated successfully' }),
+      request
+    )
   } catch (error) {
     console.error('Update company info error:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    return addCorsHeaders(response)
+    return addCorsHeaders(
+      NextResponse.json({ error: 'Internal server error' }, { status: 500 }),
+      request
+    )
   }
 }

@@ -13,16 +13,20 @@ import {
   Divider,
 } from 'react-native-paper'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import apiClient from '../api/client'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export default function QuotesScreen() {
-  const navigation = useNavigation()
+  const router = useRouter()
   const [token, setToken] = useState<string | null>(null)
+  const [tokenChecked, setTokenChecked] = useState(false)
 
   useEffect(() => {
-    AsyncStorage.getItem('token').then(t => setToken(t))
+    AsyncStorage.getItem('token').then(t => {
+      setToken(t)
+      setTokenChecked(true)
+    })
   }, [])
 
   const {
@@ -33,7 +37,7 @@ export default function QuotesScreen() {
   } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => apiClient.getQuotes(),
-    enabled: !!token,
+    enabled: tokenChecked && !!token,
   })
 
   const quotes = quotesData?.quotes || []
@@ -101,7 +105,7 @@ export default function QuotesScreen() {
           </Text>
           <Button
             mode="contained"
-            onPress={() => navigation.navigate('login')}
+            onPress={() => router.push('/login')}
             buttonColor="#1a3a5c"
             style={styles.authBtn}
           >
@@ -136,7 +140,7 @@ export default function QuotesScreen() {
               <Text style={styles.emptyText}>No quote requests found.</Text>
               <Button
                 mode="contained"
-                onPress={() => navigation.navigate('quote-request')}
+                onPress={() => router.push('/quote-request')}
                 buttonColor="#1a3a5c"
                 style={styles.newQuoteBtn}
               >

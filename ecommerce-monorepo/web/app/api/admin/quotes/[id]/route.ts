@@ -49,7 +49,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     return NextResponse.json(quote)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get quote error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     })
 
     return NextResponse.json(quote)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Update quote error:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(
@@ -114,7 +114,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     })
 
     return NextResponse.json({ message: 'Quote deleted successfully' })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Delete quote error:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(

@@ -9,6 +9,7 @@ import {
   TrendingUp, Bell
 } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -21,27 +22,55 @@ const navItems = [
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const { isAdmin, loading } = useAdminAuth()
   const [logoUrl, setLogoUrl] = useState('')
   const [companyName, setCompanyName] = useState('YIWU EXPRESS')
   const pathname = usePathname()
   const router = useRouter()
 
+  // Fix hydration issues by only rendering dynamic content after mount
   useEffect(() => {
-    fetch('/api/settings')
-      .then(res => res.json())
-      .then(data => {
-        if (data.settings) {
-          if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
-          if (data.settings.companyName) setCompanyName(data.settings.companyName)
-        }
-      })
-      .catch(err => console.error(err))
+    setMounted(true)
   }, [])
 
+  useEffect(() => {
+    if (mounted) {
+      fetch('/api/settings')
+        .then(res => res.json())
+        .then(data => {
+          if (data.settings) {
+            if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
+            if (data.settings.companyName) setCompanyName(data.settings.companyName)
+          }
+        })
+        .catch(err => console.error(err))
+    }
+  }, [mounted])
+
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    router.push('/auth/login')
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token')
+        window.location.href = '/auth/login'
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Fallback: try router push
+      router.push('/auth/login')
+    }
+  }
+
+  // Don't render anything until hydration is complete
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
+          <p className="text-sm text-gray-500">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {

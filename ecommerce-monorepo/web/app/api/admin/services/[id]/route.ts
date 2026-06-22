@@ -98,7 +98,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     })
 
     return NextResponse.json(service)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Update service error:', error)
     if (error.code === 'P2025') {
       return NextResponse.json(

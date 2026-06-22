@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import {
   Building2, Mail, Phone, Globe, FileText, Save,
-  MapPin, Hash, Palette, AlertCircle, CheckCircle, Upload
+  MapPin, Hash, Palette, AlertCircle, CheckCircle, Upload, RefreshCw
 } from 'lucide-react'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
 
@@ -18,6 +18,7 @@ interface CompanySettings {
   taxRegistrationNumber: string
   companyDescription: string
   companyLogo: string
+  companyFavicon: string
   primaryColor: string
   accentColor: string
   currency: string
@@ -43,6 +44,7 @@ export default function CompanyInfoPage() {
     taxRegistrationNumber: '',
     companyDescription: '',
     companyLogo: '',
+    companyFavicon: '',
     primaryColor: '#1a3a5c',
     accentColor: '#c9a84c',
     currency: 'USD',
@@ -105,6 +107,7 @@ export default function CompanyInfoPage() {
             taxRegistrationNumber: safeString(data.settings.taxRegistrationNumber),
             companyDescription: safeString(data.settings.companyDescription),
             companyLogo: safeString(data.settings.companyLogo),
+            companyFavicon: safeString(data.settings.companyFavicon),
             primaryColor: safeString(data.settings.primaryColor) || '#1a3a5c',
             accentColor: safeString(data.settings.accentColor) || '#c9a84c',
             currency: safeString(data.settings.currency) || 'USD',
@@ -145,24 +148,8 @@ export default function CompanyInfoPage() {
 
       if (response.ok) {
         setSuccess('Company information updated successfully!')
-        // Ensure returned settings have safe string values
-        setSettings({
-          ...data.settings,
-          companyName: safeString(data.settings.companyName) || 'YIWU EXPRESS',
-          companyAddress: safeString(data.settings.companyAddress),
-          companyPhone: safeString(data.settings.companyPhone),
-          companyEmail: safeString(data.settings.companyEmail),
-          companyWebsite: safeString(data.settings.companyWebsite),
-          businessLicense: safeString(data.settings.businessLicense),
-          taxRegistrationNumber: safeString(data.settings.taxRegistrationNumber),
-          companyDescription: safeString(data.settings.companyDescription),
-          companyLogo: safeString(data.settings.companyLogo),
-          primaryColor: safeString(data.settings.primaryColor) || '#1a3a5c',
-          accentColor: safeString(data.settings.accentColor) || '#c9a84c',
-          currency: safeString(data.settings.currency) || 'USD',
-          timezone: safeString(data.settings.timezone) || 'Asia/Shanghai',
-          language: safeString(data.settings.language) || 'en',
-        })
+        // Force reload settings from server to ensure consistency
+        await fetchSettings()
         setTimeout(() => setSuccess(''), 3000)
       } else {
         setError(data.error || 'Failed to update settings')
@@ -214,6 +201,51 @@ export default function CompanyInfoPage() {
     }
   }
 
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !token) return
+
+    // Validate file type for favicon
+    const validTypes = ['image/x-icon', 'image/vnd.microsoft.icon', 'image/png', 'image/svg+xml']
+    if (!validTypes.includes(file.type)) {
+      setError('Please upload a valid favicon file (.ico, .png, or .svg)')
+      return
+    }
+
+    setUploading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', 'favicon')
+
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Update the favicon field in the form
+        handleInputChange('companyFavicon', data.url)
+        setSuccess('Favicon uploaded successfully! Don\'t forget to save changes.')
+        setTimeout(() => setSuccess(''), 5000)
+      } else {
+        setError(data.error || 'Failed to upload favicon')
+      }
+    } catch (err) {
+      setError('Favicon upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -238,6 +270,18 @@ export default function CompanyInfoPage() {
             <p className="text-sm text-gray-500">Manage your business details and branding</p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true)
+            fetchSettings()
+          }}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+          Refresh
+        </button>
       </div>
 
       {/* Alerts */}
@@ -516,6 +560,69 @@ export default function CompanyInfoPage() {
                       value={settings.companyLogo}
                       onChange={(e) => handleInputChange('companyLogo', e.target.value)}
                       placeholder="https://example.com/logo.png"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Website Favicon</label>
+              <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                {settings.companyFavicon && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative w-16 h-16 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
+                      <img
+                        src={settings.companyFavicon}
+                        alt="Favicon Preview"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="w-4 h-4 border border-gray-200 rounded overflow-hidden bg-white flex items-center justify-center">
+                        <img
+                          src={settings.companyFavicon}
+                          alt="Small Favicon Preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <span>16x16 preview</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-xl cursor-pointer shadow-sm transition-colors">
+                      <Upload size={16} />
+                      {uploading ? 'Uploading...' : 'Upload Favicon'}
+                      <input
+                        type="file"
+                        accept=".ico,.png,.svg,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml"
+                        onChange={handleFaviconUpload}
+                        className="hidden"
+                        disabled={uploading}
+                      />
+                    </label>
+                    {settings.companyFavicon && (
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('companyFavicon', '')}
+                        className="px-3 py-2 text-sm text-red-600 hover:text-red-700 font-medium"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500">Supports ICO, PNG, or SVG. Recommended size: 32x32px or 16x16px. Max 1MB.</p>
+                  
+                  <div className="pt-2">
+                    <span className="text-xs text-gray-400 block mb-1">Or enter Favicon URL manually:</span>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      value={settings.companyFavicon}
+                      onChange={(e) => handleInputChange('companyFavicon', e.target.value)}
+                      placeholder="https://example.com/favicon.ico"
                     />
                   </div>
                 </div>

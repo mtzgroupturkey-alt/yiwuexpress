@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   StyleSheet,
@@ -17,17 +17,27 @@ import {
   Snackbar,
 } from 'react-native-paper'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import apiClient from '../api/client'
 
 export default function ProfileScreen() {
-  const navigation = useNavigation()
+  const router = useRouter()
+  const [token, setToken] = useState<string | null>(null)
+  const [tokenChecked, setTokenChecked] = useState(false)
+
+  useEffect(() => {
+    AsyncStorage.getItem('token').then(t => {
+      setToken(t)
+      setTokenChecked(true)
+    })
+  }, [])
+
   const [snackbarVisible, setSnackbarVisible] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  // Fetch Quotes
+  // Fetch Quotes — only when logged in
   const {
     data: quotesData,
     isLoading: quotesLoading,
@@ -35,9 +45,10 @@ export default function ProfileScreen() {
   } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => apiClient.getQuotes(),
+    enabled: tokenChecked && !!token,
   })
 
-  // Fetch User Profile
+  // Fetch User Profile — only when logged in
   const {
     data: userProfileData,
     isLoading: userProfileLoading,
@@ -45,9 +56,10 @@ export default function ProfileScreen() {
     queryKey: ['user-profile'],
     queryFn: () => apiClient.getUserProfile(),
     retry: false,
+    enabled: tokenChecked && !!token,
   })
 
-  // Fetch Company Info
+  // Fetch Company Info — only when logged in
   const {
     data: companyData,
     isLoading: companyLoading,
@@ -55,6 +67,7 @@ export default function ProfileScreen() {
     queryKey: ['company-info'],
     queryFn: () => apiClient.getCompanyInfo(),
     retry: false,
+    enabled: tokenChecked && !!token,
   })
 
   const quotes = quotesData?.quotes || []
@@ -77,10 +90,7 @@ export default function ProfileScreen() {
             try {
               setIsLoggingOut(true)
               await AsyncStorage.removeItem('token')
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'login' }],
-              })
+              router.replace('/login')
             } catch (err) {
               setSnackbarMessage('Logout failed. Please try again.')
               setSnackbarVisible(true)
@@ -106,9 +116,7 @@ export default function ProfileScreen() {
           {quote.price ? `$${quote.price}` : 'Under Review'}
         </Text>
       )}
-      onPress={() => {
-        navigation.navigate('quotes')
-      }}
+      onPress={() => router.push('/quotes')}
     />
   )
 
@@ -213,9 +221,7 @@ export default function ProfileScreen() {
                 </Text>
                 <Button
                   mode="contained"
-                  onPress={() => {
-                    navigation.navigate('index')
-                  }}
+                  onPress={() => router.push('/')}
                   style={styles.quoteButton}
                   buttonColor="#1a3a5c"
                 >
@@ -237,9 +243,7 @@ export default function ProfileScreen() {
                   <List.Item
                     title="View All Quotes"
                     left={props => <List.Icon {...props} icon="arrow-right" />}
-                    onPress={() => {
-                      navigation.navigate('quotes')
-                    }}
+                    onPress={() => router.push('/quotes')}
                   />
                 </>
               )}

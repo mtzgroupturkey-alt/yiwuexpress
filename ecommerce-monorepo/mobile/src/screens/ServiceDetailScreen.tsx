@@ -14,7 +14,6 @@ import {
   Divider,
 } from 'react-native-paper'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigation } from '@react-navigation/native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import apiClient from '../api/client'
 

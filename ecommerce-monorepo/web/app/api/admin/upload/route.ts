@@ -20,27 +20,61 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData()
     const file = formData.get('file') as File | null
+    const uploadType = formData.get('type') as string || 'general'
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
+    // File size limit: 2MB for general files, 1MB for favicons
+    const maxSize = uploadType === 'favicon' ? 1024 * 1024 : 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json({ 
+        error: `File too large. Maximum size is ${maxSize / (1024 * 1024)}MB` 
+      }, { status: 400 })
+    }
+
+    // Validate file type for favicon
+    if (uploadType === 'favicon') {
+      const validFaviconTypes = [
+        'image/x-icon',
+        'image/vnd.microsoft.icon',
+        'image/png',
+        'image/svg+xml'
+      ]
+      if (!validFaviconTypes.includes(file.type)) {
+        return NextResponse.json({ 
+          error: 'Invalid favicon format. Please upload .ico, .png, or .svg files' 
+        }, { status: 400 })
+      }
+    }
+
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+    // Create subdirectory based on upload type
+    const subDir = uploadType === 'favicon' ? 'favicons' : 'general'
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', subDir)
     
     // Ensure directory exists
     await mkdir(uploadDir, { recursive: true })
 
-    const uniqueFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`
-    const filepath = path.join(uploadDir, uniqueFilename)
+    // Special handling for favicon naming
+    let filename: string
+    if (uploadType === 'favicon') {
+      const ext = path.extname(file.name)
+      filename = `favicon-${Date.now()}${ext}`
+    } else {
+      filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`
+    }
+
+    const filepath = path.join(uploadDir, filename)
     
     await writeFile(filepath, buffer)
 
     return NextResponse.json({ 
-      url: `/uploads/${uniqueFilename}`,
-      message: 'File uploaded successfully' 
+      url: `/uploads/${subDir}/${filename}`,
+      message: `${uploadType === 'favicon' ? 'Favicon' : 'File'} uploaded successfully` 
     })
   } catch (error) {
     console.error('File upload error:', error)

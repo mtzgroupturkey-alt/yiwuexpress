@@ -1,31 +1,16 @@
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
-
-// ─── API URL Configuration ─────────────────────────────────────────────────
-// Android emulator → 10.0.2.2 maps to host machine's localhost
-// iOS simulator   → localhost works directly
-// Real device     → must use the host machine's LAN IP
-const LAN_IP = '192.168.1.185'
-
-const getApiUrl = () => {
-  if (Platform.OS === 'web') {
-    // Running in a browser - always use localhost
-    return 'http://localhost:3000/api'
-  }
-  if (__DEV__) {
-    if (Platform.OS === 'android') return `http://10.0.2.2:3000/api`
-    // iOS simulator or real device - use LAN IP
-    return `http://${LAN_IP}:3000/api`
-  }
-  return 'https://your-production-api.com/api'
-}
+import { API_CONFIG, getApiUrl } from '../config/api.config'
 
 const API_URL = getApiUrl()
 
+console.log('🔧 Mobile API Config: Using port', API_CONFIG.BACKEND_PORT)
+console.log('📡 API URL:', API_URL)
+
 const client = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: API_CONFIG.TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,10 +22,14 @@ client.interceptors.request.use(
     const token = await AsyncStorage.getItem('token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      console.log('🔐 API Request with token to:', config.url)
+    } else {
+      console.log('⚠️ API Request without token to:', config.url)
     }
     return config
   },
   (error) => {
+    console.error('❌ API Request Error:', error)
     return Promise.reject(error)
   }
 )

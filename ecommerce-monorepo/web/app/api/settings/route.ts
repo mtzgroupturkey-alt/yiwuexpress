@@ -1,7 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
+import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
 
-export async function GET() {
+// Handle OPTIONS preflight request
+export async function OPTIONS(request: NextRequest) {
+  return handleOptions(request)
+}
+
+export async function GET(request: NextRequest) {
   try {
     let settings = await prisma.systemSettings.findFirst({
       select: {
@@ -36,9 +42,11 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ settings })
+    const response = NextResponse.json({ settings })
+    return addCorsHeaders(response, request)
   } catch (error) {
     console.error('Get public settings error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return addCorsHeaders(response, request)
   }
 }

@@ -9,19 +9,11 @@ const nextConfig = {
       },
     ],
   },
-  async headers() {
-    return [
-      {
-        // Apply CORS headers to all API routes
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,DELETE,OPTIONS,PATCH' },
-          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization, X-Requested-With' },
-        ],
-      },
-    ];
+  // Enable custom server port from environment
+  env: {
+    CUSTOM_PORT: process.env.PORT || '3001',
   },
+
 };
 
 module.exports = nextConfig;

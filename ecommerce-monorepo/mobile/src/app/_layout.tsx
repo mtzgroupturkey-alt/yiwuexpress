@@ -28,7 +28,7 @@ export default function RootLayout() {
           options={{ title: 'SERVICE DETAILS' }}
         />
         <Stack.Screen
-          name="quote/new"
+          name="quote-request"
           options={{ title: 'Request Quote' }}
         />
       </Stack>
