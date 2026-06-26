@@ -21,45 +21,64 @@ export function CategoryMenu() {
   useEffect(() => {
     fetchCategories()
     
-    const handleOutsideClick = () => {
-      setActiveCategory(null)
-    }
-    window.addEventListener('click', handleOutsideClick)
-    return () => window.removeEventListener('click', handleOutsideClick)
+    // Temporarily disable outside click handler to debug
+    // const handleOutsideClick = (event: MouseEvent) => {
+    //   // Don't close if clicking on a category button
+    //   if ((event.target as Element)?.closest('[data-category-button]')) {
+    //     return
+    //   }
+    //   console.log('[CategoryMenu] Outside click detected, closing dropdown')
+    //   setActiveCategory(null)
+    // }
+    
+    // // Use capture phase to handle click before button click
+    // document.addEventListener('click', handleOutsideClick, true)
+    // return () => document.removeEventListener('click', handleOutsideClick, true)
   }, [])
 
   const fetchCategories = async () => {
     try {
+      console.log('[CategoryMenu] Fetching categories from API...')
       const response = await fetch('/api/categories?includeChildren=true')
+      console.log('[CategoryMenu] Response status:', response.status, response.ok)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('[CategoryMenu] Raw API data:', data)
+        
+        // API returns { success: true, data: [...] } not { success: true, categories: [...] }
+        const allCategories = data.data || data.categories || []
+        console.log('[CategoryMenu] All categories count:', allCategories.length)
         
         // Only show parent categories (no parentId) that are active and showInMenu
-        const parentCategories = data.categories
-          ?.filter((cat: any) => {
+        const parentCategories = allCategories
+          .filter((cat: any) => {
             const isParent = !cat.parentId
-            const isActive = cat.isActive
-            const showInMenu = cat.showInMenu !== false
+            const isActive = cat.isActive !== false // Default to true if undefined
+            const showInMenu = cat.showInMenu !== false // Default to true if undefined
+            console.log(`[CategoryMenu] ${cat.name}: isParent=${isParent}, isActive=${isActive}, showInMenu=${showInMenu}`)
             return isParent && isActive && showInMenu
           })
-          .sort((a: any, b: any) => (a.menuOrder || 0) - (b.menuOrder || 0)) || []
+          .sort((a: any, b: any) => (a.menuOrder || 0) - (b.menuOrder || 0))
+        
+        console.log('[CategoryMenu] Filtered parent categories:', parentCategories.length)
         
         // Map to include children and grandchildren, sorted by menuOrder
         const categoriesWithChildren = parentCategories.map((cat: any) => {
-          const children = data.categories
-            ?.filter((child: any) => child.parentId === cat.id && child.isActive && (child.showInMenu !== false))
+          const children = allCategories
+            .filter((child: any) => child.parentId === cat.id && child.isActive !== false && child.showInMenu !== false)
             .sort((a: any, b: any) => (a.menuOrder || 0) - (b.menuOrder || 0))
             .map((child: any) => {
               // Get level 3 subcategories (grandchildren)
-              const grandchildren = data.categories
-                ?.filter((grandchild: any) => grandchild.parentId === child.id && grandchild.isActive && (grandchild.showInMenu !== false))
+              const grandchildren = allCategories
+                .filter((grandchild: any) => grandchild.parentId === child.id && grandchild.isActive !== false && grandchild.showInMenu !== false)
                 .sort((a: any, b: any) => (a.menuOrder || 0) - (b.menuOrder || 0))
                 .map((grandchild: any) => ({
                   id: grandchild.id,
                   name: grandchild.name,
                   slug: grandchild.slug,
                   productCount: grandchild._count?.products || 0
-                })) || []
+                }))
 
               return {
                 id: child.id,
@@ -68,7 +87,7 @@ export function CategoryMenu() {
                 productCount: child._count?.products || 0,
                 children: grandchildren
               }
-            }) || []
+            })
           
           return {
             id: cat.id,
@@ -79,14 +98,36 @@ export function CategoryMenu() {
         })
         
         setCategories(categoriesWithChildren)
+        console.log('[CategoryMenu] Final categories set:', categoriesWithChildren.length)
+        console.log('[CategoryMenu] Categories with children:', categoriesWithChildren.map(c => ({
+          name: c.name,
+          childrenCount: c.children?.length || 0,
+          children: c.children?.map(ch => ch.name)
+        })))
       } else {
-        console.error('API response not ok:', response.status, response.statusText)
+        console.error('[CategoryMenu] API response not ok:', response.status, response.statusText)
+        // Load static fallback categories
+        loadFallbackCategories()
       }
     } catch (error) {
-      console.error('Failed to fetch categories:', error)
+      console.error('[CategoryMenu] Failed to fetch categories:', error)
+      // Load static fallback categories
+      loadFallbackCategories()
     } finally {
       setLoading(false)
     }
+  }
+
+  const loadFallbackCategories = () => {
+    console.log('[CategoryMenu] Loading fallback static categories')
+    setCategories([
+      { id: '1', name: 'ALL', slug: 'all', children: [] },
+      { id: '2', name: 'COOKWARE', slug: 'cookware', children: [] },
+      { id: '3', name: 'BAKEWARE', slug: 'bakeware', children: [] },
+      { id: '4', name: 'UTENSILS', slug: 'utensils', children: [] },
+      { id: '5', name: 'APPLIANCES', slug: 'appliances', children: [] },
+      { id: '6', name: 'TABLEWARE', slug: 'tableware', children: [] },
+    ])
   }
 
   if (loading) {
@@ -105,25 +146,45 @@ export function CategoryMenu() {
     )
   }
 
+  // Don't render at all if no categories - FOR DEBUGGING, SHOW EMPTY BAR
+  if (categories.length === 0) {
+    return (
+      <div className="bg-[#1a3a5c] text-white">
+        <Container>
+          <nav className="flex items-center justify-center space-x-8 h-12">
+            <span className="text-white/70 text-sm">Loading categories...</span>
+          </nav>
+        </Container>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-[#1a3a5c] text-white">
       <Container>
-        <nav className="flex items-center space-x-8 h-12">
-          {categories.map((category) => {
-            const hasGrandchildren = category.children?.some(
-              (child) => child.children && child.children.length > 0
-            )
+        <div className="relative">
+          <nav className="flex items-center space-x-8 h-12 overflow-x-auto no-scrollbar">
+            {categories.map((category) => {
+              const hasGrandchildren = category.children?.some(
+                (child) => child.children && child.children.length > 0
+              )
 
-            return (
-              <div key={category.id} className="relative group h-full flex items-center">
+              return (
+                <div key={category.id} className="relative h-full flex items-center">
                 {category.children && category.children.length > 0 ? (
                   /* Category with children - show as button that opens dropdown */
                   <button
+                    data-category-button
                     className="text-white/90 hover:text-white font-medium text-sm whitespace-nowrap border-b-2 border-transparent hover:border-[#c9a84c] transition-colors h-full flex items-center gap-1 cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      setActiveCategory(activeCategory === category.id ? null : category.id)
+                      console.log(`[CategoryMenu] Clicked ${category.name}, has ${category.children?.length} children`)
+                      console.log(`[CategoryMenu] Current activeCategory: ${activeCategory}`)
+                      console.log(`[CategoryMenu] Category ID: ${category.id}`)
+                      const newActiveCategory = activeCategory === category.id ? null : category.id
+                      console.log(`[CategoryMenu] Setting activeCategory to: ${newActiveCategory}`)
+                      setActiveCategory(newActiveCategory)
                     }}
                   >
                     {category.name}
@@ -143,14 +204,21 @@ export function CategoryMenu() {
                 {/* Sub-category dropdown */}
                 {category.children && category.children.length > 0 && (
                   <>
+                    {(() => {
+                      console.log(`[CategoryMenu] Rendering dropdown for ${category.name}, active: ${activeCategory === category.id}, activeCategory: ${activeCategory}, category.id: ${category.id}, children: ${category.children.length}`)
+                      return null
+                    })()}
                     {hasGrandchildren ? (
                       /* Mega Menu Style for Multi-Level Categories */
                       <div 
-                        className={`absolute left-0 top-full bg-white shadow-xl border border-gray-100 rounded-b-lg p-6 w-[650px] transition-all duration-200 z-50 grid grid-cols-3 gap-6 ${
-                          activeCategory === category.id
-                            ? 'opacity-100 visible'
-                            : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
+                        className={`absolute left-0 top-full mt-0 bg-white shadow-xl rounded-b-lg p-6 w-[650px] z-[9999] transition-all duration-200 border-4 border-red-500 ${
+                          activeCategory === category.id || category.name === 'CLOTHING' ? 'block' : 'hidden'
                         }`}
+                        style={{
+                          display: activeCategory === category.id ? 'grid' : 'none',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: '1.5rem'
+                        }}
                         onClick={(e) => e.stopPropagation()}
                       >
                         {category.children.map((sub) => (
@@ -183,10 +251,8 @@ export function CategoryMenu() {
                     ) : (
                       /* Simple Dropdown for Single-Level Categories */
                       <div 
-                        className={`absolute left-0 top-full bg-white shadow-lg rounded-b-lg p-4 min-w-[220px] transition-all duration-200 z-50 ${
-                          activeCategory === category.id
-                            ? 'opacity-100 visible'
-                            : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
+                        className={`absolute left-0 top-full mt-0 bg-white shadow-lg rounded-b-lg p-4 min-w-[220px] transition-all duration-200 z-[9999] ${
+                          activeCategory === category.id ? 'block' : 'hidden'
                         }`}
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -216,6 +282,7 @@ export function CategoryMenu() {
             )
           })}
         </nav>
+        </div>
       </Container>
     </div>
   )

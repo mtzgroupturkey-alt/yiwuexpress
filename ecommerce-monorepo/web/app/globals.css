@@ -41,6 +41,33 @@
   }
 }
 
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Responsive breakpoint utilities */
+  @media (max-width: 1023px) {
+    .desktop-menu {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-menu-toggle {
+      display: none !important;
+    }
+    .desktop-menu {
+      display: flex !important;
+    }
+  }
+}
+
 :root {
   --foreground-rgb: 17, 24, 39;
   --background-rgb: 249, 250, 251;
