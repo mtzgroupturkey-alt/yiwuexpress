@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
 
-// Handle preflight requests
-export async function OPTIONS(request: NextRequest) {
-  return handleOptions(request)
-}
+// Note: CORS is handled globally by next.config.js
 
 interface Params {
   params: Promise<{ id: string }>
@@ -20,18 +16,12 @@ export async function GET(request: NextRequest, { params }: Params) {
     })
 
     if (!service) {
-      return addCorsHeaders(
-        NextResponse.json({ error: 'Service not found' }, { status: 404 }),
-        request
-      )
+      return NextResponse.json({ error: 'Service not found' }, { status: 404 })
     }
 
-    return addCorsHeaders(NextResponse.json({ service }), request)
+    return NextResponse.json({ service })
   } catch (error) {
     console.error('Get service error:', error)
-    return addCorsHeaders(
-      NextResponse.json({ error: 'Internal server error' }, { status: 500 }),
-      request
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Test Orders</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1a3a5c;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #0284c7;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .orders-list {
+            margin-top: 15px;
+        }
+        .order-item {
+            background: #f9fafb;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Seed Test Orders</h1>
+        <p>Click the button below to add 3 test orders to your database. This will create sample data for testing the admin panel.</p>
+        
+        <button id="seedBtn" onclick="seedOrders()">
+            Create Test Orders
+        </button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function seedOrders() {
+            const btn = document.getElementById('seedBtn');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            btn.textContent = 'Creating orders...';
+            result.style.display = 'block';
+            result.className = 'loading';
+            result.innerHTML = '⏳ Please wait...';
+
+            try {
+                const response = await fetch('/api/admin/seed-orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    result.className = 'success';
+                    result.innerHTML = `
+                        <div><strong>✅ Success!</strong></div>
+                        <div>${data.message}</div>
+                        ${data.orders ? `
+                            <div class="orders-list">
+                                <strong>Created orders:</strong>
+                                ${data.orders.map(order => `
+                                    <div class="order-item">
+                                        ${order.orderNumber} - ${order.status} - $${order.total.toFixed(2)}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        <div style="margin-top: 15px;">
+                            <a href="/admin/orders" style="color: #0ea5e9; text-decoration: none; font-weight: 600;">
+                                → View Orders in Admin Panel
+                            </a>
+                        </div>
+                    `;
+                    btn.textContent = 'Orders Created!';
+                } else {
+                    result.className = 'error';
+                    result.innerHTML = `
+                        <div><strong>❌ Error</strong></div>
+                        <div>${data.message || data.error}</div>
+                        ${data.details ? `<div style="margin-top: 10px; font-size: 12px;">Details: ${data.details}</div>` : ''}
+                    `;
+                    btn.disabled = false;
+                    btn.textContent = 'Try Again';
+                }
+            } catch (error) {
+                result.className = 'error';
+                result.innerHTML = `
+                    <div><strong>❌ Error</strong></div>
+                    <div>Failed to connect to API: ${error.message}</div>
+                `;
+                btn.disabled = false;
+                btn.textContent = 'Try Again';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Tabs } from 'expo-router'
-import { Home, Package, Map, FileText, User } from 'lucide-react-native'
+import { Home, Package, ShoppingCart, FileText, ClipboardList, Map, User } from 'lucide-react-native'
 
 export default function TabLayout() {
   return (
@@ -34,10 +34,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="products"
+        options={{
+          title: 'Products',
+          tabBarIcon: ({ color, size }) => <ShoppingCart color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="services"
         options={{
           title: 'Services',
           tabBarIcon: ({ color, size }) => <Package color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />,
         }}
       />
       <Tabs.Screen
@@ -48,17 +62,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="quotes"
-        options={{
-          title: 'Quotes',
-          tabBarIcon: ({ color, size }) => <FileText color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+        }}
+      />
+      
+      {/* Hide quotes tab - moved to services section */}
+      <Tabs.Screen
+        name="quotes"
+        options={{
+          href: null, // Hide from tabs
         }}
       />
     </Tabs>

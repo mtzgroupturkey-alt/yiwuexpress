@@ -1,117 +1,126 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-export async function GET(request: NextRequest) {
+const prisma = new PrismaClient()
+
+// GET /api/admin/stats - Get admin dashboard statistics
+export async function GET(request: Request) {
   try {
-    // Check admin auth
-    const authHeader = request.headers.get('authorization')
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    // TODO: Add authentication check for admin
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const payload = verifyToken(token)
-    if (!payload || payload.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      )
-    }
-
-    // Calculate date ranges
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
-
+    // Get total counts
     const [
+      totalUsers,
+      totalOrders,
+      totalProducts,
       totalServices,
       totalQuotes,
       totalShipments,
-      totalUsers,
-      pendingQuotes,
-      activeShipments,
-      recentQuotes,
-      recentShipments,
+      totalWholesaleInquiries
     ] = await Promise.all([
-      // Basic counts
+      prisma.user.count(),
+      prisma.order.count(),
+      prisma.product.count(),
       prisma.service.count(),
       prisma.quote.count(),
       prisma.shipment.count(),
-      prisma.user.count({ where: { role: 'USER' } }),
-      prisma.quote.count({ where: { status: 'PENDING' } }),
-      prisma.shipment.count({ where: { status: { in: ['IN_TRANSIT', 'PROCESSING', 'SHIPPED'] } } }),
-      
-      // Recent data
-      prisma.quote.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        include: { 
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              companyName: true,
-            }
-          }, 
-          service: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            }
-          }
-        },
-      }),
-      prisma.shipment.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        include: { 
-          service: {
-            select: {
-              id: true,
-              name: true,
-              type: true,
-            }
-          }
-        },
-      }),
+      prisma.wholesaleInquiry.count()
     ])
 
-    // Calculate simple growth (mock data for now)
-    const stats = {
-      // Basic counts
-      totalServices,
-      totalQuotes,
-      totalShipments,
-      totalUsers,
-      pendingQuotes,
-      activeShipments,
-      
-      // Revenue (mock data)
-      totalRevenue: 125000,
-      thisMonthRevenue: 25000,
-      revenueGrowth: 15,
-      
-      // Growth metrics (mock data)
-      quotesGrowth: 8,
-      shipmentsGrowth: 12,
-      usersGrowth: 5,
-      
-      // Recent data
-      recentQuotes,
-      recentShipments,
-    }
+    // Get order statistics
+    const ordersByStatus = await prisma.order.groupBy({
+      by: ['status'],
+      _count: true
+    })
 
-    return NextResponse.json(stats)
+    // Get revenue (only completed orders)
+    const revenueData = await prisma.order.aggregate({
+      where: {
+        status: { in: ['DELIVERED', 'COMPLETED'] },
+        paymentStatus: 'PAID'
+      },
+      _sum: {
+        total: true
+      }
+    })
+
+    // Get recent orders
+    const recentOrders = await prisma.order.findMany({
+      take: 5,
+      orderBy: {
+        createdAt: 'desc'
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        customerName: true,
+        total: true,
+        status: true,
+        createdAt: true
+      }
+    })
+
+    // Get pending quotes
+    const pendingQuotes = await prisma.quote.count({
+      where: {
+        status: 'PENDING'
+      }
+    })
+
+    // Get active shipments
+    const activeShipments = await prisma.shipment.count({
+      where: {
+        status: { in: ['PREPARING', 'IN_TRANSIT', 'IN_CUSTOMS'] }
+      }
+    })
+
+    // Get wholesale inquiries by status
+    const wholesaleByStatus = await prisma.wholesaleInquiry.groupBy({
+      by: ['status'],
+      _count: true
+    })
+
+    // Get low stock products (products where stock is less than or equal to their lowStockThreshold)
+    const allProducts = await prisma.product.findMany({
+      select: {
+        stock: true,
+        lowStockThreshold: true
+      }
+    })
+    const lowStockProducts = allProducts.filter(p => p.stock <= p.lowStockThreshold).length
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        overview: {
+          totalUsers,
+          totalOrders,
+          totalProducts,
+          totalServices,
+          totalQuotes,
+          totalShipments,
+          totalWholesaleInquiries,
+          revenue: revenueData._sum.total || 0,
+          pendingQuotes,
+          activeShipments,
+          lowStockProducts
+        },
+        ordersByStatus: ordersByStatus.map(item => ({
+          status: item.status,
+          count: item._count
+        })),
+        wholesaleByStatus: wholesaleByStatus.map(item => ({
+          status: item.status,
+          count: item._count
+        })),
+        recentOrders
+      }
+    })
   } catch (error) {
-    console.error('Admin stats error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Error fetching admin stats:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch admin statistics' },
+      { status: 500 }
+    )
   }
 }

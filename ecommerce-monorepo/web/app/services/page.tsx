@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import ServiceCard from '@/components/service-card'
 import { Service } from '@prisma/client'
 import { Search, Filter, Truck, Shield, Package, Users } from 'lucide-react'
@@ -47,21 +46,15 @@ export default function ServicesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      <div>
-        <Navbar />
-        
-        {/* Banner */}
-        <section className="bg-gradient-primary text-white py-16 relative overflow-hidden">
-          <div className="absolute inset-0 chinese-pattern opacity-10"></div>
-          <div className="container mx-auto px-4 relative z-10 text-center">
-            <h1 className="text-4xl font-bold mb-4">Our Professional Logistics Services</h1>
-            <p className="text-lg text-gray-200 max-w-2xl mx-auto">
-              Choose from a wide range of reliable and secure international trade solutions tailored to your business needs.
-            </p>
-          </div>
-        </section>
-
+    <SharedLayout 
+      pageTitle="Our Professional Logistics Services"
+      pageDescription="Choose from a wide range of reliable and secure international trade solutions tailored to your business needs"
+      breadcrumbs={[
+        { name: 'Services', href: '/services' }
+      ]}
+      backgroundImage="/images/services-bg.jpg"
+    >
+      <div className="bg-gray-50">
         {/* Search and Filters */}
         <section className="container mx-auto px-4 py-8">
           <div className="bg-white rounded-2xl shadow-brand p-6 mb-8 -mt-12 relative z-20">
@@ -172,7 +165,6 @@ export default function ServicesPage() {
           )}
         </section>
       </div>
-      <Footer />
-    </div>
+    </SharedLayout>
   )
 }

@@ -4,25 +4,51 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+@layer base {
+  /* Ensure no horizontal scroll */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    background-color: #f9fafb;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: rgb(17, 24, 39);
+  }
+
+  /* Typography scaling */
+  h1 {
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold;
+  }
+  h2 {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold;
+  }
+  h3 {
+    @apply text-lg sm:text-xl md:text-2xl font-semibold;
+  }
+  p {
+    @apply text-sm sm:text-base leading-relaxed;
+  }
+}
+
 :root {
   --foreground-rgb: 17, 24, 39;
   --background-rgb: 249, 250, 251;
   --primary: 26, 58, 92;
   --secondary: 201, 168, 76;
   --accent: 231, 76, 60;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 249, 250, 251;
-    --background-rgb: 17, 24, 39;
-  }
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --primary-color: #1a3a5c;
+  --accent-color: #c9a84c;
 }
 
 /* Custom scrollbar */
@@ -56,13 +82,35 @@ body {
   outline-offset: 2px;
 }
 
+/* Remove focus outline on mouse click, but keep it for keyboard navigation */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Show focus ring only for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid rgba(201, 168, 76, 0.8);
+  outline-offset: 2px;
+}
+
 /* Smooth transitions */
 * {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
 
 /* Utility classes */
 @layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
   .text-balance {
     text-wrap: balance;
   }
@@ -89,6 +137,16 @@ body {
   
   .border-brand {
     border-color: rgba(26, 58, 92, 0.1);
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
   
   /* Chinese-inspired decorative elements */
@@ -141,4 +199,83 @@ body {
   height: 2px;
   background: linear-gradient(90deg, #1a3a5c 0%, #c9a84c 50%, #e74c3c 100%);
   border-radius: 1px;
+}
+
+/* Dynamic Theme Classes */
+.hover-primary:hover {
+  color: var(--primary-color) !important;
+}
+
+.hover-accent:hover {
+  color: var(--accent-color) !important;
+}
+
+.hover-primary-bg:hover {
+  background-color: var(--primary-color) !important;
+}
+
+.hover-accent-bg:hover {
+  background-color: var(--accent-color) !important;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  filter: brightness(0.85);
+}
+
+.btn-accent {
+  background-color: var(--accent-color);
+}
+
+.btn-accent:hover {
+  filter: brightness(0.85);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-accent {
+  background-color: var(--accent-color);
+}
+
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-accent {
+  color: var(--accent-color);
+}
+
+.border-primary {
+  border-color: var(--primary-color);
+}
+
+/* Category Circle Hover Effect */
+.category-circle {
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-circle:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(26, 58, 92, 0.15);
+}
+
+.category-circle::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a3a5c, #c9a84c);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.category-circle:hover::after {
+  opacity: 0.1;
 }

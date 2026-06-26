@@ -105,6 +105,7 @@ export default function RootLayout({
             })
           }}
         />
+        <script src="/unregister-sw.js" defer></script>
       </head>
       <body className={inter.className}>
         <Providers>

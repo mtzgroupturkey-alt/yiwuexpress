@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react'
 
 export default function ContactPage() {
@@ -54,21 +53,15 @@ export default function ContactPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      <div>
-        <Navbar />
-
-        {/* Banner Section */}
-        <section className="bg-gradient-primary text-white py-16 relative overflow-hidden">
-          <div className="absolute inset-0 chinese-pattern opacity-10"></div>
-          <div className="container mx-auto px-4 relative z-10 text-center">
-            <h1 className="text-4xl font-bold mb-4">Contact Our Global Teams</h1>
-            <p className="text-lg text-gray-200 max-w-xl mx-auto">
-              Get in touch for shipping inquiries, warehousing operations, custom clearance support, and contract agreements.
-            </p>
-          </div>
-        </section>
-
+    <SharedLayout 
+      pageTitle="Contact Our Global Teams"
+      pageDescription="Get in touch for shipping inquiries, warehousing operations, custom clearance support, and contract agreements"
+      breadcrumbs={[
+        { name: 'Contact', href: '/contact' }
+      ]}
+      backgroundImage="/images/contact-bg.jpg"
+    >
+      <div className="bg-gray-50">
         {/* Main Grid */}
         <main className="container mx-auto px-4 py-12 max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -214,8 +207,6 @@ export default function ContactPage() {
           </div>
         </main>
       </div>
-
-      <Footer />
-    </div>
+    </SharedLayout>
   )
 }

@@ -1,8 +1,48 @@
-import { Truck, Mail, Phone, MapPin, Globe } from 'lucide-react'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Truck, Mail, Phone, MapPin, Globe, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { Container } from '@/components/ui/Container'
 
 export default function Footer() {
+  const [logoUrl, setLogoUrl] = useState('')
+  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [accentColor, setAccentColor] = useState('#c9a84c')
+  const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   const currentYear = new Date().getFullYear()
+
+  useEffect(() => {
+    // Fetch settings for branding
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings) {
+          if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
+          if (data.settings.companyName) setCompanyName(data.settings.companyName)
+          if (data.settings.accentColor) {
+            setAccentColor(data.settings.accentColor)
+            document.documentElement.style.setProperty('--accent-color', data.settings.accentColor)
+          }
+          if (data.settings.primaryColor) {
+            setPrimaryColor(data.settings.primaryColor)
+            document.documentElement.style.setProperty('--primary-color', data.settings.primaryColor)
+          }
+        }
+      })
+      .catch(err => console.error(err))
+  }, [])
+
+  // Helper to darken color for hover effect
+  const adjustColor = (color: string, amount: number) => {
+    const clamp = (num: number) => Math.min(Math.max(num, 0), 255)
+    const hex = color.replace('#', '')
+    const r = clamp(parseInt(hex.substr(0, 2), 16) + amount)
+    const g = clamp(parseInt(hex.substr(2, 2), 16) + amount)
+    const b = clamp(parseInt(hex.substr(4, 2), 16) + amount)
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  }
+  
   
   const serviceLinks = [
     { label: 'Air Freight', href: '/services/air-freight' },
@@ -41,14 +81,24 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-12">
+      <Container maxWidth="2xl" className="py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
-              <Truck className="w-8 h-8 text-secondary-400" />
+              {logoUrl ? (
+                <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center p-1">
+                  <img
+                    src={logoUrl}
+                    alt={`${companyName} Logo`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <Truck className="w-8 h-8 text-accent" />
+              )}
               <div>
-                <h2 className="text-2xl font-bold">YIWU EXPRESS</h2>
+                <h2 className="text-2xl font-bold">{companyName}</h2>
                 <p className="text-gray-400 text-sm">Global Trade Solutions from Yiwu, China</p>
               </div>
             </div>
@@ -140,7 +190,7 @@ export default function Footer() {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary-600 transition-colors"
+                      className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center transition-colors hover-primary-bg"
                       aria-label={social.label}
                     >
                       <Icon className="w-5 h-5" />
@@ -167,21 +217,21 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors whitespace-nowrap"
+                className="px-6 py-3 text-white font-medium rounded-lg transition-colors whitespace-nowrap btn-primary"
               >
                 Subscribe
               </button>
             </form>
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* Bottom Bar */}
       <div className="bg-gray-950 py-6">
-        <div className="container mx-auto px-4">
+        <Container maxWidth="2xl">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {currentYear} YIWU EXPRESS. All rights reserved.
+              © {currentYear} {companyName}. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
               <Link href="/privacy" className="hover:text-white transition-colors">
@@ -198,42 +248,40 @@ export default function Footer() {
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
 
       {/* Trust Badges */}
       <div className="bg-gray-800 py-4">
-        <div className="container mx-auto px-4">
+        <Container maxWidth="2xl">
           <div className="flex flex-wrap justify-center items-center gap-8 text-xs text-gray-400">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#10b981' }}>
                 <Shield className="w-4 h-4 text-white" />
               </div>
               <span>ISO 9001 Certified</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary">
                 <Globe className="w-4 h-4 text-white" />
               </div>
               <span>Global Network</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent">
                 <Shield className="w-4 h-4 text-white" />
               </div>
               <span>Secure Transactions</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#ef4444' }}>
                 <Truck className="w-4 h-4 text-white" />
               </div>
               <span>24/7 Support</span>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
     </footer>
   )
 }
-
-import { Shield } from 'lucide-react'

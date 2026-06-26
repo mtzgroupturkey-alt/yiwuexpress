@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import { Calculator, ArrowRight, Info, HelpCircle, PackageOpen, Award, CheckCircle } from 'lucide-react'
 
 export default function CalculatorPage() {
@@ -69,21 +68,15 @@ export default function CalculatorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      <div>
-        <Navbar />
-
-        {/* Banner */}
-        <section className="bg-gradient-primary text-white py-16 relative overflow-hidden">
-          <div className="absolute inset-0 chinese-pattern opacity-10"></div>
-          <div className="container mx-auto px-4 relative z-10 text-center">
-            <h1 className="text-4xl font-bold mb-4 font-heading">Freight Cost Calculator</h1>
-            <p className="text-lg text-gray-200 max-w-xl mx-auto">
-              Get an instant shipping cost estimate based on cargo weights, volume dimensions, and international routes.
-            </p>
-          </div>
-        </section>
-
+    <SharedLayout 
+      pageTitle="Freight Cost Calculator"
+      pageDescription="Get an instant shipping cost estimate based on cargo weights, volume dimensions, and international routes"
+      breadcrumbs={[
+        { name: 'Calculator', href: '/calculator' }
+      ]}
+      backgroundImage="/images/calculator-bg.jpg"
+    >
+      <div className="bg-gray-50">
         {/* Main Grid */}
         <section className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 -mt-12 relative z-20">
@@ -284,8 +277,6 @@ export default function CalculatorPage() {
           </div>
         </section>
       </div>
-
-      <Footer />
-    </div>
+    </SharedLayout>
   )
 }

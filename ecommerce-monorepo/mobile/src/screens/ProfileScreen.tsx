@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native'
 import {
   Text,
@@ -15,6 +16,8 @@ import {
   Divider,
   ActivityIndicator,
   Snackbar,
+  Portal,
+  Dialog,
 } from 'react-native-paper'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
@@ -36,6 +39,7 @@ export default function ProfileScreen() {
   const [snackbarVisible, setSnackbarVisible] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false)
 
   // Fetch Quotes — only when logged in
   const {
@@ -75,33 +79,42 @@ export default function ProfileScreen() {
   const company = companyData?.company
 
   const handleLogout = async () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout from YIWU EXPRESS?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setIsLoggingOut(true)
-              await AsyncStorage.removeItem('token')
-              router.replace('/login')
-            } catch (err) {
-              setSnackbarMessage('Logout failed. Please try again.')
-              setSnackbarVisible(true)
-            } finally {
-              setIsLoggingOut(false)
-            }
+    // Use native dialog for web, Alert for mobile
+    if (Platform.OS === 'web') {
+      setLogoutDialogVisible(true)
+    } else {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout from YIWU EXPRESS?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
           },
-        },
-      ],
-      { cancelable: true }
-    )
+          {
+            text: 'Logout',
+            style: 'destructive',
+            onPress: performLogout,
+          },
+        ],
+        { cancelable: true }
+      )
+    }
+  }
+
+  const performLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      setLogoutDialogVisible(false)
+      await AsyncStorage.removeItem('token')
+      setToken(null)
+      router.replace('/login')
+    } catch (err) {
+      setSnackbarMessage('Logout failed. Please try again.')
+      setSnackbarVisible(true)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   const renderQuoteItem = (quote: any) => (
@@ -277,6 +290,34 @@ export default function ProfileScreen() {
       >
         {snackbarMessage}
       </Snackbar>
+
+      {/* Logout Confirmation Dialog for Web */}
+      <Portal>
+        <Dialog
+          visible={logoutDialogVisible}
+          onDismiss={() => setLogoutDialogVisible(false)}
+        >
+          <Dialog.Title>Logout</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              Are you sure you want to logout from YIWU EXPRESS?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setLogoutDialogVisible(false)}>
+              Cancel
+            </Button>
+            <Button
+              onPress={performLogout}
+              textColor="#ef4444"
+              loading={isLoggingOut}
+              disabled={isLoggingOut}
+            >
+              Logout
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </SafeAreaView>
   )
 }

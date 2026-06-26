@@ -18,6 +18,7 @@ interface CompanySettings {
   taxRegistrationNumber: string
   companyDescription: string
   companyLogo: string
+  companyLogoHeight: number
   companyFavicon: string
   primaryColor: string
   accentColor: string
@@ -44,6 +45,7 @@ export default function CompanyInfoPage() {
     taxRegistrationNumber: '',
     companyDescription: '',
     companyLogo: '',
+    companyLogoHeight: 40,
     companyFavicon: '',
     primaryColor: '#1a3a5c',
     accentColor: '#c9a84c',
@@ -161,7 +163,7 @@ export default function CompanyInfoPage() {
     }
   }
 
-  const handleInputChange = (field: keyof CompanySettings, value: string) => {
+  const handleInputChange = (field: keyof CompanySettings, value: string | number) => {
     setSettings(prev => ({ ...prev, [field]: value }))
   }
 
@@ -563,6 +565,25 @@ export default function CompanyInfoPage() {
                     />
                   </div>
                 </div>
+              </div>
+              
+              {/* Logo Height Setting */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Logo Height (pixels)
+                </label>
+                <input
+                  type="number"
+                  min="20"
+                  max="100"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  value={settings.companyLogoHeight}
+                  onChange={(e) => handleInputChange('companyLogoHeight', parseInt(e.target.value) || 40)}
+                  placeholder="40"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Recommended: 30-50px. Current: {settings.companyLogoHeight}px
+                </p>
               </div>
             </div>
 

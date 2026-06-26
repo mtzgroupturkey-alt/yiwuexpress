@@ -16,7 +16,6 @@ import {
 } from 'react-native-paper'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useQuery } from '@tanstack/react-query'
-import apiClient from '../api/client'
 
 interface ProductDetailRouteParams {
   productId: string
@@ -35,15 +34,72 @@ export default function ProductDetailScreen() {
     error,
   } = useQuery({
     queryKey: ['product', productId],
-    queryFn: () => apiClient.getProduct(productId),
+    queryFn: async () => {
+      // Mock product data - replace with actual API call
+      const mockProducts = [
+        {
+          id: '1',
+          name: 'Premium Wireless Headphones',
+          description: 'Experience crystal-clear sound quality with our premium wireless headphones. Features active noise cancellation, 30-hour battery life, and comfortable over-ear design perfect for music lovers and professionals.',
+          price: 199.99,
+          stock: 50,
+          image: null,
+          category: 'Electronics',
+          createdAt: '2026-06-01T00:00:00Z',
+        },
+        {
+          id: '2',
+          name: 'Organic Cotton T-Shirt',
+          description: 'Sustainably made from 100% organic cotton. Soft, breathable, and perfect for everyday wear. Available in multiple colors and sizes. Eco-friendly and comfortable.',
+          price: 29.99,
+          stock: 100,
+          image: null,
+          category: 'Clothing',
+          createdAt: '2026-06-05T00:00:00Z',
+        },
+        {
+          id: '3',
+          name: 'Smart LED Desk Lamp',
+          description: 'Modern desk lamp with adjustable brightness and color temperature. Touch controls, USB charging port, and energy-efficient LED technology. Perfect for any workspace.',
+          price: 79.99,
+          stock: 25,
+          image: null,
+          category: 'Home',
+          createdAt: '2026-06-10T00:00:00Z',
+        },
+        {
+          id: '4',
+          name: 'Educational Building Blocks',
+          description: 'Safe and fun building blocks for children ages 3+. Develops creativity, problem-solving skills, and fine motor skills. Made from non-toxic, durable plastic.',
+          price: 49.99,
+          stock: 75,
+          image: null,
+          category: 'Toys',
+          createdAt: '2026-06-15T00:00:00Z',
+        },
+      ]
+
+      const product = mockProducts.find((p) => p.id === productId)
+      
+      if (!product) {
+        throw new Error('Product not found')
+      }
+
+      return { product }
+    },
   })
 
   const product = productData?.product
 
   const handleAddToCart = async () => {
     try {
-      await apiClient.addToCart(productId, quantity)
-      setSnackbarMessage('Product added to cart successfully!')
+      // Mock add to cart - replace with actual API call
+      // await apiClient.addToCart(productId, quantity)
+      console.log(`Adding ${quantity} of product ${productId} to cart`)
+      
+      // Store cart in AsyncStorage or state management
+      // For now, just show success message
+      setSnackbarMessage(`${quantity} item(s) added to cart successfully!`)
       setSnackbarVisible(true)
     } catch (err) {
       setSnackbarMessage('Failed to add product to cart. Please try again.')
@@ -92,15 +148,18 @@ export default function ProductDetailScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Product Image */}
         <View style={styles.imageContainer}>
-          <Image
-            source={
-              product.image
-                ? { uri: product.image }
-                : require('../../assets/placeholder.jpg')
-            }
-            style={styles.productImage}
-            resizeMode="cover"
-          />
+          {product.image ? (
+            <Image
+              source={{ uri: product.image }}
+              style={styles.productImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.productImage, styles.placeholderImage]}>
+              <Text style={styles.placeholderEmoji}>📦</Text>
+              <Text style={styles.placeholderLabel}>No Image Available</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.content}>
@@ -271,6 +330,20 @@ const styles = StyleSheet.create({
   productImage: {
     width: '100%',
     height: 300,
+  },
+  placeholderImage: {
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderEmoji: {
+    fontSize: 80,
+    marginBottom: 12,
+  },
+  placeholderLabel: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontWeight: '500',
   },
   content: {
     padding: 16,

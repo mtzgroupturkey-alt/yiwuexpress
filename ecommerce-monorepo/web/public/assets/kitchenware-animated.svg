@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <!-- CSS Animations -->
+    <style type="text/css">
+      @keyframes pan-shake {
+        0%, 100% { transform: translate(0, 0); }
+        25% { transform: translate(4px, 0); }
+        75% { transform: translate(-4px, 0); }
+      }
+      @keyframes egg-wobble {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.06) translate(-4px, -2px); }
+      }
+      @keyframes pot-lid-bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+      @keyframes steam-rise-1 {
+        0% { transform: translateY(0) scaleX(1); opacity: 0.1; }
+        50% { transform: translateY(-15px) scaleX(1.2); opacity: 0.6; }
+        100% { transform: translateY(-35px) scaleX(0.8); opacity: 0; }
+      }
+      @keyframes steam-rise-2 {
+        0% { transform: translateY(5px) scaleX(1.1); opacity: 0.1; }
+        50% { transform: translateY(-10px) scaleX(0.9); opacity: 0.5; }
+        100% { transform: translateY(-30px) scaleX(1.1); opacity: 0; }
+      }
+      @keyframes spatula-wait {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(-10deg); }
+      }
+      @keyframes knife-hover {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      @keyframes knife-gleam {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 0.9; }
+      }
+      @keyframes shaker-tilt {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(6deg); }
+      }
+
+      .animated-pan {
+        animation: pan-shake 3s ease-in-out infinite;
+        transform-origin: 250px 260px;
+      }
+      .animated-egg {
+        animation: egg-wobble 2s ease-in-out infinite;
+        transform-origin: 140px 257px;
+      }
+      .animated-pot-lid {
+        animation: pot-lid-bounce 2.5s ease-in-out infinite;
+        transform-origin: 340px 225px;
+      }
+      .animated-steam-1 {
+        animation: steam-rise-1 4s linear infinite;
+        transform-origin: 320px 220px;
+      }
+      .animated-steam-2 {
+        animation: steam-rise-2 3.5s linear infinite;
+        transform-origin: 340px 218px;
+      }
+      .animated-steam-3 {
+        animation: steam-rise-1 4.5s linear infinite;
+        transform-origin: 360px 220px;
+      }
+      .animated-spatula {
+        animation: spatula-wait 4s ease-in-out infinite;
+        transform-origin: 64px 380px;
+      }
+      .animated-knife {
+        animation: knife-hover 3.5s ease-in-out infinite;
+        transform-origin: 443px 315px;
+      }
+      .animated-knife-gleam {
+        animation: knife-gleam 2s ease-in-out infinite;
+      }
+      .animated-shaker {
+        animation: shaker-tilt 3s ease-in-out infinite;
+        transform-origin: 200px 325px;
+      }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="500" height="400" fill="#f5f0eb" rx="10"/>
+  
+  <!-- Counter/Surface -->
+  <rect x="0" y="320" width="500" height="80" fill="#d4c5b0" rx="5"/>
+  <line x1="0" y1="320" x2="500" y2="320" stroke="#c0b09a" stroke-width="2"/>
+  
+  <!-- Frying Pan & Egg Group -->
+  <g class="animated-pan">
+    <!-- Frying Pan -->
+    <ellipse cx="150" cy="270" rx="80" ry="20" fill="#4a4a4a"/>
+    <ellipse cx="150" cy="265" rx="75" ry="17" fill="#6b6b6b"/>
+    <ellipse cx="150" cy="262" rx="70" ry="14" fill="#888"/>
+    <!-- Pan handle -->
+    <rect x="220" y="260" width="60" height="12" rx="4" fill="#8B6B4A"/>
+    <rect x="275" y="258" width="15" height="16" rx="6" fill="#6d4f2e"/>
+    
+    <!-- Egg in pan -->
+    <g class="animated-egg">
+      <ellipse cx="140" cy="260" rx="25" ry="12" fill="white"/>
+      <ellipse cx="140" cy="255" rx="8" ry="5" fill="#FFD700"/>
+    </g>
+  </g>
+  
+  <!-- Cooking Pot Group -->
+  <g>
+    <!-- Pot Body -->
+    <rect x="290" y="230" width="90" height="50" rx="5" fill="#c0c0c0"/>
+    <!-- Pot handles -->
+    <rect x="280" y="245" width="12" height="20" rx="4" fill="#b0b0b0"/>
+    <rect x="378" y="245" width="12" height="20" rx="4" fill="#b0b0b0"/>
+    
+    <!-- Pot Lid -->
+    <g class="animated-pot-lid">
+      <rect x="285" y="225" width="100" height="10" rx="3" fill="#a8a8a8"/>
+      <!-- Lid Handle -->
+      <rect x="325" y="217" width="20" height="8" rx="2" fill="#555"/>
+    </g>
+    
+    <!-- Steam -->
+    <path class="animated-steam-1" d="M320 220 Q325 200 320 185" stroke="#ddd" stroke-width="3" fill="none" opacity="0.6" stroke-linecap="round"/>
+    <path class="animated-steam-2" d="M340 218 Q345 195 340 178" stroke="#ddd" stroke-width="3" fill="none" opacity="0.5" stroke-linecap="round"/>
+    <path class="animated-steam-3" d="M360 220 Q365 200 360 182" stroke="#ddd" stroke-width="3" fill="none" opacity="0.4" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Spatula -->
+  <g class="animated-spatula">
+    <rect x="60" y="320" width="8" height="60" rx="3" fill="#8B6B4A"/>
+    <rect x="52" y="315" width="24" height="12" rx="4" fill="#a07c55"/>
+    <rect x="54" y="317" width="20" height="8" rx="2" fill="#c4a07a"/>
+  </g>
+  
+  <!-- Knife -->
+  <g class="animated-knife">
+    <rect x="440" y="290" width="6" height="50" rx="2" fill="#8B6B4A"/>
+    <polygon points="440,285 460,315 440,340" fill="#d0d0d0"/>
+    <polygon points="440,285 450,315 440,340" class="animated-knife-gleam" fill="#ffffff"/>
+  </g>
+  
+  <!-- Cutting Board -->
+  <rect x="400" y="310" width="70" height="15" rx="5" fill="#d4a373"/>
+  <rect x="402" y="312" width="66" height="11" rx="3" fill="#e8c9a0"/>
+  
+  <!-- Salt Shaker -->
+  <g class="animated-shaker">
+    <rect x="190" y="300" width="20" height="25" rx="4" fill="#f0ece6"/>
+    <rect x="193" y="295" width="14" height="8" rx="2" fill="#e0dbd4"/>
+    <circle cx="197" cy="293" r="1.5" fill="#d4cdc4"/>
+    <circle cx="201" cy="293" r="1.5" fill="#d4cdc4"/>
+  </g>
+  
+  <!-- Title -->
+  <text x="250" y="380" font-family="Arial, sans-serif" font-size="16" fill="#8B7355" text-anchor="middle" font-weight="300">✦ KITCHEN ESSENTIALS ✦</text>
+</svg>

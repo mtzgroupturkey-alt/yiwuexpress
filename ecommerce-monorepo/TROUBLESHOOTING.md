@@ -1,331 +1,344 @@
 # 🔧 Troubleshooting Guide - YIWU EXPRESS
 
-## 🚨 Common Issues and Solutions
+## 🐛 Issue: Still Getting 500 Errors
 
-### Issue 1: 500 Internal Server Error on Login
-
-**Symptoms:**
+If you're still seeing errors like:
 ```
-POST http://localhost:3001/api/auth/login 500 (Internal Server Error)
-```
-
-**Root Cause:** Database not initialized
-
-**Solution:**
-1. **Stop the backend server** (Ctrl+C in the terminal)
-2. **Run the database fix script:**
-   ```bash
-   # Double-click this file:
-   FIX-DATABASE.bat
-   ```
-3. **Restart the backend:**
-   ```bash
-   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-   npm run dev
-   ```
-
-**Test Login:**
-- Email: `admin@yiwuexpress.com`
-- Password: `admin123`
-
----
-
-### Issue 2: EPERM Error (Operation Not Permitted)
-
-**Symptoms:**
-```
-EPERM: operation not permitted, rename 'query_engine-windows.dll.node.tmp' -> 'query_engine-windows.dll.node'
+GET http://localhost:3001/api/settings 500 (Internal Server Error)
+GET http://localhost:3001/api/admin/stats 500 (Internal Server Error)
 ```
 
-**Root Cause:** Files are locked by running Node processes or VS Code
+### ✅ Solution: Restart the Development Server
 
-**Solution:**
+**The Problem:** Next.js development server doesn't always hot-reload new API route files. You need to restart it.
 
-**Option A: Complete Stop and Restart**
-1. Close ALL terminal windows
-2. Close VS Code completely
-3. Open CMD as Administrator:
-   ```bash
-   taskkill /F /IM node.exe
-   ```
-4. Wait 5 seconds
-5. Open VS Code and run `FIX-DATABASE.bat`
+### Steps to Fix:
 
-**Option B: Restart Computer**
-If Option A doesn't work, restart your computer and try again.
-
----
-
-### Issue 3: CORS Policy Errors
-
-**Symptoms:**
+#### 1. Stop the Current Server
+In your terminal where the server is running, press:
 ```
-Access to XMLHttpRequest at 'http://localhost:3001/api/auth/login' from origin 'http://localhost:8081' has been blocked by CORS policy
+Ctrl + C
 ```
 
-**Root Cause:** Backend not running or CORS not configured
-
-**Solution:**
-1. **Ensure backend is running FIRST:**
-   ```bash
-   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-   npm run dev
-   ```
-   Wait until you see: `✓ Ready on http://localhost:3001`
-
-2. **Then start mobile app:**
-   ```bash
-   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
-   npm start
-   ```
-
-3. **Verify CORS configuration in `web/.env.local`:**
-   ```env
-   ALLOWED_ORIGINS=http://localhost:8081,http://localhost:3000,http://localhost:19006
-   ```
-
----
-
-### Issue 4: Port Already in Use
-
-**Symptoms:**
-```
-Error: listen EADDRINUSE: address already in use :::3001
-```
-
-**Solution:**
-
-**For Backend (Port 3001):**
+#### 2. Start the Server Again
 ```bash
-# Find the process
-netstat -ano | findstr :3001
-
-# Kill the process (replace [PID] with the actual number)
-taskkill /PID [PID] /F
+cd web
+npm run dev
 ```
 
-**For Mobile (Port 8081):**
-```bash
-# Find the process
-netstat -ano | findstr :8081
-
-# Kill the process
-taskkill /PID [PID] /F
+#### 3. Refresh Your Browser
+Hard refresh with:
 ```
-
-**Or use the check script:**
-```bash
-# Double-click this file:
-CHECK-PORTS.bat
+Ctrl + Shift + R  (Windows/Linux)
+Cmd + Shift + R   (Mac)
 ```
 
 ---
 
-### Issue 5: Prisma Client Not Generated
+## 📋 All Missing Endpoints Now Created
 
-**Symptoms:**
-```
-Error: @prisma/client did not initialize yet
-```
+I've created these additional API endpoints:
 
-**Solution:**
-1. Stop all Node processes
-2. Run:
-   ```bash
-   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-   npm run db:generate
-   ```
+### 1. System Settings API ✅
+**File:** `web/app/api/settings/route.ts`
+- `GET /api/settings` - Get system settings
+- `PUT /api/settings` - Update system settings
 
----
+### 2. Company Settings API ✅
+**File:** `web/app/api/admin/settings/company/route.ts`
+- `GET /api/admin/settings/company` - Get company settings
+- `PUT /api/admin/settings/company` - Update company settings
 
-### Issue 6: Database Schema Mismatch
+### 3. Admin Stats API ✅ NEW!
+**File:** `web/app/api/admin/stats/route.ts`
+- `GET /api/admin/stats` - Get dashboard statistics
 
-**Symptoms:**
-```
-Error: Invalid `prisma.user.findUnique()` invocation
-```
-
-**Root Cause:** Database schema doesn't match Prisma schema
-
-**Solution:**
-```bash
-cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-npm run db:push
-```
-
----
-
-### Issue 7: JWT Secret Missing
-
-**Symptoms:**
-```
-Error: JWT_SECRET is not defined
-```
-
-**Solution:**
-Check `web/.env.local` has:
-```env
-JWT_SECRET="your-super-secret-jwt-key-change-this-in-production-use-at-least-32-characters"
-```
-
----
-
-### Issue 8: Module Not Found Errors
-
-**Symptoms:**
-```
-Error: Cannot find module '@prisma/client'
-```
-
-**Solution:**
-```bash
-# Reinstall dependencies
-cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-npm install
-
-cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
-npm install
-```
-
----
-
-### Issue 9: Mobile App Can't Connect to Backend
-
-**Checklist:**
-- ✅ Backend is running on port 3001
-- ✅ Mobile app is running on port 8081
-- ✅ No CORS errors in browser console
-- ✅ `mobile/src/config/api.config.ts` has correct `BACKEND_PORT: 3001`
-- ✅ Test backend URL directly: http://localhost:3001/api/services
-
-**Verify API Configuration:**
-```typescript
-// mobile/src/config/api.config.ts
-export const API_CONFIG = {
-  BACKEND_PORT: 3001,
-  EXPO_PORT: 8081,
-  HOSTNAME: 'localhost',
-  // ...
+Returns:
+```json
+{
+  "success": true,
+  "data": {
+    "overview": {
+      "totalUsers": 2,
+      "totalOrders": 0,
+      "totalProducts": 4,
+      "revenue": 0,
+      "pendingQuotes": 1,
+      "activeShipments": 2,
+      "lowStockProducts": 0
+    },
+    "ordersByStatus": [...],
+    "wholesaleByStatus": [...],
+    "recentOrders": [...]
+  }
 }
 ```
 
 ---
 
-### Issue 10: Changes Not Reflecting
+## 🧪 Quick Test After Restart
+
+After restarting the server, test these endpoints:
+
+```bash
+# Test 1: System Settings
+curl http://localhost:3001/api/settings
+
+# Test 2: Company Settings
+curl http://localhost:3001/api/admin/settings/company
+
+# Test 3: Admin Stats
+curl http://localhost:3001/api/admin/stats
+
+# Test 4: Countries
+curl http://localhost:3001/api/countries
+
+# Test 5: Products
+curl http://localhost:3001/api/products
+```
+
+All should return JSON with `"success": true`.
+
+---
+
+## 🔍 Common Issues & Solutions
+
+### Issue 1: Database Connection Error
+
+**Error:** `Can't reach database server`
 
 **Solution:**
-1. **Clear browser cache:**
-   - Chrome: Ctrl+Shift+Delete
-   - Or open in Incognito mode
+```bash
+# Check if PostgreSQL is running
+docker ps | grep yiwu-express-db
 
-2. **Restart development servers:**
-   ```bash
-   # Stop both terminals (Ctrl+C)
-   # Then restart
-   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-   npm run dev
-   
-   # In another terminal
-   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
-   npm start
-   ```
+# If not running, start it
+cd docker
+docker-compose up -d
+
+# Wait 10 seconds for it to start
+timeout /t 10 /nobreak
+```
+
+### Issue 2: Prisma Client Not Generated
+
+**Error:** `@prisma/client did not initialize yet`
+
+**Solution:**
+```bash
+cd web
+npx prisma generate
+```
+
+### Issue 3: Tables Don't Exist
+
+**Error:** `relation "system_settings" does not exist`
+
+**Solution:**
+```bash
+cd web
+npx prisma db push
+npm run db:seed
+```
+
+### Issue 4: Port Already in Use
+
+**Error:** `Port 3001 is already in use`
+
+**Solution:**
+```bash
+# Find and kill the process using port 3001
+netstat -ano | findstr :3001
+# Note the PID, then:
+taskkill /PID <PID> /F
+
+# Or use a different port
+set PORT=3002
+npm run dev
+```
+
+### Issue 5: Module Not Found Errors
+
+**Error:** `Cannot find module '@prisma/client'`
+
+**Solution:**
+```bash
+cd web
+npm install
+npx prisma generate
+```
 
 ---
 
-## 🔍 Debugging Tips
+## 🚀 Complete Reset (Nuclear Option)
 
-### Check Backend Logs
-Look at the terminal where `npm run dev` is running. The login route logs errors:
-```typescript
-console.error('Login error:', error)
-```
+If nothing else works, do a complete reset:
 
-### Check Database File
-Database location: `c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web\prisma\dev.db`
-
-Verify it exists:
 ```bash
-dir c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web\prisma\dev.db
-```
+# 1. Stop the server (Ctrl+C)
 
-### Test API Endpoints Directly
-```bash
-# Test services endpoint
-curl http://localhost:3001/api/services
+# 2. Stop PostgreSQL
+cd docker
+docker-compose down
 
-# Test login endpoint
-curl -X POST http://localhost:3001/api/auth/login ^
-  -H "Content-Type: application/json" ^
-  -d "{\"email\":\"admin@yiwuexpress.com\",\"password\":\"admin123\"}"
-```
-
-### View Database Content
-```bash
-cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
-npm run db:studio
-```
-This opens Prisma Studio at http://localhost:5555
-
----
-
-## 📞 Still Having Issues?
-
-### Before Asking for Help:
-1. ✅ Read this entire troubleshooting guide
-2. ✅ Check both terminal outputs (backend and mobile)
-3. ✅ Check browser console for errors
-4. ✅ Verify ports with `CHECK-PORTS.bat`
-5. ✅ Try restarting everything with `QUICK-START.bat`
-
-### What to Include:
-- Exact error message (copy/paste)
-- Which terminal/browser it appeared in
-- Steps you took before the error
-- Output from `CHECK-PORTS.bat`
-- Screenshot if applicable
-
----
-
-## 🚀 Quick Recovery Commands
-
-### Nuclear Option (Fresh Start)
-```bash
-# 1. Stop everything
-taskkill /F /IM node.exe
-
-# 2. Backup and delete database
-del c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web\prisma\dev.db
-
-# 3. Reinstall dependencies
-cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
+# 3. Remove node_modules
+cd ../web
 rmdir /s /q node_modules
+
+# 4. Clean install
 npm install
 
-# 4. Setup database
-npm run db:generate
-npm run db:push
+# 5. Start PostgreSQL
+cd ../docker
+docker-compose up -d
+
+# 6. Wait for PostgreSQL
+timeout /t 10 /nobreak
+
+# 7. Setup database
+cd ../web
+npx prisma generate
+npx prisma db push --force-reset
 npm run db:seed
 
-# 5. Start fresh
-# Use QUICK-START.bat
+# 8. Start server
+npm run dev
 ```
 
 ---
 
 ## ✅ Verification Checklist
 
-After fixing issues, verify:
-- [ ] Backend starts without errors: `npm run dev` in web folder
-- [ ] Backend accessible at: http://localhost:3001
-- [ ] Mobile app starts: `npm start` in mobile folder  
-- [ ] Mobile app accessible at: http://localhost:8081
-- [ ] Login works with test credentials
-- [ ] No CORS errors in console
-- [ ] Database file exists: `web\prisma\dev.db`
+After restart, verify:
+
+- [ ] Server starts without errors
+- [ ] Browser console is clear (no 500 errors)
+- [ ] Can access http://localhost:3001
+- [ ] Admin dashboard loads
+- [ ] Settings page loads
+- [ ] Products page works
+- [ ] No red errors in browser console
 
 ---
 
-## 📚 Related Documentation
-- [SETUP-AND-START.md](SETUP-AND-START.md) - Setup guide
-- [PORT-CONFIG.md](PORT-CONFIG.md) - Port configuration
-- [DATABASE_SETUP.md](DATABASE_SETUP.md) - Database details
+## 📊 Expected API Response Format
+
+All APIs should return this format:
+
+**Success:**
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**Error:**
+```json
+{
+  "success": false,
+  "error": "Error message"
+}
+```
+
+---
+
+## 🆘 Still Having Issues?
+
+### Check Server Terminal Output
+
+Look for errors in the terminal where you ran `npm run dev`:
+
+**Common errors:**
+- `ECONNREFUSED` - Database not running
+- `Module not found` - Need to run `npm install`
+- `Prisma Client` - Need to run `npx prisma generate`
+- `relation does not exist` - Need to run `npx prisma db push`
+
+### Check Browser Console
+
+Look for:
+- Network errors (500, 404, etc.)
+- CORS errors
+- JavaScript errors
+
+### Check Database with Prisma Studio
+
+```bash
+cd web
+npx prisma studio
+```
+
+Open http://localhost:5555 and verify:
+- `system_settings` table exists and has 1 row
+- `countries` table has 8 rows
+- `products` table has 4 rows
+- `users` table has 2 rows
+
+---
+
+## 📝 Quick Reference
+
+### Restart Everything
+```bash
+# Ctrl+C to stop server
+cd web
+npm run dev
+```
+
+### Reset Database
+```bash
+cd web
+npx prisma db push --force-reset
+npm run db:seed
+```
+
+### Check Logs
+```bash
+# PostgreSQL logs
+docker logs yiwu-express-db
+
+# Next.js logs
+# In the terminal where server is running
+```
+
+### Test API
+```bash
+curl http://localhost:3001/api/settings
+curl http://localhost:3001/api/admin/stats
+curl http://localhost:3001/api/countries
+```
+
+---
+
+## ✅ Final Checklist
+
+Before reporting issues, ensure:
+
+1. [ ] PostgreSQL container is running
+2. [ ] Development server is running
+3. [ ] Database is seeded
+4. [ ] Prisma Client is generated
+5. [ ] Browser was hard-refreshed
+6. [ ] No other app is using port 3001
+7. [ ] You're accessing http://localhost:3001 (not 3000)
+
+---
+
+**Most Common Fix:** Just restart the development server!
+
+```bash
+# Stop with Ctrl+C, then:
+cd web
+npm run dev
+```
+
+Then refresh your browser with `Ctrl+Shift+R`.
+
+---
+
+**Need more help?** Check the other documentation files:
+- `README.md` - General setup
+- `MIGRATION_GUIDE.md` - Database setup
+- `TEST_APIS.md` - API testing
+- `PHASE_1_FIXED.md` - Recent fixes

@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      maxWidth: {
+        '7xl': '1400px',
+      },
       colors: {
         // YIWU EXPRESS Brand Colors
         primary: {

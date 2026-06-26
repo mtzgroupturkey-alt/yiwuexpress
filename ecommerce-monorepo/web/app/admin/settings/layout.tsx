@@ -57,9 +57,11 @@ export default function SettingsLayout({
   // Pages that should not show the sidebar navigation (shown as submenu in main sidebar)
   const directPages = [
     '/admin/settings/company', 
+    '/admin/settings/system',
     '/admin/settings/permissions', 
     '/admin/settings/backup',
-    '/admin/settings/notifications'
+    '/admin/settings/notifications',
+    '/admin/settings/api'
   ]
   const showSidebar = !directPages.includes(pathname)
 

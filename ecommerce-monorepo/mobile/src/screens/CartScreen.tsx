@@ -4,184 +4,218 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  FlatList,
+  Image,
+  TouchableOpacity,
 } from 'react-native'
 import {
   Text,
   Card,
   Button,
-  List,
   Divider,
-  ActivityIndicator,
-  Snackbar,
+  IconButton,
 } from 'react-native-paper'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import apiClient, { CartItem } from '../api/client'
+import { useRouter } from 'expo-router'
+import { Trash2 } from 'lucide-react-native'
+
+interface CartItem {
+  id: string
+  productId: string
+  name: string
+  price: number
+  quantity: number
+  image: string | null
+  stock: number
+}
 
 export default function CartScreen() {
-  const queryClient = useQueryClient()
-  const [snackbarVisible, setSnackbarVisible] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState('')
+  const router = useRouter()
+  
+  // Mock cart data - replace with actual state management
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: '1',
+      productId: '1',
+      name: 'Premium Wireless Headphones',
+      price: 199.99,
+      quantity: 1,
+      image: null,
+      stock: 50,
+    },
+    {
+      id: '2',
+      productId: '3',
+      name: 'Smart LED Desk Lamp',
+      price: 79.99,
+      quantity: 2,
+      image: null,
+      stock: 25,
+    },
+  ])
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['cart'],
-    queryFn: () => apiClient.getCart(),
-  })
+  const updateQuantity = (id: string, delta: number) => {
+    setCartItems((items) =>
+      items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: Math.max(1, Math.min(item.stock, item.quantity + delta)),
+            }
+          : item
+      )
+    )
+  }
 
-  const cartItems = data?.cart || []
+  const removeItem = (id: string) => {
+    setCartItems((items) => items.filter((item) => item.id !== id))
+  }
 
-  const totalPrice = cartItems.reduce((sum, item) => {
-    return sum + (item.product.price * item.quantity)
-  }, 0)
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const shipping = subtotal > 0 ? 15.0 : 0
+  const tax = subtotal * 0.1
+  const total = subtotal + shipping + tax
 
-  const renderCartItem = ({ item }: { item: CartItem }) => (
-    <List.Item
-      title={item.product.name}
-      description={`$${item.product.price.toFixed(2)} x ${item.quantity}`}
-      left={props => (
-        <List.Icon {...props} icon="shopping" />
-      )}
-      right={props => (
-        <Text style={styles.itemTotal}>
-          ${(item.product.price * item.quantity).toFixed(2)}
-        </Text>
-      )}
-    />
-  )
-
-  const handleCheckout = async () => {
-    try {
-      // Navigate to checkout or create order
-      setSnackbarMessage('Checkout functionality coming soon!')
-      setSnackbarVisible(true)
-    } catch (err) {
-      setSnackbarMessage('Checkout failed. Please try again.')
-      setSnackbarVisible(true)
+  const handleCheckout = () => {
+    if (cartItems.length > 0) {
+      router.push('/checkout')
     }
-  }
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0ea5e9" />
-        </View>
-      </SafeAreaView>
-    )
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text variant="titleMedium" style={styles.errorText}>
-            Error loading cart
-          </Text>
-          <Button mode="contained" onPress={() => queryClient.invalidateQueries({ queryKey: ['cart'] })}>
-            Retry
-          </Button>
-        </View>
-      </SafeAreaView>
-    )
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={styles.backText}>← Back</Text>
+          </TouchableOpacity>
           <Text variant="headlineMedium" style={styles.title}>
             Shopping Cart
           </Text>
+        </View>
 
-          {cartItems.length === 0 ? (
-            <Card style={styles.emptyCard}>
+        {cartItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyEmoji}>🛒</Text>
+            <Text variant="titleLarge" style={styles.emptyTitle}>
+              Your cart is empty
+            </Text>
+            <Text variant="bodyMedium" style={styles.emptyText}>
+              Add some products to get started
+            </Text>
+            <Button
+              mode="contained"
+              onPress={() => router.push('/(tabs)/products')}
+              style={styles.shopButton}
+            >
+              Start Shopping
+            </Button>
+          </View>
+        ) : (
+          <>
+            {/* Cart Items */}
+            <View style={styles.itemsContainer}>
+              {cartItems.map((item) => (
+                <Card key={item.id} style={styles.itemCard}>
+                  <Card.Content style={styles.itemContent}>
+                    <View style={styles.itemRow}>
+                      {/* Product Image */}
+                      {item.image ? (
+                        <Image
+                          source={{ uri: item.image }}
+                          style={styles.itemImage}
+                        />
+                      ) : (
+                        <View style={[styles.itemImage, styles.placeholderImage]}>
+                          <Text style={styles.placeholderText}>📦</Text>
+                        </View>
+                      )}
+
+                      {/* Product Info */}
+                      <View style={styles.itemInfo}>
+                        <Text variant="titleMedium" style={styles.itemName} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <Text variant="titleMedium" style={styles.itemPrice}>
+                          ${item.price.toFixed(2)}
+                        </Text>
+
+                        {/* Quantity Controls */}
+                        <View style={styles.quantityRow}>
+                          <View style={styles.quantityControls}>
+                            <IconButton
+                              icon="minus"
+                              size={20}
+                              onPress={() => updateQuantity(item.id, -1)}
+                              disabled={item.quantity <= 1}
+                              style={styles.quantityButton}
+                            />
+                            <Text style={styles.quantityText}>{item.quantity}</Text>
+                            <IconButton
+                              icon="plus"
+                              size={20}
+                              onPress={() => updateQuantity(item.id, 1)}
+                              disabled={item.quantity >= item.stock}
+                              style={styles.quantityButton}
+                            />
+                          </View>
+
+                          {/* Remove Button */}
+                          <TouchableOpacity
+                            onPress={() => removeItem(item.id)}
+                            style={styles.removeButton}
+                          >
+                            <Trash2 color="#ef4444" size={20} />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  </Card.Content>
+                </Card>
+              ))}
+            </View>
+
+            {/* Order Summary */}
+            <Card style={styles.summaryCard}>
               <Card.Content>
-                <Text variant="titleMedium" style={styles.emptyText}>
-                  Your cart is empty
+                <Text variant="titleLarge" style={styles.summaryTitle}>
+                  Order Summary
                 </Text>
-                <Text variant="bodyMedium" style={styles.emptySubtext}>
-                  Add some products to get started!
-                </Text>
-                <Button
-                  mode="contained"
-                  onPress={() => {
-                    // Navigate to products
-                  }}
-                  style={styles.shopButton}
-                >
-                  Browse Products
-                </Button>
-              </Card.Content>
-            </Card>
-          ) : (
-            <>
-              <Card style={styles.cartCard}>
-                <FlatList
-                  data={cartItems}
-                  renderItem={renderCartItem}
-                  keyExtractor={(item) => item.id}
-                  ItemSeparatorComponent={Divider}
-                  scrollEnabled={false}
-                />
-              </Card>
 
-              <Card style={styles.summaryCard}>
-                <Card.Content>
-                  <Text variant="titleMedium" style={styles.summaryTitle}>
-                    Order Summary
-                  </Text>
-                  <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Subtotal</Text>
-                    <Text style={styles.summaryValue}>${totalPrice.toFixed(2)}</Text>
-                  </View>
-                  <View style={styles.summaryRow}>
-                    <Text style={styles.summaryLabel}>Shipping</Text>
-                    <Text style={styles.summaryValue}>$0.00</Text>
-                  </View>
-                  <Divider style={styles.summaryDivider} />
-                  <View style={styles.summaryRow}>
-                    <Text style={styles.totalLabel}>Total</Text>
-                    <Text style={styles.totalValue}>${totalPrice.toFixed(2)}</Text>
-                  </View>
-                </Card.Content>
-              </Card>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Subtotal</Text>
+                  <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+                </View>
 
-              <View style={styles.actionButtons}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Shipping</Text>
+                  <Text style={styles.summaryValue}>${shipping.toFixed(2)}</Text>
+                </View>
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Tax (10%)</Text>
+                  <Text style={styles.summaryValue}>${tax.toFixed(2)}</Text>
+                </View>
+
+                <Divider style={styles.divider} />
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.totalLabel}>Total</Text>
+                  <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+                </View>
+
                 <Button
                   mode="contained"
                   onPress={handleCheckout}
                   style={styles.checkoutButton}
-                  contentStyle={styles.buttonContent}
+                  contentStyle={styles.checkoutButtonContent}
                 >
                   Proceed to Checkout
                 </Button>
-                <Button
-                  mode="outlined"
-                  onPress={() => {
-                    // Clear cart
-                  }}
-                  style={styles.clearButton}
-                >
-                  Clear Cart
-                </Button>
-              </View>
-            </>
-          )}
-        </View>
+              </Card.Content>
+            </Card>
+          </>
+        )}
       </ScrollView>
-
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-        style={styles.snackbar}
-      >
-        {snackbarMessage}
-      </Snackbar>
     </SafeAreaView>
   )
 }
@@ -191,68 +225,122 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorText: {
-    marginBottom: 16,
-    color: '#ef4444',
-    textAlign: 'center',
-  },
   scrollContent: {
     paddingBottom: 24,
   },
-  content: {
+  header: {
+    backgroundColor: 'white',
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  backButton: {
+    marginBottom: 8,
+  },
+  backText: {
+    color: '#0ea5e9',
+    fontSize: 16,
   },
   title: {
     fontWeight: 'bold',
-    marginBottom: 24,
     color: '#1f2937',
   },
-  emptyCard: {
-    backgroundColor: 'white',
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingVertical: 80,
+    paddingHorizontal: 24,
+  },
+  emptyEmoji: {
+    fontSize: 80,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
   },
   emptyText: {
-    textAlign: 'center',
-    marginBottom: 8,
     color: '#6b7280',
-  },
-  emptySubtext: {
-    textAlign: 'center',
     marginBottom: 24,
-    color: '#9ca3af',
+    textAlign: 'center',
   },
   shopButton: {
     backgroundColor: '#0ea5e9',
   },
-  cartCard: {
-    marginBottom: 16,
+  itemsContainer: {
+    padding: 16,
+  },
+  itemCard: {
+    marginBottom: 12,
     backgroundColor: 'white',
   },
-  itemTotal: {
+  itemContent: {
+    padding: 12,
+  },
+  itemRow: {
+    flexDirection: 'row',
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    marginRight: 12,
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    fontSize: 40,
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemName: {
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  itemPrice: {
+    color: '#0ea5e9',
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  quantityRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+  },
+  quantityButton: {
+    margin: 0,
+  },
+  quantityText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0ea5e9',
+    paddingHorizontal: 12,
+    color: '#1f2937',
+  },
+  removeButton: {
+    padding: 8,
   },
   summaryCard: {
-    marginBottom: 16,
+    margin: 16,
+    marginTop: 0,
     backgroundColor: 'white',
   },
   summaryTitle: {
     fontWeight: 'bold',
-    marginBottom: 16,
     color: '#1f2937',
+    marginBottom: 16,
   },
   summaryRow: {
     flexDirection: 'row',
@@ -260,39 +348,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   summaryLabel: {
+    fontSize: 14,
     color: '#6b7280',
-    fontSize: 16,
   },
   summaryValue: {
+    fontSize: 14,
     color: '#1f2937',
-    fontSize: 16,
+    fontWeight: '500',
   },
-  summaryDivider: {
-    marginVertical: 16,
+  divider: {
+    marginVertical: 12,
   },
   totalLabel: {
-    color: '#1f2937',
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#1f2937',
   },
   totalValue: {
-    color: '#0ea5e9',
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  actionButtons: {
-    gap: 12,
+    color: '#0ea5e9',
   },
   checkoutButton: {
+    marginTop: 16,
     backgroundColor: '#059669',
   },
-  clearButton: {
-    borderColor: '#ef4444',
-  },
-  buttonContent: {
+  checkoutButtonContent: {
     paddingVertical: 8,
-  },
-  snackbar: {
-    backgroundColor: '#059669',
   },
 })

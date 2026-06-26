@@ -14,6 +14,7 @@ interface CompanySettings {
   taxRegistrationNumber?: string
   companyDescription?: string
   companyLogo?: string
+  companyLogoHeight?: number
   companyFavicon?: string
   primaryColor: string
   accentColor: string

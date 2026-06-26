@@ -1,11 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
-import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
 
-// Handle OPTIONS preflight request
-export async function OPTIONS(request: NextRequest) {
-  return handleOptions(request)
-}
+// Note: CORS is handled globally by next.config.js
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +15,7 @@ export async function GET(request: NextRequest) {
         companyWebsite: true,
         companyDescription: true,
         companyLogo: true,
+        companyLogoHeight: true,
         companyFavicon: true,
         primaryColor: true,
         accentColor: true,
@@ -41,6 +38,7 @@ export async function GET(request: NextRequest) {
         companyWebsite: 'https://yiwuexpress.com',
         companyDescription: 'Leading logistics and trade services provider connecting China to the world',
         companyLogo: '',
+        companyLogoHeight: 40,
         companyFavicon: '',
         primaryColor: '#1a3a5c',
         accentColor: '#c9a84c',
@@ -50,7 +48,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return addCorsHeaders(NextResponse.json({ settings }), request)
+    return NextResponse.json({ settings })
   } catch (error) {
     console.error('Public settings error:', error)
 
@@ -63,6 +61,7 @@ export async function GET(request: NextRequest) {
       companyWebsite: 'https://yiwuexpress.com',
       companyDescription: 'Leading logistics and trade services provider connecting China to the world',
       companyLogo: '',
+      companyLogoHeight: 40,
       companyFavicon: '',
       primaryColor: '#1a3a5c',
       accentColor: '#c9a84c',
@@ -71,6 +70,6 @@ export async function GET(request: NextRequest) {
       language: 'en',
     }
 
-    return addCorsHeaders(NextResponse.json({ settings: defaultSettings }), request)
+    return NextResponse.json({ settings: defaultSettings })
   }
 }

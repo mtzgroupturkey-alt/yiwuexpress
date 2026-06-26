@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "@21st-dev/magic": {
+      "command": "npx",
+      "args": ["-y", "@21st-dev/magic@latest"],
+      "env": {
+        "API_KEY": "ccb814da7e400af61090dca09b727171e4fe61a24e912f685f195b1829c5fd23"
+      },
+      "disabled": false,
+      "autoApprove": [],
+      "description": "21st.dev Magic AI Agent for generating UI components"
+    }
+  }
+}

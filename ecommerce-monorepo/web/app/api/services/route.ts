@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
 
-// Handle preflight requests
-export async function OPTIONS(request: NextRequest) {
-  return handleOptions(request)
-}
+// Note: CORS is handled globally by next.config.js
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +37,7 @@ export async function GET(request: NextRequest) {
       prisma.service.count({ where }),
     ])
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       services,
       pagination: {
         page,
@@ -50,13 +46,11 @@ export async function GET(request: NextRequest) {
         pages: Math.ceil(total / limit),
       },
     })
-    return addCorsHeaders(response, request)
   } catch (error) {
     console.error('Get services error:', error)
-    const response = NextResponse.json(
+    return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     )
-    return addCorsHeaders(response, request)
   }
 }

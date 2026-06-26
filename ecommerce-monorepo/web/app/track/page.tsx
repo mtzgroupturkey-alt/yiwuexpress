@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import { Search, MapPin, Calendar, Truck, CheckCircle2, Clock } from 'lucide-react'
 
 interface ShipmentDetails {
@@ -84,21 +83,15 @@ export default function TrackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      <div>
-        <Navbar />
-
-        {/* Banner Section */}
-        <section className="bg-gradient-primary text-white py-16 relative overflow-hidden">
-          <div className="absolute inset-0 chinese-pattern opacity-10"></div>
-          <div className="container mx-auto px-4 relative z-10 text-center">
-            <h1 className="text-4xl font-bold mb-4">Real-Time Shipment Tracking</h1>
-            <p className="text-lg text-gray-200 max-w-xl mx-auto">
-              Get immediate status updates, estimated arrival dates, and customs clearances for your international freight.
-            </p>
-          </div>
-        </section>
-
+    <SharedLayout 
+      pageTitle="Real-Time Shipment Tracking"
+      pageDescription="Get immediate status updates, estimated arrival dates, and customs clearances for your international freight"
+      breadcrumbs={[
+        { name: 'Track Shipment', href: '/track' }
+      ]}
+      backgroundImage="/images/track-bg.jpg"
+    >
+      <div className="bg-gray-50">
         {/* Tracking Input Container */}
         <section className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-brand p-6 md:p-8 -mt-12 relative z-20">
@@ -236,8 +229,6 @@ export default function TrackPage() {
           </div>
         </section>
       </div>
-
-      <Footer />
-    </div>
+    </SharedLayout>
   )
 }

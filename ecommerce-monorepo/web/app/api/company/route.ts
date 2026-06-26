@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
 import jwt from 'jsonwebtoken'
 
-// Handle preflight requests
-export async function OPTIONS(request: NextRequest) {
-  return handleOptions(request)
-}
+// Note: CORS is handled globally by next.config.js
 
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return addCorsHeaders(
-        NextResponse.json({ error: 'Authentication required' }, { status: 401 }),
-        request
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
@@ -24,10 +17,7 @@ export async function GET(request: NextRequest) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
     } catch {
-      return addCorsHeaders(
-        NextResponse.json({ error: 'Invalid token' }, { status: 401 }),
-        request
-      )
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Get user company information from CompanyInfo table
@@ -63,19 +53,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (!companyInfo) {
-      return addCorsHeaders(
-        NextResponse.json({ error: 'Company info not found' }, { status: 404 }),
-        request
-      )
+      return NextResponse.json({ error: 'Company info not found' }, { status: 404 })
     }
 
-    return addCorsHeaders(NextResponse.json({ company: companyInfo }), request)
+    return NextResponse.json({ company: companyInfo })
   } catch (error) {
     console.error('Get company info error:', error)
-    return addCorsHeaders(
-      NextResponse.json({ error: 'Internal server error' }, { status: 500 }),
-      request
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -83,10 +67,7 @@ export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return addCorsHeaders(
-        NextResponse.json({ error: 'Authentication required' }, { status: 401 }),
-        request
-      )
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     const token = authHeader.substring(7)
@@ -95,10 +76,7 @@ export async function POST(request: NextRequest) {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret')
     } catch {
-      return addCorsHeaders(
-        NextResponse.json({ error: 'Invalid token' }, { status: 401 }),
-        request
-      )
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     const body = await request.json()
@@ -127,15 +105,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return addCorsHeaders(
-      NextResponse.json({ company: companyInfo, message: 'Company info updated successfully' }),
-      request
-    )
+    return NextResponse.json({ company: companyInfo, message: 'Company info updated successfully' })
   } catch (error) {
     console.error('Update company info error:', error)
-    return addCorsHeaders(
-      NextResponse.json({ error: 'Internal server error' }, { status: 500 }),
-      request
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,5 +1,4 @@
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import { Globe, Award, Users, Target, ShieldCheck, TrendingUp } from 'lucide-react'
 
 export default function AboutPage() {
@@ -34,21 +33,15 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      <div>
-        <Navbar />
-
-        {/* Hero Section */}
-        <section className="bg-gradient-primary text-white py-20 relative overflow-hidden">
-          <div className="absolute inset-0 chinese-pattern opacity-10"></div>
-          <div className="container mx-auto px-4 relative z-10 text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4">About YIWU EXPRESS</h1>
-            <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-              Connecting China's primary manufacturing hub with businesses around the globe through reliable, modern logistics.
-            </p>
-          </div>
-        </section>
-
+    <SharedLayout 
+      pageTitle="About YIWU EXPRESS"
+      pageDescription="Connecting China's primary manufacturing hub with businesses around the globe through reliable, modern logistics"
+      breadcrumbs={[
+        { name: 'About', href: '/about' }
+      ]}
+      backgroundImage="/images/about-bg.jpg"
+    >
+      <div className="bg-gray-50">
         {/* Story Section */}
         <section className="container mx-auto px-4 py-16 max-w-5xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
@@ -121,8 +114,6 @@ export default function AboutPage() {
           </div>
         </section>
       </div>
-
-      <Footer />
-    </div>
+    </SharedLayout>
   )
 }

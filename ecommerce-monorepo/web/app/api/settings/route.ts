@@ -1,52 +1,86 @@
-import { NextResponse, NextRequest } from 'next/server'
-import { prisma } from '@/lib/db'
-import { addCorsHeaders, handleOptions } from '@/lib/api-middleware'
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-// Handle OPTIONS preflight request
-export async function OPTIONS(request: NextRequest) {
-  return handleOptions(request)
-}
+const prisma = new PrismaClient()
 
-export async function GET(request: NextRequest) {
+// GET /api/settings - Get system settings
+export async function GET(request: Request) {
   try {
-    let settings = await prisma.systemSettings.findFirst({
-      select: {
-        companyName: true,
-        companyLogo: true,
-        companyPhone: true,
-        companyEmail: true,
-        companyAddress: true,
-        companyWebsite: true,
-        primaryColor: true,
-        accentColor: true,
-        currency: true,
-        timezone: true,
-        language: true,
-      }
-    })
+    // Get first system settings record (there should only be one)
+    const settings = await prisma.systemSettings.findFirst()
 
     if (!settings) {
-      // Default settings fallback
-      settings = {
-        companyName: 'YIWU EXPRESS',
-        companyLogo: '',
-        companyPhone: '+86 579 8555 1234',
-        companyEmail: 'info@yiwuexpress.com',
-        companyAddress: 'Yiwu International Trade City, Yiwu, Zhejiang, China',
-        companyWebsite: 'https://yiwuexpress.com',
-        primaryColor: '#1a3a5c',
-        accentColor: '#c9a84c',
-        currency: 'USD',
-        timezone: 'Asia/Shanghai',
-        language: 'en',
-      }
+      // Return default settings if none exist
+      return NextResponse.json({
+        success: true,
+        settings: {
+          companyName: 'YIWU EXPRESS',
+          companyAddress: 'Yiwu International Trade City, Yiwu, Zhejiang, China',
+          companyPhone: '+86 579 8555 1234',
+          companyEmail: 'info@yiwuexpress.com',
+          companyWebsite: 'https://yiwuexpress.com',
+          companyLogo: '',
+          companyFavicon: '',
+          primaryColor: '#1a3a5c',
+          accentColor: '#c9a84c',
+          currency: 'USD',
+          timezone: 'Asia/Shanghai',
+          language: 'en'
+        }
+      })
     }
 
-    const response = NextResponse.json({ settings })
-    return addCorsHeaders(response, request)
+    return NextResponse.json({
+      success: true,
+      settings: settings
+    })
   } catch (error) {
-    console.error('Get public settings error:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-    return addCorsHeaders(response, request)
+    console.error('Error fetching system settings:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch system settings' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT /api/settings - Update system settings (Admin only)
+export async function PUT(request: Request) {
+  try {
+    // TODO: Add authentication check for admin
+    const body = await request.json()
+
+    // Get existing settings
+    const existing = await prisma.systemSettings.findFirst()
+
+    if (existing) {
+      // Update existing settings
+      const settings = await prisma.systemSettings.update({
+        where: { id: existing.id },
+        data: body
+      })
+
+      return NextResponse.json({
+        success: true,
+        settings: settings,
+        message: 'Settings updated successfully'
+      })
+    } else {
+      // Create new settings
+      const settings = await prisma.systemSettings.create({
+        data: body
+      })
+
+      return NextResponse.json({
+        success: true,
+        settings: settings,
+        message: 'Settings created successfully'
+      }, { status: 201 })
+    }
+  } catch (error) {
+    console.error('Error updating system settings:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to update system settings' },
+      { status: 500 }
+    )
   }
 }
