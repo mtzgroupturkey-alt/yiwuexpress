@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Truck, Mail, Phone, MapPin, Globe, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
+import { GlobeInteractive } from '@/components/ui/cobe-globe-interactive'
 
 export default function Footer() {
   const [logoUrl, setLogoUrl] = useState('')
@@ -78,16 +79,53 @@ export default function Footer() {
     { icon: Globe, href: 'https://instagram.com/yiwuexpress', label: 'Instagram' },
   ]
 
+  // Custom markers for YIWU EXPRESS global network
+  const globalNetworkMarkers = [
+    { id: "yiwu", location: [29.3, 120.07], name: "Yiwu HQ", users: 2500 },
+    { id: "shanghai", location: [31.23, 121.47], name: "Shanghai", users: 1800 },
+    { id: "usa", location: [40.71, -74.01], name: "USA", users: 1200 },
+    { id: "uk", location: [51.51, -0.13], name: "UK", users: 890 },
+    { id: "dubai", location: [25.2, 55.27], name: "Dubai", users: 1100 },
+    { id: "sydney", location: [-33.87, 151.21], name: "Sydney", users: 650 },
+  ]
+
   return (
-    <footer className="bg-gray-900 text-white">
-      {/* Main Footer */}
-      <Container maxWidth="2xl" className="py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Brand Column */}
-          <div className="lg:col-span-2">
-            <div className="flex items-center space-x-3 mb-6">
+    <footer className="relative bg-[#0a0f1a] text-white overflow-hidden">
+      {/* Premium Gold Top Border */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary-500 to-transparent"></div>
+      
+      {/* Subtle Dot Pattern Overlay - Visual Texture */}
+      <div 
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `radial-gradient(circle, #fff 1px, transparent 1px)`,
+          backgroundSize: '32px 32px'
+        }}
+      ></div>
+      
+      {/* Massive Background Globe - Enhanced Visibility & Glow */}
+      <div className="hidden lg:block absolute -right-32 top-1/2 -translate-y-1/2 w-[700px] h-[700px] opacity-35 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-radial from-secondary-500/10 via-transparent to-transparent blur-3xl"></div>
+        <GlobeInteractive 
+          markers={globalNetworkMarkers}
+          speed={0.0015}
+          className="w-full h-full drop-shadow-[0_0_80px_rgba(201,168,76,0.15)]"
+        />
+      </div>
+      
+      {/* Animated Gradient Orbs - Ambient Background */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-secondary-500/5 rounded-full blur-[120px] animate-pulse"></div>
+      <div className="absolute bottom-20 right-40 w-80 h-80 bg-primary-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+      
+      {/* Main Footer Content - 4 Equal Columns */}
+      <Container maxWidth="2xl" className="relative z-10 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          
+          {/* COLUMN 1: Logo + About Us */}
+          <div>
+            <div className="flex items-center space-x-3 mb-5">
               {logoUrl ? (
-                <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center p-1">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600 flex items-center justify-center p-2 shadow-[0_8px_32px_rgba(201,168,76,0.3)] ring-2 ring-secondary-500/20">
                   <img
                     src={logoUrl}
                     alt={`${companyName} Logo`}
@@ -95,93 +133,111 @@ export default function Footer() {
                   />
                 </div>
               ) : (
-                <Truck className="w-8 h-8 text-accent" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600 flex items-center justify-center shadow-[0_8px_32px_rgba(201,168,76,0.3)] ring-2 ring-secondary-500/20">
+                  <Truck className="w-7 h-7 text-white drop-shadow-lg" />
+                </div>
               )}
               <div>
-                <h2 className="text-2xl font-bold">{companyName}</h2>
-                <p className="text-gray-400 text-sm">Global Trade Solutions from Yiwu, China</p>
+                <h2 className="text-xl font-bold text-white drop-shadow-lg">{companyName}</h2>
+                <p className="text-secondary-400 text-xs font-semibold">Global Trade</p>
               </div>
             </div>
-            <p className="text-gray-400 mb-6 max-w-md">
-              Connecting businesses worldwide with professional logistics, customs clearance, 
-              and sourcing services from the world&apos;s largest small commodities market.
-            </p>
             
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-300">Yiwu International Trade City, Zhejiang, China</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-300">+86 579 8555 1234</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-300">info@yiwuexpress.com</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Globe className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-300">www.yiwuexpress.com</span>
-              </div>
-            </div>
+            <p className="text-gray-300/90 leading-relaxed text-sm">
+              Connecting businesses worldwide with professional logistics, customs clearance, 
+              and sourcing services from Yiwu, China.
+            </p>
           </div>
 
-          {/* Services Column */}
+          {/* COLUMN 2: Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Our Services</h3>
-            <ul className="space-y-2">
-              {serviceLinks.map((link) => (
+            <h3 className="text-base font-bold mb-6 text-white relative inline-block">
+              Quick Links
+              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
+            </h3>
+            <ul className="space-y-3">
+              {[
+                ...serviceLinks.slice(0, 3),
+                ...companyLinks.slice(0, 3)
+              ].map((link) => (
                 <li key={link.href}>
                   <Link 
                     href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-gray-300/90 hover:text-secondary-300 transition-all duration-300 inline-flex items-center group hover:translate-x-1"
                   >
-                    {link.label}
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 group-hover:bg-secondary-400 group-hover:shadow-lg group-hover:shadow-secondary-500/50 transition-all duration-300"></span>
+                    <span className="group-hover:drop-shadow-lg">{link.label}</span>
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Company Column */}
+          {/* COLUMN 3: Support / Help */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Company</h3>
-            <ul className="space-y-2">
-              {companyLinks.map((link) => (
-                <li key={link.href}>
-                  <Link 
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Support Column */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
+            <h3 className="text-base font-bold mb-6 text-white relative inline-block">
+              Support & Help
+              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
+            </h3>
+            <ul className="space-y-3">
               {supportLinks.map((link) => (
                 <li key={link.href}>
                   <Link 
                     href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-gray-300/90 hover:text-secondary-300 transition-all duration-300 inline-flex items-center group hover:translate-x-1"
                   >
-                    {link.label}
+                    <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 group-hover:bg-secondary-400 group-hover:shadow-lg group-hover:shadow-secondary-500/50 transition-all duration-300"></span>
+                    <span className="group-hover:drop-shadow-lg">{link.label}</span>
                   </Link>
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* COLUMN 4: Contact Information + Social */}
+          <div>
+            <h3 className="text-base font-bold mb-6 text-white relative inline-block">
+              Get In Touch
+              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
+            </h3>
+            
+            {/* Contact Info - Compact Design */}
+            <div className="space-y-3.5 mb-8">
+              <div className="flex items-start space-x-2.5 group">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-gray-700/50 group-hover:border-secondary-500/50 transition-all duration-300">
+                  <MapPin className="w-4 h-4 text-secondary-400 transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5 font-medium">Address</p>
+                  <span className="text-gray-200 text-xs leading-relaxed">Yiwu International Trade City, Zhejiang, China</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2.5 group">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-gray-700/50 group-hover:border-secondary-500/50 transition-all duration-300">
+                  <Phone className="w-4 h-4 text-secondary-400 transition-colors" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-0.5 font-medium">Phone</p>
+                  <span className="text-gray-200 text-xs">+86 579 8555 1234</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2.5 group">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-gray-700/50 group-hover:border-secondary-500/50 transition-all duration-300">
+                  <Mail className="w-4 h-4 text-secondary-400 transition-colors" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-0.5 font-medium">Email</p>
+                  <span className="text-gray-200 text-xs">info@yiwuexpress.com</span>
+                </div>
+              </div>
+            </div>
 
             {/* Social Links */}
-            <div className="mt-8">
-              <h4 className="text-sm font-semibold mb-3 text-gray-400">FOLLOW US</h4>
-              <div className="flex space-x-3">
+            <div>
+              <h4 className="text-xs font-bold mb-4 text-gray-400 uppercase tracking-widest">Connect With Us</h4>
+              <div className="flex space-x-2.5">
                 {socialLinks.map((social) => {
                   const Icon = social.icon
                   return (
@@ -190,10 +246,11 @@ export default function Footer() {
                       href={social.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center transition-colors hover-primary-bg"
+                      className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-gray-700/50 hover:border-secondary-500/80 flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
                       aria-label={social.label}
                     >
-                      <Icon className="w-5 h-5" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-secondary-500/0 to-secondary-600/0 group-hover:from-secondary-500/20 group-hover:to-secondary-600/20 transition-all duration-300"></div>
+                      <Icon className="w-4 h-4 relative z-10 text-gray-400 group-hover:text-secondary-300 transition-colors" />
                     </a>
                   )
                 })}
@@ -201,83 +258,31 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
-        {/* Newsletter */}
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <div className="max-w-xl mx-auto">
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-semibold mb-2">Subscribe to Our Newsletter</h3>
-              <p className="text-gray-400">Get the latest updates on international trade and logistics</p>
-            </div>
-            <form className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Your business email"
-                className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-primary-500 text-white"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 text-white font-medium rounded-lg transition-colors whitespace-nowrap btn-primary"
-              >
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
       </Container>
 
-      {/* Bottom Bar */}
-      <div className="bg-gray-950 py-6">
-        <Container maxWidth="2xl">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {currentYear} {companyName}. All rights reserved.
+      {/* Bottom Bar - Premium Design with Border Glow */}
+      <div className="relative z-10 border-t border-gray-700/40">
+        {/* Top border glow */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-secondary-500/30 to-transparent"></div>
+        
+        <Container maxWidth="2xl" className="py-7">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-gray-400 text-sm">
+              © {currentYear} <span className="text-white font-bold drop-shadow-lg">{companyName}</span>. All rights reserved.
             </div>
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
-              <Link href="/privacy" className="hover:text-white transition-colors">
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <Link href="/privacy" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="hover:text-white transition-colors">
+              <Link href="/terms" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
                 Terms of Service
               </Link>
-              <Link href="/cookies" className="hover:text-white transition-colors">
+              <Link href="/cookies" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
                 Cookie Policy
               </Link>
-              <Link href="/sitemap" className="hover:text-white transition-colors">
+              <Link href="/sitemap" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
                 Sitemap
               </Link>
-            </div>
-          </div>
-        </Container>
-      </div>
-
-      {/* Trust Badges */}
-      <div className="bg-gray-800 py-4">
-        <Container maxWidth="2xl">
-          <div className="flex flex-wrap justify-center items-center gap-8 text-xs text-gray-400">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#10b981' }}>
-                <Shield className="w-4 h-4 text-white" />
-              </div>
-              <span>ISO 9001 Certified</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary">
-                <Globe className="w-4 h-4 text-white" />
-              </div>
-              <span>Global Network</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-accent">
-                <Shield className="w-4 h-4 text-white" />
-              </div>
-              <span>Secure Transactions</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#ef4444' }}>
-                <Truck className="w-4 h-4 text-white" />
-              </div>
-              <span>24/7 Support</span>
             </div>
           </div>
         </Container>

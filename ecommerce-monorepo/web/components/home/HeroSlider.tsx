@@ -241,7 +241,7 @@ export function HeroSlider() {
 
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] min-h-[500px] flex items-center justify-center">
+      <div className="bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] h-[calc(100vh-164px)] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -255,13 +255,13 @@ export function HeroSlider() {
 
   if (slides.length === 0) {
     return (
-      <section className="relative bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] h-[calc(100vh-164px)] overflow-hidden flex items-center justify-center">
         <Container>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[500px] py-12"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-8 md:py-12"
           >
             <div className="text-white space-y-6 z-10">
               <p className="text-[#c9a84c] text-sm uppercase tracking-widest font-medium">
@@ -293,7 +293,7 @@ export function HeroSlider() {
 
   return (
     <div
-      className="relative overflow-hidden min-h-[500px]"
+      className="relative overflow-hidden h-[calc(100vh-164px)] flex items-center justify-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       role="region"
@@ -377,7 +377,7 @@ export function HeroSlider() {
               initial="enter"
               animate="center"
               exit="exit"
-              className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[500px] py-12"
+              className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-8 md:py-12"
             >
               {/* Text Content */}
               <div className="text-white space-y-4 max-w-xl">

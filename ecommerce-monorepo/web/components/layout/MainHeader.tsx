@@ -64,25 +64,30 @@ export function MainHeader() {
             </span>
           </Link>
 
-          {/* Right: Search + Warranty + Icons */}
+          {/* Right: Search + Language/Currency + Icons */}
           <div className="flex items-center space-x-4">
             {/* Search Bar - Desktop */}
-            <div className="hidden lg:flex items-center border border-gray-300 rounded-full px-4 py-1.5 w-64">
+            <div className="hidden lg:flex items-center border border-gray-300 rounded-full px-4 py-1.5 w-64 focus-within:border-[#c9a84c] transition-colors">
               <Search className="w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search for kitchenware..."
-                className="w-full px-3 py-1 text-sm outline-none bg-transparent"
+                className="w-full px-3 py-1 text-sm outline-none bg-transparent focus:outline-none focus:ring-0 border-0"
               />
             </div>
 
-            {/* Warranty Registration - Desktop */}
-            <Link
-              href="/warranty"
-              className="hidden lg:block text-xs text-gray-600 hover:text-[#1a3a5c] font-medium transition-colors"
-            >
-              Warranty Registration
-            </Link>
+            {/* Language & Currency - Desktop */}
+            <div className="hidden lg:flex items-center space-x-2 text-xs font-medium text-gray-600">
+              <button className="hover:text-[#1a3a5c] transition-colors flex items-center gap-1">
+                <span>🇺🇸</span>
+                <span>EN</span>
+              </button>
+              <span className="text-gray-300">|</span>
+              <button className="hover:text-[#1a3a5c] transition-colors flex items-center gap-1">
+                <span>💰</span>
+                <span>USD</span>
+              </button>
+            </div>
 
             {/* Icons */}
             <button className="text-gray-600 hover:text-[#1a3a5c] p-2 lg:hidden transition-colors">
@@ -103,12 +108,12 @@ export function MainHeader() {
         </div>
 
         {/* Mobile Search */}
-        <div className="lg:hidden mt-3 flex items-center border border-gray-300 rounded-full px-4 py-2">
+        <div className="lg:hidden mt-3 flex items-center border border-gray-300 rounded-full px-4 py-2 focus-within:border-[#c9a84c] transition-colors">
           <Search className="w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search for kitchenware..."
-            className="w-full px-3 py-1 text-sm outline-none bg-transparent"
+            className="w-full px-3 py-1 text-sm outline-none bg-transparent focus:outline-none focus:ring-0 border-0"
           />
         </div>
       </Container>
