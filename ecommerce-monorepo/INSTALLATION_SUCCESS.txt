@@ -12,9 +12,9 @@
 ═══════════════════════════════════════════════════════════
 
 🌐 ACCESS YOUR STORE:
-- Frontend: http://localhost:3001
-- Products: http://localhost:3001/products
-- Admin: http://localhost:3001/admin
+- Frontend: http://localhost:3005
+- Products: http://localhost:3005/products
+- Admin: http://localhost:3005/admin
 - Login: admin@test.com / password123
 
 ═══════════════════════════════════════════════════════════

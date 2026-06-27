@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
@@ -17,23 +17,19 @@ export function CategoryMenu() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchCategories()
     
-    // Temporarily disable outside click handler to debug
-    // const handleOutsideClick = (event: MouseEvent) => {
-    //   // Don't close if clicking on a category button
-    //   if ((event.target as Element)?.closest('[data-category-button]')) {
-    //     return
-    //   }
-    //   console.log('[CategoryMenu] Outside click detected, closing dropdown')
-    //   setActiveCategory(null)
-    // }
-    
-    // // Use capture phase to handle click before button click
-    // document.addEventListener('click', handleOutsideClick, true)
-    // return () => document.removeEventListener('click', handleOutsideClick, true)
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveCategory(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const fetchCategories = async () => {
@@ -163,7 +159,7 @@ export function CategoryMenu() {
     <div className="bg-[#1a3a5c] text-white">
       <Container>
         <div className="relative">
-          <nav className="flex items-center space-x-8 h-12 overflow-x-auto no-scrollbar">
+          <nav className="flex items-center space-x-8 h-12 overflow-x-auto lg:overflow-visible no-scrollbar">
             {categories.map((category) => {
               const hasGrandchildren = category.children?.some(
                 (child) => child.children && child.children.length > 0
@@ -211,8 +207,8 @@ export function CategoryMenu() {
                     {hasGrandchildren ? (
                       /* Mega Menu Style for Multi-Level Categories */
                       <div 
-                        className={`absolute left-0 top-full mt-0 bg-white shadow-xl rounded-b-lg p-6 w-[650px] z-[9999] transition-all duration-200 border-4 border-red-500 ${
-                          activeCategory === category.id || category.name === 'CLOTHING' ? 'block' : 'hidden'
+                        className={`absolute left-0 top-full mt-0 bg-white shadow-xl rounded-b-lg p-6 w-[650px] z-[9999] transition-all duration-200 ${
+                          activeCategory === category.id ? 'block' : 'hidden'
                         }`}
                         style={{
                           display: activeCategory === category.id ? 'grid' : 'none',

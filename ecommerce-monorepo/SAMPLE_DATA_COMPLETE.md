@@ -48,18 +48,18 @@ Your YIWU EXPRESS store has been fully populated with professional sample data i
 ## 🌐 View Your Data
 
 ### Frontend (Customer View)
-- **Homepage with Hero Slides**: http://localhost:3001/
-- **All Products**: http://localhost:3001/products
+- **Homepage with Hero Slides**: http://localhost:3005/
+- **All Products**: http://localhost:3005/products
 - **Products by Category**: 
-  - http://localhost:3001/products?category=cookware
-  - http://localhost:3001/products?category=electronics
-  - http://localhost:3001/products?category=clothing
-  - http://localhost:3001/products?category=furniture
+  - http://localhost:3005/products?category=cookware
+  - http://localhost:3005/products?category=electronics
+  - http://localhost:3005/products?category=clothing
+  - http://localhost:3005/products?category=furniture
 
 ### Admin Panel
-- **Product Management**: http://localhost:3001/admin/products
-- **Category Management**: http://localhost:3001/admin/categories
-- **Hero Slides Management**: http://localhost:3001/admin/hero-slides
+- **Product Management**: http://localhost:3005/admin/products
+- **Category Management**: http://localhost:3005/admin/categories
+- **Hero Slides Management**: http://localhost:3005/admin/hero-slides
 
 ### Database Studio
 ```bash
@@ -97,7 +97,7 @@ Opens Prisma Studio at http://localhost:5555
 ## 🎯 What You Can Do Now
 
 ### 1. **Browse Products**
-Visit http://localhost:3001/products to see all products with photos and pricing
+Visit http://localhost:3005/products to see all products with photos and pricing
 
 ### 2. **Test Search & Filtering**
 - Search by product name

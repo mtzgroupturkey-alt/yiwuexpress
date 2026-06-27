@@ -10,7 +10,7 @@ Your store now has **29 products**, **174+ variants**, **5 hero slides**, and co
 
 ### **Customer Frontend**
 ```
-http://localhost:3001
+http://localhost:3005
 ```
 - Browse products with photos
 - View hero slider on homepage
@@ -19,7 +19,7 @@ http://localhost:3001
 
 ### **Admin Panel**
 ```
-http://localhost:3001/admin
+http://localhost:3005/admin
 ```
 **Login Credentials:**
 - Email: `admin@test.com`
@@ -73,7 +73,7 @@ Opens at: http://localhost:5555
 cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
 npm run dev
 ```
-Access at: http://localhost:3001
+Access at: http://localhost:3005
 
 ### Add More Products
 ```bash

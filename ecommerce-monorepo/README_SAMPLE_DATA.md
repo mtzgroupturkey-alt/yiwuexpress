@@ -71,12 +71,12 @@ Animated homepage carousel with:
 ## 🚀 Quick Access
 
 ### View Your Store
-- **Homepage**: http://localhost:3001
-- **Products**: http://localhost:3001/products
-- **Category**: http://localhost:3001/products?category=cookware
+- **Homepage**: http://localhost:3005
+- **Products**: http://localhost:3005/products
+- **Category**: http://localhost:3005/products?category=cookware
 
 ### Admin Panel
-- **URL**: http://localhost:3001/admin
+- **URL**: http://localhost:3005/admin
 - **Login**: admin@test.com / password123
 - **Features**: Manage products, variants, categories, hero slides
 

@@ -81,9 +81,9 @@ echo    - 5 Hero Slides
 echo    - Complete Attributes System
 echo.
 echo 🌐 Access Your Store:
-echo    Frontend:  http://localhost:3001
-echo    Products:  http://localhost:3001/products
-echo    Admin:     http://localhost:3001/admin
+echo    Frontend:  http://localhost:3005
+echo    Products:  http://localhost:3005/products
+echo    Admin:     http://localhost:3005/admin
 echo.
 echo 🚀 Start Development Server:
 echo    npm run dev

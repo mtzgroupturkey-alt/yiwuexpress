@@ -128,8 +128,8 @@ After seeding, you'll have:
 ## 🔍 Verification
 
 Check your results at:
-- **Frontend**: http://localhost:3001/products
-- **Admin Panel**: http://localhost:3001/admin/products  
+- **Frontend**: http://localhost:3005/products
+- **Admin Panel**: http://localhost:3005/admin/products  
 - **Database Studio**: `npm run db:studio`
 
 ## 🎯 Business Benefits
