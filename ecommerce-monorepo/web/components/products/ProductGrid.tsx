@@ -5,6 +5,7 @@ import ProductCard from './ProductCard'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
+import { useCart } from '@/components/CartContext'
 
 interface Product {
   id: string
@@ -49,6 +50,7 @@ export default function ProductGrid({
   isLoading = false,
   viewMode = 'grid'
 }: ProductGridProps) {
+  const { refreshCartCount } = useCart()
   const [wishlist, setWishlist] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
@@ -102,7 +104,7 @@ export default function ProductGrid({
         // Optionally show a toast notification
         console.log('Product added to cart')
         // Trigger cart count update
-        window.dispatchEvent(new Event('cartUpdated'))
+        refreshCartCount()
       } else {
         console.error('Failed to add to cart:', data.message)
       }

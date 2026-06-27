@@ -34,7 +34,7 @@ export function ImageUpload({ value, onChange, folder = 'categories', className 
     }
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg']
     if (!validTypes.includes(file.type)) {
       setError('Please upload a valid image (JPEG, PNG, WebP, or GIF)')
       return
@@ -44,28 +44,32 @@ export function ImageUpload({ value, onChange, folder = 'categories', className 
     setError(null)
 
     try {
-      // Convert image to base64 data URL for preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const base64String = reader.result as string
-        onChange(base64String)
-        setIsUploading(false)
-      }
-      reader.onerror = () => {
-        setError('Failed to read file. Please try again.')
-        setIsUploading(false)
-      }
-      reader.readAsDataURL(file)
+      // Upload to server
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', folder || 'general')
       
-      // TODO: In production, upload to your storage service (AWS S3, Cloudinary, etc.)
-      // Example:
-      // const formData = new FormData()
-      // formData.append('file', file)
-      // const response = await fetch('/api/upload', { method: 'POST', body: formData })
-      // const { url } = await response.json()
-      // onChange(url)
-    } catch (err) {
-      setError('Failed to upload image. Please try again.')
+      // Get auth token from localStorage
+      const token = localStorage.getItem('token')
+      
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Upload failed')
+      }
+      
+      const { url } = await response.json()
+      onChange(url)
+      setIsUploading(false)
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload image. Please try again.')
       console.error('Upload error:', err)
       setIsUploading(false)
     }
@@ -122,7 +126,7 @@ export function ImageUpload({ value, onChange, folder = 'categories', className 
       {value && (
         <div className="mt-2">
           <p className="text-sm text-gray-500 mb-1">Preview:</p>
-          <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200">
+          <div className="w-full max-w-md h-32 rounded overflow-hidden border-2 border-gray-200">
             <img
               src={value}
               alt="Preview"
@@ -133,7 +137,7 @@ export function ImageUpload({ value, onChange, folder = 'categories', className 
       )}
       
       <p className="text-xs text-gray-500">
-        Recommended: 400×400px square image. Max 5MB.
+        Recommended: 1920×400px for breadcrumb backgrounds. Max 5MB.
       </p>
     </div>
   )

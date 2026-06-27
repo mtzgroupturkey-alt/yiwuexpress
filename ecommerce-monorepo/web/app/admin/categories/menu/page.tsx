@@ -40,6 +40,7 @@ interface CategoryItem {
   slug: string
   description?: string
   image?: string
+  icon?: string
   level: number
   displayOrder: number
   menuOrder: number

@@ -21,9 +21,9 @@ const categorySchema = z.object({
   image: z.string().optional(),
   icon: z.string().optional(),
   parentId: z.string().optional(),
-  isActive: z.boolean().default(true),
-  isFeatured: z.boolean().default(false),
-  showInMenu: z.boolean().default(true)
+  isActive: z.boolean(),
+  isFeatured: z.boolean(),
+  showInMenu: z.boolean()
 })
 
 type CategoryForm = z.infer<typeof categorySchema>
@@ -133,6 +133,8 @@ export default function AdminCategoriesPage() {
       return newSet
     })
   }
+
+  const name = watch('name')
 
   // Auto-generate slug from name
   useEffect(() => {

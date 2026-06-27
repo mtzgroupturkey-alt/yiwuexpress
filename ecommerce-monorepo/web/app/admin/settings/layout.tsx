@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Settings, Building2, Globe, Shield, Bell, Users2,
-  Key, Database, Mail, Palette, FileText, Cog
+  Key, Database, Mail, Palette, FileText, Cog, Image
 } from 'lucide-react'
 
 const settingsNavigation = [
@@ -20,6 +20,12 @@ const settingsNavigation = [
     href: '/admin/settings/system',
     icon: Cog,
     description: 'General system configuration',
+  },
+  {
+    name: 'Breadcrumb Settings',
+    href: '/admin/settings/breadcrumb',
+    icon: Image,
+    description: 'Manage breadcrumb backgrounds',
   },
   {
     name: 'User Permissions',

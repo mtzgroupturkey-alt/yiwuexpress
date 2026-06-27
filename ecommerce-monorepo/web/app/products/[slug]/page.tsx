@@ -8,16 +8,8 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
-  ShoppingCart, 
-  Minus, 
-  Plus, 
-  Package, 
-  Truck, 
-  Shield, 
-  ArrowLeft,
-  FileText
-} from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, Shield, ArrowLeft, FileText } from 'lucide-react'
+import { useCart } from '@/components/CartContext'
 
 interface Product {
   id: string
@@ -48,6 +40,7 @@ export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const slug = params.slug as string
+  const { refreshCartCount } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [quantity, setQuantity] = useState(1)
@@ -121,6 +114,7 @@ export default function ProductDetailPage() {
       
       if (data.success) {
         alert('Item added to cart successfully!')
+        refreshCartCount()
       } else {
         alert(data.error || 'Failed to add item to cart')
       }

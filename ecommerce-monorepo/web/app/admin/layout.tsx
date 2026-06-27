@@ -8,7 +8,7 @@ import {
   Settings, LogOut, Menu, X, ChevronRight, Globe,
   TrendingUp, Bell, ChevronDown, Eye, CheckCircle,
   MapPin, Building, Sliders, Mail, Shield, Database,
-  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag
+  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image
 } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -100,6 +100,7 @@ const navItems: NavItem[] = [
       { href: '/admin/settings/hero-slider', label: 'Hero Slider', icon: Sliders },
       { href: '/admin/settings/featured-products', label: 'Featured Products', icon: ShoppingBag },
       { href: '/admin/settings/new-arrivals', label: 'New Arrivals', icon: Package },
+      { href: '/admin/settings/breadcrumb', label: 'Breadcrumb Backgrounds', icon: Image },
       { href: '/admin/settings/company', label: 'Company Info', icon: Building },
       { href: '/admin/settings/system', label: 'System Settings', icon: Sliders },
       { href: '/admin/settings/notifications', label: 'Notifications', icon: Mail },

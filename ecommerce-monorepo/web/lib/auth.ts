@@ -53,3 +53,13 @@ export async function getUserFromToken(token: string) {
     }
   })
 }
+
+export async function getAuthUser(req: Request) {
+  const authHeader = req.headers.get('authorization')
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null
+  }
+
+  const token = authHeader.split(' ')[1]
+  return await getUserFromToken(token)
+}

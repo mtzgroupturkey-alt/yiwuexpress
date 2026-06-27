@@ -7,6 +7,7 @@ import { CartItem } from '@/components/cart/CartItem'
 import { CartSummary } from '@/components/cart/CartSummary'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag, ArrowLeft } from 'lucide-react'
+import { useCart } from '@/components/CartContext'
 
 interface Cart {
   id: string
@@ -30,6 +31,7 @@ interface Cart {
 
 export default function CartPage() {
   const router = useRouter()
+  const { refreshCartCount } = useCart()
   const [cart, setCart] = useState<Cart | null>(null)
   const [summary, setSummary] = useState({
     itemCount: 0,
@@ -50,11 +52,23 @@ export default function CartPage() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        router.push('/login')
+        router.push('/login?redirect=/cart')
         return
       }
 
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
+      let userId
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        userId = payload.userId
+        if (!userId) {
+          throw new Error('Invalid token: missing userId')
+        }
+      } catch (e) {
+        console.error('Invalid token:', e)
+        localStorage.removeItem('token')
+        router.push('/login?redirect=/cart')
+        return
+      }
 
       const response = await fetch(`/api/cart?userId=${userId}`, {
         headers: {
@@ -64,10 +78,18 @@ export default function CartPage() {
 
       const data = await response.json()
       
+      if (response.status === 404) {
+        // User not found - redirect to login
+        localStorage.removeItem('token')
+        router.push('/login?redirect=/cart')
+        return
+      }
+      
       if (data.success) {
         setCart(data.data.cart)
         setSummary(data.data.summary)
         setError('')
+        refreshCartCount()
       } else {
         setError(data.error || 'Failed to load cart')
       }

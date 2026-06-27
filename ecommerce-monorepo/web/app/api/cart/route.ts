@@ -16,6 +16,18 @@ export async function GET(request: Request) {
       )
     }
 
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
     // Get or create cart
     let cart = await prisma.cart.findUnique({
       where: { userId },
@@ -48,7 +60,19 @@ export async function GET(request: Request) {
         include: {
           items: {
             include: {
-              product: true
+              product: {
+                select: {
+                  id: true,
+                  sku: true,
+                  name: true,
+                  slug: true,
+                  price: true,
+                  thumbnail: true,
+                  stock: true,
+                  weightKg: true,
+                  isActive: true
+                }
+              }
             }
           }
         }
@@ -106,6 +130,18 @@ export async function POST(request: Request) {
       )
     }
 
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
     // Verify product exists and is active
     const product = await prisma.product.findUnique({
       where: { id: productId }
@@ -138,12 +174,11 @@ export async function POST(request: Request) {
     }
 
     // Check if item already in cart
-    const existingItem = await prisma.cartItem.findUnique({
+    const existingItem = await prisma.cartItem.findFirst({
       where: {
-        cartId_productId: {
-          cartId: cart.id,
-          productId
-        }
+        cartId: cart.id,
+        productId,
+        variantId: null
       }
     })
 
@@ -160,10 +195,7 @@ export async function POST(request: Request) {
 
       const updatedItem = await prisma.cartItem.update({
         where: {
-          cartId_productId: {
-            cartId: cart.id,
-            productId
-          }
+          id: existingItem.id
         },
         data: {
           quantity: newQuantity

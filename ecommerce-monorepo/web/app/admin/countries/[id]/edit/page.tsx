@@ -19,7 +19,7 @@ const countrySchema = z.object({
   currencySymbol: z.string().min(1, 'Currency symbol is required').max(3),
   flag: z.string().optional(),
   deliverySLA: z.string().optional(),
-  isActive: z.boolean().default(true)
+  isActive: z.boolean()
 })
 
 type CountryForm = z.infer<typeof countrySchema>

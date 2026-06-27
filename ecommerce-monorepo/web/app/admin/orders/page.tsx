@@ -157,22 +157,26 @@ export default function AdminOrdersPage() {
             </div>
             <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="md:w-48"
+              onValueChange={(value) => setStatusFilter(value)}
             >
-              <option value="">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="PAID">Paid</option>
-              <option value="PROCESSING">Processing</option>
-              <option value="PICKING">Picking</option>
-              <option value="PACKING">Packing</option>
-              <option value="SHIPPED">Shipped</option>
-              <option value="IN_TRANSIT">In Transit</option>
-              <option value="CUSTOMS_HOLD">Customs Hold</option>
-              <option value="CUSTOMS_CLEARED">Customs Cleared</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="ON_HOLD">On Hold</option>
-              <option value="CANCELLED">Cancelled</option>
+              <SelectTrigger className="md:w-48">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="PAID">Paid</SelectItem>
+                <SelectItem value="PROCESSING">Processing</SelectItem>
+                <SelectItem value="PICKING">Picking</SelectItem>
+                <SelectItem value="PACKING">Packing</SelectItem>
+                <SelectItem value="SHIPPED">Shipped</SelectItem>
+                <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
+                <SelectItem value="CUSTOMS_HOLD">Customs Hold</SelectItem>
+                <SelectItem value="CUSTOMS_CLEARED">Customs Cleared</SelectItem>
+                <SelectItem value="DELIVERED">Delivered</SelectItem>
+                <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
             </Select>
             <Button
               variant="outline"

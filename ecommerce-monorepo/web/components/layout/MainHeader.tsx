@@ -7,10 +7,11 @@ import { useState } from 'react'
 import { MobileMenu } from './MobileMenu'
 import { Container } from '@/components/ui/Container'
 import { useSettings } from '@/components/SettingsProvider'
+import { useCart } from '@/components/CartContext'
 
 export function MainHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [cartCount] = useState(3) // This should come from your cart state
+  const { cartCount } = useCart()
   const { settings } = useSettings()
 
   return (

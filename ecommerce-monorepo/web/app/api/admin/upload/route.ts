@@ -53,7 +53,15 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
 
     // Create subdirectory based on upload type
-    const subDir = uploadType === 'favicon' ? 'favicons' : 'general'
+    let subDir: string
+    if (uploadType === 'favicon') {
+      subDir = 'favicons'
+    } else if (uploadType === 'breadcrumb' || uploadType === 'breadcrumb/mobile') {
+      subDir = uploadType
+    } else {
+      subDir = 'general'
+    }
+    
     const uploadDir = path.join(process.cwd(), 'public', 'uploads', subDir)
     
     // Ensure directory exists

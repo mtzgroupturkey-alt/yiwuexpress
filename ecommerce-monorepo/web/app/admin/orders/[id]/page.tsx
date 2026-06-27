@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select } from '@/components/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { 
@@ -329,21 +329,25 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                     <label className="block text-sm font-medium mb-2">Status</label>
                     <Select
                       value={editedStatus}
-                      onChange={(e) => setEditedStatus(e.target.value)}
-                      className="w-full"
+                      onValueChange={(value) => setEditedStatus(value)}
                     >
-                      <option value="PENDING">Pending</option>
-                      <option value="PAID">Paid</option>
-                      <option value="PROCESSING">Processing</option>
-                      <option value="PICKING">Picking</option>
-                      <option value="PACKING">Packing</option>
-                      <option value="SHIPPED">Shipped</option>
-                      <option value="IN_TRANSIT">In Transit</option>
-                      <option value="CUSTOMS_HOLD">Customs Hold</option>
-                      <option value="CUSTOMS_CLEARED">Customs Cleared</option>
-                      <option value="DELIVERED">Delivered</option>
-                      <option value="ON_HOLD">On Hold</option>
-                      <option value="CANCELLED">Cancelled</option>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PENDING">Pending</SelectItem>
+                        <SelectItem value="PAID">Paid</SelectItem>
+                        <SelectItem value="PROCESSING">Processing</SelectItem>
+                        <SelectItem value="PICKING">Picking</SelectItem>
+                        <SelectItem value="PACKING">Packing</SelectItem>
+                        <SelectItem value="SHIPPED">Shipped</SelectItem>
+                        <SelectItem value="IN_TRANSIT">In Transit</SelectItem>
+                        <SelectItem value="CUSTOMS_HOLD">Customs Hold</SelectItem>
+                        <SelectItem value="CUSTOMS_CLEARED">Customs Cleared</SelectItem>
+                        <SelectItem value="DELIVERED">Delivered</SelectItem>
+                        <SelectItem value="ON_HOLD">On Hold</SelectItem>
+                        <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      </SelectContent>
                     </Select>
                   </div>
                   <div>

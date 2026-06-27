@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const activeOnly = searchParams.get('active') !== 'false'
     const includeChildren = searchParams.get('includeChildren') === 'true'
     const featured = searchParams.get('featured') === 'true'
+    const level = searchParams.get('level') ? parseInt(searchParams.get('level')!) : undefined
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
 
     const where: any = {}
@@ -18,6 +19,12 @@ export async function GET(request: Request) {
     }
     if (featured) {
       where.isFeatured = true
+    }
+    // Filter by level (1 = top level, no parent)
+    if (level === 1) {
+      where.parentId = null
+    } else if (level) {
+      where.level = level
     }
 
     const categories = await prisma.category.findMany({
@@ -36,7 +43,20 @@ export async function GET(request: Request) {
             name: true,
             slug: true
           }
-        }
+        },
+        children: includeChildren ? {
+          where: { isActive: true },
+          include: {
+            children: {
+              where: { isActive: true },
+              include: {
+                children: {
+                  where: { isActive: true }
+                }
+              }
+            }
+          }
+        } : false
       },
       orderBy: [
         { displayOrder: 'asc' },
