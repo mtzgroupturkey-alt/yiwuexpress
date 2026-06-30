@@ -241,46 +241,52 @@ model Category {
 }
 
 model Product {
-  id                   String           @id @default(cuid())
-  sku                  String           @unique
+  id                   String              @id @default(cuid())
+  sku                  String              @unique
   name                 String
-  slug                 String           @unique
+  slug                 String              @unique
   description          String?
   categoryId           String?
   price                Float
   compareAtPrice       Float?
   costPrice            Float?
+  purchaseCurrency     String?               // Currency used for purchases (CNY)
+  purchasePrice        Float?                // Price in purchase currency
+  prices               Json?                 // Multi-currency prices: { "USD": 150.00, "CNY": 1080.00 }
   images               String[]
+  videos               String[]            @default([])
   thumbnail            String?
-  stock                Int              @default(0)
-  lowStockThreshold    Int              @default(10)
+  stock                Int                 @default(0)
+  lowStockThreshold    Int                 @default(10)
   hsCode               String?
   weightKg             Float
   dimensions           Json?
   declaredCustomsValue Float?
-  countryOfOrigin      String           @default("China")
+  countryOfOrigin      String              @default("China")
   material             String?
-  fragile              Boolean          @default(false)
-  exportRestricted     Boolean          @default(false)
-  dangerousGoods       Boolean          @default(false)
-  batteryIncluded      Boolean          @default(false)
+  fragile              Boolean             @default(false)
+  exportRestricted     Boolean             @default(false)
+  dangerousGoods       Boolean             @default(false)
+  batteryIncluded      Boolean             @default(false)
   requiredExportDocs   String[]
-  minOrderQty          Int              @default(1)
+  minOrderQty          Int                 @default(1)
   wholesalePrice       Float?
   metaTitle            String?
   metaDescription      String?
-  isActive             Boolean          @default(true)
-  isFeatured           Boolean          @default(false)
-  featuredOrder        Int              @default(999)
-  isNewArrival         Boolean          @default(false)
-  newArrivalOrder      Int              @default(999)
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  isActive             Boolean             @default(true)
+  isFeatured           Boolean             @default(false)
+  featuredOrder        Int                 @default(999)
+  isNewArrival         Boolean             @default(false)
+  newArrivalOrder      Int                 @default(999)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
   attributeValues      AttributeValue[]
   cartItems            CartItem[]
   orderItems           OrderItem[]
   variants             ProductVariant[]
-  category             Category?        @relation(fields: [categoryId], references: [id])
+  category             Category?           @relation(fields: [categoryId], references: [id])
+  suppliers            ProductSupplier[]
+  purchaseOrderItems   PurchaseOrderItem[]
 
   @@map("products")
 }
@@ -312,6 +318,11 @@ model Order {
   tax                Float            @default(0)
   discount           Float            @default(0)
   total              Float
+  currency           String           @default("USD") // Sales currency
+  exchangeRate       Float?           // Rate used at time of order
+  purchaseCost       Float?           // Cost in base currency
+  profit             Float?           // Profit in base currency
+  profitMargin       Float?           // Profit percentage
   carrier            String?
   trackingNumber     String?
   shippedAt          DateTime?
@@ -693,4 +704,148 @@ enum AttributeType {
   URL
   CHECKBOX
   DATE
+}
+
+
+// ============================================
+// PURCHASE MANAGEMENT SYSTEM
+// ============================================
+
+model Supplier {
+  id             String              @id @default(cuid())
+  name           String
+  companyName    String?
+  email          String?
+  phone          String?
+  address        String?
+  contactPerson  String?
+  taxId          String?
+  paymentTerms   String?             // "net30", "net60", "prepayment"
+  currency       String              @default("USD")
+  notes          String?
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  purchaseOrders PurchaseOrder[]
+  products       ProductSupplier[]
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id               String              @id @default(cuid())
+  poNumber         String              @unique
+  supplierId       String
+  status           String              @default("DRAFT") // DRAFT, PENDING, SENT, CONFIRMED, SHIPPED, RECEIVED, CANCELLED, CLOSED
+  subtotal         Float
+  tax              Float
+  shippingCost     Float
+  discount         Float               @default(0)
+  total            Float
+  currency         String              @default("USD")
+  exchangeRate     Float?              // Rate used at time of purchase
+  costInBase       Float?              // Total cost converted to base currency
+  orderDate        DateTime            @default(now())
+  expectedDelivery DateTime?
+  receivedDate     DateTime?
+  paidDate         DateTime?
+  notes            String?
+  internalNotes    String?
+  isUrgent         Boolean             @default(false)
+  isPaid           Boolean             @default(false)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  supplier         Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  items            PurchaseOrderItem[]
+  payments         SupplierPayment[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id               String        @id @default(cuid())
+  purchaseOrderId  String
+  productId        String?
+  productName      String        // Snapshot
+  productSku       String        // Snapshot
+  quantity         Int
+  unitPrice        Float
+  total            Float
+  receivedQuantity Int           @default(0)
+  notes            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product          Product?      @relation(fields: [productId], references: [id])
+
+  @@map("purchase_order_items")
+}
+
+model SupplierPayment {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  amount          Float
+  currency        String        @default("USD")
+  paymentMethod   String        // "bank_transfer", "cash", "check", "paypal"
+  paymentDate     DateTime
+  reference       String?       // Payment reference number
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@map("supplier_payments")
+}
+
+model ProductSupplier {
+  id          String   @id @default(cuid())
+  productId   String
+  supplierId  String
+  supplierSku String?  // Supplier's SKU
+  costPrice   Float    // Purchase price from supplier
+  leadTime    Int?     // Days to deliver
+  isPreferred Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  supplier    Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, supplierId])
+  @@map("product_suppliers")
+}
+
+
+// ============================================
+// MULTI-CURRENCY MANAGEMENT SYSTEM
+// ============================================
+
+model Currency {
+  id                    String    @id @default(cuid())
+  code                  String    @unique // USD, CNY, EUR, RUB, etc.
+  name                  String    // US Dollar, Chinese Yuan, etc.
+  symbol                String    // $, ¥, €, ₽, etc.
+  symbolPosition        String    @default("before") // before, after
+  decimalPlaces         Int       @default(2)
+  isBase                Boolean   @default(false) // Base currency for reporting
+  isActive              Boolean   @default(true)
+  exchangeRate          Float?    // Rate against base currency
+  exchangeRateUpdatedAt DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("currencies")
+}
+
+model ExchangeRateHistory {
+  id           String   @id @default(cuid())
+  fromCurrency String
+  toCurrency   String
+  rate         Float
+  date         DateTime @default(now())
+  source       String?  // "manual", "api", "admin"
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([fromCurrency, toCurrency, date])
+  @@map("exchange_rate_history")
 }

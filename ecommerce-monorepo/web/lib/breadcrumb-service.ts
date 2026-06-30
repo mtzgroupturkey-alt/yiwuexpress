@@ -120,12 +120,14 @@ export async function getBreadcrumbBackground(params: {
       },
     })
   } else if (pageType === 'shop_default') {
+    console.log('[BreadcrumbService] Looking for shop_default setting')
     setting = await prisma.breadcrumbSetting.findFirst({
       where: {
         pageType: 'shop_default',
         isActive: true,
       },
     })
+    console.log('[BreadcrumbService] Shop default query result:', setting)
   }
 
   if (!setting) {
@@ -138,5 +140,59 @@ export async function getBreadcrumbBackground(params: {
     overlayColor: setting.overlayColor,
     title: setting.title,
     subtitle: setting.subtitle,
+  }
+}
+
+// New function: Get breadcrumb background with parent hierarchy fallback
+export async function getBreadcrumbBackgroundWithParentFallback(categoryId: string) {
+  console.log('[BreadcrumbService] Starting parent fallback for category:', categoryId)
+  
+  // First try the specific category
+  let setting = await getBreadcrumbBackground({
+    pageType: 'category',
+    categoryId
+  })
+  
+  if (setting) {
+    console.log('[BreadcrumbService] Found direct category setting')
+    return setting
+  }
+  
+  // If no direct setting, look for parent category settings
+  console.log('[BreadcrumbService] No direct setting, checking parent hierarchy')
+  
+  try {
+    // Get the category with its parent information
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      include: {
+        parent: true
+      }
+    })
+    
+    if (!category) {
+      console.log('[BreadcrumbService] Category not found')
+      return null
+    }
+    
+    console.log('[BreadcrumbService] Category found:', { id: category.id, name: category.name, parentId: category.parentId })
+    
+    // If has parent, recursively check parent hierarchy
+    if (category.parentId) {
+      console.log('[BreadcrumbService] Checking parent category:', category.parentId)
+      const parentSetting = await getBreadcrumbBackgroundWithParentFallback(category.parentId)
+      
+      if (parentSetting) {
+        console.log('[BreadcrumbService] Found parent category setting')
+        return parentSetting
+      }
+    }
+    
+    console.log('[BreadcrumbService] No parent settings found')
+    return null
+    
+  } catch (error) {
+    console.error('[BreadcrumbService] Error in parent hierarchy check:', error)
+    return null
   }
 }

@@ -13,6 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save } from 'lucide-react'
 import { ProductAttributesSection, validateRequiredAttributes } from '@/components/admin/ProductAttributesSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
+import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
+
+interface MediaItem {
+  url: string
+  type: 'image' | 'video'
+}
 
 const productSchema = z.object({
   sku: z.string().min(1, 'SKU is required'),
@@ -49,7 +55,7 @@ export default function NewProductPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [submitting, setSubmitting] = useState(false)
-  const [imageUrls, setImageUrls] = useState<string[]>([''])
+  const [media, setMedia] = useState<MediaItem[]>([])
 
   const {
     register,
@@ -108,13 +114,15 @@ export default function NewProductPage() {
   const onSubmit = async (data: ProductForm) => {
     setSubmitting(true)
     try {
-      // Filter out empty image URLs
-      const validImages = imageUrls.filter(url => url.trim() !== '')
+      // Separate images and videos
+      const images = media.filter(m => m.type === 'image').map(m => m.url)
+      const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
       const productData = {
         ...data,
-        images: validImages,
-        thumbnail: validImages[0] || null,
+        images,
+        videos,
+        thumbnail: images[0] || null,
         price: parseFloat(data.price.toString()),
         compareAtPrice: data.compareAtPrice ? parseFloat(data.compareAtPrice.toString()) : null,
         costPrice: data.costPrice ? parseFloat(data.costPrice.toString()) : null,
@@ -146,20 +154,6 @@ export default function NewProductPage() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  const addImageUrl = () => {
-    setImageUrls([...imageUrls, ''])
-  }
-
-  const updateImageUrl = (index: number, value: string) => {
-    const newUrls = [...imageUrls]
-    newUrls[index] = value
-    setImageUrls(newUrls)
-  }
-
-  const removeImageUrl = (index: number) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index))
   }
 
   return (
@@ -396,33 +390,17 @@ export default function NewProductPage() {
               </CardContent>
             </Card>
 
-            {/* Images */}
+            {/* Images & Videos */}
             <Card>
               <CardHeader>
-                <CardTitle>Product Images</CardTitle>
+                <CardTitle>Product Images & Videos</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {imageUrls.map((url, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder="Image URL"
-                      value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
-                    />
-                    {imageUrls.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeImageUrl(index)}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button type="button" variant="outline" onClick={addImageUrl}>
-                  Add Image URL
-                </Button>
+              <CardContent>
+                <ProductMediaUpload
+                  media={media}
+                  onChange={setMedia}
+                  maxItems={15}
+                />
               </CardContent>
             </Card>
 

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll Diagnostic Tool</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+      background: #1a1a2e;
+      color: #00ff00;
+    }
+    .result {
+      margin: 10px 0;
+      padding: 10px;
+      background: #0f0f1e;
+      border-left: 3px solid #00ff00;
+    }
+    .error {
+      border-left-color: #ff0000;
+      color: #ff6b6b;
+    }
+    .warning {
+      border-left-color: #ffaa00;
+      color: #ffaa00;
+    }
+    button {
+      background: #00ff00;
+      color: #1a1a2e;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 10px 5px;
+    }
+    button:hover {
+      background: #00cc00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Scroll Diagnostic Tool</h1>
+  <p>Open this in a new tab, then switch back to your homepage to diagnose</p>
+  
+  <button onclick="diagnoseScroll()">🔍 Diagnose Scroll Issue</button>
+  <button onclick="forceFixScroll()">🔧 Force Fix Scroll</button>
+  <button onclick="clearResults()">🗑️ Clear Results</button>
+  
+  <div id="results"></div>
+  
+  <script>
+    function addResult(message, type = 'info') {
+      const results = document.getElementById('results')
+      const div = document.createElement('div')
+      div.className = 'result ' + (type === 'error' ? 'error' : type === 'warning' ? 'warning' : '')
+      div.textContent = message
+      results.appendChild(div)
+    }
+    
+    function clearResults() {
+      document.getElementById('results').innerHTML = ''
+    }
+    
+    function diagnoseScroll() {
+      clearResults()
+      addResult('=== SCROLL DIAGNOSTIC STARTED ===')
+      
+      // Check HTML
+      const html = document.documentElement
+      addResult(`HTML overflow-y: ${getComputedStyle(html).overflowY}`)
+      addResult(`HTML height: ${getComputedStyle(html).height}`)
+      addResult(`HTML position: ${getComputedStyle(html).position}`)
+      
+      if (getComputedStyle(html).overflowY === 'hidden') {
+        addResult('❌ HTML has overflow-y: hidden - THIS BLOCKS SCROLL!', 'error')
+      }
+      
+      // Check BODY
+      const body = document.body
+      addResult(`BODY overflow-y: ${getComputedStyle(body).overflowY}`)
+      addResult(`BODY height: ${getComputedStyle(body).height}`)
+      addResult(`BODY position: ${getComputedStyle(body).position}`)
+      
+      if (getComputedStyle(body).overflowY === 'hidden') {
+        addResult('❌ BODY has overflow-y: hidden - THIS BLOCKS SCROLL!', 'error')
+      }
+      
+      // Check #__next
+      const nextRoot = document.querySelector('#__next')
+      if (nextRoot) {
+        addResult(`#__next overflow: ${getComputedStyle(nextRoot).overflow}`)
+        addResult(`#__next height: ${getComputedStyle(nextRoot).height}`)
+        addResult(`#__next position: ${getComputedStyle(nextRoot).position}`)
+        
+        if (getComputedStyle(nextRoot).height === getComputedStyle(html).height) {
+          addResult('⚠️ #__next has same height as viewport - might block scroll', 'warning')
+        }
+      }
+      
+      // Check MAIN
+      const main = document.querySelector('main')
+      if (main) {
+        addResult(`MAIN overflow: ${getComputedStyle(main).overflow}`)
+        addResult(`MAIN height: ${getComputedStyle(main).height}`)
+        addResult(`MAIN position: ${getComputedStyle(main).position}`)
+      }
+      
+      // Check if page is taller than viewport
+      const scrollHeight = document.documentElement.scrollHeight
+      const clientHeight = document.documentElement.clientHeight
+      addResult(`Document scroll height: ${scrollHeight}px`)
+      addResult(`Viewport height: ${clientHeight}px`)
+      
+      if (scrollHeight <= clientHeight) {
+        addResult('❌ Content is NOT taller than viewport - nothing to scroll!', 'error')
+      } else {
+        addResult(`✅ Content is ${scrollHeight - clientHeight}px taller than viewport`)
+      }
+      
+      // Check if we can actually scroll
+      const canScroll = scrollHeight > clientHeight
+      if (canScroll) {
+        addResult('✅ Page SHOULD be scrollable')
+        
+        // Try to scroll
+        window.scrollTo(0, 100)
+        setTimeout(() => {
+          if (window.scrollY > 0) {
+            addResult('✅ SCROLL WORKS! Page can scroll.')
+            window.scrollTo(0, 0) // Scroll back
+          } else {
+            addResult('❌ SCROLL BLOCKED! Cannot scroll even though content is tall enough.', 'error')
+          }
+        }, 100)
+      } else {
+        addResult('⚠️ Not enough content to scroll', 'warning')
+      }
+      
+      addResult('=== DIAGNOSTIC COMPLETE ===')
+    }
+    
+    function forceFixScroll() {
+      clearResults()
+      addResult('=== APPLYING EMERGENCY SCROLL FIX ===')
+      
+      try {
+        // Fix HTML
+        document.documentElement.style.overflow = 'auto'
+        document.documentElement.style.overflowY = 'auto'
+        document.documentElement.style.height = 'auto'
+        document.documentElement.style.minHeight = '100vh'
+        addResult('✅ Fixed HTML element')
+        
+        // Fix BODY
+        document.body.style.overflow = 'auto'
+        document.body.style.overflowY = 'auto'
+        document.body.style.height = 'auto'
+        document.body.style.minHeight = '100vh'
+        document.body.style.position = 'relative'
+        addResult('✅ Fixed BODY element')
+        
+        // Fix #__next
+        const nextRoot = document.querySelector('#__next')
+        if (nextRoot) {
+          nextRoot.style.height = 'auto'
+          nextRoot.style.minHeight = 'auto'
+          nextRoot.style.overflow = 'visible'
+          addResult('✅ Fixed #__next element')
+        }
+        
+        // Fix MAIN
+        const main = document.querySelector('main')
+        if (main) {
+          main.style.height = 'auto'
+          main.style.overflow = 'visible'
+          addResult('✅ Fixed MAIN element')
+        }
+        
+        addResult('=== FIX APPLIED ===')
+        addResult('Try scrolling now! If it works, the issue was CSS blocking.')
+        
+        // Re-diagnose
+        setTimeout(() => {
+          addResult('--- Running diagnostic after fix ---')
+          diagnoseScroll()
+        }, 500)
+        
+      } catch (error) {
+        addResult(`❌ Error applying fix: ${error.message}`, 'error')
+      }
+    }
+    
+    // Auto-run diagnostic on load
+    window.addEventListener('load', () => {
+      setTimeout(diagnoseScroll, 500)
+    })
+  </script>
+</body>
+</html>

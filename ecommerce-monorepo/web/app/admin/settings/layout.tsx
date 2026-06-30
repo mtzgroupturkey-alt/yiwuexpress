@@ -64,6 +64,7 @@ export default function SettingsLayout({
   const directPages = [
     '/admin/settings/company', 
     '/admin/settings/system',
+    '/admin/settings/breadcrumb',
     '/admin/settings/permissions', 
     '/admin/settings/backup',
     '/admin/settings/notifications',

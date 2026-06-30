@@ -8,7 +8,8 @@ import {
   Settings, LogOut, Menu, X, ChevronRight, Globe,
   TrendingUp, Bell, ChevronDown, Eye, CheckCircle,
   MapPin, Building, Sliders, Mail, Shield, Database,
-  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image
+  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image,
+  Building2, ClipboardList, DollarSign
 } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -46,8 +47,22 @@ const navItems: NavItem[] = [
     icon: Tag,
   },
   { 
+    href: '/admin/suppliers', 
+    label: 'Suppliers', 
+    icon: Building2,
+  },
+  { 
+    href: '/admin/purchase-orders', 
+    label: 'Purchase Orders', 
+    icon: ClipboardList,
+    subItems: [
+      { href: '/admin/purchase-orders', label: 'All Purchase Orders', icon: Eye },
+      { href: '/admin/purchase-orders/new', label: 'Create Purchase Order', icon: Plus },
+    ]
+  },
+  { 
     href: '/admin/orders', 
-    label: 'Orders', 
+    label: 'Sales Orders', 
     icon: ShoppingCart,
     subItems: [
       { href: '/admin/orders', label: 'All Orders', icon: Eye },
@@ -71,6 +86,11 @@ const navItems: NavItem[] = [
       { href: '/admin/countries', label: 'All Countries', icon: Eye },
       { href: '/admin/countries/new', label: 'Add Country', icon: Plus },
     ]
+  },
+  { 
+    href: '/admin/currencies', 
+    label: 'Currencies', 
+    icon: DollarSign,
   },
   { href: '/admin/services', label: 'Services', icon: Package },
   { 

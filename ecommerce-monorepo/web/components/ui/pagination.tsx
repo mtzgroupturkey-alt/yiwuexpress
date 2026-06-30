@@ -1,186 +1,187 @@
-import * as React from "react"
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
+'use client'
 
-export interface PaginationProps {
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+interface PaginationProps {
   currentPage: number
   totalPages: number
   onPageChange: (page: number) => void
-  showPrevNext?: boolean
-  showFirstLast?: boolean
-  maxVisible?: number
+  className?: string
 }
 
 export function Pagination({
   currentPage,
   totalPages,
   onPageChange,
-  showPrevNext = true,
-  showFirstLast = true,
-  maxVisible = 7,
+  className
 }: PaginationProps) {
-  const pages = React.useMemo(() => {
-    const items: (number | string)[] = []
-    
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const maxVisible = 7 // Maximum number of page buttons to show
+
     if (totalPages <= maxVisible) {
-      // Show all pages
+      // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
-        items.push(i)
+        pages.push(i)
       }
     } else {
       // Always show first page
-      items.push(1)
+      pages.push(1)
 
-      const leftSiblingIndex = Math.max(currentPage - 1, 2)
-      const rightSiblingIndex = Math.min(currentPage + 1, totalPages - 1)
+      if (currentPage > 3) {
+        pages.push('...')
+      }
 
-      const shouldShowLeftDots = leftSiblingIndex > 2
-      const shouldShowRightDots = rightSiblingIndex < totalPages - 1
+      // Show pages around current page
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
 
-      if (!shouldShowLeftDots && shouldShowRightDots) {
-        // Show pages at start
-        for (let i = 2; i <= Math.min(maxVisible - 2, totalPages - 1); i++) {
-          items.push(i)
-        }
-        items.push('...')
-      } else if (shouldShowLeftDots && !shouldShowRightDots) {
-        // Show pages at end
-        items.push('...')
-        for (let i = Math.max(2, totalPages - maxVisible + 3); i <= totalPages - 1; i++) {
-          items.push(i)
-        }
-      } else if (shouldShowLeftDots && shouldShowRightDots) {
-        // Show pages in middle
-        items.push('...')
-        for (let i = leftSiblingIndex; i <= rightSiblingIndex; i++) {
-          items.push(i)
-        }
-        items.push('...')
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push('...')
       }
 
       // Always show last page
-      if (totalPages > 1) {
-        items.push(totalPages)
-      }
+      pages.push(totalPages)
     }
 
-    return items
-  }, [currentPage, totalPages, maxVisible])
-
-  if (totalPages <= 1) {
-    return null
+    return pages
   }
 
+  const pageNumbers = getPageNumbers()
+  const isFirstPage = currentPage === 1
+  const isLastPage = currentPage === totalPages
+
   return (
-    <nav className="flex items-center justify-center space-x-2">
-      {showPrevNext && (
-        <>
-          {showFirstLast && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(1)}
-              disabled={currentPage === 1}
-              className="h-8 w-8 p-0"
-            >
-              <span className="sr-only">First page</span>
-              <ChevronLeft className="h-4 w-4" />
-              <ChevronLeft className="h-4 w-4 -ml-2" />
-            </Button>
-          )}
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="h-8 w-8 p-0"
-          >
-            <span className="sr-only">Previous page</span>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-        </>
-      )}
+    <nav
+      aria-label="Pagination"
+      className={cn('flex items-center justify-center gap-2', className)}
+    >
+      {/* Previous Button */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={isFirstPage}
+        aria-label="Go to previous page"
+        className={cn(
+          'flex items-center justify-center w-10 h-10 rounded-lg border transition-colors',
+          isFirstPage
+            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
+        )}
+      >
+        <ChevronLeft className="w-5 h-5" />
+      </button>
 
-      {pages.map((page, index) => {
-        if (page === '...') {
+      {/* Page Numbers */}
+      <div className="flex items-center gap-1">
+        {pageNumbers.map((page, index) => {
+          if (page === '...') {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="flex items-center justify-center w-10 h-10 text-gray-500"
+              >
+                ...
+              </span>
+            )
+          }
+
+          const pageNumber = page as number
+          const isActive = pageNumber === currentPage
+
           return (
-            <Button
-              key={`ellipsis-${index}`}
-              variant="outline"
-              size="sm"
-              disabled
-              className="h-8 w-8 p-0"
+            <button
+              key={pageNumber}
+              onClick={() => onPageChange(pageNumber)}
+              aria-label={`Go to page ${pageNumber}`}
+              aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                'flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all',
+                isActive
+                  ? 'bg-[#1a3a5c] text-white shadow-md'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-[#1a3a5c]'
+              )}
             >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+              {pageNumber}
+            </button>
           )
-        }
+        })}
+      </div>
 
-        return (
-          <Button
-            key={page}
-            variant={currentPage === page ? "default" : "outline"}
-            size="sm"
-            onClick={() => onPageChange(page as number)}
-            className="h-8 w-8 p-0"
-          >
-            {page}
-          </Button>
-        )
-      })}
-
-      {showPrevNext && (
-        <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="h-8 w-8 p-0"
-          >
-            <span className="sr-only">Next page</span>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
-          {showFirstLast && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onPageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className="h-8 w-8 p-0"
-            >
-              <span className="sr-only">Last page</span>
-              <ChevronRight className="h-4 w-4" />
-              <ChevronRight className="h-4 w-4 -ml-2" />
-            </Button>
-          )}
-        </>
-      )}
+      {/* Next Button */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={isLastPage}
+        aria-label="Go to next page"
+        className={cn(
+          'flex items-center justify-center w-10 h-10 rounded-lg border transition-colors',
+          isLastPage
+            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
+        )}
+      >
+        <ChevronRight className="w-5 h-5" />
+      </button>
     </nav>
   )
 }
 
-export function PaginationInfo({
+// Compact version for mobile
+export function PaginationCompact({
   currentPage,
   totalPages,
-  totalItems,
-  itemsPerPage,
-}: {
-  currentPage: number
-  totalPages: number
-  totalItems: number
-  itemsPerPage: number
-}) {
-  const start = (currentPage - 1) * itemsPerPage + 1
-  const end = Math.min(currentPage * itemsPerPage, totalItems)
+  onPageChange,
+  className
+}: PaginationProps) {
+  const isFirstPage = currentPage === 1
+  const isLastPage = currentPage === totalPages
 
   return (
-    <div className="text-sm text-gray-600">
-      Showing <span className="font-medium">{start}</span> to{" "}
-      <span className="font-medium">{end}</span> of{" "}
-      <span className="font-medium">{totalItems}</span> results
-    </div>
+    <nav
+      aria-label="Pagination"
+      className={cn('flex items-center justify-between gap-4', className)}
+    >
+      {/* Previous Button */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={isFirstPage}
+        aria-label="Go to previous page"
+        className={cn(
+          'flex items-center gap-2 px-4 py-2 rounded-lg border font-medium transition-colors',
+          isFirstPage
+            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
+        )}
+      >
+        <ChevronLeft className="w-5 h-5" />
+        <span className="hidden sm:inline">Previous</span>
+      </button>
+
+      {/* Page Info */}
+      <span className="text-sm text-gray-600 font-medium">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      {/* Next Button */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={isLastPage}
+        aria-label="Go to next page"
+        className={cn(
+          'flex items-center gap-2 px-4 py-2 rounded-lg border font-medium transition-colors',
+          isLastPage
+            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
+        )}
+      >
+        <span className="hidden sm:inline">Next</span>
+        <ChevronRight className="w-5 h-5" />
+      </button>
+    </nav>
   )
 }

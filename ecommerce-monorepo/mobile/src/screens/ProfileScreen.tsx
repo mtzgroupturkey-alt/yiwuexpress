@@ -6,23 +6,38 @@ import {
   ScrollView,
   Alert,
   Platform,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native'
 import {
   Text,
-  Card,
-  Button,
-  Avatar,
-  List,
   Divider,
-  ActivityIndicator,
   Snackbar,
   Portal,
   Dialog,
+  Button,
 } from 'react-native-paper'
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Bell, MapPin, ChevronDown, Phone, MapPin as PinIcon, Briefcase, FileText, LogOut } from 'lucide-react-native'
 import apiClient from '../api/client'
+import AppHeader from '../components/AppHeader'
+
+const { width } = Dimensions.get('window')
+const CONTAINER_WIDTH = Math.min(428, width)
+
+const COLORS = {
+  primary: '#1A3C5E',
+  accent: '#F59E0B',
+  background: '#F5F7FA',
+  white: '#FFFFFF',
+  textDark: '#111827',
+  textGray: '#6b7280',
+  border: '#e5e7eb',
+  badgeRed: '#dc2626',
+}
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -41,18 +56,7 @@ export default function ProfileScreen() {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false)
 
-  // Fetch Quotes — only when logged in
-  const {
-    data: quotesData,
-    isLoading: quotesLoading,
-    error: quotesError,
-  } = useQuery({
-    queryKey: ['quotes'],
-    queryFn: () => apiClient.getQuotes(),
-    enabled: tokenChecked && !!token,
-  })
-
-  // Fetch User Profile — only when logged in
+  // Fetch User Profile
   const {
     data: userProfileData,
     isLoading: userProfileLoading,
@@ -63,23 +67,9 @@ export default function ProfileScreen() {
     enabled: tokenChecked && !!token,
   })
 
-  // Fetch Company Info — only when logged in
-  const {
-    data: companyData,
-    isLoading: companyLoading,
-  } = useQuery({
-    queryKey: ['company-info'],
-    queryFn: () => apiClient.getCompanyInfo(),
-    retry: false,
-    enabled: tokenChecked && !!token,
-  })
-
-  const quotes = quotesData?.quotes || []
   const user = userProfileData?.user
-  const company = companyData?.company
 
   const handleLogout = async () => {
-    // Use native dialog for web, Alert for mobile
     if (Platform.OS === 'web') {
       setLogoutDialogVisible(true)
     } else {
@@ -87,15 +77,8 @@ export default function ProfileScreen() {
         'Logout',
         'Are you sure you want to logout from YIWU EXPRESS?',
         [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Logout',
-            style: 'destructive',
-            onPress: performLogout,
-          },
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Logout', style: 'destructive', onPress: performLogout },
         ],
         { cancelable: true }
       )
@@ -117,27 +100,11 @@ export default function ProfileScreen() {
     }
   }
 
-  const renderQuoteItem = (quote: any) => (
-    <List.Item
-      title={`${quote.service?.name || 'Logistics Service'}`}
-      description={`${quote.origin} ➔ ${quote.destination} • ${quote.status}`}
-      left={props => (
-        <List.Icon {...props} icon="file-document-outline" color="#1a3a5c" />
-      )}
-      right={props => (
-        <Text style={styles.quotePrice}>
-          {quote.price ? `$${quote.price}` : 'Under Review'}
-        </Text>
-      )}
-      onPress={() => router.push('/quotes')}
-    />
-  )
-
-  if (quotesLoading || companyLoading || userProfileLoading) {
+  if (userProfileLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1a3a5c" />
+          <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       </SafeAreaView>
     )
@@ -145,139 +112,87 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <AppHeader />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* Profile Header */}
-          <Card style={styles.profileCard}>
-            <Card.Content style={styles.profileContent}>
-              <Avatar.Text
-                size={64}
-                label={(user?.name || user?.companyName || 'User').substring(0, 2).toUpperCase()}
-                style={styles.avatar}
-                labelStyle={styles.avatarLabel}
-              />
-              <View style={styles.profileInfo}>
-                <Text variant="headlineSmall" style={styles.profileName}>
-                  {user?.name || 'User Name'}
+          <Text style={styles.pageTitle}>My Profile</Text>
+
+          {/* Profile Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.profileContent}>
+              <View style={styles.avatarLarge}>
+                <Text style={styles.avatarLargeText}>
+                  {(user?.name || 'User').substring(0, 2).toUpperCase()}
                 </Text>
-                <Text variant="bodyMedium" style={styles.profileEmail}>
-                  {user?.email || 'user@example.com'}
-                </Text>
-                <Text variant="bodySmall" style={styles.companyName}>
-                  {user?.companyName || 'Company Name'}
-                </Text>
-                {user?.businessType && (
-                  <Text variant="bodySmall" style={styles.businessType}>
-                    {user.businessType}
-                  </Text>
-                )}
               </View>
-            </Card.Content>
-          </Card>
-
-          {/* User Details */}
-          {user && (
-            <Card style={styles.detailsCard}>
-              <Card.Content>
-                <Text variant="titleMedium" style={styles.sectionTitle}>
-                  Personal Information
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileName}>
+                  {user?.name || 'User Account'}
                 </Text>
-                <List.Item
-                  title="Phone"
-                  description={user.phone || 'N/A'}
-                  left={props => <List.Icon {...props} icon="phone" />}
-                />
-                <Divider />
-                <List.Item
-                  title="Country"
-                  description={user.country || 'N/A'}
-                  left={props => <List.Icon {...props} icon="map-marker" />}
-                />
-                <Divider />
-                <List.Item
-                  title="Business Type"
-                  description={user.businessType || 'N/A'}
-                  left={props => <List.Icon {...props} icon="briefcase" />}
-                />
-                {user.taxId && (
-                  <>
-                    <Divider />
-                    <List.Item
-                      title="Tax ID"
-                      description={user.taxId}
-                      left={props => <List.Icon {...props} icon="file-document" />}
-                    />
-                  </>
-                )}
-              </Card.Content>
-            </Card>
-          )}
-
-          {/* Recent Quotes */}
-          <Text variant="titleLarge" style={styles.sectionTitle}>
-            Recent Quotations
-          </Text>
-
-          {quotesError ? (
-            <Card style={styles.errorCard}>
-              <Card.Content>
-                <Text variant="bodyMedium" style={styles.errorText}>
-                  Error loading quotes
+                <Text style={styles.profileEmail}>
+                  {user?.email || 'user@shophub.com'}
                 </Text>
-              </Card.Content>
-            </Card>
-          ) : quotes.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <Card.Content>
-                <Text variant="bodyMedium" style={styles.emptyText}>
-                  No quotation requests submitted yet
+                <Text style={styles.companyName}>
+                  {user?.companyName || 'Personal Buyer'}
                 </Text>
-                <Button
-                  mode="contained"
-                  onPress={() => router.push('/')}
-                  style={styles.quoteButton}
-                  buttonColor="#1a3a5c"
-                >
-                  Request Quote
-                </Button>
-              </Card.Content>
-            </Card>
-          ) : (
-            <Card style={styles.quotesCard}>
-              {quotes.slice(0, 3).map((quote, index) => (
-                <React.Fragment key={quote.id}>
-                  {renderQuoteItem(quote)}
-                  {index < quotes.slice(0, 3).length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-              {quotes.length > 3 && (
-                <>
-                  <Divider />
-                  <List.Item
-                    title="View All Quotes"
-                    left={props => <List.Icon {...props} icon="arrow-right" />}
-                    onPress={() => router.push('/quotes')}
-                  />
-                </>
-              )}
-            </Card>
-          )}
+              </View>
+            </View>
+          </View>
+
+          {/* Details Card */}
+          <View style={styles.detailsCard}>
+            <Text style={styles.sectionTitle}>Account Details</Text>
+            
+            <View style={styles.detailItem}>
+              <Phone size={18} color={COLORS.textGray} style={styles.detailIcon} />
+              <View style={styles.detailTextContainer}>
+                <Text style={styles.detailLabel}>Phone Number</Text>
+                <Text style={styles.detailValue}>{user?.phone || 'Not specified'}</Text>
+              </View>
+            </View>
+            <Divider style={styles.divider} />
+
+            <View style={styles.detailItem}>
+              <PinIcon size={18} color={COLORS.textGray} style={styles.detailIcon} />
+              <View style={styles.detailTextContainer}>
+                <Text style={styles.detailLabel}>Default Country</Text>
+                <Text style={styles.detailValue}>{user?.country || 'Not specified'}</Text>
+              </View>
+            </View>
+            <Divider style={styles.divider} />
+
+            <View style={styles.detailItem}>
+              <Briefcase size={18} color={COLORS.textGray} style={styles.detailIcon} />
+              <View style={styles.detailTextContainer}>
+                <Text style={styles.detailLabel}>Business / Account Type</Text>
+                <Text style={styles.detailValue}>{user?.businessType || 'Retail Buyer'}</Text>
+              </View>
+            </View>
+            {user?.taxId && (
+              <>
+                <Divider style={styles.divider} />
+                <View style={styles.detailItem}>
+                  <FileText size={18} color={COLORS.textGray} style={styles.detailIcon} />
+                  <View style={styles.detailTextContainer}>
+                    <Text style={styles.detailLabel}>Tax identification number</Text>
+                    <Text style={styles.detailValue}>{user.taxId}</Text>
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
 
           {/* Logout Button */}
-          <Button
-            mode="outlined"
-            onPress={handleLogout}
-            loading={isLoggingOut}
-            disabled={isLoggingOut}
+          <TouchableOpacity
             style={styles.logoutButton}
-            textColor="#ef4444"
+            onPress={handleLogout}
           >
-            {isLoggingOut ? 'Logging Out...' : 'Logout'}
-          </Button>
+            <LogOut size={16} color={COLORS.badgeRed} />
+            <Text style={styles.logoutButtonText}>Log Out from Account</Text>
+          </TouchableOpacity>
 
-          {/* App Info */}
-          <Text variant="bodySmall" style={styles.versionText}>
-            YIWU EXPRESS Logistics Portal v1.0.0
+          <Text style={styles.versionText}>
+            YIWU EXPRESS Mobile Application v1.0.0
           </Text>
         </View>
       </ScrollView>
@@ -291,25 +206,25 @@ export default function ProfileScreen() {
         {snackbarMessage}
       </Snackbar>
 
-      {/* Logout Confirmation Dialog for Web */}
       <Portal>
         <Dialog
           visible={logoutDialogVisible}
           onDismiss={() => setLogoutDialogVisible(false)}
+          style={styles.dialog}
         >
-          <Dialog.Title>Logout</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>Logout</Dialog.Title>
           <Dialog.Content>
-            <Text variant="bodyMedium">
+            <Text style={styles.dialogBody}>
               Are you sure you want to logout from YIWU EXPRESS?
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setLogoutDialogVisible(false)}>
+            <Button onPress={() => setLogoutDialogVisible(false)} textColor={COLORS.textGray}>
               Cancel
             </Button>
             <Button
               onPress={performLogout}
-              textColor="#ef4444"
+              textColor={COLORS.badgeRed}
               loading={isLoggingOut}
               disabled={isLoggingOut}
             >
@@ -325,7 +240,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.background,
   },
   loadingContainer: {
     flex: 1,
@@ -333,105 +248,231 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: 100,
   },
   content: {
-    padding: 16,
+    width: CONTAINER_WIDTH,
+  },
+  header: {
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 8,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  logo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconBtn: {
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: COLORS.badgeRed,
+    borderRadius: 8,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e5e7eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: COLORS.textGray,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+  },
+  locationText: {
+    fontSize: 12,
+    color: COLORS.textGray,
+  },
+  pageTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.textDark,
+    marginHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 12,
   },
   profileCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   profileContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatar: {
-    backgroundColor: '#1a3a5c',
+  avatarLarge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
   },
-  avatarLabel: {
+  avatarLargeText: {
+    color: 'white',
     fontSize: 20,
-    color: '#ffffff',
+    fontWeight: 'bold',
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a3a5c',
+    color: COLORS.textDark,
+    marginBottom: 2,
   },
   profileEmail: {
-    color: '#6b7280',
+    fontSize: 14,
+    color: COLORS.textGray,
+    marginBottom: 4,
   },
   companyName: {
-    color: '#1a3a5c',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  businessType: {
-    color: '#c9a84c',
     fontSize: 12,
-    marginTop: 2,
-  },
-  taxId: {
-    color: '#9ca3af',
-    marginTop: 2,
+    fontWeight: '600',
+    color: COLORS.accent,
   },
   detailsCard: {
-    marginBottom: 16,
-    backgroundColor: 'white',
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   sectionTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginTop: 8,
-    marginBottom: 12,
-    color: '#1a3a5c',
-  },
-  quotesCard: {
-    marginBottom: 24,
-    backgroundColor: 'white',
-  },
-  quotePrice: {
-    fontWeight: 'bold',
-    color: '#1a3a5c',
-    alignSelf: 'center',
-  },
-  errorCard: {
+    color: COLORS.textDark,
     marginBottom: 16,
-    backgroundColor: '#fef2f2',
+  },
+  detailItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingVertical: 8,
   },
-  errorText: {
-    textAlign: 'center',
-    color: '#ef4444',
+  detailIcon: {
+    marginRight: 14,
   },
-  emptyCard: {
-    marginBottom: 16,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    padding: 32,
+  detailTextContainer: {
+    flex: 1,
   },
-  emptyText: {
-    textAlign: 'center',
-    marginBottom: 16,
-    color: '#6b7280',
+  detailLabel: {
+    fontSize: 11,
+    color: COLORS.textGray,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginBottom: 2,
   },
-  quoteButton: {
-    borderRadius: 8,
+  detailValue: {
+    fontSize: 14,
+    color: COLORS.textDark,
+    fontWeight: '500',
+  },
+  divider: {
+    marginVertical: 8,
+    backgroundColor: COLORS.border,
   },
   logoutButton: {
-    marginVertical: 16,
-    borderColor: '#ef4444',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginVertical: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderRadius: 8,
+    borderColor: COLORS.badgeRed,
+    backgroundColor: COLORS.white,
+  },
+  logoutButtonText: {
+    color: COLORS.badgeRed,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   versionText: {
     textAlign: 'center',
-    color: '#9ca3af',
+    color: COLORS.textGray,
+    fontSize: 11,
+    marginBottom: 16,
   },
   snackbar: {
-    backgroundColor: '#059669',
+    backgroundColor: COLORS.badgeRed,
+  },
+  dialog: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+  },
+  dialogTitle: {
+    color: COLORS.textDark,
+    fontWeight: 'bold',
+  },
+  dialogBody: {
+    color: COLORS.textGray,
+    fontSize: 14,
   },
 })

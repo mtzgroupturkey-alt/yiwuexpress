@@ -3,7 +3,7 @@
 
 export const API_CONFIG = {
   // Backend API Port (must match web/.env.local PORT)
-  BACKEND_PORT: 3001,
+  BACKEND_PORT: 3005,
   
   // Expo Metro Port (web platform)
   EXPO_PORT: 8081,

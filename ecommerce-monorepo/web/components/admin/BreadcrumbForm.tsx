@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { ImageUpload } from '@/components/admin/ImageUpload'
+import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { DialogFooter } from '@/components/ui/dialog'
 
 interface BreadcrumbFormProps {
@@ -97,18 +98,24 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
       {pageType === 'category' && (
         <div>
           <Label>Category</Label>
-          <Select value={categoryId} onValueChange={setCategoryId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="mt-2">
+            <CategoryDropdown
+              categories={categories}
+              value={categoryId}
+              onChange={setCategoryId}
+              placeholder="Search and select a category..."
+              searchPlaceholder="Type to search categories..."
+              showPath={true}
+              showLevelIndicator={true}
+              clearable={true}
+              className="w-full"
+            />
+          </div>
+          {categories && categories.length === 0 && (
+            <p className="text-xs text-gray-500 mt-1">
+              Categories are empty. Please create some categories first in the Category Management section.
+            </p>
+          )}
         </div>
       )}
 

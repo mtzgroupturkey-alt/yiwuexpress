@@ -11,8 +11,14 @@ export async function GET(
   try {
     const { slug } = params
 
-    const product = await prisma.product.findUnique({
-      where: { slug },
+    const product = await prisma.product.findFirst({
+      where: {
+        isActive: true,
+        OR: [
+          { id: slug },
+          { slug: slug }
+        ]
+      },
       include: {
         category: {
           select: {

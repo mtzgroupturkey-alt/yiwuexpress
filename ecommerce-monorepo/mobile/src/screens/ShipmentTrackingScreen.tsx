@@ -5,16 +5,32 @@ import {
   SafeAreaView,
   ScrollView,
   Keyboard,
+  TouchableOpacity,
+  TextInput,
+  Platform,
+  Dimensions,
 } from 'react-native'
 import {
   Text,
-  TextInput,
-  Button,
-  Card,
-  ActivityIndicator,
   Divider,
+  ActivityIndicator,
 } from 'react-native-paper'
+import { Bell, MapPin, ChevronDown } from 'lucide-react-native'
 import apiClient from '../api/client'
+
+const { width } = Dimensions.get('window')
+const CONTAINER_WIDTH = Math.min(428, width)
+
+const COLORS = {
+  primary: '#1A3C5E',
+  accent: '#F59E0B',
+  background: '#F5F7FA',
+  white: '#FFFFFF',
+  textDark: '#111827',
+  textGray: '#6b7280',
+  border: '#e5e7eb',
+  badgeRed: '#dc2626',
+}
 
 interface TrackingEvent {
   status: string
@@ -54,80 +70,94 @@ export default function ShipmentTrackingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Track Shipment
-        </Text>
-        <Text variant="bodyMedium" style={styles.subtitle}>
-          Enter your cargo tracking number for real-time milestones.
-        </Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.topBar}>
+          <Text style={styles.logo}>YIWU EXPRESS 🚚</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.iconBtn}>
+              <Bell size={20} color={COLORS.textDark} />
+              <View style={styles.notificationBadge}>
+                <Text style={styles.badgeText}>5</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>U</Text>
+            </View>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.locationRow}>
+          <MapPin size={12} color={COLORS.textGray} />
+          <Text style={styles.locationText}>Deliver to: San Francisco, USA</Text>
+          <ChevronDown size={12} color={COLORS.textGray} />
+        </TouchableOpacity>
+      </View>
 
-        <Card style={styles.searchCard}>
-          <Card.Content>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          <Text style={styles.pageTitle}>Track Shipment</Text>
+          <Text style={styles.pageSubtitle}>
+            Enter your cargo tracking number for real-time milestones.
+          </Text>
+
+          <View style={styles.searchCard}>
             <View style={styles.searchRow}>
               <TextInput
-                label="Tracking Number"
                 value={trackingNumber}
                 onChangeText={setTrackingNumber}
                 placeholder="e.g. YWE87349823CN"
-                mode="outlined"
-                activeOutlineColor="#1a3a5c"
+                placeholderTextColor="#9ca3af"
                 style={styles.searchInput}
               />
-              <Button
-                mode="contained"
+              <TouchableOpacity
                 onPress={handleTrack}
-                loading={loading}
                 disabled={loading}
-                style={styles.trackBtn}
-                buttonColor="#1a3a5c"
+                style={[styles.trackBtn, loading && styles.trackBtnDisabled]}
               >
-                Track
-              </Button>
+                {loading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Text style={styles.trackBtnText}>Track</Text>
+                )}
+              </TouchableOpacity>
             </View>
 
             <TouchableOpacity style={styles.sampleLink} onPress={fillSample}>
               <Text style={styles.sampleText}>Use Sample Code (YWE87349823CN)</Text>
             </TouchableOpacity>
-          </Card.Content>
-        </Card>
+          </View>
 
-        {error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : null}
+          {error ? (
+            <Text style={styles.errorText}>{error}</Text>
+          ) : null}
 
-        {result ? (
-          <View style={styles.resultContainer}>
-            {/* Summary Details */}
-            <Card style={styles.resultCard}>
-              <Card.Content>
+          {result ? (
+            <View style={styles.resultContainer}>
+              {/* Summary Details */}
+              <View style={styles.resultCard}>
                 <View style={styles.metaRow}>
-                  <Text variant="titleMedium" style={styles.metaLabel}>
-                    Tracking Code:
-                  </Text>
-                  <Text variant="titleMedium" style={styles.metaVal}>
-                    {result.shipment?.trackingNumber}
-                  </Text>
+                  <Text style={styles.metaLabel}>Tracking Code</Text>
+                  <Text style={styles.metaVal}>{result.shipment?.trackingNumber}</Text>
                 </View>
 
-                <Divider style={styles.div} />
+                <Divider style={styles.divider} />
 
                 <View style={styles.metaRow}>
-                  <Text style={styles.metaLabel}>Status:</Text>
-                  <Text style={[styles.metaVal, { color: '#1a3a5c', fontWeight: 'bold' }]}>
+                  <Text style={styles.metaLabel}>Status</Text>
+                  <Text style={[styles.metaVal, { color: COLORS.accent, fontWeight: 'bold' }]}>
                     {result.currentStatus}
                   </Text>
                 </View>
 
                 <View style={styles.metaRow}>
-                  <Text style={styles.metaLabel}>Route:</Text>
+                  <Text style={styles.metaLabel}>Route</Text>
                   <Text style={styles.metaVal}>
                     {result.shipment?.origin} ➔ {result.shipment?.destination}
                   </Text>
                 </View>
 
                 <View style={styles.metaRow}>
-                  <Text style={styles.metaLabel}>Carrier:</Text>
+                  <Text style={styles.metaLabel}>Carrier</Text>
                   <Text style={styles.metaVal}>
                     {result.shipment?.carrier || 'YIWU EXPRESS'}
                   </Text>
@@ -135,29 +165,25 @@ export default function ShipmentTrackingScreen() {
 
                 {result.estimatedDelivery ? (
                   <View style={styles.metaRow}>
-                    <Text style={styles.metaLabel}>Est. Delivery:</Text>
+                    <Text style={styles.metaLabel}>Est. Delivery</Text>
                     <Text style={styles.metaVal}>
                       {new Date(result.estimatedDelivery).toLocaleDateString()}
                     </Text>
                   </View>
                 ) : null}
-              </Card.Content>
-            </Card>
+              </View>
 
-            {/* Timeline */}
-            <Text variant="titleMedium" style={styles.timelineTitle}>
-              Shipment Milestones
-            </Text>
+              {/* Timeline */}
+              <Text style={styles.timelineTitle}>Shipment Milestones</Text>
 
-            <Card style={styles.timelineCard}>
-              <Card.Content>
+              <View style={styles.timelineCard}>
                 {result.trackingEvents?.map((event: TrackingEvent, index: number) => (
                   <View key={event.status} style={styles.timelineEvent}>
                     <View style={styles.timelineIndicators}>
                       <View
                         style={[
                           styles.dot,
-                          { backgroundColor: event.completed ? '#1a3a5c' : '#d1d5db' },
+                          { backgroundColor: event.completed ? COLORS.primary : '#d1d5db' },
                         ]}
                       />
                       {index < result.trackingEvents.length - 1 ? (
@@ -165,51 +191,137 @@ export default function ShipmentTrackingScreen() {
                       ) : null}
                     </View>
                     <View style={styles.timelineDetails}>
-                      <Text variant="bodyLarge" style={styles.eventStatus}>
+                      <Text style={styles.eventStatus}>
                         {event.status}
                       </Text>
-                      <Text variant="bodyMedium" style={styles.eventDesc}>
+                      <Text style={styles.eventDesc}>
                         {event.description}
                       </Text>
-                      <Text variant="bodySmall" style={styles.eventLoc}>
+                      <Text style={styles.eventLoc}>
                         📍 {event.location} • {event.timestamp ? new Date(event.timestamp).toLocaleDateString() : ''}
                       </Text>
                     </View>
                   </View>
                 ))}
-              </Card.Content>
-            </Card>
-          </View>
-        ) : null}
+              </View>
+            </View>
+          ) : null}
+        </View>
       </ScrollView>
     </SafeAreaView>
   )
 }
 
-import { TouchableOpacity } from 'react-native'
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
-    padding: 24,
+    paddingBottom: 100,
   },
-  title: {
+  content: {
+    width: CONTAINER_WIDTH,
+  },
+  header: {
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 8,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  logo: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#1a3a5c',
+    color: COLORS.primary,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconBtn: {
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: COLORS.badgeRed,
+    borderRadius: 8,
+    width: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e5e7eb',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: COLORS.textGray,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+  },
+  locationText: {
+    fontSize: 12,
+    color: COLORS.textGray,
+  },
+  pageTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.textDark,
+    marginHorizontal: 16,
+    marginTop: 20,
     marginBottom: 4,
   },
-  subtitle: {
-    color: '#6b7280',
-    marginBottom: 20,
+  pageSubtitle: {
+    fontSize: 14,
+    color: COLORS.textGray,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   searchCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
     marginBottom: 16,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   searchRow: {
     flexDirection: 'row',
@@ -218,61 +330,113 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: 'white',
+    height: 44,
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    color: COLORS.textDark,
   },
   trackBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    height: 44,
     borderRadius: 8,
-    paddingVertical: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trackBtnDisabled: {
+    opacity: 0.7,
+  },
+  trackBtnText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   sampleLink: {
     marginTop: 12,
     alignSelf: 'flex-start',
   },
   sampleText: {
-    color: '#c9a84c',
+    color: COLORS.accent,
     fontSize: 12,
     fontWeight: 'bold',
   },
   errorText: {
-    color: '#ef4444',
+    color: COLORS.badgeRed,
     textAlign: 'center',
     marginVertical: 12,
     fontWeight: 'bold',
+    marginHorizontal: 16,
   },
   resultContainer: {
     marginTop: 8,
   },
   resultCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
     marginBottom: 20,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   metaLabel: {
-    color: '#6b7280',
-    fontWeight: '500',
+    fontSize: 13,
+    color: COLORS.textGray,
   },
   metaVal: {
-    color: '#111827',
+    fontSize: 13,
+    color: COLORS.textDark,
     fontWeight: '600',
   },
-  div: {
-    marginVertical: 12,
+  divider: {
+    marginVertical: 10,
+    backgroundColor: COLORS.border,
   },
   timelineTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a3a5c',
+    color: COLORS.textDark,
+    marginHorizontal: 16,
     marginBottom: 12,
   },
   timelineCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    elevation: 2,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   timelineEvent: {
     flexDirection: 'row',
@@ -298,14 +462,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   eventStatus: {
+    fontSize: 14,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: COLORS.textDark,
   },
   eventDesc: {
-    color: '#4b5563',
+    fontSize: 13,
+    color: COLORS.textGray,
     marginVertical: 4,
+    lineHeight: 18,
   },
   eventLoc: {
-    color: '#9ca3af',
+    fontSize: 11,
+    color: COLORS.textGray,
   },
 })

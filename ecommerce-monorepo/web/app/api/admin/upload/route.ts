@@ -21,21 +21,43 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const uploadType = formData.get('type') as string || 'general'
+    const mediaType = formData.get('mediaType') as string || 'image'
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
     }
 
-    // File size limit: 2MB for general files, 1MB for favicons
-    const maxSize = uploadType === 'favicon' ? 1024 * 1024 : 2 * 1024 * 1024
+    // File size limit: Different for videos and images
+    let maxSize: number
+    if (mediaType === 'video') {
+      maxSize = 100 * 1024 * 1024 // 100MB for videos
+    } else if (uploadType === 'favicon') {
+      maxSize = 1024 * 1024 // 1MB for favicons
+    } else {
+      maxSize = 5 * 1024 * 1024 // 5MB for images
+    }
+    
     if (file.size > maxSize) {
       return NextResponse.json({ 
         error: `File too large. Maximum size is ${maxSize / (1024 * 1024)}MB` 
       }, { status: 400 })
     }
 
-    // Validate file type for favicon
-    if (uploadType === 'favicon') {
+    // Validate file type
+    if (mediaType === 'video') {
+      const validVideoTypes = [
+        'video/mp4',
+        'video/webm',
+        'video/quicktime',
+        'video/x-msvideo',
+        'video/x-matroska'
+      ]
+      if (!validVideoTypes.includes(file.type)) {
+        return NextResponse.json({ 
+          error: 'Invalid video format. Please upload MP4, WebM, MOV, AVI, or MKV files' 
+        }, { status: 400 })
+      }
+    } else if (uploadType === 'favicon') {
       const validFaviconTypes = [
         'image/x-icon',
         'image/vnd.microsoft.icon',
@@ -58,6 +80,8 @@ export async function POST(request: NextRequest) {
       subDir = 'favicons'
     } else if (uploadType === 'breadcrumb' || uploadType === 'breadcrumb/mobile') {
       subDir = uploadType
+    } else if (uploadType === 'products') {
+      subDir = 'products'
     } else {
       subDir = 'general'
     }

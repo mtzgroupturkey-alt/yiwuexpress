@@ -19,6 +19,7 @@ interface SharedLayoutProps {
   pageDescription?: string
   breadcrumbs?: BreadcrumbItem[]
   backgroundImage?: string
+  categoryId?: string
 }
 
 export function SharedLayout({ 
@@ -27,10 +28,11 @@ export function SharedLayout({
   pageTitle,
   pageDescription,
   breadcrumbs,
-  backgroundImage
+  backgroundImage,
+  categoryId
 }: SharedLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden">
       {/* Top Bar - Always visible */}
       <TopBar />
       
@@ -50,11 +52,12 @@ export function SharedLayout({
           description={pageDescription}
           breadcrumbs={breadcrumbs}
           backgroundImage={backgroundImage}
+          categoryId={categoryId}
         />
       )}
       
       {/* Main Content */}
-      <main>
+      <main className="flex-1 w-full">
         {children}
       </main>
 

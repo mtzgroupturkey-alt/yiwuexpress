@@ -1,11 +1,8 @@
-import React from 'react'
-import { View } from 'react-native'
-import ProductDetailScreen from '@/screens/ProductDetailScreen'
+import React from 'react';
+import ProductDetailScreen from '@/screens/ProductDetailScreen';
+
+export const options = { title: 'PRODUCT DETAIL' };
 
 export default function ProductDetailPage() {
-  return (
-    <View style={{ flex: 1 }}>
-      <ProductDetailScreen />
-    </View>
-  )
+  return <ProductDetailScreen />;
 }

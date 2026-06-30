@@ -1,0 +1,72 @@
+/* Emergency Scroll Fix - Override ALL blocking styles */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+  position: relative !important;
+}
+
+body {
+  overflow-y: scroll !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  position: relative !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+#__next {
+  height: auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+  display: block !important;
+}
+
+main {
+  display: block !important;
+  height: auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+  position: relative !important;
+}
+
+/* Remove any fixed heights that block scroll */
+.min-h-screen {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+  html {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: auto !important;
+  }
+  
+  body {
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: auto !important;
+    position: relative !important;
+  }
+  
+  #__next, main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* Ensure no component blocks scroll */
+[data-scroll-locked="true"] {
+  overflow: auto !important;
+}

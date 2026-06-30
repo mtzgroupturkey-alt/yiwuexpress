@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { Container } from '@/components/ui/Container'
@@ -37,6 +38,46 @@ export default function BreadcrumbSettingsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('static')
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // Load tab from URL param or localStorage on component mount
+  useEffect(() => {
+    const urlTab = searchParams.get('tab')
+    
+    if (urlTab && ['static', 'shop', 'categories'].includes(urlTab)) {
+      // URL parameter takes priority
+      setActiveTab(urlTab)
+    } else {
+      // Fallback to localStorage
+      try {
+        const savedTab = localStorage.getItem('breadcrumb-settings-active-tab')
+        if (savedTab && ['static', 'shop', 'categories'].includes(savedTab)) {
+          setActiveTab(savedTab)
+        }
+      } catch (error) {
+        console.error('Error loading saved tab from localStorage:', error)
+        setActiveTab('static')
+      }
+    }
+  }, [searchParams])
+
+  // Save tab to localStorage and URL when it changes
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem('breadcrumb-settings-active-tab', tab)
+    } catch (error) {
+      console.error('Error saving tab to localStorage:', error)
+    }
+    
+    // Update URL without causing a navigation
+    const currentUrl = new URL(window.location.href)
+    currentUrl.searchParams.set('tab', tab)
+    router.replace(currentUrl.pathname + '?' + currentUrl.searchParams.toString(), { scroll: false })
+  }
 
   // Fetch all breadcrumb settings
   const { data: settings, isLoading } = useQuery({
@@ -52,8 +93,13 @@ export default function BreadcrumbSettingsPage() {
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const response = await api.get('/api/categories?level=1&includeChildren=true')
-      return response.data
+      console.log('Fetching categories...')
+      const response = await api.get('/api/categories?includeChildren=true')
+      console.log('Categories API response:', response)
+      console.log('Response data:', response.data)
+      console.log('Response data.data:', response.data.data)
+      // Return the actual categories array
+      return response.data.data || response.data || []
     },
   })
 
@@ -146,11 +192,29 @@ export default function BreadcrumbSettingsPage() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="static">Static Pages</TabsTrigger>
-          <TabsTrigger value="shop">Shop Default</TabsTrigger>
-          <TabsTrigger value="categories">Categories</TabsTrigger>
+          <TabsTrigger value="static">
+            Static Pages {staticPages.length > 0 && (
+              <span className="ml-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                {staticPages.length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="shop">
+            Shop Default {shopDefault.length > 0 && (
+              <span className="ml-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                {shopDefault.length}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="categories">
+            Categories {categorySettings.length > 0 && (
+              <span className="ml-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+                {categorySettings.length}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         {/* STATIC PAGES TAB */}
@@ -403,7 +467,7 @@ export default function BreadcrumbSettingsPage() {
 
           <BreadcrumbForm
             initialData={editingItem}
-            categories={categories?.data || []}
+            categories={categories || []}
             onSave={handleSave}
             onCancel={() => setIsDialogOpen(false)}
           />

@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const activeOnly = searchParams.get('active') !== 'false'
     const includeChildren = searchParams.get('includeChildren') === 'true'
     const featured = searchParams.get('featured') === 'true'
+    const parent = searchParams.get('parent')
     const level = searchParams.get('level') ? parseInt(searchParams.get('level')!) : undefined
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
 
@@ -19,6 +20,10 @@ export async function GET(request: Request) {
     }
     if (featured) {
       where.isFeatured = true
+    }
+    // Filter by parent categories (parent=null means top-level categories)
+    if (parent === 'null' || parent === 'none') {
+      where.parentId = null
     }
     // Filter by level (1 = top level, no parent)
     if (level === 1) {

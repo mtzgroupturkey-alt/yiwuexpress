@@ -18,57 +18,78 @@ interface Category {
   isFeatured: boolean
 }
 
-export function CategoryGrid() {
+interface CategoryGridProps {
+  variant?: 'featured' | 'parent'
+}
+
+export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
+  // Build query params based on variant
+  const queryParams = variant === 'parent' 
+    ? 'parent=null' // Fetch all parent categories
+    : 'featured=true&limit=8' // Fetch featured categories
+
   const { data, isLoading } = useQuery({
-    queryKey: ['categories', 'featured'],
-    queryFn: () => api.get('/api/categories?featured=true&limit=8'),
+    queryKey: ['categories', variant],
+    queryFn: () => api.get(`/api/categories?${queryParams}`),
   })
 
   const categories: Category[] = data?.data || []
 
+  // Customize section title and subtitle based on variant
+  const sectionTitle = variant === 'parent' 
+    ? 'Browse by Category' 
+    : 'Shop by Category'
+  
+  const sectionSubtitle = variant === 'parent'
+    ? 'Explore our complete range of product categories'
+    : 'Explore our wide range of kitchenware products. From professional cookware to everyday essentials.'
+
   if (isLoading) {
     return (
-      <Container maxWidth="2xl">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-[#1a3a5c]">Shop by Category</h2>
-          <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
-            Explore our wide range of kitchenware products. From professional cookware to everyday essentials.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <Skeleton className="w-24 h-24 md:w-32 md:h-32 rounded-full" />
-              <Skeleton className="h-4 w-20 mt-3" />
-              <Skeleton className="h-3 w-12 mt-1" />
-            </div>
-          ))}
-        </div>
-      </Container>
+      <section className="py-16 bg-gray-50">
+        <Container maxWidth="2xl">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-[#1a3a5c]">{sectionTitle}</h2>
+            <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
+              {sectionSubtitle}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <Skeleton className="w-24 h-24 md:w-32 md:h-32 rounded-full" />
+                <Skeleton className="h-4 w-20 mt-3" />
+                <Skeleton className="h-3 w-12 mt-1" />
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
     )
   }
 
   if (categories.length === 0) {
     return (
-      <Container maxWidth="2xl">
-        <div className="text-center py-12">
-          <h2 className="text-3xl font-bold text-[#1a3a5c]">Shop by Category</h2>
-          <p className="text-gray-500 mt-2">No categories available yet.</p>
-        </div>
-      </Container>
+      <section className="py-16 bg-gray-50">
+        <Container maxWidth="2xl">
+          <div className="text-center py-12">
+            <h2 className="text-3xl font-bold text-[#1a3a5c]">{sectionTitle}</h2>
+            <p className="text-gray-500 mt-2">No categories available yet.</p>
+          </div>
+        </Container>
+      </section>
     )
   }
 
   return (
     <section className="py-16 bg-gray-50">
       <Container maxWidth="2xl">
-        {/* Section Header */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold text-[#1a3a5c]">
-            Shop by Category
+            {sectionTitle}
           </h2>
           <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
-            Explore our wide range of kitchenware products. From professional cookware to everyday essentials.
+            {sectionSubtitle}
           </p>
         </div>
 

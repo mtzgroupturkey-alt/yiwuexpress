@@ -13,6 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import { ProductAttributesSection } from '@/components/admin/ProductAttributesSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
+import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
+
+interface MediaItem {
+  url: string
+  type: 'image' | 'video'
+}
 
 const productSchema = z.object({
   sku: z.string().min(1, 'SKU is required'),
@@ -50,7 +56,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [imageUrls, setImageUrls] = useState<string[]>([''])
+  const [media, setMedia] = useState<MediaItem[]>([])
   const [deleting, setDeleting] = useState(false)
 
   const {
@@ -121,10 +127,22 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           batteryIncluded: product.batteryIncluded
         })
 
-        // Set image URLs
+        // Set media (images and videos)
+        const mediaItems: MediaItem[] = []
+        
         if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-          setImageUrls(product.images)
+          product.images.forEach((url: string) => {
+            mediaItems.push({ url, type: 'image' })
+          })
         }
+        
+        if (product.videos && Array.isArray(product.videos) && product.videos.length > 0) {
+          product.videos.forEach((url: string) => {
+            mediaItems.push({ url, type: 'video' })
+          })
+        }
+        
+        setMedia(mediaItems)
 
         // Set attribute values if they exist
         if (product.attributes) {
@@ -145,13 +163,15 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const onSubmit = async (data: ProductForm) => {
     setSubmitting(true)
     try {
-      // Filter out empty image URLs
-      const validImages = imageUrls.filter(url => url.trim() !== '')
+      // Separate images and videos
+      const images = media.filter(m => m.type === 'image').map(m => m.url)
+      const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
       const productData = {
         ...data,
-        images: validImages,
-        thumbnail: validImages[0] || null,
+        images,
+        videos,
+        thumbnail: images[0] || null,
         price: parseFloat(data.price.toString()),
         compareAtPrice: data.compareAtPrice ? parseFloat(data.compareAtPrice.toString()) : null,
         costPrice: data.costPrice ? parseFloat(data.costPrice.toString()) : null,
@@ -210,20 +230,6 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     } finally {
       setDeleting(false)
     }
-  }
-
-  const addImageUrl = () => {
-    setImageUrls([...imageUrls, ''])
-  }
-
-  const updateImageUrl = (index: number, value: string) => {
-    const newUrls = [...imageUrls]
-    newUrls[index] = value
-    setImageUrls(newUrls)
-  }
-
-  const removeImageUrl = (index: number) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index))
   }
 
   if (loading) {
@@ -482,33 +488,17 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               </CardContent>
             </Card>
 
-            {/* Images */}
+            {/* Images & Videos */}
             <Card>
               <CardHeader>
-                <CardTitle>Product Images</CardTitle>
+                <CardTitle>Product Images & Videos</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {imageUrls.map((url, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder="Image URL"
-                      value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
-                    />
-                    {imageUrls.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => removeImageUrl(index)}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button type="button" variant="outline" onClick={addImageUrl}>
-                  Add Image URL
-                </Button>
+              <CardContent>
+                <ProductMediaUpload
+                  media={media}
+                  onChange={setMedia}
+                  maxItems={15}
+                />
               </CardContent>
             </Card>
 

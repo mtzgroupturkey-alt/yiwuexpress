@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pause, Play, ChevronDown } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Container } from '@/components/ui/Container'
 
@@ -241,7 +241,7 @@ export function HeroSlider() {
 
   if (isLoading) {
     return (
-      <div className="bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] h-[calc(100vh-164px)] flex items-center justify-center">
+      <div className="bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] h-[60vh] sm:h-[70vh] md:h-[calc(100vh-164px)] flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -255,7 +255,7 @@ export function HeroSlider() {
 
   if (slides.length === 0) {
     return (
-      <section className="relative bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] h-[calc(100vh-164px)] overflow-hidden flex items-center justify-center">
+      <section className="relative bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] h-[60vh] sm:h-[70vh] md:h-[calc(100vh-164px)] overflow-hidden flex items-center justify-center">
         <Container>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -293,7 +293,7 @@ export function HeroSlider() {
 
   return (
     <div
-      className="relative overflow-hidden h-[calc(100vh-164px)] flex items-center justify-center"
+      className="relative overflow-hidden h-[60vh] sm:h-[70vh] md:h-[calc(100vh-164px)] flex items-center justify-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       role="region"
@@ -510,6 +510,24 @@ export function HeroSlider() {
           </div>
         </>
       )}
+
+      {/* Scroll Indicator - Shows on mobile to indicate more content below */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 md:hidden">
+        <motion.div
+          animate={{
+            y: [0, 8, 0],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="flex flex-col items-center text-white/60"
+        >
+          <ChevronDown className="w-6 h-6" />
+          <span className="text-xs mt-1">Scroll</span>
+        </motion.div>
+      </div>
     </div>
   )
 }

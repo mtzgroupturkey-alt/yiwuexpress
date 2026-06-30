@@ -99,6 +99,8 @@ export default function ProductsPage() {
   const [filters, setFilters] = useState<Record<string, any>>({})
   const [totalPages, setTotalPages] = useState(1)
   const [totalProducts, setTotalProducts] = useState(0)
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [categoryName, setCategoryName] = useState<string | null>(null)
   const productsPerPage = 12
 
   const categorySlug = searchParams.get('category')
@@ -107,6 +109,33 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchProducts()
   }, [currentPage, sortBy, filters, categorySlug, searchQuery])
+
+  // Fetch category ID when categorySlug changes
+  useEffect(() => {
+    const fetchCategoryId = async () => {
+      if (categorySlug) {
+        try {
+          const response = await fetch(`/api/categories`)
+          const data = await response.json()
+          if (data.success && data.data) {
+            const category = data.data.find((cat: any) => cat.slug === categorySlug)
+            setCategoryId(category?.id || null)
+            setCategoryName(category?.name || null)
+            console.log('Found category for breadcrumb:', category)
+          }
+        } catch (error) {
+          console.error('Error fetching category for breadcrumb:', error)
+          setCategoryId(null)
+          setCategoryName(null)
+        }
+      } else {
+        setCategoryId(null)
+        setCategoryName(null)
+      }
+    }
+    
+    fetchCategoryId()
+  }, [categorySlug])
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -158,11 +187,8 @@ export default function ProductsPage() {
 
   // Get category name for breadcrumb and header
   const getCategoryName = () => {
-    if (categorySlug) {
-      const categoryOption = filterSections
-        .find(s => s.id === 'category')
-        ?.options?.find(opt => opt.value === categorySlug)
-      return categoryOption?.label || 'Products'
+    if (categorySlug && categoryName) {
+      return categoryName
     }
     if (searchQuery) {
       return `Search Results for "${searchQuery}"`
@@ -174,11 +200,12 @@ export default function ProductsPage() {
     { name: 'Shop', href: '/products' },
   ]
 
+  // Always add Products to breadcrumb
   if (categorySlug) {
-    breadcrumbItems.push({
-      name: getCategoryName(),
-      href: `/products?category=${categorySlug}`
-    })
+    breadcrumbItems.push(
+      { name: 'Products', href: '/products' },
+      { name: getCategoryName(), href: `/products?category=${categorySlug}` }
+    )
   }
 
   const pageTitle = getCategoryName()
@@ -193,7 +220,7 @@ export default function ProductsPage() {
       pageTitle={pageTitle}
       pageDescription={pageDescription}
       breadcrumbs={breadcrumbItems}
-      backgroundImage="/images/breadcrumb-bg.jpg"
+      categoryId={categoryId}
     >
       <div className="bg-gray-50 py-8">
         <Container maxWidth="2xl">

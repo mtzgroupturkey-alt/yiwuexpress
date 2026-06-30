@@ -5,20 +5,30 @@ import { Container } from '@/components/ui/Container'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import TrustBadges from '@/components/TrustBadges'
 import { CategoryGrid } from '@/components/home/CategoryGrid'
+import { AllProductsSection } from '@/components/home/AllProductsSection'
 import ProductGrid from '@/components/products/ProductGrid'
 import BlogSection from '@/components/BlogSection'
 import { Users, Globe, Clock, Shield } from 'lucide-react'
 
 interface Product {
-  id: number
+  id: string
+  slug: string
   name: string
   description?: string
   price: number
-  image?: string
-  category?: string
-  stock?: number
+  compareAtPrice?: number | null
+  thumbnail?: string | null
+  stock: number
+  sku: string
+  category?: {
+    id: string
+    name: string
+    slug: string
+  } | null
   minOrder?: number
   wholesalePrice?: number
+  isFeatured?: boolean
+  isNewArrival?: boolean
 }
 
 interface ProductsResponse {
@@ -62,8 +72,9 @@ export default function Home() {
 
   return (
     <SharedLayout showHero={true}>
-      {/* Stats Section */}
-      <section className="py-12 bg-white border-b border-gray-100">
+      <div className="bg-gray-50">
+        {/* Stats Section */}
+        <section className="py-12 bg-white border-b border-gray-100">
         <Container maxWidth="2xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => {
@@ -85,11 +96,14 @@ export default function Home() {
       {/* Trust Badges */}
       <TrustBadges />
 
-      {/* Category Grid */}
-      <CategoryGrid />
+      {/* Parent Categories - Show all top-level categories */}
+      <CategoryGrid variant="parent" />
+
+      {/* All Products Section - NEW: Display all products with pagination */}
+      <AllProductsSection />
 
       {/* Featured Products */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-gray-50">
         <Container maxWidth="2xl">
           <ProductGrid
             title="Featured Products"
@@ -102,7 +116,7 @@ export default function Home() {
       </section>
 
       {/* New Arrivals */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <Container maxWidth="2xl">
           <ProductGrid
             title="New Arrivals"
@@ -142,6 +156,7 @@ export default function Home() {
           </div>
         </Container>
       </section>
+      </div>
     </SharedLayout>
   )
 }

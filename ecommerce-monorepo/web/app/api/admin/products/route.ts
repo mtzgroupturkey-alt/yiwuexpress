@@ -47,7 +47,15 @@ export async function GET(request: Request) {
             select: {
               id: true,
               name: true,
-              slug: true
+              slug: true,
+              parentId: true,
+              parent: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true
+                }
+              }
             }
           }
         },

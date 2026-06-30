@@ -1,0 +1,413 @@
+# 📸 Product Image Upload - Visual Guide
+
+## Interface Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Product Images                              2 / 10 images   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  [📤 Upload from Computer]  [🔗 Add from URL]                │
+│                                                               │
+│  💡 First image will be used as the product thumbnail.       │
+│     Drag to reorder images.                                  │
+│                                                               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │          │  │          │  │          │  │          │   │
+│  │  Image   │  │  Image   │  │  Image   │  │   Add    │   │
+│  │    1     │  │    2     │  │    3     │  │   More   │   │
+│  │          │  │          │  │          │  │          │   │
+│  │[Thumb-   │  │          │  │          │  │          │   │
+│  │ nail]    │  │          │  │          │  │          │   │
+│  │          │  │          │  │          │  │          │   │
+│  │ [↑][↓][×]│  │ [↑][↓][×]│  │ [↑][↓][×]│  │          │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+│  🔗 URL       📁 Uploaded   🔗 URL                          │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## State 1: Empty (No Images)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Product Images                              0 / 10 images   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  [📤 Upload from Computer]  [🔗 Add from URL]                │
+│                                                               │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │                                                        │   │
+│  │                      📷                                │   │
+│  │                                                        │   │
+│  │            No images added yet                        │   │
+│  │     Upload from computer or add from URL             │   │
+│  │                                                        │   │
+│  └──────────────────────────────────────────────────────┘   │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## State 2: Adding URL
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Product Images                              1 / 10 images   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  [📤 Upload from Computer]  [🔗 Add from URL] (active)       │
+│                                                               │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ Add Image URL                                          │ │
+│  │ ┌──────────────────────────────────────┐              │ │
+│  │ │ https://example.com/product.jpg       │ [Add] [Cancel]│
+│  │ └──────────────────────────────────────┘              │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  ┌──────────┐                                                │
+│  │  Existing │                                                │
+│  │  Image    │                                                │
+│  └──────────┘                                                │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## State 3: Uploading Files
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Product Images                              3 / 10 images   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  [📤 Uploading...]  [🔗 Add from URL]                        │
+│                                                               │
+│  ⏳ Uploading 2 of 3 files...                                │
+│  ▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░ 60%                    │
+│                                                               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
+│  │ Image 1  │  │ Image 2  │  │ Loading  │                  │
+│  │   ✓      │  │   ✓      │  │   ...    │                  │
+│  └──────────┘  └──────────┘  └──────────┘                  │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## State 4: Error State
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Product Images                              2 / 10 images   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  [📤 Upload from Computer]  [🔗 Add from URL]                │
+│                                                               │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ ⚠️ Error:                                              │ │
+│  │ File size must be less than 5MB                        │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                               │
+│  ┌──────────┐  ┌──────────┐                                 │
+│  │ Image 1  │  │ Image 2  │                                 │
+│  └──────────┘  └──────────┘                                 │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## State 5: Hover on Image (Desktop)
+
+```
+┌──────────┐
+│          │
+│  Image   │   ← Hover here
+│          │
+│  ┌────┐  │   Overlay appears with actions:
+│  │ ↑  │  │   
+│  ├────┤  │   [↑] = Move Up
+│  │ ↓  │  │   [↓] = Move Down  
+│  ├────┤  │   [×] = Remove
+│  │ ×  │  │
+│  └────┘  │
+│          │
+│ 📁 Uploaded│
+└──────────┘
+```
+
+---
+
+## State 6: Max Images Reached
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Product Images                             10 / 10 images   │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  [📤 Upload from Computer (disabled)]                        │
+│  [🔗 Add from URL (disabled)]                                │
+│                                                               │
+│  ⚠️ Maximum 10 images reached. Remove some to add more.      │
+│                                                               │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐             │
+│  │Image1│ │Image2│ │Image3│ │Image4│ │Image5│             │
+│  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘             │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐             │
+│  │Image6│ │Image7│ │Image8│ │Image9│ │Img10 │             │
+│  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘             │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Button States
+
+### Upload from Computer Button
+```
+Normal:    [📤 Upload from Computer]
+Hover:     [📤 Upload from Computer] (highlighted)
+Active:    [📤 Uploading...] (disabled, spinner)
+Disabled:  [📤 Upload from Computer] (grayed out)
+```
+
+### Add from URL Button
+```
+Normal:    [🔗 Add from URL]
+Hover:     [🔗 Add from URL] (highlighted)
+Active:    [🔗 Add from URL] (highlighted, input shown)
+Disabled:  [🔗 Add from URL] (grayed out)
+```
+
+---
+
+## Image Grid Layouts
+
+### Desktop (4 columns)
+```
+┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐
+│ Img │ │ Img │ │ Img │ │ Img │
+│  1  │ │  2  │ │  3  │ │  4  │
+└─────┘ └─────┘ └─────┘ └─────┘
+┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐
+│ Img │ │ Img │ │ Img │ │ Img │
+│  5  │ │  6  │ │  7  │ │  8  │
+└─────┘ └─────┘ └─────┘ └─────┘
+```
+
+### Tablet (3 columns)
+```
+┌─────┐ ┌─────┐ ┌─────┐
+│ Img │ │ Img │ │ Img │
+│  1  │ │  2  │ │  3  │
+└─────┘ └─────┘ └─────┘
+┌─────┐ ┌─────┐ ┌─────┐
+│ Img │ │ Img │ │ Img │
+│  4  │ │  5  │ │  6  │
+└─────┘ └─────┘ └─────┘
+```
+
+### Mobile (2 columns)
+```
+┌─────┐ ┌─────┐
+│ Img │ │ Img │
+│  1  │ │  2  │
+└─────┘ └─────┘
+┌─────┐ ┌─────┐
+│ Img │ │ Img │
+│  3  │ │  4  │
+└─────┘ └─────┘
+```
+
+---
+
+## Color Coding
+
+```
+🔵 Primary Actions:     Upload buttons, Add button
+🔴 Destructive Actions: Remove (×) button  
+🟢 Success State:       Upload complete, valid URL
+🟠 Warning State:       Max images reached
+🔴 Error State:         Invalid file, upload failed
+⚪ Neutral/Info:        Image counter, helper text
+```
+
+---
+
+## Icons Used
+
+```
+📤 Upload        - Upload from computer
+🔗 Link          - Add from URL
+📁 Folder        - Uploaded file indicator
+🌐 Globe         - URL link indicator
+× Cross         - Remove image
+↑ Up Arrow      - Move image up
+↓ Down Arrow    - Move image down
+📷 Camera       - Empty state icon
+⚠️ Warning      - Error/warning messages
+✓ Checkmark     - Upload success
+⏳ Hourglass    - Uploading in progress
+```
+
+---
+
+## User Flow Diagrams
+
+### Upload Flow
+```
+Start
+  │
+  ├─→ Click "Upload from Computer"
+  │     │
+  │     ├─→ Select File(s)
+  │     │     │
+  │     │     ├─→ Validate File
+  │     │     │     │
+  │     │     │     ├─→ Valid? 
+  │     │     │     │   ├─→ YES: Upload to Server
+  │     │     │     │   │         │
+  │     │     │     │   │         ├─→ Get URL
+  │     │     │     │   │         │     │
+  │     │     │     │   │         │     ├─→ Add to Grid
+  │     │     │     │   │         │           │
+  │     │     │     │   │         │           └─→ Done ✓
+  │     │     │     │   │         │
+  │     │     │     │   └─→ NO: Show Error
+  │     │     │     │              │
+  │     │     │     │              └─→ Retry?
+  │     │     │     │
+  │     │     │     └─→ End
+```
+
+### URL Flow
+```
+Start
+  │
+  ├─→ Click "Add from URL"
+  │     │
+  │     ├─→ Input Field Appears
+  │     │     │
+  │     │     ├─→ Paste URL
+  │     │     │     │
+  │     │     │     ├─→ Click "Add" or Enter
+  │     │     │     │     │
+  │     │     │     │     ├─→ Validate URL
+  │     │     │     │     │     │
+  │     │     │     │     │     ├─→ Valid?
+  │     │     │     │     │     │   ├─→ YES: Add to Grid
+  │     │     │     │     │     │   │       │
+  │     │     │     │     │     │   │       └─→ Done ✓
+  │     │     │     │     │     │   │
+  │     │     │     │     │     │   └─→ NO: Show Error
+  │     │     │     │     │     │             │
+  │     │     │     │     │     │             └─→ Retry?
+```
+
+---
+
+## Keyboard Shortcuts
+
+```
+Tab           - Navigate between elements
+Enter         - Confirm URL input
+Escape        - Cancel URL input
+Space/Click   - Select file for upload
+Delete        - (Future) Remove selected image
+Arrow Keys    - (Future) Navigate images
+```
+
+---
+
+## Accessibility Features
+
+```
+✓ Keyboard Navigation:      All buttons accessible via Tab
+✓ Screen Reader Labels:     Descriptive aria-labels
+✓ Focus Indicators:         Visible focus states
+✓ Alt Text:                 Images have alt attributes
+✓ Error Announcements:      Screen readers announce errors
+✓ Button States:            Disabled states clearly marked
+✓ Color Contrast:           WCAG AA compliant
+```
+
+---
+
+## Mobile Touch Targets
+
+```
+Minimum Touch Target Size: 44x44px
+
+[Upload from Computer]     - 48px height ✓
+[Add from URL]             - 48px height ✓
+[×] Remove Button          - 44px × 44px ✓
+[↑] Move Up Button         - 44px × 44px ✓
+[↓] Move Down Button       - 44px × 44px ✓
+Image Thumbnail            - Tap to view full size
+```
+
+---
+
+## Animation & Transitions
+
+```
+Hover Effect:        0.2s ease-in-out
+Button Click:        0.1s scale down
+Image Load:          Fade in 0.3s
+Error Appear:        Slide down 0.2s
+Upload Progress:     Smooth progress bar
+Grid Reorder:        0.3s position change
+Overlay Appear:      0.2s fade in
+```
+
+---
+
+## Responsive Breakpoints
+
+```
+Desktop:    1024px and above  → 4 columns
+Tablet:     768px - 1023px    → 3 columns
+Mobile:     0px - 767px       → 2 columns
+```
+
+---
+
+## Quick Reference Card
+
+```
+╔═══════════════════════════════════════════════════════════╗
+║           PRODUCT IMAGE UPLOAD QUICK REFERENCE            ║
+╠═══════════════════════════════════════════════════════════╣
+║                                                           ║
+║  Upload Methods:                                          ║
+║    📤 From Computer → Select local files                  ║
+║    🔗 From URL      → Paste image link                   ║
+║                                                           ║
+║  Limits:                                                  ║
+║    • Max 10 images per product                            ║
+║    • Max 5MB per file                                     ║
+║    • JPEG, PNG, WebP, GIF only                           ║
+║                                                           ║
+║  Actions:                                                 ║
+║    • ↑ Move up      • ↓ Move down      • × Remove        ║
+║                                                           ║
+║  Tips:                                                    ║
+║    • First image = Thumbnail                              ║
+║    • Multi-select with Ctrl/Cmd                          ║
+║    • Hover to see controls                                ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+```
+
+---
+
+**Visual Guide Complete** ✅
+
+This guide provides all visual states and interactions for the product image upload feature!

@@ -1,2 +1,2 @@
-import ServicesScreen from '../../screens/ServicesScreen'
-export default ServicesScreen
+import CartScreen from '../../screens/CartScreen'
+export default CartScreen

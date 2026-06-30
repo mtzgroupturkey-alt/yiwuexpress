@@ -16,14 +16,32 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+    /* Mobile-specific fixes */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
   }
 
   body {
     overflow-x: hidden;
+    overflow-y: auto;
     width: 100%;
+    min-height: 100vh;
     background-color: #f9fafb;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: rgb(17, 24, 39);
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    position: relative;
+  }
+
+  /* Ensure main content doesn't block scroll on mobile */
+  #__next,
+  main {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
   }
 
   /* Typography scaling */
@@ -64,6 +82,21 @@
     }
     .desktop-menu {
       display: flex !important;
+    }
+  }
+
+  /* Mobile scroll fixes */
+  @media (max-width: 768px) {
+    html {
+      overflow-y: scroll !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+    
+    body {
+      overflow-y: scroll !important;
+      -webkit-overflow-scrolling: touch !important;
+      height: auto !important;
+      position: relative !important;
     }
   }
 }
