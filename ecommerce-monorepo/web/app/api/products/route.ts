@@ -22,10 +22,34 @@ export async function GET(request: Request) {
 
     if (categorySlug) {
       const category = await prisma.category.findUnique({
-        where: { slug: categorySlug }
+        where: { slug: categorySlug },
+        include: {
+          children: {
+            include: {
+              children: {
+                include: {
+                  children: true
+                }
+              }
+            }
+          }
+        }
       })
       if (category) {
-        where.categoryId = category.id
+        // Get all descendant category IDs (including the selected category)
+        const categoryIds = [category.id]
+        const collectChildIds = (cat: any) => {
+          if (cat.children && cat.children.length > 0) {
+            cat.children.forEach((child: any) => {
+              categoryIds.push(child.id)
+              collectChildIds(child)
+            })
+          }
+        }
+        collectChildIds(category)
+        
+        // Filter by category and all its descendants
+        where.categoryId = { in: categoryIds }
       }
     }
 

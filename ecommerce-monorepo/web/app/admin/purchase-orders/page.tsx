@@ -8,17 +8,27 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Eye, Search, FileDown, Filter } from 'lucide-react'
+import { Plus, Eye, Search, FileDown, Filter, Edit, Trash2 } from 'lucide-react'
 
-const statusColors: Record<string, string> = {
-  DRAFT: 'bg-gray-100 text-gray-800',
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  SENT: 'bg-blue-100 text-blue-800',
-  CONFIRMED: 'bg-indigo-100 text-indigo-800',
-  SHIPPED: 'bg-purple-100 text-purple-800',
-  RECEIVED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-red-100 text-red-800',
-  CLOSED: 'bg-gray-100 text-gray-800',
+const getStatusBadge = (status: string) => {
+  const config: Record<string, { bg: string; text: string; label: string }> = {
+    DRAFT: { bg: 'bg-gray-500', text: 'text-white', label: 'DRAFT' },
+    PENDING: { bg: 'bg-yellow-500', text: 'text-white', label: 'PENDING' },
+    SENT: { bg: 'bg-blue-500', text: 'text-white', label: 'SENT' },
+    CONFIRMED: { bg: 'bg-indigo-500', text: 'text-white', label: 'CONFIRMED' },
+    SHIPPED: { bg: 'bg-purple-500', text: 'text-white', label: 'SHIPPED' },
+    RECEIVED: { bg: 'bg-green-500', text: 'text-white', label: 'RECEIVED' },
+    CANCELLED: { bg: 'bg-red-500', text: 'text-white', label: 'CANCELLED' },
+    CLOSED: { bg: 'bg-gray-600', text: 'text-white', label: 'CLOSED' },
+  }
+  
+  const statusConfig = config[status] || config.DRAFT
+  
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text}`}>
+      {statusConfig.label}
+    </span>
+  )
 }
 
 interface PurchaseOrder {
@@ -28,6 +38,7 @@ interface PurchaseOrder {
   status: string
   total: number
   currency: string
+  exchangeRate: number
   orderDate: string
   expectedDelivery?: string
   supplier: {
@@ -41,13 +52,16 @@ interface PurchaseOrder {
 export default function PurchaseOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const { data: purchaseOrders, isLoading } = useQuery<{ purchaseOrders: PurchaseOrder[] }>({
     queryKey: ['purchase-orders'],
     queryFn: async () => {
       const res = await fetch('/api/admin/purchase-orders')
       if (!res.ok) throw new Error('Failed to fetch purchase orders')
-      return res.json()
+      const data = await res.json()
+      console.log('Purchase Orders data:', data)
+      return data
     },
   })
 
@@ -62,9 +76,18 @@ export default function PurchaseOrdersPage() {
   // Calculate statistics
   const stats = {
     total: purchaseOrders?.purchaseOrders?.length || 0,
-    pending: purchaseOrders?.purchaseOrders?.filter((po) => po.status === 'PENDING').length || 0,
-    received: purchaseOrders?.purchaseOrders?.filter((po) => po.status === 'RECEIVED').length || 0,
-    value: purchaseOrders?.purchaseOrders?.reduce((sum, po) => sum + po.total, 0) || 0,
+    pending: purchaseOrders?.purchaseOrders?.filter((po) => po.status === 'PENDING' || po.status === 'SENT' || po.status === 'CONFIRMED').length || 0,
+    received: purchaseOrders?.purchaseOrders?.filter((po) => po.status === 'RECEIVED' || po.status === 'CLOSED').length || 0,
+    value: purchaseOrders?.purchaseOrders?.reduce((sum, po) => {
+      // Convert to USD if not already in USD
+      if (po.currency === 'USD') {
+        return sum + po.total
+      } else {
+        // Divide by exchange rate to convert to USD
+        // Example: 105 AFN / 64.559188 = 1.62 USD
+        return sum + (po.total / (po.exchangeRate || 1))
+      }
+    }, 0) || 0,
   }
 
   return (
@@ -94,26 +117,29 @@ export default function PurchaseOrdersPage() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <p className="text-xs text-gray-500 mt-1">Pending, Sent, Confirmed</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Received</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.received}</div>
+            <p className="text-xs text-gray-500 mt-1">Received, Closed</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Value</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Total Value (USD)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-[#1a3a5c]">${stats.value.toFixed(2)}</div>
+            <p className="text-xs text-gray-500 mt-1">Converted to USD</p>
           </CardContent>
         </Card>
       </div>
@@ -185,7 +211,15 @@ export default function PurchaseOrdersPage() {
                         <Badge variant="outline">{po._count.items} items</Badge>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {po.currency} {po.total.toFixed(2)}
+                        <div className="font-semibold">
+                          {po.currency} {po.total.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ≈ ${(po.currency === 'USD' ? po.total : po.total / (po.exchangeRate || 1)).toFixed(2)} USD
+                          {po.currency !== 'USD' && po.exchangeRate && (
+                            <span className="text-[10px] ml-1">(rate: {po.exchangeRate})</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {po.expectedDelivery
@@ -193,14 +227,39 @@ export default function PurchaseOrdersPage() {
                           : '-'}
                       </TableCell>
                       <TableCell>
-                        <Badge className={statusColors[po.status]}>{po.status}</Badge>
+                        {getStatusBadge(po.status)}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Link href={`/admin/purchase-orders/${po.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="w-4 h-4" />
+                        <div className="flex items-center justify-end gap-2">
+                          <Link href={`/admin/purchase-orders/${po.id}`}>
+                            <Button variant="ghost" size="sm" title="View Details">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/purchase-orders/${po.id}/edit`}>
+                            <Button variant="ghost" size="sm" title="Edit" className="text-blue-600 hover:text-blue-700">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="Delete"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to delete PO ${po.poNumber}?`)) {
+                                // Add delete functionality here
+                                fetch(`/api/admin/purchase-orders/${po.id}`, {
+                                  method: 'DELETE',
+                                }).then(() => {
+                                  window.location.reload()
+                                })
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
-                        </Link>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

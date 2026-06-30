@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search')
     const categorySlug = searchParams.get('category')
     const isActive = searchParams.get('isActive')
+    const includeVariants = searchParams.get('includeVariants') === 'true'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
@@ -28,10 +29,34 @@ export async function GET(request: Request) {
 
     if (categorySlug) {
       const category = await prisma.category.findUnique({
-        where: { slug: categorySlug }
+        where: { slug: categorySlug },
+        include: {
+          children: {
+            include: {
+              children: {
+                include: {
+                  children: true
+                }
+              }
+            }
+          }
+        }
       })
       if (category) {
-        where.categoryId = category.id
+        // Get all descendant category IDs (including the selected category)
+        const categoryIds = [category.id]
+        const collectChildIds = (cat: any) => {
+          if (cat.children && cat.children.length > 0) {
+            cat.children.forEach((child: any) => {
+              categoryIds.push(child.id)
+              collectChildIds(child)
+            })
+          }
+        }
+        collectChildIds(category)
+        
+        // Filter by category and all its descendants
+        where.categoryId = { in: categoryIds }
       }
     }
 
@@ -57,7 +82,22 @@ export async function GET(request: Request) {
                 }
               }
             }
-          }
+          },
+          variants: includeVariants ? {
+            where: { 
+              isActive: true,
+            },
+            select: {
+              id: true,
+              productId: true,
+              sku: true,
+              attributes: true,
+              price: true,
+              costPrice: true,
+              stock: true,
+              isActive: true,
+            }
+          } : false,
         },
         orderBy: {
           createdAt: 'desc'

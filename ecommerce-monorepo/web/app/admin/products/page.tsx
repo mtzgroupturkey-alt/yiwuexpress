@@ -31,27 +31,89 @@ export default function AdminProductsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
+  const [flatCategories, setFlatCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [filtersLoaded, setFiltersLoaded] = useState(false)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const limit = 20
 
+  // Load filters from localStorage on mount
+  useEffect(() => {
+    const savedFilters = localStorage.getItem('adminProductsFilters')
+    if (savedFilters) {
+      try {
+        const filters = JSON.parse(savedFilters)
+        if (filters.search) setSearch(filters.search)
+        if (filters.categoryFilter) setCategoryFilter(filters.categoryFilter)
+        if (filters.page) setPage(filters.page)
+      } catch (error) {
+        console.error('Error loading saved filters:', error)
+      }
+    }
+    setFiltersLoaded(true)
+  }, [])
+
+  // Helper function to flatten nested categories
+  const flattenCategories = (cats: any[]): any[] => {
+    const result: any[] = []
+    const flatten = (items: any[]) => {
+      items.forEach(cat => {
+        result.push(cat)
+        if (cat.children && cat.children.length > 0) {
+          flatten(cat.children)
+        }
+      })
+    }
+    flatten(cats)
+    return result
+  }
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    if (filtersLoaded) {
+      const filters = {
+        search,
+        categoryFilter,
+        page
+      }
+      localStorage.setItem('adminProductsFilters', JSON.stringify(filters))
+    }
+  }, [search, categoryFilter, page, filtersLoaded])
+
   useEffect(() => {
     fetchCategories()
   }, [])
 
   useEffect(() => {
-    fetchProducts()
-  }, [page, search, categoryFilter])
+    // Only fetch products after filters are loaded from localStorage
+    if (filtersLoaded) {
+      fetchProducts()
+    }
+  }, [page, search, categoryFilter, filtersLoaded])
+  
+  // Re-fetch products when categories finish loading (if a filter is active)
+  useEffect(() => {
+    if (flatCategories.length > 0 && categoryFilter) {
+      fetchProducts()
+    }
+  }, [flatCategories.length])
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories')
+      // Request categories with children included
+      const response = await fetch('/api/categories?includeChildren=true')
       const data = await response.json()
+      console.log('Categories response:', data)
       if (data.success) {
-        setCategories(data.data || [])
+        const cats = data.data || []
+        setCategories(cats)
+        // Flatten the nested structure for easy lookup
+        const flattened = flattenCategories(cats)
+        console.log('Flattened categories:', flattened)
+        setFlatCategories(flattened)
       }
     } catch (error) {
       console.error('Error fetching categories:', error)
@@ -61,15 +123,46 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
+      // Convert category ID to slug if categoryFilter is set
+      let categorySlug = null
+      if (categoryFilter) {
+        // Wait for categories to load if they haven't yet
+        if (flatCategories.length === 0) {
+          console.log('Categories not loaded yet, waiting...')
+          setLoading(false)
+          return
+        }
+        
+        const category = flatCategories.find(c => c.id === categoryFilter)
+        categorySlug = category?.slug || null
+        console.log('Category Filter:', {
+          categoryFilter,
+          foundCategory: category,
+          categorySlug,
+          totalFlatCategories: flatCategories.length
+        })
+        
+        if (!categorySlug) {
+          console.error('Category not found in flat categories!')
+        }
+      }
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
         ...(search && { search }),
-        ...(categoryFilter && { category: categoryFilter })
+        ...(categorySlug && { category: categorySlug })
       })
 
-      const response = await fetch(`/api/products?${params}`)
+      console.log('Fetching products with params:', params.toString())
+      const response = await fetch(`/api/admin/products?${params}`)
       const data = await response.json()
+
+      console.log('Products response:', {
+        total: data.pagination?.total,
+        count: data.data?.length,
+        hasCategory: !!categorySlug
+      })
 
       if (data.success) {
         setProducts(data.data || [])
@@ -169,7 +262,14 @@ export default function AdminProductsPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600">Manage your product catalog</p>
+          <p className="text-gray-600">
+            Manage your product catalog
+            {(search || categoryFilter) && (
+              <span className="ml-2 text-sm text-primary">
+                • Filters active
+              </span>
+            )}
+          </p>
         </div>
         <Button onClick={() => router.push('/admin/products/new')}>
           <Plus className="w-4 h-4 mr-2" />
@@ -208,6 +308,8 @@ export default function AdminProductsPage() {
               onClick={() => {
                 setSearch('')
                 setCategoryFilter(null)
+                setPage(1)
+                localStorage.removeItem('adminProductsFilters')
               }}
             >
               Clear Filters

@@ -75,6 +75,21 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+
+      // If variant is specified, validate it exists
+      if (item.variantId) {
+        const variant = await prisma.productVariant.findUnique({
+          where: { id: item.variantId },
+          select: { id: true, sku: true, attributes: true },
+        })
+
+        if (!variant) {
+          return NextResponse.json(
+            { error: `Product variant not found in catalog. Please refresh and try again.` },
+            { status: 400 }
+          )
+        }
+      }
     }
 
     // Generate PO number
@@ -109,8 +124,11 @@ export async function POST(request: NextRequest) {
         items: {
           create: body.items.map((item: any) => ({
             productId: item.productId,
+            variantId: item.variantId || null,
             productName: item.productName,
             productSku: item.productSku,
+            variantName: item.variantName || null,
+            variantAttributes: item.variantAttributes || null,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             total: item.total,

@@ -143,28 +143,65 @@ export default function AttributeManager() {
               <CardDescription>Select a category to manage its attributes</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {isLoading ? (
                   <div className="text-center py-4 text-gray-500">Loading...</div>
                 ) : (
-                  categories?.data?.map((category: any) => (
-                    <button
-                      key={category.id}
-                      className={`w-full text-left p-3 rounded-lg border transition ${
-                        selectedCategoryId === category.id
-                          ? 'border-[#1a3a5c] bg-[#1a3a5c]/5'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setSelectedCategoryId(category.id)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{category.name}</span>
-                        <Badge variant="secondary">
-                          {category._count?.attributes || 0}
-                        </Badge>
-                      </div>
-                    </button>
-                  ))
+                  (() => {
+                    // Build category hierarchy
+                    const allCategories = categories?.data || []
+                    const parentCategories = allCategories.filter((c: any) => !c.parentId)
+                    const childCategories = allCategories.filter((c: any) => c.parentId)
+                    
+                    const categoryTree: any[] = []
+                    
+                    // Sort and build tree
+                    parentCategories
+                      .sort((a: any, b: any) => (a.menuOrder || 0) - (b.menuOrder || 0) || a.name.localeCompare(b.name))
+                      .forEach((parent: any) => {
+                        categoryTree.push({ ...parent, isParent: true, level: 0 })
+                        
+                        childCategories
+                          .filter((child: any) => child.parentId === parent.id)
+                          .sort((a: any, b: any) => (a.menuOrder || 0) - (b.menuOrder || 0) || a.name.localeCompare(b.name))
+                          .forEach((child: any) => {
+                            categoryTree.push({ ...child, isChild: true, level: 1, parentName: parent.name })
+                          })
+                      })
+                    
+                    return categoryTree.map((category: any) => (
+                      <button
+                        key={category.id}
+                        className={`w-full text-left p-3 rounded-lg border transition ${
+                          selectedCategoryId === category.id
+                            ? 'border-[#1a3a5c] bg-[#1a3a5c]/5'
+                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        } ${category.isParent ? 'font-semibold' : ''}`}
+                        onClick={() => setSelectedCategoryId(category.id)}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {category.isChild && (
+                              <span className="text-gray-400 flex-shrink-0">└─</span>
+                            )}
+                            <span className={`truncate ${category.isParent ? 'text-gray-900' : 'text-gray-700'}`}>
+                              {category.name}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge variant="secondary" className="text-xs">
+                              {category._count?.attributes || 0}
+                            </Badge>
+                            {category.isParent && (
+                              <span className="text-xs text-gray-400">
+                                {childCategories.filter((c: any) => c.parentId === category.id).length} sub
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  })()
                 )}
               </div>
             </CardContent>
@@ -193,79 +230,111 @@ export default function AttributeManager() {
                 </div>
               ) : isLoading ? (
                 <div className="text-center py-8 text-gray-500">Loading attributes...</div>
-              ) : categoryAttributes?.data?.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p>No attributes defined for this category</p>
-                  <Button
-                    onClick={() => {
-                      setEditingAttribute(null)
-                      setIsDialogOpen(true)
-                    }}
-                    variant="outline"
-                    className="mt-4"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add First Attribute
-                  </Button>
-                </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Attribute</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Required</TableHead>
-                      <TableHead>Filterable</TableHead>
-                      <TableHead>Visible</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {categoryAttributes?.data?.map((attr: any) => (
-                      <TableRow key={attr.id}>
-                        <TableCell className="font-medium">{attr.name}</TableCell>
-                        <TableCell>
-                          <Badge className={getAttributeTypeBadge(attr.type)}>
-                            {attr.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {attr.isRequired ? '✅' : '❌'}
-                        </TableCell>
-                        <TableCell>
-                          {attr.isFilterable ? '✅' : '❌'}
-                        </TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={attr.isVisible}
-                            onCheckedChange={() =>
-                              toggleVisibility.mutate({
-                                id: attr.id,
-                                visible: !attr.isVisible,
-                              })
-                            }
-                          />
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(attr)}
+                <>
+                  {categoryAttributes?.category?.hasParent && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        ℹ️ This category inherits attributes from its parent category. Inherited attributes are shown with a light blue background and cannot be edited here.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {categoryAttributes?.data?.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No attributes defined for this category</p>
+                      <Button
+                        onClick={() => {
+                          setEditingAttribute(null)
+                          setIsDialogOpen(true)
+                        }}
+                        variant="outline"
+                        className="mt-4"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add First Attribute
+                      </Button>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Attribute</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Required</TableHead>
+                          <TableHead>Filterable</TableHead>
+                          <TableHead>Visible</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {categoryAttributes?.data?.map((attr: any) => (
+                          <TableRow 
+                            key={attr.id} 
+                            className={attr.isInherited ? 'bg-blue-50/50' : ''}
                           >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(attr.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{attr.name}</span>
+                                {attr.isInherited && (
+                                  <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
+                                    Inherited from {attr.inheritedFrom}
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getAttributeTypeBadge(attr.type)}>
+                                {attr.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {attr.isRequired ? '✅' : '❌'}
+                            </TableCell>
+                            <TableCell>
+                              {attr.isFilterable ? '✅' : '❌'}
+                            </TableCell>
+                            <TableCell>
+                              <Switch
+                                checked={attr.isVisible}
+                                onCheckedChange={() =>
+                                  toggleVisibility.mutate({
+                                    id: attr.id,
+                                    visible: !attr.isVisible,
+                                  })
+                                }
+                                disabled={attr.isInherited}
+                              />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {!attr.isInherited && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEdit(attr)}
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(attr.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              )}
+                              {attr.isInherited && (
+                                <span className="text-xs text-gray-400">Read-only</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

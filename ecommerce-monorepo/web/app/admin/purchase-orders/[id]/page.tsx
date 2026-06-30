@@ -115,17 +115,9 @@ export default function PurchaseOrderDetailPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href="/admin/purchase-orders">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-[#1a3a5c]">{purchaseOrder.poNumber}</h1>
-            <p className="text-gray-500 mt-1">Purchase Order Details</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-[#1a3a5c]">{purchaseOrder.poNumber}</h1>
+          <p className="text-gray-500 mt-1">Purchase Order Details</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge className={statusColors[purchaseOrder.status]}>{purchaseOrder.status}</Badge>
@@ -140,6 +132,12 @@ export default function PurchaseOrderDetailPage() {
               Send to Supplier
             </Button>
           )}
+          <Link href="/admin/purchase-orders">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -159,6 +157,13 @@ export default function PurchaseOrderDetailPage() {
                     <div className="flex-1">
                       <div className="font-medium">{item.productName}</div>
                       <div className="text-sm text-gray-500">SKU: {item.productSku}</div>
+                      {item.variantName && (
+                        <div className="mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {item.variantName}
+                          </Badge>
+                        </div>
+                      )}
                       {item.notes && (
                         <div className="text-sm text-gray-400 mt-1">{item.notes}</div>
                       )}
