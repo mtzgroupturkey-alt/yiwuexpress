@@ -23,6 +23,7 @@ interface HeroSlide {
   secondaryCtaLink: string | null
   overlayColor: string | null
   textColor: string | null
+  alignment: string
   displayOrder: number
   isActive: boolean
   slideDuration: number
@@ -366,94 +367,229 @@ export function HeroSlider() {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}
               className="absolute inset-0"
-              style={{ backgroundColor: slide.overlayColor || 'rgba(26,58,92,0.6)' }}
+              style={{
+                background: slide.overlayColor 
+                  ? slide.overlayColor
+                  : 'linear-gradient(to right, rgba(26,58,92,0.95) 0%, rgba(26,58,92,0.7) 40%, rgba(26,58,92,0.3) 100%)'
+              }}
             />
           </div>
 
           {/* Content */}
           <Container>
-            <motion.div
-              variants={contentVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-8 md:py-12"
-            >
-              {/* Text Content */}
-              <div className="text-white space-y-4 max-w-xl">
-                {slide.badgeText && (
-                  <motion.span
-                    variants={itemVariants}
-                    className="inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
-                    style={{
-                      backgroundColor: slide.badgeColor || '#c9a84c',
-                      color: slide.textColor || '#1a1a2e'
-                    }}
-                  >
-                    {slide.badgeText}
-                  </motion.span>
-                )}
-                {slide.subtitle && (
-                  <motion.p
-                    variants={itemVariants}
-                    className="text-sm uppercase tracking-widest text-white/80"
-                  >
-                    {slide.subtitle}
-                  </motion.p>
-                )}
-                <motion.h1
-                  variants={itemVariants}
-                  className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight"
-                >
-                  {slide.title}
-                </motion.h1>
-                {slide.description && (
-                  <motion.p
-                    variants={itemVariants}
-                    className="text-white/80 text-base md:text-lg"
-                  >
-                    {slide.description}
-                  </motion.p>
-                )}
-                <motion.div
-                  variants={itemVariants}
-                  className="flex flex-wrap gap-4 pt-2"
-                >
-                  <Link
-                    href={slide.ctaLink}
-                    className="bg-[#c9a84c] text-[#1a1a2e] px-6 py-2.5 rounded-full font-semibold hover:bg-[#e8d48b] transition-all transform hover:scale-105 inline-flex items-center"
-                  >
-                    {slide.ctaText}
-                  </Link>
-                  {slide.secondaryCtaText && slide.secondaryCtaLink && (
-                    <Link
-                      href={slide.secondaryCtaLink}
-                      className="border border-white/30 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-white/10 transition-all inline-flex items-center"
+            {/* Center Alignment - Full Width Layout */}
+            {slide.alignment === 'center' ? (
+              <motion.div
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="relative z-10 flex items-center justify-center py-8 md:py-12 min-h-[400px]"
+              >
+                {/* Text Content - Centered Full Width */}
+                <div className="text-white space-y-4 max-w-3xl w-full text-center">
+                  {slide.badgeText && (
+                    <motion.span
+                      variants={itemVariants}
+                      className="inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded"
+                      style={{
+                        backgroundColor: slide.badgeColor || '#c9a84c',
+                        color: slide.textColor || '#1a1a2e'
+                      }}
                     >
-                      {slide.secondaryCtaText}
-                    </Link>
+                      {slide.badgeText}
+                    </motion.span>
                   )}
-                </motion.div>
-              </div>
+                  {slide.subtitle && (
+                    <motion.p
+                      variants={itemVariants}
+                      className="text-sm uppercase tracking-widest text-white/80"
+                    >
+                      {slide.subtitle}
+                    </motion.p>
+                  )}
+                  <motion.h1
+                    variants={itemVariants}
+                    transition={{ duration: 0.5 }}
+                    className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white drop-shadow-md tracking-tight"
+                  >
+                    {slide.title}
+                  </motion.h1>
+                  {slide.description && (
+                    <motion.p
+                      variants={itemVariants}
+                      className="text-white/80 text-base md:text-lg max-w-2xl mx-auto"
+                    >
+                      {slide.description}
+                    </motion.p>
+                  )}
+                  <motion.div
+                    variants={itemVariants}
+                    className="flex flex-wrap gap-4 pt-2 justify-center"
+                  >
+                    <Link
+                      href={slide.ctaLink}
+                      className="bg-secondary-500 text-white px-8 py-3.5 rounded-full font-bold hover:bg-secondary-400 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl inline-flex items-center"
+                    >
+                      {slide.ctaText}
+                    </Link>
+                    {slide.secondaryCtaText && slide.secondaryCtaLink && (
+                      <Link
+                        href={slide.secondaryCtaLink}
+                        className="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-full font-bold hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] inline-flex items-center"
+                      >
+                        {slide.secondaryCtaText}
+                      </Link>
+                    )}
+                  </motion.div>
 
-              {/* Product Image */}
-              {slide.productImageUrl && (
-                <motion.div
-                  variants={itemVariants}
-                  className="flex justify-center lg:justify-end"
-                >
-                  <motion.img
-                    src={slide.productImageUrl}
-                    alt={slide.title}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.4, duration: 0.6 }}
-                    className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
-                    loading="lazy"
-                  />
-                </motion.div>
-              )}
-            </motion.div>
+                  {/* Product Image - Below text for center alignment */}
+                  {slide.productImageUrl && (
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex justify-center mt-8"
+                    >
+                      <motion.img
+                        src={slide.productImageUrl}
+                        alt={slide.title}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.4, duration: 0.6 }}
+                        className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
+                        loading="lazy"
+                      />
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            ) : (
+              /* Left/Right Alignment - Grid Layout */
+              <motion.div
+                variants={contentVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center py-8 md:py-12"
+              >
+                {/* Product Image - Show first for right alignment on desktop */}
+                {slide.productImageUrl && slide.alignment === 'right' && (
+                  <motion.div
+                    variants={itemVariants}
+                    className="hidden lg:flex justify-center lg:justify-start order-first"
+                  >
+                    <motion.img
+                      src={slide.productImageUrl}
+                      alt={slide.title}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.6 }}
+                      className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
+                      loading="lazy"
+                    />
+                  </motion.div>
+                )}
+
+                {/* Text Content */}
+                <div className={`text-white space-y-4 max-w-xl w-full ${
+                  slide.alignment === 'right' ? 'text-right ml-auto' : 'text-left'
+                }`}>
+                  {slide.badgeText && (
+                    <motion.span
+                      variants={itemVariants}
+                      className={`inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded ${
+                        slide.alignment === 'right' ? 'ml-auto' : ''
+                      }`}
+                      style={{
+                        backgroundColor: slide.badgeColor || '#c9a84c',
+                        color: slide.textColor || '#1a1a2e'
+                      }}
+                    >
+                      {slide.badgeText}
+                    </motion.span>
+                  )}
+                  {slide.subtitle && (
+                    <motion.p
+                      variants={itemVariants}
+                      className="text-sm uppercase tracking-widest text-white/80"
+                    >
+                      {slide.subtitle}
+                    </motion.p>
+                  )}
+                  <motion.h1
+                    variants={itemVariants}
+                    transition={{ duration: 0.5 }}
+                    className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-white drop-shadow-md tracking-tight"
+                  >
+                    {slide.title}
+                  </motion.h1>
+                  {slide.description && (
+                    <motion.p
+                      variants={itemVariants}
+                      className="text-white/80 text-base md:text-lg"
+                    >
+                      {slide.description}
+                    </motion.p>
+                  )}
+                  <motion.div
+                    variants={itemVariants}
+                    className={`flex flex-wrap gap-4 pt-2 ${
+                      slide.alignment === 'right' ? 'justify-end' : 'justify-start'
+                    }`}
+                  >
+                    <Link
+                      href={slide.ctaLink}
+                      className="bg-secondary-500 text-white px-8 py-3.5 rounded-full font-bold hover:bg-secondary-400 transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl inline-flex items-center"
+                    >
+                      {slide.ctaText}
+                    </Link>
+                    {slide.secondaryCtaText && slide.secondaryCtaLink && (
+                      <Link
+                        href={slide.secondaryCtaLink}
+                        className="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-full font-bold hover:bg-white/20 transition-all duration-300 transform hover:scale-[1.02] inline-flex items-center"
+                      >
+                        {slide.secondaryCtaText}
+                      </Link>
+                    )}
+                  </motion.div>
+                </div>
+
+                {/* Product Image - Standard position for left alignment */}
+                {slide.productImageUrl && slide.alignment === 'left' && (
+                  <motion.div
+                    variants={itemVariants}
+                    className="flex justify-center lg:justify-end"
+                  >
+                    <motion.img
+                      src={slide.productImageUrl}
+                      alt={slide.title}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.6 }}
+                      className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
+                      loading="lazy"
+                    />
+                  </motion.div>
+                )}
+
+                {/* Product Image - Mobile for right alignment */}
+                {slide.productImageUrl && slide.alignment === 'right' && (
+                  <motion.div
+                    variants={itemVariants}
+                    className="flex lg:hidden justify-center"
+                  >
+                    <motion.img
+                      src={slide.productImageUrl}
+                      alt={slide.title}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.6 }}
+                      className="w-48 h-48 md:w-64 md:h-64 object-contain"
+                      loading="lazy"
+                    />
+                  </motion.div>
+                )}
+              </motion.div>
+            )}
           </Container>
         </motion.div>
       </AnimatePresence>

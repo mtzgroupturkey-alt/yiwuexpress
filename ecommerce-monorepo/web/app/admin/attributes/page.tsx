@@ -343,20 +343,22 @@ export default function AttributeManager() {
 
       {/* Attribute Form Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={() => handleDialogClose()}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{editingAttribute ? 'Edit Attribute' : 'Add Attribute'}</DialogTitle>
             <DialogDescription>
               Define a custom attribute for this category
             </DialogDescription>
           </DialogHeader>
 
-          <AttributeForm
-            initialData={editingAttribute}
-            categoryId={selectedCategoryId}
-            onSuccess={() => handleDialogClose(true)}
-            onCancel={() => handleDialogClose()}
-          />
+          <div className="flex-1 overflow-y-auto pr-2">
+            <AttributeForm
+              initialData={editingAttribute}
+              categoryId={selectedCategoryId}
+              onSuccess={() => handleDialogClose(true)}
+              onCancel={() => handleDialogClose()}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </Container>

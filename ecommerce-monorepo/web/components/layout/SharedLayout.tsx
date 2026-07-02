@@ -1,8 +1,6 @@
 'use client'
 
-import { TopBar } from './TopBar'
-import { MainHeader } from './MainHeader'
-import { CategoryMenu } from './CategoryMenu'
+import { TwoRowNavbar } from './TwoRowNavbar'
 import { HeroSlider } from '@/components/home/HeroSlider'
 import { PageHero } from './PageHero'
 import Footer from '@/components/footer'
@@ -33,14 +31,8 @@ export function SharedLayout({
 }: SharedLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden">
-      {/* Top Bar - Always visible */}
-      <TopBar />
-      
-      {/* Main Header - Always visible */}
-      <MainHeader />
-      
-      {/* Category Menu - Always visible */}
-      <CategoryMenu />
+      {/* Main Header and Category Menu */}
+      <TwoRowNavbar />
       
       {/* Hero Section - Only on homepage */}
       {showHero && <HeroSlider />}

@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       slug,
       type,
       options,
+      colorOptions,
       placeholder,
       helperText,
       isRequired,
@@ -90,9 +91,16 @@ export async function POST(req: NextRequest) {
 
     // Validate options for SELECT/MULTISELECT types
     if ((type === 'SELECT' || type === 'MULTISELECT') && (!options || options.length === 0)) {
-      console.error('Validation failed: options required for SELECT/MULTISELECT')
       return NextResponse.json(
         { error: 'Options are required for SELECT and MULTISELECT types' },
+        { status: 400 }
+      )
+    }
+
+    // Validate colorOptions for COLOR types
+    if ((type === 'COLOR' || type === 'COLOR_MULTI') && (!colorOptions || colorOptions.length === 0)) {
+      return NextResponse.json(
+        { error: 'Color options are required for COLOR attribute types' },
         { status: 400 }
       )
     }
@@ -119,6 +127,7 @@ export async function POST(req: NextRequest) {
         slug: finalSlug,
         type,
         options: options || [],
+        colorOptions: colorOptions || null,
         placeholder,
         helperText,
         isRequired: isRequired || false,

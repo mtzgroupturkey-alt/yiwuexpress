@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import { toast } from '@/components/ui/use-toast'
-import { GripVertical, Pencil, Trash2, Plus, Eye, EyeOff, Save, Image as ImageIcon, Link2, Copy, Loader2 } from 'lucide-react'
+import { GripVertical, Pencil, Trash2, Plus, Eye, EyeOff, Save, Image as ImageIcon, Link2, Copy, Loader2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 
 interface HeroSlide {
   id: string
@@ -35,6 +35,7 @@ interface HeroSlide {
   secondaryCtaLink: string | null
   overlayColor: string | null
   textColor: string | null
+  alignment: string
   displayOrder: number
   isActive: boolean
   slideDuration: number
@@ -106,6 +107,12 @@ function SortableSlideItem({ slide, onEdit, onDelete, onDuplicate, onToggleActiv
             <span className="flex items-center gap-1">
               <Link2 className="w-3 h-3" />
               {slide.ctaText}
+            </span>
+            <span className="flex items-center gap-1">
+              {slide.alignment === 'left' && <AlignLeft className="w-3 h-3" />}
+              {slide.alignment === 'center' && <AlignCenter className="w-3 h-3" />}
+              {slide.alignment === 'right' && <AlignRight className="w-3 h-3" />}
+              {slide.alignment || 'left'}
             </span>
           </div>
         </div>
@@ -462,6 +469,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
   const [secondaryCtaLink, setSecondaryCtaLink] = useState('')
   const [overlayColor, setOverlayColor] = useState('rgba(26,58,92,0.6)')
   const [textColor, setTextColor] = useState('#ffffff')
+  const [alignment, setAlignment] = useState('left')
   const [slideDuration, setSlideDuration] = useState(5)
   const [motionType, setMotionType] = useState('slide')
   const [isActive, setIsActive] = useState(true)
@@ -482,6 +490,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       setSecondaryCtaLink(initialData.secondaryCtaLink || '')
       setOverlayColor(initialData.overlayColor || 'rgba(26,58,92,0.6)')
       setTextColor(initialData.textColor || '#ffffff')
+      setAlignment(initialData.alignment || 'left')
       setSlideDuration(initialData.slideDuration)
       setMotionType(initialData.motionType || 'slide')
       setIsActive(initialData.isActive)
@@ -501,6 +510,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       setSecondaryCtaLink('')
       setOverlayColor('rgba(26,58,92,0.6)')
       setTextColor('#ffffff')
+      setAlignment('left')
       setSlideDuration(5)
       setMotionType('slide')
       setIsActive(true)
@@ -530,6 +540,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       secondaryCtaLink: secondaryCtaLink || null,
       overlayColor: overlayColor || null,
       textColor: textColor || null,
+      alignment: alignment || 'left',
       slideDuration,
       motionType,
       isActive,
@@ -572,9 +583,10 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs defaultValue="content" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="media">Media & Design</TabsTrigger>
+              <TabsTrigger value="layout">Layout</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
@@ -647,6 +659,125 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 <Label>Product Image (Right Side) - Optional</Label>
                 <div className="mt-2">
                   <ImageUpload value={productImageUrl} onChange={setProductImageUrl} folder="hero/products" />
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* LAYOUT TAB - NEW ALIGNMENT OPTIONS */}
+            <TabsContent value="layout" className="space-y-4">
+              <div>
+                <Label>Text & Button Alignment</Label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Choose how the text and buttons should be aligned on this slide
+                </p>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Left Alignment */}
+                  <button
+                    type="button"
+                    className={`p-4 border-2 rounded-lg text-center transition ${
+                      alignment === 'left'
+                        ? 'border-[#1a3a5c] bg-[#1a3a5c]/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setAlignment('left')}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <AlignLeft className={`w-6 h-6 ${
+                        alignment === 'left' ? 'text-[#1a3a5c]' : 'text-gray-400'
+                      }`} />
+                      <span className={`text-sm font-medium ${
+                        alignment === 'left' ? 'text-[#1a3a5c]' : 'text-gray-600'
+                      }`}>
+                        Left
+                      </span>
+                      <div className="flex flex-col items-start w-full gap-1 p-2 bg-gray-100 rounded">
+                        <div className="w-3/4 h-2 bg-gray-400 rounded" />
+                        <div className="w-1/2 h-2 bg-gray-400 rounded" />
+                        <div className="flex gap-2 mt-1">
+                          <div className="w-12 h-2 bg-[#c9a84c] rounded" />
+                          <div className="w-10 h-2 bg-gray-400 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Center Alignment */}
+                  <button
+                    type="button"
+                    className={`p-4 border-2 rounded-lg text-center transition ${
+                      alignment === 'center'
+                        ? 'border-[#1a3a5c] bg-[#1a3a5c]/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setAlignment('center')}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <AlignCenter className={`w-6 h-6 ${
+                        alignment === 'center' ? 'text-[#1a3a5c]' : 'text-gray-400'
+                      }`} />
+                      <span className={`text-sm font-medium ${
+                        alignment === 'center' ? 'text-[#1a3a5c]' : 'text-gray-600'
+                      }`}>
+                        Center
+                      </span>
+                      <div className="flex flex-col items-center w-full gap-1 p-2 bg-gray-100 rounded">
+                        <div className="w-3/4 h-2 bg-gray-400 rounded" />
+                        <div className="w-1/2 h-2 bg-gray-400 rounded" />
+                        <div className="flex gap-2 mt-1">
+                          <div className="w-12 h-2 bg-[#c9a84c] rounded" />
+                          <div className="w-10 h-2 bg-gray-400 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Right Alignment */}
+                  <button
+                    type="button"
+                    className={`p-4 border-2 rounded-lg text-center transition ${
+                      alignment === 'right'
+                        ? 'border-[#1a3a5c] bg-[#1a3a5c]/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setAlignment('right')}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <AlignRight className={`w-6 h-6 ${
+                        alignment === 'right' ? 'text-[#1a3a5c]' : 'text-gray-400'
+                      }`} />
+                      <span className={`text-sm font-medium ${
+                        alignment === 'right' ? 'text-[#1a3a5c]' : 'text-gray-600'
+                      }`}>
+                        Right
+                      </span>
+                      <div className="flex flex-col items-end w-full gap-1 p-2 bg-gray-100 rounded">
+                        <div className="w-3/4 h-2 bg-gray-400 rounded" />
+                        <div className="w-1/2 h-2 bg-gray-400 rounded" />
+                        <div className="flex gap-2 mt-1">
+                          <div className="w-12 h-2 bg-[#c9a84c] rounded" />
+                          <div className="w-10 h-2 bg-gray-400 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Preview of selected alignment */}
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-500 mb-2">Preview:</p>
+                  <div className={`flex flex-col gap-2 ${
+                    alignment === 'left' ? 'items-start text-left' :
+                    alignment === 'center' ? 'items-center text-center' :
+                    'items-end text-right'
+                  }`}>
+                    <div className="text-sm font-bold text-[#1a3a5c]">Sample Title</div>
+                    <div className="text-sm text-gray-500">Sample description text</div>
+                    <div className="flex gap-2">
+                      <div className="px-4 py-1 text-xs text-white bg-[#c9a84c] rounded">Button</div>
+                      <div className="px-4 py-1 text-xs text-gray-500 border rounded">Secondary</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </TabsContent>

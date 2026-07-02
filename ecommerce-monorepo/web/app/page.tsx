@@ -74,18 +74,18 @@ export default function Home() {
     <SharedLayout showHero={true}>
       <div className="bg-gray-50">
         {/* Stats Section */}
-        <section className="py-12 bg-white border-b border-gray-100">
+        <section className="py-16 bg-gray-50 border-b border-gray-100">
         <Container maxWidth="2xl">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => {
               const Icon = stat.icon
               return (
-                <div key={index} className="text-center group">
-                  <div className="inline-flex items-center justify-center w-12 h-12 mb-3 bg-primary-50 rounded-full group-hover:bg-primary-100 transition-colors">
-                    <Icon className="w-6 h-6 text-primary-600" />
+                <div key={index} className="text-center group bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02]">
+                  <div className="inline-flex items-center justify-center w-14 h-14 mb-4 bg-primary-50 rounded-full group-hover:bg-primary-100 transition-colors">
+                    <Icon className="w-7 h-7 text-primary-500" />
                   </div>
-                  <div className="text-3xl font-bold text-primary-600 mb-2">{stat.value}</div>
-                  <div className="text-gray-600">{stat.label}</div>
+                  <div className="text-3xl font-extrabold text-primary-500 mb-2">{stat.value}</div>
+                  <div className="text-gray-600 font-medium">{stat.label}</div>
                 </div>
               )
             })}
@@ -132,27 +132,31 @@ export default function Home() {
       <BlogSection />
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-primary text-white">
-        <Container maxWidth="2xl" className="text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Ready to Expand Your Business Globally?
-          </h2>
-          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Join thousands of businesses who trust YIWU EXPRESS for their international trade needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={() => window.location.href = '/products'}
-              className="px-8 py-3 bg-secondary-500 text-white font-semibold rounded-lg hover:bg-secondary-600 transition-colors"
-            >
-              Browse Products
-            </button>
-            <button 
-              onClick={() => window.location.href = '/contact'}
-              className="px-8 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/20 transition-colors"
-            >
-              Contact Our Team
-            </button>
+      <section className="py-24 bg-gradient-to-br from-primary-600 to-primary-800 text-white relative overflow-hidden">
+        {/* Subtle background grain/pattern for premium feel */}
+        <div className="absolute inset-0 opacity-10 bg-[url('/pattern-china.svg')] bg-repeat mix-blend-overlay"></div>
+        <Container maxWidth="2xl" className="text-center relative z-10">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-10 md:p-16 rounded-3xl max-w-4xl mx-auto shadow-2xl">
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight text-white drop-shadow-sm">
+              Ready to Expand Your Business Globally?
+            </h2>
+            <p className="text-xl text-primary-50 mb-10 max-w-2xl mx-auto font-medium">
+              Join thousands of businesses who trust YIWU EXPRESS for their international trade, logistics, and wholesale needs.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-5 justify-center">
+              <button 
+                onClick={() => window.location.href = '/products'}
+                className="px-8 py-4 bg-secondary-500 text-white font-bold rounded-full hover:bg-secondary-400 hover:scale-[1.02] transition-all duration-300 shadow-lg"
+              >
+                Browse Products
+              </button>
+              <button 
+                onClick={() => window.location.href = '/contact'}
+                className="px-8 py-4 bg-white/10 backdrop-blur-md text-white font-bold rounded-full border border-white/30 hover:bg-white/20 hover:scale-[1.02] transition-all duration-300"
+              >
+                Contact Our Team
+              </button>
+            </div>
           </div>
         </Container>
       </section>

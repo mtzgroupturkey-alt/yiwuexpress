@@ -16,6 +16,7 @@ interface Product {
   stock?: number
   minOrder?: number
   wholesalePrice?: number
+  colors?: { label: string; value: string }[]  // hex color swatches
 }
 
 interface ProductCardProps {
@@ -147,6 +148,23 @@ export default function ProductCard({
           <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
+
+          {/* Color Swatches */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+              {product.colors.slice(0, 5).map(color => (
+                <div
+                  key={color.value}
+                  className="w-5 h-5 rounded-full border-2 border-white shadow-sm ring-1 ring-gray-200 flex-shrink-0"
+                  style={{ backgroundColor: color.value }}
+                  title={color.label}
+                />
+              ))}
+              {product.colors.length > 5 && (
+                <span className="text-xs text-gray-400">+{product.colors.length - 5}</span>
+              )}
+            </div>
+          )}
 
           {/* Description (optional, shown on hover) */}
           {product.description && (

@@ -608,6 +608,7 @@ model HeroSlide {
   secondaryCtaLink String?
   overlayColor     String?
   textColor        String?
+  alignment        String   @default("left") // left, center, right
   displayOrder     Int      @default(0)
   isActive         Boolean  @default(true)
   slideDuration    Int      @default(5)
@@ -625,7 +626,8 @@ model Attribute {
   name         String
   slug         String              @unique
   type         AttributeType
-  options      Json?
+  options      Json?               // For SELECT/MULTISELECT: ["Red", "Blue"]
+  colorOptions Json?               // For COLOR/COLOR_MULTI: [{"label":"Red","value":"#FF0000"}]
   placeholder  String?
   helperText   String?
   isRequired   Boolean             @default(false)
@@ -701,6 +703,7 @@ enum AttributeType {
   SELECT
   MULTISELECT
   COLOR
+  COLOR_MULTI
   FILE
   URL
   CHECKBOX

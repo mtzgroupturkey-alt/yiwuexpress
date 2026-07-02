@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, Minus, Plus, Package, Truck, Shield, ArrowLeft, FileText } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
+import ProductCard from '@/components/products/ProductCard'
 
 interface Product {
   id: string
@@ -34,6 +35,33 @@ interface Product {
   } | null
   minOrderQty: number
   wholesalePrice?: number | null
+  attributes?: Record<string, any> | null
+  categoryAttributes?: Array<{
+    id: string
+    slug: string
+    name: string
+    inputType: string
+    isRequired: boolean
+    isFilterable: boolean
+    isVisible: boolean
+    displayOrder: number
+    options?: string[] | null
+    colorOptions?: { label: string; value: string }[] | null
+  }> | null
+}
+
+interface RelatedProduct {
+  id: number
+  slug: string
+  name: string
+  description?: string
+  price: number
+  image?: string
+  category?: string
+  stock?: number
+  minOrder?: number
+  wholesalePrice?: number
+  colors?: { label: string; value: string }[]
 }
 
 export default function ProductDetailPage() {
@@ -43,6 +71,7 @@ export default function ProductDetailPage() {
   const { refreshCartCount } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -51,6 +80,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (slug) {
       fetchProduct()
+      fetchRelatedProducts()
     }
   }, [slug])
 
@@ -59,6 +89,8 @@ export default function ProductDetailPage() {
     try {
       const response = await fetch(`/api/products/${slug}`)
       const data = await response.json()
+      
+
       
       if (data.success) {
         setProduct(data.data)
@@ -72,6 +104,19 @@ export default function ProductDetailPage() {
       setError('Failed to load product')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRelatedProducts = async () => {
+    try {
+      const response = await fetch(`/api/products/${slug}/related?limit=4`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setRelatedProducts(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching related products:', error)
     }
   }
 
@@ -354,32 +399,112 @@ export default function ProductDetailPage() {
           {/* Specifications */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-4">Specifications</h2>
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                Specifications
+              </h2>
+              
+
+              
               <dl className="space-y-3">
-                <div className="flex justify-between">
-                  <dt className="text-gray-600">Weight</dt>
-                  <dd className="font-medium">{product.weightKg} kg</dd>
+                {/* Product Attributes from Category */}
+                  {product.attributes && Object.entries(product.attributes).length > 0 && (
+                  <>
+                    {product.categoryAttributes && product.categoryAttributes.length > 0 ? (
+                      product.categoryAttributes
+                        .filter(attr => {
+                          const value = product.attributes?.[attr.slug]
+                          if (!value) return false
+                          if (Array.isArray(value) && value.length === 0) return false
+                          return true
+                        })
+                        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                        .map(attr => {
+                          const value = product.attributes?.[attr.slug]
+                          if (!value) return null
+
+                          const isColorType = attr.inputType === 'COLOR' || attr.inputType === 'COLOR_MULTI'
+                          const colorOpts   = attr.colorOptions || []
+
+                          // Color attribute — show swatches
+                          if (isColorType) {
+                            const colorVals: string[] = Array.isArray(value) ? value : [value]
+                            return (
+                              <div key={attr.slug} className="py-3 border-b border-gray-100 last:border-0">
+                                <div className="flex justify-between items-start gap-4">
+                                  <dt className="text-gray-600 font-medium flex-shrink-0">{attr.name}</dt>
+                                  <dd className="flex flex-wrap gap-2 justify-end">
+                                    {colorVals.map((hex: string) => {
+                                      const label = colorOpts.find((c: any) => c.value === hex)?.label || hex
+                                      return (
+                                        <div key={hex} className="flex items-center gap-1.5">
+                                          <span
+                                            className="inline-block w-5 h-5 rounded-full border-2 border-white shadow ring-1 ring-gray-200"
+                                            style={{ backgroundColor: hex }}
+                                            title={label}
+                                          />
+                                          <span className="text-sm font-medium text-gray-900">{label}</span>
+                                        </div>
+                                      )
+                                    })}
+                                  </dd>
+                                </div>
+                              </div>
+                            )
+                          }
+
+                          // Regular attribute — text display
+                          const displayValue = Array.isArray(value) ? value.join(', ') : String(value)
+                          return (
+                            <div key={attr.slug} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                              <dt className="text-gray-600 font-medium">{attr.name}</dt>
+                              <dd className="font-semibold text-gray-900">{displayValue}</dd>
+                            </div>
+                          )
+                        })
+                    ) : (
+                      Object.entries(product.attributes)
+                        .filter(([, value]) => !!value && !(Array.isArray(value) && value.length === 0))
+                        .map(([key, value]) => {
+                          const displayName  = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()
+                          const displayValue = Array.isArray(value) ? value.join(', ') : String(value)
+                          return (
+                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                              <dt className="text-gray-600 font-medium">{displayName}</dt>
+                              <dd className="font-semibold text-gray-900">{displayValue}</dd>
+                            </div>
+                          )
+                        })
+                    )}
+                    <div className="my-4 border-t-2 border-gray-200" />
+                  </>
+                )}
+                
+                {/* Basic Product Info */}
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <dt className="text-gray-600 font-medium">Weight</dt>
+                  <dd className="font-semibold text-gray-900">{product.weightKg} kg</dd>
                 </div>
                 {product.hsCode && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-600">HS Code</dt>
-                    <dd className="font-medium">{product.hsCode}</dd>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <dt className="text-gray-600 font-medium">HS Code</dt>
+                    <dd className="font-semibold text-gray-900">{product.hsCode}</dd>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <dt className="text-gray-600">Origin</dt>
-                  <dd className="font-medium">{product.countryOfOrigin}</dd>
+                <div className="flex justify-between py-2 border-b border-gray-100">
+                  <dt className="text-gray-600 font-medium">Country of Origin</dt>
+                  <dd className="font-semibold text-gray-900">{product.countryOfOrigin}</dd>
                 </div>
                 {product.material && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-600">Material</dt>
-                    <dd className="font-medium">{product.material}</dd>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <dt className="text-gray-600 font-medium">Material</dt>
+                    <dd className="font-semibold text-gray-900">{product.material}</dd>
                   </div>
                 )}
                 {product.dimensions && (
-                  <div className="flex justify-between">
-                    <dt className="text-gray-600">Dimensions</dt>
-                    <dd className="font-medium">
+                  <div className="flex justify-between py-2">
+                    <dt className="text-gray-600 font-medium">Dimensions</dt>
+                    <dd className="font-semibold text-gray-900">
                       {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} cm
                     </dd>
                   </div>
@@ -388,6 +513,67 @@ export default function ProductDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Related Products Section */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
+              {product.category && (
+                <Button
+                  variant="outline"
+                  onClick={() => router.push(`/products?category=${product.category?.slug}`)}
+                >
+                  View All in {product.category.name}
+                </Button>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedProducts.map((relatedProduct) => (
+                <ProductCard
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                  onAddToCart={async (productId) => {
+                    try {
+                      const token = localStorage.getItem('token')
+                      if (!token) {
+                        alert('Please login to add items to cart')
+                        router.push('/login')
+                        return
+                      }
+
+                      const userId = JSON.parse(atob(token.split('.')[1])).userId
+
+                      const response = await fetch('/api/cart', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                          userId,
+                          productId: relatedProduct.id.toString(),
+                          quantity: relatedProduct.minOrder || 1
+                        })
+                      })
+
+                      const data = await response.json()
+                      
+                      if (data.success) {
+                        refreshCartCount()
+                      } else {
+                        alert(data.error || 'Failed to add item to cart')
+                      }
+                    } catch (error) {
+                      console.error('Error adding to cart:', error)
+                      alert('Failed to add item to cart')
+                    }
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </Container>
     </div>
     </SharedLayout>

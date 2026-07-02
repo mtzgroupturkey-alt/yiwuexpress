@@ -11,6 +11,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search')
     const featured = searchParams.get('featured')
     const newArrivals = searchParams.get('new')
+    const colors = searchParams.getAll('color') // Get color filters
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
@@ -59,6 +60,20 @@ export async function GET(request: Request) {
         { description: { contains: search, mode: 'insensitive' } },
         { sku: { contains: search, mode: 'insensitive' } }
       ]
+    }
+
+    // Color filter
+    if (colors && colors.length > 0) {
+      where.attributeValues = {
+        some: {
+          attribute: {
+            type: { in: ['COLOR', 'COLOR_MULTI'] }
+          },
+          OR: colors.map(color => ({
+            value: { contains: color }
+          }))
+        }
+      }
     }
 
     if (featured === 'true') {
