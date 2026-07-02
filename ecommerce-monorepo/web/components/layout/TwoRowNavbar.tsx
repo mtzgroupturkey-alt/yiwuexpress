@@ -7,6 +7,7 @@ import { Search, ShoppingCart, User, Menu, X, ChevronDown, Globe } from 'lucide-
 import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
 
 // Types
 interface Category {
@@ -87,10 +88,21 @@ export function TwoRowNavbar() {
       >
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between h-8">
-            {/* Left: Welcome Message */}
-            <span className="text-white/70 text-[10px] md:text-xs tracking-wider">
-              Welcome to {company?.name || 'YIWU EXPRESS'} — Premium Sourcing
-            </span>
+            {/* Left: Welcome Message with Typing Animation */}
+            <div className="flex items-center space-x-2">
+              <span className="text-[#c9a84c] text-sm drop-shadow-lg">✦</span>
+              <SimpleTypingText
+                texts={[
+                  `WELCOME TO ${(company?.name || 'YIWU EXPRESS').toUpperCase()} — PREMIUM SOURCING`,
+                  "GLOBAL TRADE SOLUTIONS — QUALITY YOU CAN TRUST",
+                  "WHOLESALE & RETAIL — BEST PRICES GUARANTEED"
+                ]}
+                typingSpeed={75}
+                deletingSpeed={30}
+                pauseDuration={2600}
+                className="text-white/70 text-[10px] md:text-xs tracking-wider"
+              />
+            </div>
 
             {/* Right: Main Navigation */}
             <nav className="flex items-center space-x-4 md:space-x-6">
@@ -242,7 +254,7 @@ export function TwoRowNavbar() {
             {categories.map((category) => (
               <div key={category.id} className="relative group h-full flex items-center">
                 <Link
-                  href={`/categories/${category.slug}`}
+                  href={`/products?category=${category.slug}`}
                   className="text-gray-600 hover:text-[#1a3a5c] text-xs md:text-sm font-medium whitespace-nowrap transition-colors hover:border-b-2 hover:border-[#c9a84c] py-1 flex items-center gap-1"
                 >
                   {category.name}
@@ -258,7 +270,7 @@ export function TwoRowNavbar() {
                       {category.children.slice(0, 8).map((sub) => (
                         <li key={sub.id}>
                           <Link
-                            href={`/categories/${sub.slug}`}
+                            href={`/products?category=${sub.slug}`}
                             className="block px-3 py-2 text-sm text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-lg transition"
                           >
                             {sub.name}
@@ -268,7 +280,7 @@ export function TwoRowNavbar() {
                       {category.children.length > 8 && (
                         <li>
                           <Link
-                            href={`/categories/${category.slug}`}
+                            href={`/products?category=${category.slug}`}
                             className="block px-3 py-2 text-sm text-[#c9a84c] font-medium hover:bg-gray-50 rounded-lg transition"
                           >
                             View All →
@@ -314,7 +326,7 @@ export function TwoRowNavbar() {
                 {categories.map((cat) => (
                   <div key={cat.id} className="border-b border-gray-50">
                     <Link
-                      href={`/categories/${cat.slug}`}
+                      href={`/products?category=${cat.slug}`}
                       className="block py-2 text-sm text-gray-600 hover:text-[#1a3a5c]"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -325,7 +337,7 @@ export function TwoRowNavbar() {
                         {cat.children.map((sub) => (
                           <Link
                             key={sub.id}
-                            href={`/categories/${sub.slug}`}
+                            href={`/products?category=${sub.slug}`}
                             className="block py-1 text-xs text-gray-500 hover:text-[#1a3a5c]"
                             onClick={() => setIsMobileMenuOpen(false)}
                           >

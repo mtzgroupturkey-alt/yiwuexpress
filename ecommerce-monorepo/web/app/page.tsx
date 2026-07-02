@@ -131,31 +131,56 @@ export default function Home() {
       {/* Blog Section */}
       <BlogSection />
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-primary-600 to-primary-800 text-white relative overflow-hidden">
-        {/* Subtle background grain/pattern for premium feel */}
-        <div className="absolute inset-0 opacity-10 bg-[url('/pattern-china.svg')] bg-repeat mix-blend-overlay"></div>
-        <Container maxWidth="2xl" className="text-center relative z-10">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-10 md:p-16 rounded-3xl max-w-4xl mx-auto shadow-2xl">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight text-white drop-shadow-sm">
-              Ready to Expand Your Business Globally?
-            </h2>
-            <p className="text-xl text-primary-50 mb-10 max-w-2xl mx-auto font-medium">
-              Join thousands of businesses who trust YIWU EXPRESS for their international trade, logistics, and wholesale needs.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-5 justify-center">
-              <button 
-                onClick={() => window.location.href = '/products'}
-                className="px-8 py-4 bg-secondary-500 text-white font-bold rounded-full hover:bg-secondary-400 hover:scale-[1.02] transition-all duration-300 shadow-lg"
-              >
-                Browse Products
-              </button>
-              <button 
-                onClick={() => window.location.href = '/contact'}
-                className="px-8 py-4 bg-white/10 backdrop-blur-md text-white font-bold rounded-full border border-white/30 hover:bg-white/20 hover:scale-[1.02] transition-all duration-300"
-              >
-                Contact Our Team
-              </button>
+      {/* Newsletter Section - Compact */}
+      <section className="relative py-12 bg-slate-800 overflow-hidden">
+        {/* Subtle Background Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+
+        <Container maxWidth="2xl" className="relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-slate-700/50 backdrop-blur-sm border border-slate-600 rounded-2xl p-8 md:p-10">
+              <div className="grid md:grid-cols-2 gap-6 items-center">
+                {/* Left: Content */}
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs font-semibold mb-3">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                    Stay Updated
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                    Get Exclusive Deals & Updates
+                  </h2>
+                  <p className="text-slate-300 text-sm">
+                    Subscribe to our newsletter for wholesale pricing, new arrivals, and industry insights.
+                  </p>
+                </div>
+
+                {/* Right: Form */}
+                <div>
+                  <form className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      className="flex-1 px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      required
+                    />
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 whitespace-nowrap"
+                    >
+                      Subscribe
+                    </button>
+                  </form>
+                  <p className="text-xs text-slate-400 mt-3 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                    We respect your privacy. Unsubscribe anytime.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </Container>

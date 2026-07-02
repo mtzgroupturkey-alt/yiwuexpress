@@ -1,0 +1,203 @@
+# Visual Guide - Where to Look for TextType Animation
+
+## Main Page Layout (http://localhost:3001/)
+
+```
+╔═══════════════════════════════════════════════════════════════════╗
+║  ← TOP BAR (Look here for typing animation!)                     ║
+║  Background: Dark Blue (#1a3a5c)                                  ║
+║  ✦ WELCOME TO DROMKOK — PREMIUM SOURCING|                        ║
+║     ↑                                        ↑                    ║
+║   Sparkle                             Blinking cursor             ║
+╠═══════════════════════════════════════════════════════════════════╣
+║                                                                   ║
+║  LOGO        [HOME] [SHOP] [SERVICES] [ABOUT]    🔍 🛒 👤       ║
+║                                                                   ║
+╠═══════════════════════════════════════════════════════════════════╣
+║                                                                   ║
+║                     HERO SECTION                                  ║
+║                                                                   ║
+║              Premium Cookware Collection                          ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+## Important Notes:
+
+1. **Top Bar Location:**
+   - At the VERY TOP of the page
+   - Dark blue background
+   - BEFORE the logo and navigation
+
+2. **Visibility:**
+   - Shows on desktop (width > 768px)
+   - Hides on mobile/tablet
+   - Slides up when you scroll down
+   - Reappears when you scroll to top
+
+3. **Animation:**
+   - Text types character by character
+   - Cursor "|" blinks while waiting
+   - Pauses 2.6 seconds when complete
+   - Deletes and shows next message
+   - Loops forever
+
+## Screen Size Visual:
+
+```
+Desktop (> 768px)             Mobile (< 768px)
+┌─────────────────┐           ┌──────────────┐
+│ TOP BAR VISIBLE │           │ NO TOP BAR   │
+│ ✦ WELCOME TO... │           │ (Hidden)     │
+├─────────────────┤           ├──────────────┤
+│ LOGO | MENU     │           │ LOGO | ☰     │
+│                 │           │              │
+│   HERO IMAGE    │           │ HERO IMAGE   │
+│                 │           │              │
+└─────────────────┘           └──────────────┘
+    ✅ Can see it             ❌ Can't see it
+```
+
+## Test Page Comparison:
+
+```
+Test 1: /test-minimal
+┌────────────────────────────────────────┐
+│                                        │
+│   Minimal Typing Test                  │
+│                                        │
+│   HELLO WORLD - THIS IS TYPING|        │
+│                                        │
+└────────────────────────────────────────┘
+Simple test, no styling, just typing
+
+
+Test 2: /test-simple-texttype  
+┌────────────────────────────────────────┐
+│ Test 1: Minimal                        │
+│ HELLO WORLD|                           │
+├────────────────────────────────────────┤
+│ Test 2: Like MainHeader                │
+│ ✦ WELCOME TO DROMKOK...|               │
+├────────────────────────────────────────┤
+│ Test 3: Static (no animation)          │
+│ ✦ WELCOME TO DROMKOK...                │
+└────────────────────────────────────────┘
+Three examples for comparison
+
+
+Test 3: / (Main Page)
+┌────────────────────────────────────────┐
+│ ✦ WELCOME TO DROMKOK — PREMIUM...|    │
+├────────────────────────────────────────┤
+│ LOGO | HOME | SHOP | ABOUT    🔍 🛒   │
+├────────────────────────────────────────┤
+│                                        │
+│        Full Homepage Layout            │
+│                                        │
+└────────────────────────────────────────┘
+Real implementation in production
+```
+
+## Scroll Behavior:
+
+```
+Position 1: Top of Page
+┌────────────────────────────────┐
+│ ✦ WELCOME TO DROMKOK...|      │ ← TOP BAR VISIBLE
+├────────────────────────────────┤
+│ LOGO | MENU                    │
+│                                │
+│      HERO IMAGE                │
+│                                │
+
+
+Position 2: Scrolled Down
+┌────────────────────────────────┐
+│ (Top bar hidden)               │ ← TOP BAR SLIDES UP
+├────────────────────────────────┤
+│ LOGO | MENU  (sticky)          │
+├────────────────────────────────┤
+│      PRODUCTS                  │
+│                                │
+
+
+Position 3: Scroll Back Up
+┌────────────────────────────────┐
+│ ✦ WELCOME TO DROMKOK...|      │ ← TOP BAR REAPPEARS
+├────────────────────────────────┤
+│ LOGO | MENU                    │
+│                                │
+```
+
+## Animation Timeline:
+
+```
+Time    Display
+----    -------
+0.0s    ✦ |
+0.1s    ✦ W|
+0.2s    ✦ WE|
+0.3s    ✦ WEL|
+0.4s    ✦ WELC|
+0.5s    ✦ WELCO|
+...     ...
+6.0s    ✦ WELCOME TO DROMKOK — PREMIUM SOURCING|
+        (cursor blinks, pauses 2.6 seconds)
+8.6s    ✦ WELCOME TO DROMKOK — PREMIUM SOURCIN|
+8.7s    ✦ WELCOME TO DROMKOK — PREMIUM SOURCI|
+...     (deletes quickly)
+9.5s    ✦ |
+9.6s    ✦ G|
+9.7s    ✦ GL|
+...     (types next message)
+```
+
+## What Each Element Does:
+
+```
+✦           → Sparkle icon (decorative, gold color)
+Text        → Types character by character
+|           → Cursor (blinks with GSAP animation)
+Background  → Dark blue (#1a3a5c)
+Text Color  → White with 60% opacity
+```
+
+## Browser DevTools View:
+
+```
+Press F12 to open DevTools:
+
+┌─────────────────────────────────────────────────────────┐
+│ Elements   Console   Network   ...                      │
+├─────────────────────────────────────────────────────────┤
+│ <body>                                                   │
+│   <header>                                               │
+│     <motion.div class="bg-[#1a3a5c]...">  ← TOP BAR     │
+│       <div class="flex items-center...">                 │
+│         <span>✦</span>                                   │
+│         <div class="text-type...">  ← TextType Component│
+│           <span>WELCOME TO...</span>                     │
+│           <span class="cursor">|</span>                  │
+│         </div>                                           │
+│       </div>                                             │
+│     </motion.div>                                        │
+│   </header>                                              │
+│ </body>                                                  │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Quick Reference:
+
+Location:    VERY TOP of page
+Color:       Dark blue background
+Icon:        ✦ (gold sparkle)
+Text:        White, small (10px)
+Animation:   Types character by character
+Cursor:      | (blinks)
+Messages:    3 rotating (loops forever)
+Desktop:     Visible
+Mobile:      Hidden
+Scroll:      Hides when scrolling down
+
+```

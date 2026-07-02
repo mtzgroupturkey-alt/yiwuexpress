@@ -18,10 +18,10 @@ export function TopBar() {
   ]
 
   return (
-    <div className="bg-gradient-to-r from-[#1a3a5c] via-[#2a4a6c] to-[#1a3a5c] text-white/80 text-xs py-2 hidden md:block border-b border-[#c9a84c]/20 overflow-hidden">
+    <div className="relative bg-gradient-to-r from-[#1a3a5c] via-[#2a4a6c] to-[#1a3a5c] text-white/80 text-xs py-2 hidden md:block border-b border-[#c9a84c]/20">
       {/* Subtle Pattern Overlay */}
       <div 
-        className="absolute inset-0 opacity-5"
+        className="absolute inset-0 opacity-5 pointer-events-none"
         style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, rgba(201, 168, 76, 0.3) 1px, transparent 0)`,
           backgroundSize: '32px 32px'
@@ -29,10 +29,10 @@ export function TopBar() {
       ></div>
       
       {/* Animated Gradient Orb - Left */}
-      <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-40 h-40 bg-[#c9a84c]/10 rounded-full blur-3xl"></div>
+      <div className="absolute -left-20 top-1/2 -translate-y-1/2 w-40 h-40 bg-[#c9a84c]/10 rounded-full blur-3xl pointer-events-none"></div>
       
       {/* Animated Gradient Orb - Right */}
-      <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-40 h-40 bg-[#c9a84c]/10 rounded-full blur-3xl"></div>
+      <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-40 h-40 bg-[#c9a84c]/10 rounded-full blur-3xl pointer-events-none"></div>
       
       <Container maxWidth="2xl" className="relative z-10">
         <div className="flex items-center justify-between">
@@ -41,18 +41,18 @@ export function TopBar() {
             <span className="text-[#c9a84c] text-sm drop-shadow-lg">✦</span>
             <TextType
               text={[
-                "Welcome to YIWU EXPRESS - Premium Kitchenware from Yiwu, China",
-                "Global Trade Solutions - Quality You Can Trust",
-                "Wholesale & Retail - Best Prices Guaranteed"
+                "WELCOME TO YIWU EXPRESS - PREMIUM KITCHENWARE FROM YIWU, CHINA",
+                "GLOBAL TRADE SOLUTIONS - QUALITY YOU CAN TRUST",
+                "WHOLESALE & RETAIL - BEST PRICES GUARANTEED"
               ]}
               as="span"
-              typingSpeed={50}
+              typingSpeed={75}
               deletingSpeed={30}
-              pauseDuration={3000}
+              pauseDuration={2600}
               showCursor={true}
-              cursorCharacter="_"
+              cursorCharacter="|"
               cursorBlinkDuration={0.6}
-              className="text-white/70 text-[10px] tracking-wider font-medium drop-shadow-sm"
+              className="text-white/70 text-[10px] tracking-wider font-medium drop-shadow-sm uppercase"
               loop={true}
             />
           </div>

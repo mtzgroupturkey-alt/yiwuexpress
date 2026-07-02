@@ -25,7 +25,7 @@ interface CategoryGridProps {
 export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
   // Build query params based on variant
   const queryParams = variant === 'parent' 
-    ? 'parent=null' // Fetch all parent categories
+    ? 'parent=null&featured=true' // Fetch only featured parent categories
     : 'featured=true&limit=8' // Fetch featured categories
 
   const { data, isLoading } = useQuery({

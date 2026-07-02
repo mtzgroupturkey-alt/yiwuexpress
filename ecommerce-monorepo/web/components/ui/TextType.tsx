@@ -15,11 +15,14 @@ interface TextTypeProps {
   className?: string;
   showCursor?: boolean;
   hideCursorWhileTyping?: boolean;
-  cursorCharacter?: string;
+  cursorCharacter?: string | React.ReactNode;
   cursorClassName?: string;
   cursorBlinkDuration?: number;
   textColors?: string[];
   variableSpeed?: { min: number; max: number };
+  variableSpeedEnabled?: boolean;
+  variableSpeedMin?: number;
+  variableSpeedMax?: number;
   onSentenceComplete?: (sentence: string, index: number) => void;
   startOnVisible?: boolean;
   reverseMode?: boolean;
@@ -41,6 +44,9 @@ const TextType = ({
   cursorBlinkDuration = 0.5,
   textColors = [],
   variableSpeed,
+  variableSpeedEnabled = false,
+  variableSpeedMin = 110,
+  variableSpeedMax = 175,
   onSentenceComplete,
   startOnVisible = false,
   reverseMode = false,
@@ -52,15 +58,19 @@ const TextType = ({
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(!startOnVisible);
   const cursorRef = useRef<HTMLSpanElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
   const textArray = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
 
   const getRandomSpeed = useCallback(() => {
+    if (variableSpeedEnabled) {
+      return Math.random() * (variableSpeedMax - variableSpeedMin) + variableSpeedMin;
+    }
     if (!variableSpeed) return typingSpeed;
     const { min, max } = variableSpeed;
     return Math.random() * (max - min) + min;
-  }, [variableSpeed, typingSpeed]);
+  }, [variableSpeed, variableSpeedEnabled, variableSpeedMin, variableSpeedMax, typingSpeed]);
 
   const getCurrentTextColor = () => {
     if (textColors.length === 0) return 'inherit';
@@ -99,9 +109,8 @@ const TextType = ({
   }, [showCursor, cursorBlinkDuration]);
 
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || textArray.length === 0) return;
 
-    let timeout: NodeJS.Timeout;
     const currentText = textArray[currentTextIndex];
     const processedText = reverseMode ? currentText.split('').reverse().join('') : currentText;
 
@@ -117,21 +126,21 @@ const TextType = ({
           }
           setCurrentTextIndex(prev => (prev + 1) % textArray.length);
           setCurrentCharIndex(0);
-          timeout = setTimeout(() => {}, pauseDuration);
+          timeoutRef.current = setTimeout(() => {}, pauseDuration);
         } else {
-          timeout = setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setDisplayedText(prev => prev.slice(0, -1));
           }, deletingSpeed);
         }
       } else {
         if (currentCharIndex < processedText.length) {
-          timeout = setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setDisplayedText(prev => prev + processedText[currentCharIndex]);
             setCurrentCharIndex(prev => prev + 1);
-          }, variableSpeed ? getRandomSpeed() : typingSpeed);
+          }, variableSpeed || variableSpeedEnabled ? getRandomSpeed() : typingSpeed);
         } else if (textArray.length >= 1) {
           if (!loop && currentTextIndex === textArray.length - 1) return;
-          timeout = setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setIsDeleting(true);
           }, pauseDuration);
         }
@@ -139,12 +148,16 @@ const TextType = ({
     };
 
     if (currentCharIndex === 0 && !isDeleting && displayedText === '') {
-      timeout = setTimeout(executeTypingAnimation, initialDelay);
+      timeoutRef.current = setTimeout(executeTypingAnimation, initialDelay);
     } else {
       executeTypingAnimation();
     }
 
-    return () => clearTimeout(timeout);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [
     currentCharIndex,
     displayedText,
@@ -159,12 +172,13 @@ const TextType = ({
     isVisible,
     reverseMode,
     variableSpeed,
+    variableSpeedEnabled,
     onSentenceComplete,
     getRandomSpeed
   ]);
 
   const shouldHideCursor =
-    hideCursorWhileTyping && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
+    hideCursorWhileTyping && textArray[currentTextIndex] && (currentCharIndex < textArray[currentTextIndex].length || isDeleting);
 
   return createElement(
     Component,

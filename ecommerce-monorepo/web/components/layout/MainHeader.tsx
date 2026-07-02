@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Container } from '@/components/ui/Container'
 import { useSettings } from '@/components/SettingsProvider'
 import { useCart } from '@/components/CartContext'
+import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
 
 // Nav items defined outside the component so they never cause remounts
 const NAV_ITEMS = [
@@ -48,13 +49,24 @@ export function MainHeader() {
         initial={false}
         animate={isSticky ? { height: 0, opacity: 0 } : { height: 'auto', opacity: 1 }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
-        className="bg-[#1a3a5c] text-white overflow-hidden hidden md:block"
+        className="bg-[#1a3a5c] text-white hidden md:block"
       >
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex items-center justify-between">
-            <span className="text-white/60 text-[10px] tracking-wider font-medium">
-              Welcome to {settings?.companyName || 'YIWU EXPRESS'} — Premium Sourcing
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-[#c9a84c] text-sm drop-shadow-lg">✦</span>
+              <SimpleTypingText
+                texts={[
+                  `WELCOME TO ${(settings?.companyName || 'YIWU EXPRESS').toUpperCase()} — PREMIUM SOURCING`,
+                  "GLOBAL TRADE SOLUTIONS — QUALITY YOU CAN TRUST",
+                  "WHOLESALE & RETAIL — BEST PRICES GUARANTEED"
+                ]}
+                typingSpeed={75}
+                deletingSpeed={30}
+                pauseDuration={2600}
+                className="text-white/60 text-sm tracking-wider font-medium"
+              />
+            </div>
             <div className="flex items-center space-x-6">
               {TOP_BAR_LINKS.map((name) => (
                 <Link
@@ -129,11 +141,10 @@ export function MainHeader() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors duration-200 whitespace-nowrap ${
-                    item.isSpecial
-                      ? 'text-secondary-500 hover:text-secondary-400 hover:bg-secondary-50/50 border border-secondary-500/30'
-                      : 'text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50'
-                  }`}
+                  className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors duration-200 whitespace-nowrap ${item.isSpecial
+                    ? 'text-secondary-500 hover:text-secondary-400 hover:bg-secondary-50/50 border border-secondary-500/30'
+                    : 'text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50'
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -240,9 +251,8 @@ export function MainHeader() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`block py-2 text-gray-700 hover:text-[#1a3a5c] font-medium border-b border-gray-100 ${
-                    item.isSpecial ? 'text-secondary-500' : ''
-                  }`}
+                  className={`block py-2 text-gray-700 hover:text-[#1a3a5c] font-medium border-b border-gray-100 ${item.isSpecial ? 'text-secondary-500' : ''
+                    }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}

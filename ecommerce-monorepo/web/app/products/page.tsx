@@ -197,13 +197,13 @@ export default function ProductsPage() {
   }
 
   const breadcrumbItems = [
+    { name: 'Home', href: '/' },
     { name: 'Shop', href: '/products' },
   ]
 
-  // Always add Products to breadcrumb
-  if (categorySlug) {
+  // Add category-specific breadcrumb if present
+  if (categorySlug && categoryName) {
     breadcrumbItems.push(
-      { name: 'Products', href: '/products' },
       { name: getCategoryName(), href: `/products?category=${categorySlug}` }
     )
   }
