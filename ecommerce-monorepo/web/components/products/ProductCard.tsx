@@ -66,12 +66,12 @@ export default function ProductCard({
   return (
     <Link href={`/products/${product.slug}`}>
       <div 
-        className="group relative bg-white rounded-xl overflow-hidden shadow-brand hover:shadow-brand-lg transition-all duration-300 cursor-pointer"
+        className="group relative bg-white rounded-xl overflow-hidden shadow-brand hover:shadow-brand-lg transition-all duration-300 cursor-pointer flex flex-col"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0">
           {product.image && !imageError ? (
             <Image
               src={product.image}
@@ -136,7 +136,7 @@ export default function ProductCard({
         </div>
 
         {/* Product Info */}
-        <div className="p-4">
+        <div className="p-4 pb-8 flex-1 flex flex-col">
           {/* Category */}
           {product.category && (
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
@@ -145,13 +145,13 @@ export default function ProductCard({
           )}
 
           {/* Product Name */}
-          <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
+          <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 h-12">
             {product.name}
           </h3>
 
           {/* Color Swatches */}
           {product.colors && product.colors.length > 0 && (
-            <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            <div className="flex items-center gap-1.5 mb-2 flex-wrap h-6">
               {product.colors.slice(0, 5).map(color => (
                 <div
                   key={color.value}
@@ -166,12 +166,15 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Description (optional, shown on hover) */}
+          {/* Description - Fixed height or hidden */}
           {product.description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+            <p className="text-sm text-gray-600 mb-3 line-clamp-2 h-10">
               {product.description}
             </p>
           )}
+
+          {/* Spacer to push buttons to bottom */}
+          <div className="flex-1"></div>
 
           {/* Pricing */}
           <div className="flex items-baseline gap-2 mb-3">

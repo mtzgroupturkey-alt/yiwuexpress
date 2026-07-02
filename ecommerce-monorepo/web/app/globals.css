@@ -85,6 +85,17 @@
     background-size: 40px 40px;
   }
 
+  /* Hide scrollbar for carousel */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+
   h2 {
     @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold;
   }

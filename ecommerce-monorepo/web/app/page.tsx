@@ -1,12 +1,13 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Container } from '@/components/ui/Container'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import TrustBadges from '@/components/TrustBadges'
 import { CategoryGrid } from '@/components/home/CategoryGrid'
-import { AllProductsSection } from '@/components/home/AllProductsSection'
-import ProductGrid from '@/components/products/ProductGrid'
+import { LatestProducts } from '@/components/home/LatestProducts'
+import ProductCard from '@/components/products/ProductCard'
 import BlogSection from '@/components/BlogSection'
 import { Users, Globe, Clock, Shield } from 'lucide-react'
 
@@ -43,17 +44,7 @@ interface ProductsResponse {
 }
 
 export default function Home() {
-  // Fetch featured products
-  const { data: featuredData, isLoading: featuredLoading } = useQuery<ProductsResponse>({
-    queryKey: ['featured-products'],
-    queryFn: async () => {
-      const response = await fetch('/api/products?featured=true&limit=8')
-      if (!response.ok) throw new Error('Failed to fetch products')
-      return response.json()
-    },
-  })
-
-  // Fetch new arrivals
+  // Fetch new arrivals for carousel
   const { data: newArrivalsData, isLoading: newArrivalsLoading } = useQuery<ProductsResponse>({
     queryKey: ['new-arrivals'],
     queryFn: async () => {
@@ -62,6 +53,49 @@ export default function Home() {
       return response.json()
     },
   })
+
+  // Auto-scroll carousel for New Arrivals
+  useEffect(() => {
+    const newArrivalsCarousel = document.getElementById('new-arrivals-carousel')
+    
+    const intervals: NodeJS.Timeout[] = []
+
+    const setupAutoScroll = (carousel: HTMLElement) => {
+      const scrollInterval = setInterval(() => {
+        const maxScroll = carousel.scrollWidth - carousel.clientWidth
+        if (carousel.scrollLeft >= maxScroll) {
+          carousel.scrollTo({ left: 0, behavior: 'smooth' })
+        } else {
+          carousel.scrollBy({ left: 300, behavior: 'smooth' })
+        }
+      }, 3000) // Auto-scroll every 3 seconds
+
+      intervals.push(scrollInterval)
+
+      // Pause on hover
+      const stopAutoScroll = () => clearInterval(scrollInterval)
+      const startAutoScroll = () => {
+        const newInterval = setInterval(() => {
+          const maxScroll = carousel.scrollWidth - carousel.clientWidth
+          if (carousel.scrollLeft >= maxScroll) {
+            carousel.scrollTo({ left: 0, behavior: 'smooth' })
+          } else {
+            carousel.scrollBy({ left: 300, behavior: 'smooth' })
+          }
+        }, 3000)
+        intervals.push(newInterval)
+      }
+
+      carousel.addEventListener('mouseenter', stopAutoScroll)
+      carousel.addEventListener('mouseleave', startAutoScroll)
+    }
+
+    if (newArrivalsCarousel) setupAutoScroll(newArrivalsCarousel)
+
+    return () => {
+      intervals.forEach(interval => clearInterval(interval))
+    }
+  }, [newArrivalsData])
 
   const stats = [
     { value: '1500+', label: 'Business Partners', icon: Users },
@@ -99,32 +133,134 @@ export default function Home() {
       {/* Parent Categories - Show all top-level categories */}
       <CategoryGrid variant="parent" />
 
-      {/* All Products Section - NEW: Display all products with pagination */}
-      <AllProductsSection />
+      {/* Latest Products - 12 Cards Grid */}
+      <LatestProducts />
 
-      {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
-        <Container maxWidth="2xl">
-          <ProductGrid
-            title="Featured Products"
-            subtitle="Hand-picked selection of our most popular kitchenware items"
-            products={featuredData?.data || []}
-            columns={4}
-            isLoading={featuredLoading}
-          />
-        </Container>
-      </section>
-
-      {/* New Arrivals */}
+      {/* New Arrivals - Carousel */}
       <section className="py-16 bg-white">
         <Container maxWidth="2xl">
-          <ProductGrid
-            title="New Arrivals"
-            subtitle="Discover the latest additions to our kitchenware collection"
-            products={newArrivalsData?.data || []}
-            columns={4}
-            isLoading={newArrivalsLoading}
-          />
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1a3a5c] mb-2">New Arrivals</h2>
+            <p className="text-gray-600">Discover the latest additions to our kitchenware collection</p>
+          </div>
+
+          {newArrivalsLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            </div>
+          ) : newArrivalsData?.data && newArrivalsData.data.length > 0 ? (
+            <div className="relative group">
+              {/* Previous Button */}
+              <button
+                onClick={() => {
+                  const container = document.getElementById('new-arrivals-carousel')
+                  if (container) {
+                    container.scrollBy({ left: -300, behavior: 'smooth' })
+                  }
+                }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+              >
+                <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Carousel Container */}
+              <div
+                id="new-arrivals-carousel"
+                className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-hide snap-x snap-mandatory pb-4"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {newArrivalsData.data.map((product: Product) => (
+                  <div key={product.id} className="flex-shrink-0 w-72 snap-start">
+                    <ProductCard
+                      product={{
+                        id: parseInt(product.id) || 0,
+                        slug: product.slug,
+                        name: product.name,
+                        description: product.description,
+                        price: product.price,
+                        image: product.thumbnail || undefined,
+                        category: product.category?.name,
+                        stock: product.stock,
+                        minOrder: 1,
+                        wholesalePrice: product.compareAtPrice || undefined,
+                      }}
+                      onAddToCart={async (productId) => {
+                        try {
+                          const token = localStorage.getItem('token')
+                          if (!token) {
+                            alert('Please login to add items to cart')
+                            window.location.href = '/login'
+                            return
+                          }
+
+                          const userId = JSON.parse(atob(token.split('.')[1])).userId
+
+                          const response = await fetch('/api/cart', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                              userId,
+                              productId: product.id,
+                              quantity: 1
+                            })
+                          })
+
+                          const data = await response.json()
+                          
+                          if (data.success) {
+                            alert('Added to cart!')
+                          } else {
+                            alert(data.error || 'Failed to add item to cart')
+                          }
+                        } catch (error) {
+                          console.error('Error adding to cart:', error)
+                          alert('Failed to add item to cart')
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => {
+                  const container = document.getElementById('new-arrivals-carousel')
+                  if (container) {
+                    container.scrollBy({ left: 300, behavior: 'smooth' })
+                  }
+                }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-sm hover:bg-white shadow-lg rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+              >
+                <svg className="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Scroll Indicators */}
+              <div className="flex justify-center gap-2 mt-6">
+                {Array.from({ length: Math.ceil((newArrivalsData?.data?.length || 0) / 4) }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      const container = document.getElementById('new-arrivals-carousel')
+                      if (container) {
+                        container.scrollTo({ left: index * 1200, behavior: 'smooth' })
+                      }
+                    }}
+                    className="w-2 h-2 rounded-full bg-gray-300 hover:bg-gray-400 transition-colors"
+                  ></button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">No new arrivals available</p>
+          )}
         </Container>
       </section>
 
