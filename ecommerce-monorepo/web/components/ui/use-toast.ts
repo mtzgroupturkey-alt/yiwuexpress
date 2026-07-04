@@ -5,7 +5,7 @@ import { useState } from 'react'
 type ToastProps = {
   title: string
   description?: string
-  variant?: 'default' | 'success' | 'error'
+  variant?: 'default' | 'success' | 'error' | 'destructive'
 }
 
 export function toast({ title, description, variant = 'default' }: ToastProps) {

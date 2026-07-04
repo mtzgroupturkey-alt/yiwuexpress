@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Select } from '@/components/ui/select'
 import { Package, Eye, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Order {
   id: string
@@ -33,6 +34,7 @@ const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'warnin
 
 export default function OrdersPage() {
   const router = useRouter()
+  const { isAuthenticated, checkAuth } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,8 +42,16 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
-    fetchOrders()
+    checkAuth()
   }, [])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchOrders()
+    } else if (!loading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated])
 
   useEffect(() => {
     filterOrders()
@@ -50,16 +60,18 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login')
-        return
-      }
-
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-      const response = await fetch(`/api/orders?userId=${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - userId extracted from cookie on server
+      const response = await fetch('/api/orders', {
+        credentials: 'include' // Send httpOnly cookie
       })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/login')
+          return
+        }
+        throw new Error('Failed to fetch orders')
+      }
 
       const data = await response.json()
       if (data.success) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Search, Eye, MessageSquare, Download } from 'lucide-react'
@@ -165,18 +165,22 @@ export default function AdminWholesalePage() {
             </div>
             <Select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="md:w-48"
+              onValueChange={(value) => setStatusFilter(value)}
             >
-              <option value="">All Statuses</option>
-              <option value="new">New</option>
-              <option value="reviewing">Reviewing</option>
-              <option value="quoted">Quoted</option>
-              <option value="negotiating">Negotiating</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-              <option value="converted">Converted</option>
-              <option value="expired">Expired</option>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="reviewing">Reviewing</SelectItem>
+                <SelectItem value="quoted">Quoted</SelectItem>
+                <SelectItem value="negotiating">Negotiating</SelectItem>
+                <SelectItem value="accepted">Accepted</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="converted">Converted</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+              </SelectContent>
             </Select>
             <Button
               variant="outline"

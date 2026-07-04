@@ -50,40 +50,17 @@ export default function CartPage() {
   const fetchCart = async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login?redirect=/cart')
-        return
-      }
-
-      let userId
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        userId = payload.userId
-        if (!userId) {
-          throw new Error('Invalid token: missing userId')
-        }
-      } catch (e) {
-        console.error('Invalid token:', e)
-        localStorage.removeItem('token')
-        router.push('/login?redirect=/cart')
-        return
-      }
-
-      const response = await fetch(`/api/cart?userId=${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const response = await fetch('/api/cart', {
+        credentials: 'include' // Send httpOnly cookie
       })
 
-      const data = await response.json()
-      
-      if (response.status === 404) {
-        // User not found - redirect to login
-        localStorage.removeItem('token')
+      if (response.status === 401) {
+        // Not authenticated
         router.push('/login?redirect=/cart')
         return
       }
+
+      const data = await response.json()
       
       if (data.success) {
         setCart(data.data.cart)
@@ -106,22 +83,21 @@ export default function CartPage() {
 
     setUpdating(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login')
-        return
-      }
-
       const response = await fetch(`/api/cart/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include', // Send httpOnly cookie
         body: JSON.stringify({ quantity: newQuantity })
       })
 
       const data = await response.json()
+      
+      if (response.status === 401) {
+        router.push('/login')
+        return
+      }
       
       if (data.success) {
         await fetchCart() // Refresh cart
@@ -143,20 +119,17 @@ export default function CartPage() {
 
     setUpdating(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login')
-        return
-      }
-
       const response = await fetch(`/api/cart/${itemId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include' // Send httpOnly cookie
       })
 
       const data = await response.json()
+      
+      if (response.status === 401) {
+        router.push('/login')
+        return
+      }
       
       if (data.success) {
         await fetchCart() // Refresh cart

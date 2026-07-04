@@ -1,19 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { loginSchema, LoginInput } from '@/lib/validation'
-import Navbar from '@/components/navbar'
-import Footer from '@/components/footer'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import { Building, Mail, Lock, Globe } from 'lucide-react'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [companyLogo, setCompanyLogo] = useState('')
   const router = useRouter()
+
+  // Fetch company settings
+  useEffect(() => {
+    fetch('/api/settings/public')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings) {
+          if (data.settings.companyName) setCompanyName(data.settings.companyName)
+          if (data.settings.companyLogo) setCompanyLogo(data.settings.companyLogo)
+        }
+      })
+      .catch(err => console.error('Failed to load company settings:', err))
+  }, [])
 
   const {
     register,
@@ -33,6 +47,7 @@ export default function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Send/receive cookies
         body: JSON.stringify(data),
       })
 
@@ -42,12 +57,18 @@ export default function LoginPage() {
         throw new Error(result.error || 'Login failed')
       }
 
-      // Save token to localStorage
-      localStorage.setItem('token', result.token)
-      localStorage.setItem('user', JSON.stringify(result.user))
-      
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // NO localStorage - token is in httpOnly cookie
+      // Redirect based on role
+      if (result.user.role === 'ADMIN') {
+        router.push('/admin')
+      } else if (result.user.role === 'SUPPLIER') {
+        router.push('/dashboard/supplier')
+      } else {
+        // Customer - redirect to dashboard
+        const urlParams = new URLSearchParams(window.location.search)
+        const redirect = urlParams.get('redirect') || '/dashboard'
+        router.push(redirect)
+      }
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
@@ -57,32 +78,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <Building className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back to YIWU EXPRESS
-            </h1>
-            <p className="text-gray-600">
-              Sign in to your business account to manage logistics, quotes, and shipments
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Login Form */}
-            <div className="bg-white rounded-2xl shadow-brand p-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                Business Account Login
-              </h2>
+    <SharedLayout
+      pageTitle="Sign In to Your Account"
+      pageDescription="Access your business account to manage logistics, quotes, and shipments"
+      breadcrumbs={[
+        { name: 'Login', href: '/login' }
+      ]}
+    >
+      <div className="bg-gray-50">
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Login Form */}
+              <div className="bg-white rounded-2xl shadow-brand p-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Business Account Login
+                </h2>
 
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -195,7 +206,7 @@ export default function LoginPage() {
             {/* Benefits Panel */}
             <div className="bg-gradient-primary text-white rounded-2xl p-8">
               <h3 className="text-xl font-semibold mb-6">
-                Why Join YIWU EXPRESS?
+                Why Join {companyName}?
               </h3>
 
               <ul className="space-y-6">
@@ -297,8 +308,7 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
+      </div>
+    </SharedLayout>
   )
 }

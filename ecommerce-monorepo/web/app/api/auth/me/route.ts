@@ -3,15 +3,14 @@ import { prisma } from '@/lib/db'
 import { withAuth } from '@/lib/api-middleware'
 import { z } from 'zod'
 
-// Note: CORS is handled globally by middleware.ts, no need to duplicate headers here
-
 const updateProfileSchema = z.object({
-  name: z.string().min(2, 'Contact name must be at least 2 characters'),
-  companyName: z.string().min(2, 'Company name is required'),
-  businessType: z.enum(['IMPORTER', 'EXPORTER', 'MANUFACTURER', 'DISTRIBUTOR', 'OTHER']),
-  phone: z.string().min(10, 'Valid phone number is required'),
-  taxId: z.string().optional().nullable(),
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  phone: z.string().optional().nullable(),
   country: z.string().optional().nullable(),
+  profilePhoto: z.string().optional().nullable(),
+  companyName: z.string().optional().nullable(),
+  businessType: z.string().optional().nullable(),
+  taxId: z.string().optional().nullable(),
 })
 
 // GET /api/auth/me
@@ -20,17 +19,8 @@ async function getProfileHandler(request: any) {
     const userPayload = request.user
     const user = await prisma.user.findUnique({
       where: { id: userPayload.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        companyName: true,
-        businessType: true,
-        taxId: true,
-        country: true,
-        phone: true,
-        createdAt: true,
+      include: {
+        supplierProfile: true,
       },
     })
 
@@ -38,7 +28,28 @@ async function getProfileHandler(request: any) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ user })
+    return NextResponse.json({
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        phone: user.phone,
+        country: user.country,
+        profilePhoto: user.profilePhoto,
+        companyName: user.companyName,
+        businessType: user.businessType,
+        taxId: user.taxId,
+        isActive: user.isActive,
+        isVerified: user.isVerified,
+        supplierProfile: user.supplierProfile ? {
+          id: user.supplierProfile.id,
+          companyName: user.supplierProfile.companyName,
+          businessType: user.supplierProfile.businessType,
+        } : undefined,
+        createdAt: user.createdAt,
+      },
+    })
   } catch (error) {
     console.error('Get profile error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -56,28 +67,36 @@ async function updateProfileHandler(request: any) {
       where: { id: userPayload.userId },
       data: {
         name: validatedData.name,
+        phone: validatedData.phone,
+        country: validatedData.country,
+        profilePhoto: validatedData.profilePhoto,
         companyName: validatedData.companyName,
         businessType: validatedData.businessType,
-        phone: validatedData.phone,
         taxId: validatedData.taxId,
-        country: validatedData.country,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        companyName: true,
-        businessType: true,
-        taxId: true,
-        country: true,
-        phone: true,
-        createdAt: true,
+      include: {
+        supplierProfile: true,
       },
     })
 
     return NextResponse.json({
-      user: updatedUser,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role,
+        phone: updatedUser.phone,
+        country: updatedUser.country,
+        profilePhoto: updatedUser.profilePhoto,
+        companyName: updatedUser.companyName,
+        businessType: updatedUser.businessType,
+        taxId: updatedUser.taxId,
+        supplierProfile: updatedUser.supplierProfile ? {
+          id: updatedUser.supplierProfile.id,
+          companyName: updatedUser.supplierProfile.companyName,
+          businessType: updatedUser.supplierProfile.businessType,
+        } : undefined,
+      },
       message: 'Profile updated successfully',
     })
   } catch (error) {

@@ -40,35 +40,22 @@ export function PageHero({ title, description, breadcrumbs, backgroundImage, pag
         // Auto-detect page slug from pathname if not provided
         const detectedSlug = pageSlug || pathname?.split('/')[1] || ''
         
-        console.log('[PageHero] Fetching background for:', { detectedSlug, categoryId, pathname })
-        
-        // Build query params
         const params = new URLSearchParams()
         if (categoryId) {
-          console.log('[PageHero] Using categoryId:', categoryId)
           params.append('categoryId', categoryId)
         } else if (detectedSlug) {
-          // For products page, don't pass pageSlug - let API use shop_default
           if (detectedSlug !== 'products') {
             params.append('pageSlug', detectedSlug)
           }
         }
 
         const url = `/api/breadcrumb-background?${params.toString()}`
-        console.log('[PageHero] Fetching from:', url)
-        
         const response = await fetch(url)
-        console.log('[PageHero] Response status:', response.status)
         
         if (response.ok) {
           const data = await response.json()
-          console.log('[PageHero] Response data:', data)
           if (data.setting) {
-            console.log('[PageHero] Setting background:', data.setting)
-            console.log('[PageHero] Fallback info:', data.debug)
             setBgSettings(data.setting)
-          } else {
-            console.log('[PageHero] No setting found in response')
           }
         } else {
           console.log('[PageHero] Response not OK:', await response.text())

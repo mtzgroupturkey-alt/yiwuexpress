@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import './preloader.css'
 import { Providers } from '@/components/providers'
 import { SettingsProvider } from '@/components/SettingsProvider'
+import { PreloaderWrapper } from '@/components/PreloaderWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -109,11 +111,13 @@ export default function RootLayout({
         <script src="/unregister-sw.js" defer></script>
       </head>
       <body className={inter.className}>
-        <Providers>
-          <SettingsProvider>
-            {children}
-          </SettingsProvider>
-        </Providers>
+        <PreloaderWrapper>
+          <Providers>
+            <SettingsProvider>
+              {children}
+            </SettingsProvider>
+          </Providers>
+        </PreloaderWrapper>
       </body>
     </html>
   )

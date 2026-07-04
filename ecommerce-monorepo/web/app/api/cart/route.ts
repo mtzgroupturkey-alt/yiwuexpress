@@ -1,36 +1,18 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
 // GET /api/cart - Get user's cart
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User ID is required' },
-        { status: 400 }
-      )
-    }
-
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      )
-    }
+    // IDOR Protection: Get userId from authenticated token, not request
+    const user = await requireAuth(request)
 
     // Get or create cart
     let cart = await prisma.cart.findUnique({
-      where: { userId },
+      where: { userId: user.id },
       include: {
         items: {
           include: {
@@ -55,7 +37,7 @@ export async function GET(request: Request) {
     if (!cart) {
       cart = await prisma.cart.create({
         data: {
-          userId
+          userId: user.id
         },
         include: {
           items: {
@@ -102,6 +84,9 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching cart:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch cart' },
@@ -113,12 +98,15 @@ export async function GET(request: Request) {
 // POST /api/cart - Add item to cart
 export async function POST(request: Request) {
   try {
+    // IDOR Protection: Get userId from authenticated token, not request body
+    const user = await requireAuth(request)
+    
     const body = await request.json()
-    const { userId, productId, quantity } = body
+    const { productId, quantity } = body
 
-    if (!userId || !productId || !quantity) {
+    if (!productId || !quantity) {
       return NextResponse.json(
-        { success: false, error: 'User ID, product ID, and quantity are required' },
+        { success: false, error: 'Product ID and quantity are required' },
         { status: 400 }
       )
     }
@@ -127,18 +115,6 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: 'Quantity must be at least 1' },
         { status: 400 }
-      )
-    }
-
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
       )
     }
 
@@ -164,12 +140,12 @@ export async function POST(request: Request) {
 
     // Get or create cart
     let cart = await prisma.cart.findUnique({
-      where: { userId }
+      where: { userId: user.id }
     })
 
     if (!cart) {
       cart = await prisma.cart.create({
-        data: { userId }
+        data: { userId: user.id }
       })
     }
 
@@ -230,6 +206,9 @@ export async function POST(request: Request) {
       }, { status: 201 })
     }
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error adding to cart:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to add item to cart' },
@@ -241,18 +220,11 @@ export async function POST(request: Request) {
 // DELETE /api/cart - Clear cart
 export async function DELETE(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User ID is required' },
-        { status: 400 }
-      )
-    }
+    // IDOR Protection: Get userId from authenticated token, not request
+    const user = await requireAuth(request)
 
     const cart = await prisma.cart.findUnique({
-      where: { userId }
+      where: { userId: user.id }
     })
 
     if (cart) {
@@ -266,6 +238,9 @@ export async function DELETE(request: Request) {
       message: 'Cart cleared'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error clearing cart:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to clear cart' },

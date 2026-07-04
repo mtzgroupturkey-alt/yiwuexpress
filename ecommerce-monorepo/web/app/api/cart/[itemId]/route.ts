@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
@@ -9,6 +10,9 @@ export async function PUT(
   { params }: { params: { itemId: string } }
 ) {
   try {
+    // IDOR Protection: Verify user owns this cart item
+    const user = await requireAuth(request)
+    
     const { itemId } = params
     const body = await request.json()
     const { quantity } = body
@@ -20,16 +24,29 @@ export async function PUT(
       )
     }
 
-    // Get cart item with product info
+    // Get cart item with product info and verify ownership
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },
-      include: { product: true }
+      include: { 
+        product: true,
+        cart: {
+          select: { userId: true }
+        }
+      }
     })
 
     if (!cartItem) {
       return NextResponse.json(
         { success: false, error: 'Cart item not found' },
         { status: 404 }
+      )
+    }
+
+    // IDOR Protection: Verify cart belongs to authenticated user
+    if (cartItem.cart.userId !== user.id) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
       )
     }
 
@@ -54,6 +71,9 @@ export async function PUT(
       message: 'Cart item updated'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error updating cart item:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update cart item' },
@@ -68,7 +88,35 @@ export async function DELETE(
   { params }: { params: { itemId: string } }
 ) {
   try {
+    // IDOR Protection: Verify user owns this cart item
+    const user = await requireAuth(request)
+    
     const { itemId } = params
+
+    // Get cart item and verify ownership
+    const cartItem = await prisma.cartItem.findUnique({
+      where: { id: itemId },
+      include: {
+        cart: {
+          select: { userId: true }
+        }
+      }
+    })
+
+    if (!cartItem) {
+      return NextResponse.json(
+        { success: false, error: 'Cart item not found' },
+        { status: 404 }
+      )
+    }
+
+    // IDOR Protection: Verify cart belongs to authenticated user
+    if (cartItem.cart.userId !== user.id) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
 
     await prisma.cartItem.delete({
       where: { id: itemId }
@@ -79,6 +127,9 @@ export async function DELETE(
       message: 'Item removed from cart'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error removing cart item:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to remove cart item' },

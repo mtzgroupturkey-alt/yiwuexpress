@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, ShoppingCart, Eye } from 'lucide-react'
+import { ShoppingCart, Eye } from 'lucide-react'
+import { WishlistButton } from './WishlistButton'
 
 interface Product {
-  id: number
+  id: string
   slug: string
   name: string
   description?: string
@@ -21,16 +22,12 @@ interface Product {
 
 interface ProductCardProps {
   product: Product
-  onAddToCart?: (productId: number) => void
-  onToggleWishlist?: (productId: number) => void
-  isInWishlist?: boolean
+  onAddToCart?: (productId: string) => void
 }
 
 export default function ProductCard({ 
   product, 
-  onAddToCart, 
-  onToggleWishlist,
-  isInWishlist = false 
+  onAddToCart
 }: ProductCardProps) {
   const [imageError, setImageError] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -51,15 +48,6 @@ export default function ProductCard({
       await onAddToCart(product.id)
     } finally {
       setTimeout(() => setIsAddingToCart(false), 1000)
-    }
-  }
-
-  const handleToggleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    if (onToggleWishlist) {
-      onToggleWishlist(product.id)
     }
   }
 
@@ -103,17 +91,11 @@ export default function ProductCard({
           </div>
 
           {/* Wishlist Button */}
-          <button
-            onClick={handleToggleWishlist}
-            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors z-10"
-            aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-          >
-            <Heart 
-              className={`w-5 h-5 transition-colors ${
-                isInWishlist ? 'fill-accent-500 text-accent-500' : 'text-gray-600'
-              }`}
-            />
-          </button>
+          <WishlistButton
+            productId={product.id}
+            className="absolute top-3 right-3 z-10"
+            size="md"
+          />
 
           {/* Quick View Button (appears on hover) */}
           <div 

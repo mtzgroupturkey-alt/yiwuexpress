@@ -140,27 +140,27 @@ export default function ProductDetailPage() {
     
     setAdding(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('Please login to add items to cart')
-        router.push('/login')
-        return
-      }
-
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - userId extracted from cookie on server
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include', // Send httpOnly cookie
         body: JSON.stringify({
-          userId,
           productId: product.id,
           quantity
         })
       })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Please login to add items to cart')
+          router.push('/login')
+          return
+        }
+        throw new Error('Failed to add item to cart')
+      }
 
       const data = await response.json()
       
@@ -310,7 +310,7 @@ export default function ProductDetailPage() {
                               return true
                             })
                             .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                            .forEach(attr => {
+                            .forEach((attr, idx) => {
                               const value = product.attributes?.[attr.slug]
                               if (!value) return
 
@@ -321,14 +321,14 @@ export default function ProductDetailPage() {
                               if (isColorType) {
                                 const colorVals: string[] = Array.isArray(value) ? value : [value]
                                 allSpecs.push(
-                                  <div key={attr.slug} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
+                                  <div key={attr.slug ?? `color-${idx}`} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
                                     <div className="flex justify-between items-start gap-2">
                                       <dt className="text-gray-700 font-semibold flex-shrink-0 text-xs">{attr.name}</dt>
                                       <dd className="flex flex-wrap gap-1 justify-end">
-                                        {colorVals.map((hex: string) => {
+                                        {colorVals.map((hex: string, ci) => {
                                           const label = colorOpts.find((c: any) => c.value === hex)?.label || hex
                                           return (
-                                            <div key={hex} className="flex items-center gap-1">
+                                            <div key={hex ?? `color-val-${idx}-${ci}`} className="flex items-center gap-1">
                                               <span
                                                 className="inline-block w-4 h-4 rounded-full border border-white shadow-sm ring-1 ring-gray-300"
                                                 style={{ backgroundColor: hex }}
@@ -346,7 +346,7 @@ export default function ProductDetailPage() {
                                 // Regular attribute — text display
                                 const displayValue = Array.isArray(value) ? value.join(', ') : String(value)
                                 allSpecs.push(
-                                  <div key={attr.slug} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
+                                  <div key={attr.slug ?? `spec-${idx}`} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
                                     <dt className="text-gray-700 font-semibold text-xs">{attr.name}</dt>
                                     <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
                                   </div>
@@ -883,27 +883,25 @@ export default function ProductDetailPage() {
                   product={relatedProduct}
                   onAddToCart={async (productId) => {
                     try {
-                      const token = localStorage.getItem('token')
-                      if (!token) {
-                        alert('Please login to add items to cart')
-                        router.push('/login')
-                        return
-                      }
-
-                      const userId = JSON.parse(atob(token.split('.')[1])).userId
-
+                      // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
                       const response = await fetch('/api/cart', {
                         method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          'Authorization': `Bearer ${token}`
-                        },
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
                         body: JSON.stringify({
-                          userId,
-                          productId: relatedProduct.id.toString(),
-                          quantity: relatedProduct.minOrder || 1
+                          productId,
+                          quantity: 1
                         })
                       })
+
+                      if (!response.ok) {
+                        if (response.status === 401) {
+                          alert('Please login to add items to cart')
+                          router.push('/login')
+                          return
+                        }
+                        throw new Error('Failed to add item')
+                      }
 
                       const data = await response.json()
                       

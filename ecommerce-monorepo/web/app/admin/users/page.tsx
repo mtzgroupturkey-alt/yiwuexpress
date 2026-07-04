@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { 
   Users, Plus, Search, Edit, Trash2, Eye,
-  Building, Mail, Phone, MapPin, Calendar, AlertTriangle
+  Building, Mail, Phone, MapPin, Calendar, AlertTriangle,
+  Camera, Loader2
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
 import ClientOnly from '@/components/ClientOnly'
@@ -15,6 +16,7 @@ interface User {
   name: string
   companyName: string | null
   businessType: string | null
+  profilePhoto: string | null
   taxId: string | null
   country: string | null
   phone: string | null
@@ -47,8 +49,18 @@ interface Pagination {
   pages: number
 }
 
-const roleColors = {
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+const roleColors: Record<string, { bg: string; text: string; border: string }> = {
   ADMIN: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+  SUPPLIER: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
   USER: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
 }
 
@@ -64,12 +76,18 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [addPhotoPreview, setAddPhotoPreview] = useState<string | null>(null)
+  const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null)
+  const addFileInputRef = useRef<HTMLInputElement>(null)
+  const editFileInputRef = useRef<HTMLInputElement>(null)
   const [permissionRoles, setPermissionRoles] = useState<PermissionRole[]>([])
   const [editFormData, setEditFormData] = useState({
     email: '',
     name: '',
     companyName: '',
     businessType: '',
+    profilePhoto: '',
     taxId: '',
     country: '',
     phone: '',
@@ -84,6 +102,7 @@ export default function AdminUsersPage() {
     name: '',
     companyName: '',
     businessType: '',
+    profilePhoto: '',
     taxId: '',
     country: '',
     phone: '',
@@ -205,6 +224,7 @@ export default function AdminUsersPage() {
       name: user.name,
       companyName: user.companyName || '',
       businessType: user.businessType || '',
+      profilePhoto: user.profilePhoto || '',
       taxId: user.taxId || '',
       country: user.country || '',
       phone: user.phone || '',
@@ -212,7 +232,57 @@ export default function AdminUsersPage() {
       password: '', // Don't populate password
       permissionRoleId: user.roleId || '',
     })
+    setEditPhotoPreview(user.profilePhoto || null)
     setShowEditModal(true)
+  }
+
+  const uploadPhoto = async (file: File): Promise<string | null> => {
+    if (!token) return null
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      setPhotoUploading(true)
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      })
+      const data = await response.json()
+      if (response.ok) return data.url
+      alert(data.error || 'Upload failed')
+      return null
+    } catch {
+      alert('Network error during upload')
+      return null
+    } finally {
+      setPhotoUploading(false)
+    }
+  }
+
+  const handleAddPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) { alert('Please select an image file'); return }
+    if (file.size > 5 * 1024 * 1024) { alert('Image must be less than 5MB'); return }
+    const previewUrl = URL.createObjectURL(file)
+    setAddPhotoPreview(previewUrl)
+    const url = await uploadPhoto(file)
+    if (url) {
+      setAddFormData(prev => ({ ...prev, profilePhoto: url }))
+    }
+  }
+
+  const handleEditPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) { alert('Please select an image file'); return }
+    if (file.size > 5 * 1024 * 1024) { alert('Image must be less than 5MB'); return }
+    const previewUrl = URL.createObjectURL(file)
+    setEditPhotoPreview(previewUrl)
+    const url = await uploadPhoto(file)
+    if (url) {
+      setEditFormData(prev => ({ ...prev, profilePhoto: url }))
+    }
   }
 
   const handleUpdateUser = async (e: React.FormEvent) => {
@@ -249,6 +319,7 @@ export default function AdminUsersPage() {
 
       // Remove permissionRoleId before updating basic user info
       delete updateData.permissionRoleId
+      if (!updateData.profilePhoto) delete updateData.profilePhoto
 
       const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
         method: 'PUT',
@@ -280,6 +351,7 @@ export default function AdminUsersPage() {
       const createData: any = { ...addFormData }
       const permissionRoleId = createData.permissionRoleId
       delete createData.permissionRoleId
+      if (!createData.profilePhoto) delete createData.profilePhoto
 
       const response = await fetch('/api/admin/users', {
         method: 'POST',
@@ -310,12 +382,14 @@ export default function AdminUsersPage() {
 
         fetchUsers()
         setShowAddModal(false)
+        setAddPhotoPreview(null)
         setAddFormData({
           email: '',
           password: '',
           name: '',
           companyName: '',
           businessType: '',
+          profilePhoto: '',
           taxId: '',
           country: '',
           phone: '',
@@ -362,12 +436,14 @@ export default function AdminUsersPage() {
   }
 
   const resetAddForm = () => {
+    setAddPhotoPreview(null)
     setAddFormData({
       email: '',
       password: '',
       name: '',
       companyName: '',
       businessType: '',
+      profilePhoto: '',
       taxId: '',
       country: '',
       phone: '',
@@ -380,11 +456,13 @@ export default function AdminUsersPage() {
   const closeEditModal = () => {
     setShowEditModal(false)
     setSelectedUser(null)
+    setEditPhotoPreview(null)
     setEditFormData({
       email: '',
       name: '',
       companyName: '',
       businessType: '',
+      profilePhoto: '',
       taxId: '',
       country: '',
       phone: '',
@@ -495,12 +573,25 @@ export default function AdminUsersPage() {
                   {users.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-6">
-                        <div>
-                          <h4 className="font-medium text-gray-900">{user.name}</h4>
-                          <p className="text-xs text-gray-400">{user.email}</p>
-                          {user.taxId && (
-                            <p className="text-xs text-blue-600">Tax ID: {user.taxId}</p>
+                        <div className="flex items-center gap-3">
+                          {user.profilePhoto ? (
+                            <img
+                              src={user.profilePhoto}
+                              alt={user.name}
+                              className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1a3a5c] to-[#2a5a8c] flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+                              {getInitials(user.name)}
+                            </div>
                           )}
+                          <div>
+                            <h4 className="font-medium text-gray-900">{user.name}</h4>
+                            <p className="text-xs text-gray-400">{user.email}</p>
+                            {user.taxId && (
+                              <p className="text-xs text-blue-600">Tax ID: {user.taxId}</p>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="py-4 px-6">
@@ -658,6 +749,53 @@ export default function AdminUsersPage() {
                   />
                 </div>
 
+                {/* Profile Photo */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                  <div className="flex items-center gap-4">
+                    {addPhotoPreview ? (
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+                        <img src={addPhotoPreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                        <Camera className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => addFileInputRef.current?.click()}
+                        disabled={photoUploading}
+                        className="px-4 py-2 text-sm font-medium text-[#1a3a5c] bg-[#1a3a5c]/10 hover:bg-[#1a3a5c]/20 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {photoUploading ? (
+                          <span className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Uploading...
+                          </span>
+                        ) : 'Upload Photo'}
+                      </button>
+                      {addPhotoPreview && (
+                        <button
+                          type="button"
+                          onClick={() => { setAddPhotoPreview(null); setAddFormData(prev => ({ ...prev, profilePhoto: '' })) }}
+                          className="px-4 py-1 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                      <input
+                        ref={addFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAddPhotoChange}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
@@ -722,6 +860,7 @@ export default function AdminUsersPage() {
                     onChange={(e) => setAddFormData(prev => ({ ...prev, role: e.target.value }))}
                   >
                     <option value="USER">User</option>
+                    <option value="SUPPLIER">Supplier</option>
                     <option value="ADMIN">Admin</option>
                   </select>
                 </div>
@@ -809,6 +948,53 @@ export default function AdminUsersPage() {
                 />
               </div>
 
+              {/* Profile Photo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                <div className="flex items-center gap-4">
+                  {editPhotoPreview ? (
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
+                      <img src={editPhotoPreview} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <Camera className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    <button
+                      type="button"
+                      onClick={() => editFileInputRef.current?.click()}
+                      disabled={photoUploading}
+                      className="px-4 py-2 text-sm font-medium text-[#1a3a5c] bg-[#1a3a5c]/10 hover:bg-[#1a3a5c]/20 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {photoUploading ? (
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Uploading...
+                        </span>
+                      ) : 'Upload Photo'}
+                    </button>
+                    {editPhotoPreview && (
+                      <button
+                        type="button"
+                        onClick={() => { setEditPhotoPreview(null); setEditFormData(prev => ({ ...prev, profilePhoto: '' })) }}
+                        className="px-4 py-1 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditPhotoChange}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
@@ -873,6 +1059,7 @@ export default function AdminUsersPage() {
                   onChange={(e) => setEditFormData(prev => ({ ...prev, role: e.target.value }))}
                 >
                   <option value="USER">User</option>
+                  <option value="SUPPLIER">Supplier</option>
                   <option value="ADMIN">Admin</option>
                 </select>
               </div>

@@ -5,6 +5,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 interface CartContextType {
   cartCount: number
   refreshCartCount: () => Promise<void>
+  clearCart: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -13,23 +14,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0)
 
   const refreshCartCount = useCallback(async () => {
-    const token = localStorage.getItem('token')
-    if (!token) return
-
     try {
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-      const response = await fetch(`/api/cart?userId=${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch('/api/cart', {
+        credentials: 'include', // Important for cookies
       })
-      const data = await response.json()
-      if (data.success && data.data.cart) {
-        setCartCount(data.data.summary.totalQuantity)
-      } else {
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.data.cart) {
+          setCartCount(data.data.summary.totalQuantity || 0)
+        } else {
+          setCartCount(0)
+        }
+      } else if (response.status === 401) {
+        // Not logged in
         setCartCount(0)
       }
     } catch (err) {
       console.error('Failed to fetch cart count', err)
+      setCartCount(0)
     }
+  }, [])
+
+  const clearCart = useCallback(() => {
+    setCartCount(0)
   }, [])
 
   useEffect(() => {
@@ -37,7 +45,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [refreshCartCount])
 
   return (
-    <CartContext.Provider value={{ cartCount, refreshCartCount }}>
+    <CartContext.Provider value={{ cartCount, refreshCartCount, clearCart }}>
       {children}
     </CartContext.Provider>
   )

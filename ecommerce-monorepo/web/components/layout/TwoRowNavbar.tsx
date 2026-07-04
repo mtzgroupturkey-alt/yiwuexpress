@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
+import { UserMenu } from './UserMenu'
+import { useCart } from '@/components/CartContext'
 
 // Types
 interface Category {
@@ -22,6 +24,9 @@ export function TwoRowNavbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSticky, setIsSticky] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  
+  // Get real cart count from CartContext
+  const { cartCount } = useCart()
 
   // Fetch company info from database
   const { data: companyData } = useQuery({
@@ -49,8 +54,6 @@ export function TwoRowNavbar() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  const cartCount = 3
 
   // Main navigation items
   const mainNavItems = [
@@ -192,10 +195,8 @@ export function TwoRowNavbar() {
                 )}
               </Link>
 
-              {/* Account */}
-              <Link href="/login" className="hidden md:flex p-1.5 md:p-2 text-gray-500 hover:text-[#1a3a5c] hover:bg-gray-100 rounded-full transition">
-                <User className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
+              {/* Account / User Menu */}
+              <UserMenu />
 
               {/* Mobile Menu Toggle */}
               <button

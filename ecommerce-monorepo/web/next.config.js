@@ -13,6 +13,15 @@ const nextConfig = {
   env: {
     CUSTOM_PORT: process.env.PORT || '3001',
   },
+  async redirects() {
+    return [
+      {
+        source: '/login',
+        destination: '/auth/login',
+        permanent: true,
+      },
+    ]
+  },
   // Add CORS headers to all API routes
   async headers() {
     return [

@@ -62,14 +62,9 @@ export function ProductImageUpload({ images, onChange, maxImages = 10 }: Product
         formData.append('file', file)
         formData.append('type', 'products')
 
-        // Get auth token from localStorage
-        const token = localStorage.getItem('token')
-
         const response = await fetch('/api/admin/upload', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
+          credentials: 'include', // Send httpOnly cookie
           body: formData
         })
 

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preloader</title>
+<style>
+  /* ============================================
+     PRELOADER - Home Appliances & Kitchenware
+     ============================================ */
+
+  .preloader-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: #ffffff;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+
+  .preloader-overlay.dark-mode {
+    background: #0f172a;
+  }
+
+  .preloader-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* --- LOGO --- */
+  .preloader-logo-wrap {
+    position: relative;
+    margin-bottom: 36px;
+  }
+
+  .preloader-logo {
+    width: 180px;
+    height: auto;
+    animation: logoReveal 1.8s ease-out forwards, logoPulse 2.5s ease-in-out 1.8s infinite;
+    opacity: 0;
+    filter: drop-shadow(0 2px 12px rgba(0,0,0,0.08));
+  }
+
+  .dark-mode .preloader-logo {
+    filter: drop-shadow(0 2px 16px rgba(59,130,246,0.2));
+  }
+
+  @keyframes logoReveal {
+    0% { opacity: 0; transform: scale(0.7) translateY(10px); filter: blur(6px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
+  }
+
+  @keyframes logoPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  /* --- TRIPLE RING SPINNER --- */
+  .preloader-spinner {
+    position: relative;
+    width: 64px;
+    height: 64px;
+  }
+
+  .preloader-spinner .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+  }
+
+  .preloader-spinner .ring:nth-child(1) {
+    top: 0; left: 0; width: 100%; height: 100%;
+    border-top-color: #3b82f6;
+    border-right-color: #3b82f6;
+    animation: spin1 1s cubic-bezier(0.6, 0.15, 0.35, 0.85) infinite;
+  }
+
+  .preloader-spinner .ring:nth-child(2) {
+    top: 7px; left: 7px;
+    width: calc(100% - 14px); height: calc(100% - 14px);
+    border-bottom-color: #10b981;
+    border-left-color: #10b981;
+    animation: spin2 1.2s cubic-bezier(0.6, 0.15, 0.35, 0.85) infinite;
+  }
+
+  .preloader-spinner .ring:nth-child(3) {
+    top: 14px; left: 14px;
+    width: calc(100% - 28px); height: calc(100% - 28px);
+    border-top-color: #f59e0b;
+    animation: spin1 0.8s cubic-bezier(0.6, 0.15, 0.35, 0.85) infinite;
+  }
+
+  @keyframes spin1 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes spin2 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+
+  /* --- LOADING TEXT --- */
+  .preloader-text {
+    margin-top: 28px;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .dark-mode .preloader-text {
+    color: #475569;
+  }
+
+  /* --- PROGRESS BAR --- */
+  .preloader-progress {
+    width: 180px;
+    height: 2px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+
+  .dark-mode .preloader-progress {
+    background: #1e293b;
+  }
+
+  .preloader-progress .bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #3b82f6, #10b981);
+    animation: progressFill 2.8s ease-in-out forwards;
+  }
+
+  @keyframes progressFill {
+    0% { width: 0%; }
+    15% { width: 20%; }
+    40% { width: 50%; }
+    70% { width: 78%; }
+    90% { width: 90%; }
+    100% { width: 96%; }
+  }
+
+  /* --- FLOATING ICONS --- */
+  .preloader-icons {
+    position: absolute;
+    width: 100%; height: 100%;
+    top: 0; left: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .preloader-icons span {
+    position: absolute;
+    font-size: 22px;
+    opacity: 0;
+    animation: iconFloat 4s ease-in-out infinite;
+  }
+
+  .dark-mode .preloader-icons span {
+    filter: brightness(0.7);
+  }
+
+  .preloader-icons span:nth-child(1) { top: 12%; left: 10%;  animation-delay: 0s;   font-size: 24px; }
+  .preloader-icons span:nth-child(2) { top: 18%; right: 14%; animation-delay: 0.8s; font-size: 18px; }
+  .preloader-icons span:nth-child(3) { bottom: 18%; left: 14%; animation-delay: 1.6s; font-size: 20px; }
+  .preloader-icons span:nth-child(4) { bottom: 22%; right: 12%; animation-delay: 0.4s; font-size: 16px; }
+  .preloader-icons span:nth-child(5) { top: 50%; left: 6%;  animation-delay: 1.2s; font-size: 18px; }
+  .preloader-icons span:nth-child(6) { top: 65%; right: 8%;  animation-delay: 2.0s; font-size: 22px; }
+
+  @keyframes iconFloat {
+    0%, 100% { opacity: 0; transform: translateY(0) rotate(0deg); }
+    30%, 70% { opacity: 0.07; }
+    50% { opacity: 0.07; transform: translateY(-12px) rotate(5deg); }
+  }
+
+  /* ============================================
+     DEMO STYLES (remove in production)
+     ============================================ */
+  body { margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+
+  .demo-bar {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; z-index: 100000;
+    background: white; padding: 10px 18px; border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08); font-family: inherit;
+  }
+  .demo-bar button {
+    padding: 7px 14px; border: 1px solid #e2e8f0; border-radius: 8px;
+    background: white; color: #334155; font-size: 12px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; font-weight: 500;
+  }
+  .demo-bar button:hover { background: #f8fafc; }
+  .demo-bar button.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+  .website-content {
+    min-height: 200vh; display: flex; align-items: center;
+    justify-content: center; color: #cbd5e1; font-size: 16px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== PRELOADER START (copy this to your website) ========== -->
+<div class="preloader-overlay" id="preloader">
+  <div class="preloader-icons">
+    <span>&#x1F3E0;</span>
+    <span>&#x1F373;</span>
+    <span>&#x2615;</span>
+    <span>&#x1F6D2;</span>
+    <span>&#x1F525;</span>
+    <span>&#x1F4A1;</span>
+  </div>
+
+  <div class="preloader-logo-wrap">
+    <img id="preloaderLogo" src="Gemini_Generated_Image_88hnzx88hnzx88hn.png" alt="Loading..." class="preloader-logo" />
+  </div>
+
+  <div class="preloader-spinner">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+
+  <div class="preloader-text">Loading</div>
+
+  <div class="preloader-progress">
+    <div class="bar"></div>
+  </div>
+</div>
+<!-- ========== PRELOADER END ========== -->
+
+<!-- Demo (remove in production) -->
+<div class="website-content"><p>Your store content here</p></div>
+<div class="demo-bar">
+  <button class="active" onclick="setTheme('default',this)">Light</button>
+  <button onclick="setTheme('dark-mode',this)">Dark</button>
+  <button onclick="replay()">Replay</button>
+</div>
+
+<script>
+  // Fetch company logo from admin settings
+  async function loadCompanyLogo() {
+    try {
+      console.log('Fetching company logo from /api/settings/public...');
+      const response = await fetch('/api/settings/public');
+      
+      if (!response.ok) {
+        console.error('API response not ok:', response.status);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Settings data received:', data);
+      
+      if (data.settings && data.settings.companyLogo) {
+        const logoImg = document.getElementById('preloaderLogo');
+        console.log('Setting logo to:', data.settings.companyLogo);
+        logoImg.src = data.settings.companyLogo;
+        logoImg.alt = data.settings.companyName || 'Loading...';
+        
+        // Add error handler for image loading
+        logoImg.onerror = function() {
+          console.error('Failed to load logo image:', data.settings.companyLogo);
+          // Revert to default logo
+          logoImg.src = 'Gemini_Generated_Image_88hnzx88hnzx88hn.png';
+        };
+        
+        logoImg.onload = function() {
+          console.log('Logo loaded successfully');
+        };
+      } else {
+        console.log('No company logo found in settings, using default');
+      }
+    } catch (error) {
+      console.error('Error loading company logo:', error);
+      // Keep default logo on error
+    }
+  }
+
+  // Load logo immediately
+  loadCompanyLogo();
+
+  // Track if page is loaded
+  let pageLoaded = false;
+  let minTimeElapsed = false;
+
+  function hidePreloader() {
+    // Only hide when both conditions are met
+    if (pageLoaded && minTimeElapsed) {
+      document.getElementById('preloader').classList.add('hidden');
+    }
+  }
+
+  // Minimum display time (let animation complete at least once)
+  setTimeout(() => {
+    minTimeElapsed = true;
+    hidePreloader();
+  }, 2800);
+
+  // Hide when page fully loads
+  window.addEventListener('load', () => {
+    pageLoaded = true;
+    hidePreloader();
+  });
+
+  // Fallback: force hide after maximum time regardless
+  setTimeout(() => {
+    pageLoaded = true;
+    minTimeElapsed = true;
+    hidePreloader();
+  }, 10000);
+
+  // Demo only
+  function setTheme(t, btn) {
+    const p = document.getElementById('preloader');
+    p.className = 'preloader-overlay ' + t;
+    document.querySelectorAll('.demo-bar button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    replay();
+  }
+
+  function replay() {
+    const p = document.getElementById('preloader');
+    p.classList.remove('hidden');
+    pageLoaded = false;
+    minTimeElapsed = false;
+    p.querySelectorAll('.preloader-logo, .bar').forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = '';
+    });
+    p.querySelectorAll('.preloader-icons span').forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = '';
+    });
+    setTimeout(() => {
+      minTimeElapsed = true;
+      hidePreloader();
+    }, 2800);
+    setTimeout(() => {
+      pageLoaded = true;
+      hidePreloader();
+    }, 100);
+  }
+</script>
+</body>
+</html>

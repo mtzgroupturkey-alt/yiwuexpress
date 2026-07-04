@@ -9,10 +9,11 @@ export interface SwitchProps {
   disabled?: boolean
   id?: string
   className?: string
+  title?: string
 }
 
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
-  ({ checked = false, onCheckedChange, disabled, id, className }, ref) => {
+  ({ checked = false, onCheckedChange, disabled, id, className, title }, ref) => {
     return (
       <button
         type="button"
@@ -21,6 +22,7 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         id={id}
         ref={ref}
         disabled={disabled}
+        title={title}
         className={cn(
           'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
           checked ? 'bg-[#1a3a5c]' : 'bg-gray-200',

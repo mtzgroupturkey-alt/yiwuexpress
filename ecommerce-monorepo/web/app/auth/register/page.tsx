@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Building, Mail, Lock, User, Globe } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -16,6 +17,7 @@ export default function RegisterPage() {
     businessType: ''
   })
   const router = useRouter()
+  const { register: registerUser } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,23 +36,8 @@ export default function RegisterPage() {
       setIsLoading(true)
       setError('')
 
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
-      }
-
-      // Save token to localStorage
-      localStorage.setItem('token', result.token)
-      localStorage.setItem('user', JSON.stringify(result.user))
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - useAuth handles httpOnly cookies
+      await registerUser(formData)
       
       // Redirect to dashboard
       router.push('/dashboard')

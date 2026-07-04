@@ -192,7 +192,7 @@ export default function BreadcrumbSettingsPage() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+      <Tabs defaultValue="static" value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="static">
             Static Pages {staticPages.length > 0 && (

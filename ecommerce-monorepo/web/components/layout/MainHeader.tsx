@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, User, Menu, X, ChevronDown } from 'lucide-react'
+import { Search, ShoppingCart, Menu, X, ChevronDown, Heart } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Container } from '@/components/ui/Container'
 import { useSettings } from '@/components/SettingsProvider'
 import { useCart } from '@/components/CartContext'
+import { useWishlist } from '@/hooks/useWishlist'
 import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
+import { UserMenu } from '@/components/layout/UserMenu'
 
 // Nav items defined outside the component so they never cause remounts
 const NAV_ITEMS = [
@@ -30,6 +32,7 @@ export function MainHeader() {
   const [isSticky, setIsSticky] = useState(false)
 
   const { cartCount } = useCart()
+  const { wishlistCount } = useWishlist()
   const { settings } = useSettings()
 
   useEffect(() => {
@@ -170,6 +173,22 @@ export function MainHeader() {
                 </button>
               </div>
 
+              {/* Wishlist */}
+              <div className="relative">
+                <Link
+                  href="/dashboard/wishlist"
+                  className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
+                  aria-label="Wishlist"
+                >
+                  <Heart className="w-5 h-5" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Link>
+              </div>
+
               {/* Cart */}
               <div className="relative">
                 <Link
@@ -186,14 +205,8 @@ export function MainHeader() {
                 </Link>
               </div>
 
-              {/* Account */}
-              <Link
-                href="/account"
-                className="hidden md:flex p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200"
-                aria-label="Account"
-              >
-                <User className="w-5 h-5" />
-              </Link>
+              {/* Account / User Menu */}
+              <UserMenu />
 
               {/* Mobile hamburger */}
               <button

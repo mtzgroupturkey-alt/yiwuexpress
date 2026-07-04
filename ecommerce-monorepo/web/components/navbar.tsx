@@ -6,29 +6,31 @@ import { Truck, User, Menu, X, Search, ShoppingCart, ChevronDown, Package, Headp
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 import MegaMenu from '@/components/MegaMenu'
+import { UserMenu } from '@/components/layout/UserMenu'
+import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/components/CartContext'
 
 export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const { isAuthenticated, checkAuth } = useAuth()
+  const { cartCount } = useCart()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [logoUrl, setLogoUrl] = useState('')
   const [companyName, setCompanyName] = useState('YIWU EXPRESS')
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   const [accentColor, setAccentColor] = useState('#c9a84c')
-  const [cartItemCount, setCartItemCount] = useState(0)
   const [searchExpanded, setSearchExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [showAccountDropdown, setShowAccountDropdown] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    setIsLoggedIn(!!token)
+    // ✅ Check authentication using useAuth hook
+    checkAuth()
 
-    // Fetch cart count if logged in
-    if (token) {
-      fetchCartCount()
-    }
+    // ✅ Re-check auth every 30 seconds to catch login in other tabs
+    const authCheckInterval = setInterval(() => {
+      checkAuth()
+    }, 30000)
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 10)
@@ -55,7 +57,10 @@ export default function Navbar() {
       })
       .catch(err => console.error(err))
 
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      clearInterval(authCheckInterval)
+    }
   }, [])
 
   // Auto-focus search input when expanded
@@ -69,29 +74,6 @@ export default function Navbar() {
     e.preventDefault()
     if (searchQuery.trim()) {
       window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`
-    }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    setIsLoggedIn(false)
-    window.location.href = '/login'
-  }
-
-  const fetchCartCount = async () => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) return
-      
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-      const response = await fetch(`/api/cart?userId=${userId}`)
-      const data = await response.json()
-      
-      if (data.success && data.data.summary) {
-        setCartItemCount(data.data.summary.itemCount || 0)
-      }
-    } catch (error) {
-      console.error('Error fetching cart count:', error)
     }
   }
 
@@ -248,105 +230,17 @@ export default function Navbar() {
               className="relative w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 hover:from-[#c9a84c]/20 hover:to-[#1a3a5c]/20 flex items-center justify-center transition-all duration-300 hover:scale-105 group border-2 border-transparent hover:border-[#c9a84c]/30"
             >
               <ShoppingCart className="w-4.5 h-4.5 text-gray-700 group-hover:text-[#1a3a5c]" />
-              {cartItemCount > 0 && (
+              {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg shadow-red-500/50 animate-pulse ring-2 ring-white">
-                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                  {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
             </Link>
 
-            {/* Account Dropdown */}
-            {isLoggedIn ? (
-              <div className="relative">
-                <button 
-                  onClick={() => setShowAccountDropdown(!showAccountDropdown)}
-                  className="w-10 h-10 rounded-full bg-gradient-to-br from-[#1a3a5c] to-[#2a5a8c] hover:from-[#c9a84c] hover:to-[#1a3a5c] flex items-center justify-center transition-all duration-300 hover:scale-105 shadow-lg group ring-2 ring-[#c9a84c]/20"
-                >
-                  <User className="w-4.5 h-4.5 text-white" />
-                </button>
-                
-                {showAccountDropdown && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={() => setShowAccountDropdown(false)}
-                    ></div>
-                    <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden animate-slideDown">
-                      <div className="bg-gradient-to-br from-[#1a3a5c] to-[#2a5a8c] px-4 py-4 text-white">
-                        <div className="text-sm font-bold">My Account</div>
-                        <div className="text-xs text-white/70 mt-0.5">Manage your business</div>
-                      </div>
-                      
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 border-b border-gray-50"
-                        onClick={() => setShowAccountDropdown(false)}
-                      >
-                        <Package className="w-4 h-4 mr-3 text-[#1a3a5c]" />
-                        Dashboard
-                      </Link>
-                      <Link
-                        href="/orders"
-                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 border-b border-gray-50"
-                        onClick={() => setShowAccountDropdown(false)}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-3 text-[#1a3a5c]" />
-                        My Orders
-                      </Link>
-                      <Link
-                        href="/profile"
-                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 border-b border-gray-50"
-                        onClick={() => setShowAccountDropdown(false)}
-                      >
-                        <User className="w-4 h-4 mr-3 text-[#1a3a5c]" />
-                        Business Profile
-                      </Link>
-                      <Link
-                        href="/quotes"
-                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 border-b border-gray-50"
-                        onClick={() => setShowAccountDropdown(false)}
-                      >
-                        <FileText className="w-4 h-4 mr-3 text-[#1a3a5c]" />
-                        My Quotes
-                      </Link>
-                      <Link
-                        href="/shipments"
-                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 border-b border-gray-50"
-                        onClick={() => setShowAccountDropdown(false)}
-                      >
-                        <Truck className="w-4 h-4 mr-3 text-[#1a3a5c]" />
-                        My Shipments
-                      </Link>
-                      <button
-                        onClick={() => {
-                          handleLogout()
-                          setShowAccountDropdown(false)
-                        }}
-                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 font-medium"
-                      >
-                        <X className="w-4 h-4 mr-3" />
-                        Logout
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="hidden md:flex items-center space-x-2">
-                <Link
-                  href="/login"
-                  className="px-5 py-2.5 text-sm font-semibold text-gray-700 hover:text-[#1a3a5c] transition-all duration-300 rounded-full hover:bg-gray-100"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/register"
-                  className="px-5 py-2.5 text-sm text-white font-semibold rounded-full bg-gradient-to-r from-[#c9a84c] to-[#1a3a5c] hover:from-[#1a3a5c] hover:to-[#c9a84c] shadow-lg shadow-[#c9a84c]/30 hover:shadow-[#1a3a5c]/40 transition-all duration-300 hover:scale-105"
-                >
-                  Register
-                </Link>
-              </div>
-            )}
+            {/* ✅ User Menu Component - Uses useAuth hook */}
+            <div className="hidden md:block">
+              <UserMenu />
+            </div>
 
             {/* Mobile menu button */}
             <button
@@ -441,24 +335,10 @@ export default function Navbar() {
                 </div>
               </div>
               
-              {!isLoggedIn && (
-                <div className="px-4 pt-4 space-y-2 border-t border-gray-100 mt-2">
-                  <Link
-                    href="/login"
-                    className="block px-4 py-3 text-center text-gray-700 font-semibold text-sm bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="block px-4 py-3 text-center text-white font-semibold text-sm bg-gradient-to-r from-[#c9a84c] to-[#1a3a5c] hover:from-[#1a3a5c] hover:to-[#c9a84c] rounded-xl shadow-lg transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Register Business
-                  </Link>
-                </div>
-              )}
+              {/* ✅ Mobile Auth Buttons */}
+              <div className="px-4 pt-4 border-t border-gray-100 mt-2">
+                <UserMenu />
+              </div>
             </div>
           </div>
         )}

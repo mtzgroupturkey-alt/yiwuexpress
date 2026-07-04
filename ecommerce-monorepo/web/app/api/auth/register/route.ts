@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { hashPassword, generateToken } from '@/lib/auth'
-import { registerSchema } from '@/lib/validation'
+import { hashPassword, generateToken, setAuthCookie } from '@/lib/auth'
+import { registerRateLimit } from '@/lib/rate-limit'
+
+const registerSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'), // Increased from 6 to 8
+  phone: z.string().optional(),
+  country: z.string().optional(),
+  // Explicitly define role to strip it - any client-sent role is ignored
+  role: z.string().optional(),
+})
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = registerRateLimit(request)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await request.json()
     const validatedData = registerSchema.parse(body)
 
@@ -14,8 +31,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
+      // Generic error message to prevent account enumeration
       return NextResponse.json(
-        { error: 'Business account with this email already exists' },
+        { error: 'Unable to register with this email' },
         { status: 400 }
       )
     }
@@ -23,45 +41,55 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(validatedData.password)
 
-    // Create user with business information
+    // Create customer user (public registration)
+    // SECURITY: Always set role to 'USER', ignoring any client-sent role
     const user = await prisma.user.create({
       data: {
         email: validatedData.email,
         password: hashedPassword,
         name: validatedData.name,
-        companyName: validatedData.companyName,
-        businessType: validatedData.businessType,
-        taxId: validatedData.taxId,
-        role: 'BUSINESS',
+        phone: validatedData.phone,
+        country: validatedData.country,
+        role: 'USER', // HARDCODED - never trust client input for role
+        isVerified: false, // Set to false - email verification required
+        isActive: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        country: true,
+        role: true,
+        isActive: true,
+        // DO NOT SELECT PASSWORD
       },
     })
 
-    // Generate token
+    // Generate JWT token
     const token = generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
-      companyName: user.companyName || '',
     })
 
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        companyName: user.companyName,
-        businessType: user.businessType,
-        role: user.role,
-      },
-      token,
-      message: 'Business account created successfully. Welcome to YIWU EXPRESS!',
+    // Create response with httpOnly cookie
+    const response = NextResponse.json({
+      user,
+      message: 'Account created successfully. Welcome to YIWU EXPRESS!',
+      // NO TOKEN IN RESPONSE BODY - only in httpOnly cookie
     })
+
+    // Set httpOnly cookie
+    setAuthCookie(response, token)
+
+    return response
   } catch (error) {
     console.error('Registration error:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Invalid input', details: error.errors },
         { status: 400 }
       )
     }
@@ -72,5 +100,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-import { z } from 'zod'

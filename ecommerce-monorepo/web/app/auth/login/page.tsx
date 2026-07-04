@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Building, Mail, Lock, Globe } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -12,7 +13,23 @@ export default function LoginPage() {
     email: '',
     password: ''
   })
+  const [companyLogo, setCompanyLogo] = useState('')
+  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
   const router = useRouter()
+  const { login } = useAuth()
+
+  // Fetch company settings
+  useEffect(() => {
+    fetch('/api/settings/public')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings) {
+          if (data.settings.companyLogo) setCompanyLogo(data.settings.companyLogo)
+          if (data.settings.companyName) setCompanyName(data.settings.companyName)
+        }
+      })
+      .catch(err => console.error('Failed to load company settings:', err))
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,29 +43,19 @@ export default function LoginPage() {
       setIsLoading(true)
       setError('')
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed')
-      }
-
-      // Save token to localStorage
-      localStorage.setItem('token', result.token)
-      localStorage.setItem('user', JSON.stringify(result.user))
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - useAuth handles httpOnly cookies
+      const user = await login(formData.email, formData.password)
       
       // Redirect based on role
-      if (result.user.role === 'ADMIN') {
+      if (user.role === 'ADMIN') {
         router.push('/admin')
+      } else if (user.role === 'SUPPLIER') {
+        router.push('/dashboard/supplier')
       } else {
-        router.push('/dashboard')
+        // Customer (USER role) - redirect to dashboard or redirect URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const redirect = urlParams.get('redirect') || '/dashboard'
+        router.push(redirect)
       }
       router.refresh()
     } catch (err) {
@@ -60,14 +67,40 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      {/* Back to Website Link */}
+      <div className="absolute top-4 left-4">
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#1a3a5c] transition-colors group"
+        >
+          <svg 
+            className="w-5 h-5 transition-transform group-hover:-translate-x-1" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to Website
+        </Link>
+      </div>
+
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex items-center justify-center">
-          <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}>
-            <Globe size={24} className="text-white" />
-          </div>
+          {companyLogo ? (
+            <img
+              src={companyLogo}
+              alt={`${companyName} Logo`}
+              className="h-16 w-auto object-contain"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}>
+              <Globe size={24} className="text-white" />
+            </div>
+          )}
         </div>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Sign in to YIWU EXPRESS
+          Sign in to {companyName}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Access your logistics dashboard
@@ -169,15 +202,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-gray-600">
-              Don&apos;t have an account?{' '}
-              <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-700">
-                Create account
-              </Link>
-            </p>
-          </div>
-
           {/* Demo Credentials */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <h4 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials</h4>
@@ -185,6 +209,26 @@ export default function LoginPage() {
               <p><strong>Admin Access:</strong> admin@yiwuexpress.com / admin123</p>
               <p><strong>Customer:</strong> user@example.com / password123</p>
             </div>
+          </div>
+
+          {/* Don't have an account */}
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                Sign up
+              </Link>
+            </p>
+          </div>
+
+          {/* Back to Website Link - Mobile friendly */}
+          <div className="mt-4 text-center sm:hidden">
+            <Link 
+              href="/" 
+              className="text-sm font-medium text-gray-500 hover:text-[#1a3a5c]"
+            >
+              ← Back to Website
+            </Link>
           </div>
         </div>
       </div>

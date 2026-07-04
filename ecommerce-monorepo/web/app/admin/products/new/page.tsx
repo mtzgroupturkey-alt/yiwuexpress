@@ -48,7 +48,7 @@ const productSchema = z.object({
   batteryIncluded: z.boolean().default(false)
 })
 
-type ProductForm = z.infer<typeof productSchema>
+type ProductForm = z.input<typeof productSchema>
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -129,8 +129,8 @@ export default function NewProductPage() {
         wholesalePrice: data.wholesalePrice ? parseFloat(data.wholesalePrice.toString()) : null,
         weightKg: parseFloat(data.weightKg.toString()),
         stock: parseInt(data.stock.toString()),
-        lowStockThreshold: parseInt(data.lowStockThreshold.toString()),
-        minOrderQty: parseInt(data.minOrderQty.toString()),
+        lowStockThreshold: parseInt((data.lowStockThreshold ?? 10).toString()),
+        minOrderQty: parseInt((data.minOrderQty ?? 1).toString()),
         attributes: attributeValues // Add attribute values to product data
       }
 

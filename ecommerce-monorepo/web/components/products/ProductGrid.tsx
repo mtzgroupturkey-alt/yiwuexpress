@@ -141,14 +141,16 @@ export default function ProductGrid({
       const token = localStorage.getItem('token')
       if (!token) return
 
-      await fetch('/api/wishlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productIds: wishlistArray })
-      })
+      await Promise.all(wishlistArray.map(productId =>
+        fetch('/api/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ productId })
+        })
+      ))
     } catch (error) {
       console.error('Error syncing wishlist:', error)
     }
@@ -325,7 +327,7 @@ export default function ProductGrid({
               {products.map((product) => {
               // Map the product structure to match ProductCard expectations
               const mappedProduct = {
-                id: parseInt(product.id) || 0,
+                id: product.id,
                 slug: product.slug,
                 name: product.name,
                 price: product.price,
@@ -340,8 +342,6 @@ export default function ProductGrid({
                   key={product.id}
                   product={mappedProduct}
                   onAddToCart={(id) => handleAddToCart(product.id)}
-                  onToggleWishlist={(id) => handleToggleWishlist(product.id)}
-                  isInWishlist={wishlist.has(product.id)}
                 />
               )
             })}

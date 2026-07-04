@@ -42,8 +42,12 @@ export function handleOptions(request: NextRequest): NextResponse {
 
 export function withAuth(handler: Function) {
   return async function (req: NextRequest, ...args: any[]) {
+    // Try cookie first (preferred), then Authorization header (fallback)
+    const cookieToken = req.cookies.get('auth_token')?.value
     const authHeader = req.headers.get('authorization')
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    
+    const token = cookieToken || headerToken
 
     if (!token) {
       return NextResponse.json(

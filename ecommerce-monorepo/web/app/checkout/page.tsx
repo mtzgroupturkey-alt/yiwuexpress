@@ -63,14 +63,19 @@ export default function CheckoutPage() {
 
   const fetchCart = async () => {
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login')
-        return
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
+      const response = await fetch('/api/cart', {
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/login')
+          return
+        }
+        throw new Error('Failed to fetch cart')
       }
 
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-      const response = await fetch(`/api/cart?userId=${userId}`)
       const data = await response.json()
 
       if (data.success) {
@@ -139,17 +144,9 @@ export default function CheckoutPage() {
 
     setSubmitting(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login')
-        return
-      }
-
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - userId extracted from cookie on server
       const orderData = {
         ...data,
-        userId,
         items: cart.cart.items.map((item: any) => ({
           productId: item.productId,
           quantity: item.quantity
@@ -162,11 +159,19 @@ export default function CheckoutPage() {
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include', // Send httpOnly cookie
         body: JSON.stringify(orderData)
       })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/login')
+          return
+        }
+        throw new Error('Failed to create order')
+      }
 
       const result = await response.json()
 

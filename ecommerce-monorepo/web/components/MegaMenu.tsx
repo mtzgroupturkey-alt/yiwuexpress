@@ -125,7 +125,7 @@ export default function MegaMenu() {
             setIsOpen(false)
             setActiveCategory(null)
           }}
-        >>
+          >
           <div className="flex">
             {/* Categories Sidebar */}
             <div className="w-64 bg-gray-50 rounded-l-lg p-4 border-r border-gray-200">

@@ -27,6 +27,8 @@ interface WholesaleInquiry {
   createdAt: string
   user?: {
     name?: string
+    firstName?: string
+    lastName?: string
     email: string
     phone?: string
   }
@@ -35,6 +37,7 @@ interface WholesaleInquiry {
   quotedAt?: string
   quoteValidUntil?: string
   quoteNotes?: string
+  quotes?: Array<{ id: string; status: string; unitPrice: number; quantity: number; totalPrice: number; validUntil: string; createdAt: string; notes?: string }>
 }
 
 export default function AdminWholesaleDetailPage({ params }: { params: { id: string } }) {
@@ -466,9 +469,8 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
               <div>
                 <Label htmlFor="status">New Status</Label>
                 <Select
-                  id="status"
                   value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value)}
+                  onValueChange={(value) => setNewStatus(value)}
                 >
                   <option value="new">New</option>
                   <option value="reviewing">Reviewing</option>

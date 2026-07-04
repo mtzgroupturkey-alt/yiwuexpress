@@ -1,374 +1,474 @@
-# 🧪 PHASE 1 TESTING GUIDE
+# 🧪 TESTING GUIDE - Customer Login & Dashboard
 
-## Prerequisites
+## 🎯 Quick Test Steps
 
-Before testing, ensure you've completed:
-1. ✅ Run database migration
-2. ✅ Regenerate Prisma Client
-3. ✅ Restart Next.js server
+### 1. Start the Development Server
 
 ```bash
-cd web
-npx prisma migrate dev --name add_phase1_enhanced_models
-npx prisma generate
+cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\web
 npm run dev
 ```
 
----
-
-## 🔐 Test 1: Password Reset Flow
-
-### A. Request Password Reset
-
-**Page:** http://localhost:3001/forgot-password
-
-**Steps:**
-1. Navigate to forgot password page
-2. Enter email: `admin@yiwuexpress.com`
-3. Click "Send Reset Link"
-4. Check console for reset URL
-5. Verify success message displayed
-
-**Expected Result:**
-- ✅ Success message shown
-- ✅ Console shows reset URL with token
-- ✅ EmailLog created in database
-
-**API Test:**
-```bash
-curl -X POST http://localhost:3001/api/auth/forgot-password \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@yiwuexpress.com"}'
-```
-
-### B. Reset Password
-
-**Page:** http://localhost:3001/reset-password?token=TOKEN_FROM_CONSOLE
-
-**Steps:**
-1. Copy token from console
-2. Navigate to reset-password page with token
-3. Enter new password (minimum 8 characters)
-4. Confirm password
-5. Click "Reset Password"
-6. Wait for redirect to login
-
-**Expected Result:**
-- ✅ Password strength indicator works
-- ✅ Password validation enforced
-- ✅ Success message shown
-- ✅ Redirected to login page
-- ✅ Can login with new password
-- ✅ ActivityLog created in database
-
-**API Test:**
-```bash
-curl -X POST http://localhost:3001/api/auth/reset-password \
-  -H "Content-Type: application/json" \
-  -d '{
-    "token":"YOUR_TOKEN_HERE",
-    "password":"NewPass123!",
-    "confirmPassword":"NewPass123!"
-  }'
-```
+Server should start at: `http://localhost:3000`
 
 ---
 
-## 🏢 Test 2: Wholesale Inquiry
+## 🔐 Test Login Flow
 
-**Page:** http://localhost:3001/wholesale
+### A. Navigate to Login Page
+1. Open browser: `http://localhost:3000/login`
+2. ✅ Verify: Header is visible
+3. ✅ Verify: Breadcrumb shows "Home / Login"
+4. ✅ Verify: Footer is visible
+5. ✅ Verify: Login form is displayed
 
-**Steps:**
-1. Navigate to wholesale page
-2. Fill in company information:
-   - Company Name: "Test Wholesale Co"
-   - Business Type: "Wholesaler"
-   - Country: "United States"
-   - Email: "wholesale@test.com"
-3. Fill in product requirements:
-   - Product Interests: "Electronics and gadgets"
-   - Target Quantity: 500
-   - Target Price: 25.00
-4. Select shipping terms:
-   - Payment Terms: "T/T"
-   - Shipping Terms: "FOB"
-   - Preferred Shipping: "Sea"
-5. Add notes (optional)
-6. Click "Submit Wholesale Inquiry"
+### B. Test Invalid Login
+1. Enter invalid email: `test@test.com`
+2. Enter invalid password: `wrongpassword`
+3. Click "Sign In"
+4. ✅ Verify: Error message is displayed
+5. ✅ Verify: User stays on login page
 
-**Expected Result:**
-- ✅ Form validation works
-- ✅ Success page displayed
-- ✅ Wholesale inquiry created in database
-- ✅ Console shows inquiry details
+### C. Test Valid Customer Login
+1. Enter valid customer credentials
+2. Click "Sign In"
+3. ✅ Verify: Redirected to `/dashboard`
+4. ✅ Verify: Welcome message shows user name
+5. ✅ Verify: Header, Breadcrumb, Footer visible
 
-**API Test:**
-```bash
-curl -X POST http://localhost:3001/api/wholesale \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "companyName": "Test Wholesale Co",
-    "businessType": "wholesaler",
-    "country": "United States",
-    "products": [{
-      "productName": "Electronics",
-      "quantity": 500,
-      "targetPrice": 25
-    }],
-    "paymentTerms": "T/T",
-    "shippingTerms": "FOB",
-    "preferredShipping": "sea"
-  }'
-```
+### D. Test Role-Based Redirect
+1. **Admin Login:**
+   - Should redirect to `/admin`
+   
+2. **Supplier Login:**
+   - Should redirect to `/dashboard/supplier`
+   
+3. **Customer Login:**
+   - Should redirect to `/dashboard`
+
+### E. Test Redirect Parameter
+1. Navigate to: `http://localhost:3000/login?redirect=/dashboard/orders`
+2. Login with customer credentials
+3. ✅ Verify: Redirected to `/dashboard/orders` (not `/dashboard`)
 
 ---
 
-## 🔄 Test 3: Return Request
+## 🏠 Test Dashboard Pages
 
-**Prerequisites:** Have a delivered order
+### 1. Dashboard Overview (`/dashboard`)
 
-**Steps:**
+**Checklist:**
+- [ ] Header displays correctly
+- [ ] Breadcrumb shows "Home / Dashboard"
+- [ ] Welcome message shows user name
+- [ ] Stats cards display (Orders, Wishlist, Addresses)
+- [ ] Quick action cards are clickable
+- [ ] All cards navigate to correct pages
+- [ ] "Back to Shop" button works
+- [ ] Footer displays correctly
+
+**Actions to Test:**
+1. Click "My Orders" → Should go to `/dashboard/orders`
+2. Click "Wishlist" → Should go to `/dashboard/wishlist`
+3. Click "Profile" → Should go to `/dashboard/profile`
+4. Click "Addresses" → Should go to `/dashboard/addresses`
+5. Click "Shop Products" → Should go to `/products`
+6. Click "Settings" → Should go to `/dashboard/settings`
+
+---
+
+### 2. My Orders (`/dashboard/orders`)
+
+**Checklist:**
+- [ ] Header displays correctly
+- [ ] Breadcrumb shows "Home / Dashboard / Orders"
+- [ ] Page title "My Orders" visible
+- [ ] Back arrow works (returns to `/dashboard`)
+- [ ] Search box is functional
+- [ ] Footer displays correctly
+
+**With No Orders:**
+- [ ] Empty state displays
+- [ ] Icon and message shown
+- [ ] "Browse Products" button visible
+- [ ] Button navigates to `/products`
+
+**With Orders:**
+- [ ] Orders list displays
+- [ ] Order numbers shown
+- [ ] Dates formatted correctly
+- [ ] Status badges have colors
+- [ ] Total price displays
+- [ ] "View Details" link works
+
+**Actions to Test:**
+1. Enter order number in search
+2. ✅ Verify: Matching orders filter
+3. Click "View Details"
+4. ✅ Verify: Navigate to order detail page
+
+---
+
+### 3. My Wishlist (`/dashboard/wishlist`)
+
+**Checklist:**
+- [ ] Header displays correctly
+- [ ] Breadcrumb shows "Home / Dashboard / Wishlist"
+- [ ] Page title shows count: "My Wishlist (X items)"
+- [ ] Back arrow works
+- [ ] Footer displays correctly
+
+**With No Wishlist Items:**
+- [ ] Empty state displays
+- [ ] Heart icon shown
+- [ ] "Browse Products" button works
+
+**With Wishlist Items:**
+- [ ] Products display in grid
+- [ ] Product images load
+- [ ] Product names display
+- [ ] Prices show correctly
+- [ ] "Add to Cart" button visible
+- [ ] Delete button (🗑️) visible
+
+**Actions to Test:**
+1. Click product image → Navigate to product page
+2. Click product name → Navigate to product page
+3. Click "Add to Cart" → Add product to cart
+4. Click delete button → Remove from wishlist
+5. ✅ Verify: Item removed and count updated
+
+---
+
+### 4. My Profile (`/dashboard/profile`)
+
+**Checklist:**
+- [ ] Header displays correctly
+- [ ] Breadcrumb shows "Home / Dashboard / Profile"
+- [ ] Back arrow works
+- [ ] Avatar placeholder displays
+- [ ] User name shown
+- [ ] Email shown (read-only)
+- [ ] Role badge displays
+- [ ] Form fields populated with user data
+- [ ] Footer displays correctly
+
+**Form Fields:**
+- [ ] Full Name (editable)
+- [ ] Email (disabled/read-only)
+- [ ] Phone Number (editable)
+- [ ] Country (dropdown with 70+ countries)
+
+**Actions to Test:**
+1. Change full name
+2. Change phone number
+3. Select different country
+4. Click "Save Changes"
+5. ✅ Verify: Success message displays
+6. ✅ Verify: Changes saved
+7. Refresh page
+8. ✅ Verify: Changes persisted
+
+---
+
+### 5. My Addresses (`/dashboard/addresses`)
+
+**Checklist:**
+- [ ] Header displays correctly
+- [ ] Breadcrumb shows "Home / Dashboard / Addresses"
+- [ ] Back arrow works
+- [ ] "Add Address" button visible
+- [ ] Footer displays correctly
+
+**With No Addresses:**
+- [ ] Empty state displays
+- [ ] Map pin icon shown
+- [ ] Message and call-to-action shown
+- [ ] "Add Your First Address" button works
+
+**With Addresses:**
+- [ ] Addresses display in grid
+- [ ] Default address has special styling
+- [ ] Default badge shows on default address
+- [ ] All address fields visible
+- [ ] Edit, Set Default, Delete buttons visible
+
+**Actions to Test - Add Address:**
+1. Click "+ Add Address"
+2. ✅ Verify: Form displays
+3. Fill all required fields:
+   - Full Name
+   - Phone
+   - Address Line 1
+   - City
+   - Postal Code
+   - Country
+4. Check "Set as default"
+5. Click "Save Address"
+6. ✅ Verify: Success message
+7. ✅ Verify: Address added to list
+8. ✅ Verify: Default badge visible
+
+**Actions to Test - Edit Address:**
+1. Click "Edit" on an address
+2. ✅ Verify: Form opens with data
+3. Modify some fields
+4. Click "Update Address"
+5. ✅ Verify: Changes saved
+6. ✅ Verify: Updated data displays
+
+**Actions to Test - Set Default:**
+1. Click "Set Default" on non-default address
+2. ✅ Verify: Default badge moves
+3. ✅ Verify: Previous default no longer has badge
+
+**Actions to Test - Delete:**
+1. Click "Delete" on an address
+2. ✅ Verify: Confirmation prompt
+3. Confirm deletion
+4. ✅ Verify: Address removed
+5. ✅ Verify: Success message
+
+---
+
+### 6. Settings (`/dashboard/settings`)
+
+**Checklist:**
+- [ ] Header displays correctly
+- [ ] Breadcrumb shows "Home / Dashboard / Settings"
+- [ ] Back arrow works
+- [ ] Two cards display: Change Password & Account Info
+- [ ] Footer displays correctly
+
+**Change Password Card:**
+- [ ] Current Password field
+- [ ] New Password field
+- [ ] Confirm Password field
+- [ ] Password requirements shown
+
+**Account Info Card:**
+- [ ] Account created date
+- [ ] Role badge
+- [ ] Email display
+
+**Actions to Test - Change Password:**
+1. Enter current password
+2. Enter new password (min 8 chars)
+3. Enter confirm password (matching)
+4. Click "Update Password"
+5. ✅ Verify: Success message
+6. ✅ Verify: Password changed (can login with new password)
+
+**Actions to Test - Password Validation:**
+1. Enter mismatched passwords
+2. ✅ Verify: Error message "Passwords do not match"
+3. Enter short password (<8 chars)
+4. ✅ Verify: Error message about minimum length
+
+---
+
+## 🔒 Test Authentication & Security
+
+### A. Unauthenticated Access
+1. Open browser in incognito/private mode
+2. Navigate to: `http://localhost:3000/dashboard`
+3. ✅ Verify: Redirected to `/login?redirect=/dashboard`
+4. Navigate to: `http://localhost:3000/dashboard/orders`
+5. ✅ Verify: Redirected to `/login?redirect=/dashboard/orders`
+
+### B. Session Persistence
 1. Login as customer
-2. Navigate to order details page
-3. Click "Request Return" button
-4. Select items to return
-5. Choose return reason
-6. Add description
-7. Submit return request
+2. Navigate to dashboard pages
+3. Close browser tab
+4. Open new tab
+5. Navigate to: `http://localhost:3000/dashboard`
+6. ✅ Verify: Still authenticated (not redirected to login)
 
-**Expected Result:**
-- ✅ Return request created
-- ✅ Order status updated to "RETURN_REQUESTED"
-- ✅ Return number generated
-- ✅ ActivityLog created
+### C. Logout
+1. Login as customer
+2. Click user menu in header
+3. Click "Logout"
+4. ✅ Verify: Redirected to home or login
+5. Try to access: `http://localhost:3000/dashboard`
+6. ✅ Verify: Redirected to login
 
-**API Test:**
-```bash
-curl -X POST http://localhost:3001/api/orders/ORDER_ID/return \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d '{
-    "reason": "damaged",
-    "description": "Product arrived damaged",
-    "items": [{
-      "productId": "PRODUCT_ID",
-      "productName": "Test Product",
-      "quantity": 1
-    }]
-  }'
-```
+### D. Role Protection
+1. Login as admin
+2. ✅ Verify: Redirected to `/admin` (not dashboard)
+3. Manually navigate to: `http://localhost:3000/dashboard`
+4. ✅ Verify: Cannot access or redirected
 
 ---
 
-## 📧 Test 4: Contact Form
+## 📱 Test Responsive Design
 
-**Page:** http://localhost:3001/contact
+### Desktop (>1024px)
+- [ ] All pages display in full width
+- [ ] Grid layouts show 3-4 columns
+- [ ] Navigation expanded
+- [ ] All features accessible
 
-**Steps:**
-1. Navigate to contact page
-2. Fill in form:
-   - Name: "John Doe"
-   - Email: "john@example.com"
-   - Subject: "Product Inquiry"
-   - Message: "I need information about..."
-3. Submit form
-4. Check console for submission
+### Tablet (640-1024px)
+- [ ] Grid layouts show 2 columns
+- [ ] Navigation may collapse
+- [ ] Touch-friendly buttons
 
-**Expected Result:**
-- ✅ Form validation works
-- ✅ Success message displayed
-- ✅ Console shows contact details
-- ✅ Rate limiting works (max 3 per minute)
+### Mobile (<640px)
+- [ ] Grid layouts show 1 column
+- [ ] Hamburger menu for navigation
+- [ ] Stack elements vertically
+- [ ] Large touch targets
 
-**API Test:**
-```bash
-curl -X POST http://localhost:3001/api/contact \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "subject": "Product Inquiry",
-    "message": "I need information about bulk orders"
-  }'
-```
+**Test Each Page:**
+1. Open browser dev tools (F12)
+2. Toggle device toolbar
+3. Test at different sizes:
+   - iPhone SE (375px)
+   - iPad (768px)
+   - Desktop (1920px)
+4. ✅ Verify: Layouts adjust correctly
 
 ---
 
-## 🗄️ Test 5: Database Verification
+## 🎨 Test UI/UX Elements
 
-### Check New Tables
+### Loading States
+- [ ] Login button shows spinner when loading
+- [ ] Dashboard shows loader while checking auth
+- [ ] Pages show loader while fetching data
+- [ ] Buttons show "Saving..." during save
 
-```sql
--- Connect to PostgreSQL
-psql -U postgres -d ecommerce
+### Empty States
+- [ ] Orders page empty state
+- [ ] Wishlist page empty state
+- [ ] Addresses page empty state
+- [ ] All have icons and messages
+- [ ] All have call-to-action buttons
 
--- List all tables
-\dt
+### Success Feedback
+- [ ] Profile save shows success
+- [ ] Address save shows success
+- [ ] Password change shows success
+- [ ] Toast notifications appear and disappear
 
--- Check specific new tables
-SELECT * FROM product_variants LIMIT 5;
-SELECT * FROM tiered_prices LIMIT 5;
-SELECT * FROM returns LIMIT 5;
-SELECT * FROM email_logs LIMIT 5;
-SELECT * FROM activity_logs LIMIT 10;
-```
-
-### Check User Model Updates
-
-```sql
--- Verify resetToken fields exist
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'User' 
-AND column_name IN ('resetToken', 'resetTokenExpiry');
-```
-
-### Check Relations
-
-```sql
--- Check CartItem variant relation
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'cart_items' 
-AND column_name = 'variantId';
-
--- Check OrderItem variant relation
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'order_items' 
-AND column_name = 'variantId';
-```
+### Error Handling
+- [ ] Login errors show clearly
+- [ ] Form validation errors display
+- [ ] Network errors handled gracefully
+- [ ] User sees helpful error messages
 
 ---
 
-## 🎨 Test 6: UI Components (After Installation)
+## 🐛 Common Issues to Check
 
-After running `install-ui-components.bat`, verify:
+### Issue 1: Infinite Redirect Loop
+**Symptom:** Page keeps redirecting between login and dashboard
+**Check:**
+- [ ] useAuth hook checkAuth() not called multiple times
+- [ ] Layout useEffect dependencies correct
+- [ ] No circular authentication checks
 
-```bash
-# Check if components are installed
-dir web\components\ui
-```
+### Issue 2: User Data Not Persisting
+**Symptom:** User info lost after refresh
+**Check:**
+- [ ] Zustand persist middleware configured
+- [ ] Browser localStorage enabled
+- [ ] No console errors about storage
 
-Expected components:
-- ✅ button.tsx
-- ✅ card.tsx
-- ✅ input.tsx
-- ✅ label.tsx
-- ✅ select.tsx
-- ✅ badge.tsx
-- ✅ form.tsx (NEW)
-- ✅ table.tsx (NEW)
-- ✅ dialog.tsx (NEW)
-- ✅ tabs.tsx (NEW)
-- ✅ alert.tsx (NEW)
-- ✅ toast.tsx (NEW)
-- ✅ skeleton.tsx (NEW)
-- ✅ pagination.tsx (NEW)
-- ✅ checkbox.tsx (NEW)
-- ✅ radio-group.tsx (NEW)
-- ✅ textarea.tsx (NEW)
+### Issue 3: Breadcrumb Not Updating
+**Symptom:** Breadcrumb shows wrong path
+**Check:**
+- [ ] Breadcrumb component receives correct props
+- [ ] window.location.pathname reads correctly
+- [ ] Path segments parsed properly
 
----
+### Issue 4: 401 Unauthorized Errors
+**Symptom:** API calls fail with 401
+**Check:**
+- [ ] Cookies enabled in browser
+- [ ] credentials: 'include' in all API calls
+- [ ] Backend sending httpOnly cookie correctly
 
-## 🐛 Common Issues & Fixes
-
-### Issue 1: Migration Fails
-
-**Error:** `Migration failed to apply cleanly to the shadow database`
-
-**Solution:**
-```bash
-npx prisma migrate reset
-npx prisma migrate dev --name add_phase1_enhanced_models
-```
-
-### Issue 2: Prisma Client Not Updated
-
-**Error:** `Property 'return' does not exist on type 'PrismaClient'`
-
-**Solution:**
-```bash
-npx prisma generate
-# Restart your editor/IDE
-```
-
-### Issue 3: 404 on New Pages
-
-**Error:** Pages not found after creation
-
-**Solution:**
-```bash
-# Clear Next.js cache
-rm -rf .next
-npm run dev
-```
-
-### Issue 4: Reset Token Not Working
-
-**Error:** "Invalid or expired reset token"
-
-**Solution:**
-- Check token hasn't expired (1 hour limit)
-- Verify token copied correctly from console
-- Check `resetToken` and `resetTokenExpiry` in User table
+### Issue 5: Styles Not Loading
+**Symptom:** Pages look unstyled
+**Check:**
+- [ ] Tailwind CSS configured
+- [ ] Global CSS imported
+- [ ] No CSS class typos
 
 ---
 
-## ✅ Testing Checklist
+## ✅ Final Verification Checklist
 
-### Database & Migration
-- [ ] Migration ran successfully
-- [ ] All 5 new tables exist
-- [ ] User table has resetToken fields
-- [ ] CartItem has variantId field
-- [ ] OrderItem has variantId field
+### Functionality
+- [ ] All login flows work
+- [ ] All dashboard pages load
+- [ ] All forms submit successfully
+- [ ] All navigation links work
+- [ ] Authentication guards working
+- [ ] Role-based routing working
 
-### API Endpoints
-- [ ] POST /api/auth/forgot-password works
-- [ ] POST /api/auth/reset-password works
-- [ ] POST /api/orders/[id]/return works
-- [ ] POST /api/contact works
-- [ ] POST /api/wholesale works (existing)
+### UI/UX
+- [ ] Header on all pages
+- [ ] Breadcrumb on all pages
+- [ ] Footer on all pages
+- [ ] Loading states display
+- [ ] Empty states display
+- [ ] Success messages display
+- [ ] Error messages display
 
-### Web Pages
-- [ ] /forgot-password page loads
-- [ ] /reset-password page loads with token
-- [ ] /wholesale page loads
-- [ ] All forms validate correctly
-- [ ] Success/error messages display
+### Responsive
+- [ ] Works on mobile
+- [ ] Works on tablet
+- [ ] Works on desktop
+- [ ] Touch targets adequate
+- [ ] Text readable on all sizes
 
-### User Flows
-- [ ] Can request password reset
-- [ ] Can reset password with valid token
-- [ ] Can submit wholesale inquiry
-- [ ] Can submit contact form
-- [ ] Can request order return
+### Security
+- [ ] Cannot access dashboard when logged out
+- [ ] Roles redirect correctly
+- [ ] Passwords hidden (type="password")
+- [ ] No tokens in localStorage
+- [ ] Logout clears session
 
-### Database Logs
-- [ ] EmailLog entries created
-- [ ] ActivityLog entries created
-- [ ] Return records created
-- [ ] WholesaleInquiry records created
-
----
-
-## 📊 Success Criteria
-
-All tests pass when:
-- ✅ All 5 database tables created successfully
-- ✅ Password reset flow works end-to-end
-- ✅ Wholesale inquiry submission works
-- ✅ Contact form submission works
-- ✅ Return request works for delivered orders
-- ✅ All pages render without errors
-- ✅ Form validations work correctly
-- ✅ Database logs are created properly
+### Performance
+- [ ] Pages load quickly
+- [ ] No console errors
+- [ ] No excessive re-renders
+- [ ] Images load properly
+- [ ] Forms respond instantly
 
 ---
 
-**Test Date:** _______________  
-**Tested By:** _______________  
-**Status:** ⬜ Pass  ⬜ Fail  ⬜ Partial  
-**Notes:** _______________
+## 🚀 Ready for Production?
+
+**ALL ITEMS ABOVE MUST PASS** ✅
+
+If all tests pass, the system is ready for production deployment!
+
+---
+
+## 📞 Troubleshooting
+
+### Problem: Page won't load
+1. Check console for errors
+2. Verify API is running
+3. Check network tab for failed requests
+4. Clear browser cache
+
+### Problem: Authentication not working
+1. Check browser cookies enabled
+2. Verify API credentials endpoint
+3. Check httpOnly cookie in network tab
+4. Try incognito mode
+
+### Problem: Styles broken
+1. Run `npm run dev` again
+2. Clear `.next` cache folder
+3. Check tailwind.config.js
+4. Verify CSS imports
+
+---
+
+**Generated:** July 3, 2026
+**Status:** Ready for Testing

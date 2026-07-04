@@ -1,24 +1,19 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
 // GET /api/orders - Get user's orders
 export async function GET(request: Request) {
   try {
-    // TODO: Get userId from authenticated session
+    // IDOR Protection: Get userId from authenticated token, not request
+    const user = await requireAuth(request)
+    
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
     const status = searchParams.get('status')
 
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User ID is required' },
-        { status: 400 }
-      )
-    }
-
-    const where: any = { userId }
+    const where: any = { userId: user.id }
     if (status) {
       where.status = status
     }
@@ -57,6 +52,9 @@ export async function GET(request: Request) {
       count: orders.length
     })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching orders:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch orders' },
@@ -68,11 +66,13 @@ export async function GET(request: Request) {
 // POST /api/orders - Create a new order
 export async function POST(request: Request) {
   try {
+    // IDOR Protection: Get userId from authenticated token, not request body
+    const user = await requireAuth(request)
+    
     const body = await request.json()
 
-    // Validate required fields
+    // Validate required fields (userId no longer required from request)
     const requiredFields = [
-      'userId',
       'customerName',
       'customerEmail',
       'customerPhone',
@@ -157,11 +157,11 @@ export async function POST(request: Request) {
     const discount = body.discount || 0
     const total = subtotal + shippingFee + tax - discount
 
-    // Create order with items
+    // Create order with items (use userId from token)
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        userId: body.userId,
+        userId: user.id,
         customerName: body.customerName,
         customerEmail: body.customerEmail,
         customerPhone: body.customerPhone,
@@ -219,9 +219,9 @@ export async function POST(request: Request) {
       })
     }
 
-    // Clear user's cart if exists
+    // Clear user's cart if exists (use userId from token)
     const cart = await prisma.cart.findUnique({
-      where: { userId: body.userId }
+      where: { userId: user.id }
     })
     if (cart) {
       await prisma.cartItem.deleteMany({
@@ -238,6 +238,9 @@ export async function POST(request: Request) {
       message: 'Order created successfully'
     }, { status: 201 })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error creating order:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create order' },

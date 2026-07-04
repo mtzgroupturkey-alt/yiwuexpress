@@ -17,12 +17,21 @@ model User {
   taxId              String?
   country            String?
   phone              String?
-  role               String             @default("USER")
+  profilePhoto       String?            // Profile photo URL or base64
+  role               String             @default("USER") // USER, SUPPLIER, ADMIN
   roleId             String?
   resetToken         String?
   resetTokenExpiry   DateTime?
+  isActive           Boolean            @default(true)
+  isVerified         Boolean            @default(false)
+  lastLoginAt        DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+  
+  // Supplier reference (only for SUPPLIER role)
+  supplierId         String?            @unique
+  supplierProfile    SupplierProfile?   @relation(fields: [supplierId], references: [id])
+  
   company            CompanyInfo?
   quotes             Quote[]
   shipments          Shipment[]
@@ -36,6 +45,10 @@ model User {
   orders             Order[]
   returns            Return[]
   wholesaleInquiries WholesaleInquiry[]
+  wishlistItems      WishlistItem[]
+  
+  @@index([email])
+  @@index([role])
 }
 
 model Service {
@@ -287,6 +300,7 @@ model Product {
   category             Category?           @relation(fields: [categoryId], references: [id])
   suppliers            ProductSupplier[]
   purchaseOrderItems   PurchaseOrderItem[]
+  wishlistItems        WishlistItem[]
 
   @@map("products")
 }
@@ -715,6 +729,32 @@ enum AttributeType {
 // PURCHASE MANAGEMENT SYSTEM
 // ============================================
 
+// ============================================================
+// SUPPLIER PROFILE (for SUPPLIER role users)
+// ============================================================
+model SupplierProfile {
+  id             String              @id @default(cuid())
+  companyName    String
+  businessType   String?             // MANUFACTURER, WHOLESALER, DISTRIBUTOR
+  taxId          String?
+  vatNumber      String?
+  phone          String?
+  address        String?
+  website        String?
+  description    String?
+  logo           String?
+  paymentTerms   String?             // "net30", "net60", "prepayment"
+  currency       String              @default("USD")
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  
+  // One-to-one with User
+  user           User?
+  
+  @@map("supplier_profiles")
+}
+
 model Supplier {
   id             String              @id @default(cuid())
   name           String
@@ -856,4 +896,16 @@ model ExchangeRateHistory {
 
   @@index([fromCurrency, toCurrency, date])
   @@map("exchange_rate_history")
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
 }

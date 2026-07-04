@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Navbar from '@/components/navbar'
 import { User, Building, Phone, Mail, Globe, Shield, Edit2, Check, X, Calendar } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Contact name must be at least 2 characters'),
@@ -27,6 +28,7 @@ export default function ProfilePage() {
   const [successMsg, setSuccessMsg] = useState('')
   const [userData, setUserData] = useState<any>(null)
   const router = useRouter()
+  const { checkAuth, isAuthenticated, updateUser } = useAuth()
 
   const {
     register,
@@ -39,37 +41,36 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
-    fetchProfile(token)
+    checkAuth()
   }, [])
 
-  const fetchProfile = async (token: string) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchProfile()
+    } else if (!isLoading && !isAuthenticated) {
+      router.push('/login')
+    }
+  }, [isAuthenticated])
+
+  const fetchProfile = async () => {
     try {
       setIsLoading(true)
       setError('')
 
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
       const response = await fetch('/api/auth/me', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include'
       })
-
-      const result = await response.json()
 
       if (!response.ok) {
         if (response.status === 401) {
-          localStorage.removeItem('token')
           router.push('/login')
           return
         }
-        throw new Error(result.error || 'Failed to fetch profile')
+        throw new Error('Failed to fetch profile')
       }
 
+      const result = await response.json()
       setUserData(result.user)
       
       // Populate form values
@@ -91,31 +92,28 @@ export default function ProfilePage() {
       setIsSaving(true)
       setError('')
       setSuccessMsg('')
-      const token = localStorage.getItem('token')
 
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
       const response = await fetch('/api/auth/me', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       })
 
-      const result = await response.json()
-
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to update profile')
+        throw new Error('Failed to update profile')
       }
 
+      const result = await response.json()
       setUserData(result.user)
       setSuccessMsg('Profile updated successfully!')
       setIsEditing(false)
       
-      // Refresh navbar state by updating local storage user cache if it exists
-      if (localStorage.getItem('user')) {
-        localStorage.setItem('user', JSON.stringify(result.user))
-      }
+      // Update global auth state
+      updateUser(result.user)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile')
     } finally {

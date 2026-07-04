@@ -49,14 +49,9 @@ export function ImageUpload({ value, onChange, folder = 'categories', className 
       formData.append('file', file)
       formData.append('type', folder || 'general')
       
-      // Get auth token from localStorage
-      const token = localStorage.getItem('token')
-      
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        credentials: 'include', // Send httpOnly cookie
         body: formData
       })
       
