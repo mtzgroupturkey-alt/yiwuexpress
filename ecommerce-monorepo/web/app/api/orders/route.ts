@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
+import { sendOrderConfirmationEmail } from '@/lib/email'
+import { logger } from '@/lib/logger'
 
 const prisma = new PrismaClient()
 
@@ -229,8 +231,39 @@ export async function POST(request: Request) {
       })
     }
 
-    // TODO: Send order confirmation email
-    // TODO: Create notification for user
+    // Send order confirmation email (non-blocking)
+    sendOrderConfirmationEmail(order.customerEmail, {
+      customerName: order.customerName,
+      orderNumber: order.orderNumber,
+      total: order.total,
+      paymentMethod: order.paymentMethod,
+      orderId: order.id,
+    }).catch((err) => logger.error('Failed to send order confirmation email', err))
+
+    // Create notification for user
+    prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: 'ORDER_CREATED',
+        title: 'Order Created',
+        message: `Your order #${order.orderNumber} has been created successfully.`,
+        data: { orderId: order.id, orderNumber: order.orderNumber },
+      },
+    }).catch((err) => logger.error('Failed to create notification', err))
+
+    // Log email in EmailLog table (non-blocking)
+    prisma.emailLog.create({
+      data: {
+        orderId: order.id,
+        userId: user.id,
+        recipient: order.customerEmail,
+        subject: `Order Confirmation #${order.orderNumber} - YIWU EXPRESS`,
+        template: 'orderConfirmation',
+        content: `Order created for ${order.customerName}`,
+        status: 'SENT',
+        sentAt: new Date(),
+      },
+    }).catch((err) => logger.error('Failed to log email', err))
 
     return NextResponse.json({
       success: true,

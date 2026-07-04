@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Package, MapPin, CreditCard, Truck, Check } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, CreditCard, Truck, Check, ExternalLink } from 'lucide-react'
 
 interface Order {
   id: string
@@ -72,14 +72,8 @@ export default function OrderDetailPage() {
   const fetchOrder = async () => {
     setLoading(true)
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        router.push('/login')
-        return
-      }
-
       const response = await fetch(`/api/orders/${orderId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -306,6 +300,15 @@ export default function OrderDetailPage() {
                     {order.paymentStatus}
                   </Badge>
                 </div>
+                {order.paymentStatus === 'UNPAID' && (
+                  <Button
+                    className="w-full mt-3"
+                    onClick={() => router.push(`/payment/${order.id}`)}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Pay Now - ${order.total.toFixed(2)}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { hashPassword, generateToken, setAuthCookie } from '@/lib/auth'
 import { registerRateLimit } from '@/lib/rate-limit'
+import { sendWelcomeEmail } from '@/lib/email'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -82,6 +83,11 @@ export async function POST(request: NextRequest) {
 
     // Set httpOnly cookie
     setAuthCookie(response, token)
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(user.email, { name: user.name }).catch((err) =>
+      console.error('Failed to send welcome email:', err)
+    )
 
     return response
   } catch (error) {

@@ -83,18 +83,16 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { isAdmin, token } = useAdminAuth()
+  const { isAdmin } = useAdminAuth()
 
   useEffect(() => {
-    // Only fetch stats if we're authenticated and have a token
-    if (!isAdmin || !token) return
+    // Only fetch stats if we're authenticated
+    if (!isAdmin) return
     
     const fetchStats = async () => {
       try {
         const response = await fetch('/api/admin/stats', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          credentials: 'include',
         })
         
         const data = await response.json()
@@ -113,7 +111,7 @@ export default function AdminDashboard() {
     }
 
     fetchStats()
-  }, [isAdmin, token]) // Depend on authentication state
+  }, [isAdmin]) // Depend on authentication state
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">

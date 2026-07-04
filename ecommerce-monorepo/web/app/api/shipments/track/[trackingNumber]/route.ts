@@ -8,60 +8,93 @@ export async function GET(
   try {
     const { trackingNumber } = params
 
-    const shipment = await prisma.shipment.findUnique({
+    // Try to find shipment by tracking number
+    let shipment = await prisma.shipment.findUnique({
       where: { trackingNumber },
-      include: { service: true, user: { select: { id: true, name: true, companyName: true } } },
+      include: {
+        service: true,
+        shippingMethod: true,
+        user: { select: { id: true, name: true, companyName: true } },
+      },
     })
+
+    // If no shipment found, try order tracking number
+    if (!shipment) {
+      const order = await prisma.order.findFirst({
+        where: {
+          OR: [
+            { trackingNumber },
+            { customerCarrierTracking: trackingNumber },
+          ],
+        },
+        include: {
+          container: {
+            include: { shippingMethod: true },
+          },
+        },
+      })
+
+      if (order) {
+        const statusHistory = (order.trackingHistory as any[]) || []
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            trackingNumber,
+            status: order.status,
+            statusHistory: statusHistory.length > 0 ? statusHistory : [
+              {
+                status: order.status,
+                location: order.shippingAddress,
+                timestamp: order.createdAt,
+                note: 'Order created',
+              },
+            ],
+            origin: 'Yiwu, China',
+            destination: `${order.shippingCity}${order.shippingState ? ', ' + order.shippingState : ''}`,
+            carrier: order.carrier || order.customerCarrier,
+            carrierType: order.carrierType,
+            estimatedDelivery: order.estimatedDelivery,
+            actualDelivery: order.actualDelivery,
+            containerNumber: order.containerNumber,
+            containerStatus: order.container?.status || null,
+            orderNumber: order.orderNumber,
+            type: 'order',
+          },
+        })
+      }
+    }
 
     if (!shipment) {
       return NextResponse.json({ error: 'Shipment not found' }, { status: 404 })
     }
 
-    // Add mock tracking events for a realistic logistics feel
-    const trackingEvents = [
+    const statusHistory = (shipment.statusHistory as any[]) || []
+    const events = statusHistory.length > 0 ? statusHistory : [
       {
-        status: 'PREPARING',
-        description: 'Shipment info received and package registered.',
+        status: shipment.status,
         location: shipment.origin,
-        timestamp: new Date(shipment.createdAt).toISOString(),
-        completed: true,
+        timestamp: shipment.createdAt,
+        note: 'Shipment registered',
       },
-      {
-        status: 'IN_TRANSIT',
-        description: 'Package departed sorting facility and is in transit.',
-        location: 'Yiwu Hub, China',
-        timestamp: new Date(new Date(shipment.createdAt).getTime() + 12 * 60 * 60 * 1000).toISOString(),
-        completed: shipment.status !== 'PREPARING',
-      },
-      {
-        status: 'IN_CUSTOMS',
-        description: 'Customs clearance documents processed.',
-        location: 'Customs Office',
-        timestamp: new Date(new Date(shipment.createdAt).getTime() + 36 * 60 * 60 * 1000).toISOString(),
-        completed: shipment.status === 'IN_CUSTOMS' || shipment.status === 'ARRIVED' || shipment.status === 'DELIVERED',
-      },
-      {
-        status: 'ARRIVED',
-        description: 'Shipment arrived at local distribution center.',
-        location: shipment.destination,
-        timestamp: shipment.estimatedDelivery ? new Date(shipment.estimatedDelivery).toISOString() : '',
-        completed: shipment.status === 'ARRIVED' || shipment.status === 'DELIVERED',
-      },
-      {
-        status: 'DELIVERED',
-        description: 'Package successfully delivered and signed by consignee.',
-        location: shipment.destination,
-        timestamp: shipment.actualDelivery ? new Date(shipment.actualDelivery).toISOString() : '',
-        completed: shipment.status === 'DELIVERED',
-      },
-    ].filter(event => event.completed || event.status === 'PREPARING')
+    ]
 
     return NextResponse.json({
-      shipment,
-      trackingEvents,
-      estimatedDelivery: shipment.estimatedDelivery,
-      currentStatus: shipment.status,
-      nextUpdate: shipment.status === 'DELIVERED' ? 'None' : 'In 12-24 hours',
+      success: true,
+      data: {
+        trackingNumber: shipment.trackingNumber,
+        status: shipment.status,
+        statusHistory: events,
+        origin: shipment.origin,
+        destination: shipment.destination,
+        currentLocation: shipment.currentLocation,
+        carrier: shipment.carrier,
+        estimatedDelivery: shipment.estimatedDelivery,
+        actualDelivery: shipment.actualDelivery,
+        shippingMethod: shipment.shippingMethod?.name || null,
+        orderNumber: shipment.orderNumber || null,
+        type: 'shipment',
+      },
     })
   } catch (error) {
     console.error('Track shipment error:', error)

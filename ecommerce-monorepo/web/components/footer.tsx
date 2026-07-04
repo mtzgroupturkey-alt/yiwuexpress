@@ -81,12 +81,14 @@ export default function Footer() {
 
   // Custom markers for YIWU EXPRESS global network
   const globalNetworkMarkers = [
-    { id: "yiwu", location: [29.3, 120.07], name: "Yiwu HQ", users: 2500 },
-    { id: "shanghai", location: [31.23, 121.47], name: "Shanghai", users: 1800 },
-    { id: "usa", location: [40.71, -74.01], name: "USA", users: 1200 },
-    { id: "uk", location: [51.51, -0.13], name: "UK", users: 890 },
-    { id: "dubai", location: [25.2, 55.27], name: "Dubai", users: 1100 },
-    { id: "sydney", location: [-33.87, 151.21], name: "Sydney", users: 650 },
+    { id: "china", location: [35.86, 104.19], name: "CHINA", users: 2500 },
+    { id: "russia", location: [55.75, 37.61], name: "RUSSIA", users: 1800 },
+    { id: "turkmenistan", location: [37.96, 58.33], name: "Turkmenistan", users: 1200 },
+    { id: "dubai", location: [25.2, 55.27], name: "DUBAI", users: 1100 },
+    { id: "turkey", location: [39.92, 32.85], name: "Turkey", users: 900 },
+    { id: "belarus", location: [53.90, 27.56], name: "Belarus", users: 800 },
+    { id: "iraq", location: [33.31, 44.36], name: "Iraq", users: 700 },
+    { id: "afghanistan", location: [34.52, 69.17], name: "Afghanistan", users: 650 },
   ]
 
   return (

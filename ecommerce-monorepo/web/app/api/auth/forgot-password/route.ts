@@ -3,8 +3,7 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import crypto from 'crypto'
 import { sendPasswordResetEmail } from '@/lib/email'
-
-// Note: CORS is handled globally by next.config.js
+import { rateLimit } from '@/lib/rate-limit'
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -12,6 +11,16 @@ const forgotPasswordSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 3 requests per 15 minutes per IP
+    const rateLimitResponse = rateLimit(request, {
+      windowMs: 15 * 60 * 1000,
+      maxRequests: 3,
+      keyPrefix: 'forgot-password',
+    })
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await request.json()
     const { email } = forgotPasswordSchema.parse(body)
 

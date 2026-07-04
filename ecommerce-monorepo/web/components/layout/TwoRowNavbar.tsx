@@ -135,13 +135,17 @@ export function TwoRowNavbar() {
             {/* LOGO - Left side */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
               {company?.logo ? (
-                <Image
-                  src={company.logo}
-                  alt={company.name || 'YIWU EXPRESS'}
-                  width={40}
-                  height={40}
-                  className="w-8 h-8 md:w-10 md:h-10 object-contain rounded-lg"
-                />
+                <div
+                  className="relative"
+                  style={{ height: `${company.logoHeight || 40}px`, width: `${(company.logoHeight || 40) * 3}px` }}
+                >
+                  <Image
+                    src={company.logo}
+                    alt={company.name || 'YIWU EXPRESS'}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
               ) : (
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-[#c9a84c] to-[#e8d48b] rounded-lg flex items-center justify-center text-[#1a1a2e] font-bold text-sm md:text-base shadow-md">
                   YE

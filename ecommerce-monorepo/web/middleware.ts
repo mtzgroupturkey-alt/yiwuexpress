@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest) {
     '/api/settings',
     '/api/currencies',
     '/api/countries',
+    '/api/webhooks',
     '/_next',
     '/favicon.ico',
   ]
@@ -57,6 +58,7 @@ export async function middleware(request: NextRequest) {
     '/admin',
     '/profile',
     '/orders',
+    '/payment',
     '/wishlist',
     '/api/admin',
     '/api/orders',
@@ -66,6 +68,7 @@ export async function middleware(request: NextRequest) {
     '/api/addresses',
     '/api/profile',
     '/api/auth/me',
+    '/api/payments',
   ]
 
   const isProtectedPath = protectedPaths.some(path => 

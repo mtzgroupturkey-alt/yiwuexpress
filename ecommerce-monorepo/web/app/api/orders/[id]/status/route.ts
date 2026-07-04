@@ -89,7 +89,7 @@ export async function PUT(
       where: { id: params.id },
       data: {
         status,
-        trackingHistory: [...existingHistory, trackingEntry],
+        trackingHistory: [...(existingHistory as any[]), trackingEntry],
         ...(status === 'PAID' && { paidAt: new Date() }),
         ...(status === 'SHIPPED' && { shippedAt: new Date() }),
         ...(status === 'DELIVERED' && { actualDelivery: new Date() })

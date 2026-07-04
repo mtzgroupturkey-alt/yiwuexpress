@@ -78,7 +78,7 @@ export async function PUT(
       where: { id: params.id },
       data: {
         status,
-        negotiationHistory: [...existingHistory, historyEntry]
+        negotiationHistory: [...(existingHistory as any[]), historyEntry]
       },
       include: {
         user: {

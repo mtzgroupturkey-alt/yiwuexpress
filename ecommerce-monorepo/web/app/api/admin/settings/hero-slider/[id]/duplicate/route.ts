@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { getUserFromToken, getTokenFromRequest } from '@/lib/auth'
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Get token from Authorization header
-    const authHeader = req.headers.get('authorization')
-    const token = authHeader?.replace('Bearer ', '')
+    const token = getTokenFromRequest(req)
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (!token) {
+    const user = await getUserFromToken(token)
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    // TODO: Verify token and check admin role
-    // For now, proceeding with duplication
 
     const { id } = params
 

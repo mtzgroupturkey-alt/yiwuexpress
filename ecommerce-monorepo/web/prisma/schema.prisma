@@ -92,17 +92,35 @@ model Shipment {
   trackingNumber    String    @unique
   userId            String
   serviceId         String
+  
+  // Order link
+  orderId           String?
+  orderNumber       String?
+  
+  // Shipping method
+  shippingMethodId  String?
+  shippingMethod    ShippingMethod? @relation(fields: [shippingMethodId], references: [id])
+  
   origin            String
   destination       String
+  currentLocation   String?
   status            String    @default("PREPARING")
+  statusHistory     Json?
   estimatedDelivery DateTime?
   actualDelivery    DateTime?
   carrier           String?
+  weight            Float?
+  dimensions        String?
   notes             String?
+  shippedAt         DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   service           Service   @relation(fields: [serviceId], references: [id])
   user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([trackingNumber])
+  @@index([status])
 }
 
 model CompanyInfo {
@@ -337,14 +355,30 @@ model Order {
   purchaseCost       Float?           // Cost in base currency
   profit             Float?           // Profit in base currency
   profitMargin       Float?           // Profit percentage
+  
+  // Carrier type: COMPANY or CUSTOMER
+  carrierType        String           @default("COMPANY")
+  customerCarrier    String?
+  customerCarrierContact String?
+  customerCarrierTracking String?
+  customerCarrierNotes String?
+  
   carrier            String?
   trackingNumber     String?
+  shippingMethod     String?
+  shippingCost       Float?
   shippedAt          DateTime?
   estimatedDelivery  DateTime?
   actualDelivery     DateTime?
   trackingHistory    Json[]
   customsStatus      String?
   customsDocs        Json?
+  
+  // Container relation
+  containerId        String?
+  container          Container?       @relation(fields: [containerId], references: [id])
+  containerNumber    String?
+  
   customerNotes      String?
   adminNotes         String?
   hasException       Boolean          @default(false)
@@ -359,6 +393,7 @@ model Order {
   user               User             @relation(fields: [userId], references: [id])
   returns            Return[]
 
+  @@index([containerId])
   @@map("orders")
 }
 
@@ -908,4 +943,71 @@ model WishlistItem {
 
   @@unique([userId, productId])
   @@map("wishlist_items")
+}
+
+// ============================================================
+// SHIPPING METHOD - Dynamic shipping modes
+// ============================================================
+model ShippingMethod {
+  id                    String   @id @default(cuid())
+  name                  String   // "Sea Freight", "Truck", "Train", "Air", "Multi-modal"
+  slug                  String   @unique // "sea", "truck", "train", "air", "multi-modal"
+  description           String?
+  
+  // Default statuses for this shipping method
+  defaultStatuses       Json?    // ["LOADING", "IN_TRANSIT", "CUSTOMS", "DELIVERED"]
+  
+  // Custom statuses allowed
+  customStatusesAllowed Boolean  @default(true)
+  
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  containers            Container[]
+  shipments             Shipment[]
+
+  @@map("shipping_methods")
+}
+
+// ============================================================
+// CONTAINER - With dynamic shipping method
+// ============================================================
+model Container {
+  id                  String           @id @default(cuid())
+  containerNumber     String           @unique
+  shippingMethodId    String?
+  
+  vesselName          String?
+  voyageNumber        String?
+  
+  methodDetails       Json?            // { "route": "Yiwu-Moscow", "transitPoints": [...] }
+  
+  status              String           @default("PLANNING")
+  statusHistory       Json?            // Array of { status, timestamp, location, note }
+  
+  origin              String
+  destination         String
+  transitPoints       Json?            // ["Yiwu", "Almaty", "Moscow"]
+  
+  estimatedDeparture  DateTime?
+  estimatedArrival    DateTime?
+  actualDeparture     DateTime?
+  actualArrival       DateTime?
+  
+  containerType       String?          // 20ft, 40ft, 40ft HC
+  weight              Float?
+  volume              Float?
+  
+  notes               String?
+  
+  shippingMethod      ShippingMethod?  @relation(fields: [shippingMethodId], references: [id])
+  orders              Order[]
+  
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([containerNumber])
+  @@index([status])
+  @@map("containers")
 }

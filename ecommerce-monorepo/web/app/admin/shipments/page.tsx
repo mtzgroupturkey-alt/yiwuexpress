@@ -52,7 +52,7 @@ const statusColors = {
 }
 
 export default function AdminShipmentsPage() {
-  const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const { isAdmin, loading: authLoading } = useAdminAuth()
   const [shipments, setShipments] = useState<Shipment[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
@@ -81,13 +81,12 @@ export default function AdminShipmentsPage() {
     notes: '',
   })
   useEffect(() => {
-    if (!authLoading && isAdmin && token) {
+    if (!authLoading && isAdmin) {
       fetchShipments()
     }
-  }, [pagination.page, searchTerm, statusFilter, authLoading, isAdmin, token])
+  }, [pagination.page, searchTerm, statusFilter, authLoading, isAdmin])
 
   const fetchShipments = async () => {
-    if (!token) return
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -99,9 +98,7 @@ export default function AdminShipmentsPage() {
       if (statusFilter) params.append('status', statusFilter)
 
       const response = await fetch(`/api/admin/shipments?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -133,15 +130,15 @@ export default function AdminShipmentsPage() {
   }
   const handleUpdateShipment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedShipment || !token) return
+    if (!selectedShipment) return
 
     try {
       const response = await fetch(`/api/admin/shipments/${selectedShipment.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(editFormData),
       })
 
@@ -161,15 +158,14 @@ export default function AdminShipmentsPage() {
 
   const handleCreateShipment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) return
 
     try {
       const response = await fetch('/api/admin/shipments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(addFormData),
       })
 
@@ -195,14 +191,12 @@ export default function AdminShipmentsPage() {
     }
   }
   const handleDelete = async (shipment: Shipment) => {
-    if (!confirm(`Are you sure you want to delete shipment ${shipment.trackingNumber}?`) || !token) return
+    if (!confirm(`Are you sure you want to delete shipment ${shipment.trackingNumber}?`)) return
 
     try {
       const response = await fetch(`/api/admin/shipments/${shipment.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()

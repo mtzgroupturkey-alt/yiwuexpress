@@ -28,7 +28,7 @@ export async function GET(
       )
     }
 
-    let relatedProducts = []
+    let relatedProducts: any[] = []
 
     // Try to get products from the same category first
     if (currentProduct.categoryId) {

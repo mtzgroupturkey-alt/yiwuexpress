@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select } from '@/components/ui/select'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Check, CreditCard, MapPin, Package, Truck } from 'lucide-react'
 
@@ -43,6 +43,7 @@ export default function CheckoutPage() {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors }
   } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema)
@@ -330,19 +331,29 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="shippingCountryId">Country *</Label>
-                      <Select id="shippingCountryId" {...register('shippingCountryId')}>
-                        <option value="">Select Country</option>
-                        {countries.map(country => (
-                          <option key={country.id} value={country.id}>
-                            {country.flag} {country.name}
-                          </option>
-                        ))}
-                      </Select>
-                      {errors.shippingCountryId && (
-                        <p className="text-red-600 text-sm mt-1">{errors.shippingCountryId.message}</p>
-                      )}
-                    </div>
+                        <Label htmlFor="shippingCountryId">Country *</Label>
+                        <Controller
+                          name="shippingCountryId"
+                          control={control}
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {countries.map(country => (
+                                  <SelectItem key={country.id} value={country.id}>
+                                    {country.flag} {country.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {errors.shippingCountryId && (
+                          <p className="text-red-600 text-sm mt-1">{errors.shippingCountryId.message}</p>
+                        )}
+                      </div>
 
                     <Button type="button" onClick={() => setStep(2)} className="w-full">
                       Continue to Shipping Method

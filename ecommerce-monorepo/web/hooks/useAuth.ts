@@ -13,6 +13,7 @@ export interface User {
   phone?: string
   country?: string
   isActive?: boolean
+  createdAt?: string
   supplierProfile?: {
     id: string
     companyName: string

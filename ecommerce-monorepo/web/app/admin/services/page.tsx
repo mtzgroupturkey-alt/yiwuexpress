@@ -31,7 +31,7 @@ interface Pagination {
 }
 
 export default function AdminServicesPage() {
-  const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const { isAdmin, loading: authLoading } = useAdminAuth()
   const [services, setServices] = useState<Service[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
@@ -53,14 +53,12 @@ export default function AdminServicesPage() {
   })
 
   useEffect(() => {
-    if (!authLoading && isAdmin && token) {
+    if (!authLoading && isAdmin) {
       fetchServices()
     }
-  }, [pagination.page, searchTerm, typeFilter, authLoading, isAdmin, token])
+  }, [pagination.page, searchTerm, typeFilter, authLoading, isAdmin])
 
   const fetchServices = async () => {
-    if (!token) return
-    
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -72,9 +70,7 @@ export default function AdminServicesPage() {
       if (typeFilter) params.append('type', typeFilter)
 
       const response = await fetch(`/api/admin/services?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -95,7 +91,6 @@ export default function AdminServicesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) return
     
     try {
       const method = editingService ? 'PUT' : 'POST'
@@ -107,8 +102,8 @@ export default function AdminServicesPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
@@ -156,14 +151,11 @@ export default function AdminServicesPage() {
 
   const handleDelete = async (service: Service) => {
     if (!confirm(`Are you sure you want to delete "${service.name}"?`)) return
-    if (!token) return
 
     try {
       const response = await fetch(`/api/admin/services/${service.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()

@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getUserFromToken } from '@/lib/auth'
+import { getUserFromToken, getTokenFromRequest } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const token = getTokenFromRequest(req)
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const token = authHeader.substring(7)
     const user = await getUserFromToken(token)
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

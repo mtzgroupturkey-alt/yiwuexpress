@@ -59,7 +59,7 @@ export async function PUT(
       where: { id },
       data: {
         status,
-        internalNotes: notes ? `${existing.internalNotes || ''}\n[${new Date().toISOString()}] Status changed to ${status}: ${notes}`.trim() : existing.internalNotes
+        adminNotes: notes ? `${existing.adminNotes || ''}\n[${new Date().toISOString()}] Status changed to ${status}: ${notes}`.trim() : existing.adminNotes
       },
       include: {
         user: true,

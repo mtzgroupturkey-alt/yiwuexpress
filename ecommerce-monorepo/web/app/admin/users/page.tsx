@@ -64,14 +64,24 @@ const roleColors: Record<string, { bg: string; text: string; border: string }> =
   USER: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
 }
 
+type TabId = 'all' | 'admin' | 'customer' | 'supplier'
+
+const tabs: { id: TabId; label: string; icon: string; color: string }[] = [
+  { id: 'all', label: 'All Users', icon: '👥', color: 'text-gray-700' },
+  { id: 'admin', label: 'Admin Users', icon: '🛡️', color: 'text-purple-700' },
+  { id: 'customer', label: 'Customers', icon: '👤', color: 'text-blue-700' },
+  { id: 'supplier', label: 'Suppliers', icon: '🏭', color: 'text-amber-700' },
+]
+
 export default function AdminUsersPage() {
-  const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const { isAdmin, loading: authLoading } = useAdminAuth()
   const [mounted, setMounted] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState<TabId>('all')
   const [roleFilter, setRoleFilter] = useState('')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -111,11 +121,17 @@ export default function AdminUsersPage() {
   })
 
   useEffect(() => {
-    if (!authLoading && isAdmin && token) {
+    if (!authLoading && isAdmin) {
       fetchUsers()
       fetchPermissionRoles()
     }
-  }, [pagination.page, searchTerm, roleFilter, authLoading, isAdmin, token])
+  }, [pagination.page, searchTerm, roleFilter, authLoading, isAdmin])
+
+  useEffect(() => {
+    const roleMap: Record<TabId, string> = { all: '', admin: 'ADMIN', customer: 'USER', supplier: 'SUPPLIER' }
+    setRoleFilter(roleMap[activeTab])
+    setPagination(prev => ({ ...prev, page: 1 }))
+  }, [activeTab])
 
   // Cleanup effect to prevent DOM errors
   useEffect(() => {
@@ -166,7 +182,6 @@ export default function AdminUsersPage() {
   }, [showEditModal, showAddModal])
 
   const fetchUsers = async () => {
-    if (!token) return
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -178,9 +193,7 @@ export default function AdminUsersPage() {
       if (roleFilter) params.append('role', roleFilter)
 
       const response = await fetch(`/api/admin/users?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -200,12 +213,9 @@ export default function AdminUsersPage() {
   }
 
   const fetchPermissionRoles = async () => {
-    if (!token) return
     try {
       const response = await fetch('/api/admin/permissions/roles', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       if (response.ok) {
@@ -237,14 +247,13 @@ export default function AdminUsersPage() {
   }
 
   const uploadPhoto = async (file: File): Promise<string | null> => {
-    if (!token) return null
     const formData = new FormData()
     formData.append('file', file)
     try {
       setPhotoUploading(true)
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
         body: formData,
       })
       const data = await response.json()
@@ -287,7 +296,7 @@ export default function AdminUsersPage() {
 
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedUser || !token) return
+    if (!selectedUser) return
 
     try {
       // Remove empty password from data
@@ -302,8 +311,8 @@ export default function AdminUsersPage() {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
           },
+          credentials: 'include',
           body: JSON.stringify({
             roleId: updateData.permissionRoleId || null,
             customPermissions: []
@@ -325,8 +334,8 @@ export default function AdminUsersPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(updateData),
       })
 
@@ -345,7 +354,6 @@ export default function AdminUsersPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) return
 
     try {
       const createData: any = { ...addFormData }
@@ -357,8 +365,8 @@ export default function AdminUsersPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(createData),
       })
 
@@ -371,8 +379,8 @@ export default function AdminUsersPage() {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
             },
+            credentials: 'include',
             body: JSON.stringify({
               roleId: permissionRoleId,
               customPermissions: []
@@ -405,14 +413,12 @@ export default function AdminUsersPage() {
   }
 
   const handleDelete = async (user: User) => {
-    if (!confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`) || !token) return
+    if (!confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`)) return
 
     try {
       const response = await fetch(`/api/admin/users/${user.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -495,7 +501,7 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage customer accounts and admin users</p>
+          <p className="text-sm text-gray-500 mt-0.5">Manage admin users, customers, and suppliers</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
@@ -512,6 +518,25 @@ export default function AdminUsersPage() {
           </button>
         </div>
       </div>
+
+      {/* Tabs */}
+      <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 flex gap-1">
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              activeTab === tab.id
+                ? 'bg-white shadow-sm border border-gray-200 text-gray-900'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <span className="text-base">{tab.icon}</span>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Filters */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -519,21 +544,12 @@ export default function AdminUsersPage() {
             <Search size={20} className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
-              placeholder="Search users by name, email, or company..."
+              placeholder={`Search ${activeTab === 'all' ? 'users' : activeTab === 'admin' ? 'admin users' : activeTab === 'customer' ? 'customers' : 'suppliers'} by name, email, or company...`}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <select
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-          >
-            <option value="">All Roles</option>
-            <option value="USER">Users</option>
-            <option value="ADMIN">Admins</option>
-          </select>
         </div>
       </div>
 
@@ -570,7 +586,17 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {users.map((user) => (
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-16 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <Users size={40} className="text-gray-300" />
+                          <p className="text-gray-500 font-medium">No users found</p>
+                          <p className="text-sm text-gray-400">Try adjusting your search or filter</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : users.map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">

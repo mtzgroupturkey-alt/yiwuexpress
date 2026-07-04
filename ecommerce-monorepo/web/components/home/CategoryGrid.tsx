@@ -26,7 +26,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
   // Build query params based on variant
   const queryParams = variant === 'parent' 
     ? 'parent=null&featured=true' // Fetch only featured parent categories
-    : 'featured=true&limit=8' // Fetch featured categories
+    : 'featured=true&limit=6' // Fetch featured categories
 
   const { data, isLoading } = useQuery({
     queryKey: ['categories', variant],
@@ -54,8 +54,8 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
               {sectionSubtitle}
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {[...Array(5)].map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="flex flex-col items-center">
                 <Skeleton className="w-24 h-24 md:w-32 md:h-32 rounded-full" />
                 <Skeleton className="h-4 w-20 mt-3" />
@@ -94,7 +94,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
         </div>
 
         {/* Category Grid - Circle Design */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
           {categories.map((category) => (
             <Link
               key={category.id}

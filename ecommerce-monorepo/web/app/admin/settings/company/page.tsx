@@ -28,7 +28,7 @@ interface CompanySettings {
 }
 
 export default function CompanyInfoPage() {
-  const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const { isAdmin, loading: authLoading } = useAdminAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -77,20 +77,16 @@ export default function CompanyInfoPage() {
   }
 
   useEffect(() => {
-    if (!authLoading && isAdmin && token) {
+    if (!authLoading && isAdmin) {
       fetchSettings()
     }
-  }, [authLoading, isAdmin, token])
+  }, [authLoading, isAdmin])
 
   const fetchSettings = async () => {
-    if (!token) return
-    
     try {
       setLoading(true)
       const response = await fetch('/api/admin/settings/company', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -130,7 +126,6 @@ export default function CompanyInfoPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!token) return
 
     setSaving(true)
     setError('')
@@ -141,8 +136,8 @@ export default function CompanyInfoPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(settings),
       })
 
@@ -169,7 +164,7 @@ export default function CompanyInfoPage() {
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !token) return
+    if (!file) return
 
     setUploading(true)
     setError('')
@@ -181,9 +176,7 @@ export default function CompanyInfoPage() {
 
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
         body: formData,
       })
 
@@ -205,7 +198,7 @@ export default function CompanyInfoPage() {
 
   const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !token) return
+    if (!file) return
 
     // Validate file type for favicon
     const validTypes = ['image/x-icon', 'image/vnd.microsoft.icon', 'image/png', 'image/svg+xml']
@@ -225,9 +218,7 @@ export default function CompanyInfoPage() {
 
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
         body: formData,
       })
 

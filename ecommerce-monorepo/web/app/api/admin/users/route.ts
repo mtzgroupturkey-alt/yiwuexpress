@@ -57,6 +57,9 @@ export async function GET(request: NextRequest) {
           name: true,
           email: true,
           role: true,
+          companyName: true,
+          businessType: true,
+          taxId: true,
           phone: true,
           country: true,
           profilePhoto: true,
@@ -64,17 +67,19 @@ export async function GET(request: NextRequest) {
           isVerified: true,
           lastLoginAt: true,
           createdAt: true,
-          supplierProfile: {
+          updatedAt: true,
+          roleId: true,
+          permissionRole: {
             select: {
               id: true,
-              companyName: true,
-              businessType: true,
+              name: true,
+              description: true,
             },
           },
           _count: {
             select: {
-              orders: true,
               quotes: true,
+              shipments: true,
             },
           },
           // NO PASSWORD

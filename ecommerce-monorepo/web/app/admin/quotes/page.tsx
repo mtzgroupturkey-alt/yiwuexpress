@@ -55,7 +55,7 @@ const statusColors = {
 }
 
 export default function AdminQuotesPage() {
-  const { isAdmin, loading: authLoading, token } = useAdminAuth()
+  const { isAdmin, loading: authLoading } = useAdminAuth()
   const [mounted, setMounted] = useState(false)
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
@@ -90,13 +90,13 @@ export default function AdminQuotesPage() {
   }, [pathname])
 
   useEffect(() => {
-    if (!authLoading && isAdmin && token) {
+    if (!authLoading && isAdmin) {
       fetchQuotes()
     }
-  }, [pagination.page, searchTerm, statusFilter, authLoading, isAdmin, token])
+  }, [pagination.page, searchTerm, statusFilter, authLoading, isAdmin])
 
   const fetchQuotes = async () => {
-    if (!token) return
+    
     try {
       setLoading(true)
       const params = new URLSearchParams({
@@ -108,9 +108,7 @@ export default function AdminQuotesPage() {
       if (statusFilter) params.append('status', statusFilter)
 
       const response = await fetch(`/api/admin/quotes?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()
@@ -142,15 +140,15 @@ export default function AdminQuotesPage() {
 
   const handleUpdateQuote = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedQuote || !token) return
+    if (!selectedQuote) return
 
     try {
       const response = await fetch(`/api/admin/quotes/${selectedQuote.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...editFormData,
           price: editFormData.price ? parseFloat(editFormData.price) : null,
@@ -172,14 +170,12 @@ export default function AdminQuotesPage() {
   }
 
   const handleDelete = async (quote: Quote) => {
-    if (!confirm(`Are you sure you want to delete quote from ${quote.user.name}?`) || !token) return
+    if (!confirm(`Are you sure you want to delete quote from ${quote.user.name}?`)) return
 
     try {
       const response = await fetch(`/api/admin/quotes/${quote.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
       })
 
       const data = await response.json()

@@ -17,6 +17,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [logoUrl, setLogoUrl] = useState('')
   const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [logoHeight, setLogoHeight] = useState(40)
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   const [accentColor, setAccentColor] = useState('#c9a84c')
   const [searchExpanded, setSearchExpanded] = useState(false)
@@ -45,6 +46,7 @@ export default function Navbar() {
         if (data.settings) {
           if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
           if (data.settings.companyName) setCompanyName(data.settings.companyName)
+          if (data.settings.companyLogoHeight) setLogoHeight(data.settings.companyLogoHeight)
           if (data.settings.primaryColor) {
             setPrimaryColor(data.settings.primaryColor)
             document.documentElement.style.setProperty('--primary-color', data.settings.primaryColor)
@@ -97,12 +99,22 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20 relative">
           {/* Logo with Premium Gradient Icon */}
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-[#1a3a5c] via-[#2a5a8c] to-[#1a3a5c] flex items-center justify-center shadow-lg shadow-[#1a3a5c]/30 ring-2 ring-[#c9a84c]/20 group-hover:ring-[#c9a84c]/40 transition-all duration-300 group-hover:scale-105">
+            <div 
+              className="relative rounded-xl bg-gradient-to-br from-[#1a3a5c] via-[#2a5a8c] to-[#1a3a5c] flex items-center justify-center shadow-lg shadow-[#1a3a5c]/30 ring-2 ring-[#c9a84c]/20 group-hover:ring-[#c9a84c]/40 transition-all duration-300 group-hover:scale-105"
+              style={{
+                width: `${logoHeight}px`,
+                height: `${logoHeight}px`,
+              }}
+            >
               {logoUrl ? (
                 <img
                   src={logoUrl}
                   alt={`${companyName} Logo`}
-                  className="w-8 h-8 object-contain"
+                  className="object-contain p-1"
+                  style={{
+                    width: `${logoHeight * 0.7}px`,
+                    height: `${logoHeight * 0.7}px`,
+                  }}
                 />
               ) : (
                 <div className="text-white font-bold text-lg">YE</div>

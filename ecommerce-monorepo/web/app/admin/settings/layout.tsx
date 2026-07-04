@@ -65,10 +65,14 @@ export default function SettingsLayout({
     '/admin/settings/company', 
     '/admin/settings/system',
     '/admin/settings/breadcrumb',
+    '/admin/settings/hero-slider',
+    '/admin/settings/featured-products',
+    '/admin/settings/new-arrivals',
     '/admin/settings/permissions', 
     '/admin/settings/backup',
     '/admin/settings/notifications',
-    '/admin/settings/api'
+    '/admin/settings/api',
+    '/admin/settings/shipping-methods',
   ]
   const showSidebar = !directPages.includes(pathname)
 

@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getUserFromToken } from '@/lib/auth'
+import { getUserFromToken, getTokenFromRequest } from '@/lib/auth'
+
+async function getAuthUser(req: NextRequest) {
+  const token = getTokenFromRequest(req)
+  if (!token) return null
+  return await getUserFromToken(token)
+}
+
+async function requireAdmin(req: NextRequest) {
+  const user = await getAuthUser(req)
+  if (!user || user.role !== 'ADMIN') {
+    return null
+  }
+  return user
+}
 
 // GET - List all hero slides
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const token = authHeader.substring(7)
-    const user = await getUserFromToken(token)
-    if (!user || user.role !== 'ADMIN') {
+    const user = await requireAdmin(req)
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -30,14 +38,8 @@ export async function GET(req: NextRequest) {
 // POST - Create a new hero slide
 export async function POST(req: NextRequest) {
   try {
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const token = authHeader.substring(7)
-    const user = await getUserFromToken(token)
-    if (!user || user.role !== 'ADMIN') {
+    const user = await requireAdmin(req)
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

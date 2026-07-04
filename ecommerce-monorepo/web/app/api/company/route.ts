@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
         data: {
           name: settings.companyName,
           logo: settings.companyLogo,
+          logoHeight: settings.companyLogoHeight,
           description: settings.companyDescription,
           phone: settings.companyPhone,
           email: settings.companyEmail,
@@ -22,7 +23,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       data: {
         name: 'YIWU EXPRESS',
-        logo: null
+        logo: null,
+        logoHeight: 40
       }
     })
   } catch (error) {

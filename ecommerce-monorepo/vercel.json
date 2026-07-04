@@ -1,0 +1,25 @@
+{
+  "buildCommand": "cd web && npm run build",
+  "outputDirectory": "web/.next",
+  "installCommand": "cd web && npm install",
+  "framework": "nextjs",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "JWT_SECRET": "@jwt_secret",
+    "JWT_EXPIRES_IN": "7d",
+    "APP_URL": "@app_url",
+    "NEXT_PUBLIC_API_URL": "@api_url",
+    "STRIPE_SECRET_KEY": "@stripe_secret_key",
+    "STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "STRIPE_WEBHOOK_SECRET": "@stripe_webhook_secret",
+    "PAYPAL_CLIENT_ID": "@paypal_client_id",
+    "PAYPAL_SECRET": "@paypal_secret",
+    "SMTP_HOST": "@smtp_host",
+    "SMTP_PORT": "587",
+    "SMTP_USER": "@smtp_user",
+    "SMTP_PASSWORD": "@smtp_password",
+    "SMTP_FROM": "noreply@yiwuexpress.com",
+    "LOG_LEVEL": "info"
+  }
+}

@@ -59,7 +59,7 @@ export async function POST(
         quotedAt: new Date(),
         quoteValidUntil,
         quoteNotes,
-        negotiationHistory: [...existingHistory, negotiationEntry]
+        negotiationHistory: [...(existingHistory as any[]), negotiationEntry]
       },
       include: {
         user: {

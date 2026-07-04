@@ -52,14 +52,23 @@ export async function POST(
       data: {
         orderNumber,
         userId: inquiry.userId,
+        customerName: inquiry.user.name || inquiry.companyName,
+        customerEmail: inquiry.user.email,
+        customerPhone: '',
+        shippingAddress: '',
+        shippingCity: inquiry.country || '',
+        shippingPostalCode: '',
+        shippingCountryId: inquiry.countryId || '',
+        paymentMethod: 'bank_transfer',
         status: 'PENDING',
-        paymentStatus: 'PENDING',
-        totalAmount: inquiry.quotedPrice,
-        subtotalAmount: inquiry.quotedPrice,
-        taxAmount: 0,
-        shippingCost: 0,
-        notes: `Converted from wholesale inquiry #${inquiry.inquiryNumber}. Products: ${JSON.stringify(inquiry.products)}`,
-        internalNotes: body.internalNotes || `Wholesale order converted from inquiry ${id}`
+        paymentStatus: 'UNPAID',
+        subtotal: inquiry.quotedPrice || 0,
+        shippingFee: 0,
+        tax: 0,
+        discount: 0,
+        total: inquiry.quotedPrice || 0,
+        customerNotes: `Converted from wholesale inquiry #${inquiry.inquiryNumber}. Products: ${JSON.stringify(inquiry.products)}`,
+        adminNotes: body.internalNotes || `Wholesale order converted from inquiry ${id}`
       }
     })
 

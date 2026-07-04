@@ -9,7 +9,7 @@ import {
   TrendingUp, Bell, ChevronDown, Eye, CheckCircle,
   MapPin, Building, Sliders, Mail, Shield, Database,
   ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image,
-  Building2, ClipboardList, DollarSign
+  Building2, ClipboardList, DollarSign, Truck
 } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 import ErrorBoundary from '@/components/ErrorBoundary'
@@ -108,6 +108,7 @@ const navItems: NavItem[] = [
     icon: Ship,
     subItems: [
       { href: '/admin/shipments', label: 'All Shipments', icon: Ship },
+      { href: '/admin/containers', label: 'Containers', icon: Package },
       { href: '/admin/shipments?tab=tracking', label: 'Tracking', icon: MapPin },
     ]
   },
@@ -123,6 +124,7 @@ const navItems: NavItem[] = [
       { href: '/admin/settings/breadcrumb', label: 'Breadcrumb Backgrounds', icon: Image },
       { href: '/admin/settings/company', label: 'Company Info', icon: Building },
       { href: '/admin/settings/system', label: 'System Settings', icon: Sliders },
+      { href: '/admin/settings/shipping-methods', label: 'Shipping Methods', icon: Truck },
       { href: '/admin/settings/notifications', label: 'Notifications', icon: Mail },
       { href: '/admin/settings/permissions', label: 'Permissions', icon: Shield },
       { href: '/admin/settings/backup', label: 'Backup & Export', icon: Database },

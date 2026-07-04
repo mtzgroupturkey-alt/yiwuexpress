@@ -122,6 +122,11 @@ export async function POST() {
         data: {
           code: 'US',
           name: 'United States',
+          currency: 'USD',
+          currencySymbol: '$',
+          shippingMethods: [],
+          customsRules: {},
+          deliverySLA: '5-10 business days',
           isActive: true,
         },
       })

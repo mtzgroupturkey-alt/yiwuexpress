@@ -75,24 +75,13 @@ export default function ProductGrid({
 
     // Default implementation
     try {
-      const token = localStorage.getItem('token')
-      
-      if (!token) {
-        // Redirect to login or show modal
-        window.location.href = '/login?redirect=/products'
-        return
-      }
-
-      const userId = JSON.parse(atob(token.split('.')[1])).userId
-
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
+        credentials: 'include', // Include cookies for auth
         body: JSON.stringify({
-          userId,
           productId,
           quantity: 1
         })
@@ -100,16 +89,28 @@ export default function ProductGrid({
 
       const data = await response.json()
 
+      if (response.status === 401) {
+        // User not authenticated - redirect to login
+        const currentPath = window.location.pathname
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+        return
+      }
+
       if (data.success) {
-        // Optionally show a toast notification
+        // Show success feedback
         console.log('Product added to cart')
         // Trigger cart count update
         refreshCartCount()
+        
+        // Optional: Show toast notification
+        // toast.success('Product added to cart!')
       } else {
-        console.error('Failed to add to cart:', data.message)
+        console.error('Failed to add to cart:', data.error || data.message)
+        alert(data.error || 'Failed to add product to cart')
       }
     } catch (error) {
       console.error('Error adding to cart:', error)
+      alert('An error occurred while adding to cart')
     }
   }
 

@@ -74,8 +74,8 @@ export default function DashboardLayout({
       
       {/* Breadcrumb Section */}
       <PageHero
-        pageTitle={`Welcome back, ${user?.name || 'User'}!`}
-        pageDescription="Manage your orders, wishlist, profile and account settings"
+        title={`Welcome back, ${user?.name || 'User'}!`}
+        description="Manage your orders, wishlist, profile and account settings"
         breadcrumbs={breadcrumbs}
       />
       

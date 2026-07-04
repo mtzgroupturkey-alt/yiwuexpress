@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
@@ -27,6 +28,40 @@ interface HeroSlide {
   isActive: boolean
   slideDuration: number
   alignment: 'left' | 'center' | 'right'
+  motionType: string
+}
+
+const motionVariants: Record<string, { initial: any; animate: any; exit: any }> = {
+  slide: {
+    initial: { x: 300, opacity: 0 },
+    animate: { x: 0, opacity: 1 },
+    exit: { x: -300, opacity: 0 },
+  },
+  fade: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+  },
+  zoom: {
+    initial: { scale: 0.8, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    exit: { scale: 0.8, opacity: 0 },
+  },
+  flip: {
+    initial: { rotateY: 90, opacity: 0 },
+    animate: { rotateY: 0, opacity: 1 },
+    exit: { rotateY: -90, opacity: 0 },
+  },
+  rotate: {
+    initial: { rotate: -15, scale: 0.9, opacity: 0 },
+    animate: { rotate: 0, scale: 1, opacity: 1 },
+    exit: { rotate: 15, scale: 0.9, opacity: 0 },
+  },
+  scale: {
+    initial: { scale: 0.5, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    exit: { scale: 0.5, opacity: 0 },
+  },
 }
 
 export function HeroSlider() {
@@ -138,141 +173,153 @@ export function HeroSlider() {
   return (
     <div className="relative overflow-hidden bg-[#1a1a2e]">
       <div className="relative w-full min-h-[400px] md:min-h-[500px] lg:min-h-[600px] h-[60vh] sm:h-[70vh] md:h-[calc(100vh-164px)]">
-        
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          {slide.mobileImageUrl ? (
-            <>
-              <img
-                src={slide.imageUrl}
-                alt={slide.title}
-                className="hidden md:block w-full h-full object-cover"
-              />
-              <img
-                src={slide.mobileImageUrl}
-                alt={slide.title}
-                className="md:hidden w-full h-full object-cover"
-              />
-            </>
-          ) : (
-            <img
-              src={slide.imageUrl}
-              alt={slide.title}
-              className="w-full h-full object-cover"
-            />
-          )}
-          <div
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slide.id}
+            variants={motionVariants[slide.motionType] || motionVariants.slide}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.5, ease: 'easeInOut' }}
             className="absolute inset-0"
-            style={{ backgroundColor: slide.overlayColor || 'rgba(26,58,92,0.6)' }}
-          />
-        </div>
+            style={{ perspective: 1200 }}
+          >
+            {/* Background Image */}
+            <div className="absolute inset-0">
+              {slide.mobileImageUrl ? (
+                <>
+                  <img
+                    src={slide.imageUrl}
+                    alt={slide.title}
+                    className="hidden md:block w-full h-full object-cover"
+                  />
+                  <img
+                    src={slide.mobileImageUrl}
+                    alt={slide.title}
+                    className="md:hidden w-full h-full object-cover"
+                  />
+                </>
+              ) : (
+                <img
+                  src={slide.imageUrl}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: slide.overlayColor || 'rgba(26,58,92,0.6)' }}
+              />
+            </div>
 
-        {/* ============================================================ */}
-        {/* CONTENT - WITH PROPER PADDING                                 */}
-        {/* ============================================================ */}
-        <div className="absolute inset-0 flex items-center">
-          <div className="relative z-10 w-full px-6 sm:px-8 lg:px-12 xl:px-16">
-            <div className={cn(
-              'flex flex-col lg:flex-row gap-8 items-center',
-              getContentClasses()
-            )}>
-              
-              {/* ============================================================ */}
-              {/* TEXT CONTENT                                               */}
-              {/* ============================================================ */}
-              <div className={cn(
-                'text-white space-y-4 flex-1',
-                getTextAlignment(),
-                alignment === 'center' ? 'items-center' : 
-                alignment === 'right' ? 'items-end' : 'items-start'
-              )}>
-                {/* Badge */}
-                {slide.badgeText && (
-                  <span
-                    className={cn(
-                      'inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded',
-                      alignment === 'center' && 'mx-auto',
-                      alignment === 'right' && 'ml-auto'
-                    )}
-                    style={{
-                      backgroundColor: slide.badgeColor || '#c9a84c',
-                      color: slide.textColor || '#1a1a2e'
-                    }}
-                  >
-                    {slide.badgeText}
-                  </span>
-                )}
-
-                {/* Subtitle */}
-                {slide.subtitle && (
-                  <p className={cn(
-                    'text-sm uppercase tracking-widest text-white/80',
-                    getTextAlignment()
-                  )}>
-                    {slide.subtitle}
-                  </p>
-                )}
-
-                {/* Title */}
-                <h1 className={cn(
-                  'text-3xl md:text-4xl lg:text-5xl font-bold leading-tight',
-                  getTextAlignment()
-                )}>
-                  {slide.title}
-                </h1>
-
-                {/* Description */}
-                {slide.description && (
-                  <p className={cn(
-                    'text-white/80 text-base md:text-lg',
-                    getTextAlignment()
-                  )}>
-                    {slide.description}
-                  </p>
-                )}
-
-                {/* Buttons */}
+            {/* ============================================================ */}
+            {/* CONTENT - WITH PROPER PADDING                                 */}
+            {/* ============================================================ */}
+            <div className="absolute inset-0 flex items-center">
+              <div className="relative z-10 w-full px-6 sm:px-8 lg:px-12 xl:px-16">
                 <div className={cn(
-                  'flex flex-wrap gap-4 pt-2',
-                  getJustifyContent()
+                  'flex flex-col lg:flex-row gap-8 items-center',
+                  getContentClasses()
                 )}>
-                  <Link
-                    href={slide.ctaLink}
-                    className="bg-[#c9a84c] text-[#1a1a2e] px-6 py-2.5 rounded-full font-semibold hover:bg-[#e8d48b] transition-all transform hover:scale-105 inline-flex items-center"
-                  >
-                    {slide.ctaText}
-                  </Link>
+                  
+                  {/* ============================================================ */}
+                  {/* TEXT CONTENT                                               */}
+                  {/* ============================================================ */}
+                  <div className={cn(
+                    'text-white space-y-4 flex-1',
+                    getTextAlignment(),
+                    alignment === 'center' ? 'items-center' : 
+                    alignment === 'right' ? 'items-end' : 'items-start'
+                  )}>
+                    {/* Badge */}
+                    {slide.badgeText && (
+                      <span
+                        className={cn(
+                          'inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded',
+                          alignment === 'center' && 'mx-auto',
+                          alignment === 'right' && 'ml-auto'
+                        )}
+                        style={{
+                          backgroundColor: slide.badgeColor || '#c9a84c',
+                          color: slide.textColor || '#1a1a2e'
+                        }}
+                      >
+                        {slide.badgeText}
+                      </span>
+                    )}
 
-                  {slide.secondaryCtaText && slide.secondaryCtaLink && (
-                    <Link
-                      href={slide.secondaryCtaLink}
-                      className="border border-white/30 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-white/10 transition-all inline-flex items-center"
-                    >
-                      {slide.secondaryCtaText}
-                    </Link>
+                    {/* Subtitle */}
+                    {slide.subtitle && (
+                      <p className={cn(
+                        'text-sm uppercase tracking-widest text-white/80',
+                        getTextAlignment()
+                      )}>
+                        {slide.subtitle}
+                      </p>
+                    )}
+
+                    {/* Title */}
+                    <h1 className={cn(
+                      'text-3xl md:text-4xl lg:text-5xl font-bold leading-tight',
+                      getTextAlignment()
+                    )}>
+                      {slide.title}
+                    </h1>
+
+                    {/* Description */}
+                    {slide.description && (
+                      <p className={cn(
+                        'text-white/80 text-base md:text-lg',
+                        getTextAlignment()
+                      )}>
+                        {slide.description}
+                      </p>
+                    )}
+
+                    {/* Buttons */}
+                    <div className={cn(
+                      'flex flex-wrap gap-4 pt-2',
+                      getJustifyContent()
+                    )}>
+                      <Link
+                        href={slide.ctaLink}
+                        className="bg-[#c9a84c] text-[#1a1a2e] px-6 py-2.5 rounded-full font-semibold hover:bg-[#e8d48b] transition-all transform hover:scale-105 inline-flex items-center"
+                      >
+                        {slide.ctaText}
+                      </Link>
+
+                      {slide.secondaryCtaText && slide.secondaryCtaLink && (
+                        <Link
+                          href={slide.secondaryCtaLink}
+                          className="border border-white/30 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-white/10 transition-all inline-flex items-center"
+                        >
+                          {slide.secondaryCtaText}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ============================================================ */}
+                  {/* PRODUCT IMAGE                                               */}
+                  {/* ============================================================ */}
+                  {slide.productImageUrl && (
+                    <div className={cn(
+                      'flex-shrink-0',
+                      getImageOrder(),
+                      getImageJustify()
+                    )}>
+                      <img
+                        src={slide.productImageUrl}
+                        alt={slide.title}
+                        className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
+                      />
+                    </div>
                   )}
                 </div>
               </div>
-
-              {/* ============================================================ */}
-              {/* PRODUCT IMAGE                                               */}
-              {/* ============================================================ */}
-              {slide.productImageUrl && (
-                <div className={cn(
-                  'flex-shrink-0',
-                  getImageOrder(),
-                  getImageJustify()
-                )}>
-                  <img
-                    src={slide.productImageUrl}
-                    alt={slide.title}
-                    className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
-                  />
-                </div>
-              )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* ============================================================ */}
         {/* NAVIGATION CONTROLS                                          */}

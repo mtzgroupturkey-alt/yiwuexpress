@@ -19,6 +19,11 @@ interface Order {
   customerName: string
   customerEmail: string
   items: any[]
+  user?: {
+    id: string
+    email: string
+    name: string
+  }
   shippingCountry?: {
     name: string
     flag: string
@@ -253,12 +258,22 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        {order.user && (
+                          <div className="text-sm font-medium text-gray-900">
+                            {order.user.name}
+                          </div>
+                        )}
+                        <div className="text-sm text-gray-700">
                           {order.customerName}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs text-gray-400">
                           {order.customerEmail}
                         </div>
+                        {order.user && order.user.email !== order.customerEmail && (
+                          <div className="text-xs text-blue-500">
+                            Account: {order.user.email}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -308,7 +323,14 @@ export default function AdminOrdersPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h3 className="font-semibold text-gray-900">{order.orderNumber}</h3>
-                      <p className="text-sm text-gray-500">{order.customerName}</p>
+                      {order.user && (
+                        <p className="text-sm font-medium text-gray-900">{order.user.name}</p>
+                      )}
+                      <p className="text-xs text-gray-500">{order.customerName}</p>
+                      <p className="text-xs text-gray-400">{order.customerEmail}</p>
+                      {order.user && order.user.email !== order.customerEmail && (
+                        <p className="text-xs text-blue-500">Account: {order.user.email}</p>
+                      )}
                     </div>
                     <Badge variant={statusColors[order.status] || 'default'}>
                       {order.status}
