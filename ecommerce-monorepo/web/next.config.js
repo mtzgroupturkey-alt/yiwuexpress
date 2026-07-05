@@ -7,11 +7,35 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**',
       },
+      // LOCALHOST CONFIGURATION
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3005',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '3005',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '',
+        pathname: '/**',
+      },
     ],
+    domains: ['localhost', '127.0.0.1'],
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60,
   },
   // Enable custom server port from environment
   env: {
-    CUSTOM_PORT: process.env.PORT || '3001',
+    CUSTOM_PORT: process.env.PORT || '3005',
   },
   async redirects() {
     return [

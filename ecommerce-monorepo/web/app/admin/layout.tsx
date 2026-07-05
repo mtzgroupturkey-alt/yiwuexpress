@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
   LayoutDashboard, Package, FileText, Ship, Users,
   Settings, LogOut, Menu, X, ChevronRight, Globe,
   TrendingUp, Bell, ChevronDown, Eye, CheckCircle,
   MapPin, Building, Sliders, Mail, Shield, Database,
-  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image,
+  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image as ImageIcon,
   Building2, ClipboardList, DollarSign, Truck
 } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
@@ -269,9 +270,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
           {sidebarOpen && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 overflow-hidden relative">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  <Image 
+                    src={logoUrl} 
+                    alt="Logo" 
+                    fill
+                    sizes="32px"
+                    className="object-contain"
+                  />
                 ) : (
                   <Globe size={16} className="text-white" />
                 )}
@@ -424,7 +431,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   ? 'Settings' 
                   : navItems.find(n => n.href === pathname)?.label || 'Admin'}
               </h2>
-              <p className="text-xs text-gray-400 hidden sm:block">YIWU EXPRESS Management Console</p>
+              <p className="text-xs text-gray-400 hidden sm:block">{companyName} Management Console</p>
             </div>
           </div>
 

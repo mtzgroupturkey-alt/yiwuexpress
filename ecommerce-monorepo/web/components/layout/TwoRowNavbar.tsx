@@ -143,6 +143,8 @@ export function TwoRowNavbar() {
                     src={company.logo}
                     alt={company.name || 'YIWU EXPRESS'}
                     fill
+                    priority
+                    sizes="(max-width: 768px) 120px, 160px"
                     className="object-contain"
                   />
                 </div>

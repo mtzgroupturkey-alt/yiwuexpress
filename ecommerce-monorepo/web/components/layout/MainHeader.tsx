@@ -115,6 +115,7 @@ export function MainHeader() {
                     src={settings.companyLogo}
                     alt={`${settings.companyName || 'Company'} Logo`}
                     fill
+                    sizes="(max-width: 768px) 32px, 40px"
                     className="object-contain"
                     priority
                   />

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -532,9 +533,15 @@ export default function CheckoutPage() {
                 <CardContent className="space-y-4">
                   {cart && cart.cart.items.map((item: any) => (
                     <div key={item.id} className="flex gap-3">
-                      <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0">
+                      <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0 relative">
                         {item.product.thumbnail && (
-                          <img src={item.product.thumbnail} alt={item.product.name} className="w-full h-full object-cover rounded" />
+                          <Image 
+                            src={item.product.thumbnail} 
+                            alt={item.product.name} 
+                            fill
+                            sizes="64px"
+                            className="object-cover rounded"
+                          />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">

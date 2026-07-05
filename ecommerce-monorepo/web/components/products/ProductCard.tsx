@@ -65,6 +65,7 @@ export default function ProductCard({
               src={product.image}
               alt={product.name}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className={`object-cover transition-transform duration-500 ${
                 isHovered ? 'scale-110' : 'scale-100'
               }`}

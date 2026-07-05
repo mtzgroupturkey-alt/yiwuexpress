@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChevronDown, ChefHat, UtensilsCrossed, Coffee, Soup, Wine, Refrigerator, TrendingUp, Star, Folder } from 'lucide-react'
 
 interface Category {
@@ -148,8 +149,14 @@ export default function MegaMenu() {
                       }`}
                     >
                       {category.image ? (
-                        <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
-                          <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+                        <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 relative">
+                          <Image 
+                            src={category.image} 
+                            alt={category.name} 
+                            fill
+                            sizes="20px"
+                            className="object-cover"
+                          />
                         </div>
                       ) : (
                         <Folder className="w-5 h-5" />
@@ -213,8 +220,14 @@ export default function MegaMenu() {
                             >
                               <div className="flex items-center gap-3">
                                 {sub.image ? (
-                                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                                    <img src={sub.image} alt={sub.name} className="w-full h-full object-cover" />
+                                  <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 relative">
+                                    <Image 
+                                      src={sub.image} 
+                                      alt={sub.name} 
+                                      fill
+                                      sizes="32px"
+                                      className="object-cover"
+                                    />
                                   </div>
                                 ) : null}
                                 <span className="text-gray-700 group-hover:text-primary-600 font-medium">

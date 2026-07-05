@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import Image from 'next/image'
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -75,9 +76,15 @@ function SortableSlideItem({ slide, onEdit, onDelete, onDuplicate, onToggleActiv
         </div>
 
         {/* Slide Preview */}
-        <div className="w-24 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+        <div className="w-24 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0 relative">
           {slide.imageUrl ? (
-            <img src={slide.imageUrl} alt={slide.title} className="w-full h-full object-cover" />
+            <Image 
+              src={slide.imageUrl} 
+              alt={slide.title} 
+              fill
+              sizes="96px"
+              className="object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400">
               <ImageIcon className="w-6 h-6" />

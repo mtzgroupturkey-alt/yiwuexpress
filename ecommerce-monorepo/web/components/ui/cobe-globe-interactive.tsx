@@ -81,45 +81,78 @@ export function GlobeInteractive({
     let globe: ReturnType<typeof createGlobe> | null = null
     let animationId: number
     let phi = 0
+    let webglError = false
+
+    const originalConsoleError = console.error
+    const webglErrorFilter = (msg: any, ...args: any[]) => {
+      const msgStr = String(msg)
+      if (msgStr.includes('WebGL') || msgStr.includes('INVALID_OPERATION') || msgStr.includes('drawArrays')) {
+        return
+      }
+      originalConsoleError.call(console, msg, ...args)
+    }
+    console.error = webglErrorFilter
 
     function init() {
       const width = canvas.offsetWidth
       if (width === 0) return
-      if (globe) return // already initialized
+      if (globe) return
+      if (webglError) return
 
-      globe = createGlobe(canvas, {
-        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
-        width,
-        height: width,
-        phi: 0,
-        theta: 0.2,
-        dark: 0,
-        diffuse: 1.5,
-        mapSamples: 16000,
-        mapBrightness: 10,
-        baseColor: [1, 1, 1],
-        markerColor: [0.1, 0.2, 0.45],
-        glowColor: [0.94, 0.93, 0.91],
-        markerElevation: 0,
-        markers: markers.map((m) => ({ location: m.location, size: 0.025, id: m.id })),
-        arcs: [],
-        arcColor: [0.15, 0.3, 0.55],
-        arcWidth: 0.5,
-        arcHeight: 0.25,
-        opacity: 0.7,
-      })
+      canvas.width = width
+      canvas.height = width
 
-      function animate() {
-        if (!isPausedRef.current) phi += speed
-        globe!.update({
-          phi: phi + phiOffsetRef.current + dragOffset.current.phi,
-          theta: 0.2 + thetaOffsetRef.current + dragOffset.current.theta,
+      try {
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+        if (!gl) {
+          webglError = true
+          canvas.style.display = 'none'
+          return
+        }
+
+        globe = createGlobe(canvas, {
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+          width,
+          height: width,
+          phi: 0,
+          theta: 0.2,
+          dark: 0,
+          diffuse: 1.5,
+          mapSamples: 16000,
+          mapBrightness: 10,
+          baseColor: [1, 1, 1],
+          markerColor: [0.1, 0.2, 0.45],
+          glowColor: [0.94, 0.93, 0.91],
+          markerElevation: 0,
+          markers: markers.map((m) => ({ location: m.location, size: 0.025, id: m.id })),
+          arcs: [],
+          arcColor: [0.15, 0.3, 0.55],
+          arcWidth: 0.5,
+          arcHeight: 0.25,
+          opacity: 0.7,
         })
-        animationId = requestAnimationFrame(animate)
-      }
 
-      animate()
-      setTimeout(() => canvas && (canvas.style.opacity = "1"))
+        function animate() {
+          if (webglError || !globe) return
+          try {
+            if (!isPausedRef.current) phi += speed
+            globe.update({
+              phi: phi + phiOffsetRef.current + dragOffset.current.phi,
+              theta: 0.2 + thetaOffsetRef.current + dragOffset.current.theta,
+            })
+            animationId = requestAnimationFrame(animate)
+          } catch (err) {
+            webglError = true
+            if (canvas) canvas.style.display = 'none'
+          }
+        }
+
+        animate()
+        if (canvas) canvas.style.opacity = "1"
+      } catch (err) {
+        webglError = true
+        canvas.style.display = 'none'
+      }
     }
 
     if (canvas.offsetWidth > 0) {
@@ -135,8 +168,15 @@ export function GlobeInteractive({
     }
 
     return () => {
+      console.error = originalConsoleError
       if (animationId) cancelAnimationFrame(animationId)
-      if (globe) globe.destroy()
+      if (globe) {
+        try {
+          globe.destroy()
+        } catch (err) {
+          // Silently fail on destroy
+        }
+      }
     }
   }, [markers, speed])
 

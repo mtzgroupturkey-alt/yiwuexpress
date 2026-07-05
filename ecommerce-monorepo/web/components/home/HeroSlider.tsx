@@ -191,11 +191,13 @@ export function HeroSlider() {
                   <img
                     src={slide.imageUrl}
                     alt={slide.title}
+                    loading="eager"
                     className="hidden md:block w-full h-full object-cover"
                   />
                   <img
                     src={slide.mobileImageUrl}
                     alt={slide.title}
+                    loading="eager"
                     className="md:hidden w-full h-full object-cover"
                   />
                 </>
@@ -203,6 +205,7 @@ export function HeroSlider() {
                 <img
                   src={slide.imageUrl}
                   alt={slide.title}
+                  loading="eager"
                   className="w-full h-full object-cover"
                 />
               )}
@@ -311,6 +314,7 @@ export function HeroSlider() {
                       <img
                         src={slide.productImageUrl}
                         alt={slide.title}
+                        loading="eager"
                         className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
                       />
                     </div>

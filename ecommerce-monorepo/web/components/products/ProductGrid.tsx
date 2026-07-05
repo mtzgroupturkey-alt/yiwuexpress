@@ -186,6 +186,7 @@ export default function ProductGrid({
                   src={product.thumbnail}
                   alt={product.name}
                   fill
+                  sizes="128px"
                   className="object-cover"
                   onError={() => handleImageError(product.id)}
                 />

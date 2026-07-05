@@ -109,6 +109,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
                     src={category.image}
                     alt={category.name}
                     fill
+                    sizes="(max-width: 768px) 96px, (max-width: 1024px) 128px, 144px"
                     className="rounded-full object-cover ring-2 ring-white shadow-lg group-hover:scale-105 transition-transform duration-300 group-hover:shadow-xl"
                   />
                 ) : (
