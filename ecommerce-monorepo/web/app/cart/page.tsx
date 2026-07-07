@@ -8,6 +8,7 @@ import { CartSummary } from '@/components/cart/CartSummary'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag, ArrowLeft } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
+import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 
 interface Cart {
   id: string
@@ -247,6 +248,9 @@ export default function CartPage() {
                 itemCount={summary.itemCount}
                 onCheckout={handleCheckout}
               />
+              <div className="mt-6">
+                <TrustBadgesMini layout="row" />
+              </div>
             </div>
           </div>
         </div>

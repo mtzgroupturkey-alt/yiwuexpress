@@ -17,7 +17,7 @@ interface Product {
   stock?: number
   minOrder?: number
   wholesalePrice?: number
-  colors?: { label: string; value: string }[]  // hex color swatches
+  colors?: { label: string; value: string }[]
 }
 
 interface ProductCardProps {
@@ -25,8 +25,8 @@ interface ProductCardProps {
   onAddToCart?: (productId: string) => void
 }
 
-export default function ProductCard({ 
-  product, 
+export default function ProductCard({
+  product,
   onAddToCart
 }: ProductCardProps) {
   const [imageError, setImageError] = useState(false)
@@ -40,9 +40,9 @@ export default function ProductCard({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     if (!onAddToCart) return
-    
+
     setIsAddingToCart(true)
     try {
       await onAddToCart(product.id)
@@ -53,8 +53,8 @@ export default function ProductCard({
 
   return (
     <Link href={`/products/${product.slug}`}>
-      <div 
-        className="group relative bg-white rounded-xl overflow-hidden shadow-brand hover:shadow-brand-lg transition-all duration-300 cursor-pointer flex flex-col"
+      <div
+        className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100/80 shadow-premium hover:shadow-premium-xl hover:-translate-y-2 transition-all duration-500 cursor-pointer flex flex-col"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -66,8 +66,8 @@ export default function ProductCard({
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`object-cover transition-transform duration-500 ${
-                isHovered ? 'scale-110' : 'scale-100'
+              className={`object-cover transition-transform duration-700 ${
+                isHovered ? 'scale-105' : 'scale-100'
               }`}
               onError={() => setImageError(true)}
             />
@@ -77,16 +77,21 @@ export default function ProductCard({
             </div>
           )}
 
+          {/* Image Overlay Gradient on Hover */}
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent transition-opacity duration-500 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`} />
+
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {hasWholesale && (
-              <span className="bg-secondary-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
-                Wholesale
+              <span className="bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] text-[#1a1a2e] text-xs font-bold px-4 py-2 rounded-full shadow-gold backdrop-blur-sm border border-white/20">
+                WHOLESALE
               </span>
             )}
             {product.stock && product.stock < 10 && (
-              <span className="bg-accent-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg">
-                Low Stock
+              <span className="bg-gradient-to-r from-accent-500 to-accent-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-[0_4px_16px_rgba(231,76,60,0.4)] backdrop-blur-sm border border-white/20">
+                LOW STOCK
               </span>
             )}
           </div>
@@ -99,17 +104,16 @@ export default function ProductCard({
           />
 
           {/* Quick View Button (appears on hover) */}
-          <div 
+          <div
             className={`absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-0'
             }`}
           >
             <button
-              className="w-full py-2 bg-white text-gray-900 font-medium rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 bg-white/90 backdrop-blur-sm text-gray-900 font-medium rounded-lg hover:bg-white transition-all flex items-center justify-center gap-2 shadow-lg"
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                // Quick view functionality can be added here
               }}
             >
               <Eye className="w-4 h-4" />
@@ -119,16 +123,16 @@ export default function ProductCard({
         </div>
 
         {/* Product Info */}
-        <div className="p-4 pb-8 flex-1 flex flex-col">
+        <div className="p-6 pb-8 flex-1 flex flex-col">
           {/* Category */}
           {product.category && (
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+            <p className="label-premium mb-1">
               {product.category}
             </p>
           )}
 
           {/* Product Name */}
-          <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 h-12">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 h-14">
             {product.name}
           </h3>
 
@@ -149,7 +153,7 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Description - Fixed height or hidden */}
+          {/* Description */}
           {product.description && (
             <p className="text-sm text-gray-600 mb-3 line-clamp-2 h-10">
               {product.description}
@@ -166,7 +170,7 @@ export default function ProductCard({
                 {priceLabel}
               </span>
             )}
-            <span className="text-2xl font-bold text-primary-600">
+            <span className="text-3xl font-bold text-gradient-primary">
               ${displayPrice?.toFixed(2)}
             </span>
             {hasWholesale && product.price && (
@@ -187,17 +191,20 @@ export default function ProductCard({
           <button
             onClick={handleAddToCart}
             disabled={isAddingToCart || (product.stock !== undefined && product.stock === 0)}
-            className={`w-full py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+            className={`w-full py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden ${
               isAddingToCart
-                ? 'bg-green-500 text-white'
+                ? 'bg-green-500 text-white shadow-lg'
                 : product.stock === 0
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg'
+                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-primary-600 via-primary-500 to-primary-700 text-white shadow-premium hover:shadow-premium-lg hover:-translate-y-1 active:translate-y-0 before:absolute before:inset-0 before:bg-gradient-to-tr before:from-white/0 before:to-white/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300'
             }`}
           >
             {isAddingToCart ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
                 Added!
               </>
             ) : product.stock === 0 ? (
@@ -216,7 +223,6 @@ export default function ProductCard({
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                // Navigate to wholesale inquiry
                 window.location.href = `/wholesale?product=${product.id}`
               }}
               className="w-full mt-2 py-2 text-sm text-secondary-600 font-medium hover:text-secondary-700 transition-colors"

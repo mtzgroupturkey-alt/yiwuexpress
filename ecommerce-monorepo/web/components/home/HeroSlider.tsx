@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { TrustBadgesMini } from '@/components/TrustBadgesMini'
+import { useSettings } from '@/components/SettingsProvider'
 
 interface HeroSlide {
   id: string
@@ -67,6 +69,7 @@ const motionVariants: Record<string, { initial: any; animate: any; exit: any }> 
 export function HeroSlider() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const { settings } = useSettings()
 
   const { data, isLoading } = useQuery({
     queryKey: ['hero-slides', 'active'],
@@ -75,6 +78,9 @@ export function HeroSlider() {
   })
 
   const slides: HeroSlide[] = data?.data || []
+  
+  // Get company name from settings, fallback to 'YIWU EXPRESS'
+  const companyName = settings?.companyName || 'YIWU EXPRESS'
 
   useEffect(() => {
     if (isPaused || slides.length === 0) return
@@ -117,10 +123,6 @@ export function HeroSlider() {
   const slide = slides[currentIndex]
   const alignment = slide.alignment || 'left'
 
-  // ============================================================
-  // ALIGNMENT CLASSES
-  // ============================================================
-
   const getTextAlignment = () => {
     switch (alignment) {
       case 'center':
@@ -143,19 +145,17 @@ export function HeroSlider() {
     }
   }
 
-  // Content block width and margin
   const getContentClasses = () => {
     switch (alignment) {
       case 'center':
-        return 'mx-auto max-w-2xl'
+        return 'mx-auto max-w-3xl'
       case 'right':
-        return 'ml-auto max-w-2xl'
+        return 'ml-auto max-w-3xl'
       default:
-        return 'mr-auto max-w-2xl'
+        return 'mr-auto max-w-3xl'
     }
   }
 
-  // Product image position
   const getImageOrder = () => {
     if (alignment === 'right') {
       return 'order-first lg:order-first'
@@ -215,30 +215,26 @@ export function HeroSlider() {
               />
             </div>
 
-            {/* ============================================================ */}
-            {/* CONTENT - WITH PROPER PADDING                                 */}
-            {/* ============================================================ */}
+            {/* Content */}
             <div className="absolute inset-0 flex items-center">
               <div className="relative z-10 w-full px-6 sm:px-8 lg:px-12 xl:px-16">
                 <div className={cn(
                   'flex flex-col lg:flex-row gap-8 items-center',
                   getContentClasses()
                 )}>
-                  
-                  {/* ============================================================ */}
-                  {/* TEXT CONTENT                                               */}
-                  {/* ============================================================ */}
+
+                  {/* Text Content */}
                   <div className={cn(
-                    'text-white space-y-4 flex-1',
+                    'text-white space-y-6 flex-1',
                     getTextAlignment(),
-                    alignment === 'center' ? 'items-center' : 
+                    alignment === 'center' ? 'items-center' :
                     alignment === 'right' ? 'items-end' : 'items-start'
                   )}>
                     {/* Badge */}
                     {slide.badgeText && (
                       <span
                         className={cn(
-                          'inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 rounded',
+                          'inline-block text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg backdrop-blur-sm border border-white/20',
                           alignment === 'center' && 'mx-auto',
                           alignment === 'right' && 'ml-auto'
                         )}
@@ -254,16 +250,16 @@ export function HeroSlider() {
                     {/* Subtitle */}
                     {slide.subtitle && (
                       <p className={cn(
-                        'text-sm uppercase tracking-widest text-white/80',
+                        'text-sm md:text-base uppercase tracking-[0.15em] text-gradient-gold font-semibold',
                         getTextAlignment()
                       )}>
                         {slide.subtitle}
                       </p>
                     )}
 
-                    {/* Title */}
+                    {/* Title - Premium Mobile Sizing */}
                     <h1 className={cn(
-                      'text-3xl md:text-4xl lg:text-5xl font-bold leading-tight',
+                      'font-bold tracking-tight text-5xl sm:text-6xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight text-shadow-lg font-["Outfit",sans-serif]',
                       getTextAlignment()
                     )}>
                       {slide.title}
@@ -272,7 +268,7 @@ export function HeroSlider() {
                     {/* Description */}
                     {slide.description && (
                       <p className={cn(
-                        'text-white/80 text-base md:text-lg',
+                        'text-white/80 text-base md:text-lg leading-relaxed max-w-xl',
                         getTextAlignment()
                       )}>
                         {slide.description}
@@ -286,15 +282,16 @@ export function HeroSlider() {
                     )}>
                       <Link
                         href={slide.ctaLink}
-                        className="bg-[#c9a84c] text-[#1a1a2e] px-6 py-2.5 rounded-full font-semibold hover:bg-[#e8d48b] transition-all transform hover:scale-105 inline-flex items-center"
+                        className="bg-gradient-to-r from-[#c9a84c] via-[#d4b15c] to-[#e8d48b] text-[#1a1a2e] px-8 py-3 rounded-full font-bold text-sm md:text-base transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-gold-lg inline-flex items-center gap-2 shadow-gold"
                       >
                         {slide.ctaText}
+                        <span className="text-lg">→</span>
                       </Link>
 
                       {slide.secondaryCtaText && slide.secondaryCtaLink && (
                         <Link
                           href={slide.secondaryCtaLink}
-                          className="border border-white/30 text-white px-6 py-2.5 rounded-full font-semibold hover:bg-white/10 transition-all inline-flex items-center"
+                          className="glass text-white px-8 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 inline-flex items-center gap-2"
                         >
                           {slide.secondaryCtaText}
                         </Link>
@@ -302,9 +299,7 @@ export function HeroSlider() {
                     </div>
                   </div>
 
-                  {/* ============================================================ */}
-                  {/* PRODUCT IMAGE                                               */}
-                  {/* ============================================================ */}
+                  {/* Product Image */}
                   {slide.productImageUrl && (
                     <div className={cn(
                       'flex-shrink-0',
@@ -315,7 +310,7 @@ export function HeroSlider() {
                         src={slide.productImageUrl}
                         alt={slide.title}
                         loading="eager"
-                        className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain"
+                        className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain drop-shadow-2xl"
                       />
                     </div>
                   )}
@@ -325,14 +320,12 @@ export function HeroSlider() {
           </motion.div>
         </AnimatePresence>
 
-        {/* ============================================================ */}
-        {/* NAVIGATION CONTROLS                                          */}
-        {/* ============================================================ */}
+        {/* Navigation Controls - Glass Effect */}
         {slides.length > 1 && (
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 glass text-white p-3 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 hover:shadow-2xl"
               aria-label="Previous slide"
             >
               <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -340,7 +333,7 @@ export function HeroSlider() {
 
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 glass text-white p-3 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 hover:shadow-2xl"
               aria-label="Next slide"
             >
               <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
@@ -348,18 +341,20 @@ export function HeroSlider() {
 
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="absolute bottom-20 left-4 z-20 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition"
+              className="absolute bottom-20 left-4 z-20 glass text-white p-2.5 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110"
               aria-label={isPaused ? 'Play' : 'Pause'}
             >
               {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
             </button>
 
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
               {slides.map((_, index) => (
                 <button
                   key={index}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentIndex ? 'bg-white w-8' : 'bg-white/50 hover:bg-white/70'
+                  className={`transition-all duration-300 rounded-full ${
+                    index === currentIndex
+                      ? 'w-10 h-3 bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] shadow-gold'
+                      : 'w-3 h-3 bg-white/50 hover:bg-white/70'
                   }`}
                   onClick={() => goToSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}

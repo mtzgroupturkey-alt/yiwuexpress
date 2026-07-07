@@ -199,7 +199,8 @@ export function ModernHeroSlider() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
-                className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
+                className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight"
+                style={{ fontFamily: 'Outfit, sans-serif' }}
               >
                 <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
                   YIWU EXPRESS
@@ -419,7 +420,8 @@ export function ModernHeroSlider() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
+                  className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-tight"
+                  style={{ fontFamily: 'Outfit, sans-serif' }}
                 >
                   {slide.title}
                 </motion.h1>

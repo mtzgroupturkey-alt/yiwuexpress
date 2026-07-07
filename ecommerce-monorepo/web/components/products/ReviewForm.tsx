@@ -48,13 +48,15 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
 
   const mutation = useMutation({
     mutationFn: async (data: ReviewFormData) => {
-      const response = await fetch('/api/reviews', {
+      const response = await fetch(`/api/products/${productId}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          ...data,
-          productId,
+          rating: data.rating,
+          title: data.title,
+          comment: data.comment,
+          images: [], // can be extended for uploads later
         }),
       })
 

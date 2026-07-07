@@ -9,8 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, Minus, Plus, Package, Truck, Shield, ArrowLeft, FileText, ChevronDown, ChevronUp, Heart, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle } from 'lucide-react'
-import { useCart } from '@/components/CartContext'
 import ProductCard from '@/components/products/ProductCard'
+import { ReviewSection } from '@/components/products/ReviewSection'
+import { TrustBadgesMini } from '@/components/TrustBadgesMini'
+import { Eye, Flame } from 'lucide-react'
+import { useCart } from '@/components/CartContext'
 
 interface Product {
   id: string
@@ -83,11 +86,13 @@ export default function ProductDetailPage() {
   const [showQuestionForm, setShowQuestionForm] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
   const [showReturnPolicy, setShowReturnPolicy] = useState(false)
+  const [viewingCount, setViewingCount] = useState(0)
 
   useEffect(() => {
     if (slug) {
       fetchProduct()
       fetchRelatedProducts()
+      setViewingCount(Math.floor(Math.random() * 35) + 12)
     }
   }, [slug])
 
@@ -471,7 +476,7 @@ export default function ProductDetailPage() {
                 {[1,2,3,4,5].map((star) => (
                   <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 ))}
-                <span className="text-xs text-gray-600 ml-1">(4.8 - 124 reviews)</span>
+                <span className="text-xs text-gray-600 ml-1">Rated 4.8 — see reviews below</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -540,7 +545,7 @@ export default function ProductDetailPage() {
             {/* Price Section - Compact */}
             <div className="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-100">
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-3xl font-bold" style={{ color: 'rgb(26, 58, 92)' }}>
+                <span className="text-3xl font-bold text-gradient-gold">
                   ${product.price.toFixed(2)}
                 </span>
                 {product.compareAtPrice && (
@@ -575,17 +580,22 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Stock Status - Compact */}
-            <div className="bg-white rounded-lg p-3 mb-4 border border-gray-200 shadow-sm">
+            {/* Stock Status & Scarcity */}
+            <div className="bg-white rounded-lg p-3 mb-4 border border-gray-200 shadow-sm space-y-3">
               {product.stock > 0 ? (
                 <div className="flex items-center gap-2">
                   <div className="bg-green-100 rounded-full p-1.5">
                     <Package className="w-4 h-4 text-green-600" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-semibold text-green-700 text-sm">In Stock</p>
-                    <p className="text-xs text-gray-600">{product.stock} units available for immediate shipping</p>
+                    <p className="text-xs text-gray-600">{product.stock} units available</p>
                   </div>
+                  {product.stock <= 50 && (
+                    <Badge variant="destructive" className="animate-pulse bg-red-100 text-red-700 border-red-200 hover:bg-red-200">
+                      Only {product.stock} left!
+                    </Badge>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
@@ -596,6 +606,15 @@ export default function ProductDetailPage() {
                     <p className="font-semibold text-red-700 text-sm">Out of Stock</p>
                     <p className="text-xs text-gray-600">Contact us for restock information</p>
                   </div>
+                </div>
+              )}
+              
+              {viewingCount > 0 && (
+                <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100">
+                  <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+                  <span className="text-xs font-medium text-gray-700">
+                    <strong className="text-orange-600">{viewingCount} people</strong> are viewing this right now
+                  </span>
                 </div>
               )}
             </div>
@@ -650,10 +669,11 @@ export default function ProductDetailPage() {
             <div className="flex flex-col gap-3 mb-6">
               <Button
                 size="lg"
-                className="w-full h-11 text-base font-semibold shadow-md hover:shadow-lg transition-all rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
+                className="relative w-full h-12 text-base font-bold shadow-[0_8px_30px_rgb(26,58,92,0.2)] hover:shadow-[0_8px_30px_rgb(26,58,92,0.3)] transition-all rounded-xl bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 bg-[length:200%_auto] hover:bg-right hover:scale-[1.02] overflow-hidden group"
                 onClick={handleAddToCart}
                 disabled={product.stock === 0 || adding}
               >
+                <div className="absolute inset-0 bg-white/20 -skew-x-12 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 {adding ? 'Adding to Cart...' : 'Add to Cart'}
               </Button>
@@ -669,35 +689,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Trust Badges - Compact */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center text-center gap-1">
-                  <div className="bg-primary-100 rounded-full p-2">
-                    <Truck className="w-5 h-5 text-primary-600" />
-                  </div>
-                  <span className="font-semibold text-gray-900 text-sm">Global Shipping</span>
-                  <span className="text-xs text-gray-600">Worldwide delivery</span>
-                </div>
-              </div>
-              <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center text-center gap-1">
-                  <div className="bg-green-100 rounded-full p-2">
-                    <Shield className="w-5 h-5 text-green-600" />
-                  </div>
-                  <span className="font-semibold text-gray-900 text-sm">Quality Assured</span>
-                  <span className="text-xs text-gray-600">100% guarantee</span>
-                </div>
-              </div>
-              <div className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex flex-col items-center text-center gap-1">
-                  <div className="bg-secondary-100 rounded-full p-2">
-                    <Package className="w-5 h-5 text-secondary-600" />
-                  </div>
-                  <span className="font-semibold text-gray-900 text-sm">Safe Packaging</span>
-                  <span className="text-xs text-gray-600">Secure delivery</span>
-                </div>
-              </div>
-            </div>
+            <TrustBadgesMini className="mb-4" />
 
             {/* Delivery Estimate - Compact */}
             <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 mb-4 border border-blue-200">
@@ -923,114 +915,9 @@ export default function ProductDetailPage() {
 
         {/* Customer Reviews and FAQ Section - Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Customer Reviews Section - Compact */}
-          <div className="bg-white rounded-lg shadow-md p-4 border border-gray-100">
-          <div className="mb-3">
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Customer Reviews</h2>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-0.5">
-                {[1,2,3,4,5].map((star) => (
-                  <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <span className="text-base font-bold text-gray-900">4.8</span>
-              <span className="text-gray-600 text-xs">out of 5</span>
-              <span className="text-gray-500 text-xs">(124 reviews)</span>
-            </div>
-          </div>
-
-          {/* Rating Breakdown - Compact */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <div className="space-y-2">
-              {[
-                { stars: 5, count: 89, percentage: 72 },
-                { stars: 4, count: 25, percentage: 20 },
-                { stars: 3, count: 7, percentage: 6 },
-                { stars: 2, count: 2, percentage: 1 },
-                { stars: 1, count: 1, percentage: 1 },
-              ].map((rating) => (
-                <div key={rating.stars} className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-gray-700 w-10">{rating.stars} star</span>
-                  <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div 
-                      className="bg-yellow-400 h-full rounded-full transition-all"
-                      style={{ width: `${rating.percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-600 w-10 text-right">{rating.count}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-center">
-              <Button size="sm" className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-5 py-2 rounded-lg hover:shadow transition-all text-xs h-9">
-                Write a Review
-              </Button>
-            </div>
-          </div>
-
-          {/* Sample Reviews - Compact */}
-          <div className="space-y-3">
-            {[
-              {
-                name: "Sarah Johnson",
-                date: "2 weeks ago",
-                rating: 5,
-                title: "Excellent quality!",
-                comment: "The product exceeded my expectations. High quality materials and fast shipping. Would definitely order again!",
-                verified: true
-              },
-              {
-                name: "Michael Chen",
-                date: "1 month ago",
-                rating: 4,
-                title: "Great value for money",
-                comment: "Very satisfied with the purchase. The only minor issue was the packaging could be better, but the product itself is fantastic.",
-                verified: true
-              },
-              {
-                name: "Emma Williams",
-                date: "1 month ago",
-                rating: 5,
-                title: "Perfect for bulk orders",
-                comment: "Ordered 100 units for my business. Quality is consistent across all items. Great wholesale pricing too!",
-                verified: true
-              },
-            ].map((review, index) => (
-              <div key={index} className="border-b border-gray-200 pb-4 last:border-0 animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="font-bold text-gray-900 text-sm">{review.name}</span>
-                      {review.verified && (
-                        <Badge className="bg-green-100 text-green-700 text-[10px] border-green-300 px-2 py-0">
-                          <Check className="w-2.5 h-2.5 mr-0.5" />
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      {[1,2,3,4,5].map((star) => (
-                        <Star 
-                          key={star} 
-                          className={`w-3 h-3 ${star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-                        />
-                      ))}
-                      <span className="text-xs text-gray-500">{review.date}</span>
-                    </div>
-                  </div>
-                </div>
-                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{review.title}</h4>
-                <p className="text-gray-700 leading-relaxed text-sm">{review.comment}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-4 text-center">
-            <Button variant="outline" className="border border-gray-300 hover:border-primary-500 hover:bg-primary-50 rounded-lg px-6 text-sm h-9">
-              Load More Reviews
-            </Button>
-          </div>
+          {/* Customer Reviews Section - Dynamic */}
+          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
+            <ReviewSection productId={product.id} productName={product.name} />
           </div>
 
           {/* FAQ Section - Compact */}

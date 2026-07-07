@@ -16,6 +16,7 @@ export function NewArrivals() {
 
   const products = (data?.data || []).map((p: any) => ({
     ...p,
+    image: p.thumbnail || p.images?.[0] || undefined,
     category: p.category?.name || p.category,
   }))
 

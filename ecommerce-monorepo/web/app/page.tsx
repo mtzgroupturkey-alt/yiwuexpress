@@ -3,8 +3,9 @@ import { TrustStrip } from '@/components/home/TrustStrip'
 import { CategoryGrid } from '@/components/home/CategoryGrid'
 import { FeaturedProducts } from '@/components/home/FeaturedProducts'
 import { NewArrivals } from '@/components/home/NewArrivals'
-import { StatsTrustSection } from '@/components/home/StatsTrustSection'
 import { BottomCta } from '@/components/home/BottomCta'
+import { AboutYiwuExpress } from '@/components/home/AboutYiwuExpress'
+import { Container } from '@/components/ui/Container'
 
 export default function Home() {
   return (
@@ -23,11 +24,12 @@ export default function Home() {
       {/* New Arrivals */}
       <NewArrivals />
 
-      {/* Stats + Trust Section (merged) */}
-      <StatsTrustSection />
+      {/* About Yiwu Express - Comprehensive section with stats, features, and timeline */}
+      <AboutYiwuExpress />
 
       {/* Bottom CTA */}
       <BottomCta />
     </SharedLayout>
   )
 }
+

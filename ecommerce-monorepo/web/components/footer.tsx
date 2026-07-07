@@ -262,6 +262,7 @@ export default function Footer() {
         </div>
       </Container>
 
+
       {/* Bottom Bar - Premium Design with Border Glow */}
       <div className="relative z-10 border-t border-gray-700/40">
         {/* Top border glow */}

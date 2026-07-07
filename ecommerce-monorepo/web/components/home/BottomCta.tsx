@@ -34,7 +34,7 @@ export function BottomCta() {
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 border-2 border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl text-lg transition-all duration-300"
+                  className="inline-flex items-center gap-2 border-2 border-white/30 text-white hover:bg-white/10 hover:border-secondary-400/50 hover:shadow-gold font-semibold px-8 py-4 rounded-xl text-lg transition-all duration-300"
                 >
                   Contact Our Team
                 </Link>

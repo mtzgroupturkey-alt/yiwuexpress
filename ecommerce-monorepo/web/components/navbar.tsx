@@ -121,10 +121,10 @@ export default function Navbar() {
               )}
             </div>
             <div className="hidden md:block">
-              <div className="text-xl font-bold bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] bg-clip-text text-transparent group-hover:from-[#c9a84c] group-hover:to-[#1a3a5c] transition-all duration-300">
+              <div className="text-2xl font-black tracking-tight bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] bg-clip-text text-transparent group-hover:from-[#c9a84c] group-hover:to-[#1a3a5c] transition-all duration-300" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 {companyName}
               </div>
-              <div className="text-[10px] text-gray-500 font-medium tracking-wide">Global Trade Solutions</div>
+              <div className="text-[10px] text-gray-500 font-medium tracking-widest uppercase">Global Trade Solutions</div>
             </div>
           </Link>
 

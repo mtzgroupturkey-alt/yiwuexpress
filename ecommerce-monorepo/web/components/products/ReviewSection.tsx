@@ -20,7 +20,7 @@ export function ReviewSection({ productId, productName }: ReviewSectionProps) {
   const { data: reviewData, isLoading } = useQuery({
     queryKey: ['reviews', productId],
     queryFn: async () => {
-      const response = await fetch(`/api/reviews?productId=${productId}`)
+      const response = await fetch(`/api/products/${productId}/reviews`)
       if (!response.ok) throw new Error('Failed to fetch reviews')
       return response.json()
     }

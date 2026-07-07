@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Check, CreditCard, MapPin, Package, Truck } from 'lucide-react'
+import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 
 const checkoutSchema = z.object({
   customerName: z.string().min(2, 'Name is required'),
@@ -463,6 +464,10 @@ export default function CheckoutPage() {
                     {errors.paymentMethod && (
                       <p className="text-red-600 text-sm">{errors.paymentMethod.message}</p>
                     )}
+
+                    <div className="py-2">
+                      <TrustBadgesMini layout="row" className="bg-gray-50 p-3 rounded-lg justify-center" />
+                    </div>
 
                     <div>
                       <Label htmlFor="customerNotes">Order Notes (Optional)</Label>

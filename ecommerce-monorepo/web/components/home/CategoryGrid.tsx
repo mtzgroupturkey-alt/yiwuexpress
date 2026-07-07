@@ -23,10 +23,9 @@ interface CategoryGridProps {
 }
 
 export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
-  // Build query params based on variant
-  const queryParams = variant === 'parent' 
-    ? 'parent=null&featured=true' // Fetch only featured parent categories
-    : 'featured=true&limit=6' // Fetch featured categories
+  const queryParams = variant === 'parent'
+    ? 'parent=null&featured=true'
+    : 'featured=true&limit=6'
 
   const { data, isLoading } = useQuery({
     queryKey: ['categories', variant],
@@ -35,11 +34,10 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
 
   const categories: Category[] = data?.data || []
 
-  // Customize section title and subtitle based on variant
-  const sectionTitle = variant === 'parent' 
-    ? 'Browse by Category' 
+  const sectionTitle = variant === 'parent'
+    ? 'Browse by Category'
     : 'Shop by Category'
-  
+
   const sectionSubtitle = variant === 'parent'
     ? 'Explore our complete range of product categories'
     : 'Explore our wide range of kitchenware products. From professional cookware to everyday essentials.'
@@ -49,8 +47,8 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
       <section className="py-16 bg-gray-50">
         <Container maxWidth="2xl">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-[#1a3a5c]">{sectionTitle}</h2>
-            <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">{sectionTitle}</h2>
+            <p className="text-gray-600 mt-3 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
               {sectionSubtitle}
             </p>
           </div>
@@ -73,8 +71,8 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
       <section className="py-16 bg-gray-50">
         <Container maxWidth="2xl">
           <div className="text-center py-12">
-            <h2 className="text-3xl font-bold text-[#1a3a5c]">{sectionTitle}</h2>
-            <p className="text-gray-500 mt-2">No categories available yet.</p>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">{sectionTitle}</h2>
+            <p className="text-gray-600 mt-3 text-base md:text-lg">No categories available yet.</p>
           </div>
         </Container>
       </section>
@@ -85,7 +83,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
     <section className="py-16 bg-gray-50">
       <Container maxWidth="2xl">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1a3a5c]">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">
             {sectionTitle}
           </h2>
           <p className="text-gray-500 mt-2 max-w-2xl mx-auto">
@@ -93,7 +91,6 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
           </p>
         </div>
 
-        {/* Category Grid - Circle Design */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
           {categories.map((category) => (
             <Link
@@ -101,7 +98,6 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
               href={`/products?category=${category.slug}`}
               className="group flex flex-col items-center outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-4 rounded-lg"
             >
-              {/* Circular Image */}
               <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36">
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#1a3a5c]/10 to-[#c9a84c]/10 group-hover:from-[#1a3a5c]/20 group-hover:to-[#c9a84c]/20 transition-all duration-500" />
                 {category.image ? (
@@ -110,29 +106,24 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
                     alt={category.name}
                     fill
                     sizes="(max-width: 768px) 96px, (max-width: 1024px) 128px, 144px"
-                    className="rounded-full object-cover ring-2 ring-white shadow-lg group-hover:scale-105 transition-transform duration-300 group-hover:shadow-xl"
+                    className="rounded-full object-cover ring-4 ring-white shadow-premium-lg group-hover:shadow-gold group-hover:ring-[#c9a84c]/50 group-hover:scale-105 transition-all duration-500"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-4xl shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-4xl ring-4 ring-white shadow-premium-lg group-hover:shadow-gold group-hover:ring-[#c9a84c]/50 group-hover:scale-105 transition-all duration-500">
                     <span className="text-gray-400">📦</span>
                   </div>
                 )}
-                {/* Subtle ring on hover */}
-                <div className="absolute inset-0 rounded-full ring-2 ring-transparent group-hover:ring-[#c9a84c] transition-all duration-300" />
               </div>
 
-              {/* Category Name */}
               <h3 className="mt-3 text-sm md:text-base font-semibold text-gray-700 text-center group-hover:text-[#1a3a5c] transition-colors">
                 {category.name}
               </h3>
 
-              {/* Decorative underline on hover */}
-              <div className="w-0 h-0.5 bg-[#c9a84c] group-hover:w-8 transition-all duration-300" />
+              <div className="w-0 h-0.5 bg-[#c9a84c] group-hover:w-8 transition-all duration-300 mt-1" />
             </Link>
           ))}
         </div>
 
-        {/* View All Link */}
         <div className="text-center mt-10">
           <Link
             href="/products"

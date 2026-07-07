@@ -12,8 +12,29 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+
+  // Check authentication status first
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/profile', {
+        credentials: 'include',
+      })
+      setIsAuthenticated(response.ok)
+      return response.ok
+    } catch {
+      setIsAuthenticated(false)
+      return false
+    }
+  }, [])
 
   const refreshCartCount = useCallback(async () => {
+    // Only fetch cart if authenticated
+    if (isAuthenticated === false) {
+      setCartCount(0)
+      return
+    }
+
     try {
       const response = await fetch('/api/cart', {
         credentials: 'include', // Important for cookies
@@ -28,21 +49,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (response.status === 401) {
         // Not logged in
+        setIsAuthenticated(false)
         setCartCount(0)
       }
     } catch (err) {
       console.error('Failed to fetch cart count', err)
       setCartCount(0)
     }
-  }, [])
+  }, [isAuthenticated])
 
   const clearCart = useCallback(() => {
     setCartCount(0)
   }, [])
 
   useEffect(() => {
-    refreshCartCount()
-  }, [refreshCartCount])
+    // Check auth first, then fetch cart
+    checkAuth().then((authenticated) => {
+      if (authenticated) {
+        refreshCartCount()
+      }
+    })
+  }, [])
+
+  // Re-fetch cart when auth status changes
+  useEffect(() => {
+    if (isAuthenticated === true) {
+      refreshCartCount()
+    } else if (isAuthenticated === false) {
+      setCartCount(0)
+    }
+  }, [isAuthenticated, refreshCartCount])
 
   return (
     <CartContext.Provider value={{ cartCount, refreshCartCount, clearCart }}>

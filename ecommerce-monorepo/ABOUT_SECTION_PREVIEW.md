@@ -1,0 +1,425 @@
+# 🎨 About Yiwu Express - Visual Preview
+
+## 📱 What You'll See
+
+---
+
+## 🖥️ DESKTOP VIEW (>1024px)
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║                         [ ABOUT US ]                             ║
+║                                                                  ║
+║         Your Trusted Sourcing Partner in Yiwu                    ║
+║     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━                   ║
+║    Bridging China's wholesale markets to businesses              ║
+║              worldwide since 2009                                ║
+║                                                                  ║
+╠══════════════════════════════╦═══════════════════════════════════╣
+║                              ║                                   ║
+║  ┌────────────────────────┐  ║  Yiwu Express is your premier    ║
+║  │                        │  ║  sourcing partner in China's     ║
+║  │   Yiwu International   │  ║  largest wholesale market...     ║
+║  │      Trade Market      │  ║                                  ║
+║  │                        │  ║  Our team of expert sourcing     ║
+║  │     (IMAGE HERE)       │  ║  agents handles everything...    ║
+║  │                        │  ║                                  ║
+║  │  ┌─────────────────┐   │  ║  ✓ Direct sourcing from 75K+    ║
+║  │  │  15+            │   │  ║  ✓ Quality control & inspection ║
+║  │  │  Years of       │   │  ║  ✓ Competitive wholesale prices ║
+║  │  │  Excellence  🏆 │   │  ║  ✓ Global shipping & logistics  ║
+║  │  └─────────────────┘   │  ║  ✓ 24/7 customer service        ║
+║  └────────────────────────┘  ║  ✓ Low MOQ for testing          ║
+║                              ║                                   ║
+║                              ║  [ Learn More ]  [ Get Quote ]   ║
+║                              ║                                   ║
+╠══════════════════════════════╩═══════════════════════════════════╣
+║                                                                  ║
+║   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      ║
+║   │   🏆     │  │   👥     │  │   🌍     │  │   🛍️     │      ║
+║   │   15+    │  │  1500+   │  │   50+    │  │  10K+    │      ║
+║   │  Years   │  │  Clients │  │Countries │  │ Products │      ║
+║   └──────────┘  └──────────┘  └──────────┘  └──────────┘      ║
+║                                                                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║              Why Choose Yiwu Express?                            ║
+║                                                                  ║
+║  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐      ║
+║  │   🛍️     │  │   🚚     │  │   🛡️     │  │   📈     │      ║
+║  │  Direct  │  │   Fast   │  │ Quality  │  │   Best   │      ║
+║  │ Sourcing │  │ Shipping │  │ Control  │  │  Prices  │      ║
+║  │          │  │          │  │          │  │          │      ║
+║  │ Connect  │  │Worldwide │  │ Rigorous │  │Wholesale │      ║
+║  │ directly │  │logistics │  │inspection│  │  rates   │      ║
+║  └──────────┘  └──────────┘  └──────────┘  └──────────┘      ║
+║                                                                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║                    How It Works                                  ║
+║                                                                  ║
+║  ┌──────┐      ┌──────┐      ┌──────┐      ┌──────┐           ║
+║  │  01  │  →   │  02  │  →   │  03  │  →   │  04  │           ║
+║  │ Send │      │  We  │      │Quality│      │ Ship │           ║
+║  │Request│     │Source│      │ Check │      │To You│           ║
+║  └──────┘      └──────┘      └──────┘      └──────┘           ║
+║                                                                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║               🛡️ Trusted by Businesses Worldwide                ║
+║                                                                  ║
+║   Join thousands of satisfied clients across 50+ countries      ║
+║                                                                  ║
+║    ⏰ 24/7 Support  |  🔒 Secure Payments  |  ✓ Verified       ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## 📱 MOBILE VIEW (<768px)
+
+```
+┌────────────────────────┐
+│                        │
+│    [ ABOUT US ]        │
+│                        │
+│  Your Trusted          │
+│  Sourcing Partner      │
+│  in Yiwu               │
+│  ──────────            │
+│  Bridging markets      │
+│  since 2009            │
+│                        │
+├────────────────────────┤
+│                        │
+│  ┌──────────────────┐  │
+│  │                  │  │
+│  │  Yiwu Market     │  │
+│  │     (IMAGE)      │  │
+│  │                  │  │
+│  │  ┌────────────┐  │  │
+│  │  │ 15+ Years  │  │  │
+│  │  └────────────┘  │  │
+│  └──────────────────┘  │
+│                        │
+├────────────────────────┤
+│                        │
+│  Yiwu Express is       │
+│  your premier...       │
+│                        │
+│  ✓ Direct sourcing     │
+│  ✓ Quality control     │
+│  ✓ Best prices         │
+│  ✓ Global shipping     │
+│                        │
+│  [ Learn More ]        │
+│  [ Get Quote ]         │
+│                        │
+├────────────────────────┤
+│                        │
+│  ┌────────┐┌────────┐ │
+│  │  15+   ││ 1500+  │ │
+│  │ Years  ││Clients │ │
+│  └────────┘└────────┘ │
+│  ┌────────┐┌────────┐ │
+│  │  50+   ││ 10K+   │ │
+│  │Countries│Products│ │
+│  └────────┘└────────┘ │
+│                        │
+├────────────────────────┤
+│                        │
+│  Why Choose Us?        │
+│                        │
+│  ┌────────────────┐   │
+│  │ 🛍️ Direct      │   │
+│  │    Sourcing    │   │
+│  └────────────────┘   │
+│  ┌────────────────┐   │
+│  │ 🚚 Fast        │   │
+│  │    Shipping    │   │
+│  └────────────────┘   │
+│                        │
+├────────────────────────┤
+│                        │
+│  How It Works          │
+│                        │
+│  ┌────────────────┐   │
+│  │ 01 Send Request│   │
+│  └────────────────┘   │
+│         ↓              │
+│  ┌────────────────┐   │
+│  │ 02 We Source   │   │
+│  └────────────────┘   │
+│         ↓              │
+│  ┌────────────────┐   │
+│  │ 03 Quality     │   │
+│  └────────────────┘   │
+│         ↓              │
+│  ┌────────────────┐   │
+│  │ 04 Ship to You │   │
+│  └────────────────┘   │
+│                        │
+└────────────────────────┘
+```
+
+---
+
+## 🎨 COLOR PALETTE
+
+```css
+┌─────────────────────────────────────────┐
+│                                         │
+│  PRIMARY RED      #E31E24  █████████    │
+│  (Chinese red - trust & authenticity)   │
+│                                         │
+│  GOLD ACCENT      #F5A623  █████████    │
+│  (Premium feel)                         │
+│                                         │
+│  DARK NAVY        #1A1A2E  █████████    │
+│  (Professional)                         │
+│                                         │
+│  LIGHT GRAY       #F8F9FA  █████████    │
+│  (Background)                           │
+│                                         │
+│  TEXT DARK        #333333  █████████    │
+│  (Main content)                         │
+│                                         │
+│  TEXT LIGHT       #666666  █████████    │
+│  (Secondary text)                       │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 🎬 ANIMATION TIMELINE
+
+```
+Page Load
+    │
+    ├─ 0.0s: Section enters viewport
+    │
+    ├─ 0.2s: "About Us" badge fades in ↑
+    │
+    ├─ 0.3s: Headline fades in ↑
+    │
+    ├─ 0.4s: Image slides in ←
+    │
+    ├─ 0.5s: Content slides in →
+    │
+    ├─ 0.8s: Stats grid fades in ↑
+    │         Counters animate: 0 → target (2s)
+    │
+    ├─ 1.0s: Feature cards fade in (staggered)
+    │
+    ├─ 1.5s: Process timeline fades in
+    │
+    └─ 2.0s: Trust badges fade in
+```
+
+---
+
+## 🎯 HOVER EFFECTS
+
+### Cards
+```
+Normal State:
+┌─────────────┐
+│   🛍️        │
+│   Title     │
+│   Text      │
+└─────────────┘
+
+Hover State:
+┌─────────────┐ ↑ Lifts 8px
+│   🛍️  (1.1x)│ ← Icon scales
+│   Title     │
+│   Text      │ ← Shadow grows
+└─────────────┘
+```
+
+### Buttons
+```
+Normal:
+[ Learn More About Us ]
+
+Hover:
+[ Learn More About Us ] ↑ Lifts up
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  Shadow & glow effect
+```
+
+### Image
+```
+Normal:
+┌─────────────┐
+│             │
+│   Image     │
+│             │
+└─────────────┘
+
+Hover:
+┌─────────────┐
+│             │ ← Glow effect
+│   Image     │ ← Scale 1.1x
+│  (zoomed)   │
+└─────────────┘
+```
+
+---
+
+## 📊 VISUAL HIERARCHY
+
+```
+Level 1: Main Headline (48-60px)
+  ↓
+Level 2: Subheadline (20-24px)
+  ↓
+Level 3: Section Titles (32-40px)
+  ↓
+Level 4: Card Titles (20px)
+  ↓
+Level 5: Body Text (16-18px)
+```
+
+---
+
+## 🎨 SECTION SPACING
+
+```
+┌─────────────────────────────────┐
+│                                 │ ← 80-100px padding
+│  Content starts here            │
+│                                 │
+│  • Section badge                │
+│  • Headline                     │
+│  • Image + Content grid         │ ← 48px gap
+│  • Statistics grid              │
+│  • Feature cards                │ ← 64px gap
+│  • Process timeline             │
+│  • Trust badges                 │
+│                                 │
+│  Content ends here              │
+│                                 │ ← 80-100px padding
+└─────────────────────────────────┘
+```
+
+---
+
+## 💫 SPECIAL EFFECTS
+
+### Background Decorations
+```
+     🔴 (Gradient orb - top right)
+        Blur: 72px
+        Opacity: 5%
+        Color: #E31E24
+
+
+
+        🟡 (Gradient orb - bottom left)
+           Blur: 72px
+           Opacity: 5%
+           Color: #F5A623
+```
+
+### Image Overlay Badge
+```
+┌─────────────────────────┐
+│                         │
+│      Yiwu Market        │
+│         Image           │
+│                         │
+│   ┌─────────────────┐   │
+│   │  15+         🏆 │   │ ← Overlay badge
+│   │  Years of       │   │   (bottom left)
+│   │  Excellence     │   │
+│   └─────────────────┘   │
+└─────────────────────────┘
+```
+
+### Gradient Text
+```
+Your Trusted Sourcing Partner in Yiwu
+              ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+           Red → Gold gradient
+```
+
+---
+
+## ✅ ACTUAL CONTENT
+
+### Headline
+```
+Your Trusted Sourcing Partner in Yiwu
+```
+
+### Subheadline
+```
+Bridging China's wholesale markets to businesses 
+worldwide since 2009
+```
+
+### Description (Paragraph 1)
+```
+Yiwu Express is your premier sourcing partner in 
+China's largest wholesale market. With over 15 years 
+of experience, we connect international buyers with 
+trusted suppliers in Yiwu — the world's capital of 
+small commodities.
+```
+
+### Description (Paragraph 2)
+```
+Our team of expert sourcing agents handles everything 
+from product research and quality inspection to 
+warehousing and international shipping. Whether you 
+need consumer goods, electronics, apparel, or custom 
+products, we ensure competitive prices, rigorous 
+quality control, and timely delivery.
+```
+
+### Statistics
+```
+15+      Years Experience
+1,500+   Happy Clients
+50+      Countries Served
+10,000+  Products Sourced
+```
+
+### Features
+```
+✓ Direct sourcing from 75,000+ verified suppliers
+✓ Rigorous quality control & pre-shipment inspection
+✓ Competitive wholesale prices with no hidden fees
+✓ Global shipping & full logistics support
+✓ 24/7 multilingual customer service
+✓ Low MOQ for product testing & sampling
+```
+
+### Process Steps
+```
+01 → Send Request    (Tell us what you need)
+02 → We Source       (Find best suppliers & prices)
+03 → Quality Check   (Inspect before shipping)
+04 → Ship to You     (Fast worldwide delivery)
+```
+
+---
+
+## 🎉 FINAL LOOK
+
+**Professional** ✅  
+**Engaging** ✅  
+**Trustworthy** ✅  
+**Conversion-focused** ✅  
+**Mobile-optimized** ✅  
+
+**View it now**: http://localhost:3005/
+
+---
+
+**Created**: January 2026  
+**Status**: ✅ LIVE

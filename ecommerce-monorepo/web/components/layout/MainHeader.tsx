@@ -107,25 +107,29 @@ export function MainHeader() {
                 <div
                   className="relative flex-shrink-0 transition-all duration-300"
                   style={{
-                    width: isSticky ? `${(settings?.companyLogoHeight || 40) * 0.8}px` : `${settings?.companyLogoHeight || 40}px`,
-                    height: isSticky ? `${(settings?.companyLogoHeight || 40) * 0.8}px` : `${settings?.companyLogoHeight || 40}px`,
+                    width: isSticky 
+                      ? `${(settings?.companyLogoHeight || 40) * (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.9 : 0.8)}px` 
+                      : `${settings?.companyLogoHeight || 40}px`,
+                    height: isSticky 
+                      ? `${(settings?.companyLogoHeight || 40) * (typeof window !== 'undefined' && window.innerWidth < 768 ? 0.9 : 0.8)}px` 
+                      : `${settings?.companyLogoHeight || 40}px`,
                   }}
                 >
                   <Image
                     src={settings.companyLogo}
                     alt={`${settings.companyName || 'Company'} Logo`}
                     fill
-                    sizes="(max-width: 768px) 32px, 40px"
+                    sizes="(max-width: 768px) 36px, 40px"
                     className="object-contain"
                     priority
                   />
                 </div>
               ) : (
                 <div
-                  className="bg-primary-500 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg transition-all duration-300"
+                  className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-premium transition-all duration-300"
                   style={{
-                    width: isSticky ? '32px' : '40px',
-                    height: isSticky ? '32px' : '40px',
+                    width: isSticky ? '36px' : '44px',
+                    height: isSticky ? '36px' : '44px',
                   }}
                 >
                   {settings?.companyName?.substring(0, 2).toUpperCase() || 'YE'}

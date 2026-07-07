@@ -46,6 +46,8 @@ model User {
   returns            Return[]
   wholesaleInquiries WholesaleInquiry[]
   wishlistItems      WishlistItem[]
+  reviews            Review[]
+  reviewReplies      ReviewReply[]
   
   @@index([email])
   @@index([role])
@@ -319,6 +321,7 @@ model Product {
   suppliers            ProductSupplier[]
   purchaseOrderItems   PurchaseOrderItem[]
   wishlistItems        WishlistItem[]
+  reviews              Review[]
 
   @@map("products")
 }
@@ -1011,3 +1014,61 @@ model Container {
   @@index([status])
   @@map("containers")
 }
+
+model Review {
+  id                 String        @id @default(cuid())
+  productId          String
+  userId             String
+  rating             Int           // 1 to 5
+  title              String
+  comment            String
+  images             String[]      // Array of image URLs
+  isVerifiedPurchase Boolean       @default(false)
+  isApproved         Boolean       @default(false)
+  helpfulCount       Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  
+  product            Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies            ReviewReply[]
+
+  @@index([productId])
+  @@index([userId])
+  @@index([isApproved])
+  @@map("reviews")
+}
+
+model ReviewReply {
+  id           String   @id @default(cuid())
+  reviewId     String
+  userId       String
+  comment      String
+  isAdminReply Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([userId])
+  @@map("review_replies")
+}
+
+model Testimonial {
+  id         String   @id @default(cuid())
+  name       String
+  company    String
+  role       String
+  quote      String
+  rating     Int      @default(5)
+  avatar     String?  // Avatar image URL
+  image      String?  // Secondary customer photo
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("testimonials")
+}
+

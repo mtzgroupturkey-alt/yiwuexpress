@@ -114,6 +114,8 @@ const navItems: NavItem[] = [
     ]
   },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
+  { href: '/admin/testimonials', label: 'Testimonials', icon: ImageIcon },
   { 
     href: '/admin/settings', 
     label: 'Settings', 

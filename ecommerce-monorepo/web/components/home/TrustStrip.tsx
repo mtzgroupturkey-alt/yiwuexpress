@@ -12,14 +12,14 @@ export function TrustStrip() {
   return (
     <div className="bg-gray-50 border-b border-gray-100">
       <Container maxWidth="2xl">
-        <div className="flex items-center justify-between py-2.5 md:py-3">
+        <div className="flex items-center justify-between py-3 md:py-3">
           {trustItems.map((item) => {
             const Icon = item.icon
             return (
-              <div key={item.label} className="flex items-center gap-1.5 md:gap-2.5">
-                <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-secondary-500 flex-shrink-0" />
-                <span className="text-[11px] md:text-xs font-semibold text-primary-500 whitespace-nowrap">{item.label}</span>
-                <span className="hidden md:inline text-[11px] text-gray-400">— {item.sub}</span>
+              <div key={item.label} className="flex items-center gap-2 md:gap-2.5">
+                <Icon className="w-5 h-5 md:w-5 md:h-5 text-secondary-600 flex-shrink-0" />
+                <span className="text-xs md:text-sm font-bold text-primary-600 whitespace-nowrap">{item.label}</span>
+                <span className="hidden md:inline text-xs text-gray-500">— {item.sub}</span>
               </div>
             )
           })}
