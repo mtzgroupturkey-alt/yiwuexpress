@@ -8,7 +8,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantClassMap: Record<NonNullable<ButtonProps['variant']>, string> = {
   default: 'text-white shadow-premium hover:shadow-premium-lg hover:-translate-y-1 active:translate-y-0',
-  secondary: 'text-white shadow-premium hover:shadow-premium-lg hover:-translate-y-1 active:translate-y-0'
+  secondary: 'text-white shadow-premium hover:shadow-premium-lg hover:-translate-y-1 active:translate-y-0',
   primary: 'text-white shadow-premium hover:shadow-premium-lg hover:-translate-y-1 active:translate-y-0',
   gold: 'text-[#1a1a2e] shadow-gold hover:shadow-gold-lg hover:-translate-y-1 hover:scale-[1.03] active:scale-100 active:translate-y-0 font-bold',
   outline: 'border-2 border-gray-300 bg-white text-gray-700 hover:border-[#1a3a5c] hover:bg-[#f0f4f8] hover:text-[#1a3a5c] hover:shadow-premium hover:-translate-y-0.5 active:translate-y-0',

@@ -5,7 +5,7 @@ import createGlobe from "cobe"
 
 interface InteractiveMarker {
   id: string
-  location: [number, number]
+  location: number[]
   name: string
   users: number
 }
