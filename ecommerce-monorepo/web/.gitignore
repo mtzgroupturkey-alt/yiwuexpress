@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Testing
+/coverage
+
+# Production
+/build
+/dist
+.next/
+out/
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Cache
+.cache/
+.eslintcache
+.stylelintcache
+
+# Prisma
+prisma/.env
+.prisma/
+node_modules/.cache/
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+# Build output
+tsconfig.tsbuildinfo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Module resolution cache
+.module-cache/
+
+# Yarn
+.yarn/cache/
+.yarn/install-state.gz
+.pnp.*
+
+# Environment
+.env.*.local

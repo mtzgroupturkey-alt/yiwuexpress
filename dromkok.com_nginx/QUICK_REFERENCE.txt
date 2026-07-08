@@ -1,0 +1,263 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║              SSL/TLS DEPLOYMENT - QUICK REFERENCE CARD                    ║
+║                      www.dromkok.com (YIWU EXPRESS)                       ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 QUICK START (Choose One)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WINDOWS:
+  1. cd c:\wamp64\www\yiwuexpress\dromkok.com_nginx
+  2. deploy_ssl.bat
+  3. Follow prompts
+
+LINUX:
+  1. scp -r dromkok.com_nginx/* root@39.175.57.2:/etc/nginx/ssl/dromkok.com/
+  2. ssh root@39.175.57.2
+  3. sudo bash deploy_ssl.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 FILE LOCATIONS & PERMISSIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/etc/nginx/ssl/dromkok.com/
+├── dromkok.com_bundle.crt    (chmod 644)  ✓
+├── dromkok.com.key           (chmod 600)  ⚠️  SECURE!
+├── dromkok.com_bundle.pem    (chmod 644)  ✓
+└── dromkok.com.csr           (reference)
+
+/etc/nginx/sites-available/
+└── dromkok.com               (nginx config)
+
+/var/log/nginx/
+├── www.dromkok.com_access.log
+└── www.dromkok.com_error.log
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ ESSENTIAL COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TEST CONFIGURATION:
+  sudo nginx -t
+
+RELOAD NGINX:
+  sudo systemctl reload nginx
+
+RESTART NGINX:
+  sudo systemctl restart nginx
+
+CHECK STATUS:
+  sudo systemctl status nginx
+
+VIEW ERROR LOGS:
+  tail -f /var/log/nginx/error.log
+
+VIEW ACCESS LOGS:
+  tail -f /var/log/nginx/www.dromkok.com_access.log
+
+CHECK CERTIFICATE:
+  openssl x509 -in /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt -noout -text
+
+CERTIFICATE EXPIRATION:
+  openssl x509 -in /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt -noout -enddate
+
+VERIFY CHAIN:
+  openssl verify -CAfile /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt \
+                 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🧪 TESTING COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HTTP REDIRECT TEST:
+  curl -I http://www.dromkok.com
+
+HTTPS TEST:
+  curl -I https://www.dromkok.com
+
+SSL CONNECTION:
+  openssl s_client -connect www.dromkok.com:443
+
+CHECK HEADERS:
+  curl -I https://www.dromkok.com | grep -E "Strict-Transport|X-Content-Type"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 PERMISSION COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SET CERTIFICATE PERMISSIONS:
+  chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt
+  chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.pem
+
+SET KEY PERMISSIONS (CRITICAL):
+  chmod 600 /etc/nginx/ssl/dromkok.com/dromkok.com.key
+
+SET OWNERSHIP:
+  chown www-data:www-data /etc/nginx/ssl/dromkok.com/*
+
+VERIFY PERMISSIONS:
+  ls -la /etc/nginx/ssl/dromkok.com/
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔐 SECURITY CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+AFTER DEPLOYMENT:
+  ☐ HTTPS works (https://www.dromkok.com)
+  ☐ HTTP redirects to HTTPS (301)
+  ☐ No certificate warnings in browser
+  ☐ Secure lock icon visible
+  ☐ Certificate not expired
+  ☐ Nginx error logs show no SSL errors
+  ☐ SSL Labs rating is A or A+
+
+MAINTENANCE:
+  ☐ Certificate expiration date noted
+  ☐ Renewal reminder set (90 days before)
+  ☐ Backups of certificates created
+  ☐ Team trained on SSL procedures
+  ☐ Emergency procedures documented
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 ONLINE TESTING SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SSL LABS:
+  https://www.ssllabs.com/ssltest/?d=www.dromkok.com
+  → Aim for grade A or A+
+
+SECURITY HEADERS:
+  https://securityheaders.com/?q=www.dromkok.com
+  → Check security headers grade
+
+SSL CHECKER:
+  https://www.sslshopper.com/ssl-checker.html?domain=www.dromkok.com
+  → Verify certificate chain
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 DEPLOYMENT STEPS (MANUAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. CREATE DIRECTORY:
+   ssh root@39.175.57.2
+   mkdir -p /etc/nginx/ssl/dromkok.com
+
+2. UPLOAD CERTIFICATES:
+   scp dromkok.com_nginx/* root@39.175.57.2:/etc/nginx/ssl/dromkok.com/
+
+3. SET PERMISSIONS:
+   chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt
+   chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.pem
+   chmod 600 /etc/nginx/ssl/dromkok.com/dromkok.com.key
+   chown www-data:www-data /etc/nginx/ssl/dromkok.com/*
+
+4. DEPLOY NGINX CONFIG:
+   cp nginx_ssl_config.conf /etc/nginx/sites-available/dromkok.com
+   ln -s /etc/nginx/sites-available/dromkok.com /etc/nginx/sites-enabled/
+
+5. TEST & ENABLE:
+   sudo nginx -t
+   sudo systemctl reload nginx
+
+6. VERIFY:
+   curl -I https://www.dromkok.com
+   bash verify_certificate.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NGINX WON'T START:
+  1. Check syntax: sudo nginx -t
+  2. Check error log: tail -f /var/log/nginx/error.log
+  3. Check port: sudo lsof -i :443
+
+CERTIFICATE NOT FOUND:
+  1. Verify path: ls -la /etc/nginx/ssl/dromkok.com/
+  2. Check config: grep ssl_certificate /etc/nginx/sites-available/dromkok.com
+
+PERMISSION DENIED:
+  1. Check permissions: ls -la /etc/nginx/ssl/dromkok.com/
+  2. Check ownership: stat /etc/nginx/ssl/dromkok.com/dromkok.com.key
+  3. Ensure www-data can read: sudo -u www-data cat /etc/nginx/ssl/dromkok.com/dromkok.com.key
+
+MIXED CONTENT WARNING:
+  1. Check for http:// URLs in application
+  2. Ensure API calls use HTTPS
+  3. Check for hardcoded domain references
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 IMPORTANT DATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Certificate Expiration Date: ________________  (CHECK THIS!)
+Renewal Deadline (90 days before): __________ (SET REMINDER!)
+Deployment Date: ________________
+Last Verification: ________________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+README.md                 → Overview & Quick Start
+SSL_DEPLOYMENT_GUIDE.md  → Detailed Step-by-Step
+DEPLOYMENT_CHECKLIST.md  → Track Your Progress
+SUMMARY.md               → Executive Summary
+QUICK_REFERENCE.txt      → This File
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 CONFIGURATION FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+nginx_ssl_config.conf    → Nginx SSL Configuration
+deploy_ssl.sh            → Automated Linux Deployment
+deploy_ssl.bat           → Windows Helper Script
+verify_certificate.sh    → Certificate Verification Tool
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔐 CERTIFICATE FILES (IN dromkok.com_nginx/)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+dromkok.com_bundle.crt  → SSL Certificate (with CA chain)
+dromkok.com.key         → Private Key (KEEP SECURE!)
+dromkok.com_bundle.pem  → PEM Format Certificate
+dromkok.com.csr         → Certificate Request (reference)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ SUCCESS INDICATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ HTTPS works without warnings
+✓ HTTP automatically redirects to HTTPS
+✓ Browser shows secure lock icon
+✓ SSL Labs gives A or A+ rating
+✓ Nginx startup without errors
+✓ Certificate chain valid
+✓ HSTS headers present
+✓ Security headers configured
+✓ All team members trained
+✓ Renewal procedure documented
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Certificate Provider: QCloud (Tencent Cloud)
+Server IP: 39.175.57.2
+Domain: www.dromkok.com
+Application: YIWU EXPRESS Platform
+
+Need Help?
+  → Read SSL_DEPLOYMENT_GUIDE.md (detailed steps)
+  → Check DEPLOYMENT_CHECKLIST.md (track progress)
+  → Run verify_certificate.sh (test deployment)
+  → Check /var/log/nginx/error.log (error messages)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Version: 1.0  |  Updated: July 8, 2026  |  Status: ✅ Production Ready
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║  🚀 Ready to Deploy? Start with: README.md or run deploy_ssl.bat/deploy_ssl.sh   ║
+╚════════════════════════════════════════════════════════════════════════════╝
