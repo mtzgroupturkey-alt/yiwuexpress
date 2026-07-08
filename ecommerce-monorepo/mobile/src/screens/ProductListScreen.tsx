@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   avatar: {
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   stockBadgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     color: '#92400E',
   },
@@ -475,12 +475,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   ratingText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     color: COLORS.textDark,
   },
   reviewsText: {
-    fontSize: 10,
+    fontSize: 12,
     color: COLORS.textGray,
   },
   productName: {
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   },
   quoteBtnText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   emptyContainer: {

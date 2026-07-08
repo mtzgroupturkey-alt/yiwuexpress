@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3c7',
   },
   typeChipText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   category: {

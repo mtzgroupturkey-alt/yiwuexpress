@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createStackNavigator } from '@react-navigation/stack'
@@ -12,8 +12,10 @@ import RegisterScreen from './src/screens/RegisterScreen'
 import ProfileScreen from './src/screens/ProfileScreen'
 import ServicesScreen from './src/screens/ServicesScreen'
 import QuotesScreen from './src/screens/QuotesScreen'
+import OnboardingScreen from './src/screens/OnboardingScreen'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Home, Package, Map, FileText, User } from 'lucide-react-native'
-import { Text } from 'react-native-paper'
+import { Text, ActivityIndicator, View } from 'react-native-paper'
 
 const Tab = createBottomTabNavigator()
 const Stack = createStackNavigator()
@@ -157,10 +159,37 @@ function MainTabs() {
 }
 
 export default function App() {
+  const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      const value = await AsyncStorage.getItem('onboarding_complete')
+      setIsFirstLaunch(value === null)
+    }
+    checkOnboarding()
+  }, [])
+
+  if (isFirstLaunch === null) {
+    return (
+      <Providers>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+          <ActivityIndicator size="large" color="#1a3a5c" />
+        </View>
+      </Providers>
+    )
+  }
+
   return (
     <Providers>
       <NavigationContainer>
         <Stack.Navigator>
+          {isFirstLaunch && (
+            <Stack.Screen 
+              name="Onboarding" 
+              component={OnboardingScreen}
+              options={{ headerShown: false }}
+            />
+          )}
           <Stack.Screen 
             name="Main" 
             component={MainTabs} 

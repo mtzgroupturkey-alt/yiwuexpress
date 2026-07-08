@@ -42,6 +42,11 @@ const productSchema = z.object({
   metaDescription: z.string().optional(),
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+  isFlashSale: z.boolean().default(false),
+  flashSalePrice: z.number().optional(),
+  flashSaleStart: z.string().optional(),
+  flashSaleEnd: z.string().optional(),
+  flashSaleStock: z.number().int().optional(),
   fragile: z.boolean().default(false),
   exportRestricted: z.boolean().default(false),
   dangerousGoods: z.boolean().default(false),
@@ -121,6 +126,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           metaDescription: product.metaDescription || '',
           isActive: product.isActive,
           isFeatured: product.isFeatured,
+          isFlashSale: product.isFlashSale,
+          flashSalePrice: product.flashSalePrice || undefined,
+          flashSaleStart: product.flashSaleStart ? new Date(product.flashSaleStart).toISOString().slice(0, 16) : undefined,
+          flashSaleEnd: product.flashSaleEnd ? new Date(product.flashSaleEnd).toISOString().slice(0, 16) : undefined,
+          flashSaleStock: product.flashSaleStock || undefined,
           fragile: product.fragile,
           exportRestricted: product.exportRestricted,
           dangerousGoods: product.dangerousGoods,
@@ -180,6 +190,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         stock: parseInt(data.stock.toString()),
         lowStockThreshold: parseInt((data.lowStockThreshold ?? 10).toString()),
         minOrderQty: parseInt((data.minOrderQty ?? 1).toString()),
+        isFlashSale: data.isFlashSale,
+        flashSalePrice: data.flashSalePrice ? parseFloat(data.flashSalePrice.toString()) : null,
+        flashSaleStart: data.flashSaleStart ? new Date(data.flashSaleStart).toISOString() : null,
+        flashSaleEnd: data.flashSaleEnd ? new Date(data.flashSaleEnd).toISOString() : null,
+        flashSaleStock: data.flashSaleStock ? parseInt(data.flashSaleStock.toString()) : null,
         attributes: attributeValues // Include attribute values
       }
 
@@ -541,6 +556,56 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                   <input type="checkbox" {...register('isFeatured')} className="w-4 h-4" />
                   <span className="text-sm font-medium">Featured</span>
                 </label>
+              </CardContent>
+            </Card>
+
+            {/* Flash Sale */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Flash Sale</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" {...register('isFlashSale')} className="w-4 h-4" />
+                  <span className="text-sm font-medium">Enable Flash Sale</span>
+                </label>
+                {watch('isFlashSale') && (
+                  <>
+                    <div>
+                      <Label htmlFor="flashSalePrice">Flash Sale Price ($)</Label>
+                      <Input
+                        id="flashSalePrice"
+                        type="number"
+                        step="0.01"
+                        {...register('flashSalePrice', { valueAsNumber: true })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="flashSaleStart">Start Date</Label>
+                      <Input
+                        id="flashSaleStart"
+                        type="datetime-local"
+                        {...register('flashSaleStart')}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="flashSaleEnd">End Date</Label>
+                      <Input
+                        id="flashSaleEnd"
+                        type="datetime-local"
+                        {...register('flashSaleEnd')}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="flashSaleStock">Flash Sale Stock</Label>
+                      <Input
+                        id="flashSaleStock"
+                        type="number"
+                        {...register('flashSaleStock', { valueAsNumber: true })}
+                      />
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 

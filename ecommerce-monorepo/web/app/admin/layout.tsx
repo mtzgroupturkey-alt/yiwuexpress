@@ -124,6 +124,7 @@ const navItems: NavItem[] = [
       { href: '/admin/settings/hero-slider', label: 'Hero Slider', icon: Sliders },
       { href: '/admin/settings/featured-products', label: 'Featured Products', icon: ShoppingBag },
       { href: '/admin/settings/new-arrivals', label: 'New Arrivals', icon: Package },
+      { href: '/admin/settings/flash-sales', label: 'Flash Sales', icon: TrendingUp },
       { href: '/admin/settings/breadcrumb', label: 'Breadcrumb Backgrounds', icon: Image },
       { href: '/admin/settings/company', label: 'Company Info', icon: Building },
       { href: '/admin/settings/system', label: 'System Settings', icon: Sliders },

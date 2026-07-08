@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-  TouchableOpacity,
   Dimensions,
   Platform,
 } from 'react-native'
@@ -20,6 +19,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Bell, MapPin, ChevronDown, Heart, Star, Minus, Plus, ShoppingCart, ArrowLeft } from 'lucide-react-native'
 import apiClient from '../api/client'
+import { TouchableWithMinSize } from '../components/ui/TouchableWithMinSize'
+import { ImageZoom } from '../components/ImageZoom'
 
 const { width } = Dimensions.get('window')
 const CONTAINER_WIDTH = Math.min(428, width)
@@ -42,6 +43,7 @@ export default function ProductDetailScreen() {
   const [snackbarVisible, setSnackbarVisible] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
   const [addingToCart, setAddingToCart] = useState(false)
+  const [showImageZoom, setShowImageZoom] = useState(false)
   const queryClient = useQueryClient()
 
   // Fetch product detail
@@ -140,9 +142,9 @@ export default function ProductDetailScreen() {
           <Text style={styles.errorText}>
             Product not found or error loading details
           </Text>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableWithMinSize style={styles.backBtn} onPress={() => router.back()} accessibilityLabel="Go back" accessibilityHint="Double tap to go back">
             <Text style={styles.backBtnText}>Go Back</Text>
-          </TouchableOpacity>
+          </TouchableWithMinSize>
         </View>
       </SafeAreaView>
     )
@@ -153,17 +155,17 @@ export default function ProductDetailScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.headerBack} onPress={() => router.back()}>
+          <TouchableWithMinSize style={styles.headerBack} onPress={() => router.back()} accessibilityLabel="Go back" accessibilityHint="Double tap to go back to previous page">
             <ArrowLeft size={24} color={COLORS.textDark} />
-          </TouchableOpacity>
+          </TouchableWithMinSize>
           <Text style={styles.logo}>YIWU EXPRESS 🚚</Text>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.iconBtn}>
-              <Bell size={20} color={COLORS.textDark} />
+            <TouchableWithMinSize style={styles.iconBtn} accessibilityLabel="Notifications, 5 unread" accessibilityHint="Double tap to view notifications">
+              <Bell size={22} color={COLORS.textDark} />
               <View style={styles.notificationBadge}>
                 <Text style={styles.badgeText}>5</Text>
               </View>
-            </TouchableOpacity>
+            </TouchableWithMinSize>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>U</Text>
             </View>
@@ -174,7 +176,12 @@ export default function ProductDetailScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           {/* Image Container */}
-          <View style={styles.imageContainer}>
+          <TouchableWithMinSize
+            style={styles.imageContainer}
+            onPress={() => setShowImageZoom(true)}
+            accessibilityLabel="Tap to zoom product image"
+            accessibilityHint="Double tap to view full size image"
+          >
             {product.thumbnail ? (
               <Image
                 source={{ uri: product.thumbnail.startsWith('http') ? product.thumbnail : `${apiClient.getBaseUrl()}${product.thumbnail}` }}
@@ -186,7 +193,7 @@ export default function ProductDetailScreen() {
                 <Text style={styles.placeholderEmoji}>📦</Text>
               </View>
             )}
-          </View>
+          </TouchableWithMinSize>
 
           {/* Product Details info */}
           <View style={styles.detailsCard}>
@@ -219,43 +226,53 @@ export default function ProductDetailScreen() {
             <View style={styles.quantityRow}>
               <Text style={styles.quantityLabel}>Quantity</Text>
               <View style={styles.quantityControls}>
-                <TouchableOpacity
+                <TouchableWithMinSize
                   onPress={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1}
                   style={[styles.qtyBtn, quantity <= 1 && styles.qtyBtnDisabled]}
+                  accessibilityLabel="Decrease quantity"
+                  accessibilityHint="Double tap to decrease quantity"
+                  minSize={36}
                 >
                   <Minus size={16} color={quantity <= 1 ? '#cbd5e1' : COLORS.textDark} />
-                </TouchableOpacity>
+                </TouchableWithMinSize>
                 <Text style={styles.quantityValue}>{quantity}</Text>
-                <TouchableOpacity
+                <TouchableWithMinSize
                   onPress={() => setQuantity(Math.min(product.stock, quantity + 1))}
                   disabled={quantity >= product.stock}
                   style={[styles.qtyBtn, quantity >= product.stock && styles.qtyBtnDisabled]}
+                  accessibilityLabel="Increase quantity"
+                  accessibilityHint="Double tap to increase quantity"
+                  minSize={36}
                 >
                   <Plus size={16} color={quantity >= product.stock ? '#cbd5e1' : COLORS.textDark} />
-                </TouchableOpacity>
+                </TouchableWithMinSize>
               </View>
             </View>
           </View>
 
           {/* Action buttons */}
           <View style={styles.actionRow}>
-            <TouchableOpacity
+            <TouchableWithMinSize
               style={styles.cartBtn}
               onPress={handleAddToCart}
               disabled={product.stock <= 0 || addingToCart}
+              accessibilityLabel="Add to cart"
+              accessibilityHint="Double tap to add this product to your shopping cart"
             >
-              <ShoppingCart size={18} color="white" style={styles.cartIcon} />
+              <ShoppingCart size={20} color="white" style={styles.cartIcon} />
               <Text style={styles.cartBtnText}>Add to Cart</Text>
-            </TouchableOpacity>
+            </TouchableWithMinSize>
 
-            <TouchableOpacity
+            <TouchableWithMinSize
               style={styles.buyBtn}
               onPress={handleBuyNow}
               disabled={product.stock <= 0 || addingToCart}
+              accessibilityLabel="Buy now"
+              accessibilityHint="Double tap to purchase this product immediately"
             >
               <Text style={styles.buyBtnText}>Buy Now</Text>
-            </TouchableOpacity>
+            </TouchableWithMinSize>
           </View>
         </View>
       </ScrollView>
@@ -268,6 +285,14 @@ export default function ProductDetailScreen() {
       >
         {snackbarMessage}
       </Snackbar>
+
+      {product.thumbnail && (
+        <ImageZoom
+          imageUrl={product.thumbnail.startsWith('http') ? product.thumbnail : `${apiClient.getBaseUrl()}${product.thumbnail}`}
+          visible={showImageZoom}
+          onClose={() => setShowImageZoom(false)}
+        />
+      )}
     </SafeAreaView>
   )
 }
@@ -353,7 +378,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   avatar: {
@@ -457,7 +482,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDE8E8',
   },
   stockBadgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
   stockInText: {
@@ -477,9 +502,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   descriptionText: {
-    fontSize: 13,
+    fontSize: 14,
     color: COLORS.textGray,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   quantityRow: {
     flexDirection: 'row',

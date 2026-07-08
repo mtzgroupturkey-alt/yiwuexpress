@@ -1,7 +1,9 @@
 import React, { memo } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native'
+import { View, Text, StyleSheet, Platform, Image } from 'react-native'
 import { Heart, Star } from 'lucide-react-native'
 import { colors, spacing, typography, radius, shadows } from '../theme'
+import { TouchableWithMinSize } from './ui/TouchableWithMinSize'
+import apiClient from '../api/client'
 
 interface ProductCardProps {
   product: {
@@ -12,6 +14,8 @@ interface ProductCardProps {
     reviews?: number
     duration?: string
     type?: string
+    thumbnail?: string | null
+    image?: string | null
   }
   size?: 'sm' | 'md' | 'lg'
   onPress?: () => void
@@ -41,31 +45,38 @@ export const ProductCard = memo(({
   }
 
   return (
-    <TouchableOpacity
+    <TouchableWithMinSize
       style={[styles.container, { width: cardWidth }]}
       onPress={onPress}
       activeOpacity={0.9}
-      accessible
       accessibilityLabel={`${product.name}, priced at $${product.price?.toFixed(2) || '0.00'}`}
-      accessibilityRole="button"
       accessibilityHint="Double tap to view product details"
     >
       {/* Image Container */}
       <View style={styles.imageContainer}>
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.emoji}>{getEmoji(product.type)}</Text>
-        </View>
+        {(product.thumbnail || product.image) ? (
+          <Image
+            source={{ uri: (product.thumbnail || product.image || '').startsWith('http')
+              ? (product.thumbnail || product.image || '')
+              : `${apiClient.getBaseUrl()}${product.thumbnail || product.image || ''}`
+            }}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Text style={styles.emoji}>{getEmoji(product.type)}</Text>
+          </View>
+        )}
         
         {/* Favorite Button */}
-        <TouchableOpacity
+        <TouchableWithMinSize
           style={styles.favoriteButton}
           onPress={(e) => {
             e.stopPropagation()
             onFavoritePress?.()
           }}
-          accessible
           accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-          accessibilityRole="button"
         >
           <Heart
             size={16}
@@ -114,22 +125,21 @@ export const ProductCard = memo(({
           </View>
           
           {onQuotePress && (
-            <TouchableOpacity
+            <TouchableWithMinSize
               style={styles.quoteButton}
               onPress={(e) => {
                 e.stopPropagation()
                 onQuotePress()
               }}
-              accessible
               accessibilityLabel="Request quote"
-              accessibilityRole="button"
+              minSize={36}
             >
               <Text style={styles.quoteButtonText}>Quote</Text>
-            </TouchableOpacity>
+            </TouchableWithMinSize>
           )}
         </View>
       </View>
-    </TouchableOpacity>
+    </TouchableWithMinSize>
   )
 })
 
@@ -155,6 +165,10 @@ const styles = StyleSheet.create({
   emoji: {
     fontSize: 48,
   },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
   favoriteButton: {
     position: 'absolute',
     top: spacing.sm,
@@ -178,7 +192,7 @@ const styles = StyleSheet.create({
   },
   discountText: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   info: {
@@ -220,7 +234,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   duration: {
-    fontSize: 10,
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
   },

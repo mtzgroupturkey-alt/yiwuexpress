@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   avatar: {
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   detailLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: COLORS.textGray,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   versionText: {
     textAlign: 'center',
     color: COLORS.textGray,
-    fontSize: 11,
+    fontSize: 12,
     marginBottom: 16,
   },
   snackbar: {

@@ -311,6 +311,12 @@ model Product {
   featuredOrder        Int                 @default(999)
   isNewArrival         Boolean             @default(false)
   newArrivalOrder      Int                 @default(999)
+  isFlashSale          Boolean             @default(false)
+  flashSaleOrder       Int                 @default(999)
+  flashSalePrice       Float?
+  flashSaleStart       DateTime?
+  flashSaleEnd         DateTime?
+  flashSaleStock       Int?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   attributeValues      AttributeValue[]

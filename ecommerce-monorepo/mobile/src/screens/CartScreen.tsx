@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
-  TouchableOpacity,
   Platform,
   Dimensions,
 } from 'react-native'
@@ -20,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Trash2, Bell, MapPin, ChevronDown, Minus, Plus } from 'lucide-react-native'
 import apiClient from '../api/client'
 import AppHeader from '../components/AppHeader'
+import { TouchableWithMinSize } from '../components/ui/TouchableWithMinSize'
 
 const { width } = Dimensions.get('window')
 const CONTAINER_WIDTH = Math.min(428, width)
@@ -163,12 +163,14 @@ export default function CartScreen() {
             <Text style={styles.emptyEmoji}>🛒</Text>
             <Text style={styles.emptyTitle}>Your cart is empty</Text>
             <Text style={styles.emptyText}>Add some products to get started</Text>
-            <TouchableOpacity
+            <TouchableWithMinSize
               style={styles.shopButton}
               onPress={() => router.push('/(tabs)/products')}
+              accessibilityLabel="Start shopping"
+              accessibilityHint="Double tap to browse products"
             >
               <Text style={styles.shopButtonText}>Start Shopping</Text>
-            </TouchableOpacity>
+            </TouchableWithMinSize>
           </View>
         ) : (
           <View style={styles.cartContainer}>
@@ -202,29 +204,37 @@ export default function CartScreen() {
                       {/* Quantity & Delete Controls */}
                       <View style={styles.quantityRow}>
                         <View style={styles.quantityControls}>
-                          <TouchableOpacity
+                          <TouchableWithMinSize
                             onPress={() => updateQuantity(item.id, item.quantity, -1)}
                             disabled={item.quantity <= 1}
                             style={[styles.qtyBtn, item.quantity <= 1 && styles.qtyBtnDisabled]}
+                            accessibilityLabel="Decrease quantity"
+                            accessibilityHint="Double tap to decrease quantity by 1"
+                            minSize={36}
                           >
-                            <Minus size={14} color={item.quantity <= 1 ? '#cbd5e1' : COLORS.textDark} />
-                          </TouchableOpacity>
+                            <Minus size={16} color={item.quantity <= 1 ? '#cbd5e1' : COLORS.textDark} />
+                          </TouchableWithMinSize>
                           <Text style={styles.quantityText}>{item.quantity}</Text>
-                          <TouchableOpacity
+                          <TouchableWithMinSize
                             onPress={() => updateQuantity(item.id, item.quantity, 1)}
                             disabled={item.quantity >= item.stock}
                             style={[styles.qtyBtn, item.quantity >= item.stock && styles.qtyBtnDisabled]}
+                            accessibilityLabel="Increase quantity"
+                            accessibilityHint="Double tap to increase quantity by 1"
+                            minSize={36}
                           >
-                            <Plus size={14} color={item.quantity >= item.stock ? '#cbd5e1' : COLORS.textDark} />
-                          </TouchableOpacity>
+                            <Plus size={16} color={item.quantity >= item.stock ? '#cbd5e1' : COLORS.textDark} />
+                          </TouchableWithMinSize>
                         </View>
 
-                        <TouchableOpacity
+                        <TouchableWithMinSize
                           onPress={() => removeItem(item.id)}
                           style={styles.removeButton}
+                          accessibilityLabel="Remove item from cart"
+                          accessibilityHint="Double tap to remove this item"
                         >
-                          <Trash2 color={COLORS.badgeRed} size={18} />
-                        </TouchableOpacity>
+                          <Trash2 color={COLORS.badgeRed} size={20} />
+                        </TouchableWithMinSize>
                       </View>
                     </View>
                   </View>
@@ -258,12 +268,14 @@ export default function CartScreen() {
                 <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
               </View>
 
-              <TouchableOpacity
+              <TouchableWithMinSize
                 onPress={handleCheckout}
                 style={styles.checkoutButton}
+                accessibilityLabel="Proceed to checkout"
+                accessibilityHint="Double tap to continue to payment"
               >
                 <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-              </TouchableOpacity>
+              </TouchableWithMinSize>
             </View>
           </View>
         )}
@@ -325,7 +337,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   avatar: {

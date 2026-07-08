@@ -59,6 +59,7 @@ export interface Service {
   duration: string | null
   coverage: string | null
   type: string // shipping/customs/warehousing/sourcing
+  thumbnail: string | null
   createdAt: string
   updatedAt: string
 }

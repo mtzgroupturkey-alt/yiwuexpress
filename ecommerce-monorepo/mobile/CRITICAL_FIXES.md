@@ -1,5 +1,19 @@
 # 🔧 CRITICAL CODE FIXES - COPY & PASTE READY
 
+## ⚠️ FIRST: Install Missing Dependencies
+
+```bash
+cd mobile
+npm install
+```
+
+This will install:
+- `expo-haptics` (for tactile feedback)
+- `react-native-reanimated` (for animations)
+- All other missing packages
+
+---
+
 ## FIX #1: Touch Target Helper Component
 
 Create this file first:
@@ -247,10 +261,7 @@ quoteBtnText: {
 
 ## FIX #7: Add Haptic Feedback
 
-**Install (already in package.json):**
-```bash
-npx expo install expo-haptics
-```
+**Already installed via npm install above** ✅
 
 **Usage example:**
 ```typescript

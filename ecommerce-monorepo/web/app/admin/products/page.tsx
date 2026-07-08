@@ -22,6 +22,7 @@ interface Product {
   isActive: boolean
   isFeatured: boolean
   isNewArrival: boolean
+  isFlashSale: boolean
   category?: {
     name: string
   } | null
@@ -256,6 +257,26 @@ export default function AdminProductsPage() {
     }
   }
 
+  const handleToggleFlashSale = async (id: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch(`/api/admin/products/${id}/flash-sale`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isFlashSale: !currentStatus })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        fetchProducts()
+      } else {
+        alert(data.error || 'Failed to update flash sale status')
+      }
+    } catch (error) {
+      console.error('Error updating flash sale status:', error)
+      alert('Failed to update flash sale status')
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -360,6 +381,9 @@ export default function AdminProductsPage() {
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     New Arrival
                   </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Flash Sale
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
@@ -430,6 +454,15 @@ export default function AdminProductsPage() {
                           checked={product.isNewArrival}
                           onCheckedChange={() => handleToggleNewArrival(product.id, product.isNewArrival)}
                           title={product.isNewArrival ? 'Remove from New Arrivals' : 'Add to New Arrivals'}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center">
+                        <Switch
+                          checked={product.isFlashSale}
+                          onCheckedChange={() => handleToggleFlashSale(product.id, product.isFlashSale)}
+                          title={product.isFlashSale ? 'Remove from Flash Sales' : 'Add to Flash Sales'}
                         />
                       </div>
                     </td>

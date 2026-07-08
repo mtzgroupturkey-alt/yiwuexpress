@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   divider: {

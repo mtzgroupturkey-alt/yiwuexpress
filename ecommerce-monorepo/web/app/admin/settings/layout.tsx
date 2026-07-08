@@ -68,6 +68,7 @@ export default function SettingsLayout({
     '/admin/settings/hero-slider',
     '/admin/settings/featured-products',
     '/admin/settings/new-arrivals',
+    '/admin/settings/flash-sales',
     '/admin/settings/permissions', 
     '/admin/settings/backup',
     '/admin/settings/notifications',

@@ -406,23 +406,27 @@ export default function AdminCategoriesPage() {
             <Badge variant={category.isActive ? 'success' : 'secondary'} className="text-xs">
               {category.isActive ? 'Active' : 'Inactive'}
             </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => handleEdit(category)}
-              className="h-8 w-8 p-0"
+              title="Edit category"
+              className="h-8 w-8 flex items-center justify-center rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+              style={{ backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#dbeafe' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#eff6ff' }}
             >
               <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:bg-red-50 h-8 w-8 p-0"
+            </button>
+            <button
+              title="Delete category"
+              className="h-8 w-8 flex items-center justify-center rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+              style={{ backgroundColor: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}
               onClick={() => handleDelete(category.id, category.name)}
               disabled={deleting === category.id}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fee2e2' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fef2f2' }}
             >
               <Trash2 className="w-4 h-4" />
-            </Button>
+            </button>
           </div>
         </div>
 

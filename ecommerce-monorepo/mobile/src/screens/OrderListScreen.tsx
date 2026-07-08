@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   avatar: {
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   divider: {
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
   },
   addressLabel: {
-    fontSize: 10,
+    fontSize: 12,
     color: COLORS.textGray,
     fontWeight: '600',
     textTransform: 'uppercase',

@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import toast from 'react-hot-toast'
+import { useAuth } from '@/hooks/useAuth'
 
 interface WishlistItem {
   id: string
@@ -26,6 +27,7 @@ interface WishlistItem {
 
 export function useWishlist() {
   const queryClient = useQueryClient()
+  const { isAuthenticated } = useAuth()
 
   // Get wishlist
   const { data, isLoading, refetch } = useQuery({
@@ -33,6 +35,7 @@ export function useWishlist() {
     queryFn: () => api.get('/api/wishlist'),
     staleTime: 2 * 60 * 1000,
     retry: false,
+    enabled: !!isAuthenticated,
   })
 
   const wishlist = data?.data || []

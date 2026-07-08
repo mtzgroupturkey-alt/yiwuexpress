@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#fff',
     textTransform: 'uppercase',

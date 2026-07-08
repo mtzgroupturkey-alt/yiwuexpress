@@ -2,7 +2,7 @@
 // This file is used when running on web platform (http://localhost:8081)
 
 import React, { useState, useEffect } from 'react';
-import { getApiUrl } from '../config/api.config';
+import { getApiUrl, getBaseUrl } from '../config/api.config';
 
 const getEmojiForCategory = (name: string): string => {
   const n = name.toLowerCase();
@@ -39,9 +39,22 @@ interface ProductData {
   countryOfOrigin?: string | null;
 }
 
+interface FlashSaleData {
+  id: string;
+  name: string;
+  price: number;
+  flashSalePrice: number;
+  flashSaleEnd: string;
+  thumbnail?: string | null;
+  images?: string[];
+  discount: number;
+  timeRemaining: number;
+}
+
 export default function HomeScreenWeb() {
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [products, setProducts] = useState<ProductData[]>([]);
+  const [flashSales, setFlashSales] = useState<FlashSaleData[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
@@ -69,6 +82,19 @@ export default function HomeScreenWeb() {
         }
       })
       .catch(err => console.log('Failed to fetch settings:', err));
+  }, []);
+
+  // Fetch flash sales from real API
+  useEffect(() => {
+    const baseUrl = getBaseUrl();
+    fetch(`${baseUrl}/api/products/flash-sales`)
+      .then(res => res.json())
+      .then(res => {
+        if (res.success && Array.isArray(res.data)) {
+          setFlashSales(res.data);
+        }
+      })
+      .catch(err => console.log('Failed to fetch flash sales:', err));
   }, []);
 
   // Fetch categories from DB
@@ -266,7 +292,7 @@ export default function HomeScreenWeb() {
             }}>
               {selectedProduct.thumbnail ? (
                 <img 
-                  src={selectedProduct.thumbnail} 
+                  src={selectedProduct.thumbnail.startsWith('http') ? selectedProduct.thumbnail : `${getBaseUrl()}${selectedProduct.thumbnail}`} 
                   alt={selectedProduct.name}
                   style={{
                     position: 'absolute',
@@ -753,98 +779,133 @@ export default function HomeScreenWeb() {
             </div>
 
             {/* Flash Sales Section */}
-            <div style={{
-              background: 'linear-gradient(to right, #1A3C5E, #2D5F8D)',
-              padding: '16px'
-            }}>
-              <h2 style={{
-                fontSize: '18px',
-                fontWeight: 'bold',
-                color: 'white',
-                marginBottom: '12px'
-              }}>⚡ Flash Sales</h2>
+            {flashSales.length > 0 && (
               <div style={{
-                overflowX: 'auto',
-                display: 'flex',
-                gap: '12px'
+                background: 'linear-gradient(to right, #1A3C5E, #2D5F8D)',
+                padding: '16px'
               }}>
-                {[
-                  { name: 'Wireless Headphones', price: 149.99, original: 299.99 },
-                  { name: 'Smart Watch Pro', price: 239.99, original: 399.99 },
-                ].map((item, idx) => (
-                  <div key={idx} style={{
-                    minWidth: '220px',
-                    height: '290px',
-                    borderRadius: '16px',
-                    backgroundColor: '#334155',
-                    padding: '16px',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      top: '12px',
-                      left: '12px',
-                      backgroundColor: '#F59E0B',
-                      color: 'white',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      ⚡ 50% OFF
-                    </div>
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '16px',
-                      left: '16px',
-                      right: '16px'
-                    }}>
-                      <p style={{
-                        color: 'white',
-                        fontSize: '11px',
-                        marginBottom: '8px',
-                        opacity: 0.9
-                      }}>{item.name}</p>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '12px' }}>
-                        <span style={{
-                          color: 'white',
-                          fontSize: '20px',
-                          fontWeight: 'bold'
-                        }}>${item.price}</span>
-                        <span style={{
-                          color: 'rgba(255,255,255,0.5)',
-                          fontSize: '12px',
-                          textDecoration: 'line-through'
-                        }}>${item.original}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h2 style={{
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  color: 'white',
+                  marginBottom: '12px'
+                }}>⚡ Flash Sales</h2>
+                <div style={{
+                  overflowX: 'auto',
+                  display: 'flex',
+                  gap: '12px'
+                }}>
+                  {flashSales.map((item) => {
+                    const imgSrc = item.thumbnail
+                      ? (item.thumbnail.startsWith('http') ? item.thumbnail : `${getBaseUrl()}${item.thumbnail}`)
+                      : (item.images?.[0]
+                          ? (item.images[0].startsWith('http') ? item.images[0] : `${getBaseUrl()}${item.images[0]}`)
+                          : null);
+                    const hoursLeft = Math.floor(item.timeRemaining / (1000 * 60 * 60));
+                    const minsLeft = Math.floor((item.timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    return (
+                      <div key={item.id} style={{
+                        minWidth: '200px',
+                        maxWidth: '200px',
+                        borderRadius: '16px',
+                        backgroundColor: '#1e3a5f',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '12px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        cursor: 'pointer'
+                      }}>
+                        {/* Discount badge */}
                         <div style={{
-                          backgroundColor: 'rgba(255,255,255,0.15)',
-                          padding: '6px',
-                          borderRadius: '8px',
+                          position: 'absolute',
+                          top: '10px',
+                          left: '10px',
+                          backgroundColor: '#F59E0B',
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: 'bold',
+                          padding: '3px 8px',
+                          borderRadius: '10px',
+                          zIndex: 2
+                        }}>⚡ {item.discount}% OFF</div>
+                        {/* Product image */}
+                        {imgSrc ? (
+                          <img
+                            src={imgSrc}
+                            alt={item.name}
+                            style={{
+                              width: '100%',
+                              height: '110px',
+                              objectFit: 'cover',
+                              borderRadius: '10px',
+                              marginBottom: '10px',
+                              marginTop: '8px'
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: '100%',
+                            height: '110px',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(255,255,255,0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '10px',
+                            marginTop: '8px',
+                            fontSize: '36px'
+                          }}>📦</div>
+                        )}
+                        {/* Product name */}
+                        <p style={{
                           color: 'white',
                           fontSize: '12px',
-                          fontWeight: 'bold'
-                        }}>02</div>
-                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>:</span>
-                        <div style={{
-                          backgroundColor: 'rgba(255,255,255,0.15)',
-                          padding: '6px',
-                          borderRadius: '8px',
-                          color: 'white',
-                          fontSize: '12px',
-                          fontWeight: 'bold'
-                        }}>34</div>
+                          fontWeight: '600',
+                          marginBottom: '6px',
+                          overflow: 'hidden',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical' as const
+                        }}>{item.name}</p>
+                        {/* Prices */}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '8px' }}>
+                          <span style={{ color: '#FCD34D', fontSize: '18px', fontWeight: 'bold' }}>
+                            ${item.flashSalePrice.toFixed(2)}
+                          </span>
+                          <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', textDecoration: 'line-through' }}>
+                            ${item.price.toFixed(2)}
+                          </span>
+                        </div>
+                        {/* Countdown */}
+                        {item.timeRemaining > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px' }}>⏱</span>
+                            <div style={{
+                              backgroundColor: 'rgba(255,255,255,0.12)',
+                              padding: '2px 6px',
+                              borderRadius: '6px',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: 'bold'
+                            }}>{hoursLeft}h</div>
+                            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}>:</span>
+                            <div style={{
+                              backgroundColor: 'rgba(255,255,255,0.12)',
+                              padding: '2px 6px',
+                              borderRadius: '6px',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: 'bold'
+                            }}>{String(minsLeft).padStart(2, '0')}m</div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Filter & Sort Bar */}
             <div style={{
@@ -968,7 +1029,7 @@ export default function HomeScreenWeb() {
                       }}>
                         {item.thumbnail ? (
                           <img 
-                            src={item.thumbnail} 
+                            src={item.thumbnail.startsWith('http') ? item.thumbnail : `${getBaseUrl()}${item.thumbnail}`} 
                             alt={item.name}
                             style={{
                               position: 'absolute',

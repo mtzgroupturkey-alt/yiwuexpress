@@ -1,8 +1,9 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
+import { View, Text, StyleSheet, Image } from 'react-native'
 import { Bell } from 'lucide-react-native'
 import { useQuery } from '@tanstack/react-query'
 import apiClient from '../api/client'
+import { TouchableWithMinSize } from './ui/TouchableWithMinSize'
 
 const COLORS = {
   primary: '#1A3C5E',
@@ -78,12 +79,12 @@ export default function AppHeader() {
 
         {/* ── Right: Bell + Avatar ── */}
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.bellBtn}>
-            <Bell size={20} color={COLORS.textDark} />
+          <TouchableWithMinSize style={styles.bellBtn} accessibilityLabel="Notifications, 3 unread" accessibilityHint="Double tap to view notifications">
+            <Bell size={22} color={COLORS.textDark} />
             <View style={styles.bellBadge}>
               <Text style={styles.bellBadgeText}>3</Text>
             </View>
-          </TouchableOpacity>
+          </TouchableWithMinSize>
 
           <View style={styles.avatar}>
             <Text style={styles.avatarInitial}>U</Text>
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
   },
   bellBadgeText: {
     color: COLORS.white,
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   avatar: {

@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { colors, spacing, typography, radius, shadows } from '../theme'
+import { TouchableWithMinSize } from './ui/TouchableWithMinSize'
 
 interface CategoryCardProps {
   category: {
@@ -26,13 +27,11 @@ export const CategoryCard = memo(({ category, onPress }: CategoryCardProps) => {
   }
 
   return (
-    <TouchableOpacity
+    <TouchableWithMinSize
       style={styles.container}
       onPress={onPress}
       activeOpacity={0.8}
-      accessible
       accessibilityLabel={`${category.name} category, ${category.productCount || 0} products`}
-      accessibilityRole="button"
     >
       <View style={styles.iconContainer}>
         <Text style={styles.emoji}>{getEmoji()}</Text>
@@ -45,7 +44,7 @@ export const CategoryCard = memo(({ category, onPress }: CategoryCardProps) => {
           {category.productCount} items
         </Text>
       )}
-    </TouchableOpacity>
+    </TouchableWithMinSize>
   )
 })
 
@@ -76,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   count: {
-    fontSize: 10,
+    fontSize: 12,
     color: colors.textSecondary,
     textAlign: 'center',
   },

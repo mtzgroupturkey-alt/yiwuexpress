@@ -19,6 +19,7 @@
     "db:seed:products": "tsx prisma/seed-comprehensive-products.ts",
     "db:seed:hero": "tsx prisma/seed-hero-slides.ts",
     "db:seed:all": "tsx prisma/seed-all-sample-data.ts",
+    "db:seed:sample": "tsx prisma/seed-sample-data.ts",
     "generate:placeholders": "node scripts/generate-placeholders.js"
   },
   "dependencies": {
