@@ -220,7 +220,7 @@ export default function ProductsPage() {
       pageTitle={pageTitle}
       pageDescription={pageDescription}
       breadcrumbs={breadcrumbItems}
-      categoryId={categoryId}
+      categoryId={categoryId ?? undefined}
     >
       <div className="bg-gray-50 py-8">
         <Container maxWidth="2xl">

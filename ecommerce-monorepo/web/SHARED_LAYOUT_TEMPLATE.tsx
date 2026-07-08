@@ -50,7 +50,7 @@ export function SingleBreadcrumbTemplate() {
       backgroundImage="/images/breadcrumb-bg.jpg"
     >
       <div className="bg-white py-12">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           {/* Your content */}
         </Container>
       </div>
@@ -74,7 +74,7 @@ export function MultipleBreadcrumbsTemplate() {
       backgroundImage="/images/services-bg.jpg"
     >
       <div className="bg-gray-50 py-12">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           {/* Your content */}
         </Container>
       </div>
@@ -108,7 +108,7 @@ export function DynamicPageTemplate({ params }: { params: { slug: string } }) {
       backgroundImage="/images/dynamic-bg.jpg"
     >
       <div className="bg-white py-12">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           {/* Your dynamic content */}
           <h2>{data.title}</h2>
         </Container>
@@ -146,7 +146,7 @@ export function LoadingStateTemplate() {
         breadcrumbs={[{ name: 'Page', href: '/page' }]}
       >
         <div className="py-12">
-          <Container maxWidth="2xl">
+          <Container maxWidth="2xl" children={<></>}>
             <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
               <p className="text-red-800">Error loading page</p>
             </div>
@@ -163,7 +163,7 @@ export function LoadingStateTemplate() {
       breadcrumbs={[{ name: 'Page', href: '/page' }]}
     >
       <div className="bg-gray-50 py-12">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           {/* Your content */}
         </Container>
       </div>
@@ -179,7 +179,7 @@ export function HomepageTemplate() {
     <SharedLayout showHero={true}>
       {/* Stats Section */}
       <section className="py-12 bg-white">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           <div>Your homepage content</div>
         </Container>
       </section>
@@ -207,7 +207,7 @@ export function ListingPageTemplate() {
       backgroundImage="/images/category-bg.jpg"
     >
       <div className="bg-gray-50 py-8">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           {/* Filters and Grid */}
           <div className="grid grid-cols-4 gap-6">
             {/* Your items */}
@@ -242,7 +242,7 @@ export function DetailPageTemplate({ params }: { params: { slug: string } }) {
       backgroundImage="/images/detail-bg.jpg"
     >
       <div className="bg-gray-50 py-8">
-        <Container maxWidth="2xl">
+        <Container maxWidth="2xl" children={<></>}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Your detail content */}
           </div>
@@ -290,7 +290,7 @@ EXAMPLE:
   breadcrumbs={[{ name: 'Contact', href: '/contact' }]}
 >
   <div className="py-12">
-    <Container maxWidth="2xl">
+    <Container maxWidth="2xl" children={<></>}>
       <YourContent />
     </Container>
   </div>

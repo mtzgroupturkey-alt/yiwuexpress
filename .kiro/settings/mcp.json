@@ -1,14 +1,20 @@
 {
   "mcpServers": {
-    "@21st-dev/magic": {
+    "ruflo": {
       "command": "npx",
-      "args": ["-y", "@21st-dev/magic@latest"],
+      "args": ["ruflo@latest", "mcp", "start"],
       "env": {
-        "API_KEY": "ccb814da7e400af61090dca09b727171e4fe61a24e912f685f195b1829c5fd23"
+        "NODE_NO_WARNINGS": "1",
+        "RUFLO_LOG_LEVEL": "info"
       },
       "disabled": false,
-      "autoApprove": [],
-      "description": "21st.dev Magic AI Agent for generating UI components"
+      "autoApprove": [
+        "ruflo__memory_store",
+        "ruflo__memory_search",
+        "ruflo__agent_spawn",
+        "ruflo__swarm_init",
+        "ruflo__router_route"
+      ]
     }
   }
 }
