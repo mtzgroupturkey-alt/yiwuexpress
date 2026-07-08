@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyTokenEdge, getTokenFromRequest } from '@/lib/auth'
+import * as jose from 'jose'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -91,8 +92,23 @@ export async function middleware(request: NextRequest) {
       )
     }
 
-    // Verify token
-    const payload = await verifyTokenEdge(token)
+    // Verify token (edge-compatible - simplified verification)
+    let payload = null
+    try {
+      payload = await verifyTokenEdge(token)
+    } catch (error) {
+      // Fallback: Token verification failed, redirect to login
+      if (!pathname.startsWith('/api/')) {
+        const response = NextResponse.redirect(new URL('/login', request.url))
+        response.cookies.delete('auth_token')
+        return response
+      }
+      
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      )
+    }
     
     if (!payload) {
       // Invalid/expired token

@@ -54,7 +54,7 @@ interface Product {
 }
 
 interface RelatedProduct {
-  id: number
+  id: string
   slug: string
   name: string
   description?: string

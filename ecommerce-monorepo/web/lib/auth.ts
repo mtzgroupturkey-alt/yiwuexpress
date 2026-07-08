@@ -55,13 +55,18 @@ export function verifyToken(token: string): JwtPayload | null {
 
 /**
  * Verify JWT token using jose (Edge runtime - middleware)
+ * ⚠️ NOTE: In Edge Runtime, jose may have limitations with certain algorithms.
+ * If you encounter DecompressionStream errors, ensure jose is properly configured.
  */
 export async function verifyTokenEdge(token: string): Promise<JwtPayload | null> {
   try {
     const secret = new TextEncoder().encode(JWT_SECRET)
-    const { payload } = await jose.jwtVerify(token, secret)
+    const { payload } = await jose.jwtVerify(token, secret, {
+      algorithms: ['HS256'] // Explicitly specify algorithm
+    })
     return payload as JwtPayload
-  } catch {
+  } catch (error) {
+    console.debug('Token verification error in edge runtime:', error instanceof Error ? error.message : 'Unknown error')
     return null
   }
 }

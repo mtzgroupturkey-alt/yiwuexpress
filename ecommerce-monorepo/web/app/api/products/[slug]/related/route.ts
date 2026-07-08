@@ -128,7 +128,7 @@ export async function GET(
       }
 
       return {
-        id: parseInt(product.id),
+        id: product.id,
         slug: product.slug,
         name: product.name,
         description: product.description,
