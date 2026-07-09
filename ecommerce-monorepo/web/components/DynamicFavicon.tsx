@@ -44,8 +44,10 @@ export default function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
     document.head.appendChild(link)
     document.head.appendChild(appleLink)
 
-    // Log for debugging
-    console.log('🎨 Favicon updated:', faviconUrl)
+    // Log for debugging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('🎨 Favicon updated:', faviconUrl)
+    }
 
     // Cleanup function with safety checks
     return () => {

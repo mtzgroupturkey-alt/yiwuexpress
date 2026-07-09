@@ -79,32 +79,85 @@ export function GlobeInteractive({
 
     const canvas = canvasRef.current
     let globe: ReturnType<typeof createGlobe> | null = null
-    let animationId: number
+    let animationId = 0
     let phi = 0
     let webglError = false
+    let destroyed = false
+    let resizeObserver: ResizeObserver | null = null
 
+    // Suppress WebGL console errors during rendering
     const originalConsoleError = console.error
     const webglErrorFilter = (msg: any, ...args: any[]) => {
       const msgStr = String(msg)
-      if (msgStr.includes('WebGL') || msgStr.includes('INVALID_OPERATION') || msgStr.includes('drawArrays')) {
+      // Suppress WebGL-related errors
+      if (msgStr.includes('WebGL') || 
+          msgStr.includes('INVALID_OPERATION') || 
+          msgStr.includes('drawArrays') ||
+          msgStr.includes('no buffer is bound')) {
         return
       }
       originalConsoleError.call(console, msg, ...args)
     }
     console.error = webglErrorFilter
 
+    const destroyGlobe = () => {
+      if (animationId) cancelAnimationFrame(animationId)
+      animationId = 0
+      if (globe) {
+        try { globe.destroy() } catch {}
+        globe = null
+      }
+    }
+
+    // WebGL context loss handling
+    const handleWebGLContextLost = (e: Event) => {
+      e.preventDefault()
+      webglError = true
+      destroyGlobe()
+      canvas.style.display = 'none'
+    }
+
+    const handleWebGLContextRestored = () => {
+      webglError = false
+      canvas.style.display = 'block'
+      init()
+    }
+
+    canvas.addEventListener('webglcontextlost', handleWebGLContextLost)
+    canvas.addEventListener('webcontextrestored', handleWebGLContextRestored)
+
     function init() {
+      if (destroyed) return
       const width = canvas.offsetWidth
       if (width === 0) return
-      if (globe) return
+      if (globe) return // already initialized (guards StrictMode double-invoke)
       if (webglError) return
 
       canvas.width = width
       canvas.height = width
 
       try {
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+        // Test for WebGL support with proper context detection
+        const gl = canvas.getContext('webgl', { 
+          premultipliedAlpha: false,
+          preserveDrawingBuffer: true,
+          antialias: true
+        }) || canvas.getContext('experimental-webgl', {
+          premultipliedAlpha: false,
+          preserveDrawingBuffer: true,
+          antialias: true
+        })
+        
         if (!gl) {
+          console.warn('[Globe] WebGL not supported, hiding globe')
+          webglError = true
+          canvas.style.display = 'none'
+          return
+        }
+
+        // Verify WebGL context is working
+        if (gl.isContextLost()) {
+          console.warn('[Globe] WebGL context lost before initialization')
           webglError = true
           canvas.style.display = 'none'
           return
@@ -133,7 +186,7 @@ export function GlobeInteractive({
         })
 
         function animate() {
-          if (webglError || !globe) return
+          if (webglError || !globe || destroyed) return
           try {
             if (!isPausedRef.current) phi += speed
             globe.update({
@@ -142,14 +195,17 @@ export function GlobeInteractive({
             })
             animationId = requestAnimationFrame(animate)
           } catch (err) {
+            console.warn('[Globe] Animation error, stopping globe')
             webglError = true
             if (canvas) canvas.style.display = 'none'
+            destroyGlobe()
           }
         }
 
         animate()
         if (canvas) canvas.style.opacity = "1"
       } catch (err) {
+        console.warn('[Globe] Failed to initialize:', err instanceof Error ? err.message : 'Unknown error')
         webglError = true
         canvas.style.display = 'none'
       }
@@ -158,25 +214,26 @@ export function GlobeInteractive({
     if (canvas.offsetWidth > 0) {
       init()
     } else {
-      const ro = new ResizeObserver((entries) => {
+      resizeObserver = new ResizeObserver((entries) => {
         if (entries[0]?.contentRect.width > 0) {
-          ro.disconnect()
+          resizeObserver?.disconnect()
+          resizeObserver = null
           init()
         }
       })
-      ro.observe(canvas)
+      resizeObserver.observe(canvas)
     }
 
     return () => {
+      destroyed = true
       console.error = originalConsoleError
-      if (animationId) cancelAnimationFrame(animationId)
-      if (globe) {
-        try {
-          globe.destroy()
-        } catch (err) {
-          // Silently fail on destroy
-        }
+      canvas.removeEventListener('webglcontextlost', handleWebGLContextLost)
+      canvas.removeEventListener('webcontextrestored', handleWebGLContextRestored)
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+        resizeObserver = null
       }
+      destroyGlobe()
     }
   }, [markers, speed])
 
