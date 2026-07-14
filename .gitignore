@@ -88,3 +88,8 @@ ios/build/
 # Package lock files (keep package.json but ignore lock files for cross-platform compatibility)
 package-lock.json
 yarn.lock
+
+# gstack local state and worktrees
+.gstack/
+.gstack-worktrees/
+**/gstack-worktree-*/
