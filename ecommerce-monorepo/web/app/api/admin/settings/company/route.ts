@@ -1,8 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 // Translations are accepted as: translations: Array<{ locale, key, value }>
 // (matching the unique [systemSettingId, locale, key] constraint).
@@ -36,9 +34,7 @@ export async function GET(request: Request) {
   try {
     // TODO: Add authentication check for admin
 
-    const settings = await prisma.systemSettings.findFirst({
-      include: { translations: true },
-    })
+    const settings = await prisma.systemSettings.findFirst()
 
     if (!settings) {
       // Return default company settings
@@ -46,6 +42,7 @@ export async function GET(request: Request) {
         success: true,
         settings: {
           companyName: 'Global Trade',
+          siteTagline: '',
           companyAddress: 'China',
           companyPhone: '+86 579 8555 1234',
           companyEmail: 'info@yiwuexpress.com',
@@ -72,9 +69,21 @@ export async function GET(request: Request) {
       })
     }
 
-    // Return company-specific settings including branding
+    // Return company-specific settings including branding.
+    // Translations are loaded separately so a missing/failed
+    // `system_setting_translations` relation can never 500 the whole page.
+    let translations: any[] = []
+    try {
+      translations = await prisma.systemSettingTranslation.findMany({
+        where: { systemSettingId: settings.id },
+      })
+    } catch (err) {
+      console.error('Failed to load company translations:', err)
+    }
+
     const companyData = {
       companyName: settings.companyName,
+      siteTagline: settings.siteTagline,
       companyAddress: settings.companyAddress,
       companyPhone: settings.companyPhone,
       companyEmail: settings.companyEmail,
@@ -96,7 +105,7 @@ export async function GET(request: Request) {
       instagramUrl: settings.instagramUrl,
       wechatId: settings.wechatId,
       whatsappNumber: settings.whatsappNumber,
-      translations: settings.translations,
+      translations,
     }
 
     return NextResponse.json({
@@ -106,7 +115,11 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching company settings:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch company settings' },
+      {
+        success: false,
+        error: 'Failed to fetch company settings',
+        detail: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     )
   }
@@ -127,6 +140,7 @@ export async function PUT(request: Request) {
         where: { id: existing.id },
         data: {
           companyName: body.companyName,
+          siteTagline: body.siteTagline,
           companyAddress: body.companyAddress,
           companyPhone: body.companyPhone,
           companyEmail: body.companyEmail,
@@ -151,18 +165,31 @@ export async function PUT(request: Request) {
         }
       })
 
-      // Dual-write: upsert per (locale, key) system setting translations
-      const upserts = buildSystemSettingTranslationUpserts(settings.id, body.translations)
-      if (upserts.length) await prisma.$transaction(upserts)
+      // Dual-write: upsert per (locale, key) system setting translations.
+      // Isolated so a missing/failed translation table can't roll back the
+      // core settings save.
+      try {
+        const upserts = buildSystemSettingTranslationUpserts(settings.id, body.translations)
+        if (upserts.length) await prisma.$transaction(upserts)
+      } catch (err) {
+        console.error('Failed to upsert company translations:', err)
+      }
 
       const withTranslations = await prisma.systemSettings.findUnique({
         where: { id: settings.id },
-        include: { translations: true },
       })
+      let translations: any[] = []
+      try {
+        translations = await prisma.systemSettingTranslation.findMany({
+          where: { systemSettingId: settings.id },
+        })
+      } catch (err) {
+        console.error('Failed to load company translations:', err)
+      }
 
       return NextResponse.json({
         success: true,
-        settings: withTranslations,
+        settings: { ...withTranslations, translations },
         message: 'Company settings updated successfully'
       })
     } else {
@@ -170,6 +197,7 @@ export async function PUT(request: Request) {
       const settings = await prisma.systemSettings.create({
         data: {
           companyName: body.companyName || 'Global Trade',
+          siteTagline: body.siteTagline,
           companyAddress: body.companyAddress,
           companyPhone: body.companyPhone,
           companyEmail: body.companyEmail,
@@ -199,12 +227,20 @@ export async function PUT(request: Request) {
             value: t.value.toString().trim(),
           })),
         },
-        include: { translations: true },
       })
+
+      let createTranslations: any[] = []
+      try {
+        createTranslations = await prisma.systemSettingTranslation.findMany({
+          where: { systemSettingId: settings.id },
+        })
+      } catch (err) {
+        console.error('Failed to load company translations:', err)
+      }
 
       return NextResponse.json({
         success: true,
-        settings: settings,
+        settings: { ...settings, translations: createTranslations },
         message: 'Company settings created successfully'
       }, { status: 201 })
     }
