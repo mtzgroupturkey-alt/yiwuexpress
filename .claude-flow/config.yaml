@@ -1,0 +1,62 @@
+# RuFlo V3 Runtime Configuration
+# Generated: 2026-08-15T14:19:43.898Z
+
+version: "3.0.0"
+
+swarm:
+  topology: hierarchical-mesh
+  maxAgents: 15
+  autoScale: true
+  coordinationStrategy: consensus
+
+memory:
+  backend: hybrid
+  enableHNSW: true
+  # SHARED across all projects -> enables cross-project pattern recognition
+  persistPath: C:/Users/ASUS/.ruflo/memory
+  cacheSize: 5000
+  # ADR-049: Self-Learning Memory
+  learningBridge:
+    enabled: true
+    sonaMode: balanced
+    confidenceDecayRate: 0.005
+    accessBoostAmount: 0.03
+    consolidationThreshold: 10
+  memoryGraph:
+    enabled: true
+    pageRankDamping: 0.85
+    maxNodes: 5000
+    similarityThreshold: 0.8
+  agentScopes:
+    enabled: true
+    defaultScope: global
+
+neural:
+  enabled: true
+  modelPath: .claude-flow/neural
+
+hooks:
+  enabled: true
+  autoExecute: true
+
+mcp:
+  autoStart: false
+  port: 3000
+
+# Cross-project coordination: agents in this project can assist others via the
+# shared coordinator. Requires: ruflo plugins install ruflo-federation@ruflo
+federation:
+  enabled: true
+  coordinatorUrl: ""
+  sharedNamespaces:
+    - patterns
+    - solutions
+    - best-practices
+    - reviews
+
+# Project stack context (used by custom agents)
+project:
+  stack: "Next.js / React / Prisma / PostgreSQL"
+  appDir: "ecommerce-monorepo/web"
+  orm: "prisma"
+  database: "postgresql"

@@ -1,7 +1,11 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useLocale } from 'next-intl'
+import { useRouter, usePathname } from '@/i18n/navigation'
+import { LocaleLink } from '@/components/LocaleLink'
+import { localePath } from '@/i18n'
 import { Truck, User, Menu, X, Search, ShoppingCart, ChevronDown, Package, Headphones, FileText } from 'lucide-react'
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
@@ -13,10 +17,13 @@ import { useCart } from '@/components/CartContext'
 export default function Navbar() {
   const { isAuthenticated, checkAuth } = useAuth()
   const { cartCount } = useCart()
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [logoUrl, setLogoUrl] = useState('')
-  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [companyName, setCompanyName] = useState('Global Trade')
   const [logoHeight, setLogoHeight] = useState(40)
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   const [accentColor, setAccentColor] = useState('#c9a84c')
@@ -24,11 +31,19 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
+  const switchLocale = (newLocale: string) => {
+    // Get the current pathname without the locale prefix
+    const currentPath = pathname
+    
+    // Use the native Next.js router to navigate to the new locale
+    window.location.href = `/${newLocale}${currentPath}`
+  }
+
   useEffect(() => {
-    // ✅ Check authentication using useAuth hook
+    // âœ… Check authentication using useAuth hook
     checkAuth()
 
-    // ✅ Re-check auth every 30 seconds to catch login in other tabs
+    // âœ… Re-check auth every 30 seconds to catch login in other tabs
     const authCheckInterval = setInterval(() => {
       checkAuth()
     }, 30000)
@@ -75,7 +90,7 @@ export default function Navbar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`
+      window.location.href = localePath(`/products?search=${encodeURIComponent(searchQuery)}`, locale)
     }
   }
 
@@ -98,7 +113,7 @@ export default function Navbar() {
       <Container maxWidth="2xl">
         <div className="flex justify-between items-center h-20 relative">
           {/* Logo with Premium Gradient Icon */}
-          <Link href="/" className="flex items-center space-x-3 group">
+           <LocaleLink href="/" className="flex items-center space-x-3 group">
             <div 
               className="relative rounded-xl bg-gradient-to-br from-[#1a3a5c] via-[#2a5a8c] to-[#1a3a5c] flex items-center justify-center shadow-lg shadow-[#1a3a5c]/30 ring-2 ring-[#c9a84c]/20 group-hover:ring-[#c9a84c]/40 transition-all duration-300 group-hover:scale-105"
               style={{
@@ -126,22 +141,22 @@ export default function Navbar() {
               </div>
               <div className="text-[10px] text-gray-500 font-medium tracking-widest uppercase">Global Trade Solutions</div>
             </div>
-          </Link>
+          </LocaleLink>
 
           {/* Center Navigation - Premium with Hover Effects */}
           <div className="hidden lg:flex items-center space-x-1 absolute left-1/2 -translate-x-1/2">
-            <Link
+            <LocaleLink
               href="/"
               className="px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-[#1a3a5c] transition-all duration-300 relative group"
             >
               Home
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#c9a84c] to-[#1a3a5c] group-hover:w-full transition-all duration-300"></span>
-            </Link>
+            </LocaleLink>
             
             <MegaMenu />
             
             {navItems.slice(1).map((item) => (
-              <Link
+              <LocaleLink
                 key={item.href}
                 href={item.href}
                 className="px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-[#1a3a5c] transition-all duration-300 relative group flex items-center gap-1.5"
@@ -150,7 +165,7 @@ export default function Navbar() {
                 {item.label}
                 {item.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#c9a84c] to-[#1a3a5c] group-hover:w-full transition-all duration-300"></span>
-              </Link>
+              </LocaleLink>
             ))}
           </div>
 
@@ -191,23 +206,48 @@ export default function Navbar() {
             {/* Language Selector - Hidden on mobile */}
             <div className="relative group hidden md:block">
               <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-100 rounded-full transition-all duration-300">
-                <span className="text-base">🇺🇸</span>
-                <span className="text-xs">EN</span>
+                <span className="text-base">
+                  {locale === 'en' && 'ðŸ‡ºðŸ‡¸'}
+                  {locale === 'ru' && 'ðŸ‡·ðŸ‡º'}
+                  {locale === 'zh' && 'ðŸ‡¨ðŸ‡³'}
+                </span>
+                <span className="text-xs uppercase">{locale}</span>
                 <ChevronDown className="w-3 h-3" />
               </button>
               {/* Language Dropdown */}
               <div className="absolute right-0 top-full mt-2 w-36 bg-white shadow-xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-gray-100">
-                <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 rounded-lg transition">
-                  <span className="text-base">🇺🇸</span>
+                <button 
+                  onClick={() => switchLocale('en')} 
+                  className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm rounded-lg transition ${
+                    locale === 'en' 
+                      ? 'bg-gradient-to-r from-[#c9a84c]/20 to-[#1a3a5c]/20 text-[#1a3a5c] font-semibold' 
+                      : 'text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10'
+                  }`}
+                >
+                  <span className="text-base">ðŸ‡ºðŸ‡¸</span>
                   <span>English</span>
                 </button>
-                <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 rounded-lg transition">
-                  <span className="text-base">🇷🇺</span>
-                  <span>Russian</span>
+                <button 
+                  onClick={() => switchLocale('ru')} 
+                  className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm rounded-lg transition ${
+                    locale === 'ru' 
+                      ? 'bg-gradient-to-r from-[#c9a84c]/20 to-[#1a3a5c]/20 text-[#1a3a5c] font-semibold' 
+                      : 'text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10'
+                  }`}
+                >
+                  <span className="text-base">ðŸ‡·ðŸ‡º</span>
+                  <span>Ð ÑƒÑÑÐºÐ¸Ð¹</span>
                 </button>
-                <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 rounded-lg transition">
-                  <span className="text-base">🇨🇳</span>
-                  <span>Chinese</span>
+                <button 
+                  onClick={() => switchLocale('zh')} 
+                  className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm rounded-lg transition ${
+                    locale === 'zh' 
+                      ? 'bg-gradient-to-r from-[#c9a84c]/20 to-[#1a3a5c]/20 text-[#1a3a5c] font-semibold' 
+                      : 'text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10'
+                  }`}
+                >
+                  <span className="text-base">ðŸ‡¨ðŸ‡³</span>
+                  <span>ä¸­æ–‡</span>
                 </button>
               </div>
             </div>
@@ -215,29 +255,29 @@ export default function Navbar() {
             {/* Currency Selector - Hidden on mobile */}
             <div className="relative group hidden md:block">
               <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-100 rounded-full transition-all duration-300">
-                <span className="text-base">💰</span>
+                <span className="text-base">ðŸ’°</span>
                 <span className="text-xs">USD</span>
                 <ChevronDown className="w-3 h-3" />
               </button>
               {/* Currency Dropdown */}
               <div className="absolute right-0 top-full mt-2 w-32 bg-white shadow-xl rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 border border-gray-100">
                 <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 rounded-lg transition">
-                  <span className="text-base">💰</span>
+                  <span className="text-base">ðŸ’°</span>
                   <span>USD</span>
                 </button>
                 <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 rounded-lg transition">
-                  <span className="text-base">₽</span>
+                  <span className="text-base">â‚½</span>
                   <span>RUB</span>
                 </button>
                 <button className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 rounded-lg transition">
-                  <span className="text-base">€</span>
+                  <span className="text-base">â‚¬</span>
                   <span>EUR</span>
                 </button>
               </div>
             </div>
 
             {/* Cart Icon with Animated Badge */}
-            <Link 
+            <LocaleLink 
               href="/cart" 
               className="relative w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 hover:from-[#c9a84c]/20 hover:to-[#1a3a5c]/20 flex items-center justify-center transition-all duration-300 hover:scale-105 group border-2 border-transparent hover:border-[#c9a84c]/30"
             >
@@ -247,9 +287,9 @@ export default function Navbar() {
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
-            </Link>
+            </LocaleLink>
 
-            {/* ✅ User Menu Component - Uses useAuth hook */}
+            {/* âœ… User Menu Component - Uses useAuth hook */}
             <div className="hidden md:block">
               <UserMenu />
             </div>
@@ -282,24 +322,24 @@ export default function Navbar() {
                 </form>
               </div>
               
-              <Link
+              <LocaleLink
                 href="/"
                 className="px-4 py-3 text-gray-700 font-semibold text-sm hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 rounded-lg mx-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
-              </Link>
+              </LocaleLink>
               
-              <Link
+              <LocaleLink
                 href="/products"
                 className="px-4 py-3 text-gray-700 font-semibold text-sm hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 rounded-lg mx-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
-              </Link>
+              </LocaleLink>
               
               {navItems.slice(1).map((item) => (
-                <Link
+                <LocaleLink
                   key={item.href}
                   href={item.href}
                   className="flex items-center gap-2 px-4 py-3 text-gray-700 font-semibold text-sm hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 rounded-lg mx-2"
@@ -307,7 +347,7 @@ export default function Navbar() {
                 >
                   {item.icon && <item.icon className="w-4 h-4 text-[#1a3a5c]" />}
                   {item.label}
-                </Link>
+                </LocaleLink>
               ))}
               
               {/* Mobile Language & Currency */}
@@ -318,14 +358,35 @@ export default function Navbar() {
                 <div className="bg-gray-50 rounded-xl p-3">
                   <div className="text-xs font-medium text-gray-600 mb-2">Language</div>
                   <div className="flex flex-wrap gap-2">
-                    <button className="flex items-center gap-1.5 px-3 py-2 bg-white border-2 border-[#c9a84c] text-gray-700 rounded-lg text-sm font-medium">
-                      <span>🇺🇸</span> English
+                    <button 
+                      onClick={() => { switchLocale('en'); setIsMenuOpen(false); }} 
+                      className={`flex items-center gap-1.5 px-3 py-2 bg-white rounded-lg text-sm ${
+                        locale === 'en'
+                          ? 'border-2 border-[#c9a84c] text-gray-700 font-medium'
+                          : 'border border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <span>ðŸ‡ºðŸ‡¸</span> English
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm hover:border-gray-300">
-                      <span>🇷🇺</span> Russian
+                    <button 
+                      onClick={() => { switchLocale('ru'); setIsMenuOpen(false); }} 
+                      className={`flex items-center gap-1.5 px-3 py-2 bg-white rounded-lg text-sm ${
+                        locale === 'ru'
+                          ? 'border-2 border-[#c9a84c] text-gray-700 font-medium'
+                          : 'border border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <span>ðŸ‡·ðŸ‡º</span> Ð ÑƒÑÑÐºÐ¸Ð¹
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm hover:border-gray-300">
-                      <span>🇨🇳</span> Chinese
+                    <button 
+                      onClick={() => { switchLocale('zh'); setIsMenuOpen(false); }} 
+                      className={`flex items-center gap-1.5 px-3 py-2 bg-white rounded-lg text-sm ${
+                        locale === 'zh'
+                          ? 'border-2 border-[#c9a84c] text-gray-700 font-medium'
+                          : 'border border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      <span>ðŸ‡¨ðŸ‡³</span> ä¸­æ–‡
                     </button>
                   </div>
                 </div>
@@ -335,19 +396,19 @@ export default function Navbar() {
                   <div className="text-xs font-medium text-gray-600 mb-2">Currency</div>
                   <div className="flex flex-wrap gap-2">
                     <button className="flex items-center gap-1.5 px-3 py-2 bg-white border-2 border-[#c9a84c] text-gray-700 rounded-lg text-sm font-medium">
-                      <span>💰</span> USD
+                      <span>ðŸ’°</span> USD
                     </button>
                     <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm hover:border-gray-300">
-                      <span>₽</span> RUB
+                      <span>â‚½</span> RUB
                     </button>
                     <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm hover:border-gray-300">
-                      <span>€</span> EUR
+                      <span>â‚¬</span> EUR
                     </button>
                   </div>
                 </div>
               </div>
               
-              {/* ✅ Mobile Auth Buttons */}
+              {/* âœ… Mobile Auth Buttons */}
               <div className="px-4 pt-4 border-t border-gray-100 mt-2">
                 <UserMenu />
               </div>

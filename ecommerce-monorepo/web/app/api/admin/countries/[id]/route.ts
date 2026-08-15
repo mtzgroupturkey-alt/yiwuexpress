@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { buildCountryTranslations } from '@/lib/utils/translation-builders'
 
 const prisma = new PrismaClient()
 
@@ -16,7 +18,8 @@ export async function GET(
       include: {
         shippingRates: {
           orderBy: { carrier: 'asc' }
-        }
+        },
+        translations: true,
       }
     })
 
@@ -77,7 +80,7 @@ export async function PUT(
       }
     }
 
-    // Update country
+    // Update country (root columns stay English source of truth)
     const updated = await prisma.country.update({
       where: { id },
       data: {
@@ -92,15 +95,37 @@ export async function PUT(
         deliverySLA: body.deliverySLA,
         restrictedProducts: body.restrictedProducts,
         isActive: body.isActive
-      },
-      include: {
-        shippingRates: true
       }
+    })
+
+    // Dual-write: upsert per-locale translation rows, keep `en` name in sync.
+    if (Array.isArray(body.translations)) {
+      await prisma.$transaction(
+        body.translations
+          .filter((t: any) => t && t.locale && (t.name ?? '').trim())
+          .map((t: any) =>
+            prisma.countryTranslation.upsert({
+              where: { countryId_locale: { countryId: id, locale: t.locale } },
+              create: { countryId: id, locale: t.locale, name: t.name.trim() },
+              update: { name: t.name.trim() },
+            })
+          )
+      )
+      // Sync legacy English column with the submitted `en` translation (if any)
+      const en = body.translations.find((t: any) => t.locale === 'en' && (t.name ?? '').trim())
+      if (en) {
+        await prisma.country.update({ where: { id }, data: { name: en.name.trim() } })
+      }
+    }
+
+    const withTranslations = await prisma.country.findUnique({
+      where: { id },
+      include: { translations: true, shippingRates: true }
     })
 
     return NextResponse.json({
       success: true,
-      data: updated,
+      data: withTranslations,
       message: 'Country updated successfully'
     })
   } catch (error) {

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import jwt from 'jsonwebtoken'
@@ -107,9 +108,9 @@ export async function POST(
       .text('SELLER/SHIPPER:', 50, doc.y)
       .fontSize(10)
       .font('Helvetica')
-      .text('YIWU EXPRESS')
-      .text('Yiwu International Trade City')
-      .text('Yiwu, Zhejiang Province, 322000')
+      .text('Global Trade')
+      .text('China')
+      .text('China, Zhejiang Province, 322000')
       .text('China')
       .text('Phone: +86 579 8555 1234')
       .text('Email: export@yiwuexpress.com')
@@ -288,7 +289,7 @@ export async function POST(
       .fontSize(8)
       .font('Helvetica')
       .text(
-        'YIWU EXPRESS | Yiwu International Trade City, Zhejiang, China | +86 579 8555 1234 | www.yiwuexpress.com',
+        'Global Trade | China, Zhejiang, China | +86 579 8555 1234 | www.yiwuexpress.com',
         50,
         750,
         { align: 'center', width: 495 }

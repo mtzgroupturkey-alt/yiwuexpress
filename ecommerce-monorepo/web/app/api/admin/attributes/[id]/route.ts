@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
@@ -14,6 +15,7 @@ export async function GET(
             category: true,
           },
         },
+        translations: true,
         _count: {
           select: {
             values: true,
@@ -57,6 +59,7 @@ export async function PUT(
       isFilterable,
       isVariant,
       categoryId,
+      translations,
     } = body
 
     // Check if attribute exists
@@ -85,11 +88,16 @@ export async function PUT(
       }
     }
 
+    // Sync the English (`en`) translation back into the legacy `name` column.
+    const en = Array.isArray(translations)
+      ? translations.find((t: any) => t.locale === 'en')
+      : undefined
+
     // Update attribute
     const attribute = await prisma.attribute.update({
       where: { id: params.id },
       data: {
-        name,
+        name: en?.name ?? name,
         slug,
         type,
         options: options || [],
@@ -101,6 +109,17 @@ export async function PUT(
         isVariant,
       },
     })
+
+    if (Array.isArray(translations)) {
+      for (const t of translations) {
+        if (!t.locale) continue
+        await prisma.attributeTranslation.upsert({
+          where: { attributeId_locale: { attributeId: params.id, locale: t.locale } },
+          create: { attributeId: params.id, locale: t.locale, name: t.name ?? attribute.name },
+          update: { name: t.name ?? attribute.name },
+        })
+      }
+    }
 
     // Update category association if provided
     if (categoryId) {

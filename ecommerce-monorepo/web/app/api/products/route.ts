@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getLocalField, localizeEntity } from '@/lib/utils/localize'
 
 const prisma = new PrismaClient()
 
@@ -15,6 +17,7 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
+    const locale = searchParams.get('locale') || 'en'
 
     // Build where clause
     const where: any = {
@@ -109,8 +112,16 @@ export async function GET(request: Request) {
           select: {
             id: true,
             name: true,
-            slug: true
+            slug: true,
+            translations: {
+              where: { locale: { in: [locale, 'en'] } },
+              select: { locale: true, name: true }
+            }
           }
+        },
+        translations: {
+          where: { locale: { in: [locale, 'en'] } },
+          select: { locale: true, name: true, description: true }
         }
       },
       orderBy,
@@ -118,9 +129,37 @@ export async function GET(request: Request) {
       take: limit
     })
 
+    // Expand-and-Contract read-path localization: resolve each product's name,
+    // description (and its category name) to the active locale with English
+    // fallback, so the storefront never renders a blank text container.
+    const localizedProducts = products.map((product: any) => {
+      const { name, description } = localizeEntity(
+        product.translations,
+        locale,
+        { name: product.name, description: product.description }
+      )
+      const category = product.category
+        ? {
+            ...product.category,
+            name: getLocalField(
+              product.category.translations,
+              locale,
+              'name',
+              product.category.name
+            )
+          }
+        : product.category
+      return {
+        ...product,
+        name,
+        description,
+        category
+      }
+    })
+
     return NextResponse.json({
       success: true,
-      data: products,
+      data: localizedProducts,
       pagination: {
         page,
         limit,
@@ -172,14 +211,59 @@ export async function POST(request: Request) {
     }
 
     // Extract attributes from body
-    const { attributes, ...productData } = body
+    const { attributes, translations, ...productData } = body
 
-    // Create product
-    const product = await prisma.product.create({
-      data: productData,
-      include: {
-        category: true
+    // Normalize the incoming translations payload into an array of
+    // { locale, name, description } rows (en/ru/zh). The frontend may send a
+    // nested map (Record<locale, {name, description}>) or an array; both are
+    // supported so no locale is ever silently dropped.
+    const incomingTranslations: Array<{ locale: string; name?: string; description?: string | null }> =
+      Array.isArray(translations)
+        ? translations
+        : translations && typeof translations === 'object'
+          ? Object.entries(translations as Record<string, any>).map(([locale, value]) => ({
+              locale,
+              name: value?.name,
+              description: value?.description ?? null
+            }))
+          : []
+
+    // Expand-and-Contract dual-write: the English copy is mirrored onto the
+    // legacy root columns so non-migrated read paths keep working, and every
+    // supplied locale (incl. en) is persisted independently.
+    const englishEntry = incomingTranslations.find((t) => t.locale === 'en')
+    if (englishEntry) {
+      productData.name = englishEntry.name ?? productData.name
+      productData.description = englishEntry.description ?? null
+    }
+
+    // Create product + write all locale rows atomically. If any locale upsert
+    // fails (e.g. a DB constraint), the whole operation rolls back so we never
+    // leave a half-saved product behind.
+    const created = await prisma.$transaction(async (tx) => {
+      const product = await tx.product.create({
+        data: productData,
+        include: { category: true }
+      })
+
+      for (const t of incomingTranslations) {
+        if (!t.locale) continue
+        await tx.productTranslation.upsert({
+          where: { productId_locale: { productId: product.id, locale: t.locale } },
+          create: {
+            productId: product.id,
+            locale: t.locale,
+            name: t.name ?? '',
+            description: t.description ?? null
+          },
+          update: {
+            name: t.name ?? '',
+            description: t.description ?? null
+          }
+        })
       }
+
+      return product
     })
 
     // If attributes are provided, fetch attribute IDs and create attribute values
@@ -199,7 +283,7 @@ export async function POST(request: Request) {
           if (value !== undefined && value !== null && value !== '') {
             return {
               attributeId: attr.id,
-              productId: product.id,
+              productId: created.id,
               value: typeof value === 'object' ? JSON.stringify(value) : String(value)
             }
           }
@@ -216,7 +300,7 @@ export async function POST(request: Request) {
 
     // Fetch product with attribute values
     const productWithAttributes = await prisma.product.findUnique({
-      where: { id: product.id },
+      where: { id: created.id },
       include: {
         category: true,
         attributeValues: {

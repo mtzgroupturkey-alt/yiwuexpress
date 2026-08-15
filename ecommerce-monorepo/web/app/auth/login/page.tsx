@@ -14,7 +14,7 @@ export default function LoginPage() {
     password: ''
   })
   const [companyLogo, setCompanyLogo] = useState('')
-  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [companyName, setCompanyName] = useState('Global Trade')
   const router = useRouter()
   const { login } = useAuth()
 
@@ -34,6 +34,10 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('[LOGIN] Starting login process...')
+    console.log('[LOGIN] Current URL:', window.location.href)
+    console.log('[LOGIN] Protocol:', window.location.protocol)
+    
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields')
       return
@@ -43,24 +47,54 @@ export default function LoginPage() {
       setIsLoading(true)
       setError('')
 
+      console.log('[LOGIN] Calling login API...')
+      
       // ✅ MIGRATED TO COOKIE-BASED AUTH - useAuth handles httpOnly cookies
       const user = await login(formData.email, formData.password)
       
-      // Redirect based on role
-      if (user.role === 'ADMIN') {
-        router.push('/admin')
+      console.log('[LOGIN] Login successful!', { 
+        userId: user.id, 
+        role: user.role,
+        email: user.email 
+      })
+      
+      // Get redirect URL from query params
+      const urlParams = new URLSearchParams(window.location.search)
+      const redirectUrl = urlParams.get('redirect')
+      
+      console.log('[LOGIN] Redirect URL from params:', redirectUrl)
+      
+      // Redirect based on role or redirect parameter
+      let targetUrl = '/dashboard'
+      
+      if (redirectUrl && redirectUrl !== '/') {
+        // If there's a redirect URL, use it
+        targetUrl = redirectUrl
+        console.log('[LOGIN] Using redirect parameter:', targetUrl)
+      } else if (user.role === 'ADMIN') {
+        targetUrl = '/admin'
+        console.log('[LOGIN] Admin user, redirecting to:', targetUrl)
       } else if (user.role === 'SUPPLIER') {
-        router.push('/dashboard/supplier')
+        targetUrl = '/dashboard/supplier'
+        console.log('[LOGIN] Supplier user, redirecting to:', targetUrl)
       } else {
-        // Customer (USER role) - redirect to dashboard or redirect URL
-        const urlParams = new URLSearchParams(window.location.search)
-        const redirect = urlParams.get('redirect') || '/dashboard'
-        router.push(redirect)
+        // Customer (USER role) - redirect to dashboard
+        console.log('[LOGIN] Customer user, redirecting to:', targetUrl)
       }
-      router.refresh()
+      
+      console.log('[LOGIN] Final redirect URL:', targetUrl)
+      console.log('[LOGIN] Performing redirect with window.location.href...')
+      
+      // Force HTTPS if in production
+      if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+        console.warn('[LOGIN] WARNING: Using HTTP in production, forcing HTTPS redirect')
+        window.location.href = `https://${window.location.host}${targetUrl}`
+      } else {
+        window.location.href = targetUrl
+      }
     } catch (err) {
+      console.error('[LOGIN] Login failed:', err)
       setError(err instanceof Error ? err.message : 'Login failed')
-    } finally {
       setIsLoading(false)
     }
   }
@@ -201,15 +235,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="text-sm font-medium text-blue-800 mb-2">Demo Credentials</h4>
-            <div className="text-sm text-blue-700 space-y-1">
-              <p><strong>Admin Access:</strong> admin@yiwuexpress.com / admin123</p>
-              <p><strong>Customer:</strong> user@example.com / password123</p>
-            </div>
-          </div>
 
           {/* Don't have an account */}
           <div className="mt-6 text-center">

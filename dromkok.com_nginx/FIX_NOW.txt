@@ -1,0 +1,175 @@
+
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║        🚨 FIX dromkok.com "Loading..." Issue NOW 🚨           ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+
+┌────────────────────────────────────────────────────────────────┐
+│                                                                │
+│  PROBLEM: Your site is stuck on "Loading..." with errors      │
+│                                                                │
+│  CAUSE: Nginx is sending requests to wrong port               │
+│         (port 3000 instead of 3001)                           │
+│                                                                │
+│  SOLUTION: Apply the fix (already prepared for you!)          │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                                              ┃
+┃  🎯 EASIEST METHOD - DOUBLE-CLICK THIS FILE:                ┃
+┃                                                              ┃
+┃     RUN_FIX.bat                                              ┃
+┃                                                              ┃
+┃  Location:                                                   ┃
+┃     c:\wamp64\www\yiwuexpress\dromkok.com_nginx\             ┃
+┃                                                              ┃
+┃  Time Required: 2-3 minutes                                  ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+
+┌────────────────────────────────────────────────────────────────┐
+│  OR - Run from Command Line:                                  │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  Windows CMD:                                                  │
+│    cd c:\wamp64\www\yiwuexpress\dromkok.com_nginx             │
+│    fix_and_deploy.bat                                          │
+│                                                                │
+│  PowerShell:                                                   │
+│    cd c:\wamp64\www\yiwuexpress\dromkok.com_nginx             │
+│    .\fix_and_deploy.ps1                                        │
+│                                                                │
+│  Git Bash:                                                     │
+│    cd /c/wamp64/www/yiwuexpress/dromkok.com_nginx             │
+│    bash fix_and_deploy.sh                                      │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════
+  THE SCRIPT WILL:
+═══════════════════════════════════════════════════════════════════
+
+  ✓ Upload corrected nginx config to server
+  ✓ Backup your old config (safe!)
+  ✓ Test the new config
+  ✓ Apply it (if test passes)
+  ✓ Reload nginx (no downtime)
+  ✓ Verify your app is running
+  ✓ Report success or errors
+
+
+═══════════════════════════════════════════════════════════════════
+  AFTER THE SCRIPT FINISHES:
+═══════════════════════════════════════════════════════════════════
+
+  1. Clear your browser cache
+     Press: Ctrl + Shift + Del
+     Select: "Cached images and files"
+     Click: "Clear data"
+
+  2. Reload dromkok.com
+     Press: Ctrl + F5 (hard refresh)
+
+  3. Check browser console (F12)
+     Should see: NO red errors!
+
+  4. ✅ Site should load completely!
+
+
+┌────────────────────────────────────────────────────────────────┐
+│  NEED HELP?                                                    │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  📖 Detailed Instructions:                                     │
+│     Open: START_HERE_FIX.md                                    │
+│                                                                │
+│  📋 Quick Reference:                                           │
+│     Open: QUICK_FIX.txt                                        │
+│                                                                │
+│  📚 Full Documentation:                                        │
+│     Open: FIX_PORT_MISMATCH.md                                 │
+│                                                                │
+│  🆘 Troubleshooting:                                           │
+│     Open: README_FIX.md                                        │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║  ⚠️  ACTION REQUIRED                                           ║
+║                                                                ║
+║  Your site won't work until you run one of the fix scripts    ║
+║  above. The fix is ready - just needs to be applied!          ║
+║                                                                ║
+║  🎯 Recommended: Double-click RUN_FIX.bat                      ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+
+═══════════════════════════════════════════════════════════════════
+  What gets changed:
+═══════════════════════════════════════════════════════════════════
+
+  Nginx config file on server:
+    /etc/nginx/sites-available/www.dromkok.com
+
+  What changes:
+    proxy_pass http://localhost:3000  →  localhost:3001
+    (5 locations updated)
+
+  Backup created:
+    /etc/nginx/sites-available/www.dromkok.com.backup.[timestamp]
+
+  Safe rollback:
+    Just restore the backup if needed
+
+
+═══════════════════════════════════════════════════════════════════
+  Frequently Asked Questions:
+═══════════════════════════════════════════════════════════════════
+
+  Q: Is this safe?
+  A: Yes! Creates backup, tests before applying, safe rollback.
+
+  Q: Will there be downtime?
+  A: No! Nginx reloads without stopping the service.
+
+  Q: What if it fails?
+  A: Automatic rollback. Old config restored. Site stays up.
+
+  Q: How long does it take?
+  A: 2-3 minutes for the entire process.
+
+  Q: Do I need to restart the app?
+  A: No, the script checks and restarts if needed.
+
+  Q: What if I don't have SSH keys?
+  A: Script will prompt for your server password.
+
+
+═══════════════════════════════════════════════════════════════════
+  Ready? Let's fix it!
+═══════════════════════════════════════════════════════════════════
+
+  📂 Open File Explorer
+  📂 Navigate to: c:\wamp64\www\yiwuexpress\dromkok.com_nginx
+  🖱️  Double-click: RUN_FIX.bat
+  ⏱️  Wait 2-3 minutes
+  🧹 Clear browser cache
+  🚀 Reload dromkok.com
+  ✅ Done!
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║  Your site will be working in under 5 minutes! 🎉             ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+

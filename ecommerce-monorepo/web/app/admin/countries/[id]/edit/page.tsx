@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Save, Trash2, Truck } from 'lucide-react'
+import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
 
 const countrySchema = z.object({
   code: z.string().min(2, 'Country code is required').max(2, 'Country code must be 2 characters'),
@@ -39,6 +40,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([])
+  const [translations, setTranslations] = useState<TranslationRow[]>([])
 
   const {
     register,
@@ -70,6 +72,14 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
           isActive: country.isActive
         })
         setShippingRates(country.shippingRates || [])
+        setTranslations(
+          [
+            { locale: 'en', name: country.name },
+            ...(country.translations || [])
+              .filter((t: any) => t.locale !== 'en')
+              .map((t: any) => ({ locale: t.locale, name: t.name })),
+          ]
+        )
       } else {
         alert('Country not found')
         router.push('/admin/countries')
@@ -85,14 +95,25 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
   const onSubmit = async (data: CountryForm) => {
     setSubmitting(true)
     try {
+      // The English name lives in BOTH the main "Country Name" field and the
+      // `en` tab of LocalizedFieldsForm. Use whichever is filled so the English
+      // value is never lost on save.
+      const enFromForm = (data.name || '').trim()
+      const enFromLocalized = (translations.find((t) => t.locale === 'en')?.name || '').trim()
+      const resolvedName = enFromForm || enFromLocalized
+
       const countryData = {
         code: data.code.toUpperCase(),
-        name: data.name,
+        name: resolvedName,
         currency: data.currency.toUpperCase(),
         currencySymbol: data.currencySymbol,
         flag: data.flag || null,
         deliverySLA: data.deliverySLA || null,
-        isActive: data.isActive
+        isActive: data.isActive,
+        translations: [
+          { locale: 'en', name: resolvedName },
+          ...translations.filter((t) => t.locale !== 'en'),
+        ]
       }
 
       const response = await fetch(`/api/admin/countries/${params.id}`, {
@@ -220,6 +241,16 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                       <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
                     )}
                   </div>
+                </div>
+
+                {/* Localized country name (RU / ZH) */}
+                <div>
+                  <Label className="mb-2 block">Localized Name (optional)</Label>
+                  <LocalizedFieldsForm
+                    fields={[{ key: 'name', label: 'Name' }]}
+                    initialValues={translationsArrayToInitial(translations)}
+                    onChange={setTranslations}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

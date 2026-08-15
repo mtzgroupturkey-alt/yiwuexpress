@@ -59,7 +59,7 @@ export default function TrustBadges() {
             Why Shop With Us?
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Your trusted partner for quality kitchenware from Yiwu. We're committed to providing 
+            Your trusted partner for quality kitchenware from China. We're committed to providing 
             the best products and services for your business.
           </p>
         </div>

@@ -10,6 +10,10 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Plus, Search, Edit, Trash2, Eye, Package, Star, Sparkles } from 'lucide-react'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
+import { localizeProduct } from '@/lib/utils/localize'
+
+// Admin works against the canonical English source of truth for the list view.
+const ADMIN_LOCALE = 'en'
 
 interface Product {
   id: string
@@ -23,9 +27,44 @@ interface Product {
   isFeatured: boolean
   isNewArrival: boolean
   isFlashSale: boolean
+  translations?: Array<{ locale: string; name: string }> | null
   category?: {
     name: string
   } | null
+}
+
+const SUPPORTED_LOCALES = ['en', 'ru', 'zh'] as const
+
+// Mini readiness badges: green if a translation row has a non-empty name,
+// muted gray if missing.
+function TranslationBadges({ product }: { product: Product }) {
+  const present = new Set(
+    (product.translations || [])
+      .filter((t) => t.name && t.name.trim().length > 0)
+      .map((t) => t.locale)
+  )
+
+  return (
+    <div className="mt-1 flex items-center gap-1">
+      {SUPPORTED_LOCALES.map((locale) => {
+        const has = present.has(locale)
+        return (
+          <span
+            key={locale}
+            title={has ? `${locale.toUpperCase()} translation ready` : `${locale.toUpperCase()} translation missing`}
+            className={[
+              'inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+              has
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-400'
+            ].join(' ')}
+          >
+            {locale}
+          </span>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function AdminProductsPage() {
@@ -412,8 +451,9 @@ export default function AdminProductsPage() {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {product.name}
+                            {localizeProduct(product, ADMIN_LOCALE).name}
                           </div>
+                          <TranslationBadges product={product} />
                           {product.category && (
                             <div className="text-sm text-gray-500">
                               {product.category.name}
@@ -527,11 +567,12 @@ export default function AdminProductsPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">
-                        {product.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">SKU: {product.sku}</p>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {localizeProduct(product, ADMIN_LOCALE).name}
+                        </h3>
+                        <TranslationBadges product={product} />
+                        <p className="text-sm text-gray-500">SKU: {product.sku}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-sm font-medium text-primary">
                           ${product.price.toFixed(2)}

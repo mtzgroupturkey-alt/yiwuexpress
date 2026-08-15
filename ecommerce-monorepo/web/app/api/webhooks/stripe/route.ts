@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
             orderId: order.id,
             userId: order.userId,
             recipient: order.customerEmail,
-            subject: `Order Confirmation #${order.orderNumber} - YIWU EXPRESS`,
+            subject: `Order Confirmation #${order.orderNumber} - Global Trade`,
             template: 'orderConfirmation',
             content: `Payment confirmed for order #${order.orderNumber}`,
             status: 'SENT',

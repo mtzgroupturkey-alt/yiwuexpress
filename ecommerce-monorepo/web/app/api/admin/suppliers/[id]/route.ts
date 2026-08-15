@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
@@ -21,6 +22,7 @@ export async function GET(
             purchaseOrders: true,
           },
         },
+        translations: true,
       },
     })
 
@@ -60,7 +62,47 @@ export async function PUT(
       },
     })
 
-    return NextResponse.json({ supplier })
+    // Dual-write: upsert per-locale supplier translations, keep legacy `en` synced.
+    if (Array.isArray(body.translations)) {
+      await prisma.$transaction(
+        body.translations
+          .filter((t: any) => t && t.locale && (t.name ?? '').trim())
+          .map((t: any) =>
+            prisma.supplierTranslation.upsert({
+              where: { supplierId_locale: { supplierId: params.id, locale: t.locale } },
+              create: {
+                supplierId: params.id,
+                locale: t.locale,
+                name: t.name.trim(),
+                description: (t.description ?? '').trim() || null,
+                profileText: (t.profileText ?? '').trim() || null,
+              },
+              update: {
+                name: t.name.trim(),
+                description: (t.description ?? '').trim() || null,
+                profileText: (t.profileText ?? '').trim() || null,
+              },
+            })
+          )
+      )
+      const en = body.translations.find((t: any) => t.locale === 'en' && (t.name ?? '').trim())
+      if (en) {
+        await prisma.supplier.update({
+          where: { id: params.id },
+          data: {
+            name: en.name.trim(),
+            notes: (en.description ?? '').trim() || body.notes,
+          },
+        })
+      }
+    }
+
+    const withTranslations = await prisma.supplier.findUnique({
+      where: { id: params.id },
+      include: { translations: true },
+    })
+
+    return NextResponse.json({ supplier: withTranslations })
   } catch (error) {
     console.error('Error updating supplier:', error)
     return NextResponse.json({ error: 'Failed to update supplier' }, { status: 500 })

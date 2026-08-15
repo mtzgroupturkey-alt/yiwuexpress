@@ -1,22 +1,52 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
+
+// Translations are accepted as: translations: Array<{ locale, key, value }>
+// (matching the unique [systemSettingId, locale, key] constraint).
+function buildSystemSettingTranslationUpserts(settingsId: string, translations: any[]) {
+  const rows = (translations || []).filter(
+    (t) => t && t.locale && t.key && (t.value ?? '').toString().trim().length > 0
+  )
+  if (!rows.length) return []
+  return rows.map((t) =>
+    prisma.systemSettingTranslation.upsert({
+      where: {
+        systemSettingId_locale_key: {
+          systemSettingId: settingsId,
+          locale: t.locale,
+          key: t.key,
+        },
+      },
+      create: {
+        systemSettingId: settingsId,
+        locale: t.locale,
+        key: t.key,
+        value: t.value.toString().trim(),
+      },
+      update: { value: t.value.toString().trim() },
+    })
+  )
+}
 
 // GET /api/admin/settings/company - Get company settings (Admin)
 export async function GET(request: Request) {
   try {
     // TODO: Add authentication check for admin
 
-    const settings = await prisma.systemSettings.findFirst()
+    const settings = await prisma.systemSettings.findFirst({
+      include: { translations: true },
+    })
 
     if (!settings) {
       // Return default company settings
       return NextResponse.json({
         success: true,
         settings: {
-          companyName: 'YIWU EXPRESS',
-          companyAddress: 'Yiwu International Trade City, Yiwu, Zhejiang, China',
+          companyName: 'Global Trade',
+          companyAddress: 'China',
           companyPhone: '+86 579 8555 1234',
           companyEmail: 'info@yiwuexpress.com',
           companyWebsite: 'https://yiwuexpress.com',
@@ -30,7 +60,14 @@ export async function GET(request: Request) {
           accentColor: '#c9a84c',
           currency: 'USD',
           timezone: 'Asia/Shanghai',
-          language: 'en'
+          language: 'en',
+          facebookUrl: '',
+          twitterUrl: '',
+          linkedinUrl: '',
+          instagramUrl: '',
+          wechatId: '',
+          whatsappNumber: '',
+          translations: [],
         }
       })
     }
@@ -52,7 +89,14 @@ export async function GET(request: Request) {
       accentColor: settings.accentColor,
       currency: settings.currency,
       timezone: settings.timezone,
-      language: settings.language
+      language: settings.language,
+      facebookUrl: settings.facebookUrl,
+      twitterUrl: settings.twitterUrl,
+      linkedinUrl: settings.linkedinUrl,
+      instagramUrl: settings.instagramUrl,
+      wechatId: settings.wechatId,
+      whatsappNumber: settings.whatsappNumber,
+      translations: settings.translations,
     }
 
     return NextResponse.json({
@@ -97,20 +141,35 @@ export async function PUT(request: Request) {
           accentColor: body.accentColor,
           currency: body.currency,
           timezone: body.timezone,
-          language: body.language
+          language: body.language,
+          facebookUrl: body.facebookUrl,
+          twitterUrl: body.twitterUrl,
+          linkedinUrl: body.linkedinUrl,
+          instagramUrl: body.instagramUrl,
+          wechatId: body.wechatId,
+          whatsappNumber: body.whatsappNumber
         }
+      })
+
+      // Dual-write: upsert per (locale, key) system setting translations
+      const upserts = buildSystemSettingTranslationUpserts(settings.id, body.translations)
+      if (upserts.length) await prisma.$transaction(upserts)
+
+      const withTranslations = await prisma.systemSettings.findUnique({
+        where: { id: settings.id },
+        include: { translations: true },
       })
 
       return NextResponse.json({
         success: true,
-        settings: settings,
+        settings: withTranslations,
         message: 'Company settings updated successfully'
       })
     } else {
       // Create new settings with company data
       const settings = await prisma.systemSettings.create({
         data: {
-          companyName: body.companyName || 'YIWU EXPRESS',
+          companyName: body.companyName || 'Global Trade',
           companyAddress: body.companyAddress,
           companyPhone: body.companyPhone,
           companyEmail: body.companyEmail,
@@ -125,8 +184,22 @@ export async function PUT(request: Request) {
           accentColor: body.accentColor || '#c9a84c',
           currency: body.currency || 'USD',
           timezone: body.timezone || 'Asia/Shanghai',
-          language: body.language || 'en'
-        }
+          language: body.language || 'en',
+          facebookUrl: body.facebookUrl,
+          twitterUrl: body.twitterUrl,
+          linkedinUrl: body.linkedinUrl,
+          instagramUrl: body.instagramUrl,
+          wechatId: body.wechatId,
+          whatsappNumber: body.whatsappNumber,
+          translations: (body.translations || []).filter(
+            (t: any) => t && t.locale && t.key && (t.value ?? '').toString().trim().length > 0
+          ).map((t: any) => ({
+            locale: t.locale,
+            key: t.key,
+            value: t.value.toString().trim(),
+          })),
+        },
+        include: { translations: true },
       })
 
       return NextResponse.json({

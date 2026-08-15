@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { buildSupplierTranslations } from '@/lib/utils/translation-builders'
 
 // GET /api/admin/suppliers - Get all suppliers
 export async function GET(request: NextRequest) {
@@ -11,6 +13,7 @@ export async function GET(request: NextRequest) {
             purchaseOrders: true,
           },
         },
+        translations: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -42,7 +45,9 @@ export async function POST(request: NextRequest) {
         currency: body.currency || 'USD',
         notes: body.notes,
         isActive: body.isActive ?? true,
+        translations: buildSupplierTranslations(body),
       },
+      include: { translations: true },
     })
 
     return NextResponse.json({ supplier }, { status: 201 })

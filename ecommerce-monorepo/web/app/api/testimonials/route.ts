@@ -1,18 +1,64 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getTokenFromRequest, verifyToken } from '@/lib/auth'
+import { localizeTestimonial } from '@/lib/utils/localize'
+
+type TestimonialTranslationInput = {
+  locale: string
+  quote: string
+  role?: string | null
+  company?: string | null
+}
+
+// Always seed `en` from legacy fields so the fallback chain stays intact.
+function buildTestimonialTranslations(
+  translations: TestimonialTranslationInput[] | undefined,
+  legacy: { quote: string; role?: string | null; company?: string | null }
+): TestimonialTranslationInput[] {
+  const rows: TestimonialTranslationInput[] = []
+  const seen = new Set<string>()
+
+  if (Array.isArray(translations)) {
+    for (const t of translations) {
+      if (!t.locale || seen.has(t.locale)) continue
+      seen.add(t.locale)
+      rows.push({
+        locale: t.locale,
+        quote: t.quote ?? legacy.quote,
+        role: t.role ?? null,
+        company: t.company ?? null,
+      })
+    }
+  }
+
+  if (!seen.has('en')) {
+    rows.push({
+      locale: 'en',
+      quote: legacy.quote,
+      role: legacy.role ?? null,
+      company: legacy.company ?? null,
+    })
+  }
+
+  return rows
+}
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const featuredOnly = searchParams.get('featured') === 'true'
+    const locale = searchParams.get('locale') || 'en'
 
     const testimonials = await prisma.testimonial.findMany({
       where: featuredOnly ? { isFeatured: true } : {},
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      include: { translations: true }
     })
 
-    return NextResponse.json({ success: true, data: testimonials })
+    const data = testimonials.map((t) => localizeTestimonial(t, locale))
+
+    return NextResponse.json({ success: true, data })
   } catch (error) {
     console.error('Error fetching testimonials:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
@@ -28,7 +74,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { name, company, role, quote, rating = 5, avatar, image, isFeatured = false } = body
+    const { name, company, role, quote, rating = 5, avatar, image, isFeatured = false, translations } = body
 
     if (!name || !company || !role || !quote) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -43,7 +89,10 @@ export async function POST(req: NextRequest) {
         rating: Number(rating),
         avatar,
         image,
-        isFeatured: !!isFeatured
+        isFeatured: !!isFeatured,
+        translations: {
+          create: buildTestimonialTranslations(translations, { quote, role, company })
+        }
       }
     })
 

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -98,6 +99,12 @@ export async function GET(request: Request) {
               isActive: true,
             }
           } : false,
+          translations: {
+            select: {
+              locale: true,
+              name: true
+            }
+          },
         },
         orderBy: {
           createdAt: 'desc'

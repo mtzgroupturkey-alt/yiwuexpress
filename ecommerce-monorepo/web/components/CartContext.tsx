@@ -14,14 +14,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
-  // Check authentication status first
+  // Check authentication status first (uses public endpoint, no 401)
   const checkAuth = useCallback(async () => {
     try {
-      const response = await fetch('/api/auth/profile', {
+      const response = await fetch('/api/auth/status', {
         credentials: 'include',
       })
-      setIsAuthenticated(response.ok)
-      return response.ok
+      if (!response.ok) {
+        setIsAuthenticated(false)
+        return false
+      }
+      const data = await response.json()
+      setIsAuthenticated(data.authenticated)
+      return data.authenticated
     } catch {
       setIsAuthenticated(false)
       return false
@@ -43,7 +48,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data.cart) {
-          setCartCount(data.data.summary.totalQuantity || 0)
+          // Badge reflects distinct product lines in the cart, matching the
+          // cart page (summary.itemCount) and the mobile app (items.length).
+          // totalQuantity counts units and would show "8" for one product × 8.
+          setCartCount(data.data.summary.itemCount || 0)
         } else {
           setCartCount(0)
         }

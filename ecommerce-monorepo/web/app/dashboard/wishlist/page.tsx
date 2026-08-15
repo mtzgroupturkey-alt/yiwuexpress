@@ -7,11 +7,14 @@ import { useWishlist } from '@/hooks/useWishlist'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, ShoppingCart, Trash2, ArrowLeft } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function WishlistPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const { wishlist, isLoading, removeFromWishlist } = useWishlist()
+  const t = useTranslations('DashboardPages')
+  const tw = useTranslations('DashboardPages.wishlist')
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -28,7 +31,7 @@ export default function WishlistPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Loading wishlist...</p>
+          <p className="text-sm text-gray-500">{t('loadingWishlist')}</p>
         </div>
       </div>
     )
@@ -42,10 +45,10 @@ export default function WishlistPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">
-            My Wishlist
+            {tw('title')}
             {wishlist?.length > 0 && (
               <span className="text-sm font-normal text-gray-500 ml-2">
-                ({wishlist.length} item{wishlist.length !== 1 ? 's' : ''})
+                ({wishlist.length} {wishlist.length !== 1 ? tw('items') : tw('item')})
               </span>
             )}
           </h1>
@@ -58,13 +61,13 @@ export default function WishlistPage() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Heart className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Your wishlist is empty</h3>
-            <p className="text-gray-500 mb-6">Start adding products you love.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{tw('empty')}</h3>
+            <p className="text-gray-500 mb-6">{tw('emptyDesc')}</p>
             <Link
               href="/products"
               className="inline-block px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
             >
-              Browse Products
+              {tw('browseProducts')}
             </Link>
           </div>
         ) : (
@@ -94,7 +97,7 @@ export default function WishlistPage() {
                     <div className="flex items-center gap-2 mt-3">
                       <button className="flex-1 flex items-center justify-center gap-2 bg-[#1a3a5c] hover:bg-[#2a5a8c] text-white text-sm py-2 px-3 rounded-lg transition">
                         <ShoppingCart className="w-4 h-4" />
-                        Add to Cart
+                        {tw('addToCart')}
                       </button>
                       <button
                         onClick={() => handleRemove(product.id)}

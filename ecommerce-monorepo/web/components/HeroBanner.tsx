@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import { ArrowRight, ShoppingBag, Grid3x3 } from 'lucide-react'
 
@@ -19,7 +20,7 @@ interface HeroBannerProps {
 }
 
 export default function HeroBanner({
-  title = "Premium Kitchenware from Yiwu, China",
+  title = "Premium Kitchenware from China",
   subtitle = "Discover quality kitchen products at wholesale prices. Direct from the world's largest commodity market.",
   backgroundImage = "/uploads/hero-kitchen.jpg",
   ctaPrimary = { text: "Shop Now", href: "/products" },
@@ -30,7 +31,7 @@ export default function HeroBanner({
 
   const slides = [
     {
-      title: "Premium Kitchenware from Yiwu, China",
+      title: "Premium Kitchenware from China",
       subtitle: "Discover quality kitchen products at wholesale prices. Direct from the world's largest commodity market.",
       image: backgroundImage,
       svg: "/assets/kitchenware-animated.svg"
@@ -85,7 +86,7 @@ export default function HeroBanner({
           <div className={`${currentSlideData.svg ? 'lg:col-span-7' : 'lg:col-span-12'} max-w-3xl`}>
             {/* Badge */}
             <div className="inline-flex items-center justify-center mb-6 bg-white/10 backdrop-blur-sm rounded-full px-5 py-2 border border-white/20">
-              <span className="text-sm font-medium">🏆 Trusted by 1,500+ Businesses Worldwide</span>
+              <span className="text-sm font-medium">ðŸ† Trusted by 1,500+ Businesses Worldwide</span>
             </div>
 
             {/* Main Heading */}
@@ -103,23 +104,23 @@ export default function HeroBanner({
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link
+              <LocaleLink
                 href={ctaPrimary.href}
                 className="group inline-flex items-center justify-center px-8 py-4 bg-secondary-500 text-white font-semibold rounded-lg hover:bg-secondary-600 transition-all shadow-xl hover:shadow-2xl hover:scale-105"
               >
                 <ShoppingBag className="w-5 h-5 mr-2" />
                 {ctaPrimary.text}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </LocaleLink>
               
-              <Link
+              <LocaleLink
                 href={ctaSecondary.href}
                 className="group inline-flex items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg hover:bg-white/20 transition-all border border-white/30"
               >
                 <Grid3x3 className="w-5 h-5 mr-2" />
                 {ctaSecondary.text}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Link>
+              </LocaleLink>
             </div>
 
             {/* Trust Indicators */}

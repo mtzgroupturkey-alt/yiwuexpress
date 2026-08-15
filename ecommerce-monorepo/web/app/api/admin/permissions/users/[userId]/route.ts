@@ -1,13 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
-
-async function getUser(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  if (!token) return null
-  return verifyToken(token)
-}
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // PUT update user's permission role and custom permissions
 export async function PUT(
@@ -15,11 +9,7 @@ export async function PUT(
   { params }: { params: { userId: string } }
 ) {
   try {
-    const user = await getUser(req)
-    
-    if (!user || user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-    }
+    await requireRole(req, ['ADMIN'])
 
     const body = await req.json()
     const { roleId, customPermissions } = body
@@ -70,6 +60,6 @@ export async function PUT(
     return NextResponse.json({ user: result })
   } catch (error) {
     console.error('Update user permissions error:', error)
-    return NextResponse.json({ error: 'Failed to update permissions' }, { status: 500 })
+    return createAuthErrorResponse(error as Error)
   }
 }

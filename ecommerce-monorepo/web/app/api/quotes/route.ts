@@ -1,23 +1,17 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
-
-async function getUser(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  if (!token) return null
-  return verifyToken(token)
-}
+import { getAuthUser } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUser(req)
+    const user = await getAuthUser(req)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const quotes = await prisma.quote.findMany({
-      where: { userId: user.userId },
+      where: { userId: user.id },
       include: { service: true },
       orderBy: { createdAt: 'desc' },
     })
@@ -31,7 +25,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getUser(req)
+    const user = await getAuthUser(req)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -45,7 +39,7 @@ export async function POST(req: NextRequest) {
 
     const quote = await prisma.quote.create({
       data: {
-        userId: user.userId,
+        userId: user.id,
         serviceId,
         serviceType,
         weight: weight ? parseFloat(weight) : null,

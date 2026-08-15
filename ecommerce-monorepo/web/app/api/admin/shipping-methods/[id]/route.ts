@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
@@ -8,6 +9,7 @@ export async function GET(
   try {
     const method = await prisma.shippingMethod.findUnique({
       where: { id: params.id },
+      include: { translations: true },
     })
 
     if (!method) {
@@ -27,19 +29,39 @@ export async function PUT(
 ) {
   try {
     const body = await req.json()
-    const { name, slug, description, defaultStatuses, customStatusesAllowed, isActive } = body
+    const { name, slug, description, defaultStatuses, customStatusesAllowed, isActive, translations } = body
+
+    const en = Array.isArray(translations)
+      ? translations.find((t: any) => t.locale === 'en')
+      : undefined
 
     const method = await prisma.shippingMethod.update({
       where: { id: params.id },
       data: {
-        ...(name !== undefined && { name }),
+        ...(name !== undefined && { name: en?.name ?? name }),
         ...(slug !== undefined && { slug }),
-        ...(description !== undefined && { description }),
+        ...(description !== undefined && { description: en?.description ?? description }),
         ...(defaultStatuses !== undefined && { defaultStatuses }),
         ...(customStatusesAllowed !== undefined && { customStatusesAllowed }),
         ...(isActive !== undefined && { isActive }),
       },
     })
+
+    if (Array.isArray(translations)) {
+      for (const t of translations) {
+        if (!t.locale) continue
+        await prisma.shippingMethodTranslation.upsert({
+          where: { shippingMethodId_locale: { shippingMethodId: params.id, locale: t.locale } },
+          create: {
+            shippingMethodId: params.id,
+            locale: t.locale,
+            name: t.name ?? method.name,
+            description: t.description ?? null,
+          },
+          update: { name: t.name ?? method.name, description: t.description ?? null },
+        })
+      }
+    }
 
     return NextResponse.json({ data: method })
   } catch (error) {

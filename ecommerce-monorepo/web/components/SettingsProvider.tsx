@@ -21,18 +21,27 @@ interface CompanySettings {
   currency: string
   timezone: string
   language: string
+  storeMode?: 'WHOLESALE' | 'RETAIL' | 'BOTH'
 }
 
 interface SettingsContextType {
   settings: CompanySettings | null
   loading: boolean
   refreshSettings: () => void
+  storeMode: 'WHOLESALE' | 'RETAIL' | 'BOTH'
+  isWholesaleOnly: boolean
+  isRetailOnly: boolean
+  isHybridMode: boolean
 }
 
 const SettingsContext = createContext<SettingsContextType>({
   settings: null,
   loading: true,
-  refreshSettings: () => {}
+  refreshSettings: () => {},
+  storeMode: 'WHOLESALE',
+  isWholesaleOnly: true,
+  isRetailOnly: false,
+  isHybridMode: false
 })
 
 export const useSettings = () => useContext(SettingsContext)
@@ -68,8 +77,20 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     fetchSettings()
   }
 
+  const storeMode = settings?.storeMode || 'WHOLESALE'
+
+  const value: SettingsContextType = {
+    settings,
+    loading,
+    refreshSettings,
+    storeMode,
+    isWholesaleOnly: storeMode === 'WHOLESALE',
+    isRetailOnly: storeMode === 'RETAIL',
+    isHybridMode: storeMode === 'BOTH',
+  }
+
   return (
-    <SettingsContext.Provider value={{ settings, loading, refreshSettings }}>
+    <SettingsContext.Provider value={value}>
       {settings?.companyFavicon && <DynamicFavicon faviconUrl={settings.companyFavicon} />}
       {children}
     </SettingsContext.Provider>

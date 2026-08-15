@@ -194,7 +194,7 @@ export function logEnvironmentInfo() {
   if (!loggingConfig.enableConsole) return;
 
   console.log('\n' + '='.repeat(60));
-  console.log(`🚀 YIWU EXPRESS - ${environmentName} ENVIRONMENT`);
+  console.log(`🚀 Global Trade - ${environmentName} ENVIRONMENT`);
   console.log('='.repeat(60));
   console.log(`📍 Environment: ${environmentName}`);
   console.log(`🌐 Domain: ${apiConfig.baseUrl}`);

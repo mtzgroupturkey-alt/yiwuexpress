@@ -1,0 +1,310 @@
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                                                          ┃
+┃                 🚀 YIWU EXPRESS - DEPLOYMENT OVERVIEW 🚀                ┃
+┃                                                                          ┃
+┃                      SSL & Login Fix - Complete Guide                   ┃
+┃                                                                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📋 WHAT'S HAPPENING?                                                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Your site (dromkok.com) has 4 main problems:
+
+  ❌ Problem 1: No SSL/HTTPS - Site is not secure
+  ❌ Problem 2: Admin login fails - Infinite redirect loop
+  ❌ Problem 3: Root URL errors - MIME type errors on http://dromkok.com
+  ❌ Problem 4: Public routes broken - Some pages require login incorrectly
+
+All of these are caused by missing SSL certificates!
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ✅ THE FIX                                                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+We've created automated scripts that will:
+
+  1. Upload SSL certificates to your server
+  2. Configure nginx to use HTTPS
+  3. Set up HTTP → HTTPS redirect
+  4. Deploy latest code with bug fixes
+  5. Restart your application
+
+After deployment:
+  ✅ Site will be secure (HTTPS with 🔒 icon)
+  ✅ Admin login will work perfectly
+  ✅ Root URL will redirect properly
+  ✅ Public pages will be accessible
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🎯 THREE WAYS TO GET STARTED                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Choose your preferred approach:
+
+
+  ╔════════════════════════════════════════════════════════════════════╗
+  ║  OPTION 1: SUPER QUICK (Recommended)                               ║
+  ╚════════════════════════════════════════════════════════════════════╝
+
+    📄 Read: START_HERE.txt
+    
+    Then run ONE command:
+    
+      cd C:\wamp64\www\yiwuexpress ; .\deploy-ssl-and-fix.ps1
+    
+    ⏱️  Time: 2-3 minutes
+    🎯 Best for: Just want it fixed NOW!
+
+
+  ╔════════════════════════════════════════════════════════════════════╗
+  ║  OPTION 2: WITH UNDERSTANDING                                      ║
+  ╚════════════════════════════════════════════════════════════════════╝
+
+    📄 Read: DEPLOYMENT_SUMMARY.md
+    📄 Read: DEPLOYMENT_FIX_README.md
+    
+    Then run:
+    
+      .\deploy-ssl-and-fix.ps1
+      .\verify-deployment.ps1
+    
+    ⏱️  Time: 15-20 minutes (includes reading)
+    🎯 Best for: Want to understand what's happening
+
+
+  ╔════════════════════════════════════════════════════════════════════╗
+  ║  OPTION 3: STEP-BY-STEP CHECKLIST                                  ║
+  ╚════════════════════════════════════════════════════════════════════╝
+
+    📄 Print: DEPLOYMENT_CHECKLIST.md
+    
+    Follow checklist while running:
+    
+      .\deploy-ssl-and-fix.ps1
+    
+    Then verify each item on checklist
+    
+    ⏱️  Time: 30-45 minutes (thorough testing)
+    🎯 Best for: Want to verify everything carefully
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📁 WHAT FILES DO YOU NEED?                                               │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  📂 Quick Start:
+     • START_HERE.txt                    ⭐ Read this first!
+     • QUICK_START.txt                   ⭐ Alternative quick start
+  
+  📂 Complete Guides:
+     • DEPLOYMENT_FIX_README.md          📖 Full detailed guide
+     • DEPLOYMENT_SUMMARY.md             📊 Before/after overview
+     • DEPLOYMENT_CHECKLIST.md           ✅ Printable checklist
+     • DEPLOYMENT_FLOWCHART.txt          📈 Visual process flow
+  
+  📂 Scripts (Run These):
+     • deploy-ssl-and-fix.ps1            🚀 Main deployment
+     • verify-deployment.ps1             ✅ Verify success
+     • check-logs.ps1                    📋 View logs
+  
+  📂 Reference:
+     • README_DEPLOYMENT_FILES.md        📚 This overview
+     • SETUP_SSL_CORRECT_PATH.txt        🔧 Manual steps
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ⚡ QUICK START COMMAND                                                   │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  Copy this to PowerShell:
+
+    cd C:\wamp64\www\yiwuexpress ; .\deploy-ssl-and-fix.ps1
+
+  That's it! Everything else is automatic.
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ ⏱️  TIMELINE                                                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  00:00  Start deployment script
+  00:15  ✅ SSL certificates uploaded
+  00:30  ✅ Nginx configured
+  00:45  ✅ Code pulled from GitHub
+  01:30  ✅ Application built
+  02:00  ✅ Application restarted
+  02:15  ✅ Verification checks
+  02:30  ✅ DONE! Ready to test
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🧪 HOW TO TEST                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  After deployment completes:
+
+  1. Open browser
+  2. Go to: https://dromkok.com/admin
+     
+     ⚠️  MUST use https:// (not http://)
+  
+  3. Look for 🔒 lock icon in address bar
+  4. Enter admin credentials
+  5. Click "Login"
+  6. Should redirect to admin dashboard ✅
+
+  Also test these URLs:
+  
+  ✅ https://dromkok.com         → Redirects to https://dromkok.com/en/
+  ✅ https://dromkok.com/en/     → Shows homepage
+  ✅ https://dromkok.com/en/shop → Shows products (no login required)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔧 TROUBLESHOOTING                                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  If something goes wrong:
+
+  1. Check logs:
+     
+     .\check-logs.ps1
+
+  2. Verify deployment:
+     
+     .\verify-deployment.ps1
+
+  3. Read troubleshooting guide:
+     
+     DEPLOYMENT_FIX_README.md → Troubleshooting section
+
+  4. SSH to server manually:
+     
+     ssh djdn@39.175.57.2 -p 22
+     pm2 logs ecommerce-monorepo
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📊 BEFORE VS AFTER                                                       │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  BEFORE DEPLOYMENT:
+  ─────────────────────────────────────────────────────────────────
+  URL: http://dromkok.com
+  ❌ No lock icon (not secure)
+  ❌ Login → infinite redirect loop
+  ❌ MIME type errors
+  ❌ Public pages require login
+  
+
+  AFTER DEPLOYMENT:
+  ─────────────────────────────────────────────────────────────────
+  URL: https://dromkok.com
+  ✅ 🔒 Lock icon (secure)
+  ✅ Login → works perfectly
+  ✅ No errors
+  ✅ Public pages accessible
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🎯 SUCCESS CRITERIA                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  After deployment, ALL of these should work:
+
+  ✅ Site accessible via HTTPS with 🔒 icon
+  ✅ HTTP automatically redirects to HTTPS
+  ✅ Root URL (/) redirects to /en/
+  ✅ Admin login works without redirect loop
+  ✅ Public pages don't require login
+  ✅ No MIME type errors in console
+  ✅ Language switching works (EN/RU/ZH)
+  ✅ All pages load correctly
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📞 NEED HELP?                                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  All documentation is in: C:\wamp64\www\yiwuexpress\
+
+  Start with:
+    • START_HERE.txt (quickest)
+    • DEPLOYMENT_FIX_README.md (most detailed)
+    • DEPLOYMENT_CHECKLIST.md (step-by-step)
+
+  Run scripts:
+    • deploy-ssl-and-fix.ps1 (main deployment)
+    • verify-deployment.ps1 (check status)
+    • check-logs.ps1 (view logs)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🔐 SECURITY IMPROVEMENTS                                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  This deployment improves security:
+
+  ✅ HTTPS encryption for all traffic
+  ✅ Secure cookies (HTTPS only)
+  ✅ HSTS header (prevents downgrade attacks)
+  ✅ Modern TLS protocols (1.2, 1.3)
+  ✅ Proper SSL certificate validation
+  ✅ HTTP → HTTPS automatic redirect
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 📝 TECHNICAL DETAILS                                                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  Server:    djdn@39.175.57.2:22
+  Path:      /www/wwwroot/www.dromkok.com/web
+  PM2 App:   ecommerce-monorepo
+  Port:      3001
+  Domain:    dromkok.com
+  
+  SSL:
+    Cert:    /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt
+    Key:     /etc/nginx/ssl/dromkok.com/dromkok.com.key
+  
+  Nginx:
+    Config:  /etc/nginx/sites-available/dromkok.com
+    Port 80: HTTP (redirects to HTTPS)
+    Port 443: HTTPS (proxies to port 3001)
+
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ 🚀 READY TO DEPLOY?                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+  Choose your path:
+
+  ⚡ FASTEST (2-3 minutes):
+     Open START_HERE.txt → Follow instructions
+
+  📖 WITH DETAILS (15-20 minutes):
+     Read DEPLOYMENT_FIX_README.md → Run scripts
+
+  ✅ CAREFUL & THOROUGH (30-45 minutes):
+     Follow DEPLOYMENT_CHECKLIST.md step-by-step
+
+
+  All paths lead to the same result: A working, secure website! ✨
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                                                          ┃
+┃                        👉 OPEN START_HERE.txt 👈                        ┃
+┃                                                                          ┃
+┃                              or just run:                                ┃
+┃                                                                          ┃
+┃         cd C:\wamp64\www\yiwuexpress ; .\deploy-ssl-and-fix.ps1         ┃
+┃                                                                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+

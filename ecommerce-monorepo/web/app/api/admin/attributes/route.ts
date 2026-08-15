@@ -1,5 +1,29 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+
+// Always seed `en` from the legacy `name` so the fallback chain stays intact.
+function buildAttributeTranslations(
+  translations: Array<{ locale: string; name?: string }> | undefined,
+  legacyName: string
+): Array<{ locale: string; name: string }> {
+  const rows: Array<{ locale: string; name: string }> = []
+  const seen = new Set<string>()
+
+  if (Array.isArray(translations)) {
+    for (const t of translations) {
+      if (!t.locale || seen.has(t.locale)) continue
+      seen.add(t.locale)
+      rows.push({ locale: t.locale, name: t.name ?? legacyName })
+    }
+  }
+
+  if (!seen.has('en')) {
+    rows.push({ locale: 'en', name: legacyName })
+  }
+
+  return rows
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,6 +34,7 @@ export async function GET(req: NextRequest) {
             category: true,
           },
         },
+        translations: true,
         _count: {
           select: {
             values: true,
@@ -48,6 +73,7 @@ export async function POST(req: NextRequest) {
       isFilterable,
       isVariant,
       categoryId,
+      translations,
     } = body
 
     // Validate required fields
@@ -133,6 +159,9 @@ export async function POST(req: NextRequest) {
         isRequired: isRequired || false,
         isFilterable: isFilterable !== false,
         isVariant: isVariant || false,
+        translations: {
+          create: buildAttributeTranslations(translations, name)
+        }
       },
     })
 

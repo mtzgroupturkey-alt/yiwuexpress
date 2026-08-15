@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { Calendar, ArrowRight, Clock } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 
@@ -30,7 +31,7 @@ export default function BlogSection() {
     {
       id: '2',
       title: 'Importing from China: A Beginner\'s Guide',
-      excerpt: 'Navigate the complexities of international trade with our comprehensive guide to importing kitchenware from Yiwu Market.',
+      excerpt: 'Navigate the complexities of international trade with our comprehensive guide to importing kitchenware from China Market.',
       image: '/uploads/blog-importing.jpg',
       category: 'Trade Insights',
       date: '2024-01-10',
@@ -72,19 +73,19 @@ export default function BlogSection() {
             </p>
           </div>
           
-          <Link
+          <LocaleLink
             href="/blog"
             className="hidden md:inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 transition-colors"
           >
             View All Articles
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </LocaleLink>
         </div>
 
         {/* Blog Posts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {posts.map((post) => (
-            <Link
+            <LocaleLink
               key={post.id}
               href={post.href}
               className="group bg-white rounded-xl overflow-hidden shadow-brand hover:shadow-brand-lg transition-all duration-300"
@@ -148,19 +149,19 @@ export default function BlogSection() {
                   <ArrowRight className="w-5 h-5" />
                 </div>
               </div>
-            </Link>
+            </LocaleLink>
           ))}
         </div>
 
         {/* View All Link (Mobile) */}
         <div className="text-center mt-10 md:hidden">
-          <Link
+          <LocaleLink
             href="/blog"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-lg"
           >
             View All Articles
             <ArrowRight className="w-5 h-5" />
-          </Link>
+          </LocaleLink>
         </div>
       </Container>
     </section>

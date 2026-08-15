@@ -1,8 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useCart } from '@/components/CartContext'
@@ -10,6 +12,8 @@ import { User, Heart, Package, Settings, LogOut, ChevronDown, LayoutDashboard, M
 
 export function UserMenu() {
   const router = useRouter()
+  const locale = useLocale()
+  const t = useTranslations('UserMenu')
   const { user, logout, isAuthenticated, isLoading, checkAuth } = useAuth()
   const { wishlistCount } = useWishlist()
   const { clearCart } = useCart()
@@ -81,18 +85,18 @@ export function UserMenu() {
   if (!isAuthenticated || !user) {
     return (
       <div className="flex items-center gap-2">
-        <Link
+        <LocaleLink
           href="/login"
           className="px-3 py-1.5 text-sm font-medium text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-lg transition-colors"
         >
-          Login
-        </Link>
-        <Link
+          {t('login')}
+        </LocaleLink>
+        <LocaleLink
           href="/register"
           className="px-3 py-1.5 text-sm font-medium bg-[#1a3a5c] text-white hover:bg-[#2a5a8c] rounded-lg transition-colors"
         >
-          Register
-        </Link>
+          {t('register')}
+        </LocaleLink>
       </div>
     )
   }
@@ -103,10 +107,17 @@ export function UserMenu() {
     return <User className="w-4 h-4 text-gray-500" />
   }
 
+  // The dashboard is unlocalized; prefix the current locale so the middleware
+  // redirect carries ?locale= and the dashboard renders in the user's language.
+  const localePrefix = (path: string) =>
+    ['en', 'ru', 'zh'].includes(locale) && !path.startsWith(`/${locale}`)
+      ? `/${locale}${path}`
+      : path
+
   const getDashboardLink = () => {
     if (user.role === 'ADMIN') return '/admin'
     if (user.role === 'SUPPLIER') return '/dashboard/supplier'
-    return '/dashboard'
+    return localePrefix('/dashboard')
   }
 
   const getRoleBadgeColor = () => {
@@ -128,33 +139,33 @@ export function UserMenu() {
     {
       href: getDashboardLink(),
       icon: LayoutDashboard,
-      label: 'Dashboard',
+      label: t('dashboard'),
     },
     {
-      href: '/dashboard/orders',
+      href: localePrefix('/dashboard/orders'),
       icon: Package,
-      label: 'My Orders',
+      label: t('myOrders'),
     },
     {
-      href: '/dashboard/wishlist',
+      href: localePrefix('/dashboard/wishlist'),
       icon: Heart,
-      label: 'My Wishlist',
+      label: t('myWishlist'),
       count: wishlistCount || 0,
     },
     {
-      href: '/dashboard/profile',
+      href: localePrefix('/dashboard/profile'),
       icon: User,
-      label: 'My Profile',
+      label: t('myProfile'),
     },
     {
-      href: '/dashboard/addresses',
+      href: localePrefix('/dashboard/addresses'),
       icon: MapPin,
-      label: 'My Addresses',
+      label: t('myAddresses'),
     },
     {
-      href: '/dashboard/settings',
+      href: localePrefix('/dashboard/settings'),
       icon: Settings,
-      label: 'Settings',
+      label: t('settings'),
     },
   ]
 
@@ -191,7 +202,7 @@ export function UserMenu() {
             {user.name}
           </span>
           <span className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">
-            {user.role === 'USER' ? 'Customer' : user.role}
+            {user.role === 'USER' ? t('customer') : user.role}
           </span>
         </div>
         
@@ -232,7 +243,7 @@ export function UserMenu() {
                 <div className="flex items-center gap-1.5">
                   {getRoleIcon()}
                   <span className={`text-[10px] px-2.5 py-1 rounded-full font-semibold uppercase tracking-wider ${getRoleBadgeColor()} shadow-sm`}>
-                    {user.role === 'USER' ? 'Customer' : user.role}
+                    {user.role === 'USER' ? t('customer') : user.role}
                   </span>
                 </div>
               </div>
@@ -242,7 +253,7 @@ export function UserMenu() {
           {/* Menu Items with hover effects */}
           <div className="py-2 px-2">
             {menuItems.map((item, index) => (
-              <Link
+              <LocaleLink
                 key={item.href}
                 href={item.href}
                 className="group flex items-center gap-3.5 px-3.5 py-2.5 text-sm text-gray-700 hover:text-[#1a3a5c] hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent rounded-xl transition-all duration-200 relative overflow-hidden"
@@ -265,7 +276,7 @@ export function UserMenu() {
                     {item.count}
                   </span>
                 )}
-              </Link>
+              </LocaleLink>
             ))}
           </div>
 
@@ -278,7 +289,7 @@ export function UserMenu() {
               <div className="w-8 h-8 rounded-lg bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors duration-200">
                 <LogOut className="w-4 h-4" />
               </div>
-              <span className="flex-1 text-left">Logout</span>
+              <span className="flex-1 text-left">{t('logout')}</span>
               <div className="w-1.5 h-1.5 rounded-full bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
           </div>

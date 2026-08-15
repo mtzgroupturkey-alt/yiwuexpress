@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
@@ -192,7 +193,7 @@ export async function POST(request: Request) {
             status: 'PENDING',
             notes: 'Order created',
             timestamp: new Date().toISOString(),
-            location: 'Yiwu, China'
+            location: 'China'
           }
         ],
         items: {
@@ -257,7 +258,7 @@ export async function POST(request: Request) {
         orderId: order.id,
         userId: user.id,
         recipient: order.customerEmail,
-        subject: `Order Confirmation #${order.orderNumber} - YIWU EXPRESS`,
+        subject: `Order Confirmation #${order.orderNumber} - Global Trade`,
         template: 'orderConfirmation',
         content: `Order created for ${order.customerName}`,
         status: 'SENT',

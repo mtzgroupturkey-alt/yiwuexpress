@@ -1,0 +1,227 @@
+================================================================================
+SSL SETUP FOR DROMKOK.COM - SIMPLE GUIDE
+================================================================================
+
+Your SSL certificate files are here:
+  C:\wamp64\www\yiwuexpress\dromkok.com_nginx\dromkok.com_nginx\
+
+Files needed:
+  ✓ dromkok.com_bundle.crt  (certificate)
+  ✓ dromkok.com.key         (private key)
+
+
+================================================================================
+OPTION 1: Automatic Setup (Recommended)
+================================================================================
+
+Step 1: Upload SSL files to server
+--------------------------------------------------------------------------------
+From Windows PowerShell, run these commands:
+
+scp C:/wamp64/www/yiwuexpress/dromkok.com_nginx/dromkok.com_nginx/dromkok.com_bundle.crt root@YOUR_SERVER_IP:/tmp/
+scp C:/wamp64/www/yiwuexpress/dromkok.com_nginx/dromkok.com_nginx/dromkok.com.key root@YOUR_SERVER_IP:/tmp/
+
+(Replace YOUR_SERVER_IP with your actual server IP)
+
+
+Step 2: SSH into server and run setup
+--------------------------------------------------------------------------------
+ssh root@YOUR_SERVER_IP
+
+# Move SSL files to correct location
+sudo mkdir -p /etc/nginx/ssl/dromkok.com
+sudo mv /tmp/dromkok.com_bundle.crt /etc/nginx/ssl/dromkok.com/
+sudo mv /tmp/dromkok.com.key /etc/nginx/ssl/dromkok.com/
+sudo chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt
+sudo chmod 600 /etc/nginx/ssl/dromkok.com/dromkok.com.key
+sudo chown root:root /etc/nginx/ssl/dromkok.com/*
+
+# Update nginx config
+sudo tee /etc/nginx/sites-available/dromkok.com > /dev/null << 'EOF'
+# HTTP - Redirect to HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name dromkok.com www.dromkok.com;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS - Main Server
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name dromkok.com www.dromkok.com;
+
+    # SSL Configuration
+    ssl_certificate /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt;
+    ssl_certificate_key /etc/nginx/ssl/dromkok.com/dromkok.com.key;
+    
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+    ssl_prefer_server_ciphers on;
+
+    # Security Headers
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # Logs
+    access_log /var/log/nginx/dromkok.com_access.log;
+    error_log /var/log/nginx/dromkok.com_error.log;
+
+    client_max_body_size 100M;
+    
+    # Root redirect to /en/
+    location = / {
+        return 307 /en/;
+    }
+
+    # Proxy to Next.js
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+EOF
+
+# Test and reload nginx
+sudo nginx -t
+sudo systemctl reload nginx
+
+
+Step 3: Test SSL
+--------------------------------------------------------------------------------
+curl -I https://dromkok.com
+
+Should show: HTTP/2 200
+
+
+================================================================================
+OPTION 2: Use WinSCP (If SCP doesn't work)
+================================================================================
+
+1. Download WinSCP: https://winscp.net/
+
+2. Connect to your server:
+   - Protocol: SFTP
+   - Host: YOUR_SERVER_IP
+   - Username: root
+   - Password: (your password)
+
+3. Upload files:
+   - Navigate to: /etc/nginx/ssl/dromkok.com/
+   - Upload: dromkok.com_bundle.crt
+   - Upload: dromkok.com.key
+
+4. Then follow Step 2 above (SSH commands)
+
+
+================================================================================
+OPTION 3: All-in-One Command
+================================================================================
+
+Run this ENTIRE command from Windows PowerShell:
+
+scp C:/wamp64/www/yiwuexpress/dromkok.com_nginx/dromkok.com_nginx/dromkok.com_bundle.crt root@YOUR_SERVER_IP:/tmp/ && scp C:/wamp64/www/yiwuexpress/dromkok.com_nginx/dromkok.com_nginx/dromkok.com.key root@YOUR_SERVER_IP:/tmp/ && ssh root@YOUR_SERVER_IP "sudo mkdir -p /etc/nginx/ssl/dromkok.com && sudo mv /tmp/dromkok.com_bundle.crt /etc/nginx/ssl/dromkok.com/ && sudo mv /tmp/dromkok.com.key /etc/nginx/ssl/dromkok.com/ && sudo chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt && sudo chmod 600 /etc/nginx/ssl/dromkok.com/dromkok.com.key"
+
+Then update nginx config (see Step 2 above)
+
+
+================================================================================
+VERIFY SSL IS WORKING
+================================================================================
+
+Test 1: Command line
+--------------------------------------------------------------------------------
+curl -I https://dromkok.com
+# Should show: HTTP/2 200
+
+
+Test 2: Browser
+--------------------------------------------------------------------------------
+Visit: https://dromkok.com
+# Should show lock icon 🔒 in address bar
+
+
+Test 3: SSL Labs
+--------------------------------------------------------------------------------
+Visit: https://www.ssllabs.com/ssltest/analyze.html?d=dromkok.com
+# Should show grade A or A+
+
+
+Test 4: Check certificate details
+--------------------------------------------------------------------------------
+openssl s_client -connect dromkok.com:443 -servername dromkok.com < /dev/null
+
+
+================================================================================
+AFTER SSL IS WORKING
+================================================================================
+
+1. Deploy your app with debug logs:
+   cd /root/ecommerce-monorepo/web
+   git pull origin production
+   npm run build
+   pm2 restart ecommerce-monorepo
+
+2. Test login:
+   Visit: https://dromkok.com/admin
+   Login with credentials
+   Should redirect to admin panel ✅
+
+3. Check cookies:
+   - Open DevTools (F12)
+   - Go to Application → Cookies
+   - Look for "auth_token" cookie
+   - Should have "Secure: ✓" flag
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Issue: "nginx: [emerg] cannot load certificate"
+Solution: Check file paths are correct in nginx config
+
+Issue: "Permission denied" when copying files
+Solution: Use sudo: sudo cp /tmp/file /etc/nginx/ssl/dromkok.com/
+
+Issue: SSL test fails
+Solution: 
+  sudo nginx -t
+  Check error message
+  Verify certificate files exist:
+    ls -la /etc/nginx/ssl/dromkok.com/
+
+Issue: Browser shows "Not secure"
+Solution:
+  - Clear browser cache
+  - Make sure you're using https:// (not http://)
+  - Check certificate is valid:
+    openssl x509 -in /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt -noout -dates
+
+
+================================================================================
+QUICK REFERENCE
+================================================================================
+
+SSL Files Location (Server):
+  /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt
+  /etc/nginx/ssl/dromkok.com/dromkok.com.key
+
+Nginx Config:
+  /etc/nginx/sites-available/dromkok.com
+
+Test Commands:
+  sudo nginx -t                    # Test nginx config
+  sudo systemctl reload nginx      # Reload nginx
+  curl -I https://dromkok.com      # Test HTTPS
+  pm2 logs ecommerce-monorepo      # Check app logs
+
+================================================================================

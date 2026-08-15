@@ -1,11 +1,25 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { NextIntlClientProvider } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
 import { TwoRowNavbar } from '@/components/layout/TwoRowNavbar'
 import Footer from '@/components/footer'
 import { PageHero } from '@/components/layout/PageHero'
+import { Providers } from '@/components/providers'
+import { StoreModeProvider } from '@/contexts/StoreModeContext'
+import { SessionModeProvider } from '@/contexts/SessionModeContext'
+import { WholesaleInquiryProvider } from '@/contexts/WholesaleInquiryContext'
+import enMessages from '@/messages/en.json'
+import ruMessages from '@/messages/ru.json'
+import zhMessages from '@/messages/zh.json'
+
+const MESSAGES: Record<string, typeof enMessages> = {
+  en: enMessages,
+  ru: ruMessages,
+  zh: zhMessages,
+}
 
 export default function DashboardLayout({
   children,
@@ -13,8 +27,26 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isAuthenticated, isLoading, checkAuth } = useAuth()
   const hasCheckedAuth = useRef(false)
+
+  // Resolve the active locale: ?locale= param (set by the navbar switcher on
+  // unlocalized routes), falling back to the persisted cookie, then English.
+  const cookieLocale =
+    typeof document !== 'undefined'
+      ? (document.cookie.match(/(?:^|; )NEXT_LOCALE=([^;]+)/) || [])[1]
+      : undefined
+  const locale =
+    searchParams.get('locale') || cookieLocale || 'en'
+  const activeLocale = MESSAGES[locale] ? locale : 'en'
+
+  // Persist the chosen locale so reloads/same-tab navigations keep it.
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.cookie = `NEXT_LOCALE=${activeLocale}; path=/; max-age=31536000; samesite=lax`
+    }
+  }, [activeLocale])
 
   // Only check auth once on mount
   useEffect(() => {
@@ -54,38 +86,55 @@ export default function DashboardLayout({
   // Build breadcrumb items from current path
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/dashboard'
   const pathSegments = currentPath.split('/').filter(Boolean)
-  
-  const breadcrumbs = [{ name: 'Home', href: '/' }]
-  let accumulatedPath = ''
-  
-  for (const segment of pathSegments) {
-    accumulatedPath += `/${segment}`
-    const name = segment
+
+  const breadcrumbLabels =
+    (MESSAGES[activeLocale].Dashboard as any).breadcrumb || {}
+  const defaultName = (segment: string) =>
+    segment
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
+
+  const breadcrumbs = [
+    { name: breadcrumbLabels.home || 'Home', href: '/' },
+  ]
+  let accumulatedPath = ''
+
+  for (const segment of pathSegments) {
+    accumulatedPath += `/${segment}`
+    const name = breadcrumbLabels[segment] || defaultName(segment)
     breadcrumbs.push({ name, href: accumulatedPath })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden">
-      {/* Header with Top Bar + Main Header + Mega Menu */}
-      <TwoRowNavbar />
-      
-      {/* Breadcrumb Section */}
-      <PageHero
-        title={`Welcome back, ${user?.name || 'User'}!`}
-        description="Manage your orders, wishlist, profile and account settings"
-        breadcrumbs={breadcrumbs}
-      />
-      
-      {/* Main Content */}
-      <main className="flex-1 bg-gray-50">
-        {children}
-      </main>
-      
-      {/* Footer */}
-      <Footer />
-    </div>
+    <NextIntlClientProvider locale={activeLocale} messages={MESSAGES[activeLocale]}>
+      <StoreModeProvider>
+        <SessionModeProvider>
+          <WholesaleInquiryProvider>
+            <Providers>
+              <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden" lang={activeLocale}>
+                {/* Header with Top Bar + Main Header + Mega Menu */}
+                <TwoRowNavbar />
+
+                {/* Breadcrumb Section */}
+                <PageHero
+                  title={`${MESSAGES[activeLocale].Dashboard.welcome} ${user?.name || 'User'}!`}
+                  description={MESSAGES[activeLocale].Dashboard.manageDesc}
+                  breadcrumbs={breadcrumbs}
+                />
+
+                {/* Main Content */}
+                <main className="flex-1 bg-gray-50">
+                  {children}
+                </main>
+
+                {/* Footer */}
+                <Footer />
+              </div>
+            </Providers>
+          </WholesaleInquiryProvider>
+        </SessionModeProvider>
+      </StoreModeProvider>
+    </NextIntlClientProvider>
   )
 }

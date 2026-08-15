@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Package, Clock, Search, ArrowLeft, Eye } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface OrderItem {
   id: string
@@ -32,6 +33,8 @@ export default function OrdersPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
+  const t = useTranslations('DashboardPages')
+  const to = useTranslations('DashboardPages.orders')
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -69,7 +72,7 @@ export default function OrdersPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Loading orders...</p>
+          <p className="text-sm text-gray-500">{t('loadingOrders')}</p>
         </div>
       </div>
     )
@@ -82,13 +85,13 @@ export default function OrdersPage() {
           <Link href="/dashboard" className="text-gray-500 hover:text-[#1a3a5c]">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">My Orders</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">{to('title')}</h1>
         </div>
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search orders..."
+            placeholder={to('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
@@ -102,13 +105,13 @@ export default function OrdersPage() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-            <p className="text-gray-500 mb-6">When you place an order, it will appear here.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{to('noOrders')}</h3>
+            <p className="text-gray-500 mb-6">{to('noOrdersDesc')}</p>
             <Link
               href="/products"
               className="inline-block px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
             >
-              Browse Products
+              {to('browseProducts')}
             </Link>
           </div>
         ) : (
@@ -133,7 +136,7 @@ export default function OrdersPage() {
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-4">
                     <p className="text-sm text-gray-600">
-                      {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
+                      {(order.items?.length || 0)} {(order.items?.length || 0) !== 1 ? to('items') : to('item')}
                     </p>
                     <p className="font-bold text-[#1a3a5c]">${order.total?.toFixed(2)}</p>
                   </div>
@@ -141,8 +144,8 @@ export default function OrdersPage() {
                     href={`/dashboard/orders/${order.id}`}
                     className="flex items-center gap-2 text-sm text-[#1a3a5c] hover:text-[#2a5a8c] transition-colors"
                   >
-                    <Eye className="w-4 h-4" />
-                    View Details
+                     <Eye className="w-4 h-4" />
+                     {to('viewDetails')}
                   </Link>
                 </div>
               </div>

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from '@/components/ui/use-toast'
+import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { Plus, Pencil, Loader2 } from 'lucide-react'
 
 export default function ShippingMethodsPage() {
@@ -25,6 +26,7 @@ export default function ShippingMethodsPage() {
     description: '',
     customStatusesAllowed: true,
   })
+  const [translations, setTranslations] = useState<Record<string, { name: string; description: string }>>({})
 
   const { data: methods, isLoading } = useQuery({
     queryKey: ['shipping-methods'],
@@ -53,6 +55,7 @@ export default function ShippingMethodsPage() {
 
   const resetForm = () => {
     setFormData({ name: '', slug: '', description: '', customStatusesAllowed: true })
+    setTranslations({})
     setStatuses([])
     setNewStatus('')
     setEditingMethod(null)
@@ -66,6 +69,11 @@ export default function ShippingMethodsPage() {
       description: method.description || '',
       customStatusesAllowed: method.customStatusesAllowed,
     })
+    const tr: Record<string, { name: string; description: string }> = {}
+    ;(method.translations || []).forEach((t: any) => {
+      tr[t.locale] = { name: t.name || '', description: t.description || '' }
+    })
+    setTranslations(tr)
     setStatuses(method.defaultStatuses || [])
     setIsDialogOpen(true)
   }
@@ -86,6 +94,9 @@ export default function ShippingMethodsPage() {
     const data = {
       ...formData,
       defaultStatuses: statuses,
+      translations: ['ru', 'zh']
+        .filter((l) => translations[l]?.name?.trim() || translations[l]?.description?.trim())
+        .map((l) => ({ locale: l, name: translations[l].name?.trim() || '', description: translations[l].description?.trim() || '' })),
     }
     if (editingMethod) {
       updateMutation.mutate({ ...data, id: editingMethod.id })
@@ -207,6 +218,47 @@ export default function ShippingMethodsPage() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Description of this shipping method"
               />
+            </div>
+
+            {/* Translations (RU / ZH) */}
+            <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-gray-600">Translations (optional)</p>
+                <AutoTranslateButton
+                  enFields={{ name: formData.name, description: formData.description }}
+                  onTranslated={(result) => {
+                    setTranslations((prev) => {
+                      const next = { ...prev }
+                      for (const locale of Object.keys(result)) {
+                        next[locale] = {
+                          name: result[locale].name || prev[locale]?.name || '',
+                          description: result[locale].description || prev[locale]?.description || '',
+                        }
+                      }
+                      return next
+                    })
+                  }}
+                />
+              </div>
+              {(['ru', 'zh'] as const).map((locale) => (
+                <div key={locale} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-8 text-xs font-semibold uppercase text-gray-500">{locale}</span>
+                    <Input
+                      value={translations[locale]?.name || ''}
+                      onChange={(e) => setTranslations((p) => ({ ...p, [locale]: { name: e.target.value, description: p[locale]?.description || '' } }))}
+                      placeholder={`Name (${locale})`}
+                      className="flex-1"
+                    />
+                  </div>
+                  <Input
+                    value={translations[locale]?.description || ''}
+                    onChange={(e) => setTranslations((p) => ({ ...p, [locale]: { name: p[locale]?.name || '', description: e.target.value } }))}
+                    placeholder={`Description (${locale})`}
+                    className="ml-10 flex-1"
+                  />
+                </div>
+              ))}
             </div>
             <div className="flex items-center gap-2">
               <input

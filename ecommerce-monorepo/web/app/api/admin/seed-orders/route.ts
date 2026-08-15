@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
@@ -201,7 +202,7 @@ export async function POST() {
             status: 'SHIPPED',
             notes: 'Order shipped from warehouse',
             timestamp: new Date().toISOString(),
-            location: 'Yiwu, China'
+            location: 'China'
           }
         ],
         items: {

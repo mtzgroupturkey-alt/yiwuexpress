@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface PaginationProps {
   currentPage: number
@@ -9,6 +10,7 @@ interface PaginationProps {
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  const t = useTranslations('Products')
   const getPageNumbers = () => {
     const pages: (number | string)[] = []
     const showEllipsis = totalPages > 7
@@ -40,7 +42,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="px-3 py-2 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-        aria-label="Previous page"
+        aria-label={t('prevPage')}
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -57,7 +59,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                 : 'hover:bg-gray-50 border border-gray-200 text-gray-700'
           }`}
           disabled={page === '...'}
-          aria-label={typeof page === 'number' ? `Go to page ${page}` : undefined}
+          aria-label={typeof page === 'number' ? t('goToPage', { n: page }) : undefined}
           aria-current={page === currentPage ? 'page' : undefined}
         >
           {page}
@@ -68,7 +70,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="px-3 py-2 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-        aria-label="Next page"
+        aria-label={t('nextPage')}
       >
         <ChevronRight className="w-4 h-4" />
       </button>

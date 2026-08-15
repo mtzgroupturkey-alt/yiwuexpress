@@ -1,6 +1,8 @@
-'use client'
+﻿'use client'
 
+import { useTranslations, useLocale } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
+import { LocaleLink } from '@/components/LocaleLink'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -23,9 +25,11 @@ interface CategoryGridProps {
 }
 
 export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
+  const t = useTranslations('Home.category')
+  const locale = useLocale()
   const queryParams = variant === 'parent'
-    ? 'parent=null&featured=true'
-    : 'featured=true&limit=6'
+    ? `parent=null&featured=true&locale=${locale}`
+    : `featured=true&limit=6&locale=${locale}`
 
   const { data, isLoading } = useQuery({
     queryKey: ['categories', variant],
@@ -35,12 +39,12 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
   const categories: Category[] = data?.data || []
 
   const sectionTitle = variant === 'parent'
-    ? 'Browse by Category'
-    : 'Shop by Category'
+    ? t('parentTitle')
+    : t('featuredTitle')
 
   const sectionSubtitle = variant === 'parent'
-    ? 'Explore our complete range of product categories'
-    : 'Explore our wide range of kitchenware products. From professional cookware to everyday essentials.'
+    ? t('parentSubtitle')
+    : t('featuredSubtitle')
 
   if (isLoading) {
     return (
@@ -72,7 +76,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
         <Container maxWidth="2xl">
           <div className="text-center py-12">
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">{sectionTitle}</h2>
-            <p className="text-gray-600 mt-3 text-base md:text-lg">No categories available yet.</p>
+            <p className="text-gray-600 mt-3 text-base md:text-lg">{t('empty')}</p>
           </div>
         </Container>
       </section>
@@ -93,7 +97,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8">
           {categories.map((category) => (
-            <Link
+            <LocaleLink
               key={category.id}
               href={`/products?category=${category.slug}`}
               className="group flex flex-col items-center outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-4 rounded-lg"
@@ -110,7 +114,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
                   />
                 ) : (
                   <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-4xl ring-4 ring-white shadow-premium-lg group-hover:shadow-gold group-hover:ring-[#c9a84c]/50 group-hover:scale-105 transition-all duration-500">
-                    <span className="text-gray-400">📦</span>
+                    <span className="text-gray-400">ðŸ“¦</span>
                   </div>
                 )}
               </div>
@@ -120,18 +124,18 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
               </h3>
 
               <div className="w-0 h-0.5 bg-[#c9a84c] group-hover:w-8 transition-all duration-300 mt-1" />
-            </Link>
+            </LocaleLink>
           ))}
         </div>
 
         <div className="text-center mt-10">
-          <Link
+          <LocaleLink
             href="/products"
             className="inline-flex items-center gap-2 text-[#1a3a5c] font-medium hover:text-[#c9a84c] transition-colors group outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-2 rounded-md px-4 py-2"
           >
-            View All Categories
+            {t('viewAll')}
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </LocaleLink>
         </div>
       </Container>
     </section>

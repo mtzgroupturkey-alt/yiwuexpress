@@ -1,6 +1,8 @@
-'use client'
+﻿'use client'
 
+import { useLocale, useTranslations } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
+import { LocaleLink } from '@/components/LocaleLink'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
@@ -8,9 +10,11 @@ import ProductCard from '@/components/products/ProductCard'
 import { ChevronRight } from 'lucide-react'
 
 export function FeaturedProducts() {
+  const t = useTranslations('Home.featured')
+  const locale = useLocale()
   const { data, isLoading } = useQuery({
-    queryKey: ['products', 'featured', 8],
-    queryFn: () => api.get('/api/products?featured=true&limit=8'),
+    queryKey: ['products', 'featured', 8, locale],
+    queryFn: () => api.get(`/api/products?featured=true&limit=8&locale=${locale}`),
     staleTime: 2 * 60 * 1000,
   })
 
@@ -44,19 +48,19 @@ export function FeaturedProducts() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">
-            Featured Products
+            {t('title')}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Our handpicked selection of premium kitchenware
+            {t('subtitle')}
           </p>
         </div>
-        <Link
+        <LocaleLink
           href="/products?featured=true"
           className="flex items-center gap-1 text-sm text-[#1a3a5c] hover:text-[#c9a84c] transition font-medium"
         >
-          View All
+          {t('viewAll')}
           <ChevronRight className="w-4 h-4" />
-        </Link>
+        </LocaleLink>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">

@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Pause, Play, Sparkles, ArrowRight, Zap } from 'lucide-react'
@@ -203,7 +204,7 @@ export function ModernHeroSlider() {
                 style={{ fontFamily: 'Outfit, sans-serif' }}
               >
                 <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
-                  YIWU EXPRESS
+                  Global Trade
                 </span>
               </motion.h1>
 
@@ -222,7 +223,7 @@ export function ModernHeroSlider() {
                 transition={{ delay: 0.8, duration: 0.8 }}
                 className="flex flex-wrap gap-4"
               >
-                <Link
+                <LocaleLink
                   href="/products"
                   className="group relative bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] text-[#1a1a2e] px-8 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-[#c9a84c]/50 transition-all duration-300 overflow-hidden"
                 >
@@ -236,9 +237,9 @@ export function ModernHeroSlider() {
                     whileHover={{ x: 0 }}
                     transition={{ duration: 0.3 }}
                   />
-                </Link>
+                </LocaleLink>
 
-                <Link
+                <LocaleLink
                   href="/contact"
                   className="group relative border-2 border-white/30 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm"
                 >
@@ -246,7 +247,7 @@ export function ModernHeroSlider() {
                     CONTACT US
                     <Zap className="w-5 h-5 group-hover:rotate-12 transition-transform" />
                   </span>
-                </Link>
+                </LocaleLink>
               </motion.div>
 
               {/* Feature Pills */}
@@ -443,7 +444,7 @@ export function ModernHeroSlider() {
                   transition={{ delay: 0.8 }}
                   className="flex flex-wrap gap-4 pt-4"
                 >
-                  <Link
+                  <LocaleLink
                     href={slide.ctaLink}
                     className="group relative bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] text-[#1a1a2e] px-8 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-[#c9a84c]/50 transition-all duration-300 overflow-hidden"
                   >
@@ -451,14 +452,14 @@ export function ModernHeroSlider() {
                       {slide.ctaText}
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
-                  </Link>
+                  </LocaleLink>
                   {slide.secondaryCtaText && slide.secondaryCtaLink && (
-                    <Link
+                    <LocaleLink
                       href={slide.secondaryCtaLink}
                       className="group border-2 border-white/30 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm"
                     >
                       {slide.secondaryCtaText}
-                    </Link>
+                    </LocaleLink>
                   )}
                 </motion.div>
               </motion.div>

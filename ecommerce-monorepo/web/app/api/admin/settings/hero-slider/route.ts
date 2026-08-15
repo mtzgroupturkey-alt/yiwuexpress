@@ -1,6 +1,64 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getUserFromToken, getTokenFromRequest } from '@/lib/auth'
+
+type HeroTranslationInput = {
+  locale: string
+  title: string
+  subtitle?: string | null
+  description?: string | null
+  badgeText?: string | null
+  ctaText: string
+  secondaryCtaText?: string | null
+}
+
+// Build the list of translation rows to create. Always seed `en` from the
+// legacy fields so the fallback chain stays intact even if the form omits it.
+function buildHeroTranslations(
+  translations: HeroTranslationInput[] | undefined,
+  legacy: {
+    title: string
+    subtitle?: string | null
+    description?: string | null
+    badgeText?: string | null
+    ctaText: string
+    secondaryCtaText?: string | null
+  }
+): HeroTranslationInput[] {
+  const rows: HeroTranslationInput[] = []
+  const seen = new Set<string>()
+
+  if (Array.isArray(translations)) {
+    for (const t of translations) {
+      if (!t.locale || seen.has(t.locale)) continue
+      seen.add(t.locale)
+      rows.push({
+        locale: t.locale,
+        title: t.title ?? legacy.title,
+        subtitle: t.subtitle ?? null,
+        description: t.description ?? null,
+        badgeText: t.badgeText ?? null,
+        ctaText: t.ctaText ?? legacy.ctaText,
+        secondaryCtaText: t.secondaryCtaText ?? null,
+      })
+    }
+  }
+
+  if (!seen.has('en')) {
+    rows.push({
+      locale: 'en',
+      title: legacy.title,
+      subtitle: legacy.subtitle ?? null,
+      description: legacy.description ?? null,
+      badgeText: legacy.badgeText ?? null,
+      ctaText: legacy.ctaText,
+      secondaryCtaText: legacy.secondaryCtaText ?? null,
+    })
+  }
+
+  return rows
+}
 
 async function getAuthUser(req: NextRequest) {
   const token = getTokenFromRequest(req)
@@ -26,6 +84,7 @@ export async function GET(req: NextRequest) {
 
     const slides = await prisma.heroSlide.findMany({
       orderBy: { displayOrder: 'asc' },
+      include: { translations: true },
     })
 
     return NextResponse.json({ data: slides })
@@ -61,6 +120,7 @@ export async function POST(req: NextRequest) {
       textColor,
       slideDuration,
       isActive,
+      translations,
     } = body
 
     if (!title || !imageUrl || !ctaText || !ctaLink) {
@@ -91,6 +151,11 @@ export async function POST(req: NextRequest) {
         slideDuration: slideDuration || 5,
         isActive: isActive !== false,
         displayOrder: (maxOrder._max.displayOrder || -1) + 1,
+        translations: {
+          create: buildHeroTranslations(translations, {
+            title, subtitle, description, badgeText, ctaText, secondaryCtaText
+          })
+        }
       },
     })
 

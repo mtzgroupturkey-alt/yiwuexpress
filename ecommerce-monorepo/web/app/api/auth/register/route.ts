@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
     // Create response with httpOnly cookie
     const response = NextResponse.json({
       user,
-      message: 'Account created successfully. Welcome to YIWU EXPRESS!',
+      message: 'Account created successfully. Welcome to Global Trade!',
       // NO TOKEN IN RESPONSE BODY - only in httpOnly cookie
     })
 

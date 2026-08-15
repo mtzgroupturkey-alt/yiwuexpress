@@ -1,7 +1,7 @@
 'use client'
 
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 interface PaginationProps {
   currentPage: number
@@ -10,178 +10,135 @@ interface PaginationProps {
   className?: string
 }
 
-export function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-  className
-}: PaginationProps) {
-  // Generate page numbers to display
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = []
-    const maxVisible = 7 // Maximum number of page buttons to show
-
-    if (totalPages <= maxVisible) {
-      // Show all pages if total is small
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      // Always show first page
-      pages.push(1)
-
-      if (currentPage > 3) {
-        pages.push('...')
-      }
-
-      // Show pages around current page
-      const start = Math.max(2, currentPage - 1)
-      const end = Math.min(totalPages - 1, currentPage + 1)
-
-      for (let i = start; i <= end; i++) {
-        pages.push(i)
-      }
-
-      if (currentPage < totalPages - 2) {
-        pages.push('...')
-      }
-
-      // Always show last page
-      pages.push(totalPages)
+/**
+ * Generate page numbers to display with ellipsis for large page counts
+ */
+function getPageNumbers(currentPage: number, totalPages: number): (number | 'ellipsis')[] {
+  const pages: (number | 'ellipsis')[] = []
+  
+  // If 7 or fewer pages, show all
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i)
     }
-
     return pages
   }
+  
+  // Always show first page
+  pages.push(1)
+  
+  // Calculate range around current page
+  let rangeStart = Math.max(2, currentPage - 1)
+  let rangeEnd = Math.min(totalPages - 1, currentPage + 1)
+  
+  // Adjust range to always show 3 numbers when possible
+  if (rangeEnd - rangeStart < 2) {
+    if (rangeStart === 2) {
+      rangeEnd = Math.min(totalPages - 1, rangeEnd + 1)
+    } else if (rangeEnd === totalPages - 1) {
+      rangeStart = Math.max(2, rangeStart - 1)
+    }
+  }
+  
+  // Add ellipsis if gap before range
+  if (rangeStart > 2) {
+    pages.push('ellipsis')
+  }
+  
+  // Add page numbers in range
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    pages.push(i)
+  }
+  
+  // Add ellipsis if gap after range
+  if (rangeEnd < totalPages - 1) {
+    pages.push('ellipsis')
+  }
+  
+  // Always show last page
+  pages.push(totalPages)
+  
+  return pages
+}
 
-  const pageNumbers = getPageNumbers()
-  const isFirstPage = currentPage === 1
-  const isLastPage = currentPage === totalPages
-
+export function Pagination({ 
+  currentPage, 
+  totalPages, 
+  onPageChange, 
+  className = '' 
+}: PaginationProps) {
+  // Don't render if there's only one page or less
+  if (totalPages <= 1) {
+    return null
+  }
+  
+  const pageNumbers = getPageNumbers(currentPage, totalPages)
+  const canGoPrevious = currentPage > 1
+  const canGoNext = currentPage < totalPages
+  
   return (
     <nav
       aria-label="Pagination"
-      className={cn('flex items-center justify-center gap-2', className)}
+      className={`flex items-center justify-center gap-1 ${className}`}
     >
       {/* Previous Button */}
-      <button
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => onPageChange(currentPage - 1)}
-        disabled={isFirstPage}
+        disabled={!canGoPrevious}
         aria-label="Go to previous page"
-        className={cn(
-          'flex items-center justify-center w-10 h-10 rounded-lg border transition-colors',
-          isFirstPage
-            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
-        )}
+        className="gap-1"
       >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-
+        <ChevronLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Previous</span>
+      </Button>
+      
       {/* Page Numbers */}
       <div className="flex items-center gap-1">
         {pageNumbers.map((page, index) => {
-          if (page === '...') {
+          if (page === 'ellipsis') {
             return (
               <span
                 key={`ellipsis-${index}`}
-                className="flex items-center justify-center w-10 h-10 text-gray-500"
+                className="px-3 py-2 text-gray-500"
+                aria-hidden="true"
               >
                 ...
               </span>
             )
           }
-
-          const pageNumber = page as number
-          const isActive = pageNumber === currentPage
-
+          
+          const isActive = page === currentPage
+          
           return (
-            <button
-              key={pageNumber}
-              onClick={() => onPageChange(pageNumber)}
-              aria-label={`Go to page ${pageNumber}`}
+            <Button
+              key={page}
+              variant={isActive ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onPageChange(page)}
+              aria-label={`Go to page ${page}`}
               aria-current={isActive ? 'page' : undefined}
-              className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-lg font-medium transition-all',
-                isActive
-                  ? 'bg-[#1a3a5c] text-white shadow-md'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-[#1a3a5c]'
-              )}
+              className={isActive ? 'bg-primary text-white' : ''}
             >
-              {pageNumber}
-            </button>
+              {page}
+            </Button>
           )
         })}
       </div>
-
+      
       {/* Next Button */}
-      <button
+      <Button
+        variant="outline"
+        size="sm"
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={isLastPage}
+        disabled={!canGoNext}
         aria-label="Go to next page"
-        className={cn(
-          'flex items-center justify-center w-10 h-10 rounded-lg border transition-colors',
-          isLastPage
-            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
-        )}
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
-    </nav>
-  )
-}
-
-// Compact version for mobile
-export function PaginationCompact({
-  currentPage,
-  totalPages,
-  onPageChange,
-  className
-}: PaginationProps) {
-  const isFirstPage = currentPage === 1
-  const isLastPage = currentPage === totalPages
-
-  return (
-    <nav
-      aria-label="Pagination"
-      className={cn('flex items-center justify-between gap-4', className)}
-    >
-      {/* Previous Button */}
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={isFirstPage}
-        aria-label="Go to previous page"
-        className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg border font-medium transition-colors',
-          isFirstPage
-            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
-        )}
-      >
-        <ChevronLeft className="w-5 h-5" />
-        <span className="hidden sm:inline">Previous</span>
-      </button>
-
-      {/* Page Info */}
-      <span className="text-sm text-gray-600 font-medium">
-        Page {currentPage} of {totalPages}
-      </span>
-
-      {/* Next Button */}
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={isLastPage}
-        aria-label="Go to next page"
-        className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg border font-medium transition-colors',
-          isLastPage
-            ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-            : 'border-gray-300 text-gray-700 hover:bg-[#1a3a5c] hover:text-white hover:border-[#1a3a5c]'
-        )}
+        className="gap-1"
       >
         <span className="hidden sm:inline">Next</span>
-        <ChevronRight className="w-5 h-5" />
-      </button>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </nav>
   )
 }

@@ -1,27 +1,11 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
-
-async function checkAdminAuth(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-
-  if (!token) {
-    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-  }
-
-  const payload = verifyToken(token)
-  if (!payload || payload.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-  }
-
-  return null // No error
-}
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const authError = await checkAdminAuth(request)
-    if (authError) return authError
+    await requireRole(request, ['ADMIN'])
 
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
@@ -92,17 +76,13 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Get shipments error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return createAuthErrorResponse(error as Error)
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const authError = await checkAdminAuth(request)
-    if (authError) return authError
+    await requireRole(request, ['ADMIN'])
 
     const body = await request.json()
     const { userId, serviceId, origin, destination, carrier, estimatedDelivery, notes } = body
@@ -145,9 +125,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(shipment, { status: 201 })
   } catch (error) {
     console.error('Create shipment error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return createAuthErrorResponse(error as Error)
   }
 }

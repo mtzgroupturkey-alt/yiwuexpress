@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { localizeCategory } from '@/lib/utils/localize'
 
 const prisma = new PrismaClient()
 
@@ -13,6 +15,7 @@ export async function GET(request: Request) {
     const parent = searchParams.get('parent')
     const level = searchParams.get('level') ? parseInt(searchParams.get('level')!) : undefined
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined
+    const locale = searchParams.get('locale') || 'en'
 
     const where: any = {}
     if (activeOnly) {
@@ -46,7 +49,11 @@ export async function GET(request: Request) {
           select: {
             id: true,
             name: true,
-            slug: true
+            slug: true,
+            translations: {
+              where: { locale: { in: [locale, 'en'] } },
+              select: { locale: true, name: true, description: true }
+            }
           }
         },
         children: includeChildren ? {
@@ -56,12 +63,30 @@ export async function GET(request: Request) {
               where: { isActive: true },
               include: {
                 children: {
-                  where: { isActive: true }
+                  where: { isActive: true },
+                  include: {
+                    translations: {
+                      where: { locale: { in: [locale, 'en'] } },
+                      select: { locale: true, name: true, description: true }
+                    }
+                  }
+                },
+                translations: {
+                  where: { locale: { in: [locale, 'en'] } },
+                  select: { locale: true, name: true, description: true }
                 }
               }
+            },
+            translations: {
+              where: { locale: { in: [locale, 'en'] } },
+              select: { locale: true, name: true, description: true }
             }
           }
-        } : false
+        } : false,
+        translations: {
+          where: { locale: { in: [locale, 'en'] } },
+          select: { locale: true, name: true, description: true }
+        }
       },
       orderBy: [
         { displayOrder: 'asc' },
@@ -70,9 +95,23 @@ export async function GET(request: Request) {
       take: limit
     })
 
+    // Expand-and-Contract read-path localization: resolve each category's name
+    // (and nested children) to the active locale with English fallback.
+    const localizeNode = (node: any): any => {
+      const localized = localizeCategory(node, locale)
+      const out = { ...node, name: localized.name, description: localized.description }
+      if (Array.isArray(node.children)) {
+        out.children = node.children.map(localizeNode)
+      }
+      if (node.parent) {
+        out.parent = { ...node.parent, ...localizeCategory(node.parent, locale) }
+      }
+      return out
+    }
+
     return NextResponse.json({
       success: true,
-      data: categories,
+      data: categories.map(localizeNode),
       count: categories.length
     })
   } catch (error) {

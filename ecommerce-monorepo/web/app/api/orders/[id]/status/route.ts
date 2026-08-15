@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -76,7 +77,7 @@ export async function PUT(
       status,
       notes: notes || `Status updated to ${status}`,
       timestamp: new Date().toISOString(),
-      location: location || 'Yiwu, China'
+      location: location || 'China'
     }
 
     // Get existing tracking history

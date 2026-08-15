@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save } from 'lucide-react'
+import { LocalizedFieldsForm, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
 
 const countrySchema = z.object({
   code: z.string().min(2, 'Country code is required (e.g., US, CN)').max(2, 'Country code must be 2 characters'),
@@ -26,6 +27,7 @@ type CountryForm = z.infer<typeof countrySchema>
 export default function NewCountryPage() {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
+  const [translations, setTranslations] = useState<TranslationRow[]>([])
 
   const {
     register,
@@ -43,14 +45,25 @@ export default function NewCountryPage() {
   const onSubmit = async (data: CountryForm) => {
     setSubmitting(true)
     try {
+      // The English name lives in BOTH the main "Country Name" field and the
+      // `en` tab of LocalizedFieldsForm. Use whichever is filled so the English
+      // value is never lost on save.
+      const enFromForm = (data.name || '').trim()
+      const enFromLocalized = (translations.find((t) => t.locale === 'en')?.name || '').trim()
+      const resolvedName = enFromForm || enFromLocalized
+
       const countryData = {
         code: data.code.toUpperCase(),
-        name: data.name,
+        name: resolvedName,
         currency: data.currency.toUpperCase(),
         currencySymbol: data.currencySymbol,
         flag: data.flag || null,
         deliverySLA: data.deliverySLA || 'Standard: 7-10 days',
-        isActive: data.isActive
+        isActive: data.isActive,
+        translations: [
+          { locale: 'en', name: resolvedName },
+          ...translations.filter((t) => t.locale !== 'en'),
+        ]
       }
 
       const response = await fetch('/api/admin/countries', {
@@ -129,6 +142,15 @@ export default function NewCountryPage() {
                       <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
                     )}
                   </div>
+                </div>
+
+                {/* Localized country name (RU / ZH) */}
+                <div>
+                  <Label className="mb-2 block">Localized Name (optional)</Label>
+                  <LocalizedFieldsForm
+                    fields={[{ key: 'name', label: 'Name' }]}
+                    onChange={setTranslations}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { ChevronRight, Home } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 
@@ -66,18 +67,18 @@ export function BreadcrumbWithBackground({
         <div className="text-white">
           {/* Breadcrumb */}
           <nav className="flex items-center space-x-2 text-sm text-white/80 mb-4" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-white flex items-center">
+            <LocaleLink href="/" className="hover:text-white flex items-center">
               <Home className="w-4 h-4" />
-            </Link>
+            </LocaleLink>
             {items.map((item, index) => (
               <div key={item.href} className="flex items-center space-x-2">
                 <ChevronRight className="w-4 h-4 text-white/40" />
                 {index === items.length - 1 ? (
                   <span className="text-white font-medium">{item.name}</span>
                 ) : (
-                  <Link href={item.href} className="hover:text-white transition">
+                  <LocaleLink href={item.href} className="hover:text-white transition">
                     {item.name}
-                  </Link>
+                  </LocaleLink>
                 )}
               </div>
             ))}

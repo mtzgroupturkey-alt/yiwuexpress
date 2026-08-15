@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { ChevronRight, Home } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { useEffect, useState } from 'react'
@@ -91,18 +92,18 @@ export function PageHero({ title, description, breadcrumbs, backgroundImage, pag
           {/* Breadcrumb Navigation */}
           {defaultBreadcrumbs.length > 0 && (
             <nav className="flex items-center space-x-2 text-sm mb-6" aria-label="Breadcrumb">
-              <Link href="/" className="text-white/70 hover:text-white flex items-center transition-colors">
+              <LocaleLink href="/" className="text-white/70 hover:text-white flex items-center transition-colors">
                 <Home className="w-4 h-4" />
-              </Link>
+              </LocaleLink>
               {defaultBreadcrumbs.map((item, index) => (
                 <div key={item.href} className="flex items-center space-x-2">
                   <ChevronRight className="w-4 h-4 text-white/40" />
                   {index === defaultBreadcrumbs.length - 1 ? (
                     <span className="text-[#c9a84c] font-medium">{item.name}</span>
                   ) : (
-                    <Link href={item.href} className="text-white/70 hover:text-white transition-colors">
+                    <LocaleLink href={item.href} className="text-white/70 hover:text-white transition-colors">
                       {item.name}
-                    </Link>
+                    </LocaleLink>
                   )}
                 </div>
               ))}

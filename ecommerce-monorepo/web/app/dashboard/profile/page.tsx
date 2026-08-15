@@ -7,8 +7,11 @@ import { api } from '@/lib/api'
 import { User, Mail, Phone, Globe, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { useTranslations } from 'next-intl'
 
 export default function ProfilePage() {
+  const t = useTranslations('DashboardPages')
+  const tp = useTranslations('DashboardPages.profile')
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading, updateUser } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
@@ -48,13 +51,13 @@ export default function ProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
+      toast.error(tp('photoNotImage'))
       return
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB')
+      toast.error(tp('photoTooLarge'))
       return
     }
 
@@ -80,9 +83,9 @@ export default function ProfilePage() {
       })
 
       setFormData(prev => ({ ...prev, profilePhoto: base64 }))
-      toast.success('Photo uploaded successfully!')
+      toast.success(tp('photoUploaded'))
     } catch (error) {
-      toast.error('Failed to upload photo')
+      toast.error(tp('photoUploadFailed'))
       setPhotoPreview((user as any).profilePhoto || null)
     } finally {
       setUploadingPhoto(false)
@@ -108,10 +111,10 @@ export default function ProfilePage() {
         updateUser(response.user)
       }
       setSuccess(true)
-      toast.success('Profile updated successfully!')
+      toast.success(tp('profileUpdated'))
       setTimeout(() => setSuccess(false), 3000)
     } catch (error) {
-      toast.error('Failed to update profile')
+      toast.error(tp('profileUpdateFailed'))
     } finally {
       setIsSaving(false)
     }
@@ -122,7 +125,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Loading profile...</p>
+          <p className="text-sm text-gray-500">{t('loadingProfile')}</p>
         </div>
       </div>
     )
@@ -137,7 +140,7 @@ export default function ProfilePage() {
             <Link href="/dashboard" className="text-gray-500 hover:text-[#1a3a5c]">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">My Profile</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">{tp('title')}</h1>
           </div>
         </div>
 
@@ -180,7 +183,7 @@ export default function ProfilePage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     <span className="text-xs font-medium">
-                      {uploadingPhoto ? 'Uploading...' : 'Change'}
+                      {uploadingPhoto ? tp('uploading') : tp('change')}
                     </span>
                   </div>
                 </button>
@@ -210,14 +213,14 @@ export default function ProfilePage() {
                     disabled={uploadingPhoto}
                     className="px-4 py-2 text-sm font-medium text-[#1a3a5c] bg-[#1a3a5c]/10 hover:bg-[#1a3a5c]/20 rounded-lg transition-colors disabled:opacity-50"
                   >
-                    {uploadingPhoto ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Uploading...
-                      </span>
-                    ) : (
-                      'Upload Photo'
-                    )}
+                     {uploadingPhoto ? (
+                       <span className="flex items-center gap-2">
+                         <Loader2 className="w-4 h-4 animate-spin" />
+                         {tp('uploading')}
+                       </span>
+                     ) : (
+                       tp('uploadPhoto')
+                     )}
                   </button>
                   
                   {photoPreview && (
@@ -227,13 +230,13 @@ export default function ProfilePage() {
                       disabled={uploadingPhoto}
                       className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
                     >
-                      Remove
-                    </button>
+                       {tp('remove')}
+                     </button>
                   )}
                 </div>
                 
                 <p className="text-xs text-gray-400 mt-2">
-                  JPG, PNG or GIF. Max size 5MB.
+                  {tp('photoHint')}
                 </p>
               </div>
             </div>
@@ -243,7 +246,7 @@ export default function ProfilePage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <User className="w-4 h-4 inline mr-2" />
-                  Full Name
+                  {tp('fullName')}
                 </label>
                 <input
                   type="text"
@@ -257,7 +260,7 @@ export default function ProfilePage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Mail className="w-4 h-4 inline mr-2" />
-                  Email Address
+                  {tp('emailAddress')}
                 </label>
                 <input
                   type="email"
@@ -265,13 +268,13 @@ export default function ProfilePage() {
                   disabled
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
+                <p className="text-xs text-gray-400 mt-1">{tp('emailCannotChange')}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Phone className="w-4 h-4 inline mr-2" />
-                  Phone Number
+                  {tp('phoneNumber')}
                 </label>
                 <input
                   type="tel"
@@ -284,14 +287,14 @@ export default function ProfilePage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Globe className="w-4 h-4 inline mr-2" />
-                  Country
+                  {tp('country')}
                 </label>
                 <select
                   value={formData.country}
                   onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent"
                 >
-                  <option value="">Select your country</option>
+                  <option value="">{tp('selectCountry')}</option>
                   <option value="AF">Afghanistan</option>
                   <option value="AL">Albania</option>
                   <option value="DZ">Algeria</option>
@@ -381,22 +384,22 @@ export default function ProfilePage() {
                   {isSaving ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Saving...
+                      {tp('saving')}
                     </>
                   ) : success ? (
                     <>
                       <CheckCircle className="w-4 h-4" />
-                      Saved!
+                      {tp('saved')}
                     </>
                   ) : (
-                    'Save Changes'
+                    tp('saveChanges')
                   )}
                 </button>
                 <Link
                   href="/dashboard/settings"
                   className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Change Password
+                  {tp('changePassword')}
                 </Link>
               </div>
             </form>

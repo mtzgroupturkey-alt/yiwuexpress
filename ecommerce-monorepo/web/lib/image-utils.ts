@@ -1,10 +1,24 @@
 /**
- * Image Utility Functions for YIWU EXPRESS
+ * Image Utility Functions for Global Trade
  * Handles image URL construction for localhost and production
  */
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3005'
 const UPLOAD_URL = process.env.NEXT_PUBLIC_UPLOAD_URL || `${BASE_URL}/uploads`
+
+/**
+ * Default placeholder image path for fallback
+ */
+export const DEFAULT_PLACEHOLDER = '/images/placeholder.png'
+
+/**
+ * Resolve a fallback image source. Returns the provided fallback, or the
+ * default placeholder when none is supplied.
+ */
+export function getFallbackSrc(src?: string | null): string {
+  if (!src) return DEFAULT_PLACEHOLDER
+  return src
+}
 
 /**
  * Get the full URL for an uploaded image

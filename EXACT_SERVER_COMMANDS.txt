@@ -1,0 +1,126 @@
+================================================================================
+                    EXACT COMMANDS TO RUN ON SERVER
+                         (Copy line by line)
+================================================================================
+
+1. Connect to your server:
+---------------------------
+ssh djdn@39.175.57.2
+
+
+2. Navigate to mobile directory:
+---------------------------------
+cd /www/wwwroot/www.dromkok.com/mobile
+
+
+3. Install EAS CLI (first time only):
+--------------------------------------
+npm install -g eas-cli
+
+
+4. Login to Expo (first time only):
+------------------------------------
+eas login
+
+
+5. Configure project (first time only):
+----------------------------------------
+eas build:configure
+
+
+6. Build APK:
+-------------
+eas build --platform android --profile preview
+
+
+7. Check build status:
+----------------------
+eas build:list
+
+
+================================================================================
+                    IF MOBILE FOLDER DOESN'T EXIST
+================================================================================
+
+Run this from your WINDOWS machine first:
+------------------------------------------
+scp -r "C:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile" djdn@39.175.57.2:/www/wwwroot/www.dromkok.com/
+
+
+Then install dependencies on server:
+-------------------------------------
+ssh djdn@39.175.57.2
+cd /www/wwwroot/www.dromkok.com/mobile
+npm install
+
+
+================================================================================
+                    AFTER BUILD COMPLETES
+================================================================================
+
+You'll see a URL like:
+https://expo.dev/artifacts/eas/abc123.apk
+
+Download APK:
+-------------
+Option 1: Open the URL in your browser and download
+
+Option 2: Download from Expo dashboard
+- Visit: https://expo.dev
+- Login
+- Go to: Projects > dromkok-app > Builds
+- Click Download button
+
+
+================================================================================
+                    QUICK REBUILD (After first time)
+================================================================================
+
+ssh djdn@39.175.57.2
+cd /www/wwwroot/www.dromkok.com/mobile
+eas build --platform android --profile preview
+
+
+================================================================================
+                    COMMON ERRORS
+================================================================================
+
+Error: "mobile: No such file or directory"
+→ Upload mobile folder first (see "IF MOBILE FOLDER DOESN'T EXIST")
+
+Error: "eas: command not found"
+→ npm install -g eas-cli
+
+Error: "Not logged in"
+→ eas login
+
+Error: "node_modules not found" or dependency errors
+→ cd /www/wwwroot/www.dromkok.com/mobile
+→ npm install
+
+
+================================================================================
+                    IMPORTANT INFO
+================================================================================
+
+✓ Build happens on EXPO servers (not your server)
+✓ Your server just runs the command
+✓ Build takes 10-15 minutes
+✓ You need an Expo account (free at expo.dev)
+✓ Free tier: 30 builds per month
+✓ APK size: ~45-60 MB
+
+
+================================================================================
+                    ALTERNATIVE: BUILD FROM WINDOWS
+================================================================================
+
+Much easier! Just run on your Windows PC:
+
+cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
+build-apk.bat
+
+No server needed, same result!
+
+
+================================================================================

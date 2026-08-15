@@ -1,0 +1,299 @@
+# DROMKOK Mobile APK Build Flow
+
+## 🔄 Build Process Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     YOUR LOCAL MACHINE                          │
+│                                                                 │
+│  ┌───────────────┐                                            │
+│  │  Run Command  │                                            │
+│  │  build-apk.bat│                                            │
+│  └───────┬───────┘                                            │
+│          │                                                     │
+│          ▼                                                     │
+│  ┌───────────────┐     ┌────────────────┐                   │
+│  │   EAS CLI     │────▶│  Upload Code   │                   │
+│  │   Installed   │     │  to Expo       │                   │
+│  └───────────────┘     └────────┬───────┘                   │
+│                                  │                            │
+└──────────────────────────────────┼────────────────────────────┘
+                                   │
+                                   │ Internet
+                                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     EXPO BUILD SERVERS                          │
+│                                                                 │
+│  ┌────────────────┐     ┌─────────────────┐                  │
+│  │  Queue Build   │────▶│  Install Deps   │                  │
+│  │  (30 sec)      │     │  (2-3 min)      │                  │
+│  └────────────────┘     └────────┬────────┘                  │
+│                                   │                            │
+│                                   ▼                            │
+│                         ┌─────────────────┐                   │
+│                         │ Generate Native │                   │
+│                         │ Android Project │                   │
+│                         │    (1-2 min)    │                   │
+│                         └────────┬────────┘                   │
+│                                   │                            │
+│                                   ▼                            │
+│                         ┌─────────────────┐                   │
+│                         │  Compile APK    │                   │
+│                         │    (5-8 min)    │                   │
+│                         └────────┬────────┘                   │
+│                                   │                            │
+│                                   ▼                            │
+│                         ┌─────────────────┐                   │
+│                         │   Sign & Opt    │                   │
+│                         │    (1-2 min)    │                   │
+│                         └────────┬────────┘                   │
+│                                   │                            │
+└───────────────────────────────────┼─────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    EXPO DASHBOARD (expo.dev)                    │
+│                                                                 │
+│  ┌────────────────┐                                            │
+│  │  Build Complete│                                            │
+│  │  ✅ APK Ready  │                                            │
+│  │                │                                            │
+│  │  [Download]    │◀───── Click to download                  │
+│  └────────────────┘                                            │
+└─────────────────────────────────────────────────────────────────┘
+                    │
+                    ▼
+         ┌──────────────────────┐
+         │   dromkok-1.0.0.apk  │
+         │      (~45-60 MB)     │
+         └──────────────────────┘
+                    │
+                    ▼
+         ┌──────────────────────┐
+         │   Android Device     │
+         │   📱 Install & Test  │
+         └──────────────────────┘
+```
+
+---
+
+## ⏱️ Timeline Breakdown
+
+| Stage | Duration | What Happens |
+|-------|----------|--------------|
+| **Submission** | 30 seconds | Code uploaded to Expo |
+| **Queue** | 0-2 minutes | Waiting for build worker |
+| **Dependencies** | 2-3 minutes | npm install on server |
+| **Native Generation** | 1-2 minutes | Create Android project |
+| **Compilation** | 5-8 minutes | Build APK with Gradle |
+| **Signing & Optimization** | 1-2 minutes | Sign APK, optimize assets |
+| **Upload** | 30 seconds | APK uploaded to CDN |
+| **Total** | **10-15 minutes** | Average build time |
+
+---
+
+## 🔐 What Gets Included
+
+```
+Your APK includes:
+├── 📱 Compiled React Native code
+├── 🎨 All assets (images, fonts, icons)
+├── 📦 Node modules (bundled)
+├── ⚙️ Native Android code
+├── 🔑 Signing certificate (auto-generated by Expo)
+└── 📝 App metadata (name, version, permissions)
+
+Your APK does NOT include:
+❌ Source code (.ts, .tsx files)
+❌ node_modules folder
+❌ Development tools
+❌ .env files
+❌ Build configuration files
+```
+
+---
+
+## 🌐 Network Requirements
+
+```
+┌─────────────────────┐
+│  Your Computer      │
+│  ↓ Upload: ~10-50MB │  ← Uploads your code
+│  ↓ Download: ~500KB │  ← Downloads build logs
+└─────────────────────┘
+          ↕
+┌─────────────────────┐
+│  Expo Servers       │
+│  ↓ Download: ~200MB │  ← Downloads dependencies
+│  ↑ Upload: ~45-60MB │  ← Uploads final APK
+└─────────────────────┘
+```
+
+**Internet speed impact:**
+- **Upload speed**: Affects how fast your code is uploaded (30 sec - 2 min)
+- **Download speed**: Minimal impact (only logs and final APK link)
+
+---
+
+## 🔄 Build States
+
+Your build goes through these states:
+
+```
+pending → in-queue → in-progress → finished ✅
+                                  └─ errored ❌
+                                  └─ canceled 🚫
+```
+
+**Check status:**
+```cmd
+eas build:list
+```
+
+---
+
+## 💾 Where Files Are Stored
+
+### **On Your Computer**
+```
+c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile\
+├── src/             ← Your source code
+├── assets/          ← Images and icons
+├── app.json         ← App configuration
+└── eas.json         ← Build configuration
+```
+
+### **On Expo Servers** (during build)
+```
+/tmp/expo-build-xyz/
+├── node_modules/    ← Downloaded during build
+├── .next/           ← Generated during build
+└── android/         ← Native Android project
+```
+
+### **Final APK** (after build)
+```
+Expo CDN:
+https://expo.dev/artifacts/eas/[build-id].apk
+
+Your Downloads:
+C:\Users\[YourName]\Downloads\dromkok-1.0.0.apk
+```
+
+---
+
+## 📊 Build Size Breakdown
+
+Typical APK size: **45-60 MB**
+
+```
+Components:
+├── React Native Core:        ~25 MB (55%)
+├── Your App Code:            ~5 MB  (11%)
+├── Assets (images, fonts):   ~8 MB  (18%)
+├── Dependencies:             ~5 MB  (11%)
+└── Android Framework:        ~2 MB  (5%)
+```
+
+---
+
+## 🔧 Build Optimization
+
+Expo automatically:
+- ✅ Minifies JavaScript code
+- ✅ Compresses images
+- ✅ Removes dead code
+- ✅ Optimizes assets
+- ✅ Generates multiple APK sizes for different devices
+
+---
+
+## 🚦 Build Queue System
+
+```
+Free Tier:
+├── Max concurrent builds: 1
+├── Queue position: Based on submission time
+└── Priority: Standard
+
+Paid Tiers:
+├── Max concurrent builds: 2+
+├── Queue position: Priority
+└── Faster builds
+```
+
+---
+
+## 📱 After Build Completes
+
+```
+1. Build Artifact Created
+   ↓
+2. Upload to Expo CDN
+   ↓
+3. Generate Share Link
+   ↓
+4. Send Notification (email/terminal)
+   ↓
+5. Available for Download (24 hours minimum)
+```
+
+---
+
+## 🎯 Production vs Development Builds
+
+| Feature | Development | Production |
+|---------|-------------|------------|
+| **Build Type** | Development Client | Standalone APK |
+| **Size** | Larger (~80 MB) | Optimized (~50 MB) |
+| **Updates** | OTA updates | Manual reinstall |
+| **Debugging** | Full debug tools | Limited |
+| **Performance** | Slower | Faster |
+
+Your build uses: **Production/Preview APK** ✅
+
+---
+
+## 🔗 API Connection Flow
+
+```
+APK Installed on Device
+        ↓
+App Launches
+        ↓
+Read API Config
+(ENVIRONMENT: 'production')
+        ↓
+Connect to:
+https://www.dromkok.com/api
+        ↓
+Fetch Products, Auth, etc.
+```
+
+---
+
+## 📈 Monitoring Your Build
+
+### **In Terminal**
+```
+Building...
+├── [▓▓▓▓▓▓░░░░] 60% Compiling
+└── ETA: 4 minutes
+```
+
+### **In Expo Dashboard**
+```
+expo.dev → Projects → dromkok-app → Builds
+├── Build #1 - In Progress (8/15 min)
+└── Last build: Success ✅
+```
+
+### **Via CLI**
+```cmd
+eas build:list
+eas build:view [build-id]
+```
+
+---
+
+**Ready to start?** Run `build-apk.bat` and watch the magic happen! ✨

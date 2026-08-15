@@ -305,6 +305,9 @@ export default function AdminUsersPage() {
       if (!updateData.password) {
         delete updateData.password
       }
+      if (!updateData.businessType) {
+        delete updateData.businessType
+      }
 
       // Update permission role via permissions API if it changed
       if (updateData.permissionRoleId !== selectedUser.roleId) {
@@ -361,6 +364,7 @@ export default function AdminUsersPage() {
       const permissionRoleId = createData.permissionRoleId
       delete createData.permissionRoleId
       if (!createData.profilePhoto) delete createData.profilePhoto
+      if (!createData.businessType) delete createData.businessType
 
       const response = await fetch('/api/admin/users', {
         method: 'POST',

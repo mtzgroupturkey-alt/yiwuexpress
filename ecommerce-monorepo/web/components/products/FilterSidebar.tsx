@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface FilterSection {
   id: string
@@ -22,6 +23,7 @@ interface FilterSidebarProps {
 }
 
 export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose, isMobile }: FilterSidebarProps) {
+  const t = useTranslations('Products')
   const [expandedSections, setExpandedSections] = useState<string[]>(filters.map(f => f.id))
   const [selectedFilters, setSelectedFilters] = useState<Record<string, any>>({})
 
@@ -71,15 +73,15 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose
     <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-[#1a3a5c]">Filters</h2>
+        <h2 className="text-lg font-semibold text-[#1a3a5c]">{t('filters')}</h2>
         <div className="flex items-center space-x-2">
           {Object.keys(selectedFilters).length > 0 && (
-            <button
-              onClick={handleClearAll}
-              className="text-sm text-gray-500 hover:text-[#1a3a5c] transition-colors"
-            >
-              Clear All
-            </button>
+              <button
+                onClick={handleClearAll}
+                className="text-sm text-gray-500 hover:text-[#1a3a5c] transition-colors"
+              >
+                {t('clearAll')}
+              </button>
           )}
           {isMobile && onClose && (
             <button onClick={onClose} className="p-2 text-gray-500 hover:text-[#1a3a5c]">
@@ -224,7 +226,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose
           className="w-full mt-6 bg-[#1a3a5c] text-white py-3 rounded-lg font-medium hover:bg-[#2a5a8c] transition-colors"
           onClick={onClose}
         >
-          Apply Filters
+          {t('applyFilters')}
         </button>
       )}
     </div>

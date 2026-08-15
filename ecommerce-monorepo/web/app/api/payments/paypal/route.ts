@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
 import { prisma } from '@/lib/db'
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
           },
         ],
         application_context: {
-          brand_name: 'YIWU EXPRESS',
+          brand_name: 'Global Trade',
           landing_page: 'NO_PREFERENCE',
           user_action: 'PAY_NOW',
           return_url: `${process.env.APP_URL || 'http://localhost:3001'}/orders/${order.id}?paypal=success`,

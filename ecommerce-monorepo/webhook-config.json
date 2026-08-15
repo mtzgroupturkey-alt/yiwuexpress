@@ -1,0 +1,18 @@
+[
+  {
+    "id": "deploy",
+    "execute-command": "/www/wwwroot/www.dromkok.com/web/deploy.sh",
+    "command-working-directory": "/www/wwwroot/www.dromkok.com/web",
+    "response-message": "🚀 Deployment started",
+    "trigger-rule": {
+      "match": {
+        "type": "payload-hash-sha1",
+        "secret": "YOUR_SECRET_HERE",
+        "parameter": {
+          "source": "header",
+          "name": "X-Hub-Signature"
+        }
+      }
+    }
+  }
+]

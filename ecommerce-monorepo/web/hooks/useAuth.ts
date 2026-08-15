@@ -51,8 +51,12 @@ export const useAuth = create<AuthState>()(
       isAuthenticated: false,
 
       login: async (email: string, password: string) => {
+        console.log('[useAuth] Starting login...', { email })
         set({ isLoading: true })
         try {
+          console.log('[useAuth] Sending POST to /api/auth/login')
+          console.log('[useAuth] Credentials included:', true)
+          
           const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -60,13 +64,31 @@ export const useAuth = create<AuthState>()(
             body: JSON.stringify({ email, password }),
           })
 
+          console.log('[useAuth] Response status:', response.status)
+          console.log('[useAuth] Response OK:', response.ok)
+          
+          // Log response headers
+          console.log('[useAuth] Response headers:')
+          response.headers.forEach((value, key) => {
+            console.log(`  ${key}: ${value}`)
+          })
+
           if (!response.ok) {
             const error = await response.json()
+            console.error('[useAuth] Login failed:', error)
             throw new Error(error.error || 'Login failed')
           }
 
           const { user } = await response.json()
+          console.log('[useAuth] User data received:', {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            name: user.name
+          })
+          
           // NO TOKEN - it's in httpOnly cookie
+          console.log('[useAuth] Token is in httpOnly cookie (not in response)')
 
           set({
             user,
@@ -74,8 +96,13 @@ export const useAuth = create<AuthState>()(
             isLoading: false,
           })
 
+          console.log('[useAuth] State updated, login complete')
+          console.log('[useAuth] Checking cookies...')
+          console.log('[useAuth] document.cookie:', document.cookie || '(no visible cookies - httpOnly cookies are hidden)')
+          
           return user
         } catch (error: any) {
+          console.error('[useAuth] Login error:', error)
           set({ isLoading: false })
           throw error
         }
@@ -152,16 +179,27 @@ export const useAuth = create<AuthState>()(
         set({ isLoading: true })
         
         try {
-          const response = await fetch('/api/auth/me', {
-            credentials: 'include', // Send httpOnly cookie
+          // Use public /api/auth/status endpoint (no 401 for unauthenticated)
+          const response = await fetch('/api/auth/status', {
+            credentials: 'include',
           })
 
           if (!response.ok) {
-            throw new Error('Authentication failed')
+            throw new Error('Auth status check failed')
           }
 
-          const { data: user } = await response.json()
-          set({ user, isAuthenticated: true, isLoading: false })
+          const data = await response.json()
+          if (data.authenticated && data.user) {
+            // Merge persisted user data with fresh auth check
+            const currentUser = get().user
+            set({
+              user: { ...currentUser, ...data.user } as User,
+              isAuthenticated: true,
+              isLoading: false,
+            })
+          } else {
+            set({ user: null, isAuthenticated: false, isLoading: false })
+          }
         } catch {
           set({ user: null, isAuthenticated: false, isLoading: false })
         } finally {

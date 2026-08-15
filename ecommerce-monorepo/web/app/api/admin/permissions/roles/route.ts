@@ -1,20 +1,19 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+import { getAuthUser } from '@/lib/auth'
 
-async function getUser(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  if (!token) return null
-  return verifyToken(token)
+async function getAdminUser(req: NextRequest) {
+  const user = await getAuthUser(req)
+  return user && user.role === 'ADMIN' ? user : null
 }
 
 // GET all permission roles
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUser(req)
+    const user = await getAdminUser(req)
     
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -38,9 +37,9 @@ export async function GET(req: NextRequest) {
 // POST create new role
 export async function POST(req: NextRequest) {
   try {
-    const user = await getUser(req)
+    const user = await getAdminUser(req)
     
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 

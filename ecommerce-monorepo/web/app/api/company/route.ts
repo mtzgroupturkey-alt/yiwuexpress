@@ -1,17 +1,27 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { localizeSystemSetting } from '@/lib/utils/localize'
 
 export async function GET(req: NextRequest) {
   try {
-    const settings = await prisma.systemSettings.findFirst()
+    const locale = req.nextUrl.searchParams.get('locale') || 'en'
+    const settings = await prisma.systemSettings.findFirst({
+      include: {
+        translations: {
+          where: { locale: { in: [locale, 'en'] } },
+          select: { locale: true, key: true, value: true }
+        }
+      }
+    })
 
     if (settings) {
       return NextResponse.json({
         data: {
-          name: settings.companyName,
+          name: localizeSystemSetting(settings.translations, 'companyName', settings.companyName, locale),
           logo: settings.companyLogo,
           logoHeight: settings.companyLogoHeight,
-          description: settings.companyDescription,
+          description: localizeSystemSetting(settings.translations, 'companyDescription', settings.companyDescription, locale),
           phone: settings.companyPhone,
           email: settings.companyEmail,
           address: settings.companyAddress,
@@ -22,7 +32,7 @@ export async function GET(req: NextRequest) {
     // Fallback if system settings not found
     return NextResponse.json({
       data: {
-        name: 'YIWU EXPRESS',
+        name: 'Global Trade',
         logo: null,
         logoHeight: 40
       }

@@ -27,6 +27,13 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
   const [title, setTitle] = useState(initialData?.title || '')
   const [subtitle, setSubtitle] = useState(initialData?.subtitle || '')
   const [isActive, setIsActive] = useState(initialData?.isActive !== false)
+  const [translations, setTranslations] = useState<Record<string, { title: string; subtitle: string }>>(() => {
+    const map: Record<string, { title: string; subtitle: string }> = {}
+    ;(initialData?.translations || []).forEach((t: any) => {
+      map[t.locale] = { title: t.title || '', subtitle: t.subtitle || '' }
+    })
+    return map
+  })
 
   // Static page options
   const staticPageOptions = [
@@ -54,6 +61,9 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
       title: title || null,
       subtitle: subtitle || null,
       isActive,
+      translations: ['ru', 'zh']
+        .filter((l) => translations[l]?.title?.trim() || translations[l]?.subtitle?.trim())
+        .map((l) => ({ locale: l, title: translations[l].title?.trim() || '', subtitle: translations[l].subtitle?.trim() || '' })),
     }
     onSave(data)
   }
@@ -184,8 +194,32 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
         <Input
           value={subtitle}
           onChange={(e) => setSubtitle(e.target.value)}
-          placeholder="e.g., Professional-grade kitchenware from Yiwu"
+          placeholder="e.g., Professional-grade kitchenware from China"
         />
+      </div>
+
+      {/* Translations (RU / ZH) */}
+      <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
+        <p className="text-xs font-medium text-gray-600">Translations (optional)</p>
+        {(['ru', 'zh'] as const).map((locale) => (
+          <div key={locale} className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-8 text-xs font-semibold uppercase text-gray-500">{locale}</span>
+              <Input
+                value={translations[locale]?.title || ''}
+                onChange={(e) => setTranslations((p) => ({ ...p, [locale]: { title: e.target.value, subtitle: p[locale]?.subtitle || '' } }))}
+                placeholder={`Title (${locale})`}
+                className="flex-1"
+              />
+            </div>
+            <Input
+              value={translations[locale]?.subtitle || ''}
+              onChange={(e) => setTranslations((p) => ({ ...p, [locale]: { title: p[locale]?.title || '', subtitle: e.target.value } }))}
+              placeholder={`Subtitle (${locale})`}
+              className="ml-10 flex-1"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Active Status */}

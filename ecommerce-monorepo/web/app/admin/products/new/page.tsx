@@ -14,6 +14,11 @@ import { ArrowLeft, Save } from 'lucide-react'
 import { ProductAttributesSection, validateRequiredAttributes } from '@/components/admin/ProductAttributesSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
+import {
+  ProductTranslationForm,
+  validateTranslations,
+  type TranslationPayload
+} from '@/components/admin/ProductTranslationForm'
 
 interface MediaItem {
   url: string
@@ -61,6 +66,11 @@ export default function NewProductPage() {
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [submitting, setSubmitting] = useState(false)
   const [media, setMedia] = useState<MediaItem[]>([])
+  const [translations, setTranslations] = useState<TranslationPayload>({
+    en: { name: '', description: '' },
+    ru: { name: '', description: '' },
+    zh: { name: '', description: '' }
+  })
 
   const {
     register,
@@ -85,23 +95,23 @@ export default function NewProductPage() {
     }
   })
 
-  const name = watch('name')
   const selectedCategoryId = watch('categoryId')
 
   useEffect(() => {
     fetchCategories()
   }, [])
 
-  // Auto-generate slug from name
+  // Auto-generate slug from the English (default) translation name
+  const enName = translations.en.name
   useEffect(() => {
-    if (name) {
-      const slug = name
+    if (enName) {
+      const slug = enName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '')
       setValue('slug', slug)
     }
-  }, [name, setValue])
+  }, [enName, setValue])
 
   const fetchCategories = async () => {
     try {
@@ -120,12 +130,24 @@ export default function NewProductPage() {
   const onSubmit = async (data: ProductForm) => {
     setSubmitting(true)
     try {
+      // Validate translations: English name is mandatory.
+      if (!validateTranslations(translations).valid) {
+        alert(validateTranslations(translations).error || 'English (EN) translation name is required.')
+        setSubmitting(false)
+        return
+      }
+
       // Separate images and videos
       const images = media.filter(m => m.type === 'image').map(m => m.url)
       const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
       const productData = {
         ...data,
+        // Dual-write: legacy name/description stay in sync with 'en' translation
+        // (Phase 1 design) so reads that haven't migrated still work.
+        name: translations.en.name,
+        description: translations.en.description || null,
+        translations,
         images,
         videos,
         thumbnail: images[0] || null,
@@ -219,11 +241,12 @@ export default function NewProductPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="name">Product Name *</Label>
-                  <Input id="name" {...register('name')} />
-                  {errors.name && (
-                    <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
-                  )}
+                  <Label htmlFor="name" className="sr-only">Product Name *</Label>
+                  <ProductTranslationForm
+                    disabled={submitting}
+                    initialValues={translations}
+                    onChange={setTranslations}
+                  />
                 </div>
 
                 <div>
@@ -232,16 +255,6 @@ export default function NewProductPage() {
                   {errors.slug && (
                     <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>
                   )}
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <textarea
-                    id="description"
-                    {...register('description')}
-                    rows={4}
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                  />
                 </div>
               </CardContent>
             </Card>

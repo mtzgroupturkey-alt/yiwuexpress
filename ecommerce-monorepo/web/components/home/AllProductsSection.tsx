@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Container } from '@/components/ui/Container'
 import ProductGrid from '@/components/products/ProductGrid'
-import { Pagination } from '@/components/ui/Pagination'
+import { Pagination } from '@/components/products/Pagination'
 
 interface Product {
   id: string

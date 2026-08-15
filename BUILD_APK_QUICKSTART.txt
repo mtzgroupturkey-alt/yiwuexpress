@@ -1,0 +1,102 @@
+================================================================================
+                    DROMKOK MOBILE - APK BUILD QUICK START
+================================================================================
+
+FASTEST WAY TO BUILD:
+---------------------
+1. Open Command Prompt
+2. Run these commands:
+
+   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
+   build-apk.bat
+
+3. Follow the prompts (login if needed)
+4. Wait 10-15 minutes
+5. Download APK from the link provided
+
+================================================================================
+
+MANUAL BUILD (if script doesn't work):
+---------------------------------------
+1. Install EAS CLI (one-time):
+   npm install -g eas-cli
+
+2. Navigate to mobile folder:
+   cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
+
+3. Login to Expo:
+   eas login
+
+4. Build APK:
+   eas build --platform android --profile preview
+
+5. Download when complete (link will be shown in terminal)
+
+================================================================================
+
+CHECKING BUILD STATUS:
+----------------------
+eas build:list
+
+Or visit: https://expo.dev
+
+================================================================================
+
+WHAT YOU NEED:
+--------------
+✅ Internet connection
+✅ Expo account (free - create at expo.dev)
+✅ 10-15 minutes of time
+
+================================================================================
+
+CURRENT CONFIGURATION:
+----------------------
+App Name:     DROMKOK
+Package:      com.dromkok.app
+API URL:      https://www.dromkok.com
+Environment:  Production
+Version:      1.0.0
+
+================================================================================
+
+DOCUMENTATION:
+--------------
+Full Guide:      mobile\BUILD_APK_GUIDE.md
+Quick Commands:  mobile\BUILD_COMMANDS.md
+Summary:         mobile\BUILD_SUMMARY.md
+Checklist:       mobile\PRE_BUILD_CHECKLIST.md
+
+================================================================================
+
+TROUBLESHOOTING:
+----------------
+Not logged in?           → eas login
+Build failed?            → Check logs at expo.dev
+EAS not installed?       → npm install -g eas-cli
+Need to cancel build?    → eas build:cancel
+
+================================================================================
+
+NEXT STEPS AFTER BUILD:
+-----------------------
+1. Download APK from Expo dashboard
+2. Transfer to Android device
+3. Install and test
+4. Share with beta testers (optional)
+5. Prepare for Play Store submission (optional)
+
+================================================================================
+
+SUPPORT:
+--------
+Expo Docs:    https://docs.expo.dev/build/introduction/
+Expo Status:  https://status.expo.dev/
+Expo Forums:  https://forums.expo.dev/
+
+================================================================================
+
+                           READY TO BUILD? 🚀
+                         Run: build-apk.bat
+
+================================================================================

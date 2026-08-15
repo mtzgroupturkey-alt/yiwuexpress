@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getTokenFromRequest, verifyToken } from '@/lib/auth'
@@ -20,21 +21,54 @@ export async function PUT(
 
     const testimonialId = params.id
     const body = await req.json()
-    const { name, company, role, quote, rating, avatar, image, isFeatured } = body
+    const { name, company, role, quote, rating, avatar, image, isFeatured, translations } = body
+
+    const updateData: any = {
+      ...(name && { name }),
+      ...(company && { company }),
+      ...(role && { role }),
+      ...(quote && { quote }),
+      ...(rating !== undefined && { rating: Number(rating) }),
+      ...(avatar !== undefined && { avatar }),
+      ...(image !== undefined && { image }),
+      ...(isFeatured !== undefined && { isFeatured: !!isFeatured })
+    }
+
+    const en = Array.isArray(translations)
+      ? translations.find((t: any) => t.locale === 'en')
+      : undefined
+
+    if (en) {
+      updateData.quote = en.quote ?? updateData.quote
+      updateData.role = en.role ?? null
+      updateData.company = en.company ?? null
+    }
 
     const updated = await prisma.testimonial.update({
       where: { id: testimonialId },
-      data: {
-        ...(name && { name }),
-        ...(company && { company }),
-        ...(role && { role }),
-        ...(quote && { quote }),
-        ...(rating !== undefined && { rating: Number(rating) }),
-        ...(avatar !== undefined && { avatar }),
-        ...(image !== undefined && { image }),
-        ...(isFeatured !== undefined && { isFeatured: !!isFeatured })
-      }
+      data: updateData
     })
+
+    if (Array.isArray(translations)) {
+      for (const t of translations) {
+        if (!t.locale) continue
+        await prisma.testimonialTranslation.upsert({
+          where: { testimonialId_locale: { testimonialId: testimonialId, locale: t.locale } },
+          create: {
+            testimonialId: testimonialId,
+            locale: t.locale,
+            quote: t.quote ?? '',
+            role: t.role ?? null,
+            company: t.company ?? null
+          },
+          update: {
+            quote: t.quote ?? '',
+            role: t.role ?? null,
+            company: t.company ?? null
+          }
+        })
+      }
+    }
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error) {

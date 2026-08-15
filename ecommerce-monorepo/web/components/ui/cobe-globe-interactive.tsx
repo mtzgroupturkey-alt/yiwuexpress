@@ -5,7 +5,7 @@ import createGlobe from "cobe"
 
 interface InteractiveMarker {
   id: string
-  location: number[]
+  location: [number, number]
   name: string
   users: number
 }
@@ -138,7 +138,7 @@ export function GlobeInteractive({
 
       try {
         // Test for WebGL support with proper context detection
-        const gl = canvas.getContext('webgl', { 
+        const gl = (canvas.getContext('webgl', {
           premultipliedAlpha: false,
           preserveDrawingBuffer: true,
           antialias: true
@@ -146,7 +146,7 @@ export function GlobeInteractive({
           premultipliedAlpha: false,
           preserveDrawingBuffer: true,
           antialias: true
-        })
+        })) as WebGLRenderingContext | null
         
         if (!gl) {
           console.warn('[Globe] WebGL not supported, hiding globe')
@@ -264,7 +264,6 @@ export function GlobeInteractive({
           onClick={() => setExpanded(expanded === m.id ? null : m.id)}
           style={{
             position: "absolute",
-            // @ts-expect-error CSS Anchor Positioning
             positionAnchor: `--cobe-${m.id}`,
             bottom: "anchor(top)",
             left: "anchor(center)",

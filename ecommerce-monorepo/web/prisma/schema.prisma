@@ -1,5 +1,9 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Ubuntu 24.04 ships glibc + OpenSSL 3.0. Pinning debian-openssl-3.0.x makes
+  // `prisma generate` produce a Linux-compatible engine so `next build` works
+  // on the production server (not just the dev machine's `native` engine).
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -68,6 +72,30 @@ model Service {
   updatedAt   DateTime   @updatedAt
   quotes      Quote[]
   shipments   Shipment[]
+  translations ServiceTranslation[]
+
+  @@map("Service")
+}
+
+// Expand-and-Contract: per-locale service copy. Legacy `name`/`description`/
+// `coverage`/`duration` on Service remain the source of truth until read paths
+// migrate (Phase 3+).
+model ServiceTranslation {
+  id          String   @id @default(cuid())
+  serviceId   String
+  locale      String
+  name        String
+  description String?
+  coverage    String?
+  duration    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, locale])
+  @@index([locale])
+  @@map("service_translations")
 }
 
 model Quote {
@@ -142,7 +170,7 @@ model CompanyInfo {
 
 model SystemSettings {
   id                    String   @id @default(cuid())
-  companyName           String   @default("YIWU EXPRESS")
+  companyName           String   @default("Global Trade")
   companyAddress        String?
   companyPhone          String?
   companyEmail          String?
@@ -161,10 +189,83 @@ model SystemSettings {
   emailNotifications    Boolean  @default(true)
   smsNotifications      Boolean  @default(false)
   maintenanceMode       Boolean  @default(false)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  storeMode             String   @default("WHOLESALE") // WHOLESALE, RETAIL, BOTH
+  facebookUrl           String?
+  twitterUrl            String?
+  linkedinUrl           String?
+  instagramUrl          String?
+  wechatId              String?
+  whatsappNumber        String?
+  
+  // AI Translation API Keys
+  openrouterApiKey      String?
+  geminiApiKey          String?
+  deepseekApiKey        String?
+  qwenApiKey            String?
+  kimiApiKey            String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations SystemSettingTranslation[]
 
   @@map("system_settings")
+}
+
+// Expand-and-Contract: per-locale system/company setting text blocks. The
+// `key` disambiguates which setting field is translated (e.g. "companyName",
+// "companyDescription", "companyAddress"). The legacy columns on SystemSettings
+// remain the English source of truth / fallback. Unique per (setting, locale, key).
+model SystemSettingTranslation {
+  id               String   @id @default(cuid())
+  systemSettingId  String
+  locale           String
+  key              String
+  value            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  systemSetting SystemSettings @relation(fields: [systemSettingId], references: [id], onDelete: Cascade)
+
+  @@unique([systemSettingId, locale, key])
+  @@index([locale])
+  @@map("system_setting_translations")
+}
+
+model ContactLocation {
+  id        String   @id @default(cuid())
+  type      String   @default("HUB") // HEADQUARTERS, HUB
+  city      String
+  address   String?
+  phone     String?
+  email     String?
+  hours     String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  translations ContactLocationTranslation[]
+
+  @@map("contact_locations")
+}
+
+// Expand-and-Contract: per-locale contact location copy. Legacy `city`/`address`/
+// `hours` on ContactLocation remain the source of truth until read paths migrate.
+model ContactLocationTranslation {
+  id               String   @id @default(cuid())
+  contactLocationId String
+  locale           String
+  city             String
+  address          String?
+  hours            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  contactLocation ContactLocation @relation(fields: [contactLocationId], references: [id], onDelete: Cascade)
+
+  @@unique([contactLocationId, locale])
+  @@index([locale])
+  @@map("contact_location_translations")
 }
 
 model PermissionRole {
@@ -226,8 +327,26 @@ model Country {
   orders             Order[]
   shippingRates      ShippingRate[]
   wholesaleInquiries WholesaleInquiry[]
+  translations       CountryTranslation[]
 
   @@map("countries")
+}
+
+// Expand-and-Contract: per-locale country name. Legacy `name` on Country remains
+// the source of truth (and English fallback) until read paths migrate.
+model CountryTranslation {
+  id        String   @id @default(cuid())
+  countryId String
+  locale    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  @@unique([countryId, locale])
+  @@index([locale])
+  @@map("country_translations")
 }
 
 model ShippingRate {
@@ -269,8 +388,27 @@ model Category {
   children           Category[]          @relation("CategoryHierarchy")
   attributes         CategoryAttribute[]
   products           Product[]
+  translations       CategoryTranslation[]
 
   @@map("categories")
+}
+
+// Expand-and-Contract: per-locale category copy. Legacy `name`/`description`
+// on Category remain the source of truth until read paths migrate (Phase 3+).
+model CategoryTranslation {
+  id          String   @id @default(cuid())
+  categoryId  String
+  locale      String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([locale])
+  @@map("category_translations")
 }
 
 model Product {
@@ -328,8 +466,27 @@ model Product {
   purchaseOrderItems   PurchaseOrderItem[]
   wishlistItems        WishlistItem[]
   reviews              Review[]
+  translations         ProductTranslation[]
 
   @@map("products")
+}
+
+// Expand-and-Contract: per-locale product copy. Legacy `name`/`description`
+// on Product remain the source of truth until read paths migrate (Phase 3+).
+model ProductTranslation {
+  id          String   @id @default(cuid())
+  productId   String
+  locale      String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([locale])
+  @@map("product_translations")
 }
 
 model Order {
@@ -674,9 +831,34 @@ model HeroSlide {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  translations HeroSlideTranslation[]
+
   @@index([displayOrder])
   @@index([isActive])
   @@map("hero_slides")
+}
+
+// Expand-and-Contract: per-locale hero slide copy. Legacy `title`/`subtitle`/
+// `description`/`badgeText`/`ctaText`/`secondaryCtaText` on HeroSlide remain the
+// source of truth until read paths migrate (Phase 3+).
+model HeroSlideTranslation {
+  id               String   @id @default(cuid())
+  heroSlideId      String
+  locale           String
+  title            String
+  subtitle         String?
+  description      String?
+  badgeText        String?
+  ctaText          String
+  secondaryCtaText String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  heroSlide HeroSlide @relation(fields: [heroSlideId], references: [id], onDelete: Cascade)
+
+  @@unique([heroSlideId, locale])
+  @@index([locale])
+  @@map("hero_slide_translations")
 }
 
 model Attribute {
@@ -697,8 +879,26 @@ model Attribute {
   updatedAt    DateTime            @updatedAt
   values       AttributeValue[]
   categories   CategoryAttribute[]
+  translations AttributeTranslation[]
 
   @@map("attributes")
+}
+
+// Expand-and-Contract: per-locale attribute name. Legacy `name` on Attribute
+// remains the source of truth until read paths migrate (Phase 3+).
+model AttributeTranslation {
+  id         String   @id @default(cuid())
+  attributeId String
+  locale     String
+  name       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeId, locale])
+  @@index([locale])
+  @@map("attribute_translations")
 }
 
 model CategoryAttribute {
@@ -728,10 +928,28 @@ model AttributeValue {
   attribute   Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  translations AttributeValueTranslation[]
 
   @@index([productId])
   @@index([attributeId])
   @@map("attribute_values")
+}
+
+// Expand-and-Contract: per-locale attribute value (e.g. "Red", "10kg"). Legacy
+// `value` on AttributeValue remains the source of truth until read paths migrate.
+model AttributeValueTranslation {
+  id               String   @id @default(cuid())
+  attributeValueId String
+  locale           String
+  value            String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeValueId, locale])
+  @@index([locale])
+  @@map("attribute_value_translations")
 }
 
 model BreadcrumbSetting {
@@ -748,10 +966,30 @@ model BreadcrumbSetting {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   category       Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  translations   PageBannerTranslation[]
 
   @@unique([pageType, pageSlug])
   @@unique([pageType, categoryId])
   @@map("breadcrumb_settings")
+}
+
+// Expand-and-Contract: per-locale page banner (breadcrumb) copy. Legacy `title`/
+// `subtitle` on BreadcrumbSetting remain the source of truth until read paths
+// migrate (Phase 3+). Named PageBannerTranslation per the localization roadmap.
+model PageBannerTranslation {
+  id                  String   @id @default(cuid())
+  pageBannerId        String
+  locale              String
+  title               String?
+  subtitle            String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  pageBanner BreadcrumbSetting @relation(fields: [pageBannerId], references: [id], onDelete: Cascade)
+
+  @@unique([pageBannerId, locale])
+  @@index([locale])
+  @@map("page_banner_translations")
 }
 
 enum AttributeType {
@@ -816,8 +1054,28 @@ model Supplier {
   updatedAt      DateTime            @updatedAt
   purchaseOrders PurchaseOrder[]
   products       ProductSupplier[]
+  translations   SupplierTranslation[]
 
   @@map("suppliers")
+}
+
+// Expand-and-Contract: per-locale supplier copy. Legacy `name`/`notes` on Supplier
+// remain the source of truth (and English fallback) until read paths migrate.
+model SupplierTranslation {
+  id          String   @id @default(cuid())
+  supplierId  String
+  locale      String
+  name        String
+  description String?
+  profileText String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, locale])
+  @@index([locale])
+  @@map("supplier_translations")
 }
 
 model PurchaseOrder {
@@ -975,8 +1233,28 @@ model ShippingMethod {
   
   containers            Container[]
   shipments             Shipment[]
+  translations          ShippingMethodTranslation[]
 
   @@map("shipping_methods")
+}
+
+// Expand-and-Contract: per-locale shipping method copy. Legacy `name`/
+// `description` on ShippingMethod remain the source of truth until read paths
+// migrate (Phase 3+).
+model ShippingMethodTranslation {
+  id          String   @id @default(cuid())
+  shippingMethodId String
+  locale      String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shippingMethod ShippingMethod @relation(fields: [shippingMethodId], references: [id], onDelete: Cascade)
+
+  @@unique([shippingMethodId, locale])
+  @@index([locale])
+  @@map("shipping_method_translations")
 }
 
 // ============================================================
@@ -1075,6 +1353,89 @@ model Testimonial {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  translations TestimonialTranslation[]
+
   @@map("testimonials")
+}
+
+// Expand-and-Contract: per-locale testimonial copy. Legacy `quote`/`role`/
+// `company` on Testimonial remain the source of truth until read paths migrate
+// (Phase 3+). Note `name` stays single-language (person's name, not translated).
+model TestimonialTranslation {
+  id          String   @id @default(cuid())
+  testimonialId String
+  locale      String
+  quote       String
+  role        String?
+  company     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  testimonial Testimonial @relation(fields: [testimonialId], references: [id], onDelete: Cascade)
+
+  @@unique([testimonialId, locale])
+  @@index([locale])
+  @@map("testimonial_translations")
+}
+
+model Deployment {
+  id              String   @id @default(cuid())
+  deploymentNumber String
+  environment     String
+  status          String   @default("in-progress")
+  type            String   @default("deploy") // deploy, rollback
+  branch          String?
+  commitHash      String?
+  commitMessage   String?
+  triggeredBy     String?
+  metadata        Json?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  duration        Int?
+  logs            String?
+  error           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("deployments")
+}
+
+// Email templates: localized transactional text blocks (checkout confirmation,
+// order status, tracking alerts). The legacy `subject`/`bodyHtml`/`bodyText`
+// columns hold the canonical English content and act as the fallback. `type`
+// is the stable key used by the mailer (e.g. "orderConfirmation").
+model EmailTemplate {
+  id        String   @id @default(cuid())
+  type      String   @unique
+  name      String
+  subject   String
+  bodyHtml  String
+  bodyText  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  translations EmailTemplateTranslation[]
+
+  @@map("email_templates")
+}
+
+// Expand-and-Contract: per-locale email copy. Legacy columns on EmailTemplate
+// remain the English source of truth / fallback.
+model EmailTemplateTranslation {
+  id         String   @id @default(cuid())
+  emailTemplateId String
+  locale     String
+  subject    String
+  bodyHtml   String
+  bodyText   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  emailTemplate EmailTemplate @relation(fields: [emailTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([emailTemplateId, locale])
+  @@index([locale])
+  @@map("email_template_translations")
 }
 

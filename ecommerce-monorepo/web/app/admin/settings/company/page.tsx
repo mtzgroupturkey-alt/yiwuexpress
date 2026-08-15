@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import {
@@ -6,6 +6,7 @@ import {
   MapPin, Hash, Palette, AlertCircle, CheckCircle, Upload, RefreshCw
 } from 'lucide-react'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
 
 interface CompanySettings {
   id?: string
@@ -25,6 +26,12 @@ interface CompanySettings {
   currency: string
   timezone: string
   language: string
+  facebookUrl: string
+  twitterUrl: string
+  linkedinUrl: string
+  instagramUrl: string
+  wechatId: string
+  whatsappNumber: string
 }
 
 export default function CompanyInfoPage() {
@@ -34,9 +41,10 @@ export default function CompanyInfoPage() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [translations, setTranslations] = useState<TranslationRow[]>([])
   
   const [settings, setSettings] = useState<CompanySettings>({
-    companyName: 'YIWU EXPRESS',
+    companyName: 'Global Trade',
     companyAddress: '',
     companyPhone: '',
     companyEmail: '',
@@ -52,6 +60,12 @@ export default function CompanyInfoPage() {
     currency: 'USD',
     timezone: 'Asia/Shanghai',
     language: 'en',
+    facebookUrl: '',
+    twitterUrl: '',
+    linkedinUrl: '',
+    instagramUrl: '',
+    wechatId: '',
+    whatsappNumber: '',
   })
 
   // Helper function to safely convert null to empty string
@@ -96,7 +110,7 @@ export default function CompanyInfoPage() {
           // Ensure all string fields are never null
           setSettings({
             ...data.settings,
-            companyName: safeString(data.settings.companyName) || 'YIWU EXPRESS',
+            companyName: safeString(data.settings.companyName) || 'Global Trade',
             companyAddress: safeString(data.settings.companyAddress),
             companyPhone: safeString(data.settings.companyPhone),
             companyEmail: safeString(data.settings.companyEmail),
@@ -111,9 +125,27 @@ export default function CompanyInfoPage() {
             currency: safeString(data.settings.currency) || 'USD',
             timezone: safeString(data.settings.timezone) || 'Asia/Shanghai',
             language: safeString(data.settings.language) || 'en',
+            facebookUrl: safeString(data.settings.facebookUrl),
+            twitterUrl: safeString(data.settings.twitterUrl),
+            linkedinUrl: safeString(data.settings.linkedinUrl),
+            instagramUrl: safeString(data.settings.instagramUrl),
+            wechatId: safeString(data.settings.wechatId),
+            whatsappNumber: safeString(data.settings.whatsappNumber),
           })
         }
         setError('')
+
+        if (data.settings?.translations) {
+          const byLocale: Record<string, any> = {}
+          for (const t of data.settings.translations as Array<{ locale: string; key: string; value: string | null }>) {
+            // Include ALL locales (en, ru, zh)
+            byLocale[t.locale] = byLocale[t.locale] || { locale: t.locale }
+            if (t.key === 'companyName') byLocale[t.locale].companyName = t.value || ''
+            if (t.key === 'companyDescription') byLocale[t.locale].companyDescription = t.value || ''
+            if (t.key === 'companyAddress') byLocale[t.locale].companyAddress = t.value || ''
+          }
+          setTranslations(translationsArrayToInitial(Object.values(byLocale)))
+        }
       } else {
         setError(data.error || 'Failed to load settings')
       }
@@ -132,13 +164,31 @@ export default function CompanyInfoPage() {
     setSuccess('')
 
     try {
+      // Transform translations from LocalizedFieldsForm format to API format
+      // From: [{ locale: 'ru', companyName: '...', companyDescription: '...', companyAddress: '...' }]
+      // To: [{ locale: 'ru', key: 'companyName', value: '...' }, { locale: 'ru', key: 'companyDescription', value: '...' }, ...]
+      const apiTranslations: Array<{ locale: string; key: string; value: string }> = []
+      for (const row of translations) {
+        // Process ALL locales (en, ru, zh) - don't skip any
+        for (const [key, value] of Object.entries(row)) {
+          if (key === 'locale') continue // Skip the locale property itself
+          if (value && value.toString().trim().length > 0) {
+            apiTranslations.push({
+              locale: row.locale,
+              key,
+              value: value.toString().trim()
+            })
+          }
+        }
+      }
+
       const response = await fetch('/api/admin/settings/company', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(settings),
+        body: JSON.stringify({ ...settings, translations: apiTranslations }),
       })
 
       const data = await response.json()
@@ -378,6 +428,19 @@ export default function CompanyInfoPage() {
                 placeholder="Brief description of your company and services..."
               />
             </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Localized Name / Description / Address (RU / ZH)</label>
+              <LocalizedFieldsForm
+                fields={[
+                  { key: 'companyName', label: 'Company Name' },
+                  { key: 'companyDescription', label: 'Company Description', textarea: true },
+                  { key: 'companyAddress', label: 'Company Address', textarea: true },
+                ]}
+                initialValues={translations}
+                onChange={setTranslations}
+              />
+            </div>
           </div>
         </div>
 
@@ -413,6 +476,101 @@ export default function CompanyInfoPage() {
                   value={settings.taxRegistrationNumber}
                   onChange={(e) => handleInputChange('taxRegistrationNumber', e.target.value)}
                   placeholder="Enter tax registration number"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Media Links */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Globe size={18} className="text-gray-600" />
+            Social Media Links
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">These links appear in the website footer. Leave a field empty to hide that icon.</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Facebook URL</label>
+              <div className="relative">
+                <Globe size={18} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="url"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={settings.facebookUrl}
+                  onChange={(e) => handleInputChange('facebookUrl', e.target.value)}
+                  placeholder="https://facebook.com/yourpage"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Twitter / X URL</label>
+              <div className="relative">
+                <Globe size={18} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="url"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={settings.twitterUrl}
+                  onChange={(e) => handleInputChange('twitterUrl', e.target.value)}
+                  placeholder="https://twitter.com/yourhandle"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn URL</label>
+              <div className="relative">
+                <Globe size={18} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="url"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={settings.linkedinUrl}
+                  onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
+                  placeholder="https://linkedin.com/company/yourcompany"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Instagram URL</label>
+              <div className="relative">
+                <Globe size={18} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="url"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={settings.instagramUrl}
+                  onChange={(e) => handleInputChange('instagramUrl', e.target.value)}
+                  placeholder="https://instagram.com/yourhandle"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">WeChat ID</label>
+              <div className="relative">
+                <Hash size={18} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={settings.wechatId}
+                  onChange={(e) => handleInputChange('wechatId', e.target.value)}
+                  placeholder="your_wechat_id"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number</label>
+              <div className="relative">
+                <Phone size={18} className="absolute left-3 top-3 text-gray-400" />
+                <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={settings.whatsappNumber}
+                  onChange={(e) => handleInputChange('whatsappNumber', e.target.value)}
+                  placeholder="+86 123 4567 8901"
                 />
               </div>
             </div>

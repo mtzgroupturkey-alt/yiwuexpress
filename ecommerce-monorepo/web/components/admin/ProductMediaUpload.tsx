@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -322,7 +322,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
       {/* Helper Text */}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
         <p className="text-sm text-blue-800">
-          <strong>💡 Tips:</strong> First image = product thumbnail. Videos: max 100MB, Images: max 5MB. 
+          <strong>ðŸ’¡ Tips:</strong> First image = product thumbnail. Videos: max 100MB, Images: max 5MB. 
           Supported: MP4, WebM, MOV for videos | JPEG, PNG, WebP, GIF for images
         </p>
       </div>
@@ -395,7 +395,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                       className="h-8 w-8 p-0"
                       title="Move up"
                     >
-                      ↑
+                      â†‘
                     </Button>
                     <Button
                       type="button"
@@ -406,7 +406,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                       className="h-8 w-8 p-0"
                       title="Move down"
                     >
-                      ↓
+                      â†“
                     </Button>
                     <Button
                       type="button"
@@ -423,7 +423,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
 
                 {/* Media URL Display */}
                 <p className="text-xs text-gray-500 mt-2 truncate" title={item.url}>
-                  {item.url.startsWith('http') ? '🔗 URL' : '📁 Uploaded'} • {item.type}
+                  {item.url.startsWith('http') ? 'ðŸ”— URL' : 'ðŸ“ Uploaded'} â€¢ {item.type}
                 </p>
               </CardContent>
             </Card>

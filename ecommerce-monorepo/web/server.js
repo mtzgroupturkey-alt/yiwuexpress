@@ -1,7 +1,72 @@
 #!/usr/bin/env node
 const { createServer } = require('http')
 const { parse } = require('url')
+const fs = require('fs')
+const path = require('path')
 const next = require('next')
+
+// Serve user-uploaded files from disk at request time.
+// Next.js `next start` only serves files that existed in `public/` at build
+// time, so post-build uploads (categories, products, favicons) 404. This
+// handler reads them straight from disk instead.
+const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads')
+
+const MIME_TYPES = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.bmp': 'image/bmp',
+  '.avif': 'image/avif',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.avi': 'video/x-msvideo',
+  '.mkv': 'video/x-matroska',
+}
+
+function serveUpload(req, res, pathname) {
+  const relative = decodeURIComponent(pathname.replace(/^\/uploads\/?/, ''))
+  const filepath = path.join(UPLOADS_DIR, relative)
+
+  // Prevent path traversal outside the uploads directory.
+  const normalized = path.resolve(filepath)
+  if (normalized !== UPLOADS_DIR && !normalized.startsWith(UPLOADS_DIR + path.sep)) {
+    res.statusCode = 403
+    res.end('forbidden')
+    return
+  }
+
+  fs.stat(normalized, (err, stats) => {
+    if (err || !stats.isFile()) {
+      res.statusCode = 404
+      res.end('not found')
+      return
+    }
+
+    const ext = path.extname(normalized).toLowerCase()
+    res.setHeader('Content-Type', MIME_TYPES[ext] || 'application/octet-stream')
+    res.setHeader('Content-Length', stats.size)
+    res.setHeader('Cache-Control', 'public, max-age=2592000')
+    res.setHeader('Access-Control-Allow-Origin', '*')
+
+    if (req.method === 'HEAD') {
+      res.statusCode = 200
+      res.end()
+      return
+    }
+
+    const stream = fs.createReadStream(normalized)
+    stream.on('error', () => {
+      res.statusCode = 500
+      res.end('internal server error')
+    })
+    stream.pipe(res)
+  })
+}
 
 // Load environment variables
 require('dotenv').config({ path: '.env.local' })
@@ -25,6 +90,12 @@ app.prepare().then(() => {
   createServer(async (req, res) => {
     try {
       const parsedUrl = parse(req.url, true)
+      if (parsedUrl.pathname && parsedUrl.pathname.startsWith('/uploads/')) {
+        if (req.method === 'GET' || req.method === 'HEAD') {
+          serveUpload(req, res, parsedUrl.pathname)
+          return
+        }
+      }
       await handle(req, res, parsedUrl)
     } catch (err) {
       console.error('Error occurred handling', req.url, err)

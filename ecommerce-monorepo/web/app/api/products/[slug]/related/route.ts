@@ -1,7 +1,13 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
 
 const prisma = new PrismaClient()
+
+function withTranslations<T extends Record<string, any>>(select: T): T {
+  return { ...select, translations: { select: { locale: true, name: true, description: true } } }
+}
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +17,7 @@ export async function GET(
     const { slug } = params
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '4')
+    const locale = searchParams.get('locale') || 'en'
 
     // First, get the current product to find related products
     const currentProduct = await prisma.product.findUnique({
@@ -42,7 +49,7 @@ export async function GET(
         orderBy: {
           createdAt: 'desc',
         },
-        select: {
+        select: withTranslations({
           id: true,
           sku: true,
           name: true,
@@ -65,9 +72,12 @@ export async function GET(
               id: true,
               name: true,
               slug: true,
+              translations: {
+                select: { locale: true, name: true }
+              },
             },
           },
-        },
+        }),
       })
     }
 
@@ -82,7 +92,7 @@ export async function GET(
         orderBy: {
           createdAt: 'desc',
         },
-        select: {
+        select: withTranslations({
           id: true,
           sku: true,
           name: true,
@@ -105,14 +115,18 @@ export async function GET(
               id: true,
               name: true,
               slug: true,
+              translations: {
+                select: { locale: true, name: true }
+              },
             },
           },
-        },
+        }),
       })
     }
 
     // Transform products for display
     const transformedProducts = relatedProducts.map(product => {
+      const localized = localizeProduct(product, locale)
       // Transform attributeValues array into a key-value object
       const attributes: Record<string, any> = {}
       if (product.attributeValues && Array.isArray(product.attributeValues)) {
@@ -130,15 +144,15 @@ export async function GET(
       return {
         id: product.id,
         slug: product.slug,
-        name: product.name,
-        description: product.description,
+        name: localized.name,
+        description: localized.description,
         price: parseFloat(product.price.toString()),
         image: product.thumbnail || (product.images?.[0] as string) || '/images/placeholder.jpg',
-        category: product.category?.name,
+        category: product.category ? localizeCategory(product.category, locale).name : undefined,
         stock: product.stock,
         minOrder: product.minOrderQty,
         wholesalePrice: product.wholesalePrice ? parseFloat(product.wholesalePrice.toString()) : undefined,
-        colors: extractColors(attributes),
+        colors: extractColors(attributes, locale),
       }
     })
 
@@ -156,11 +170,17 @@ export async function GET(
 }
 
 // Helper function to extract color options from product attributes
-function extractColors(attributes: any): { label: string; value: string }[] | undefined {
+const colorLabelByLocale: Record<string, string> = {
+  en: 'Color {n}',
+  ru: 'Цвет {n}',
+  zh: '颜色 {n}',
+}
+function extractColors(attributes: any, locale = 'en'): { label: string; value: string }[] | undefined {
   if (!attributes) return undefined
 
   // Check for common color attribute keys
   const colorKeys = ['colors', 'color', 'colour', 'colours']
+  const tmpl = colorLabelByLocale[locale] || colorLabelByLocale.en
   
   for (const key of colorKeys) {
     const value = attributes[key]
@@ -168,7 +188,7 @@ function extractColors(attributes: any): { label: string; value: string }[] | un
       // Check if values are hex colors
       if (typeof value[0] === 'string' && value[0].startsWith('#')) {
         return value.map((hex: string, idx: number) => ({
-          label: `Color ${idx + 1}`,
+          label: tmpl.replace('{n}', String(idx + 1)),
           value: hex,
         }))
       }

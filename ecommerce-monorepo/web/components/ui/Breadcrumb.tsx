@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { ChevronRight, Home } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
@@ -26,12 +27,12 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
       aria-label="Breadcrumb"
     >
       {/* Home Link */}
-      <Link 
+      <LocaleLink 
         href="/"
         className="flex items-center text-gray-500 hover:text-[#1a3a5c] transition-colors"
       >
         <Home className="w-4 h-4" />
-      </Link>
+      </LocaleLink>
       
       {/* Breadcrumb Items */}
       {breadcrumbItems.map((item, index) => {
@@ -45,12 +46,12 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
                 {item.label}
               </span>
             ) : (
-              <Link
+              <LocaleLink
                 href={item.href}
                 className="text-gray-500 hover:text-[#1a3a5c] transition-colors"
               >
                 {item.label}
-              </Link>
+              </LocaleLink>
             )}
           </div>
         )

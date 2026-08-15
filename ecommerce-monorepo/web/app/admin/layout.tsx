@@ -10,9 +10,10 @@ import {
   TrendingUp, Bell, ChevronDown, Eye, CheckCircle,
   MapPin, Building, Sliders, Mail, Shield, Database,
   ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image as ImageIcon,
-  Building2, ClipboardList, DollarSign, Truck
+  Building2, ClipboardList, DollarSign, Truck, Server
 } from 'lucide-react'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
+import { Providers } from '@/components/providers'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
 interface NavItem {
@@ -121,17 +122,20 @@ const navItems: NavItem[] = [
     label: 'Settings', 
     icon: Settings,
     subItems: [
+      { href: '/admin/settings/general', label: 'General', icon: Settings },
       { href: '/admin/settings/hero-slider', label: 'Hero Slider', icon: Sliders },
       { href: '/admin/settings/featured-products', label: 'Featured Products', icon: ShoppingBag },
       { href: '/admin/settings/new-arrivals', label: 'New Arrivals', icon: Package },
       { href: '/admin/settings/flash-sales', label: 'Flash Sales', icon: TrendingUp },
       { href: '/admin/settings/breadcrumb', label: 'Breadcrumb Backgrounds', icon: Image },
       { href: '/admin/settings/company', label: 'Company Info', icon: Building },
+      { href: '/admin/settings/contact-locations', label: 'Contact Locations', icon: MapPin },
       { href: '/admin/settings/system', label: 'System Settings', icon: Sliders },
       { href: '/admin/settings/shipping-methods', label: 'Shipping Methods', icon: Truck },
       { href: '/admin/settings/notifications', label: 'Notifications', icon: Mail },
       { href: '/admin/settings/permissions', label: 'Permissions', icon: Shield },
       { href: '/admin/settings/backup', label: 'Backup & Export', icon: Database },
+      { href: '/admin/deploy/local', label: 'Local Deployment', icon: Server },
     ]
   },
 ]
@@ -142,7 +146,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
   const { isAdmin, loading } = useAdminAuth()
   const [logoUrl, setLogoUrl] = useState('')
-  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [companyName, setCompanyName] = useState('Global Trade')
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   const [accentColor, setAccentColor] = useState('#c9a84c')
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({})
@@ -316,7 +320,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           {navItems.map((item) => {
             const hasSubItems = item.subItems && item.subItems.length > 0
             const isExpanded = expandedMenus[item.href]
-            const isParentActive = pathname.startsWith(item.href) && item.href !== '/admin'
+            const isParentActive = (pathname.startsWith(item.href) && item.href !== '/admin') ||
+              (item.subItems?.some(sub => pathname === sub.href || pathname.startsWith(sub.href + '/')) ?? false)
             const isExactActive = pathname === item.href
             const Icon = item.icon
 
@@ -465,8 +470,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AdminAuthProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
-    </AdminAuthProvider>
+    <Providers>
+      <AdminAuthProvider>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </AdminAuthProvider>
+    </Providers>
   )
 }

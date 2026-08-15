@@ -1,11 +1,13 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { LocaleLink } from '@/components/LocaleLink'
 import ProductCard from './ProductCard'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
+import { useStoreMode } from '@/contexts/StoreModeContext'
 
 interface Product {
   id: string
@@ -13,6 +15,7 @@ interface Product {
   name: string
   price: number
   compareAtPrice?: number | null
+  wholesalePrice?: number | null
   thumbnail?: string | null
   stock: number
   sku: string
@@ -51,6 +54,7 @@ export default function ProductGrid({
   viewMode = 'grid'
 }: ProductGridProps) {
   const { refreshCartCount } = useCart()
+  const { isRetail } = useStoreMode()
   const [wishlist, setWishlist] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
@@ -158,9 +162,9 @@ export default function ProductGrid({
   }
 
   const gridColumns = {
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+    2: 'grid-cols-2',
+    3: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3',
+    4: 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
   }
 
   const handleImageError = (productId: string) => {
@@ -172,31 +176,32 @@ export default function ProductGrid({
     <div className="space-y-4">
       {products.map((product) => {
         const isSoldOut = product.stock === 0
-        const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price
-        const discount = hasDiscount 
-          ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+        const compareAt = product.compareAtPrice
+        const hasDiscount = compareAt != null && compareAt > product.price
+        const discount = hasDiscount
+          ? Math.round(((compareAt - product.price) / compareAt) * 100)
           : 0
 
         return (
-          <div key={product.id} className="flex gap-4 bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
+          <div key={product.id} className="flex gap-3 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
             {/* Product Image */}
-            <Link href={`/products/${product.slug}`} className="relative w-32 h-32 flex-shrink-0 rounded overflow-hidden bg-gray-100">
+            <LocaleLink href={`/products/${product.slug}`} className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded overflow-hidden bg-gray-100">
               {product.thumbnail && !imageErrors.has(product.id) ? (
                 <Image
                   src={product.thumbnail}
                   alt={product.name}
                   fill
-                  sizes="128px"
+                  sizes="(max-width: 640px) 80px, 128px"
                   className="object-cover"
                   onError={() => handleImageError(product.id)}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                  <ShoppingCart className="w-12 h-12 text-gray-300" />
+                  <ShoppingCart className="w-8 h-8 sm:w-12 sm:h-12 text-gray-300" />
                 </div>
               )}
               {product.isNew && (
-                <span className="absolute top-2 left-2 bg-[#c9a84c] text-white text-xs px-2 py-1 rounded">
+                <span className="absolute top-1 left-1 bg-secondary-500 text-white text-xs px-1.5 py-0.5 rounded">
                   NEW
                 </span>
               )}
@@ -205,16 +210,16 @@ export default function ProductGrid({
                   <span className="text-white font-bold text-xs">SOLD OUT</span>
                 </div>
               )}
-            </Link>
+            </LocaleLink>
 
             {/* Product Info */}
-            <div className="flex-1 flex flex-col justify-between">
+            <div className="flex-1 flex flex-col justify-between min-w-0">
               <div>
-                <Link href={`/products/${product.slug}`} className="hover:text-[#1a3a5c] transition-colors">
-                  <h3 className="font-medium text-gray-900">{product.name}</h3>
-                </Link>
+                <LocaleLink href={`/products/${product.slug}`} className="hover:text-primary-600 transition-colors">
+                  <h3 className="text-sm sm:text-base font-medium text-gray-900 line-clamp-2">{product.name}</h3>
+                </LocaleLink>
                 {product.category && (
-                  <p className="text-xs text-gray-500 mt-1">{product.category.name}</p>
+                  <p className="text-xs text-secondary-500 mt-1 font-medium uppercase tracking-wide">{product.category.name}</p>
                 )}
                 {product.rating && (
                   <div className="flex items-center mt-2 text-xs">
@@ -232,13 +237,13 @@ export default function ProductGrid({
                   </div>
                 )}
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[#1a3a5c] font-bold text-lg">${product.price.toFixed(2)}</span>
+                  <span className="text-base sm:text-lg text-secondary-500 font-bold">${product.price.toFixed(2)}</span>
                   {hasDiscount && (
                     <>
-                      <span className="text-sm text-gray-400 line-through">
-                        ${product.compareAtPrice.toFixed(2)}
+                      <span className="text-xs sm:text-sm text-gray-400 line-through">
+                         ${compareAt.toFixed(2)}
                       </span>
-                      <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded">
+                      <span className="text-xs bg-accent-500 text-white px-1.5 py-0.5 rounded">
                         -{discount}%
                       </span>
                     </>
@@ -246,20 +251,22 @@ export default function ProductGrid({
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-3">
-                <button
-                  onClick={() => !isSoldOut && handleAddToCart(product.id)}
-                  disabled={isSoldOut}
-                  className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                    isSoldOut
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-[#1a3a5c] text-white hover:bg-[#2a5a8c]'
-                  }`}
-                >
-                  {isSoldOut ? 'Sold Out' : 'Add to Cart'}
-                </button>
+                {isRetail && (
+                  <button
+                    onClick={() => !isSoldOut && handleAddToCart(product.id)}
+                    disabled={isSoldOut}
+                    className={`px-3 sm:px-4 py-2 rounded text-xs sm:text-sm font-medium transition-colors ${
+                      isSoldOut
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                    }`}
+                  >
+                    {isSoldOut ? 'Sold Out' : 'Add to Cart'}
+                  </button>
+                )}
                 <button
                   onClick={() => handleToggleWishlist(product.id)}
-                  className="p-2 rounded border border-gray-200 hover:border-[#1a3a5c] transition-colors"
+                  className="p-2 rounded border border-gray-200 hover:border-primary-600 transition-colors"
                 >
                   <Heart
                     className={`w-4 h-4 ${wishlist.has(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
@@ -325,7 +332,7 @@ export default function ProductGrid({
           {viewMode === 'list' ? (
             <ListView />
           ) : (
-            <div className={`grid ${gridColumns[columns]} gap-6`}>
+            <div className={`grid ${gridColumns[columns]} gap-4 sm:gap-6`}>
               {products.map((product) => {
               // Map the product structure to match ProductCard expectations
               const mappedProduct = {
@@ -336,7 +343,7 @@ export default function ProductGrid({
                 image: product.thumbnail || undefined,
                 category: product.category?.name,
                 stock: product.stock,
-                wholesalePrice: product.compareAtPrice || undefined,
+                wholesalePrice: product.wholesalePrice || undefined,
               }
               
               return (

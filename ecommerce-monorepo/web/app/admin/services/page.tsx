@@ -7,6 +7,14 @@ import {
   Filter, MoreVertical, Check, X, AlertTriangle 
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
+
+interface ServiceTranslationRow {
+  name: string
+  description: string
+  duration: string
+  coverage: string
+}
 
 interface Service {
   id: string
@@ -21,6 +29,19 @@ interface Service {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  translations?: Array<{
+    locale: string
+    name: string
+    description: string | null
+    duration: string | null
+    coverage: string | null
+  }>
+}
+
+const SERVICE_LOCALES = ['ru', 'zh']
+
+function emptyServiceTranslation(): ServiceTranslationRow {
+  return { name: '', description: '', duration: '', coverage: '' }
 }
 
 interface Pagination {
@@ -51,6 +72,8 @@ export default function AdminServicesPage() {
     type: 'shipping',
     image: '',
   })
+  const [translations, setTranslations] = useState<Record<string, ServiceTranslationRow>>({})
+  const [translationsLocale, setTranslationsLocale] = useState('ru')
 
   useEffect(() => {
     if (!authLoading && isAdmin) {
@@ -107,6 +130,15 @@ export default function AdminServicesPage() {
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
+          translations: SERVICE_LOCALES
+            .map((locale) => {
+              const t = translations[locale]
+              if (!t) return null
+              const hasContent = t.name || t.description || t.duration || t.coverage
+              if (!hasContent) return null
+              return { locale, name: t.name, description: t.description, duration: t.duration, coverage: t.coverage }
+            })
+            .filter(Boolean),
         }),
       })
 
@@ -146,6 +178,16 @@ export default function AdminServicesPage() {
       type: service.type,
       image: service.image || '',
     })
+    const translationMap: Record<string, ServiceTranslationRow> = {}
+    for (const t of service.translations ?? []) {
+      translationMap[t.locale] = {
+        name: t.name ?? '',
+        description: t.description ?? '',
+        duration: t.duration ?? '',
+        coverage: t.coverage ?? '',
+      }
+    }
+    setTranslations(translationMap)
     setShowAddModal(true)
   }
 
@@ -184,6 +226,8 @@ export default function AdminServicesPage() {
       type: 'shipping',
       image: '',
     })
+    setTranslations({})
+    setTranslationsLocale('ru')
     setEditingService(null)
     setShowAddModal(false)
   }
@@ -214,7 +258,22 @@ export default function AdminServicesPage() {
           <p className="text-sm text-gray-500 mt-0.5">Manage shipping, customs, warehousing, and sourcing services</p>
         </div>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => {
+            setEditingService(null)
+            setFormData({
+              name: '',
+              slug: '',
+              description: '',
+              price: '',
+              duration: '',
+              coverage: '',
+              type: 'shipping',
+              image: '',
+            })
+            setTranslations({})
+            setTranslationsLocale('ru')
+            setShowAddModal(true)
+          }}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
           style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
         >
@@ -464,6 +523,104 @@ export default function AdminServicesPage() {
                   value={formData.image}
                   onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
                 />
+              </div>
+
+              {/* Translations */}
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-900">Translations</h3>
+                  <div className="flex items-center gap-2">
+                    <AutoTranslateButton
+                      enFields={{
+                        name: formData.name,
+                        description: formData.description,
+                        duration: formData.duration,
+                        coverage: formData.coverage,
+                      }}
+                      onTranslated={(result) => {
+                        setTranslations((prev) => {
+                          const next = { ...prev }
+                          for (const locale of Object.keys(result)) {
+                            next[locale] = { ...emptyServiceTranslation(), ...next[locale], ...result[locale] }
+                          }
+                          return next
+                        })
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      {SERVICE_LOCALES.map((locale) => (
+                        <button
+                          key={locale}
+                          type="button"
+                          onClick={() => setTranslationsLocale(locale)}
+                          className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                            translationsLocale === locale
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {locale.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">
+                  English content is saved from the fields above. Add Russian / Chinese overrides below
+                  (blank fields fall back to English).
+                </p>
+                {SERVICE_LOCALES.map((locale) => {
+                  const t = translations[locale] ?? emptyServiceTranslation()
+                  const update = (patch: Partial<ServiceTranslationRow>) =>
+                    setTranslations((prev) => ({ ...prev, [locale]: { ...t, ...patch } }))
+                  const isActive = translationsLocale === locale
+                  return (
+                    <div key={locale} className={isActive ? 'space-y-4' : 'hidden'}>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Name ({locale})</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          value={t.name}
+                          onChange={(e) => update({ name: e.target.value })}
+                          placeholder={formData.name || 'Translation for name'}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Description ({locale})</label>
+                        <textarea
+                          rows={3}
+                          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          value={t.description}
+                          onChange={(e) => update({ description: e.target.value })}
+                          placeholder={formData.description || 'Translation for description'}
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Duration ({locale})</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={t.duration}
+                            onChange={(e) => update({ duration: e.target.value })}
+                            placeholder={formData.duration || 'Translation for duration'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Coverage ({locale})</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={t.coverage}
+                            onChange={(e) => update({ coverage: e.target.value })}
+                            placeholder={formData.coverage || 'Translation for coverage'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
 
               <div className="flex justify-end gap-3 pt-4">

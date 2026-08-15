@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { LocaleLink } from '@/components/LocaleLink'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
@@ -35,13 +36,13 @@ export function SpecialOffers() {
               Limited time deals on premium kitchenware
             </p>
           </div>
-          <Link
+          <LocaleLink
             href="/products?onSale=true"
             className="flex items-center gap-1 text-sm text-[#1a3a5c] hover:text-[#c9a84c] transition font-medium"
           >
             View All
             <ChevronRight className="w-4 h-4" />
-          </Link>
+          </LocaleLink>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">

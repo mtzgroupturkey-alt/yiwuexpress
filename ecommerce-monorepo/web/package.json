@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "node server.js",
     "dev:default": "next dev -p 3001",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "NODE_ENV=production node server.js",
     "start:default": "next start -p 3001",
     "lint": "next lint",
@@ -20,7 +20,10 @@
     "db:seed:hero": "tsx prisma/seed-hero-slides.ts",
     "db:seed:all": "tsx prisma/seed-all-sample-data.ts",
     "db:seed:sample": "tsx prisma/seed-sample-data.ts",
-    "generate:placeholders": "node scripts/generate-placeholders.js"
+    "generate:placeholders": "node scripts/generate-placeholders.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -39,10 +42,12 @@
     "dotenv": "^16.4.5",
     "framer-motion": "^12.42.2",
     "gsap": "^3.15.0",
+    "impeccable": "github:pbakaus/impeccable",
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.21.0",
     "next": "14.2.19",
+    "next-intl": "^3.26.5",
     "nodemailer": "^9.0.1",
     "ogl": "^1.0.11",
     "pdfkit": "^0.19.1",
@@ -56,8 +61,14 @@
     "zod": "^3.23.8",
     "zustand": "^5.0.14"
   },
+  "engines": {
+    "node": ">=18.17.0 <23"
+  },
   "devDependencies": {
     "@prisma/client": "6.0.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20",
@@ -66,15 +77,18 @@
     "@types/react-dom": "^18",
     "@typescript-eslint/eslint-plugin": "^7",
     "@typescript-eslint/parser": "^7",
+    "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.0.1",
     "cross-env": "^10.1.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.19",
+    "jsdom": "^29.1.1",
     "postcss": "^8",
     "prisma": "6.0.0",
     "tailwindcss": "^3.3.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }

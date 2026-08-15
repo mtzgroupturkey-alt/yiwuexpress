@@ -8,6 +8,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Check, Trash2, Star, MessageSquareQuote, ShieldAlert } from 'lucide-react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
+import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
+
+interface TestimonialTranslationRow {
+  quote: string
+  role: string
+  company: string
+}
 
 interface Testimonial {
   id: string
@@ -20,6 +27,18 @@ interface Testimonial {
   image?: string
   isFeatured: boolean
   createdAt: string
+  translations?: Array<{
+    locale: string
+    quote: string
+    role: string | null
+    company: string | null
+  }>
+}
+
+const TESTIMONIAL_LOCALES = ['ru', 'zh']
+
+function emptyTestimonialTranslation(): TestimonialTranslationRow {
+  return { quote: '', role: '', company: '' }
 }
 
 export default function AdminTestimonialsPage() {
@@ -28,6 +47,14 @@ export default function AdminTestimonialsPage() {
   const [loading, setLoading] = useState(true)
   const [actioningId, setActioningId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null)
+  const [editForm, setEditForm] = useState<{
+    quote: string
+    role: string
+    company: string
+    translations: Record<string, TestimonialTranslationRow>
+  }>({ quote: '', role: '', company: '', translations: {} })
+  const [editSaving, setEditSaving] = useState(false)
 
   const fetchTestimonials = async () => {
     try {
@@ -85,6 +112,58 @@ export default function AdminTestimonialsPage() {
       console.error(err)
     } finally {
       setActioningId(null)
+    }
+  }
+
+  const handleEdit = (testimonial: Testimonial) => {
+    const translationMap: Record<string, TestimonialTranslationRow> = {}
+    for (const t of testimonial.translations ?? []) {
+      translationMap[t.locale] = {
+        quote: t.quote ?? '',
+        role: t.role ?? '',
+        company: t.company ?? '',
+      }
+    }
+    setEditingTestimonial(testimonial)
+    setEditForm({
+      quote: testimonial.quote,
+      role: testimonial.role,
+      company: testimonial.company,
+      translations: translationMap,
+    })
+  }
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingTestimonial) return
+    setEditSaving(true)
+    try {
+      const res = await fetch(`/api/admin/testimonials/${editingTestimonial.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quote: editForm.quote,
+          role: editForm.role,
+          company: editForm.company,
+          translations: TESTIMONIAL_LOCALES
+            .map((locale) => {
+              const t = editForm.translations[locale]
+              if (!t || !t.quote) return null
+              return { locale, quote: t.quote, role: t.role, company: t.company }
+            })
+            .filter(Boolean),
+        })
+      })
+      if (res.ok) {
+        setEditingTestimonial(null)
+        fetchTestimonials()
+      } else {
+        alert('Failed to update testimonial')
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -189,6 +268,14 @@ export default function AdminTestimonialsPage() {
                     <Check className="w-4 h-4" />
                     {testimonial.isFeatured ? 'Unfeature' : 'Feature'}
                   </Button>
+                   <Button
+                    onClick={() => handleEdit(testimonial)}
+                    variant="outline"
+                    className="border-primary-200 text-primary-700 hover:bg-primary-50 font-bold gap-1 text-xs"
+                  >
+                    <MessageSquareQuote className="w-4 h-4" />
+                    Edit
+                  </Button>
                   <Button
                     onClick={() => handleDelete(testimonial.id)}
                     disabled={actioningId === testimonial.id}
@@ -202,6 +289,124 @@ export default function AdminTestimonialsPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {editingTestimonial && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Edit Testimonial</h2>
+            <p className="text-sm text-gray-500 mb-6">{editingTestimonial.name}</p>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quote (English)</label>
+                <textarea
+                  rows={3}
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={editForm.quote}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, quote: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editForm.role}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, role: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={editForm.company}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, company: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-900">Translations (Russian / Chinese)</h3>
+                  <AutoTranslateButton
+                    enFields={{
+                      quote: editForm.quote,
+                      role: editForm.role,
+                      company: editForm.company,
+                    }}
+                    onTranslated={(result) => {
+                      setEditForm(prev => {
+                        const translations = { ...prev.translations }
+                        for (const locale of Object.keys(result)) {
+                          translations[locale] = { ...emptyTestimonialTranslation(), ...translations[locale], ...result[locale] }
+                        }
+                        return { ...prev, translations }
+                      })
+                    }}
+                  />
+                </div>
+                {TESTIMONIAL_LOCALES.map((locale) => {
+                  const t = editForm.translations[locale] ?? emptyTestimonialTranslation()
+                  const update = (patch: Partial<TestimonialTranslationRow>) =>
+                    setEditForm(prev => ({
+                      ...prev,
+                      translations: { ...prev.translations, [locale]: { ...t, ...patch } }
+                    }))
+                  return (
+                    <div key={locale} className="mb-4 space-y-2 rounded-xl bg-gray-50 p-3">
+                      <div className="text-xs font-semibold uppercase text-gray-500">{locale}</div>
+                      <textarea
+                        rows={2}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Translated quote"
+                        value={t.quote}
+                        onChange={(e) => update({ quote: e.target.value })}
+                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Translated role"
+                          value={t.role}
+                          onChange={(e) => update({ role: e.target.value })}
+                        />
+                        <input
+                          type="text"
+                          className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Translated company"
+                          value={t.company}
+                          onChange={(e) => update({ company: e.target.value })}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingTestimonial(null)}
+                  className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSaving}
+                  className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                  style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
+                >
+                  {editSaving ? 'Saving...' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

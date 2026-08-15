@@ -1,6 +1,30 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth'
+
+// Always seed `en` from the legacy fields so the fallback chain stays intact.
+function buildPageBannerTranslations(
+  translations: Array<{ locale: string; title?: string | null; subtitle?: string | null }> | undefined,
+  legacy: { title?: string | null; subtitle?: string | null }
+): Array<{ locale: string; title?: string | null; subtitle?: string | null }> {
+  const rows: Array<{ locale: string; title?: string | null; subtitle?: string | null }> = []
+  const seen = new Set<string>()
+
+  if (Array.isArray(translations)) {
+    for (const t of translations) {
+      if (!t.locale || seen.has(t.locale)) continue
+      seen.add(t.locale)
+      rows.push({ locale: t.locale, title: t.title ?? null, subtitle: t.subtitle ?? null })
+    }
+  }
+
+  if (!seen.has('en')) {
+    rows.push({ locale: 'en', title: legacy.title ?? null, subtitle: legacy.subtitle ?? null })
+  }
+
+  return rows
+}
 
 // GET - List all breadcrumb settings
 export async function GET(req: NextRequest) {
@@ -19,6 +43,7 @@ export async function GET(req: NextRequest) {
             slug: true,
           },
         },
+        translations: true,
       },
       orderBy: [
         { pageType: 'asc' },
@@ -42,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { pageType, pageSlug, categoryId, imageUrl, mobileImageUrl, overlayColor, title, subtitle, isActive } = body
+    const { pageType, pageSlug, categoryId, imageUrl, mobileImageUrl, overlayColor, title, subtitle, isActive, translations } = body
 
     // Validation
     if (!pageType || !imageUrl) {
@@ -70,6 +95,9 @@ export async function POST(req: NextRequest) {
         title: title || null,
         subtitle: subtitle || null,
         isActive: isActive !== false,
+        translations: {
+          create: buildPageBannerTranslations(translations, { title, subtitle })
+        }
       },
       include: {
         category: {

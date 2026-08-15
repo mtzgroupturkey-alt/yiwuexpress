@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
@@ -9,6 +10,7 @@ import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { useSettings } from '@/components/SettingsProvider'
+import { useLocale } from 'next-intl'
 
 interface HeroSlide {
   id: string
@@ -70,17 +72,18 @@ export function HeroSlider() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const { settings } = useSettings()
+  const locale = useLocale()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['hero-slides', 'active'],
-    queryFn: () => api.get('/api/hero-slides'),
+    queryKey: ['hero-slides', 'active', locale],
+    queryFn: () => api.get(`/api/hero-slides?locale=${locale}`),
     staleTime: 5 * 60 * 1000,
   })
 
   const slides: HeroSlide[] = data?.data || []
   
-  // Get company name from settings, fallback to 'YIWU EXPRESS'
-  const companyName = settings?.companyName || 'YIWU EXPRESS'
+  // Get company name from settings, fallback to 'Global Trade'
+  const companyName = settings?.companyName || 'Global Trade'
 
   useEffect(() => {
     if (isPaused || slides.length === 0) return
@@ -280,21 +283,21 @@ export function HeroSlider() {
                       'flex flex-wrap gap-4 pt-2',
                       getJustifyContent()
                     )}>
-                      <Link
+                      <LocaleLink
                         href={slide.ctaLink}
                         className="bg-gradient-to-r from-[#c9a84c] via-[#d4b15c] to-[#e8d48b] text-[#1a1a2e] px-8 py-3 rounded-full font-bold text-sm md:text-base transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-gold-lg inline-flex items-center gap-2 shadow-gold"
                       >
                         {slide.ctaText}
-                        <span className="text-lg">→</span>
-                      </Link>
+                        <span className="text-lg">â†’</span>
+                      </LocaleLink>
 
                       {slide.secondaryCtaText && slide.secondaryCtaLink && (
-                        <Link
+                        <LocaleLink
                           href={slide.secondaryCtaLink}
                           className="glass text-white px-8 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 inline-flex items-center gap-2"
                         >
                           {slide.secondaryCtaText}
-                        </Link>
+                        </LocaleLink>
                       )}
                     </div>
                   </div>

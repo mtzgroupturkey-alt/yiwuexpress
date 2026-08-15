@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken' // For API routes (Node runtime)
+import jwt, { SignOptions } from 'jsonwebtoken' // For API routes (Node runtime)
 import * as jose from 'jose' // For middleware (Edge runtime)
 import bcrypt from 'bcryptjs'
 import { prisma } from './db'
@@ -11,7 +11,7 @@ export interface JwtPayload {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET!
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7d') as SignOptions['expiresIn']
 const COOKIE_NAME = 'auth_token'
 
 // Validate JWT_SECRET at module load
@@ -64,7 +64,7 @@ export async function verifyTokenEdge(token: string): Promise<JwtPayload | null>
     const { payload } = await jose.jwtVerify(token, secret, {
       algorithms: ['HS256'] // Explicitly specify algorithm
     })
-    return payload as JwtPayload
+    return payload as unknown as JwtPayload
   } catch (error) {
     console.debug('Token verification error in edge runtime:', error instanceof Error ? error.message : 'Unknown error')
     return null
@@ -77,13 +77,20 @@ export async function verifyTokenEdge(token: string): Promise<JwtPayload | null>
 export function setAuthCookie(response: NextResponse, token: string): void {
   const isProduction = process.env.NODE_ENV === 'production'
   
+  // In production, always use secure cookies (HTTPS only)
+  // In development, allow HTTP for testing
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: isProduction,
+    secure: isProduction, // true in production (requires HTTPS)
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     path: '/',
   })
+  
+  // Log cookie setting for debugging (remove in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[AUTH] Cookie set:', { secure: isProduction, httpOnly: true, sameSite: 'lax' })
+  }
 }
 
 /**

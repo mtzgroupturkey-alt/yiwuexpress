@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/admin/ImageUpload'
+import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { toast } from '@/components/ui/use-toast'
 import { GripVertical, Pencil, Trash2, Plus, Eye, EyeOff, Save, Image as ImageIcon, Link2, Copy, Loader2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 
@@ -43,6 +44,65 @@ interface HeroSlide {
   motionType: string
   createdAt: string
   updatedAt: string
+  translations?: Array<{
+    locale: string
+    title: string
+    subtitle: string | null
+    description: string | null
+    badgeText: string | null
+    ctaText: string
+    secondaryCtaText: string | null
+  }>
+}
+
+interface TranslationRow {
+  title: string
+  subtitle: string
+  description: string
+  badgeText: string
+  ctaText: string
+  secondaryCtaText: string
+}
+
+const TRANSLATABLE_LOCALES = ['en', 'ru', 'zh']
+
+function emptyTranslation(): TranslationRow {
+  return {
+    title: '',
+    subtitle: '',
+    description: '',
+    badgeText: '',
+    ctaText: '',
+    secondaryCtaText: ''
+  }
+}
+
+// Build the `translations` payload. Always include the legacy (English) values
+// as the `en` row so the fallback chain stays intact, then layer any extra
+// locales the admin filled in.
+function buildHeroTranslationsPayload(
+  base: TranslationRow,
+  legacy: { title: string; subtitle: string; description: string; badgeText: string; ctaText: string; secondaryCtaText: string },
+  overrides: Record<string, TranslationRow>
+): Array<TranslationRow & { locale: string }> {
+  const rows: Array<TranslationRow & { locale: string }> = []
+  const seen = new Set<string>()
+
+  // en is derived from the legacy content fields
+  rows.push({ locale: 'en', ...legacy })
+  seen.add('en')
+
+  for (const locale of TRANSLATABLE_LOCALES) {
+    if (locale === 'en' || seen.has(locale)) continue
+    const o = overrides[locale]
+    if (!o) continue
+    const hasContent = o.title || o.subtitle || o.description || o.badgeText || o.ctaText || o.secondaryCtaText
+    if (!hasContent) continue
+    rows.push({ locale, ...o })
+    seen.add(locale)
+  }
+
+  return rows
 }
 
 interface SortableSlideItemProps {
@@ -480,6 +540,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
   const [slideDuration, setSlideDuration] = useState(5)
   const [motionType, setMotionType] = useState('slide')
   const [isActive, setIsActive] = useState(true)
+  const [translations, setTranslations] = useState<Record<string, TranslationRow>>({})
 
   useEffect(() => {
     if (initialData) {
@@ -501,6 +562,18 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       setSlideDuration(initialData.slideDuration)
       setMotionType(initialData.motionType || 'slide')
       setIsActive(initialData.isActive)
+      const initialTranslations: Record<string, TranslationRow> = {}
+      for (const t of initialData.translations ?? []) {
+        initialTranslations[t.locale] = {
+          title: t.title ?? '',
+          subtitle: t.subtitle ?? '',
+          description: t.description ?? '',
+          badgeText: t.badgeText ?? '',
+          ctaText: t.ctaText ?? '',
+          secondaryCtaText: t.secondaryCtaText ?? '',
+        }
+      }
+      setTranslations(initialTranslations)
     } else {
       // Reset form
       setTitle('')
@@ -521,6 +594,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       setSlideDuration(5)
       setMotionType('slide')
       setIsActive(true)
+      setTranslations({})
     }
   }, [initialData, open])
 
@@ -551,6 +625,18 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       slideDuration,
       motionType,
       isActive,
+      translations: buildHeroTranslationsPayload(
+        emptyTranslation(),
+        {
+          title,
+          subtitle,
+          description,
+          badgeText,
+          ctaText,
+          secondaryCtaText,
+        },
+        translations
+      ),
     }
 
     try {
@@ -590,11 +676,12 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs defaultValue="content" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="content">Content</TabsTrigger>
               <TabsTrigger value="media">Media & Design</TabsTrigger>
               <TabsTrigger value="layout">Layout</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="translations">Translations</TabsTrigger>
             </TabsList>
 
             {/* CONTENT TAB */}
@@ -846,6 +933,98 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 <Label>Active</Label>
                 <Switch checked={isActive} onCheckedChange={setIsActive} />
               </div>
+            </TabsContent>
+
+            {/* TRANSLATIONS TAB */}
+            <TabsContent value="translations" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-500">
+                  The default language is English (synced from the Content & Settings tabs). Add
+                  Russian and Chinese translations below. Leave a field blank to fall back to English.
+                </div>
+                <AutoTranslateButton
+                  enFields={{
+                    title: title,
+                    subtitle: subtitle,
+                    description: description,
+                    badgeText: badgeText,
+                    ctaText: ctaText,
+                    secondaryCtaText: secondaryCtaText,
+                  }}
+                  onTranslated={(result) => {
+                    setTranslations((prev) => {
+                      const next = { ...prev }
+                      for (const locale of Object.keys(result)) {
+                        next[locale] = { ...emptyTranslation(), ...next[locale], ...result[locale] }
+                      }
+                      return next
+                    })
+                  }}
+                />
+              </div>
+              {TRANSLATABLE_LOCALES.filter((l) => l !== 'en').map((locale) => {
+                const row = translations[locale] ?? emptyTranslation()
+                const update = (patch: Partial<TranslationRow>) =>
+                  setTranslations((prev) => ({ ...prev, [locale]: { ...row, ...patch } }))
+                return (
+                  <Card key={locale}>
+                    <CardHeader>
+                      <CardTitle className="text-base uppercase">{locale}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <Label>Title</Label>
+                        <Input
+                          value={row.title}
+                          onChange={(e) => update({ title: e.target.value })}
+                          placeholder={title || 'Translation for title'}
+                        />
+                      </div>
+                      <div>
+                        <Label>Subtitle</Label>
+                        <Input
+                          value={row.subtitle}
+                          onChange={(e) => update({ subtitle: e.target.value })}
+                          placeholder={subtitle || 'Translation for subtitle'}
+                        />
+                      </div>
+                      <div>
+                        <Label>Description</Label>
+                        <Textarea
+                          value={row.description}
+                          onChange={(e) => update({ description: e.target.value })}
+                          rows={3}
+                          placeholder={description || 'Translation for description'}
+                        />
+                      </div>
+                      <div>
+                        <Label>Badge Text</Label>
+                        <Input
+                          value={row.badgeText}
+                          onChange={(e) => update({ badgeText: e.target.value })}
+                          placeholder={badgeText || 'Translation for badge text'}
+                        />
+                      </div>
+                      <div>
+                        <Label>Primary CTA Text</Label>
+                        <Input
+                          value={row.ctaText}
+                          onChange={(e) => update({ ctaText: e.target.value })}
+                          placeholder={ctaText || 'Translation for CTA text'}
+                        />
+                      </div>
+                      <div>
+                        <Label>Secondary CTA Text</Label>
+                        <Input
+                          value={row.secondaryCtaText}
+                          onChange={(e) => update({ secondaryCtaText: e.target.value })}
+                          placeholder={secondaryCtaText || 'Translation for secondary CTA'}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </TabsContent>
           </Tabs>
 

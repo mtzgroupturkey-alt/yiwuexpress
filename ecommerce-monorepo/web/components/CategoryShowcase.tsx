@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { ChefHat, UtensilsCrossed, Coffee, Soup, Wine, Refrigerator } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 
@@ -84,7 +85,7 @@ export default function CategoryShowcase() {
           {categories.map((category) => {
             const Icon = category.icon
             return (
-              <Link
+              <LocaleLink
                 key={category.id}
                 href={category.href}
                 className="group relative overflow-hidden rounded-xl bg-white shadow-brand hover:shadow-brand-lg transition-all duration-300"
@@ -115,14 +116,14 @@ export default function CategoryShowcase() {
                     </svg>
                   </div>
                 </div>
-              </Link>
+              </LocaleLink>
             )
           })}
         </div>
 
         {/* View All Link */}
         <div className="text-center mt-10">
-          <Link
+          <LocaleLink
             href="/products"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-lg hover:shadow-xl"
           >
@@ -130,7 +131,7 @@ export default function CategoryShowcase() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-          </Link>
+          </LocaleLink>
         </div>
       </Container>
     </section>

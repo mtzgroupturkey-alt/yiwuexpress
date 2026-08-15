@@ -1,7 +1,16 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    // User-uploaded files land in public/uploads AFTER build. Next.js can only
+    // optimize public files that existed at build time, so it returns 400
+    // ("isn't a valid image") for uploads. Since virtually all content images
+    // here are uploads, disable optimization and serve the raw files directly.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -81,4 +90,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);

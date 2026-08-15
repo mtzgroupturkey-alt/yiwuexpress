@@ -1,0 +1,134 @@
+================================================================================
+BEST SOLUTION: NGINX REDIRECT ONLY
+================================================================================
+
+The app/page.tsx approach causes errors. 
+The BEST solution is to do the redirect in NGINX directly.
+
+This is FASTER, SIMPLER, and MORE RELIABLE than doing it in the app.
+
+
+================================================================================
+SOLUTION: Add Nginx Redirect
+================================================================================
+
+SSH into your production server and run these commands:
+
+
+STEP 1: Edit nginx config
+--------------------------------------------------------------------------------
+sudo nano /etc/nginx/sites-available/dromkok.com
+
+
+STEP 2: Find this line (around line 110):
+--------------------------------------------------------------------------------
+    # Proxy Configuration for Next.js Application
+
+
+STEP 3: Add BEFORE that line:
+--------------------------------------------------------------------------------
+    # Root Path Redirect
+    location = / {
+        return 307 /en/;
+    }
+
+
+STEP 4: Your config should look like this:
+--------------------------------------------------------------------------------
+    ...
+    
+    # Root Path Redirect
+    location = / {
+        return 307 /en/;
+    }
+
+    # Proxy Configuration for Next.js Application
+    location / {
+        proxy_pass http://localhost:3001;
+        ...
+    }
+    
+    ...
+
+
+STEP 5: Save and exit:
+--------------------------------------------------------------------------------
+Press: Ctrl + X
+Press: Y
+Press: Enter
+
+
+STEP 6: Test nginx config:
+--------------------------------------------------------------------------------
+sudo nginx -t
+
+
+STEP 7: If test passes, reload nginx:
+--------------------------------------------------------------------------------
+sudo systemctl reload nginx
+
+
+STEP 8: Test in browser:
+--------------------------------------------------------------------------------
+Visit: http://dromkok.com
+Should redirect to: http://dromkok.com/en/
+
+
+================================================================================
+ONE-LINE AUTOMATIC COMMAND (Copy & Paste):
+================================================================================
+
+sudo sed -i '/# Proxy Configuration for Next.js Application/i \    # Root Path Redirect\n    location = / {\n        return 307 /en/;\n    }\n' /etc/nginx/sites-available/dromkok.com && sudo nginx -t && sudo systemctl reload nginx
+
+
+This single command will:
+1. Add the redirect rule
+2. Test the config
+3. Reload nginx if test passes
+
+
+================================================================================
+VERIFY IT WORKS:
+================================================================================
+
+curl -I http://dromkok.com/
+
+Should show:
+HTTP/1.1 307 Temporary Redirect
+Location: /en/
+
+
+================================================================================
+WHY THIS IS BETTER:
+================================================================================
+
+✅ Nginx handles redirect BEFORE reaching Next.js app
+✅ No "Internal Server Error" issues
+✅ Faster (nginx is faster than app logic)
+✅ More reliable (nginx is designed for this)
+✅ No code changes needed in your app
+
+
+================================================================================
+IF YOU GET ERRORS:
+================================================================================
+
+Nginx test fails:
+  Check syntax: sudo nginx -t
+  Look at the error message
+
+Restore backup if needed:
+  sudo cp /etc/nginx/sites-available/dromkok.com.backup /etc/nginx/sites-available/dromkok.com
+  sudo systemctl reload nginx
+
+
+================================================================================
+DONE!
+================================================================================
+
+After adding the nginx redirect, your site will work:
+http://dromkok.com → redirects to → http://dromkok.com/en/
+
+No more errors! ✅
+
+================================================================================

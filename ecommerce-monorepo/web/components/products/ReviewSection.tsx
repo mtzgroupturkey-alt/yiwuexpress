@@ -8,6 +8,7 @@ import { ReviewForm } from './ReviewForm'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Star, ThumbsUp } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 interface ReviewSectionProps {
   productId: string
@@ -16,6 +17,7 @@ interface ReviewSectionProps {
 
 export function ReviewSection({ productId, productName }: ReviewSectionProps) {
   const [showForm, setShowForm] = useState(false)
+  const t = useTranslations('Product')
 
   const { data: reviewData, isLoading } = useQuery({
     queryKey: ['reviews', productId],
@@ -55,7 +57,7 @@ export function ReviewSection({ productId, productName }: ReviewSectionProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-primary-500" />
-            Customer Reviews
+            {t('customerReviews')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -68,7 +70,7 @@ export function ReviewSection({ productId, productName }: ReviewSectionProps) {
                 </div>
                 <ReviewStars rating={averageRating} count={totalReviews} size="lg" />
                 <p className="text-sm text-gray-600 mt-2">
-                  Based on {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
+                  {t('basedOnReviews', { n: totalReviews })}
                 </p>
               </div>
             </div>
@@ -102,7 +104,7 @@ export function ReviewSection({ productId, productName }: ReviewSectionProps) {
               variant={showForm ? 'outline' : 'default'}
               className="w-full md:w-auto"
             >
-              {showForm ? 'Cancel' : 'Write a Review'}
+              {showForm ? t('cancel') : t('writeReview')}
             </Button>
           </div>
         </CardContent>
@@ -125,13 +127,13 @@ export function ReviewSection({ productId, productName }: ReviewSectionProps) {
           <CardContent className="py-12 text-center">
             <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No reviews yet
+              {t('noReviews')}
             </h3>
             <p className="text-gray-600 mb-4">
-              Be the first to review {productName}!
+              {t('beFirst')}
             </p>
             <Button onClick={() => setShowForm(true)}>
-              Write the First Review
+              {t('writeFirstReview')}
             </Button>
           </CardContent>
         </Card>

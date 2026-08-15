@@ -1,7 +1,7 @@
 export const heroBanners = [
   {
     id: 'hero-1',
-    title: 'Premium Kitchenware from Yiwu, China',
+    title: 'Premium Kitchenware from China',
     subtitle: 'Global Trade Solutions for International Buyers',
     ctaText: 'Shop Now',
     ctaLink: '/products',
@@ -18,7 +18,7 @@ export const heroBanners = [
   {
     id: 'hero-2',
     title: 'Wholesale Prices for Bulk Orders',
-    subtitle: 'Custom sourcing and logistics from Yiwu to your door',
+    subtitle: 'Custom sourcing and logistics from China to your door',
     ctaText: 'Request Quote',
     ctaLink: '/wholesale',
     secondaryCtaText: 'Learn More',

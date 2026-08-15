@@ -1,21 +1,36 @@
-import { NextResponse } from 'next/server'
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { verifyToken } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
-// GET /api/wholesale - Get wholesale inquiries
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
-    const status = searchParams.get('status')
+function getUserId(request: NextRequest): string | null {
+  const cookieToken = request.cookies.get('auth_token')?.value
+  const authHeader = request.headers.get('authorization')
+  const headerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const token = cookieToken || headerToken
+  if (!token) return null
+  const payload = verifyToken(token)
+  return payload?.userId || null
+}
 
-    const where: any = {}
-    
-    if (userId) {
-      where.userId = userId
+// GET /api/wholesale - Get wholesale inquiries
+export async function GET(request: NextRequest) {
+  try {
+    const userId = getUserId(request)
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status')
+
+    const where: any = { userId }
+    
     if (status) {
       where.status = status
     }
@@ -60,13 +75,20 @@ export async function GET(request: Request) {
 }
 
 // POST /api/wholesale - Create wholesale inquiry
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const userId = getUserId(request)
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
 
     // Validate required fields
     const requiredFields = [
-      'userId',
       'companyName',
       'businessType',
       'country',
@@ -117,7 +139,7 @@ export async function POST(request: Request) {
     const inquiry = await prisma.wholesaleInquiry.create({
       data: {
         inquiryNumber,
-        userId: body.userId,
+        userId,
         companyName: body.companyName,
         businessType: body.businessType,
         country: body.country,

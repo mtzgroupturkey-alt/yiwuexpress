@@ -12,16 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle } from 'lucide-react'
-
-const reviewSchema = z.object({
-  rating: z.number().min(1, 'Please select a rating').max(5),
-  title: z.string().min(5, 'Title must be at least 5 characters').max(100),
-  comment: z.string().min(20, 'Review must be at least 20 characters').max(1000),
-  reviewerName: z.string().min(2, 'Name is required').max(100),
-  verifiedPurchase: z.boolean().optional(),
-})
-
-type ReviewFormData = z.infer<typeof reviewSchema>
+import { useTranslations } from 'next-intl'
 
 interface ReviewFormProps {
   productId: string
@@ -33,6 +24,17 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
   const [rating, setRating] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const queryClient = useQueryClient()
+  const t = useTranslations('Product')
+
+  const reviewSchema = z.object({
+    rating: z.number().min(1, t('errRating')).max(5),
+    title: z.string().min(5, t('errTitle')).max(100),
+    comment: z.string().min(20, t('errComment')).max(1000),
+    reviewerName: z.string().min(2, t('errName')).max(100),
+    verifiedPurchase: z.boolean().optional(),
+  })
+
+  type ReviewFormData = z.infer<typeof reviewSchema>
 
   const {
     register,
@@ -89,10 +91,10 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
         <CardContent className="py-12 text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-green-900 mb-2">
-            Thank you for your review!
+            {t('thankYouReview')}
           </h3>
           <p className="text-green-700">
-            Your feedback helps other customers make informed decisions.
+            {t('feedbackHelps')}
           </p>
         </CardContent>
       </Card>
@@ -102,9 +104,9 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Write a Review</CardTitle>
+        <CardTitle>{t('reviewFormTitle')}</CardTitle>
         <CardDescription>
-          Share your experience with {productName}
+          {t('shareExperience', { name: productName })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -112,23 +114,23 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
           {/* Rating */}
           <div>
             <Label className="mb-2 block">
-              Overall Rating <span className="text-red-500">*</span>
+              {t('overallRating')} <span className="text-red-500">*</span>
             </Label>
             <InteractiveReviewStars value={rating} onChange={setRating} />
             {rating === 0 && errors.rating && (
-              <p className="text-sm text-red-600 mt-1">Please select a rating</p>
+              <p className="text-sm text-red-600 mt-1">{errors.rating.message}</p>
             )}
           </div>
 
           {/* Review Title */}
           <div>
             <Label htmlFor="title">
-              Review Title <span className="text-red-500">*</span>
+              {t('reviewTitle')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="title"
               {...register('title')}
-              placeholder="Sum up your experience in one line"
+              placeholder={t('reviewTitlePlaceholder')}
               className="mt-1"
             />
             {errors.title && (
@@ -139,12 +141,12 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
           {/* Review Comment */}
           <div>
             <Label htmlFor="comment">
-              Your Review <span className="text-red-500">*</span>
+              {t('yourReview')} <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="comment"
               {...register('comment')}
-              placeholder="Tell us what you liked or didn't like about this product..."
+              placeholder={t('reviewCommentPlaceholder')}
               rows={5}
               className="mt-1"
             />
@@ -152,19 +154,19 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
               <p className="text-sm text-red-600 mt-1">{errors.comment.message}</p>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              Minimum 20 characters
+              {t('min20')}
             </p>
           </div>
 
           {/* Reviewer Name */}
           <div>
             <Label htmlFor="reviewerName">
-              Your Name <span className="text-red-500">*</span>
+              {t('yourName')} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="reviewerName"
               {...register('reviewerName')}
-              placeholder="How should we display your name?"
+              placeholder={t('yourNamePlaceholder')}
               className="mt-1"
             />
             {errors.reviewerName && (
@@ -182,10 +184,10 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
               {mutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Submitting...
+                  {t('submitting')}
                 </>
               ) : (
-                'Submit Review'
+                t('submitReview')
               )}
             </Button>
           </div>
@@ -194,7 +196,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
           {mutation.isError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-800">
-                {mutation.error instanceof Error ? mutation.error.message : 'Failed to submit review'}
+                {mutation.error instanceof Error ? mutation.error.message : t('submitReview')}
               </p>
             </div>
           )}

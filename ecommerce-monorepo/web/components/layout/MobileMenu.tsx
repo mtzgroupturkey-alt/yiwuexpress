@@ -1,9 +1,12 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { LocaleLink } from '@/components/LocaleLink'
+import { useState, useEffect } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import { ChevronDown, Globe } from 'lucide-react'
 import { topMenuItems, staticCategories } from '@/lib/menu-config'
+import { useRouter as useIntlRouter, usePathname } from '@/i18n/navigation'
 
 interface MobileMenuProps {
   onClose: () => void
@@ -11,6 +14,26 @@ interface MobileMenuProps {
 
 export function MobileMenu({ onClose }: MobileMenuProps) {
   const [openCategory, setOpenCategory] = useState<string | null>(null)
+  const locale = useLocale()
+  const intlRouter = useIntlRouter()
+  const pathname = usePathname()
+  const t = useTranslations('Header')
+
+  // Prefer localized categories from the API (per active website language),
+  // falling back to the static config if the request fails.
+  const [categories, setCategories] = useState(staticCategories)
+  useEffect(() => {
+    let cancelled = false
+    fetch(`/api/categories/menu?includeChildren=true&locale=${locale}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data?.data?.length) setCategories(data.data)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [locale])
 
   return (
     <div className="space-y-4">
@@ -20,14 +43,14 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
           Main Menu
         </h3>
         {topMenuItems.map((item) => (
-          <Link
+          <LocaleLink
             key={item.name}
             href={item.path}
             className="block py-3 text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50 font-medium rounded px-3 transition-colors"
             onClick={onClose}
           >
             {item.name}
-          </Link>
+          </LocaleLink>
         ))}
       </div>
 
@@ -38,16 +61,16 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
         </h3>
         
         {/* ALL Products Link */}
-        <Link
+        <LocaleLink
           href="/products"
           className="block py-3 text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50 font-medium rounded px-3 transition-colors mb-2"
           onClick={onClose}
         >
-          ALL PRODUCTS
-        </Link>
+          {t('allProducts')}
+        </LocaleLink>
 
         {/* Category List */}
-        {staticCategories.map((category) => (
+        {categories.map((category) => (
           <div key={category.id} className="border-b border-gray-100">
             <button
               className="flex items-center justify-between w-full py-3 px-3 text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50 font-medium rounded transition-colors"
@@ -72,7 +95,7 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
               <ul className="pl-6 pb-3 space-y-1">
                 {category.children.map((sub) => (
                   <li key={sub.id}>
-                    <Link
+                    <LocaleLink
                       href={`/products?category=${sub.slug}`}
                       className="text-sm text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 block py-2 px-3 rounded transition-colors"
                       onClick={onClose}
@@ -83,17 +106,17 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
                           ({sub.productCount})
                         </span>
                       )}
-                    </Link>
+                    </LocaleLink>
                   </li>
                 ))}
                 <li className="pt-2">
-                  <Link
+                  <LocaleLink
                     href={`/products?category=${category.slug}`}
                     className="text-sm text-[#c9a84c] font-medium hover:underline block py-2 px-3"
                     onClick={onClose}
                   >
-                    View All {category.name} →
-                  </Link>
+                    {t('viewAll')} {category.name} â†’
+                  </LocaleLink>
                 </li>
               </ul>
             )}
@@ -101,15 +124,57 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
         ))}
       </div>
 
+      {/* Language */}
+      <div className="pt-4 border-t border-gray-200">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <Globe className="w-4 h-4" /> Language
+        </h3>
+        <div className="grid grid-cols-3 gap-2">
+          <button
+            onClick={() => {
+              window.location.href = `/en${pathname}`
+              onClose()
+            }}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+              locale === 'en' ? 'border-[#c9a84c] text-[#1a3a5c] bg-[#c9a84c]/10' : 'border-gray-200 text-gray-600'
+            }`}
+          >
+            <span>🇺🇸</span> EN
+          </button>
+          <button
+            onClick={() => {
+              window.location.href = `/ru${pathname}`
+              onClose()
+            }}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+              locale === 'ru' ? 'border-[#c9a84c] text-[#1a3a5c] bg-[#c9a84c]/10' : 'border-gray-200 text-gray-600'
+            }`}
+          >
+            <span>🇷🇺</span> RU
+          </button>
+          <button
+            onClick={() => {
+              window.location.href = `/zh${pathname}`
+              onClose()
+            }}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
+              locale === 'zh' ? 'border-[#c9a84c] text-[#1a3a5c] bg-[#c9a84c]/10' : 'border-gray-200 text-gray-600'
+            }`}
+          >
+            <span>🇨🇳</span> ZH
+          </button>
+        </div>
+      </div>
+
       {/* Wholesale CTA */}
       <div className="pt-4 border-t border-gray-200">
-        <Link
+        <LocaleLink
           href="/wholesale"
           className="block bg-gradient-to-r from-[#1a3a5c] to-[#2a4a6c] text-white text-center py-4 rounded-lg font-semibold hover:opacity-90 transition-opacity"
           onClick={onClose}
         >
           💼 Wholesale Inquiries
-        </Link>
+        </LocaleLink>
       </div>
     </div>
   )

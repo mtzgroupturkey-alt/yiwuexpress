@@ -1,0 +1,29 @@
+# Enforce LF line endings on checkout for all text files (Linux/CI builds).
+# Prevents the classic Windows CRLF -> "command not found" / shell-script
+# parse errors that break `next build` and shell deploy scripts on Ubuntu.
+* text=auto eol=lf
+
+# Shell scripts must always have LF and must stay executable.
+*.sh text eol=lf
+
+# Mark lockfiles as text so diffs are readable; keep them mergeable.
+package-lock.json text eol=lf
+yarn.lock text eol=lf
+pnpm-lock.yaml text eol=lf
+
+# Binary assets: never normalize line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.sqlite binary
+*.db binary

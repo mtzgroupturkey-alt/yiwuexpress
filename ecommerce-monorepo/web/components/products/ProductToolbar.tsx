@@ -1,6 +1,7 @@
 'use client'
 
 import { Grid, List, SlidersHorizontal } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 interface ProductToolbarProps {
   totalProducts: number
@@ -19,21 +20,23 @@ export function ProductToolbar({
   onViewModeChange,
   onFilterToggle,
 }: ProductToolbarProps) {
+  const t = useTranslations('Products')
+  const tt = t as unknown as (key: string) => string
   const sortOptions = [
-    { value: 'relevance', label: 'Relevance' },
-    { value: 'price-asc', label: 'Price: Low to High' },
-    { value: 'price-desc', label: 'Price: High to Low' },
-    { value: 'newest', label: 'Newest First' },
-    { value: 'popularity', label: 'Popularity' },
-    { value: 'name-asc', label: 'Name: A-Z' },
-    { value: 'name-desc', label: 'Name: Z-A' },
+    { value: 'relevance', label: 'sortRelevance' },
+    { value: 'price-asc', label: 'sortPriceAsc' },
+    { value: 'price-desc', label: 'sortPriceDesc' },
+    { value: 'newest', label: 'sortNewest' },
+    { value: 'popularity', label: 'sortPopularity' },
+    { value: 'name-asc', label: 'sortNameAsc' },
+    { value: 'name-desc', label: 'sortNameDesc' },
   ]
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-b border-gray-200 bg-white rounded-lg px-4 shadow-sm">
       <div className="flex items-center space-x-4">
         <span className="text-sm text-gray-600 font-medium">
-          {totalProducts} {totalProducts === 1 ? 'Product' : 'Products'}
+          {t('productCount', { n: totalProducts })}
         </span>
         <div className="hidden md:flex items-center space-x-1 border border-gray-200 rounded-lg p-1">
           <button
@@ -41,7 +44,7 @@ export function ProductToolbar({
             className={`p-1.5 rounded transition-colors ${
               viewMode === 'grid' ? 'bg-[#1a3a5c] text-white' : 'hover:bg-gray-100 text-gray-600'
             }`}
-            title="Grid View"
+            title={t('gridView')}
           >
             <Grid className="w-4 h-4" />
           </button>
@@ -50,7 +53,7 @@ export function ProductToolbar({
             className={`p-1.5 rounded transition-colors ${
               viewMode === 'list' ? 'bg-[#1a3a5c] text-white' : 'hover:bg-gray-100 text-gray-600'
             }`}
-            title="List View"
+            title={t('listView')}
           >
             <List className="w-4 h-4" />
           </button>
@@ -64,7 +67,7 @@ export function ProductToolbar({
           className="md:hidden flex items-center space-x-2 text-sm text-gray-600 hover:text-[#1a3a5c] border border-gray-200 rounded-lg px-3 py-2 transition-colors"
         >
           <SlidersHorizontal className="w-4 h-4" />
-          <span>Filter</span>
+          <span>{t('filter')}</span>
         </button>
 
         <select
@@ -74,7 +77,7 @@ export function ProductToolbar({
         >
           {sortOptions.map((option) => (
             <option key={option.value} value={option.value}>
-              Sort by: {option.label}
+              {tt(option.label)}
             </option>
           ))}
         </select>

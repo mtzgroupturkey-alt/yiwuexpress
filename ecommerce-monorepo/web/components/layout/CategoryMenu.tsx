@@ -1,6 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
@@ -14,6 +16,8 @@ interface Category {
 }
 
 export function CategoryMenu() {
+  const locale = useLocale()
+  const t = useTranslations('Header')
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
@@ -35,7 +39,7 @@ export function CategoryMenu() {
   const fetchCategories = async () => {
     try {
       console.log('[CategoryMenu] Fetching categories from API...')
-      const response = await fetch('/api/categories?includeChildren=true')
+      const response = await fetch(`/api/categories?includeChildren=true&locale=${locale}`)
       console.log('[CategoryMenu] Response status:', response.status, response.ok)
       
       if (response.ok) {
@@ -95,10 +99,10 @@ export function CategoryMenu() {
         
         setCategories(categoriesWithChildren)
         console.log('[CategoryMenu] Final categories set:', categoriesWithChildren.length)
-        console.log('[CategoryMenu] Categories with children:', categoriesWithChildren.map(c => ({
+        console.log('[CategoryMenu] Categories with children:', categoriesWithChildren.map((c: Category) => ({
           name: c.name,
           childrenCount: c.children?.length || 0,
-          children: c.children?.map(ch => ch.name)
+          children: c.children?.map((ch: Category) => ch.name)
         })))
       } else {
         console.error('[CategoryMenu] API response not ok:', response.status, response.statusText)
@@ -117,7 +121,7 @@ export function CategoryMenu() {
   const loadFallbackCategories = () => {
     console.log('[CategoryMenu] Loading fallback static categories')
     setCategories([
-      { id: '1', name: 'ALL', slug: 'all', children: [] },
+      { id: '1', name: t('allProducts'), slug: 'all', children: [] },
       { id: '2', name: 'COOKWARE', slug: 'cookware', children: [] },
       { id: '3', name: 'BAKEWARE', slug: 'bakeware', children: [] },
       { id: '4', name: 'UTENSILS', slug: 'utensils', children: [] },
@@ -188,13 +192,13 @@ export function CategoryMenu() {
                   </button>
                 ) : (
                   /* Category without children - normal link */
-                  <Link
+                  <LocaleLink
                     href={`/products?category=${category.slug}`}
                     className="text-white/90 hover:text-white font-medium text-sm whitespace-nowrap border-b-2 border-transparent hover:border-[#c9a84c] transition-colors h-full flex items-center"
                     onClick={() => setActiveCategory(null)}
                   >
                     {category.name}
-                  </Link>
+                  </LocaleLink>
                 )}
 
                 {/* Sub-category dropdown */}
@@ -219,24 +223,24 @@ export function CategoryMenu() {
                       >
                         {category.children.map((sub) => (
                           <div key={sub.id} className="space-y-2">
-                            <Link
+                            <LocaleLink
                               href={`/products?category=${sub.slug}`}
                               className="font-bold text-sm text-[#1a3a5c] hover:text-[#c9a84c] transition-colors block border-b border-gray-100 pb-1 uppercase tracking-wider"
                               onClick={() => setActiveCategory(null)}
                             >
                               {sub.name}
-                            </Link>
+                            </LocaleLink>
                             {sub.children && sub.children.length > 0 && (
                               <ul className="space-y-1.5">
                                 {sub.children.map((grandchild) => (
                                   <li key={grandchild.id}>
-                                    <Link
+                                    <LocaleLink
                                       href={`/products?category=${grandchild.slug}`}
                                       className="text-xs text-gray-500 hover:text-[#1a3a5c] hover:translate-x-1 block transition-all"
                                       onClick={() => setActiveCategory(null)}
                                     >
                                       {grandchild.name}
-                                    </Link>
+                                    </LocaleLink>
                                   </li>
                                 ))}
                               </ul>
@@ -255,7 +259,7 @@ export function CategoryMenu() {
                         <ul className="space-y-2">
                           {category.children.map((sub) => (
                             <li key={sub.id}>
-                              <Link
+                              <LocaleLink
                                 href={`/products?category=${sub.slug}`}
                                 className="text-sm text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 block py-2 px-3 rounded transition-colors"
                                 onClick={() => setActiveCategory(null)}
@@ -266,7 +270,7 @@ export function CategoryMenu() {
                                     ({sub.productCount})
                                   </span>
                                 )}
-                              </Link>
+                              </LocaleLink>
                             </li>
                           ))}
                         </ul>

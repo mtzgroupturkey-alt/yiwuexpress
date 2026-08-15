@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
+import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { Plus, X, Palette } from 'lucide-react'
 
 interface AttributeFormProps {
@@ -54,8 +55,20 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
   const [isVariant, setIsVariant] = useState(initialData?.isVariant || false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Phase 2: translations for locales other than English (name field)
+  const [translations, setTranslations] = useState<Record<string, { name: string }>>(() => {
+    const map: Record<string, { name: string }> = {}
+    ;(initialData?.translations || []).forEach((t: any) => {
+      map[t.locale] = { name: t.name || '' }
+    })
+    return map
+  })
+
   const isColorType  = type === 'COLOR' || type === 'COLOR_MULTI'
   const isSelectType = type === 'SELECT' || type === 'MULTISELECT'
+
+  const updateTranslation = (locale: string, name: string) =>
+    setTranslations((prev) => ({ ...prev, [locale]: { name } }))
 
   // Auto-generate slug from name (only on create)
   useEffect(() => {
@@ -118,6 +131,9 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
         isFilterable,
         isVariant,
         categoryId,
+        translations: ['ru', 'zh']
+          .filter((l) => translations[l]?.name?.trim())
+          .map((l) => ({ locale: l, name: translations[l].name.trim() })),
       }
 
       const url    = initialData?.id ? `/api/admin/attributes/${initialData.id}` : '/api/admin/attributes'
@@ -148,6 +164,36 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
       <div>
         <Label>Attribute Name *</Label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Colors" required />
+      </div>
+
+      {/* Translations (RU / ZH) */}
+      <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-gray-600">Translations (optional)</p>
+          <AutoTranslateButton
+            enFields={{ name }}
+            onTranslated={(result) => {
+              setTranslations((prev) => {
+                const next = { ...prev }
+                for (const locale of Object.keys(result)) {
+                  next[locale] = { name: result[locale].name || prev[locale]?.name || '' }
+                }
+                return next
+              })
+            }}
+          />
+        </div>
+        {(['ru', 'zh'] as const).map((locale) => (
+          <div key={locale} className="flex items-center gap-2">
+            <span className="w-8 text-xs font-semibold uppercase text-gray-500">{locale}</span>
+            <Input
+              value={translations[locale]?.name || ''}
+              onChange={e => updateTranslation(locale, e.target.value)}
+              placeholder={`Name (${locale})`}
+              className="flex-1"
+            />
+          </div>
+        ))}
       </div>
 
       {/* Slug */}

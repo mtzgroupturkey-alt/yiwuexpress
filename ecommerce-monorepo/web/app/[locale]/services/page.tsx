@@ -1,0 +1,173 @@
+﻿'use client'
+
+import { useState } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
+import { LocaleLink } from '@/components/LocaleLink'
+import { useQuery } from '@tanstack/react-query'
+import { SharedLayout } from '@/components/layout/SharedLayout'
+import ServiceCard from '@/components/service-card'
+import { Service } from '@prisma/client'
+import { Search, Filter, Truck, Shield, Package, Users } from 'lucide-react'
+
+interface ServiceResponse {
+  services: Service[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
+}
+
+export default function ServicesPage() {
+  const t = useTranslations('Services')
+  const locale = useLocale()
+  const [page, setPage] = useState(1)
+  const [serviceType, setServiceType] = useState<string>('')
+  const [search, setSearch] = useState('')
+
+  const { data, isLoading, error } = useQuery<ServiceResponse>({
+    queryKey: ['services', page, serviceType, search],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '12',
+        ...(serviceType && { type: serviceType }),
+        ...(search && { search }),
+      })
+      const response = await fetch(`/api/services?${params}&locale=${locale}`)
+      if (!response.ok) throw new Error('Failed to fetch services')
+      return response.json()
+    },
+  })
+
+  const serviceTypes = [
+    { value: '', label: t('filter.all'), icon: Filter },
+    { value: 'shipping', label: t('filter.shipping'), icon: Truck },
+    { value: 'customs', label: t('filter.customs'), icon: Shield },
+    { value: 'warehousing', label: t('filter.warehousing'), icon: Package },
+    { value: 'sourcing', label: t('filter.sourcing'), icon: Users },
+  ]
+
+  return (
+    <SharedLayout 
+      pageTitle={t('pageTitle')}
+      pageDescription={t('pageDescription')}
+      breadcrumbs={[
+        { name: t('breadcrumb'), href: '/services' }
+      ]}
+      backgroundImage="/images/services-bg.jpg"
+    >
+      <div className="bg-gray-50">
+        {/* Search and Filters */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-2xl shadow-brand p-6 mb-8 -mt-12 relative z-20">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              {/* Search Bar */}
+              <div className="relative col-span-1 md:col-span-2">
+                <Search className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder={t('searchPlaceholder')}
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-800"
+                />
+              </div>
+
+              {/* Calculator Shortcut */}
+              <div className="flex justify-end">
+                  <LocaleLink href="/calculator"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-secondary-500 hover:bg-secondary-600 text-white font-semibold rounded-lg shadow transition-colors w-full md:w-auto"
+                >
+                  {t('calculatorShortcut')}
+                </LocaleLink>
+              </div>
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap gap-2 mt-6 border-t border-gray-100 pt-6">
+              {serviceTypes.map((type) => {
+                const Icon = type.icon
+                const isActive = serviceType === type.value
+                return (
+                  <button
+                    key={type.value}
+                    onClick={() => { setServiceType(type.value); setPage(1); }}
+                    className={`px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-primary-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {type.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Services List */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 shadow-brand animate-pulse">
+                  <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                  <div className="bg-gray-200 h-6 rounded w-3/4 mb-2"></div>
+                  <div className="bg-gray-200 h-4 rounded w-1/2 mb-4"></div>
+                  <div className="bg-gray-200 h-10 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-accent-600 font-medium">
+              {t('errorLoading')}: {(error as Error).message}
+            </div>
+          ) : data?.services && data.services.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {data.services.map((service) => (
+                  <ServiceCard key={service.id} service={service} />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {data.pagination.pages > 1 && (
+                <div className="flex justify-center items-center space-x-2 mt-12">
+                   <button
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                  >
+                    {t('pagination.previous')}
+                  </button>
+                  <span className="text-gray-600 text-sm">
+                    {t('pagination.pageOf', { page: page.toString(), pages: data.pagination.pages.toString() })}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(p + 1, data.pagination.pages))}
+                    disabled={page === data.pagination.pages}
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+                  >
+                    {t('pagination.next')}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+             <div className="text-center py-16 bg-white rounded-2xl shadow-brand">
+              <p className="text-gray-500 text-lg">{t('noResults')}</p>
+              <button
+                onClick={() => { setServiceType(''); setSearch(''); }}
+                className="mt-4 px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                {t('clearFilters')}
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
+    </SharedLayout>
+  )
+}

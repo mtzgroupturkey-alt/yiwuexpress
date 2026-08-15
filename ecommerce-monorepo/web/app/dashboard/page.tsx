@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
-import { Package, Heart, User, MapPin, Settings, TrendingUp, ShoppingBag } from 'lucide-react'
+import { Package, Heart, User, MapPin, Settings, TrendingUp, ShoppingBag, FileText } from 'lucide-react'
 import Link from 'next/link'
 
 interface DashboardStats {
@@ -12,14 +13,30 @@ interface DashboardStats {
   savedAddresses: number
 }
 
+interface QuoteItem {
+  id: string
+  serviceType: string
+  origin: string
+  destination: string
+  status: string
+  price: number | null
+  validUntil: string | null
+  description: string | null
+  createdAt: string
+  service: { name: string } | null
+}
+
 export default function CustomerDashboardPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading } = useAuth()
+  const t = useTranslations('Dashboard')
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
     wishlistItems: 0,
     savedAddresses: 0,
   })
+  const [quotes, setQuotes] = useState<QuoteItem[]>([])
+  const [quotesLoading, setQuotesLoading] = useState(true)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,6 +57,7 @@ export default function CustomerDashboardPage() {
       }
 
       loadDashboardData()
+      loadQuotes()
     }
   }, [user, isAuthenticated, isLoading, router])
 
@@ -60,6 +78,30 @@ export default function CustomerDashboardPage() {
     }
   }
 
+  const loadQuotes = async () => {
+    try {
+      setQuotesLoading(true)
+      const res = await fetch('/api/quotes', { credentials: 'include' })
+      if (!res.ok) return
+      const data = await res.json()
+      setQuotes(data.quotes || [])
+    } catch (error) {
+      console.error('Error loading quotes:', error)
+    } finally {
+      setQuotesLoading(false)
+    }
+  }
+
+  const statusStyles: Record<string, string> = {
+    PENDING: 'bg-amber-100 text-amber-700',
+    APPROVED: 'bg-green-100 text-green-700',
+    REJECTED: 'bg-red-100 text-red-700',
+    EXPIRED: 'bg-gray-100 text-gray-600',
+  }
+
+  const statusClass = (status: string) =>
+    statusStyles[status] || 'bg-gray-100 text-gray-600'
+
   if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -79,47 +121,55 @@ export default function CustomerDashboardPage() {
     {
       href: '/dashboard/orders',
       icon: Package,
-      label: 'My Orders',
-      description: 'View and track your orders',
+      label: t('myOrders'),
+      description: t('myOrdersDesc'),
       color: 'bg-blue-500',
       count: stats.totalOrders,
     },
     {
       href: '/dashboard/wishlist',
       icon: Heart,
-      label: 'Wishlist',
-      description: 'Your saved products',
+      label: t('wishlist'),
+      description: t('wishlistDesc'),
       color: 'bg-red-500',
       count: stats.wishlistItems,
     },
     {
       href: '/dashboard/profile',
       icon: User,
-      label: 'Profile',
-      description: 'Manage your account',
+      label: t('profile'),
+      description: t('profileDesc'),
       color: 'bg-purple-500',
     },
     {
       href: '/dashboard/addresses',
       icon: MapPin,
-      label: 'Addresses',
-      description: 'Manage shipping addresses',
+      label: t('addresses'),
+      description: t('addressesDesc'),
       color: 'bg-green-500',
       count: stats.savedAddresses,
     },
     {
       href: '/products',
       icon: ShoppingBag,
-      label: 'Shop Products',
-      description: 'Browse our catalog',
+      label: t('shopProducts'),
+      description: t('shopProductsDesc'),
       color: 'bg-orange-500',
     },
     {
       href: '/dashboard/settings',
       icon: Settings,
-      label: 'Settings',
-      description: 'Account preferences',
+      label: t('settings'),
+      description: t('settingsDesc'),
       color: 'bg-gray-500',
+    },
+    {
+      href: '/quotes',
+      icon: FileText,
+      label: t('myQuotes'),
+      description: t('myQuotesDesc'),
+      color: 'bg-indigo-500',
+      count: quotes.length,
     },
   ]
 
@@ -128,7 +178,7 @@ export default function CustomerDashboardPage() {
       {/* Welcome Message */}
       <div className="mb-8">
         <p className="text-lg text-gray-600">
-          Welcome back, <span className="font-semibold text-[#1a3a5c]">{user.name}</span>!
+          {t('welcome')} <span className="font-semibold text-[#1a3a5c]">{user.name}</span>!
         </p>
       </div>
 
@@ -142,7 +192,7 @@ export default function CustomerDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
-                <p className="text-sm text-gray-500">Total Orders</p>
+                <p className="text-sm text-gray-500">{t('totalOrders')}</p>
               </div>
             </div>
           </div>
@@ -154,7 +204,7 @@ export default function CustomerDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stats.wishlistItems}</p>
-                <p className="text-sm text-gray-500">Wishlist Items</p>
+                <p className="text-sm text-gray-500">{t('wishlistItems')}</p>
               </div>
             </div>
           </div>
@@ -166,7 +216,7 @@ export default function CustomerDashboardPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stats.savedAddresses}</p>
-                <p className="text-sm text-gray-500">Saved Addresses</p>
+                <p className="text-sm text-gray-500">{t('savedAddresses')}</p>
               </div>
             </div>
           </div>
@@ -174,7 +224,7 @@ export default function CustomerDashboardPage() {
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('quickActions')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {menuItems.map((item) => (
               <Link
@@ -205,20 +255,90 @@ export default function CustomerDashboardPage() {
           </div>
         </div>
 
+        {/* My Quotes */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">{t('myQuotes')}</h2>
+            <Link
+              href="/quotes"
+              className="text-sm text-[#1a3a5c] hover:text-[#2a5a8c] font-medium"
+            >
+              {t('viewAll')}
+            </Link>
+          </div>
+
+          {quotesLoading ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="animate-pulse flex flex-col gap-3">
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              </div>
+            </div>
+          ) : quotes.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex flex-col items-center justify-center py-8">
+                <FileText className="w-12 h-12 text-gray-300 mb-3" />
+                <p className="text-gray-500 text-center">{t('noQuotesYet')}</p>
+                <Link
+                  href="/quotes"
+                  className="mt-3 px-5 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors text-sm"
+                >
+                  {t('requestAQuote')}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="divide-y divide-gray-100">
+                {quotes.slice(0, 5).map((q) => (
+                  <div
+                    key={q.id}
+                    className="flex items-center justify-between gap-4 p-4 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-900 truncate">
+                          {q.service?.name || q.serviceType}
+                        </p>
+                        <span
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusClass(q.status)}`}
+                        >
+                          {q.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">
+                        {q.origin} &rarr; {q.destination}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-semibold text-gray-900">
+                        {q.price != null ? `$${q.price.toFixed(2)}` : '—'}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(q.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Recent Activity */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('recentActivity')}</h2>
           <div className="flex flex-col items-center justify-center py-12">
             <TrendingUp className="w-16 h-16 text-gray-300 mb-4" />
-            <p className="text-gray-500 text-center">No recent activity</p>
+            <p className="text-gray-500 text-center">{t('noRecentActivity')}</p>
             <p className="text-sm text-gray-400 mt-2">
-              Start shopping to see your activity here
+              {t('startShopping')}
             </p>
             <Link
               href="/products"
               className="mt-4 px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
             >
-              Browse Products
+              {t('browseProducts')}
             </Link>
           </div>
         </div>

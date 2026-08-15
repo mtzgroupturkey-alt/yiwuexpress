@@ -1,16 +1,21 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, Menu, X, ChevronDown, Heart } from 'lucide-react'
+import { Search, ShoppingCart, ClipboardList, Menu, X, ChevronDown, Heart, ArrowLeftRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Container } from '@/components/ui/Container'
 import { useSettings } from '@/components/SettingsProvider'
 import { useCart } from '@/components/CartContext'
 import { useWishlist } from '@/hooks/useWishlist'
+import { useStoreMode } from '@/contexts/StoreModeContext'
+import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { WholesaleInquirySlideover } from '@/components/wholesale/WholesaleInquirySlideover'
 
 // Nav items defined outside the component so they never cause remounts
 const NAV_ITEMS = [
@@ -30,10 +35,21 @@ export function MainHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSticky, setIsSticky] = useState(false)
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false)
 
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
   const { settings } = useSettings()
+  const { storeMode, isBoth } = useStoreMode()
+  const { isWholesaleSession, toggleSessionMode } = useSessionMode()
+  const { count: inquiryCount } = useWholesaleInquiry()
+
+  // Effective cart display mode. When the store is purely wholesale or retail
+  // the icon reflects the admin-configured store mode. In hybrid (BOTH) mode
+  // the visitor's session toggle drives the morph (defaulting to retail).
+  const showWholesaleIcon =
+    storeMode === 'WHOLESALE' ? true : storeMode === 'RETAIL' ? false : isWholesaleSession
+  const canToggle = isBoth
 
   useEffect(() => {
     const handleScroll = () => setIsSticky(window.scrollY > 50)
@@ -46,7 +62,7 @@ export function MainHeader() {
     <header className="sticky top-0 z-50 w-full">
 
       {/* ================================================================
-          TOP INFO BAR — slides up and hides on scroll
+          TOP INFO BAR â€” slides up and hides on scroll
           ================================================================ */}
       <motion.div
         initial={false}
@@ -57,12 +73,12 @@ export function MainHeader() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-[#c9a84c] text-sm drop-shadow-lg">✦</span>
+              <span className="text-[#c9a84c] text-sm drop-shadow-lg">âœ¦</span>
               <SimpleTypingText
                 texts={[
-                  `WELCOME TO ${(settings?.companyName || 'YIWU EXPRESS').toUpperCase()} — PREMIUM SOURCING`,
-                  "GLOBAL TRADE SOLUTIONS — QUALITY YOU CAN TRUST",
-                  "WHOLESALE & RETAIL — BEST PRICES GUARANTEED"
+                  `WELCOME TO ${(settings?.companyName || 'Global Trade').toUpperCase()} â€” PREMIUM SOURCING`,
+                  "GLOBAL TRADE SOLUTIONS â€” QUALITY YOU CAN TRUST",
+                  "WHOLESALE & RETAIL â€” BEST PRICES GUARANTEED"
                 ]}
                 typingSpeed={75}
                 deletingSpeed={30}
@@ -72,13 +88,13 @@ export function MainHeader() {
             </div>
             <div className="flex items-center space-x-6">
               {TOP_BAR_LINKS.map((name) => (
-                <Link
+                <LocaleLink
                   key={name}
                   href={`/${name.toLowerCase().replace(/ /g, '-')}`}
                   className="hover:text-[#c9a84c] transition-colors uppercase tracking-wider text-[10px] font-medium text-white/70"
                 >
                   {name}
-                </Link>
+                </LocaleLink>
               ))}
             </div>
           </div>
@@ -86,7 +102,7 @@ export function MainHeader() {
       </motion.div>
 
       {/* ================================================================
-          MAIN HEADER ROW — always visible, gets blur + shadow on sticky
+          MAIN HEADER ROW â€” always visible, gets blur + shadow on sticky
           ================================================================ */}
       <motion.div
         initial={false}
@@ -101,8 +117,8 @@ export function MainHeader() {
         <Container>
           <div className="flex items-center justify-between min-h-[72px] md:h-20 gap-4">
 
-            {/* ── LOGO ──────────────────────────────────────────────── */}
-            <Link href="/" className="flex items-center gap-3 shrink-0">
+            {/* â”€â”€ LOGO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            <LocaleLink href="/" className="flex items-center gap-3 shrink-0">
               {settings?.companyLogo ? (
                 <div
                   className="relative flex-shrink-0 transition-all duration-300"
@@ -139,14 +155,14 @@ export function MainHeader() {
                 className="font-bold text-[#1a3a5c] tracking-tight hidden sm:block transition-all duration-300"
                 style={{ fontSize: isSticky ? '1.1rem' : '1.35rem' }}
               >
-                {settings?.companyName || 'YIWU EXPRESS'}
+                {settings?.companyName || 'Global Trade'}
               </span>
-            </Link>
+            </LocaleLink>
 
-            {/* ── NAV — always rendered, never conditionally removed ─── */}
+            {/* â”€â”€ NAV â€” always rendered, never conditionally removed â”€â”€â”€ */}
             <nav className="hidden lg:flex items-center space-x-0.5">
               {NAV_ITEMS.map((item) => (
-                <Link
+                <LocaleLink
                   key={item.name}
                   href={item.href}
                   className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors duration-200 whitespace-nowrap ${item.isSpecial
@@ -155,11 +171,11 @@ export function MainHeader() {
                     }`}
                 >
                   {item.name}
-                </Link>
+                </LocaleLink>
               ))}
             </nav>
 
-            {/* ── RIGHT ICONS ────────────────────────────────────────── */}
+            {/* â”€â”€ RIGHT ICONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="flex items-center gap-1.5 shrink-0">
               {/* Search */}
               <button
@@ -173,14 +189,14 @@ export function MainHeader() {
               {/* Language */}
               <div className="relative hidden md:block">
                 <button className="flex items-center gap-1 px-2.5 py-1.5 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-lg transition-colors duration-200 text-sm font-semibold">
-                  <span>🇺🇸</span> EN
+                  <span>ðŸ‡ºðŸ‡¸</span> EN
                   <ChevronDown className="w-3 h-3" />
                 </button>
               </div>
 
               {/* Wishlist */}
               <div className="relative">
-                <Link
+                <LocaleLink
                   href="/dashboard/wishlist"
                   className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
                   aria-label="Wishlist"
@@ -191,23 +207,60 @@ export function MainHeader() {
                       {wishlistCount}
                     </span>
                   )}
-                </Link>
+                </LocaleLink>
               </div>
 
-              {/* Cart */}
-              <div className="relative">
-                <Link
-                  href="/cart"
-                  className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
-                  aria-label="Shopping cart"
+              {/* Manual mode toggle — only shown in hybrid mode where the
+                  visitor can morph between retail and wholesale. */}
+              {canToggle && (
+                <button
+                  type="button"
+                  onClick={toggleSessionMode}
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-lg transition-colors duration-200 text-sm font-semibold"
+                  aria-label={isWholesaleSession ? 'Switch to Retail / B2C' : 'Switch to Wholesale / B2B'}
+                  title={isWholesaleSession ? 'Switch to Retail / B2C' : 'Switch to Wholesale / B2B'}
                 >
-                  <ShoppingCart className="w-5 h-5" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-secondary-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                  {isWholesaleSession ? 'Retail' : 'Wholesale'}
+                </button>
+              )}
+
+              {/* Smart Cart Button — single, atomic, morphing anchor.
+                  NEVER two cart icons at once: the retail and wholesale views
+                  are mutually exclusive via the active session mode. */}
+              <div className="relative" data-testid="smart-cart-button-container">
+                {showWholesaleIcon ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsInquiryOpen(true)}
+                    className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
+                    aria-label="Wholesale inquiry basket"
+                    role="button"
+                    name="inquiry"
+                    data-testid="wholesale-inquiry-trigger"
+                  >
+                    <ClipboardList className="w-5 h-5" />
+                    {inquiryCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+                        {inquiryCount}
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <LocaleLink
+                    href="/cart"
+                    className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
+                    aria-label="Shopping cart"
+                    data-testid="retail-cart-trigger"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-secondary-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
+                        {cartCount}
+                      </span>
+                    )}
+                  </LocaleLink>
+                )}
               </div>
 
               {/* Account / User Menu */}
@@ -254,6 +307,12 @@ export function MainHeader() {
       {/* ================================================================
           MOBILE MENU
           ================================================================ */}
+      {/* Wholesale Inquiry Slide-over */}
+      <WholesaleInquirySlideover
+        open={isInquiryOpen}
+        onClose={() => setIsInquiryOpen(false)}
+      />
+
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -266,7 +325,7 @@ export function MainHeader() {
           >
             <div className="p-4 space-y-2">
               {NAV_ITEMS.map((item) => (
-                <Link
+                <LocaleLink
                   key={item.name}
                   href={item.href}
                   className={`block py-2 text-gray-700 hover:text-[#1a3a5c] font-medium border-b border-gray-100 ${item.isSpecial ? 'text-secondary-500' : ''
@@ -274,19 +333,19 @@ export function MainHeader() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
-                </Link>
+                </LocaleLink>
               ))}
               <div className="pt-2">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categories</p>
                 {['All Products', 'Cookware', 'Bakeware', 'Utensils', 'Appliances', 'Tableware'].map((cat) => (
-                  <Link
+                  <LocaleLink
                     key={cat}
                     href={`/products?category=${cat.toLowerCase().replace(' ', '-')}`}
                     className="block py-1.5 text-sm text-gray-600 hover:text-[#1a3a5c]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {cat}
-                  </Link>
+                  </LocaleLink>
                 ))}
               </div>
             </div>

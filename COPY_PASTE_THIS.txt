@@ -1,0 +1,55 @@
+================================================================================
+COPY & PASTE THESE COMMANDS ON YOUR PRODUCTION SERVER
+================================================================================
+
+Step 1: SSH into your server
+--------------------------------------------------------------------------------
+ssh root@YOUR_SERVER_IP
+
+
+Step 2: Backup current config (just in case)
+--------------------------------------------------------------------------------
+sudo cp /etc/nginx/sites-available/dromkok.com /etc/nginx/sites-available/dromkok.com.backup
+
+
+Step 3: Add redirect using sed command (automatic)
+--------------------------------------------------------------------------------
+sudo sed -i '/# Proxy Configuration for Next.js Application/i \    # Root Path Redirect\n    location = / {\n        return 307 /en/;\n    }\n' /etc/nginx/sites-available/dromkok.com
+
+
+Step 4: Test nginx config
+--------------------------------------------------------------------------------
+sudo nginx -t
+
+
+Step 5: If test passes, reload nginx
+--------------------------------------------------------------------------------
+sudo systemctl reload nginx
+
+
+Step 6: Test the redirect
+--------------------------------------------------------------------------------
+curl -I http://dromkok.com/
+
+
+DONE! Visit http://dromkok.com in your browser!
+
+================================================================================
+
+ALL IN ONE COMMAND (Advanced):
+================================================================================
+sudo cp /etc/nginx/sites-available/dromkok.com /etc/nginx/sites-available/dromkok.com.backup && sudo sed -i '/# Proxy Configuration for Next.js Application/i \    # Root Path Redirect\n    location = / {\n        return 307 /en/;\n    }\n' /etc/nginx/sites-available/dromkok.com && sudo nginx -t && sudo systemctl reload nginx && curl -I http://dromkok.com/
+================================================================================
+
+Copy the entire command above and paste it into your SSH session.
+It will:
+1. Backup config
+2. Add redirect
+3. Test nginx
+4. Reload nginx
+5. Test the redirect
+
+IF IT WORKS: You'll see "HTTP/1.1 307" and "Location: /en/"
+IF IT FAILS: Restore backup with: sudo cp /etc/nginx/sites-available/dromkok.com.backup /etc/nginx/sites-available/dromkok.com
+
+================================================================================

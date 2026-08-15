@@ -40,6 +40,12 @@ const settingsNavigation = [
     description: 'Email and system notifications',
   },
   {
+    name: 'Email Templates',
+    href: '/admin/settings/email-templates',
+    icon: Mail,
+    description: 'Localized transactional email templates',
+  },
+  {
     name: 'API Settings',
     href: '/admin/settings/api',
     icon: Key,
@@ -62,6 +68,7 @@ export default function SettingsLayout({
   
   // Pages that should not show the sidebar navigation (shown as submenu in main sidebar)
   const directPages = [
+    '/admin/settings/general',
     '/admin/settings/company', 
     '/admin/settings/system',
     '/admin/settings/breadcrumb',
@@ -72,6 +79,7 @@ export default function SettingsLayout({
     '/admin/settings/permissions', 
     '/admin/settings/backup',
     '/admin/settings/notifications',
+    '/admin/settings/email-templates',
     '/admin/settings/api',
     '/admin/settings/shipping-methods',
   ]

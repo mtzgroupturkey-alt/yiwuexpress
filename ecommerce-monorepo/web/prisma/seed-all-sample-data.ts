@@ -690,7 +690,7 @@ function daysFromNow(days: number): Date {
     console.log(`   ⏭️  ${existingBreadcrumbs.length} breadcrumb settings already exist`)
   } else {
     const breadcrumbData = [
-      { pageType: 'home', imageUrl: '/uploads/breadcrumb/home-bg.jpg', title: 'Home', subtitle: 'Welcome to YIWU EXPRESS' },
+      { pageType: 'home', imageUrl: '/uploads/breadcrumb/home-bg.jpg', title: 'Home', subtitle: 'Welcome to Global Trade' },
       { pageType: 'products', imageUrl: '/uploads/breadcrumb/products-bg.jpg', title: 'Products', subtitle: 'Browse Our Catalog' },
       { pageType: 'categories', imageUrl: '/uploads/breadcrumb/categories-bg.jpg', title: 'Categories', subtitle: 'Shop by Category' },
       { pageType: 'about', imageUrl: '/uploads/breadcrumb/about-bg.jpg', title: 'About Us', subtitle: 'Who We Are' },
@@ -702,7 +702,7 @@ function daysFromNow(days: number): Date {
       { pageType: 'wholesale', imageUrl: '/uploads/breadcrumb/wholesale-bg.jpg', title: 'Wholesale', subtitle: 'B2B Bulk Orders' },
       { pageType: 'track', imageUrl: '/uploads/breadcrumb/track-bg.jpg', title: 'Track Shipment', subtitle: 'Real-Time Tracking' },
       { pageType: 'login', imageUrl: '/uploads/breadcrumb/auth-bg.jpg', title: 'Sign In', subtitle: 'Welcome Back' },
-      { pageType: 'register', imageUrl: '/uploads/breadcrumb/auth-bg.jpg', title: 'Create Account', subtitle: 'Join YIWU EXPRESS' },
+      { pageType: 'register', imageUrl: '/uploads/breadcrumb/auth-bg.jpg', title: 'Create Account', subtitle: 'Join Global Trade' },
       { pageType: 'calculator', imageUrl: '/uploads/breadcrumb/calculator-bg.jpg', title: 'Shipping Calculator', subtitle: 'Calculate Shipping Costs' },
       { pageType: 'dashboard', imageUrl: '/uploads/breadcrumb/dashboard-bg.jpg', title: 'Dashboard', subtitle: 'Your Account Overview' },
     ]

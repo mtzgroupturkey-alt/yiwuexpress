@@ -1,6 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useLocale } from 'next-intl'
+import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronDown, ChefHat, UtensilsCrossed, Coffee, Soup, Wine, Refrigerator, TrendingUp, Star, Folder } from 'lucide-react'
@@ -20,6 +22,7 @@ interface Category {
 }
 
 export default function MegaMenu() {
+  const locale = useLocale()
   const [isOpen, setIsOpen] = useState(false)
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
@@ -33,7 +36,7 @@ export default function MegaMenu() {
   const fetchCategories = async () => {
     try {
       console.log('[MegaMenu] Fetching categories...')
-      const response = await fetch('/api/categories?active=true')
+      const response = await fetch(`/api/categories?active=true&locale=${locale}`)
       const data = await response.json()
       
       console.log('[MegaMenu] API Response:', data)
@@ -138,7 +141,7 @@ export default function MegaMenu() {
                   const isActive = activeCategory === category.id
                   
                   return (
-                    <Link
+                    <LocaleLink
                       key={category.id}
                       href={`/products?category=${category.slug}`}
                       onMouseEnter={() => handleMouseEnter(category.id)}
@@ -162,27 +165,27 @@ export default function MegaMenu() {
                         <Folder className="w-5 h-5" />
                       )}
                       <span className="font-medium">{category.name}</span>
-                    </Link>
+                    </LocaleLink>
                   )
                 })}
               </nav>
 
               {/* Quick Links */}
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <Link
+                <LocaleLink
                   href="/products?featured=true"
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors mb-2"
                 >
                   <Star className="w-4 h-4" />
                   Featured Products
-                </Link>
-                <Link
+                </LocaleLink>
+                <LocaleLink
                   href="/products?sort=popular"
                   className="flex items-center gap-2 text-sm text-gray-600 hover:text-primary-600 transition-colors"
                 >
                   <TrendingUp className="w-4 h-4" />
                   Best Sellers
-                </Link>
+                </LocaleLink>
               </div>
             </div>
 
@@ -202,18 +205,18 @@ export default function MegaMenu() {
                         <h3 className="text-2xl font-bold text-gray-900">
                           {category.name}
                         </h3>
-                        <Link
+                        <LocaleLink
                           href={`/products?category=${category.slug}`}
                           className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
                         >
-                          View All →
-                        </Link>
+                          View All â†’
+                        </LocaleLink>
                       </div>
 
                       {hasChildren ? (
                         <div className="grid grid-cols-3 gap-4">
                           {category.children!.map((sub) => (
-                            <Link
+                            <LocaleLink
                               key={sub.id}
                               href={`/products?category=${sub.slug}`}
                               className="flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors group"
@@ -239,7 +242,7 @@ export default function MegaMenu() {
                                   {sub._count.products}
                                 </span>
                               )}
-                            </Link>
+                            </LocaleLink>
                           ))}
                         </div>
                       ) : (
@@ -247,12 +250,12 @@ export default function MegaMenu() {
                           <div className="text-center">
                             <Folder className="w-12 h-12 mx-auto mb-3 opacity-20" />
                             <p className="text-sm">No subcategories available</p>
-                            <Link
+                            <LocaleLink
                               href={`/products?category=${category.slug}`}
                               className="text-primary-600 font-medium hover:text-primary-700 mt-2 inline-block"
                             >
-                              View Products →
-                            </Link>
+                              View Products â†’
+                            </LocaleLink>
                           </div>
                         </div>
                       )}

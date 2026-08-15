@@ -1,5 +1,5 @@
 // lib/auth.server.ts - Node runtime only utilities
-import jwt from 'jsonwebtoken'; // Node runtime
+import jwt, { SignOptions } from 'jsonwebtoken'; // Node runtime
 import bcrypt from 'bcryptjs'; // Node runtime
 import { NextResponse } from 'next/server';
 import { prisma } from './db';
@@ -11,7 +11,7 @@ export interface JwtPayload {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7d') as SignOptions['expiresIn'];
 const COOKIE_NAME = 'auth_token';
 
 // Password hashing (Node only)

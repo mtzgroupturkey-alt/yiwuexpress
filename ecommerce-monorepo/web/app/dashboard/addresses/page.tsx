@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { MapPin, Plus, Edit, Trash2, ArrowLeft, X, Check } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { useTranslations } from 'next-intl'
 
 interface Address {
   id: string
@@ -115,6 +116,8 @@ const COUNTRIES = [
 export default function AddressesPage() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const t = useTranslations('DashboardPages')
+  const ta = useTranslations('DashboardPages.addresses')
   const [addresses, setAddresses] = useState<Address[]>([])
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -181,7 +184,7 @@ export default function AddressesPage() {
             : addr
         )
       )
-      toast.success('Address updated!')
+      toast.success(ta('toastUpdated'))
     } else {
       // Add new
       const newAddress: Address = {
@@ -197,16 +200,16 @@ export default function AddressesPage() {
       } else {
         setAddresses(prev => [...prev, newAddress])
       }
-      toast.success('Address added!')
+      toast.success(ta('toastAdded'))
     }
     
     resetForm()
   }
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this address?')) {
+    if (confirm(ta('deleteConfirm'))) {
       setAddresses(prev => prev.filter(addr => addr.id !== id))
-      toast.success('Address deleted!')
+      toast.success(ta('toastDeleted'))
     }
   }
 
@@ -217,7 +220,7 @@ export default function AddressesPage() {
         isDefault: addr.id === id,
       }))
     )
-    toast.success('Default address updated!')
+    toast.success(ta('toastDefaultUpdated'))
   }
 
   if (authLoading) {
@@ -225,7 +228,7 @@ export default function AddressesPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Loading addresses...</p>
+          <p className="text-sm text-gray-500">{t('loadingAddresses')}</p>
         </div>
       </div>
     )
@@ -240,7 +243,7 @@ export default function AddressesPage() {
             <Link href="/dashboard" className="text-gray-500 hover:text-[#1a3a5c]">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">My Addresses</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">{ta('title')}</h1>
           </div>
           {!isAdding && (
             <button
@@ -248,7 +251,7 @@ export default function AddressesPage() {
               className="flex items-center gap-2 px-4 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Add Address
+              {ta('addAddress')}
             </button>
           )}
         </div>
@@ -259,9 +262,9 @@ export default function AddressesPage() {
         {isAdding && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {editingId ? 'Edit Address' : 'Add New Address'}
-              </h2>
+               <h2 className="text-lg font-semibold text-gray-900">
+                 {editingId ? ta('editAddress') : ta('addNewAddress')}
+               </h2>
               <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
@@ -270,7 +273,7 @@ export default function AddressesPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('fullName')}</label>
                   <input
                     type="text"
                     value={formData.fullName}
@@ -280,7 +283,7 @@ export default function AddressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('phone')}</label>
                   <input
                     type="tel"
                     value={formData.phone}
@@ -292,31 +295,31 @@ export default function AddressesPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1 *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{ta('addressLine1')}</label>
                 <input
                   type="text"
                   value={formData.addressLine}
                   onChange={(e) => setFormData(prev => ({ ...prev, addressLine: e.target.value }))}
                   required
-                  placeholder="Street address, P.O. box"
+                  placeholder={ta('addressLine1Placeholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{ta('addressLine2')}</label>
                 <input
                   type="text"
                   value={formData.addressLine2}
                   onChange={(e) => setFormData(prev => ({ ...prev, addressLine2: e.target.value }))}
-                  placeholder="Apartment, suite, unit, building, floor, etc."
+                  placeholder={ta('addressLine2Placeholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                 />
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('city')}</label>
                   <input
                     type="text"
                     value={formData.city}
@@ -326,7 +329,7 @@ export default function AddressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State/Province</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('state')}</label>
                   <input
                     type="text"
                     value={formData.state}
@@ -338,7 +341,7 @@ export default function AddressesPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('postalCode')}</label>
                   <input
                     type="text"
                     value={formData.postalCode}
@@ -348,14 +351,14 @@ export default function AddressesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('country')}</label>
                   <select
                     value={formData.country}
                     onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   >
-                    <option value="">Select country</option>
+                    <option value="">{ta('selectCountry')}</option>
                     {COUNTRIES.map(c => (
                       <option key={c.code} value={c.code}>{c.name}</option>
                     ))}
@@ -371,7 +374,7 @@ export default function AddressesPage() {
                   onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
                   className="w-4 h-4 text-[#1a3a5c] border-gray-300 rounded focus:ring-[#1a3a5c]"
                 />
-                <label htmlFor="isDefault" className="text-sm text-gray-700">Set as default address</label>
+                <label htmlFor="isDefault" className="text-sm text-gray-700">{ta('setAsDefault')}</label>
               </div>
               
               <div className="flex items-center gap-3 pt-2">
@@ -380,14 +383,14 @@ export default function AddressesPage() {
                   className="flex items-center gap-2 px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
                 >
                   <Check className="w-4 h-4" />
-                  {editingId ? 'Update Address' : 'Save Address'}
+                  {editingId ? ta('updateAddress') : ta('saveAddress')}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
                   className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {ta('cancel')}
                 </button>
               </div>
             </form>
@@ -400,13 +403,13 @@ export default function AddressesPage() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <MapPin className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses saved</h3>
-            <p className="text-gray-500 mb-6">Add your shipping addresses for faster checkout.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{ta('noAddresses')}</h3>
+            <p className="text-gray-500 mb-6">{ta('noAddressesDesc')}</p>
             <button
               onClick={() => setIsAdding(true)}
               className="px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
             >
-              Add Your First Address
+              {ta('addFirstAddress')}
             </button>
           </div>
         ) : (
@@ -425,7 +428,7 @@ export default function AddressesPage() {
                   </div>
                   {address.isDefault && (
                     <span className="px-2 py-1 bg-[#1a3a5c] text-white text-xs rounded-full">
-                      Default
+                      {ta('default')}
                     </span>
                   )}
                 </div>
@@ -443,7 +446,7 @@ export default function AddressesPage() {
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#1a3a5c] hover:bg-gray-50 rounded transition-colors"
                   >
                     <Edit className="w-4 h-4" />
-                    Edit
+                    {ta('edit')}
                   </button>
                   {!address.isDefault && (
                     <button
@@ -451,7 +454,7 @@ export default function AddressesPage() {
                       className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded transition-colors"
                     >
                       <Check className="w-4 h-4" />
-                      Set Default
+                      {ta('setDefault')}
                     </button>
                   )}
                   <button
@@ -459,7 +462,7 @@ export default function AddressesPage() {
                     className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Delete
+                    {ta('delete')}
                   </button>
                 </div>
               </div>

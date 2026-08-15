@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -16,6 +17,13 @@ export async function GET(
       include: {
         products: {
           select: { id: true }
+        },
+        translations: {
+          select: {
+            locale: true,
+            name: true,
+            description: true
+          }
         }
       }
     })
@@ -151,6 +159,35 @@ export async function PUT(
       where: { id },
       data: updateData
     })
+
+    // Expand-and-Contract dual-write: keep translation rows in sync with the
+    // nested `translations` payload (en/ru/zh) and legacy name/description.
+    // The admin form sends `translations` as an array of {locale, name, description};
+    // normalize it to a locale-keyed object before writing.
+    const translationsArray: { locale: string; name?: string; description?: string }[] =
+      Array.isArray(body.translations) ? body.translations : []
+    const incoming: Record<string, { name?: string; description?: string }> = {}
+    for (const t of translationsArray) {
+      if (t && t.locale) incoming[t.locale] = { name: t.name, description: t.description }
+    }
+    const localesToWrite = new Set<string>(['en'])
+    Object.keys(incoming).forEach((l) => localesToWrite.add(l))
+    for (const locale of localesToWrite) {
+      const t = incoming[locale]
+      await prisma.categoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId: id, locale } },
+        create: {
+          categoryId: id,
+          locale,
+          name: (t?.name ?? (locale === 'en' ? (body.name || existing.name) : '')) || '',
+          description: t?.description ?? (locale === 'en' ? (body.description ?? existing.description ?? null) : null)
+        },
+        update: {
+          name: (t?.name ?? (locale === 'en' ? (body.name || existing.name) : '')) || '',
+          description: t?.description ?? (locale === 'en' ? (body.description ?? existing.description ?? null) : null)
+        }
+      })
+    }
 
     console.log('[API] Updated category:', JSON.stringify(updated, null, 2))
 

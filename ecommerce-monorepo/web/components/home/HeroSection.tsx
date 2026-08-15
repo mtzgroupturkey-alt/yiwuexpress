@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 
@@ -23,18 +24,18 @@ export function HeroSection() {
               From bubbling enchiladas to golden bakes, bring beauty and ease to every summer meal.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link
+              <LocaleLink
                 href="/products"
                 className="bg-[#c9a84c] text-[#1a1a2e] px-8 py-3 rounded-full font-semibold hover:bg-[#e8d48b] transition-all transform hover:scale-105 shadow-lg"
               >
                 SHOP NOW
-              </Link>
-              <Link
+              </LocaleLink>
+              <LocaleLink
                 href="/products/rise-bakeware"
                 className="border-2 border-white/30 text-white px-8 py-3 rounded-full font-semibold hover:bg-white/10 transition-all"
               >
                 Rise Baking Made Beautiful
-              </Link>
+              </LocaleLink>
             </div>
           </div>
 

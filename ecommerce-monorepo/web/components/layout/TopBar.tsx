@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { Container } from '@/components/ui/Container'
 import TextType from '@/components/ui/TextType'
 
@@ -38,10 +39,10 @@ export function TopBar() {
         <div className="flex items-center justify-between">
           {/* LEFT SIDE: Welcome Message with Typing Animation */}
           <div className="flex items-center space-x-4">
-            <span className="text-[#c9a84c] text-sm drop-shadow-lg">✦</span>
+            <span className="text-[#c9a84c] text-sm drop-shadow-lg">âœ¦</span>
             <TextType
               text={[
-                "WELCOME TO YIWU EXPRESS - PREMIUM KITCHENWARE FROM YIWU, CHINA",
+                "WELCOME TO Global Trade - PREMIUM KITCHENWARE FROM CHINA",
                 "GLOBAL TRADE SOLUTIONS - QUALITY YOU CAN TRUST",
                 "WHOLESALE & RETAIL - BEST PRICES GUARANTEED"
               ]}
@@ -60,14 +61,14 @@ export function TopBar() {
           {/* RIGHT SIDE: Static Page Links */}
           <div className="flex items-center space-x-6">
             {topBarLinks.map((link, index) => (
-              <Link
+              <LocaleLink
                 key={link.name}
                 href={link.href}
                 className="relative hover:text-white transition-all duration-300 uppercase tracking-wider text-[10px] font-medium text-white/70 hover:text-[#c9a84c] group"
               >
                 {link.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-[#c9a84c] to-transparent group-hover:w-full transition-all duration-300"></span>
-              </Link>
+              </LocaleLink>
             ))}
           </div>
         </div>

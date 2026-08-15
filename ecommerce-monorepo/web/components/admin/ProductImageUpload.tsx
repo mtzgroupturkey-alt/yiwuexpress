@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -262,7 +262,7 @@ export function ProductImageUpload({ images, onChange, maxImages = 10 }: Product
                       disabled={index === 0}
                       className="h-8 w-8 p-0"
                     >
-                      ↑
+                      â†‘
                     </Button>
                     <Button
                       type="button"
@@ -272,7 +272,7 @@ export function ProductImageUpload({ images, onChange, maxImages = 10 }: Product
                       disabled={index === images.length - 1}
                       className="h-8 w-8 p-0"
                     >
-                      ↓
+                      â†“
                     </Button>
                     <Button
                       type="button"
@@ -288,7 +288,7 @@ export function ProductImageUpload({ images, onChange, maxImages = 10 }: Product
 
                 {/* Image URL Display */}
                 <p className="text-xs text-gray-500 mt-2 truncate" title={url}>
-                  {url.startsWith('http') ? '🔗 URL' : '📁 Uploaded'}
+                  {url.startsWith('http') ? 'ðŸ”— URL' : 'ðŸ“ Uploaded'}
                 </p>
               </CardContent>
             </Card>

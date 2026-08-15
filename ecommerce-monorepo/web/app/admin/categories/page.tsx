@@ -13,9 +13,15 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Search, Plus, Edit, Trash2, FolderTree, ChevronRight, Folder, Star } from 'lucide-react'
 import { ImageUpload } from '@/components/admin/ImageUpload'
+import {
+  ProductTranslationForm,
+  validateTranslations,
+  type TranslationPayload,
+  type TranslationLocale
+} from '@/components/admin/ProductTranslationForm'
 
 const categorySchema = z.object({
-  name: z.string().min(2, 'Name is required'),
+  name: z.string().optional(),
   slug: z.string().min(1, 'Slug is required'),
   description: z.string().optional(),
   image: z.string().optional(),
@@ -41,6 +47,7 @@ interface Category {
   parentId?: string
   parent?: { name: string }
   children?: Category[]
+  translations?: { locale: string; name: string; description: string | null }[]
   _count: {
     products: number
     children: number
@@ -59,6 +66,11 @@ export default function AdminCategoriesPage() {
   const [deleting, setDeleting] = useState<string | null>(null)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const [categoryImage, setCategoryImage] = useState('')
+  const [translations, setTranslations] = useState<TranslationPayload>({
+    en: { name: '', description: '' },
+    ru: { name: '', description: '' },
+    zh: { name: '', description: '' }
+  })
 
   const {
     register,
@@ -136,16 +148,17 @@ export default function AdminCategoriesPage() {
 
   const name = watch('name')
 
-  // Auto-generate slug from name
+  // Auto-generate slug from English name (default locale)
   useEffect(() => {
-    if (name && !editingCategory) {
-      const slug = name
+    const baseName = translations.en?.name || name
+    if (baseName && !editingCategory) {
+      const slug = baseName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '')
       setValue('slug', slug)
     }
-  }, [name, editingCategory, setValue])
+  }, [translations, name, editingCategory, setValue])
 
   useEffect(() => {
     fetchCategories()
@@ -219,6 +232,21 @@ export default function AdminCategoriesPage() {
   const handleEdit = (category: Category) => {
     setEditingCategory(category)
     setCategoryImage(category.image || '')
+    const seed: TranslationPayload = {
+      en: { name: '', description: '' },
+      ru: { name: '', description: '' },
+      zh: { name: '', description: '' }
+    }
+    const locales: TranslationLocale[] = ['en', 'ru', 'zh']
+    for (const locale of locales) {
+      const existing = category.translations?.find(t => t.locale === locale)
+      if (existing) {
+        seed[locale] = { name: existing.name, description: existing.description || '' }
+      } else if (locale === 'en') {
+        seed.en = { name: category.name || '', description: category.description || '' }
+      }
+    }
+    setTranslations(seed)
     reset({
       name: category.name,
       slug: category.slug,
@@ -237,6 +265,11 @@ export default function AdminCategoriesPage() {
     setEditingCategory(null)
     setShowForm(false)
     setCategoryImage('')
+    setTranslations({
+      en: { name: '', description: '' },
+      ru: { name: '', description: '' },
+      zh: { name: '', description: '' }
+    })
     reset({
       name: '',
       slug: '',
@@ -253,16 +286,36 @@ export default function AdminCategoriesPage() {
   const onSubmit = async (data: CategoryForm) => {
     setSubmitting(true)
     try {
+      const enName = translations.en?.name?.trim()
+      if (!enName) {
+        alert('English name is required')
+        setSubmitting(false)
+        return
+      }
+      const validation = validateTranslations(translations)
+      if (!validation.valid) {
+        alert(validation.error)
+        setSubmitting(false)
+        return
+      }
+
+      const enTranslation = translations.en
+      const locales: TranslationLocale[] = ['en', 'ru', 'zh']
       const categoryData = {
-        name: data.name,
+        name: enTranslation?.name || data.name,
         slug: data.slug,
-        description: data.description || null,
+        description: enTranslation?.description || data.description || null,
         image: categoryImage || null,
         icon: data.icon || null,
         parentId: data.parentId || null,
         isActive: data.isActive,
         isFeatured: data.isFeatured || false,
-        showInMenu: data.showInMenu !== false
+        showInMenu: data.showInMenu !== false,
+        translations: locales.map(locale => ({
+          locale,
+          name: translations[locale].name,
+          description: translations[locale].description || null
+        }))
       }
 
       console.log('[Admin Form] Submitting category data:', JSON.stringify(categoryData, null, 2))
@@ -580,14 +633,11 @@ export default function AdminCategoriesPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name *</Label>
-                    <Input id="name" {...register('name')} />
-                    {errors.name && (
-                      <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
-                    )}
-                  </div>
+                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <ProductTranslationForm
+                    initialValues={translations}
+                    onChange={setTranslations}
+                  />
 
                   <div>
                     <Label htmlFor="slug">Slug *</Label>
@@ -595,17 +645,7 @@ export default function AdminCategoriesPage() {
                     {errors.slug && (
                       <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>
                     )}
-                    <p className="text-xs text-gray-500 mt-1">Auto-generated from name</p>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description">Description</Label>
-                    <textarea
-                      id="description"
-                      {...register('description')}
-                      rows={3}
-                      className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                    />
+                    <p className="text-xs text-gray-500 mt-1">Auto-generated from English name</p>
                   </div>
 
                   {/* Category Image Upload */}

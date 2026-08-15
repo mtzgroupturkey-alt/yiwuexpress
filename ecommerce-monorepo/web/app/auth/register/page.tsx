@@ -61,7 +61,7 @@ export default function RegisterPage() {
           Create your account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Join YIWU EXPRESS logistics platform
+          Join Global Trade logistics platform
         </p>
       </div>
 

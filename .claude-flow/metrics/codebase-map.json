@@ -1,0 +1,11 @@
+{
+  "timestamp": "2026-08-15T15:09:33.211Z",
+  "projectRoot": "C:\\wamp64\\www\\yiwuexpress",
+  "structure": {
+    "hasPackageJson": true,
+    "hasTsConfig": false,
+    "hasClaudeConfig": true,
+    "hasClaudeFlow": true
+  },
+  "scannedAt": 1786806573211
+}

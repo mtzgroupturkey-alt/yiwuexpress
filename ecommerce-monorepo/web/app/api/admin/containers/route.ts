@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
         shippingMethodId,
         vesselName,
         voyageNumber,
-        origin: origin || 'Yiwu, China',
+        origin: origin || 'China',
         destination,
         estimatedDeparture: estimatedDeparture ? new Date(estimatedDeparture) : null,
         estimatedArrival: estimatedArrival ? new Date(estimatedArrival) : null,
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
         statusHistory: [
           {
             status: 'PLANNING',
-            location: origin || 'Yiwu, China',
+            location: origin || 'China',
             timestamp: new Date().toISOString(),
             note: 'Container created',
           },

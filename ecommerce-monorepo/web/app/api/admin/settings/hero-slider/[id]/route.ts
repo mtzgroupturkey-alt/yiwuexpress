@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getUserFromToken, getTokenFromRequest } from '@/lib/auth'
@@ -17,24 +18,67 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, translations, ...data } = body
+
+    // Sync legacy `en` columns from the english translation when present.
+    const en = Array.isArray(translations)
+      ? translations.find((t: any) => t.locale === 'en')
+      : undefined
+
+    const updateData: any = {
+      ...data,
+      subtitle: data.subtitle ?? null,
+      description: data.description ?? null,
+      mobileImageUrl: data.mobileImageUrl ?? null,
+      productImageUrl: data.productImageUrl ?? null,
+      badgeText: data.badgeText ?? null,
+      badgeColor: data.badgeColor ?? null,
+      secondaryCtaText: data.secondaryCtaText ?? null,
+      secondaryCtaLink: data.secondaryCtaLink ?? null,
+      overlayColor: data.overlayColor ?? null,
+      textColor: data.textColor ?? null,
+    }
+
+    if (en) {
+      updateData.title = en.title ?? updateData.title
+      updateData.subtitle = en.subtitle ?? null
+      updateData.description = en.description ?? null
+      updateData.badgeText = en.badgeText ?? null
+      updateData.ctaText = en.ctaText ?? updateData.ctaText
+      updateData.secondaryCtaText = en.secondaryCtaText ?? null
+    }
 
     const slide = await prisma.heroSlide.update({
       where: { id: params.id },
-      data: {
-        ...data,
-        subtitle: data.subtitle || null,
-        description: data.description || null,
-        mobileImageUrl: data.mobileImageUrl || null,
-        productImageUrl: data.productImageUrl || null,
-        badgeText: data.badgeText || null,
-        badgeColor: data.badgeColor || null,
-        secondaryCtaText: data.secondaryCtaText || null,
-        secondaryCtaLink: data.secondaryCtaLink || null,
-        overlayColor: data.overlayColor || null,
-        textColor: data.textColor || null,
-      },
+      data: updateData,
     })
+
+    if (Array.isArray(translations)) {
+      for (const t of translations) {
+        if (!t.locale) continue
+        await prisma.heroSlideTranslation.upsert({
+          where: { heroSlideId_locale: { heroSlideId: params.id, locale: t.locale } },
+          create: {
+            heroSlideId: params.id,
+            locale: t.locale,
+            title: t.title ?? '',
+            subtitle: t.subtitle ?? null,
+            description: t.description ?? null,
+            badgeText: t.badgeText ?? null,
+            ctaText: t.ctaText ?? '',
+            secondaryCtaText: t.secondaryCtaText ?? null,
+          },
+          update: {
+            title: t.title ?? '',
+            subtitle: t.subtitle ?? null,
+            description: t.description ?? null,
+            badgeText: t.badgeText ?? null,
+            ctaText: t.ctaText ?? '',
+            secondaryCtaText: t.secondaryCtaText ?? null,
+          }
+        })
+      }
+    }
 
     return NextResponse.json({ data: slide })
   } catch (error) {

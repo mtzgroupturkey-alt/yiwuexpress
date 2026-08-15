@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { localizeService } from '@/lib/utils/localize'
 
 // Note: CORS is handled globally by next.config.js
 
@@ -10,6 +12,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const type = searchParams.get('type')
     const search = searchParams.get('search')
+    const locale = searchParams.get('locale') || 'en'
 
     const skip = (page - 1) * limit
 
@@ -33,12 +36,15 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: { translations: true }
       }),
       prisma.service.count({ where }),
     ])
 
+    const localized = services.map((s) => localizeService(s, locale))
+
     return NextResponse.json({
-      services,
+      services: localized,
       pagination: {
         page,
         limit,

@@ -1,11 +1,10 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 
 async function checkAdminAuth(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-
+  const token = getTokenFromRequest(request)
   if (!token) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
@@ -66,7 +65,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (authError) return authError
 
     const body = await request.json()
-    const { name, slug, description, price, duration, coverage, type, image, isActive } = body
+    const { name, slug, description, price, duration, coverage, type, image, isActive, translations } = body
 
     // Check if slug is being changed and if it already exists
     if (slug) {
@@ -82,20 +81,56 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       }
     }
 
+    const updateData: any = {
+      ...(name && { name }),
+      ...(slug && { slug }),
+      ...(description !== undefined && { description }),
+      ...(price && { price: parseFloat(price) }),
+      ...(duration !== undefined && { duration }),
+      ...(coverage !== undefined && { coverage }),
+      ...(type && { type }),
+      ...(image !== undefined && { image }),
+      ...(isActive !== undefined && { isActive }),
+    }
+
+    const en = Array.isArray(translations)
+      ? translations.find((t: any) => t.locale === 'en')
+      : undefined
+
+    if (en) {
+      updateData.name = en.name ?? updateData.name
+      updateData.description = en.description ?? null
+      updateData.coverage = en.coverage ?? null
+      updateData.duration = en.duration ?? null
+    }
+
     const service = await prisma.service.update({
       where: { id: params.id },
-      data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        ...(description !== undefined && { description }),
-        ...(price && { price: parseFloat(price) }),
-        ...(duration !== undefined && { duration }),
-        ...(coverage !== undefined && { coverage }),
-        ...(type && { type }),
-        ...(image !== undefined && { image }),
-        ...(isActive !== undefined && { isActive }),
-      },
+      data: updateData,
     })
+
+    if (Array.isArray(translations)) {
+      for (const t of translations) {
+        if (!t.locale) continue
+        await prisma.serviceTranslation.upsert({
+          where: { serviceId_locale: { serviceId: params.id, locale: t.locale } },
+          create: {
+            serviceId: params.id,
+            locale: t.locale,
+            name: t.name ?? '',
+            description: t.description ?? null,
+            coverage: t.coverage ?? null,
+            duration: t.duration ?? null,
+          },
+          update: {
+            name: t.name ?? '',
+            description: t.description ?? null,
+            coverage: t.coverage ?? null,
+            duration: t.duration ?? null,
+          }
+        })
+      }
+    }
 
     return NextResponse.json(service)
   } catch (error: any) {

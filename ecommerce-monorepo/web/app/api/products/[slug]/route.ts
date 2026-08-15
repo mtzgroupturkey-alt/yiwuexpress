@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { localizeAttribute, localizeAttributeValue, localizeCategory } from '@/lib/utils/localize'
 
 const prisma = new PrismaClient()
 
@@ -10,6 +12,12 @@ export async function GET(
 ) {
   try {
     const { slug } = params
+    const { searchParams } = new URL(request.url)
+    const requestedLocale = searchParams.get('locale') || 'en'
+
+    // Read-path localization: only fetch translations for the active locale
+    // plus the English fallback, minimizing payload (Expand-and-Contract Phase 3).
+    const localesToFetch = Array.from(new Set([requestedLocale, 'en']))
 
     const product = await prisma.product.findFirst({
       where: {
@@ -25,6 +33,10 @@ export async function GET(
             id: true,
             name: true,
             slug: true,
+            translations: {
+              where: { locale: { in: localesToFetch } },
+              select: { locale: true, name: true }
+            },
             parentId: true,
             attributes: {
               where: {
@@ -34,7 +46,9 @@ export async function GET(
                 displayOrder: 'asc'
               },
               include: {
-                attribute: true
+                attribute: {
+                  include: { translations: true }
+                }
               }
             },
             parent: {
@@ -42,6 +56,10 @@ export async function GET(
                 id: true,
                 name: true,
                 slug: true,
+                translations: {
+                  where: { locale: { in: localesToFetch } },
+                  select: { locale: true, name: true }
+                },
                 attributes: {
                   where: {
                     isVisible: true
@@ -50,7 +68,9 @@ export async function GET(
                     displayOrder: 'asc'
                   },
                   include: {
-                    attribute: true
+                    attribute: {
+                      include: { translations: true }
+                    }
                   }
                 }
               }
@@ -59,7 +79,13 @@ export async function GET(
         },
         attributeValues: {
           include: {
-            attribute: true
+            attribute: true,
+            translations: true
+          }
+        },
+        translations: {
+          where: {
+            locale: { in: localesToFetch }
           }
         }
       }
@@ -79,18 +105,41 @@ export async function GET(
       )
     }
 
-    // Transform attributeValues array into a key-value object
+    // Transform attributeValues array into a key-value object.
+    // Keep a translation map (English value -> localized value) for localization.
     const attributes: Record<string, any> = {}
+    const valueTranslationMap: Record<string, string> = {}
     if (product.attributeValues && Array.isArray(product.attributeValues)) {
       product.attributeValues.forEach((av: any) => {
+        let parsed: any
         try {
           // Try to parse as JSON first (for arrays and objects)
-          attributes[av.attribute.slug] = JSON.parse(av.value)
+          parsed = JSON.parse(av.value)
         } catch {
           // If not JSON, use as string
-          attributes[av.attribute.slug] = av.value
+          parsed = av.value
+        }
+        attributes[av.attribute.slug] = parsed
+
+        if (typeof av.value === 'string' && av.translations) {
+          const tr = (av.translations as any[]).find(
+            (t) => t.locale === requestedLocale && t.value && t.value.trim().length > 0
+          )
+          if (tr) valueTranslationMap[av.value] = tr.value
         }
       })
+    }
+
+    // Localize the values stored in the attributes object (best-effort string/array match)
+    if (requestedLocale !== 'en') {
+      for (const slug of Object.keys(attributes)) {
+        const val = attributes[slug]
+        if (typeof val === 'string' && valueTranslationMap[val]) {
+          attributes[slug] = valueTranslationMap[val]
+        } else if (Array.isArray(val)) {
+          attributes[slug] = val.map((v) => (typeof v === 'string' && valueTranslationMap[v] ? valueTranslationMap[v] : v))
+        }
+      }
     }
 
     // Helper to flatten CategoryAttribute join-table rows into the shape the frontend expects
@@ -100,7 +149,7 @@ export async function GET(
         .map((ca: any) => ({
           id: ca.attribute.id,
           slug: ca.attribute.slug,
-          name: ca.attribute.name,
+          name: localizeAttribute(ca.attribute, requestedLocale).name,
           inputType: ca.attribute.type,   // Attribute.type is the inputType
           isRequired: ca.isRequired ?? ca.attribute.isRequired,
           isFilterable: ca.attribute.isFilterable,
@@ -129,9 +178,26 @@ export async function GET(
     }, [])
 
 
+    // Localize the product's category (and parent) names to the active locale
+    // with English fallback, so the storefront never shows a base-language name.
+    const rawCategory = product.category as any
+    const localizedCategory = rawCategory
+      ? {
+          ...rawCategory,
+          name: localizeCategory(rawCategory, requestedLocale).name,
+          parent: rawCategory.parent
+            ? {
+                ...rawCategory.parent,
+                name: localizeCategory(rawCategory.parent, requestedLocale).name
+              }
+            : rawCategory.parent
+        }
+      : rawCategory
+
     // Format the response to include categoryAttributes in the expected format
     const formattedProduct = {
       ...product,
+      category: localizedCategory,
       attributes,
       categoryAttributes: uniqueAttributes
     }

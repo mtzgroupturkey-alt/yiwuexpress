@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+﻿import { prisma } from '@/lib/db'
 
 interface BreadcrumbData {
   backgroundImage: string | null
@@ -110,6 +110,7 @@ export async function getBreadcrumbBackground(params: {
         pageSlug,
         isActive: true,
       },
+      include: { translations: true },
     })
   } else if (pageType === 'category' && categoryId) {
     setting = await prisma.breadcrumbSetting.findFirst({
@@ -118,6 +119,7 @@ export async function getBreadcrumbBackground(params: {
         categoryId,
         isActive: true,
       },
+      include: { translations: true },
     })
   } else if (pageType === 'shop_default') {
     console.log('[BreadcrumbService] Looking for shop_default setting')
@@ -126,6 +128,7 @@ export async function getBreadcrumbBackground(params: {
         pageType: 'shop_default',
         isActive: true,
       },
+      include: { translations: true },
     })
     console.log('[BreadcrumbService] Shop default query result:', setting)
   }
@@ -140,11 +143,12 @@ export async function getBreadcrumbBackground(params: {
     overlayColor: setting.overlayColor,
     title: setting.title,
     subtitle: setting.subtitle,
+    translations: setting.translations ?? null,
   }
 }
 
 // New function: Get breadcrumb background with parent hierarchy fallback
-export async function getBreadcrumbBackgroundWithParentFallback(categoryId: string) {
+export async function getBreadcrumbBackgroundWithParentFallback(categoryId: string): Promise<ReturnType<typeof getBreadcrumbBackground>> {
   console.log('[BreadcrumbService] Starting parent fallback for category:', categoryId)
   
   // First try the specific category
@@ -196,3 +200,4 @@ export async function getBreadcrumbBackgroundWithParentFallback(categoryId: stri
     return null
   }
 }
+

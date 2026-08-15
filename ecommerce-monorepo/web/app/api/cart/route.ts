@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
@@ -130,6 +131,25 @@ export async function POST(request: Request) {
       )
     }
 
+    // Fetch store mode for MOQ validation
+    const settings = await prisma.systemSettings.findFirst()
+    const storeMode = settings?.storeMode || 'WHOLESALE'
+
+    // Validate MOQ based on store mode
+    if (storeMode === 'WHOLESALE' || storeMode === 'BOTH') {
+      const minQty = product.minOrderQty || 1
+      
+      if (quantity < minQty) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Minimum order quantity is ${minQty} units for this product in ${storeMode.toLowerCase()} mode`
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // Check stock
     if (product.stock < quantity) {
       return NextResponse.json(
@@ -162,11 +182,26 @@ export async function POST(request: Request) {
       // Update quantity
       const newQuantity = existingItem.quantity + quantity
 
+      // Re-check stock for new quantity
       if (product.stock < newQuantity) {
         return NextResponse.json(
           { success: false, error: 'Insufficient stock' },
           { status: 400 }
         )
+      }
+
+      // Re-validate MOQ for new quantity
+      if (storeMode === 'WHOLESALE' || storeMode === 'BOTH') {
+        const minQty = product.minOrderQty || 1
+        if (newQuantity < minQty) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Minimum order quantity is ${minQty} units for this product`
+            },
+            { status: 400 }
+          )
+        }
       }
 
       const updatedItem = await prisma.cartItem.update({

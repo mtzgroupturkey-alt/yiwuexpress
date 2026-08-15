@@ -24,7 +24,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     name: 'Marcus Vance',
     role: 'CEO & Founder',
     company: 'Vance Goods Co.',
-    quote: 'Yiwu Express transformed our supply chain. We used to struggle with sourcing quality control, but their local inspection team ensures every container meets our exact specifications.',
+    quote: 'China Express transformed our supply chain. We used to struggle with sourcing quality control, but their local inspection team ensures every container meets our exact specifications.',
     rating: 5,
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80',
     image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&h=400&q=80',
@@ -35,7 +35,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     name: 'Elena Rostova',
     role: 'Head of Purchasing',
     company: 'Nordic Retail Group',
-    quote: 'Sourcing from Yiwu market has never been this seamless. They act as our local eyes and ears, matching us with verified suppliers and handling the entire logistics process to Europe.',
+    quote: 'Sourcing from China market has never been this seamless. They act as our local eyes and ears, matching us with verified suppliers and handling the entire logistics process to Europe.',
     rating: 5,
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80',
     image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=600&h=400&q=80',
@@ -46,7 +46,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     name: 'David Kojo',
     role: 'E-commerce Brand Owner',
     company: 'Kojo Designs',
-    quote: 'Their consolidation services saved us thousands. We source from 8 different suppliers in Yiwu, and Yiwu Express packs everything into one single container for us. Life saver!',
+    quote: 'Their consolidation services saved us thousands. We source from 8 different suppliers in China, and China Express packs everything into one single container for us. Life saver!',
     rating: 5,
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80',
     image: 'https://images.unsplash.com/photo-1553413719-87587f29173f?auto=format&fit=crop&w=600&h=400&q=80',
@@ -68,7 +68,7 @@ const DEFAULT_TESTIMONIALS: Testimonial[] = [
     name: 'Pierre Dubois',
     role: 'Operations Director',
     company: 'Maison Chic Paris',
-    quote: 'Outstanding translation, guiding, and shipment consolidation. Sourcing at Yiwu Futian market was productive because of their highly skilled local agents.',
+    quote: 'Outstanding translation, guiding, and shipment consolidation. Sourcing at China Futian market was productive because of their highly skilled local agents.',
     rating: 4,
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80',
     image: null,
@@ -157,7 +157,7 @@ export function TestimonialSection() {
             What Our Import Clients Say
           </h2>
           <p className="text-gray-400 mt-4 max-w-2xl mx-auto text-base md:text-lg">
-            Empowering businesses globally with streamlined sourcing and secure shipping from Yiwu Market.
+            Empowering businesses globally with streamlined sourcing and secure shipping from China Market.
           </p>
         </div>
 

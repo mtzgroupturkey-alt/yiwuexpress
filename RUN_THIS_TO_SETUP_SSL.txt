@@ -1,0 +1,111 @@
+================================================================================
+SETUP SSL FOR DROMKOK.COM - COPY & PASTE COMMANDS
+================================================================================
+
+STEP 1: Upload SSL files from Windows PowerShell
+================================================================================
+
+Replace YOUR_SERVER_IP with your actual server IP address!
+
+scp C:/wamp64/www/yiwuexpress/dromkok.com_nginx/dromkok.com_nginx/dromkok.com_bundle.crt root@YOUR_SERVER_IP:/tmp/
+
+scp C:/wamp64/www/yiwuexpress/dromkok.com_nginx/dromkok.com_nginx/dromkok.com.key root@YOUR_SERVER_IP:/tmp/
+
+
+STEP 2: SSH into server
+================================================================================
+
+ssh root@YOUR_SERVER_IP
+
+
+STEP 3: Install SSL files (Copy this ENTIRE block)
+================================================================================
+
+sudo mkdir -p /etc/nginx/ssl/dromkok.com && \
+sudo mv /tmp/dromkok.com_bundle.crt /etc/nginx/ssl/dromkok.com/ && \
+sudo mv /tmp/dromkok.com.key /etc/nginx/ssl/dromkok.com/ && \
+sudo chmod 644 /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt && \
+sudo chmod 600 /etc/nginx/ssl/dromkok.com/dromkok.com.key && \
+sudo chown root:root /etc/nginx/ssl/dromkok.com/* && \
+echo "✅ SSL files installed"
+
+
+STEP 4: Update Nginx config (Copy this ENTIRE block)
+================================================================================
+
+sudo tee /etc/nginx/sites-available/dromkok.com > /dev/null << 'NGINX_CONFIG'
+server {
+    listen 80;
+    server_name dromkok.com www.dromkok.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name dromkok.com www.dromkok.com;
+
+    ssl_certificate /etc/nginx/ssl/dromkok.com/dromkok.com_bundle.crt;
+    ssl_certificate_key /etc/nginx/ssl/dromkok.com/dromkok.com.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    access_log /var/log/nginx/dromkok.com_access.log;
+    error_log /var/log/nginx/dromkok.com_error.log;
+
+    client_max_body_size 100M;
+    
+    location = / {
+        return 307 /en/;
+    }
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+NGINX_CONFIG
+
+echo "✅ Nginx config updated"
+
+
+STEP 5: Test and reload Nginx
+================================================================================
+
+sudo nginx -t && sudo systemctl reload nginx && echo "✅ SSL is now active!"
+
+
+STEP 6: Test SSL
+================================================================================
+
+curl -I https://dromkok.com
+
+
+STEP 7: Update and restart your app
+================================================================================
+
+cd /root/ecommerce-monorepo/web && \
+git pull origin production && \
+npm run build && \
+pm2 restart ecommerce-monorepo && \
+echo "✅ App deployed with debug logs"
+
+
+DONE! Now test:
+================================================================================
+
+Visit in browser: https://dromkok.com/admin
+
+Should:
+✅ Show lock icon 🔒
+✅ Login successfully
+✅ Redirect to admin panel
+
+================================================================================

@@ -1,0 +1,90 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║   QUICK FIX: dromkok.com MIME Type / 404 Errors             ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+PROBLEM: Site shows "Loading..." and browser console shows:
+  • "Refused to apply style... MIME type ('text/html')"
+  • 404 errors for all _next/static/* files
+
+CAUSE: Nginx is proxying to port 3000, but app runs on port 3001
+
+═══════════════════════════════════════════════════════════════
+
+✨ EASIEST FIX - ONE COMMAND (RECOMMENDED):
+
+From your dromkok.com_nginx directory:
+
+Windows (PowerShell or CMD):
+  cd c:\wamp64\www\yiwuexpress\dromkok.com_nginx
+  fix_and_deploy.bat
+
+Linux/Mac or Git Bash on Windows:
+  cd /c/wamp64/www/yiwuexpress/dromkok.com_nginx
+  bash fix_and_deploy.sh
+
+This script will:
+  ✓ Upload the corrected nginx config
+  ✓ Apply it safely (with backup)
+  ✓ Reload nginx
+  ✓ Verify your app is running
+  ✓ Test the site
+
+═══════════════════════════════════════════════════════════════
+
+MANUAL FIX (if you prefer doing it yourself):
+
+1. SSH to server:
+   ssh root@dromkok.com
+
+2. Edit nginx config:
+   sudo nano /etc/nginx/sites-available/www.dromkok.com
+
+3. Find and replace (Ctrl+\ in nano):
+   Find: localhost:3000
+   Replace: localhost:3001
+
+4. Save (Ctrl+O, Enter, Ctrl+X)
+
+5. Test and reload:
+   sudo nginx -t && sudo systemctl reload nginx
+
+6. Verify:
+   curl -I http://localhost:3001
+   curl -I https://www.dromkok.com
+
+7. Clear your browser cache and reload!
+
+═══════════════════════════════════════════════════════════════
+
+ALTERNATIVE AUTOMATED FIX:
+
+From your local machine:
+  scp dromkok.com_nginx/update_nginx_port.sh root@dromkok.com:/tmp/
+  ssh root@dromkok.com
+  sudo bash /tmp/update_nginx_port.sh
+
+═══════════════════════════════════════════════════════════════
+
+VERIFICATION:
+
+After fix, these should all work:
+  ✓ https://www.dromkok.com (shows site, not "Loading...")
+  ✓ Browser console has no MIME errors
+  ✓ curl -I https://www.dromkok.com/_next/static/...css returns 200
+
+═══════════════════════════════════════════════════════════════
+
+FILES UPDATED IN THIS REPO:
+  ✓ dromkok.com_nginx/nginx_ssl_config.conf (port 3000→3001)
+  ✓ ecommerce-monorepo/.github/workflows/deploy.yml (added verification)
+  ✓ This guide and automation scripts
+
+═══════════════════════════════════════════════════════════════
+
+NEXT DEPLOYMENT:
+The GitHub Actions workflow now includes port verification,
+so future deploys will catch this issue automatically.
+
+═══════════════════════════════════════════════════════════════

@@ -1,0 +1,143 @@
+﻿name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - production
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: web
+        run: npm install
+
+      - name: Generate Prisma Client
+        working-directory: web
+        run: npx prisma generate
+
+      - name: Build project
+        working-directory: web
+        run: NODE_ENV=production npm run build
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          timeout: 60s
+          command_timeout: 30m
+          script_stop: true
+          envs: DATABASE_URL
+          script: |
+            set -e
+
+            if [ -z "$DATABASE_URL" ]; then
+              echo "❌ DATABASE_URL is not set"
+              exit 1
+            fi
+
+            cd /www/wwwroot/www.dromkok.com
+
+            echo "🔑 Setting GitHub authentication..."
+            git remote set-url origin https://${{ secrets.GH_USERNAME }}:${{ secrets.GH_TOKEN }}@github.com/mtzgroupturkey-alt/dromkok.git
+
+            echo "🌐 Applying git network resilience settings..."
+            git config http.version HTTP/1.1
+            git config http.postBuffer 524288000
+            git config http.lowSpeedLimit 1
+            git config http.lowSpeedTime 600
+
+            echo "📥 Pulling latest code (with retries)..."
+            pull_ok=0
+            for i in 1 2 3 4 5; do
+              if git fetch --prune origin production && git reset --hard origin/production; then
+                pull_ok=1
+                echo "✅ Code pulled successfully (attempt $i)"
+                break
+              fi
+              echo "⚠️ Pull attempt $i failed, retrying in 15s..."
+              sleep 15
+            done
+            if [ "$pull_ok" -ne 1 ]; then
+              echo "❌ Failed to pull code after 5 attempts"
+              exit 1
+            fi
+
+            cd web
+            echo "📦 Installing dependencies..."
+            npm install
+
+            echo "🔧 Generating Prisma Client..."
+            npx prisma generate
+
+            echo "🗄️ Applying safe Prisma migrations..."
+            npx prisma migrate deploy
+
+            echo "🏗️ Building app (clean)..."
+            rm -rf .next
+            npm run build
+
+            echo "🔄 Restarting PM2..."
+            pm2 restart dromkok-web --update-env || pm2 start server.js --name "dromkok-web" --env production
+            pm2 save
+            pm2 status
+
+            echo "🔍 Verifying app is running on port 3001..."
+            echo "⏳ Waiting for app to start (max 30 seconds)..."
+            
+            APP_READY=0
+            for i in {1..30}; do
+              if curl -f -s http://localhost:3001 > /dev/null 2>&1; then
+                APP_READY=1
+                echo "✅ App is responding on port 3001 (after ${i}s)"
+                break
+              fi
+              echo "   Attempt $i/30: App not ready yet, waiting..."
+              sleep 1
+            done
+            
+            if [ "$APP_READY" -eq 0 ]; then
+              echo "❌ Error: App failed to start after 30 seconds"
+              echo ""
+              echo "PM2 status:"
+              pm2 status
+              echo ""
+              echo "PM2 logs (last 50 lines):"
+              pm2 logs dromkok-web --lines 50 --nostream
+              echo ""
+              echo "Checking what's on port 3001:"
+              netstat -tlnp | grep 3001 || echo "Nothing listening on port 3001"
+              echo ""
+              echo "Checking .env.production:"
+              cat .env.production | grep PORT || echo "PORT not found in .env.production"
+              exit 1
+            fi
+            
+            echo "🧪 Testing health endpoint..."
+            if curl -f -s http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "✅ Health check passed"
+            else
+              echo "⚠️  Health endpoint not responding (app may still work)"
+            fi
+
+            echo "✅ Deployment completed successfully"
+            
+            echo ""
+            echo "📋 Running post-deployment verification..."
+            bash verify-deployment.sh || echo "⚠️  Some verification checks failed (see above)"

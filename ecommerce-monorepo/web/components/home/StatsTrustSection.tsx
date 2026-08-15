@@ -11,7 +11,7 @@ const stats = [
 const sourcingItems = [
   {
     icon: Store,
-    title: 'Direct from Yiwu Market',
+    title: 'Direct from China Market',
     description: 'Source directly from 75,000+ suppliers, no middlemen markups.',
   },
   {
@@ -37,7 +37,7 @@ export function StatsTrustSection() {
       <Container maxWidth="2xl">
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold text-primary-500">
-            Why Choose Yiwu Express?
+            Why Choose China Express?
           </h2>
           <p className="text-gray-500 mt-3 max-w-2xl mx-auto text-sm md:text-base">
             We connect you with China&apos;s largest wholesale market — quality products, reliable service, global reach.

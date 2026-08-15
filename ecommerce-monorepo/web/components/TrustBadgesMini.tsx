@@ -2,6 +2,7 @@
 
 import { Shield, ShieldCheck, Truck, Headphones, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface TrustBadgesMiniProps {
   className?: string
@@ -9,12 +10,13 @@ interface TrustBadgesMiniProps {
 }
 
 export function TrustBadgesMini({ className, layout = 'grid' }: TrustBadgesMiniProps) {
+  const t = useTranslations('TrustBadges')
   const badges = [
-    { icon: Lock, label: 'Secure Checkout', desc: 'SSL Encrypted', color: 'text-blue-600 bg-blue-50' },
-    { icon: Shield, label: '30-Day Guarantee', desc: 'Money-Back', color: 'text-green-600 bg-green-50' },
-    { icon: ShieldCheck, label: 'Verified Supplier', desc: '15 Years Sourcing', color: 'text-yellow-600 bg-yellow-50' },
-    { icon: Truck, label: 'Fast Shipping', desc: 'Sea & Air Cargo', color: 'text-purple-600 bg-purple-50' },
-    { icon: Headphones, label: '24/7 Support', desc: 'Always Available', color: 'text-pink-600 bg-pink-50' }
+    { icon: Lock, label: t('secureCheckout'), desc: t('sslEncrypted'), color: 'text-blue-600 bg-blue-50' },
+    { icon: Shield, label: t('thirtyDayGuarantee'), desc: t('moneyBack'), color: 'text-green-600 bg-green-50' },
+    { icon: ShieldCheck, label: t('verifiedSupplier'), desc: t('fifteenYears'), color: 'text-yellow-600 bg-yellow-50' },
+    { icon: Truck, label: t('fastShipping'), desc: t('seaAirCargo'), color: 'text-purple-600 bg-purple-50' },
+    { icon: Headphones, label: t('support247'), desc: t('alwaysAvailable'), color: 'text-pink-600 bg-pink-50' }
   ]
 
   return (

@@ -93,3 +93,9 @@ yarn.lock
 .gstack/
 .gstack-worktrees/
 **/gstack-worktree-*/
+
+# Ruflo local secrets and runtime data
+.env.*.local
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/

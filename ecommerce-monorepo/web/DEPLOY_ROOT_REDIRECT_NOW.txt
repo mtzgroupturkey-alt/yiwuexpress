@@ -1,0 +1,77 @@
+================================================================================
+DEPLOY ROOT REDIRECT - SIMPLE INSTRUCTIONS
+================================================================================
+
+The code is PUSHED to GitHub. Now deploy to production:
+
+--------------------------------------------------------------------------------
+OPTION 1: Quick One-Command Deploy
+--------------------------------------------------------------------------------
+
+SSH into your server and run:
+
+ssh root@YOUR_SERVER_IP "cd /root/ecommerce-monorepo/web && git pull origin production && npm run build && pm2 restart ecommerce-monorepo && echo 'Deploy complete! Test: http://dromkok.com'"
+
+
+--------------------------------------------------------------------------------
+OPTION 2: Step by Step
+--------------------------------------------------------------------------------
+
+1. SSH into production server:
+   ssh root@YOUR_SERVER_IP
+
+2. Pull latest code:
+   cd /root/ecommerce-monorepo/web
+   git pull origin production
+
+3. Build:
+   npm run build
+
+4. Restart:
+   pm2 restart ecommerce-monorepo
+
+5. Test:
+   curl -I http://localhost:3001/
+   # Should show: Location: /en/
+
+
+--------------------------------------------------------------------------------
+OPTIONAL: Add Nginx Redirect (Extra Safety)
+--------------------------------------------------------------------------------
+
+If you want nginx to also redirect (recommended), edit nginx config:
+
+   sudo nano /etc/nginx/sites-available/dromkok.com
+
+Find the line:
+   location / {
+
+Add BEFORE it:
+   location = / {
+       return 307 /en/;
+   }
+
+Then reload nginx:
+   sudo nginx -t
+   sudo systemctl reload nginx
+
+
+--------------------------------------------------------------------------------
+VERIFY IT WORKS
+--------------------------------------------------------------------------------
+
+1. Open browser
+2. Visit: http://dromkok.com
+3. Should redirect to: http://dromkok.com/en/
+4. Page should load with NO errors
+
+DONE! ✅
+
+================================================================================
+
+What was changed:
+- app/page.tsx: Now has simple redirect('/en') instead of client-side code
+
+This is server-side redirect, very simple, very fast!
+
+================================================================================

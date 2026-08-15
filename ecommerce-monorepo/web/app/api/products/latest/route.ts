@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -34,6 +35,7 @@ export async function GET(req: NextRequest) {
       slug: product.slug,
       price: product.price,
       compareAtPrice: product.compareAtPrice,
+      wholesalePrice: product.wholesalePrice,
       thumbnail: product.thumbnail,
       images: product.images || [],
       stock: product.stock,

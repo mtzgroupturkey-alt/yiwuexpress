@@ -1,0 +1,78 @@
+================================================================================
+🚀 QUICK START - FIX SSL & LOGIN ISSUES
+================================================================================
+
+PROBLEM: Your site has no SSL and admin login doesn't work
+
+SOLUTION: Run one PowerShell command to fix everything!
+
+================================================================================
+STEP 1: Open PowerShell
+================================================================================
+
+Windows Key + X → Click "Windows PowerShell" (or "Terminal")
+
+================================================================================
+STEP 2: Run Deployment Script
+================================================================================
+
+Copy and paste this command:
+
+cd C:\wamp64\www\yiwuexpress ; .\deploy-ssl-and-fix.ps1
+
+Press ENTER
+
+================================================================================
+WHAT IT DOES:
+================================================================================
+
+✅ Uploads SSL certificates to server
+✅ Configures nginx with HTTPS
+✅ Deploys latest code
+✅ Restarts application
+✅ Fixes login redirect loop
+✅ Fixes root URL redirect
+
+================================================================================
+STEP 3: Test
+================================================================================
+
+After script finishes (2-3 minutes), open browser:
+
+👉 https://dromkok.com/admin
+
+⚠️  IMPORTANT: Use HTTPS (not HTTP)
+
+Should see:
+- 🔒 Lock icon in address bar
+- Login page
+- After login → redirects to admin panel ✅
+
+================================================================================
+IF IT DOESN'T WORK:
+================================================================================
+
+1. Check logs:
+   cd C:\wamp64\www\yiwuexpress ; .\check-logs.ps1
+
+2. Verify deployment:
+   cd C:\wamp64\www\yiwuexpress ; .\verify-deployment.ps1
+
+3. Read full guide:
+   Open: C:\wamp64\www\yiwuexpress\DEPLOYMENT_FIX_README.md
+
+================================================================================
+NEED HELP?
+================================================================================
+
+All documentation is in: C:\wamp64\www\yiwuexpress\
+
+Files created:
+- deploy-ssl-and-fix.ps1       - Main deployment script
+- verify-deployment.ps1         - Check if deployment worked
+- check-logs.ps1                - View application logs
+- DEPLOYMENT_FIX_README.md      - Complete guide
+- SETUP_SSL_CORRECT_PATH.txt    - Detailed SSL setup
+- QUICK_START.txt              - This file
+
+================================================================================

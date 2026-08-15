@@ -1,11 +1,53 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifyToken } from '@/lib/auth'
+import { getTokenFromRequest, verifyToken } from '@/lib/auth'
+
+type ServiceTranslationInput = {
+  locale: string
+  name: string
+  description?: string | null
+  coverage?: string | null
+  duration?: string | null
+}
+
+// Always seed `en` from legacy fields so the fallback chain stays intact.
+function buildServiceTranslations(
+  translations: ServiceTranslationInput[] | undefined,
+  legacy: { name: string; description?: string | null; coverage?: string | null; duration?: string | null }
+): ServiceTranslationInput[] {
+  const rows: ServiceTranslationInput[] = []
+  const seen = new Set<string>()
+
+  if (Array.isArray(translations)) {
+    for (const t of translations) {
+      if (!t.locale || seen.has(t.locale)) continue
+      seen.add(t.locale)
+      rows.push({
+        locale: t.locale,
+        name: t.name ?? legacy.name,
+        description: t.description ?? null,
+        coverage: t.coverage ?? null,
+        duration: t.duration ?? null,
+      })
+    }
+  }
+
+  if (!seen.has('en')) {
+    rows.push({
+      locale: 'en',
+      name: legacy.name,
+      description: legacy.description ?? null,
+      coverage: legacy.coverage ?? null,
+      duration: legacy.duration ?? null,
+    })
+  }
+
+  return rows
+}
 
 async function checkAdminAuth(request: NextRequest) {
-  const authHeader = request.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-
+  const token = getTokenFromRequest(request)
   if (!token) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
@@ -51,6 +93,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: { translations: true },
       }),
       prisma.service.count({ where }),
     ])
@@ -79,7 +122,7 @@ export async function POST(request: NextRequest) {
     if (authError) return authError
 
     const body = await request.json()
-    const { name, slug, description, price, duration, coverage, type, image } = body
+    const { name, slug, description, price, duration, coverage, type, image, translations } = body
 
     if (!name || !slug || !price || !type) {
       return NextResponse.json(
@@ -111,6 +154,9 @@ export async function POST(request: NextRequest) {
         type,
         image,
         isActive: true,
+        translations: {
+          create: buildServiceTranslations(translations, { name, description, coverage, duration })
+        }
       },
     })
 

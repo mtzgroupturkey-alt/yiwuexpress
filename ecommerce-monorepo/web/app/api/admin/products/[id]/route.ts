@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -19,7 +20,8 @@ export async function GET(
           include: {
             attribute: true
           }
-        }
+        },
+        translations: true  // ← Add translations to the include
       }
     })
 
@@ -111,16 +113,59 @@ export async function PUT(
     }
 
     // Extract attributes from body
-    const { attributes, ...productData } = body
+    const { attributes, translations, ...productData } = body
 
-    // Update product
-    const updated = await prisma.product.update({
-      where: { id },
-      data: productData,
-      include: {
-        category: true
-      }
-    })
+    // Normalize the incoming translations payload into an array of
+    // { locale, name, description } rows (en/ru/zh). The frontend may send a
+    // nested map (Record<locale, {name, description}>) or an array; both are
+    // supported so no locale is ever silently dropped.
+    const incomingTranslations: Array<{ locale: string; name?: string; description?: string | null }> =
+      Array.isArray(translations)
+        ? translations
+        : translations && typeof translations === 'object'
+          ? Object.entries(translations as Record<string, any>).map(([locale, value]) => ({
+              locale,
+              name: value?.name,
+              description: value?.description ?? null
+            }))
+          : []
+
+    // Expand-and-Contract dual-write: every supplied locale (incl. en) is
+    // persisted independently, and the English copy is mirrored back onto the
+    // legacy root columns so non-migrated read paths keep working.
+    const englishEntry = incomingTranslations.find((t) => t.locale === 'en')
+    if (englishEntry) {
+      productData.name = englishEntry.name ?? productData.name
+      productData.description = englishEntry.description ?? null
+    }
+
+    // Update product + write all locale rows atomically. If any locale upsert
+    // fails (e.g. a DB constraint), the whole operation rolls back so we never
+    // leave a half-saved product behind.
+    const translationUpserts = incomingTranslations
+      .filter((t) => t.locale)
+      .map((t) => ({
+        where: { productId_locale: { productId: id, locale: t.locale } },
+        create: {
+          productId: id,
+          locale: t.locale,
+          name: t.name ?? '',
+          description: t.description ?? null
+        },
+        update: {
+          name: t.name ?? '',
+          description: t.description ?? null
+        }
+      }))
+
+    await prisma.$transaction([
+      prisma.product.update({
+        where: { id },
+        data: productData,
+        include: { category: true }
+      }),
+      ...translationUpserts.map((u) => prisma.productTranslation.upsert(u))
+    ])
 
     // Handle attribute values update
     if (attributes && typeof attributes === 'object') {
@@ -161,7 +206,7 @@ export async function PUT(
       }
     }
 
-    // Fetch updated product with attribute values
+    // Fetch updated product with attribute values and translations
     const productWithAttributes = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -170,7 +215,8 @@ export async function PUT(
           include: {
             attribute: true
           }
-        }
+        },
+        translations: true  // ← Add translations to the response
       }
     })
 

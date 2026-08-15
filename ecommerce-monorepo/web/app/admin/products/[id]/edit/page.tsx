@@ -14,6 +14,11 @@ import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import { ProductAttributesSection } from '@/components/admin/ProductAttributesSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
+import {
+  ProductTranslationForm,
+  validateTranslations,
+  type TranslationPayload
+} from '@/components/admin/ProductTranslationForm'
 
 interface MediaItem {
   url: string
@@ -63,6 +68,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [loading, setLoading] = useState(true)
   const [media, setMedia] = useState<MediaItem[]>([])
   const [deleting, setDeleting] = useState(false)
+  const [translations, setTranslations] = useState<TranslationPayload | null>(null)
 
   const {
     register,
@@ -154,6 +160,29 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         
         setMedia(mediaItems)
 
+        // Seed translation state (Expand-and-Contract Phase 3): prefer existing
+        // translation rows, fall back to legacy name/description for 'en'.
+        const initialTranslations: TranslationPayload = {
+          en: { name: product.name || '', description: product.description || '' },
+          ru: { name: '', description: '' },
+          zh: { name: '', description: '' }
+        }
+
+        if (product.translations && Array.isArray(product.translations)) {
+          product.translations.forEach((t: any) => {
+            const currentLocale = t.locale as 'en' | 'ru' | 'zh'
+
+            if (['en', 'ru', 'zh'].includes(currentLocale)) {
+              initialTranslations[currentLocale] = {
+                name: t.name || '',
+                description: t.description || ''
+              }
+            }
+          })
+        }
+
+        setTranslations(initialTranslations)
+
         // Set attribute values if they exist
         if (product.attributes) {
           setAttributeValues(product.attributes)
@@ -173,12 +202,25 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const onSubmit = async (data: ProductForm) => {
     setSubmitting(true)
     try {
+      // Validate translations: English name is mandatory.
+      if (!translations || !validateTranslations(translations).valid) {
+        alert(validateTranslations(translations ?? ({} as TranslationPayload)).error ||
+          'English (EN) translation name is required.')
+        setSubmitting(false)
+        return
+      }
+
       // Separate images and videos
       const images = media.filter(m => m.type === 'image').map(m => m.url)
       const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
       const productData = {
         ...data,
+        // Dual-write: legacy name/description stay in sync with 'en' translation
+        // (Phase 1 design) so reads that haven't migrated still work.
+        name: translations.en.name,
+        description: translations.en.description || null,
+        translations,
         images,
         videos,
         thumbnail: images[0] || null,
@@ -321,10 +363,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 </div>
 
                 <div>
-                  <Label htmlFor="name">Product Name *</Label>
-                  <Input id="name" {...register('name')} />
-                  {errors.name && (
-                    <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
+                  <Label htmlFor="name" className="sr-only">Product Name *</Label>
+                  {translations && (
+                    <ProductTranslationForm
+                      initialValues={translations}
+                      onChange={setTranslations}
+                      disabled={submitting}
+                    />
                   )}
                 </div>
 
@@ -334,16 +379,6 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                   {errors.slug && (
                     <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>
                   )}
-                </div>
-
-                <div>
-                  <Label htmlFor="description">Description</Label>
-                  <textarea
-                    id="description"
-                    {...register('description')}
-                    rows={4}
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
-                  />
                 </div>
               </CardContent>
             </Card>

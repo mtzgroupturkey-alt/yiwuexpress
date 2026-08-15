@@ -1,11 +1,14 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { getBreadcrumbBackground, getBreadcrumbBackgroundWithParentFallback } from '@/lib/breadcrumb-service'
+import { localizePageBanner } from '@/lib/utils/localize'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const pageSlug = searchParams.get('pageSlug')
     const categoryId = searchParams.get('categoryId')
+    const locale = searchParams.get('locale') || 'en'
 
     let setting = null
 
@@ -28,9 +31,12 @@ export async function GET(request: NextRequest) {
       setting = { imageUrl: null, mobileImageUrl: null, overlayColor: null, title: null, subtitle: null }
     }
 
+    // Localize title/subtitle when translation data is present.
+    const localized = localizePageBanner(setting as any, locale)
+
     return NextResponse.json({
       success: true,
-      setting,
+      setting: localized,
       debug: {
         pageSlug,
         categoryId,

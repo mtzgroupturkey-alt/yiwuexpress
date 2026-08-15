@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { buildCountryTranslations } from '@/lib/utils/translation-builders'
 
 const prisma = new PrismaClient()
 
@@ -24,7 +26,8 @@ export async function GET(request: Request) {
       include: {
         shippingRates: {
           orderBy: { carrier: 'asc' }
-        }
+        },
+        translations: true,
       },
       orderBy: { name: 'asc' }
     })
@@ -80,8 +83,10 @@ export async function POST(request: Request) {
         paymentMethods: body.paymentMethods || [],
         deliverySLA: body.deliverySLA || 'Standard: 7-14 days',
         restrictedProducts: body.restrictedProducts || [],
-        isActive: body.isActive !== false
-      }
+        isActive: body.isActive !== false,
+        translations: buildCountryTranslations(body),
+      },
+      include: { translations: true }
     })
 
     return NextResponse.json({

@@ -1,0 +1,191 @@
+================================================================================
+NGINX REDIRECT: http://dromkok.com → http://dromkok.com/en
+================================================================================
+
+OPTION 1: Automatic Script (Easiest)
+--------------------------------------------------------------------------------
+
+1. SSH into your production server:
+   ssh root@YOUR_SERVER_IP
+
+2. Create the script:
+   nano /root/nginx-redirect-setup.sh
+
+3. Copy the content from nginx-redirect-setup.sh file and paste it
+
+4. Make it executable and run:
+   chmod +x /root/nginx-redirect-setup.sh
+   bash /root/nginx-redirect-setup.sh
+
+5. Done! Test: http://dromkok.com
+
+
+================================================================================
+OPTION 2: Manual Setup (3 Steps)
+================================================================================
+
+Step 1: SSH into your server
+--------------------------------------------------------------------------------
+ssh root@YOUR_SERVER_IP
+
+
+Step 2: Edit Nginx Config
+--------------------------------------------------------------------------------
+sudo nano /etc/nginx/sites-available/dromkok.com
+
+Find this section (around line 110):
+
+    # ==========================================
+    # Proxy Configuration for Next.js Application
+    # ==========================================
+    location / {
+        proxy_pass http://localhost:3001;
+        ...
+
+
+Add THIS code BEFORE the "location / {" block:
+
+    # ==========================================
+    # Root Path Redirect
+    # ==========================================
+    location = / {
+        return 307 /en/;
+    }
+
+
+So it looks like:
+
+    # ==========================================
+    # Root Path Redirect
+    # ==========================================
+    location = / {
+        return 307 /en/;
+    }
+
+    # ==========================================
+    # Proxy Configuration for Next.js Application
+    # ==========================================
+    location / {
+        proxy_pass http://localhost:3001;
+        ...
+
+
+Save and exit:
+- Press: Ctrl + X
+- Press: Y
+- Press: Enter
+
+
+Step 3: Test and Reload Nginx
+--------------------------------------------------------------------------------
+# Test configuration
+sudo nginx -t
+
+# If test passes, reload nginx
+sudo systemctl reload nginx
+
+
+Step 4: Verify
+--------------------------------------------------------------------------------
+curl -I http://dromkok.com/
+
+Should show:
+  HTTP/1.1 307 Temporary Redirect
+  Location: /en/
+
+
+================================================================================
+OPTION 3: One-Line Command (Advanced)
+================================================================================
+
+If you're comfortable with command line:
+
+ssh root@YOUR_SERVER_IP "sudo sed -i '/# Proxy Configuration for Next.js Application/i \    # Root Path Redirect\\n    location = / {\\n        return 307 /en/;\\n    }\\n' /etc/nginx/sites-available/dromkok.com && sudo nginx -t && sudo systemctl reload nginx"
+
+
+================================================================================
+VERIFY IT WORKS
+================================================================================
+
+Method 1: Command Line
+--------------------------------------------------------------------------------
+curl -I http://dromkok.com/
+
+Expected output:
+  HTTP/1.1 307 Temporary Redirect
+  Location: /en/
+
+
+Method 2: Browser
+--------------------------------------------------------------------------------
+1. Open http://dromkok.com
+2. Should immediately redirect to http://dromkok.com/en/
+3. Page loads with no errors
+
+
+Method 3: Network Tab
+--------------------------------------------------------------------------------
+1. Open browser Developer Tools (F12)
+2. Go to Network tab
+3. Visit http://dromkok.com
+4. You should see:
+   - Request to "/" → Status 307 → Redirects to "/en/"
+   - No MIME type errors
+   - All CSS/JS files load correctly
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If nginx test fails:
+--------------------------------------------------------------------------------
+sudo nginx -t
+# Look at the error message
+# Usually it's a syntax error (missing semicolon, bracket)
+
+
+Restore backup if needed:
+--------------------------------------------------------------------------------
+ls /etc/nginx/sites-available/dromkok.com.backup.*
+sudo cp /etc/nginx/sites-available/dromkok.com.backup.* /etc/nginx/sites-available/dromkok.com
+sudo systemctl reload nginx
+
+
+Check nginx error logs:
+--------------------------------------------------------------------------------
+sudo tail -f /var/log/nginx/error.log
+
+
+================================================================================
+WHY THIS WORKS
+================================================================================
+
+This redirect happens at the NGINX level, which is:
+✅ FASTEST - Before reaching Next.js
+✅ SIMPLEST - Just one configuration change
+✅ RELIABLE - Nginx handles it, not JavaScript
+✅ SEO-FRIENDLY - Proper 307 redirect
+
+
+================================================================================
+WHAT HAPPENS
+================================================================================
+
+Before:
+  User → http://dromkok.com → Next.js app → Loading... → ERRORS
+
+After:
+  User → http://dromkok.com → Nginx (307 redirect) → http://dromkok.com/en/ → SUCCESS
+
+
+================================================================================
+NEED HELP?
+================================================================================
+
+If you get errors:
+1. Show me the output of: sudo nginx -t
+2. Show me: sudo tail -20 /var/log/nginx/error.log
+3. Show me the nginx config around the location blocks
+
+================================================================================

@@ -7,7 +7,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ThumbsUp, ThumbsDown, Flag, User, CheckCircle } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { enUS, ru, zhCN } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
+import { useLocale, useTranslations } from 'next-intl'
 
 interface Review {
   id: string
@@ -38,7 +40,12 @@ interface ReviewListProps {
   reviews: Review[]
 }
 
+const dateFnsLocale: Record<string, any> = { en: enUS, ru, zh: zhCN }
+
 export function ReviewList({ reviews }: ReviewListProps) {
+  const t = useTranslations('Product')
+  const locale = useLocale()
+  const dfLocale = dateFnsLocale[locale] || enUS
   const [expandedReviews, setExpandedReviews] = useState<Set<string>>(new Set())
   const [sortBy, setSortBy] = useState<'recent' | 'helpful' | 'rating'>('recent')
   const [helpfulVotes, setHelpfulVotes] = useState<Record<string, number>>({})
@@ -91,18 +98,18 @@ export function ReviewList({ reviews }: ReviewListProps) {
       {/* Sort Options */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">
-          {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+          {t('reviewsCount', { n: reviews.length })}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Sort by:</span>
+          <span className="text-sm text-gray-600">{t('sortBy')}</span>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
             className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="recent">Most Recent</option>
-            <option value="helpful">Most Helpful</option>
-            <option value="rating">Highest Rating</option>
+            <option value="recent">{t('mostRecent')}</option>
+            <option value="helpful">{t('mostHelpful')}</option>
+            <option value="rating">{t('highestRating')}</option>
           </select>
         </div>
       </div>
@@ -135,12 +142,12 @@ export function ReviewList({ reviews }: ReviewListProps) {
                         {review.isVerifiedPurchase && (
                           <Badge variant="outline" className="gap-1 text-green-700 border-green-300 bg-green-50 font-medium">
                             <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-                            Verified Purchase
+                            {t('verifiedPurchase')}
                           </Badge>
                         )}
                       </div>
                       <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: dfLocale })}
                       </span>
                     </div>
                   </div>
@@ -165,7 +172,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
                     onClick={() => toggleExpanded(review.id)}
                     className="text-primary-600 hover:text-primary-700 text-sm font-semibold mt-2"
                   >
-                    {isExpanded ? 'Show Less' : 'Read More'}
+                    {isExpanded ? t('showLess') : t('readMore')}
                   </button>
                 )}
 
@@ -189,7 +196,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
 
                 {/* Actions */}
                 <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100">
-                  <span className="text-xs text-gray-500">Was this review helpful?</span>
+                  <span className="text-xs text-gray-500">{t('helpfulQuestion')}</span>
                   <button
                     onClick={() => handleHelpful(review.id)}
                     disabled={!!helpfulVotes[review.id]}
@@ -201,7 +208,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
                     )}
                   >
                     <ThumbsUp className="w-3.5 h-3.5" />
-                    <span>{helpfulVotes[review.id] ? 'Thank you!' : `Helpful (${currentHelpful})`}</span>
+                    <span>{helpfulVotes[review.id] ? t('thankYou') : t('helpfulCount', { n: currentHelpful })}</span>
                   </button>
                 </div>
 
@@ -216,11 +223,11 @@ export function ReviewList({ reviews }: ReviewListProps) {
                           </span>
                           {reply.isAdminReply && (
                             <Badge className="bg-primary-600 hover:bg-primary-700 text-[10px] py-0 px-1.5 font-bold">
-                              Official Staff
+                              {t('officialStaff')}
                             </Badge>
                           )}
                           <span className="text-[10px] text-gray-400">
-                            {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: dfLocale })}
                           </span>
                         </div>
                         <p className="text-gray-700">{reply.comment}</p>

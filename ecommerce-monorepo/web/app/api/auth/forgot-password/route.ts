@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: user.id,
         recipient: user.email,
-        subject: 'Reset Your Password - YIWU EXPRESS',
+        subject: 'Reset Your Password - Global Trade',
         template: 'password_reset',
         content: `Password reset link: ${resetUrl}`,
         status: 'sent',

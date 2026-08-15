@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
+import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
 import { toast } from 'react-hot-toast'
 import { Plus, Pencil, Trash2, Building2, Mail, Phone, MapPin, Search } from 'lucide-react'
 
@@ -29,6 +30,7 @@ interface Supplier {
   isActive: boolean
   createdAt: string
   updatedAt: string
+  translations?: Array<{ locale: string; name?: string | null; description?: string | null; profileText?: string | null }>
   _count?: {
     purchaseOrders: number
   }
@@ -290,10 +292,24 @@ function SupplierForm({
     notes: initialData?.notes || '',
     isActive: initialData?.isActive ?? true,
   })
+  const [translations, setTranslations] = useState<TranslationRow[]>(
+    translationsArrayToInitial((initialData?.translations || []).map((t) => ({
+      locale: t.locale,
+      name: t.name || '',
+      description: t.description || '',
+      profileText: t.profileText || '',
+    })))
+  )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(formData)
+    onSave({
+      ...formData,
+      translations: [
+        { locale: 'en', name: formData.name, description: formData.notes, profileText: formData.companyName },
+        ...translations,
+      ],
+    })
   }
 
   return (
@@ -417,6 +433,19 @@ function SupplierForm({
           className="w-4 h-4"
         />
         <Label htmlFor="isActive">Active</Label>
+      </div>
+
+      <div>
+        <Label className="mb-2 block">Localized Fields (RU / ZH)</Label>
+        <LocalizedFieldsForm
+          fields={[
+            { key: 'name', label: 'Name' },
+            { key: 'description', label: 'Description', textarea: true },
+            { key: 'profileText', label: 'Profile Text', textarea: true },
+          ]}
+          initialValues={translations}
+          onChange={setTranslations}
+        />
       </div>
 
       <DialogFooter>

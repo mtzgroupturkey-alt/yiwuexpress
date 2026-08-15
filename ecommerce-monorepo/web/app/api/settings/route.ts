@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
@@ -7,25 +8,35 @@ const prisma = new PrismaClient()
 export async function GET(request: Request) {
   try {
     // Get first system settings record (there should only be one)
-    const settings = await prisma.systemSettings.findFirst()
+    const settings = await prisma.systemSettings.findFirst({
+      include: { translations: true }, // Include translations
+    })
 
     if (!settings) {
       // Return default settings if none exist
       return NextResponse.json({
         success: true,
         settings: {
-          companyName: 'YIWU EXPRESS',
-          companyAddress: 'Yiwu International Trade City, Yiwu, Zhejiang, China',
+          companyName: 'Global Trade',
+          companyAddress: 'China, Zhejiang, China',
           companyPhone: '+86 579 8555 1234',
-          companyEmail: 'info@yiwuexpress.com',
-          companyWebsite: 'https://yiwuexpress.com',
+          companyEmail: 'info@globaltrade.com',
+          companyWebsite: 'https://globaltrade.com',
           companyLogo: '',
           companyFavicon: '',
           primaryColor: '#1a3a5c',
           accentColor: '#c9a84c',
           currency: 'USD',
           timezone: 'Asia/Shanghai',
-          language: 'en'
+          language: 'en',
+          // Contact and social media fallbacks
+          facebookUrl: '',
+          twitterUrl: '',
+          linkedinUrl: '',
+          instagramUrl: '',
+          wechatId: '',
+          whatsappNumber: '',
+          translations: []
         }
       })
     }

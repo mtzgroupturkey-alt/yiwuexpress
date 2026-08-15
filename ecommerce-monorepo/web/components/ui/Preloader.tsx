@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 interface PreloaderProps {
   onComplete?: () => void
@@ -11,12 +12,13 @@ interface PreloaderProps {
 
 export function Preloader({ 
   onComplete, 
-  minDuration = 2800, 
-  maxDuration = 6000 
+  minDuration = 800, 
+  maxDuration = 4000 
 }: PreloaderProps) {
+  const t = useTranslations('Common')
   const [isVisible, setIsVisible] = useState(true)
   const [logoUrl, setLogoUrl] = useState('')
-  const [companyName, setCompanyName] = useState('Loading...')
+  const [companyName, setCompanyName] = useState(t('loading'))
 
   useEffect(() => {
     // Fetch company logo and name from database
@@ -88,7 +90,7 @@ export function Preloader({
         <div className="ring"></div>
       </div>
 
-      <div className="preloader-text">Loading</div>
+      <div className="preloader-text">{t('loading')}</div>
 
       <div className="preloader-progress">
         <div className="bar"></div>

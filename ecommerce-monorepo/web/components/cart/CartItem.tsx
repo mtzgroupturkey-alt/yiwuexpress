@@ -1,8 +1,10 @@
-'use client'
+﻿'use client'
 
 import { Minus, Plus, Trash2 } from 'lucide-react'
+import { LocaleLink } from '@/components/LocaleLink'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
 interface CartItemProps {
   item: {
@@ -25,12 +27,13 @@ interface CartItemProps {
 }
 
 export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartItemProps) {
+  const t = useTranslations('Cart')
   const total = item.product.price * item.quantity
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200">
       {/* Product Image */}
-      <Link href={`/products/${item.product.slug}`} className="flex-shrink-0">
+      <LocaleLink href={`/products/${item.product.slug}`} className="flex-shrink-0">
         <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
           {item.product.thumbnail ? (
             <img
@@ -40,27 +43,27 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400 text-2xl">
-              📦
+              ðŸ“¦
             </div>
           )}
         </div>
-      </Link>
+      </LocaleLink>
 
       {/* Product Details */}
       <div className="flex-1 min-w-0">
-        <Link 
+        <LocaleLink 
           href={`/products/${item.product.slug}`}
           className="font-semibold text-gray-900 hover:text-primary transition-colors line-clamp-2"
         >
           {item.product.name}
-        </Link>
+        </LocaleLink>
         
         <p className="text-sm text-gray-500 mt-1">
-          ${item.product.price.toFixed(2)} per unit
+          ${item.product.price.toFixed(2)} {t('perUnit')}
         </p>
         
         <p className="text-xs text-gray-400 mt-1">
-          Weight: {item.product.weightKg} kg/unit
+          {t('weightPerUnit', { n: item.product.weightKg })}
         </p>
 
         {/* Quantity Controls - Mobile */}
@@ -128,7 +131,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
           className="text-red-600 hover:text-red-700"
         >
           <Trash2 className="w-4 h-4 mr-1" />
-          Remove
+          {t('remove')}
         </Button>
       </div>
 

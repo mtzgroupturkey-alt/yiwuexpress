@@ -1,5 +1,7 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { localizeShippingMethod } from '@/lib/utils/localize'
 
 export async function GET(
   req: NextRequest,
@@ -7,13 +9,14 @@ export async function GET(
 ) {
   try {
     const { trackingNumber } = params
+    const locale = req.nextUrl.searchParams.get('locale') || 'en'
 
     // Try to find shipment by tracking number
     let shipment = await prisma.shipment.findUnique({
       where: { trackingNumber },
       include: {
         service: true,
-        shippingMethod: true,
+        shippingMethod: { include: { translations: true } },
         user: { select: { id: true, name: true, companyName: true } },
       },
     })
@@ -50,7 +53,7 @@ export async function GET(
                 note: 'Order created',
               },
             ],
-            origin: 'Yiwu, China',
+            origin: 'China',
             destination: `${order.shippingCity}${order.shippingState ? ', ' + order.shippingState : ''}`,
             carrier: order.carrier || order.customerCarrier,
             carrierType: order.carrierType,
@@ -91,7 +94,9 @@ export async function GET(
         carrier: shipment.carrier,
         estimatedDelivery: shipment.estimatedDelivery,
         actualDelivery: shipment.actualDelivery,
-        shippingMethod: shipment.shippingMethod?.name || null,
+        shippingMethod: shipment.shippingMethod
+          ? localizeShippingMethod(shipment.shippingMethod, locale).name
+          : null,
         orderNumber: shipment.orderNumber || null,
         type: 'shipment',
       },

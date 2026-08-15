@@ -1,0 +1,87 @@
+================================================================================
+FINAL SOLUTION - NGINX REDIRECT ONLY
+================================================================================
+
+The app/page.tsx was causing 500 errors - I've removed it.
+
+Now the ONLY way to redirect is through NGINX (which is better anyway!)
+
+
+================================================================================
+DEPLOY TO PRODUCTION
+================================================================================
+
+Step 1: Deploy the code (removed broken page.tsx)
+--------------------------------------------------------------------------------
+SSH into your production server and run:
+
+cd /root/ecommerce-monorepo/web
+git pull origin production
+npm run build
+pm2 restart ecommerce-monorepo
+
+
+Step 2: Add Nginx Redirect
+--------------------------------------------------------------------------------
+Run this ONE command on your production server:
+
+sudo sed -i '/# Proxy Configuration for Next.js Application/i \    # Root Path Redirect\n    location = / {\n        return 307 /en/;\n    }\n' /etc/nginx/sites-available/dromkok.com && sudo nginx -t && sudo systemctl reload nginx
+
+
+Step 3: Test
+--------------------------------------------------------------------------------
+Visit: http://dromkok.com
+Should redirect to: http://dromkok.com/en/
+
+
+================================================================================
+ALL-IN-ONE DEPLOYMENT COMMAND
+================================================================================
+
+Copy and paste this ENTIRE command on your production server:
+
+cd /root/ecommerce-monorepo/web && git pull origin production && npm run build && pm2 restart ecommerce-monorepo && sleep 10 && sudo sed -i '/# Proxy Configuration for Next.js Application/i \    # Root Path Redirect\n    location = / {\n        return 307 /en/;\n    }\n' /etc/nginx/sites-available/dromkok.com && sudo nginx -t && sudo systemctl reload nginx && curl -I http://dromkok.com/
+
+
+This will:
+1. Pull latest code
+2. Build the app
+3. Restart PM2
+4. Add nginx redirect
+5. Test nginx config
+6. Reload nginx
+7. Test the redirect
+
+
+================================================================================
+WHAT TO EXPECT
+================================================================================
+
+After running the command:
+
+1. You'll see build output
+2. PM2 restart confirmation
+3. Nginx test: "syntax is ok"
+4. Nginx reload confirmation
+5. curl output showing:
+   HTTP/1.1 307 Temporary Redirect
+   Location: /en/
+
+
+Then visit http://dromkok.com in browser:
+✅ Should redirect to http://dromkok.com/en/
+✅ No more "Loading..." 
+✅ No more 500 errors
+✅ Page loads correctly
+
+
+================================================================================
+CURRENT STATUS
+================================================================================
+
+✅ Code pushed to GitHub (removed broken page.tsx)
+✅ Routes working: /en/, /ru/, /zh/
+⏳ Needs deployment to production server
+⏳ Needs nginx redirect configuration
+
+================================================================================

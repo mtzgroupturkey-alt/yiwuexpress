@@ -1,0 +1,168 @@
+================================================================================
+NGINX REDIRECT - VISUAL GUIDE
+================================================================================
+
+FILE: /etc/nginx/sites-available/dromkok.com
+
+FIND THIS SECTION (around line 110):
+================================================================================
+
+    # ==========================================
+    # Timeouts
+    # ==========================================
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+
+    # ==========================================        <--- FIND THIS COMMENT
+    # Proxy Configuration for Next.js Application
+    # ==========================================
+    location / {                                       <--- FIND THIS LINE
+        # Proxy to your Next.js application running on port 3001
+        proxy_pass http://localhost:3001;
+        
+        # Forward important headers
+        proxy_set_header Host $host;
+        ...
+
+
+CHANGE IT TO THIS (ADD THE NEW SECTION):
+================================================================================
+
+    # ==========================================
+    # Timeouts
+    # ==========================================
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+
+    # ==========================================        <--- ADD NEW SECTION HERE ↓
+    # Root Path Redirect                               <--- NEW! ADD THIS
+    # ==========================================        <--- NEW! ADD THIS
+    location = / {                                     <--- NEW! ADD THIS
+        return 307 /en/;                               <--- NEW! ADD THIS
+    }                                                  <--- NEW! ADD THIS
+                                                       <--- NEW! ADD THIS (blank line)
+    # ==========================================        <--- KEEP EXISTING
+    # Proxy Configuration for Next.js Application      <--- KEEP EXISTING
+    # ==========================================        <--- KEEP EXISTING
+    location / {                                       <--- KEEP EXISTING
+        # Proxy to your Next.js application running on port 3001
+        proxy_pass http://localhost:3001;
+        
+        # Forward important headers
+        proxy_set_header Host $host;
+        ...
+
+
+EXACT CODE TO ADD:
+================================================================================
+
+Copy these 6 lines:
+
+    # ==========================================
+    # Root Path Redirect
+    # ==========================================
+    location = / {
+        return 307 /en/;
+    }
+
+
+STEP BY STEP:
+================================================================================
+
+1. SSH into server:
+   ssh root@YOUR_SERVER_IP
+
+2. Open nginx config:
+   sudo nano /etc/nginx/sites-available/dromkok.com
+
+3. Scroll down to find:
+   "# Proxy Configuration for Next.js Application"
+
+4. Place cursor at the beginning of that line
+
+5. Press "Enter" a few times to create space above
+
+6. Move cursor up into the empty space
+
+7. Paste the 6 lines (the new section code)
+
+8. Save:
+   - Press: Ctrl + X
+   - Press: Y
+   - Press: Enter
+
+9. Test:
+   sudo nginx -t
+
+10. If OK, reload:
+    sudo systemctl reload nginx
+
+11. Test in browser:
+    http://dromkok.com (should redirect to /en/)
+
+
+IMPORTANT NOTES:
+================================================================================
+
+✅ "location = /" is DIFFERENT from "location /"
+   - "location = /" matches ONLY the root path "/"
+   - "location /" matches all paths
+
+✅ Add the redirect BEFORE the main "location /" block
+
+✅ Keep proper indentation (4 spaces)
+
+✅ Don't forget the semicolon after "return 307 /en/;"
+
+✅ Always test with "sudo nginx -t" before reloading
+
+
+COMPLETE SECTION PREVIEW:
+================================================================================
+
+Your nginx config should look like this after editing:
+
+    ...previous config...
+
+    proxy_read_timeout 60s;
+
+    # Root Path Redirect
+    location = / {
+        return 307 /en/;
+    }
+
+    # Proxy Configuration for Next.js Application
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_set_header Host $host;
+        ...
+    }
+
+    # API Routes
+    location /api/ {
+        proxy_pass http://localhost:3001;
+        ...
+    }
+
+    ...rest of config...
+
+
+VERIFICATION:
+================================================================================
+
+After reloading nginx, test:
+
+curl -I http://dromkok.com/
+
+Should return:
+HTTP/1.1 307 Temporary Redirect
+Location: /en/
+
+Then test in browser:
+http://dromkok.com → should redirect to http://dromkok.com/en/
+
+DONE! ✅
+
+================================================================================

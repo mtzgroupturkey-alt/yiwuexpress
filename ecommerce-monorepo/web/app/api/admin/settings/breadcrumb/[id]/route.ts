@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth'
@@ -14,11 +15,15 @@ export async function PUT(
     }
 
     const body = await req.json()
-    const { pageType, pageSlug, categoryId, imageUrl, mobileImageUrl, overlayColor, title, subtitle, isActive } = body
+    const { pageType, pageSlug, categoryId, imageUrl, mobileImageUrl, overlayColor, title, subtitle, isActive, translations } = body
 
     if (!params.id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 })
     }
+
+    const en = Array.isArray(translations)
+      ? translations.find((t: any) => t.locale === 'en')
+      : undefined
 
     const setting = await prisma.breadcrumbSetting.update({
       where: { id: params.id },
@@ -29,8 +34,8 @@ export async function PUT(
         imageUrl,
         mobileImageUrl: mobileImageUrl || null,
         overlayColor: overlayColor || null,
-        title: title || null,
-        subtitle: subtitle || null,
+        title: en?.title ?? title ?? null,
+        subtitle: en?.subtitle ?? subtitle ?? null,
         isActive,
       },
       include: {
@@ -43,6 +48,22 @@ export async function PUT(
         },
       },
     })
+
+    if (Array.isArray(translations)) {
+      for (const t of translations) {
+        if (!t.locale) continue
+        await prisma.pageBannerTranslation.upsert({
+          where: { pageBannerId_locale: { pageBannerId: params.id, locale: t.locale } },
+          create: {
+            pageBannerId: params.id,
+            locale: t.locale,
+            title: t.title ?? null,
+            subtitle: t.subtitle ?? null,
+          },
+          update: { title: t.title ?? null, subtitle: t.subtitle ?? null },
+        })
+      }
+    }
 
     return NextResponse.json({ data: setting })
   } catch (error) {

@@ -29,7 +29,7 @@ export default function TestTextTypePage() {
             <span className="text-[#c9a84c] text-sm">✦</span>
             <TextType
               text={[
-                "WELCOME TO YIWU EXPRESS - PREMIUM KITCHENWARE FROM YIWU, CHINA",
+                "WELCOME TO Global Trade - PREMIUM KITCHENWARE FROM CHINA",
                 "GLOBAL TRADE SOLUTIONS - QUALITY YOU CAN TRUST",
                 "WHOLESALE & RETAIL - BEST PRICES GUARANTEED"
               ]}

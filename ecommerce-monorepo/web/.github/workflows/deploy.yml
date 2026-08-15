@@ -1,0 +1,96 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Deployment reason'
+        required: false
+        default: 'Manual deployment'
+
+jobs:
+  deploy:
+    name: Deploy to Production Server
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get commit information
+        id: commit
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "message=$(git log -1 --pretty=%B | head -1)" >> $GITHUB_OUTPUT
+          echo "author=$(git log -1 --pretty=%an)" >> $GITHUB_OUTPUT
+      
+      - name: Notify deployment start
+        if: always()
+        run: |
+          echo "🚀 Starting deployment for commit ${{ steps.commit.outputs.sha_short }}"
+          echo "📝 Message: ${{ steps.commit.outputs.message }}"
+          echo "👤 Author: ${{ steps.commit.outputs.author }}"
+      
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to production
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+            set -e
+            cd /www/wwwroot/www.dromkok.com/web
+            
+            echo "🔄 Running deployment script..."
+            bash deploy.sh
+            
+            echo "✅ Deployment completed successfully"
+          ENDSSH
+      
+      - name: Cleanup SSH key
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
+      
+      - name: Deployment success notification
+        if: success()
+        run: |
+          echo "✅ Deployment successful!"
+          echo "Commit: ${{ steps.commit.outputs.sha_short }}"
+          echo "URL: https://www.dromkok.com"
+      
+      - name: Deployment failure notification
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Commit: ${{ steps.commit.outputs.sha_short }}"
+          echo "Check logs for details"
+
+  # Optional: Slack/Discord notification
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    
+    steps:
+      - name: Deployment notification
+        run: |
+          STATUS="${{ needs.deploy.result }}"
+          if [ "$STATUS" == "success" ]; then
+            echo "✅ Deployment successful"
+            # Add webhook notification here
+            # curl -X POST ${{ secrets.WEBHOOK_URL }} -d '{"status":"success"}'
+          else
+            echo "❌ Deployment failed"
+            # curl -X POST ${{ secrets.WEBHOOK_URL }} -d '{"status":"failed"}'
+          fi

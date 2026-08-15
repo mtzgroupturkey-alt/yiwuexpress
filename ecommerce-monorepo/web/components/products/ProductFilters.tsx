@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
@@ -75,13 +74,17 @@ export function ProductFilters({ categories, onFilterChange }: ProductFiltersPro
         </div>
         
         <div className="flex gap-2">
-          <Select value={sort} onChange={(e) => setSort(e.target.value)} className="w-48">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="h-10 w-48 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
             <option value="newest">Newest First</option>
             <option value="price-low-high">Price: Low to High</option>
             <option value="price-high-low">Price: High to Low</option>
             <option value="name-asc">Name: A to Z</option>
             <option value="name-desc">Name: Z to A</option>
-          </Select>
+          </select>
           
           <Button
             variant="outline"
@@ -101,10 +104,11 @@ export function ProductFilters({ categories, onFilterChange }: ProductFiltersPro
             {/* Category Filter */}
             <div>
               <Label htmlFor="category" className="mb-2 block">Category</Label>
-              <Select
+              <select
                 id="category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
+                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
@@ -112,7 +116,7 @@ export function ProductFilters({ categories, onFilterChange }: ProductFiltersPro
                     {cat.name}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
 
             {/* Min Price Filter */}

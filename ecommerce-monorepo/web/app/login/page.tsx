@@ -12,7 +12,7 @@ import { Building, Mail, Lock, Globe } from 'lucide-react'
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [companyName, setCompanyName] = useState('YIWU EXPRESS')
+  const [companyName, setCompanyName] = useState('Global Trade')
   const [companyLogo, setCompanyLogo] = useState('')
   const router = useRouter()
 
@@ -58,21 +58,24 @@ export default function LoginPage() {
       }
 
       // NO localStorage - token is in httpOnly cookie
-      // Redirect based on role
-      if (result.user.role === 'ADMIN') {
-        router.push('/admin')
+      // Get redirect URL from query params
+      const urlParams = new URLSearchParams(window.location.search)
+      const redirectUrl = urlParams.get('redirect')
+      
+      // Redirect based on role or redirect parameter
+      if (redirectUrl && redirectUrl !== '/') {
+        // If there's a redirect URL, use it
+        window.location.href = redirectUrl
+      } else if (result.user.role === 'ADMIN') {
+        window.location.href = '/admin'
       } else if (result.user.role === 'SUPPLIER') {
-        router.push('/dashboard/supplier')
+        window.location.href = '/dashboard/supplier'
       } else {
         // Customer - redirect to dashboard
-        const urlParams = new URLSearchParams(window.location.search)
-        const redirect = urlParams.get('redirect') || '/dashboard'
-        router.push(redirect)
+        window.location.href = '/dashboard'
       }
-      router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
-    } finally {
       setIsLoading(false)
     }
   }
@@ -275,7 +278,7 @@ export default function LoginPage() {
 
               <div className="mt-8 p-4 bg-white/10 rounded-lg">
                 <p className="text-sm">
-                  <span className="font-semibold">New to Yiwu Market?</span>{' '}
+                  <span className="font-semibold">New to China Market?</span>{' '}
                   Get special onboarding support for first-time importers
                 </p>
               </div>

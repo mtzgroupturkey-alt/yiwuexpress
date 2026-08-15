@@ -1,6 +1,7 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { staticCategories } from '@/lib/menu-config'
 
 export function MegaMenu() {
@@ -10,16 +11,16 @@ export function MegaMenu() {
         <div className="grid grid-cols-5 gap-6">
           {staticCategories.slice(0, 5).map((category) => (
             <div key={category.id}>
-              <Link
+              <LocaleLink
                 href={`/products?category=${category.slug}`}
                 className="block font-semibold text-[#1a3a5c] mb-3 hover:text-[#c9a84c] text-sm uppercase tracking-wider transition-colors"
               >
                 {category.name}
-              </Link>
+              </LocaleLink>
               <ul className="space-y-2">
                 {category.children?.slice(0, 8).map((subCategory) => (
                   <li key={subCategory.id}>
-                    <Link
+                    <LocaleLink
                       href={`/products?category=${subCategory.slug}`}
                       className="text-sm text-gray-600 hover:text-[#1a3a5c] transition-colors block"
                     >
@@ -29,17 +30,17 @@ export function MegaMenu() {
                           ({subCategory.productCount})
                         </span>
                       )}
-                    </Link>
+                    </LocaleLink>
                   </li>
                 ))}
                 {category.children && category.children.length > 8 && (
                   <li>
-                    <Link
+                    <LocaleLink
                       href={`/products?category=${category.slug}`}
                       className="text-sm text-[#c9a84c] font-medium hover:underline"
                     >
-                      View All →
-                    </Link>
+                      View All â†’
+                    </LocaleLink>
                   </li>
                 )}
               </ul>
@@ -50,15 +51,15 @@ export function MegaMenu() {
         {/* Promotional Banner */}
         <div className="mt-8 bg-gradient-to-r from-[#1a3a5c] to-[#2a4a6c] rounded-lg p-6 text-white flex items-center justify-between">
           <div>
-            <span className="font-bold text-lg">💼 WHOLESALE INQUIRIES</span>
-            <p className="text-sm opacity-90 mt-1">Bulk orders & custom sourcing from Yiwu Market</p>
+            <span className="font-bold text-lg">ðŸ’¼ WHOLESALE INQUIRIES</span>
+            <p className="text-sm opacity-90 mt-1">Bulk orders & custom sourcing from China Market</p>
           </div>
-          <Link
+          <LocaleLink
             href="/wholesale"
             className="bg-[#c9a84c] text-[#1a3a5c] px-6 py-3 rounded-lg font-semibold hover:bg-[#d4b563] transition-colors shadow-lg"
           >
             Get Quote
-          </Link>
+          </LocaleLink>
         </div>
       </div>
     </div>

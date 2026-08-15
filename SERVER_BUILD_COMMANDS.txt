@@ -1,0 +1,158 @@
+================================================================================
+         DROMKOK APK BUILD - SERVER COMMANDS (Copy & Paste)
+================================================================================
+
+STEP 1: Connect to Server
+--------------------------
+ssh djdn@39.175.57.2
+
+
+STEP 2: Upload Mobile Folder (If Not on Server Yet)
+----------------------------------------------------
+# Run this from YOUR LOCAL Windows machine, NOT on server:
+scp -r "C:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile" djdn@39.175.57.2:/www/wwwroot/www.dromkok.com/
+
+
+STEP 3: Navigate to Mobile Directory (On Server)
+-------------------------------------------------
+cd /www/wwwroot/www.dromkok.com/mobile
+
+
+STEP 4: Check Node.js Version
+------------------------------
+node --version
+
+# If version is less than 18, install Node 18:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install 18
+nvm use 18
+
+
+STEP 5: Install Dependencies
+-----------------------------
+npm install
+
+
+STEP 6: Install EAS CLI
+------------------------
+npm install -g eas-cli
+
+# Verify:
+eas --version
+
+
+STEP 7: Login to Expo
+----------------------
+eas login
+
+# Enter your Expo account credentials
+# Don't have an account? Sign up at: https://expo.dev/signup
+
+
+STEP 8: Configure Project (First Time Only)
+--------------------------------------------
+eas build:configure
+
+# Press Enter to accept defaults
+
+
+STEP 9: Build APK
+------------------
+eas build --platform android --profile preview
+
+# This takes 10-15 minutes
+# You'll get a download URL when complete
+
+
+STEP 10: Check Build Status
+----------------------------
+eas build:list
+
+
+STEP 11: Download APK to Your Windows PC
+-----------------------------------------
+# When build completes, you'll see a URL like:
+# https://expo.dev/artifacts/eas/xxxxxxxxxxxx.apk
+
+# OPTION A: Download directly from browser
+# 1. Visit https://expo.dev
+# 2. Login
+# 3. Go to Projects > dromkok-app > Builds
+# 4. Click Download
+
+# OPTION B: Download to server first, then to Windows
+wget -O dromkok-app.apk "PASTE_THE_URL_HERE"
+
+# Then from Windows cmd:
+scp djdn@39.175.57.2:/www/wwwroot/www.dromkok.com/mobile/dromkok-app.apk C:\Users\YourName\Downloads\
+
+
+================================================================================
+
+QUICK BUILD (After First Time Setup)
+================================================================================
+ssh djdn@39.175.57.2
+cd /www/wwwroot/www.dromkok.com/mobile
+eas build --platform android --profile preview
+
+# Wait 10-15 minutes, then download from expo.dev
+
+================================================================================
+
+ALTERNATIVE: Build from Windows Locally
+================================================================================
+# If you want to build from your Windows machine instead:
+
+cd c:\wamp64\www\yiwuexpress\ecommerce-monorepo\mobile
+build-apk.bat
+
+# This is EASIER and doesn't require server access for building
+# The APK will still connect to your production server
+
+================================================================================
+
+TROUBLESHOOTING
+================================================================================
+
+Error: "eas: command not found"
+→ npm install -g eas-cli
+
+Error: "Not logged in"
+→ eas login
+
+Error: "Build failed"
+→ eas build:list
+→ eas build:view [build-id]
+
+Error: "Permission denied"
+→ sudo npm install -g eas-cli
+
+Error: "Node version too old"
+→ Use nvm to install Node 18 (see Step 4)
+
+================================================================================
+
+IMPORTANT NOTES
+================================================================================
+1. Build happens on EXPO SERVERS, not on your server
+2. Your server is only used to run the "eas build" command
+3. You can build from Windows OR from server - same result
+4. Free tier: 30 builds per month
+5. Build time: 10-15 minutes per build
+
+================================================================================
+
+RECOMMENDATION
+================================================================================
+✅ EASIEST METHOD: Build from Windows using build-apk.bat
+   - No need to upload to server
+   - Simpler process
+   - Same APK output
+
+⚠️  Server method is useful if:
+   - Your Windows PC is slow
+   - You want to run build in background on server
+   - You're already SSH'ed into server
+
+================================================================================
