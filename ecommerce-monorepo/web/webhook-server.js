@@ -18,7 +18,7 @@ const path = require('path');
 const PORT = process.env.WEBHOOK_PORT || 9000;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || '';
 const DEPLOY_SCRIPT = process.env.DEPLOY_SCRIPT || '/www/wwwroot/www.dromkok.com/web/deploy.sh';
-const ALLOWED_BRANCH = process.env.ALLOWED_BRANCH || 'main';
+const ALLOWED_BRANCHES = (process.env.ALLOWED_BRANCH || 'production,main,master').split(',').map(b => b.trim());
 const LOG_FILE = '/www/logs/dromkok/webhook.log';
 
 // Ensure log directory exists
@@ -59,15 +59,15 @@ function verifySignature(payload, signature) {
 /**
  * Execute deployment script
  */
-function runDeployment(commitInfo) {
+function runDeployment(commitInfo, targetBranch = 'production') {
   log('========================================');
-  log('Starting deployment...');
+  log(`Starting deployment for branch: ${targetBranch}...`);
   log(`Commit: ${commitInfo.sha.substring(0, 7)}`);
   log(`Author: ${commitInfo.author}`);
   log(`Message: ${commitInfo.message}`);
   log('========================================');
   
-  const deployProcess = exec(`bash ${DEPLOY_SCRIPT}`, (error, stdout, stderr) => {
+  const deployProcess = exec(`bash ${DEPLOY_SCRIPT} ${targetBranch}`, (error, stdout, stderr) => {
     if (error) {
       log(`ERROR: Deployment failed with code ${error.code}`);
       log(`Error: ${error.message}`);
@@ -142,8 +142,8 @@ function handleWebhook(req, res) {
         const branch = payload.ref.replace('refs/heads/', '');
         
         // Check if push is to allowed branch
-        if (branch !== ALLOWED_BRANCH) {
-          log(`Ignoring push to branch: ${branch} (allowed: ${ALLOWED_BRANCH})`);
+        if (!ALLOWED_BRANCHES.includes(branch)) {
+          log(`Ignoring push to branch: ${branch} (allowed: ${ALLOWED_BRANCHES.join(', ')})`);
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ message: 'Branch ignored' }));
           return;
@@ -168,7 +168,7 @@ function handleWebhook(req, res) {
         };
         
         // Trigger deployment
-        runDeployment(commitInfo);
+        runDeployment(commitInfo, branch);
         
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ 

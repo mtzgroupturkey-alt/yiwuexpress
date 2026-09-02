@@ -62,6 +62,11 @@ else
     exit 1
 fi
 
+TARGET_BRANCH="${1:-production}"
+if [ -z "$TARGET_BRANCH" ]; then
+    TARGET_BRANCH="production"
+fi
+
 # 3. Clean old backups (keep last 5)
 log "${BLUE}🗑️ Cleaning old backups...${NC}"
 cd "$BACKUP_DIR"
@@ -69,14 +74,34 @@ ls -t db_backup_*.sql.gz 2>/dev/null | tail -n +$((MAX_BACKUPS + 1)) | xargs -r 
 log "${GREEN}✅ Old backups cleaned. Keeping last $MAX_BACKUPS backups.${NC}"
 
 # 4. Pull latest code
-log "${BLUE}📥 Pulling latest code from GitHub...${NC}"
+log "${BLUE}📥 Updating code to origin/${TARGET_BRANCH} from GitHub...${NC}"
 cd "$PROJECT_PATH"
-if git pull origin main 2>&1 | tee -a "$LOG_FILE"; then
-    log "${GREEN}✅ Code pulled successfully${NC}"
+
+# Remove stale locks if any
+rm -f .git/index.lock 2>/dev/null || true
+
+# Fix user permissions on files so git can unlink/write
+chmod -R u+rwX "$PROJECT_PATH" 2>/dev/null || true
+
+# Fetch remote tracking
+git fetch origin "$TARGET_BRANCH" 2>&1 | tee -a "$LOG_FILE"
+
+# Hard reset ensures clean state without unlink permission collisions
+if git reset --hard "origin/$TARGET_BRANCH" 2>&1 | tee -a "$LOG_FILE"; then
+    log "${GREEN}✅ Code reset to origin/${TARGET_BRANCH} successfully${NC}"
 else
-    log "${RED}❌ Failed to pull code from GitHub${NC}"
-    exit 1
+    log "${YELLOW}⚠️ Direct reset failed, checking out branch first...${NC}"
+    git checkout -f "$TARGET_BRANCH" 2>&1 | tee -a "$LOG_FILE" || true
+    if git reset --hard "origin/$TARGET_BRANCH" 2>&1 | tee -a "$LOG_FILE"; then
+        log "${GREEN}✅ Code reset to origin/${TARGET_BRANCH} successfully${NC}"
+    else
+        log "${RED}❌ Failed to update code from GitHub${NC}"
+        exit 1
+    fi
 fi
+
+# Re-ensure permissions for node / next build
+chmod -R u+rwX "$PROJECT_PATH" 2>/dev/null || true
 
 # 5. Install dependencies (clean install from lockfile)
 log "${BLUE}📦 Installing dependencies (npm ci)...${NC}"

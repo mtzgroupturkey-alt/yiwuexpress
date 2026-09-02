@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - production
   workflow_dispatch:
     inputs:
       reason:
@@ -51,7 +52,7 @@ jobs:
             cd /www/wwwroot/www.dromkok.com/web
             
             echo "🔄 Running deployment script..."
-            bash deploy.sh
+            bash deploy.sh "${{ github.ref_name }}"
             
             echo "✅ Deployment completed successfully"
           ENDSSH

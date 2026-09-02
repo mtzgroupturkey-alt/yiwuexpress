@@ -31,14 +31,15 @@ fi
 echo -e "${GREEN}✅ Running from correct directory${NC}"
 echo ""
 
-# Step 1: Make scripts executable
-echo -e "${BLUE}[1/6] Making scripts executable...${NC}"
+# Step 1: Make scripts executable & fix directory permissions
+echo -e "${BLUE}[1/6] Making scripts executable and fixing file permissions...${NC}"
+chmod -R u+rwX "$PROJECT_PATH" 2>/dev/null || true
 chmod +x deploy.sh
 chmod +x prisma/migrations/backup.sh
 chmod +x scripts/rollback.sh
 chmod +x test-deployment.sh
 chmod +x server-setup.sh
-echo -e "${GREEN}✅ Scripts are now executable${NC}"
+echo -e "${GREEN}✅ Scripts are now executable and permissions set${NC}"
 echo ""
 
 # Step 2: Create backup directory
