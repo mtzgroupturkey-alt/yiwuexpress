@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
 import ProductCard from '@/components/products/ProductCard'
 import { ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export function NewArrivals() {
   const t = useTranslations('Home.newArrivals')
@@ -44,31 +45,61 @@ export function NewArrivals() {
   }
 
   return (
-    <div className="bg-gray-50 py-8 md:py-12">
+    <div className="bg-gradient-to-b from-gray-50 via-white to-gray-50 py-10 md:py-16 overflow-hidden">
       <Container maxWidth="2xl">
-        <div className="flex items-center justify-between mb-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-gray-100 gap-4"
+        >
           <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">
-            {t('title')}
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {t('subtitle')}
-          </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-2.5">
+              <span>🚀</span> Just Added
+            </div>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-[#1a3a5c]">
+              {t('title')}
+            </h2>
+            <p className="text-sm md:text-base text-gray-500 mt-1 max-w-xl">
+              {t('subtitle')}
+            </p>
           </div>
           <LocaleLink
             href="/products?sort=newest"
-            className="flex items-center gap-1 text-sm text-[#1a3a5c] hover:text-[#c9a84c] transition font-medium"
+            className="group inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-[#1a3a5c] text-sm text-[#1a3a5c] hover:text-white rounded-full transition-all duration-300 font-semibold self-start sm:self-auto border border-gray-200 hover:border-[#1a3a5c] shadow-sm hover:shadow-md"
           >
             {t('viewAll')}
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </LocaleLink>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+        <motion.div 
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{
+            hidden: {},
+            show: {
+              transition: {
+                staggerChildren: 0.06
+              }
+            }
+          }}
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 md:gap-6"
+        >
           {products.map((product: any) => (
-            <ProductCard key={product.id} product={product} />
+            <motion.div
+              key={product.id}
+              variants={{
+                hidden: { opacity: 0, y: 20, scale: 0.98 },
+                show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } }
+              }}
+            >
+              <ProductCard product={product} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </Container>
     </div>
   )

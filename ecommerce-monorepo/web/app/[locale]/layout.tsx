@@ -8,7 +8,7 @@ import { StoreModeProvider } from '@/contexts/StoreModeContext'
 import { SessionModeProvider } from '@/contexts/SessionModeContext'
 import { WholesaleInquiryProvider } from '@/contexts/WholesaleInquiryContext'
 import { PreloaderWrapper } from '@/components/PreloaderWrapper'
-import { getCompanyName } from '@/lib/company'
+import { getCompanyName, getSiteTagline, getCompanyDescription, getSystemSettings } from '@/lib/company'
 import { routing } from '@/i18n/routing'
 
 export const dynamic = 'force-dynamic'
@@ -22,13 +22,26 @@ export async function generateMetadata({
 }: {
   params: { locale: string }
 }): Promise<Metadata> {
-  const companyName = await getCompanyName()
-  const description = `${companyName} - International trade and logistics platform connecting businesses worldwide from China. Professional shipping, customs clearance, warehousing, and sourcing services.`
+  const locale = params.locale || 'en'
+  const settings = await getSystemSettings(locale)
+  const companyName = settings?.companyName || (await getCompanyName(locale))
+  const siteTagline = await getSiteTagline(locale)
+  const companyDescription = await getCompanyDescription(locale)
+  const companyFavicon = settings?.companyFavicon || '/favicon.svg'
+
+  const title = siteTagline
+    ? `${companyName} | ${siteTagline}`
+    : `${companyName} | Global Trade & Logistics Platform`
+
+  const description =
+    companyDescription ||
+    `${companyName} - International trade and logistics platform connecting businesses worldwide from China.`
+
   return {
-    title: `${companyName} | Global Trade & Logistics Platform`,
+    title,
     description,
     keywords: [companyName, 'International Trade', 'Logistics', 'Shipping from China', 'B2B Sourcing', 'Customs Clearance', 'China Market'],
-    authors: [{ name: companyName, url: 'https://yiwuexpress.com' }],
+    authors: [{ name: companyName, url: 'https://dromkok.com' }],
     creator: companyName,
     publisher: companyName,
     formatDetection: {
@@ -38,10 +51,10 @@ export async function generateMetadata({
     },
     openGraph: {
       type: 'website',
-      locale: params.locale === 'zh' ? 'zh_CN' : params.locale === 'ru' ? 'ru_RU' : 'en_US',
-      url: 'https://yiwuexpress.com',
-      title: `${companyName} | Global Trade & Logistics Platform`,
-      description: `Connect with global markets through ${companyName}. Professional logistics, customs clearance, and trade services from China.`,
+      locale: locale === 'zh' ? 'zh_CN' : locale === 'ru' ? 'ru_RU' : 'en_US',
+      url: 'https://dromkok.com',
+      title,
+      description,
       siteName: companyName,
       images: [
         {
@@ -54,10 +67,9 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${companyName} | Global Trade & Logistics Platform`,
-      description: `Connect with global markets through ${companyName}. Professional logistics, customs clearance, and trade services from China.`,
+      title,
+      description,
       images: ['/og-image.png'],
-      creator: '@yiwuexpress',
     },
     robots: {
       index: true,
@@ -71,9 +83,9 @@ export async function generateMetadata({
       },
     },
     icons: {
-      icon: '/favicon.svg',
-      shortcut: '/favicon.svg',
-      apple: '/favicon.svg',
+      icon: companyFavicon,
+      shortcut: companyFavicon,
+      apple: companyFavicon,
     },
     manifest: '/manifest.json',
   }
@@ -99,11 +111,20 @@ export default async function LocaleLayout({
     notFound()
   }
 
-  const companyName = await getCompanyName()
+  const settings = await getSystemSettings(locale)
+  const companyName = settings?.companyName || (await getCompanyName(locale))
+  const companyLogo = settings?.companyLogo || null
+  const companyFavicon = settings?.companyFavicon || '/favicon.svg'
   const messages = await getMessages()
 
   return (
     <>
+      <link rel="icon" href={companyFavicon} />
+      <link rel="shortcut icon" href={companyFavicon} />
+      <link rel="apple-touch-icon" href={companyFavicon} />
+      {companyLogo && (
+        <link rel="preload" as="image" href={companyLogo} />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -112,7 +133,7 @@ export default async function LocaleLayout({
             "@type": "Organization",
             "name": companyName,
             "url": "https://yiwuexpress.com",
-            "logo": "https://yiwuexpress.com/logo.svg",
+            "logo": companyLogo || "https://yiwuexpress.com/logo.svg",
             "description": `${companyName} & Logistics Platform from China`,
             "address": {
               "@type": "PostalAddress",
@@ -138,7 +159,7 @@ export default async function LocaleLayout({
       />
       <script src="/unregister-sw.js" defer></script>
       <NextIntlClientProvider messages={messages}>
-        <PreloaderWrapper>
+        <PreloaderWrapper initialLogo={companyLogo} initialCompanyName={companyName}>
           <StoreModeProvider>
             <SessionModeProvider>
               <WholesaleInquiryProvider>

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
@@ -132,7 +132,7 @@ export default function Navbar() {
                   }}
                 />
               ) : (
-                <div className="text-white font-bold text-lg">YE</div>
+                <div className="text-white font-bold text-lg">{(companyName || 'Global Trade').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'GT'}</div>
               )}
             </div>
             <div className="hidden md:block">

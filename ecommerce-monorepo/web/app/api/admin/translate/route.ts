@@ -1,4 +1,9 @@
 export const dynamic = 'force-dynamic';
+import dns from 'dns'
+// Fix IPv6 fetch failures on Linux hosts
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first')
+}
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { getApiKeys } from '@/lib/api-keys'
@@ -11,9 +16,22 @@ const LOCALE_NAMES: Record<TargetLocale, string> = {
   zh: 'Simplified Chinese',
 }
 
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b:free'
-const HTTP_REFERER = process.env.OPENROUTER_REFERER || 'http://localhost:3000'
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest'
+const OPENROUTER_MODELS = process.env.OPENROUTER_MODEL 
+  ? [process.env.OPENROUTER_MODEL] 
+  : [
+      'meta-llama/llama-3.3-70b-instruct:free',
+      'google/gemini-2.0-flash-exp:free',
+      'openrouter/free'
+    ]
+const HTTP_REFERER = process.env.OPENROUTER_REFERER || 'http://localhost:3001'
+const GEMINI_MODELS = process.env.GEMINI_MODEL 
+  ? [process.env.GEMINI_MODEL]
+  : [
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-3.5-flash-lite',
+      'gemini-3.7-flash'
+    ]
 
 interface TranslateRequest {
   fields?: Record<string, string>
@@ -64,6 +82,7 @@ interface ProviderContext {
   deepseekApiKey?: string | null
   qwenApiKey?: string | null
   kimiApiKey?: string | null
+  cerebrasApiKey?: string | null
 }
 
 const DEFAULT_TIMEOUT_MS = 25_000
@@ -83,57 +102,73 @@ async function callOpenRouter(
     `Target Locales: [${ctx.targetLocales.join(', ')}]\n` +
     `Data to translate: ${JSON.stringify(ctx.trimmedFields)}`
 
-  let res: Response
-  try {
-    res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': HTTP_REFERER,
-        'X-Title': 'Admin Translation Hub',
-      },
-      body: JSON.stringify({
-        model: OPENROUTER_MODEL,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content:
-              'Target Locales: [ru, zh]\n' +
-              'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
-          },
-          { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.2,
-      }),
-      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
-    })
-  } catch (err) {
-    // Network failure / timeout — cascade to the next tier.
-    return {
-      ok: false,
-      retryable: true,
-      error: `OpenRouter network error: ${err instanceof Error ? err.message : 'unknown'}`,
+  let lastError = ''
+
+  for (const model of OPENROUTER_MODELS) {
+    let res: Response
+    try {
+      res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': HTTP_REFERER,
+          'X-Title': 'E-Commerce Sourcing Platform',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content:
+                'Target Locales: [ru, zh]\n' +
+                'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
+            },
+            { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.2,
+        }),
+        signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+      })
+    } catch (err) {
+      lastError = `OpenRouter network error on ${model}: ${err instanceof Error ? err.message : 'unknown'}`
+      continue // Try next model on network error
+    }
+
+    if (res.status === 429 || res.status === 402 || res.status === 404) {
+      lastError = `OpenRouter ${model} unavailable (${res.status}).`
+      continue // Try next model if rate limited, out of credits, or model missing
+    }
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      return {
+        ok: false,
+        retryable: false,
+        error: `OpenRouter provider error (${res.status}) on ${model}. ${errText.slice(0, 300)}`,
+      }
+    }
+
+    const json = await res.json().catch(() => null)
+    const rawText: string = json?.choices?.[0]?.message?.content ?? ''
+    const result = finalizeFromRaw(rawText, ctx, 'OpenRouter')
+    
+    // If it parsed successfully, return it. If it failed parsing, it's safer to break and return the error
+    // rather than trying next model because the prompt/payload might just be invalid for any model.
+    if (result.ok) {
+      return result
+    } else {
+      return result
     }
   }
 
-  if (res.status === 429) {
-    return { ok: false, retryable: true, error: 'OpenRouter rate limited (429).' }
+  return {
+    ok: false,
+    retryable: true,
+    error: `All OpenRouter fallback models failed. Last error: ${lastError}`,
   }
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '')
-    return {
-      ok: false,
-      retryable: false,
-      error: `OpenRouter provider error (${res.status}). ${errText.slice(0, 300)}`,
-    }
-  }
-
-  const json = await res.json().catch(() => null)
-  const rawText: string = json?.choices?.[0]?.message?.content ?? ''
-  return finalizeFromRaw(rawText, ctx, 'OpenRouter')
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +368,71 @@ async function callMoonshot(
 }
 
 // ---------------------------------------------------------------------------
+// TIER 6 — Cerebras AI (OpenAI-compatible)
+// ---------------------------------------------------------------------------
+async function callCerebras(
+  ctx: ProviderContext,
+): Promise<ProviderResult> {
+  const apiKey = ctx.cerebrasApiKey
+  if (!apiKey) {
+    return { ok: false, error: 'CEREBRAS_API_KEY missing', retryable: true }
+  }
+
+  const userPrompt =
+    `Target Locales: [${ctx.targetLocales.join(', ')}]\n` +
+    `Data to translate: ${JSON.stringify(ctx.trimmedFields)}`
+
+  let res: Response
+  try {
+    res = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama3.1-70b',
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content:
+              'Target Locales: [ru, zh]\n' +
+              'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
+          },
+          { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.2,
+      }),
+      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+    })
+  } catch (err) {
+    return {
+      ok: false,
+      retryable: true,
+      error: `Cerebras network error: ${err instanceof Error ? err.message : 'unknown'}`,
+    }
+  }
+
+  if (res.status === 429) {
+    return { ok: false, retryable: true, error: 'Cerebras rate limited (429).' }
+  }
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '')
+    return {
+      ok: false,
+      retryable: false,
+      error: `Cerebras provider error (${res.status}). ${errText.slice(0, 300)}`,
+    }
+  }
+
+  const json = await res.json().catch(() => null)
+  const rawText: string = json?.choices?.[0]?.message?.content ?? ''
+  return finalizeFromRaw(rawText, ctx, 'Cerebras')
+}
+
+// ---------------------------------------------------------------------------
 // TIER 5 — Google Gemini (Ultimate Fallback)
 //   Note: gemini-1.5-flash was retired; gemini-2.5-flash is unavailable to new
 //   keys. Default is gemini-flash-latest (Google's stable rolling Flash alias).
@@ -350,46 +450,67 @@ async function callGemini(
     `Target Locales: [${ctx.targetLocales.join(', ')}]\n` +
     `Data to translate: ${JSON.stringify(ctx.trimmedFields)}`
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+  let lastError = ''
 
-  let res: Response
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: userPrompt }],
+  for (const model of GEMINI_MODELS) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+
+    let res: Response
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: userPrompt }],
+            },
+          ],
+          generationConfig: { 
+            temperature: 0.2,
+            responseMimeType: "application/json"
           },
-        ],
-        generationConfig: { temperature: 0.2 },
-      }),
-      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
-    })
-  } catch (err) {
-    return {
-      ok: false,
-      retryable: false,
-      error: `Gemini network error: ${err instanceof Error ? err.message : 'unknown'}`,
+        }),
+        signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+      })
+    } catch (err) {
+      lastError = `Gemini network error on ${model}: ${err instanceof Error ? err.message : 'unknown'}`
+      continue // Try next model on network error
+    }
+
+    if (res.status === 429 || res.status === 404 || res.status === 400 || res.status === 403) {
+      lastError = `Gemini ${model} unavailable (${res.status}).`
+      continue // Try next model on rate limit, not found, or bad model ID
+    }
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      return {
+        ok: false,
+        retryable: false,
+        error: `Gemini provider error (${res.status}) on ${model}. ${errText.slice(0, 300)}`,
+      }
+    }
+
+    const json = await res.json().catch(() => null)
+    const rawText: string =
+      json?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    const result = finalizeFromRaw(rawText, ctx, 'Gemini')
+    
+    if (result.ok) {
+      return result
+    } else {
+      return result
     }
   }
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '')
-    return {
-      ok: false,
-      retryable: false,
-      error: `Gemini provider error (${res.status}). ${errText.slice(0, 300)}`,
-    }
+  return {
+    ok: false,
+    retryable: true,
+    error: `All Gemini fallback models failed. Last error: ${lastError}`,
   }
-
-  const json = await res.json().catch(() => null)
-  const rawText: string =
-    json?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
-  return finalizeFromRaw(rawText, ctx, 'Gemini')
 }
 
 // ---------------------------------------------------------------------------
@@ -532,6 +653,7 @@ export async function POST(request: NextRequest) {
     deepseekApiKey: apiKeys.deepseekApiKey,
     qwenApiKey: apiKeys.qwenApiKey,
     kimiApiKey: apiKeys.kimiApiKey,
+    cerebrasApiKey: apiKeys.cerebrasApiKey,
   }
 
   /**
@@ -541,28 +663,41 @@ export async function POST(request: NextRequest) {
   async function runCascade(
     ctx: ProviderContext,
   ): Promise<{ ok: boolean; translations?: Record<string, Record<string, string>>; error?: string }> {
+    const errors: string[] = []
+
     const tier1 = await callOpenRouter(ctx)
     if (tier1.ok && tier1.translations) return { ok: true, translations: tier1.translations }
+    errors.push(`OpenRouter: ${tier1.error}`)
+    console.warn('[Translate] Tier 1 failed.', tier1.error)
 
-    console.warn('[Translate] Tier 1 failed. DeepSeek...', tier1.error)
     const tier2 = await callDeepSeek(ctx)
     if (tier2.ok && tier2.translations) return { ok: true, translations: tier2.translations }
+    errors.push(`DeepSeek: ${tier2.error}`)
+    console.warn('[Translate] Tier 2 failed.', tier2.error)
 
-    console.warn('[Translate] Tier 2 failed. Qwen...', tier2.error)
     const tier3 = await callQwen(ctx)
     if (tier3.ok && tier3.translations) return { ok: true, translations: tier3.translations }
+    errors.push(`Qwen: ${tier3.error}`)
+    console.warn('[Translate] Tier 3 failed.', tier3.error)
 
-    console.warn('[Translate] Tier 3 failed. Moonshot...', tier3.error)
     const tier4 = await callMoonshot(ctx)
     if (tier4.ok && tier4.translations) return { ok: true, translations: tier4.translations }
+    errors.push(`Moonshot: ${tier4.error}`)
+    console.warn('[Translate] Tier 4 failed.', tier4.error)
 
-    console.warn('[Translate] Tier 4 failed. Gemini...', tier4.error)
     const tier5 = await callGemini(ctx)
     if (tier5.ok && tier5.translations) return { ok: true, translations: tier5.translations }
+    errors.push(`Gemini: ${tier5.error}`)
+    console.warn('[Translate] Tier 5 failed.', tier5.error)
+
+    const tier6 = await callCerebras(ctx)
+    if (tier6.ok && tier6.translations) return { ok: true, translations: tier6.translations }
+    errors.push(`Cerebras: ${tier6.error}`)
+    console.warn('[Translate] Tier 6 failed.', tier6.error)
 
     return {
       ok: false,
-      error: tier5.error || tier4.error || tier3.error || tier2.error || tier1.error || 'All providers failed.',
+      error: 'AI free bundle is finished. Please recharge and buy AI credits in System Settings.',
     }
   }
 
@@ -591,9 +726,10 @@ export async function POST(request: NextRequest) {
   }
 
   if (Object.keys(translations).length === 0) {
-    const lastError = refillErrors.concat(missing).join(', ') || primary.error || 'All providers failed.'
+    const failedLocales = Array.from(new Set([...refillErrors, ...missing])).join(', ')
+    const lastError = primary.error || 'All providers failed.'
     return NextResponse.json(
-      { success: false, error: `Translation failed for: ${lastError}` },
+      { success: false, error: `Translation failed for [${failedLocales}]. Reason: ${lastError}` },
       { status: 200 }
     )
   }

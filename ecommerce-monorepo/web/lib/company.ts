@@ -15,10 +15,12 @@ import {
   DEFAULT_COMPANY_NAME,
   resolveCompanyName,
 } from '@/lib/company-constants'
+import { localizeSystemSetting } from '@/lib/utils/localize'
 
 export type SystemSettings = {
   id?: string
   companyName: string
+  siteTagline?: string | null
   companyAddress?: string | null
   companyPhone?: string | null
   companyEmail?: string | null
@@ -43,15 +45,43 @@ export type SystemSettings = {
 }
 
 /**
- * Cached fetch of the (single) SystemSettings row. `cache()` dedupes
- * calls within a single server request, avoiding repeated DB queries for
- * metadata, JSON-LD, providers, etc.
+ * Cached fetch of the (single) SystemSettings row with locale support.
  */
 export const getSystemSettings = cache(
-  async (): Promise<SystemSettings | null> => {
+  async (locale: string = 'en'): Promise<SystemSettings | null> => {
     try {
-      const settings = await prisma.systemSettings.findFirst()
-      return (settings as SystemSettings) ?? null
+      const settings = await prisma.systemSettings.findFirst({
+        include: {
+          translations: true,
+        },
+      })
+      if (!settings) return null
+
+      const localizedName = localizeSystemSetting(
+        settings.translations,
+        'companyName',
+        settings.companyName,
+        locale
+      )
+      const localizedDescription = localizeSystemSetting(
+        settings.translations,
+        'companyDescription',
+        settings.companyDescription,
+        locale
+      )
+      const localizedAddress = localizeSystemSetting(
+        settings.translations,
+        'companyAddress',
+        settings.companyAddress,
+        locale
+      )
+
+      return {
+        ...settings,
+        companyName: localizedName || settings.companyName,
+        companyDescription: localizedDescription || settings.companyDescription,
+        companyAddress: localizedAddress || settings.companyAddress,
+      } as SystemSettings
     } catch (error) {
       console.error('[company] Failed to fetch system settings:', error)
       return null
@@ -60,9 +90,21 @@ export const getSystemSettings = cache(
 )
 
 /** Returns the database company name, or the safe default if unavailable. */
-export async function getCompanyName(): Promise<string> {
-  const settings = await getSystemSettings()
+export async function getCompanyName(locale: string = 'en'): Promise<string> {
+  const settings = await getSystemSettings(locale)
   return resolveCompanyName(settings?.companyName)
+}
+
+/** Returns the database site tagline (slogan), or empty string if unavailable. */
+export async function getSiteTagline(locale: string = 'en'): Promise<string> {
+  const settings = await getSystemSettings(locale)
+  return settings?.siteTagline?.trim() || ''
+}
+
+/** Returns the database company description, or safe fallback if unavailable. */
+export async function getCompanyDescription(locale: string = 'en'): Promise<string> {
+  const settings = await getSystemSettings(locale)
+  return settings?.companyDescription?.trim() || DEFAULT_COMPANY.companyDescription
 }
 
 /** Default settings object used by API routes / emails when DB is empty. */

@@ -1,4 +1,4 @@
-﻿import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { LocaleLink } from '@/components/LocaleLink'
 import { Globe, Award, Users, Target, ShieldCheck, CheckCircle, ArrowRight, MapPin, Clock, TrendingUp, Package } from 'lucide-react'
@@ -7,9 +7,16 @@ import { CompanyTimeline } from '@/components/about/CompanyTimeline'
 import { ProcessFlow } from '@/components/about/ProcessFlow'
 import { ClientLogos } from '@/components/about/ClientLogos'
 import { AboutContactCTA } from '@/components/about/AboutContactCTA'
+import { getCompanyName } from '@/lib/company'
 
-export default function AboutPage() {
-  const t = useTranslations('About')
+export default async function AboutPage({
+  params,
+}: {
+  params: { locale: string }
+}) {
+  const locale = params?.locale || 'en'
+  const companyName = await getCompanyName(locale)
+  const t = await getTranslations({ locale, namespace: 'About' })
 
   const achievements = [
     { label: t('achievements.verifiedSuppliers'), value: '2,500+', icon: Users, growth: '+15% YoY' },
@@ -47,7 +54,7 @@ export default function AboutPage() {
 
   const testimonials = [
     {
-      quote: t('testimonials.quote1'),
+      quote: t('testimonials.quote1', { name: companyName }),
       author: "Sarah Chen",
       title: t('testimonials.author1Title'),
       company: "TechStart Solutions"
@@ -62,7 +69,7 @@ export default function AboutPage() {
 
   return (
     <SharedLayout 
-      pageTitle={t('pageTitle')}
+      pageTitle={t('pageTitle', { name: companyName })}
       pageDescription={t('pageDescription')}
       breadcrumbs={[
         { name: t('breadcrumb'), href: '/about' }
@@ -161,7 +168,7 @@ export default function AboutPage() {
             <div className="text-center mb-16">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('testimonials.heading')}</h2>
               <p className="text-gray-600">
-                {t('testimonials.subheading')}
+                {t('testimonials.subheading', { name: companyName })}
               </p>
             </div>
 
@@ -192,7 +199,7 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 max-w-4xl text-center">
             <h2 className="text-4xl font-bold mb-6">{t('cta.title')}</h2>
             <p className="text-white/80 mb-10 text-lg max-w-2xl mx-auto">
-              {t('cta.subtitle')}
+              {t('cta.subtitle', { name: companyName })}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

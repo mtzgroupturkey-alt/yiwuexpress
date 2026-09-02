@@ -1,9 +1,9 @@
 ﻿'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { LocaleLink } from '@/components/LocaleLink'
 import ProductCard from './ProductCard'
-import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
@@ -55,6 +55,7 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const { refreshCartCount } = useCart()
   const { isRetail } = useStoreMode()
+  const t = useTranslations('Product')
   const [wishlist, setWishlist] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
@@ -202,12 +203,12 @@ export default function ProductGrid({
               )}
               {product.isNew && (
                 <span className="absolute top-1 left-1 bg-secondary-500 text-white text-xs px-1.5 py-0.5 rounded">
-                  NEW
+                  {t('newBadge')}
                 </span>
               )}
               {isSoldOut && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">SOLD OUT</span>
+                  <span className="text-white font-bold text-xs uppercase">{t('soldOut')}</span>
                 </div>
               )}
             </LocaleLink>
@@ -261,7 +262,7 @@ export default function ProductGrid({
                         : 'bg-primary-600 text-white hover:bg-primary-700'
                     }`}
                   >
-                    {isSoldOut ? 'Sold Out' : 'Add to Cart'}
+                    {isSoldOut ? t('soldOut') : t('addToCart')}
                   </button>
                 )}
                 <button
@@ -340,12 +341,13 @@ export default function ProductGrid({
                 slug: product.slug,
                 name: product.name,
                 price: product.price,
+                compareAtPrice: product.compareAtPrice || undefined,
                 image: product.thumbnail || undefined,
                 category: product.category?.name,
                 stock: product.stock,
                 wholesalePrice: product.wholesalePrice || undefined,
               }
-              
+
               return (
                 <ProductCard
                   key={product.id}
@@ -364,7 +366,7 @@ export default function ProductGrid({
                 onClick={onLoadMore}
                 className="px-8 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-lg hover:shadow-xl"
               >
-                Load More Products
+                {t('loadMore')}
               </button>
             </div>
           )}
@@ -377,10 +379,10 @@ export default function ProductGrid({
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            No Products Found
+            {t('noProductsTitle')}
           </h3>
           <p className="text-gray-500">
-            We couldn't find any products matching your criteria.
+            {t('noProductsMessage')}
           </p>
         </div>
       )}

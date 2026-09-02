@@ -170,7 +170,11 @@ model CompanyInfo {
 
 model SystemSettings {
   id                    String   @id @default(cuid())
+  // Enforces the intended singleton: exactly one row, addressable deterministically
+  // via findUnique/upsert on singletonKey. See migration add_system_settings_singleton_key.
+  singletonKey          String   @unique @default("SINGLETON")
   companyName           String   @default("Global Trade")
+  siteTagline           String?
   companyAddress        String?
   companyPhone          String?
   companyEmail          String?
@@ -203,6 +207,7 @@ model SystemSettings {
   deepseekApiKey        String?
   qwenApiKey            String?
   kimiApiKey            String?
+  cerebrasApiKey        String?
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -914,6 +919,8 @@ model CategoryAttribute {
   category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, attributeId])
+  @@index([categoryId])
+  @@index([attributeId])
   @@map("category_attributes")
 }
 
@@ -932,6 +939,7 @@ model AttributeValue {
 
   @@index([productId])
   @@index([attributeId])
+  @@index([attributeId, productId])
   @@map("attribute_values")
 }
 

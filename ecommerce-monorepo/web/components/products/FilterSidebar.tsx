@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 interface FilterSection {
   id: string
   name: string
-  type: 'checkbox' | 'range' | 'color'
+  type: 'checkbox' | 'range' | 'color' | 'select'
+  attributeSlug?: string
   options?: { label: string; value: string; count?: number }[]
   min?: number
   max?: number
@@ -16,16 +17,34 @@ interface FilterSection {
 
 interface FilterSidebarProps {
   filters: FilterSection[]
+  selectedFilters?: Record<string, any>
   onFilterChange: (filters: Record<string, any>) => void
   onClearFilters: () => void
   onClose?: () => void
   isMobile?: boolean
 }
 
-export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose, isMobile }: FilterSidebarProps) {
+export function FilterSidebar({
+  filters,
+  selectedFilters: externalFilters,
+  onFilterChange,
+  onClearFilters,
+  onClose,
+  isMobile,
+}: FilterSidebarProps) {
   const t = useTranslations('Products')
   const [expandedSections, setExpandedSections] = useState<string[]>(filters.map(f => f.id))
-  const [selectedFilters, setSelectedFilters] = useState<Record<string, any>>({})
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, any>>(externalFilters || {})
+
+  useEffect(() => {
+    if (externalFilters !== undefined) {
+      setSelectedFilters(externalFilters)
+    }
+  }, [externalFilters])
+
+  useEffect(() => {
+    setExpandedSections(filters.map(f => f.id))
+  }, [filters])
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev =>
@@ -50,8 +69,13 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose
     const section = filters.find(f => f.id === key)
     if (!section) return String(value)
     
-    if (section.type === 'range' && Array.isArray(value)) {
-      return `$${value[0]} - $${value[1]}`
+    if (section.type === 'range') {
+      if (Array.isArray(value)) {
+        return `$${value[0]} - $${value[1]}`
+      }
+      if (typeof value === 'object' && value !== null) {
+        return `$${value.min ?? 0} - $${value.max}`
+      }
     }
     
     if (section.type === 'checkbox' && Array.isArray(value)) {
@@ -169,17 +193,29 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose
                       type="range"
                       min={section.min || 0}
                       max={section.max || 100}
-                      value={selectedFilters[section.id]?.[1] || section.max || 100}
+                      value={
+                        typeof selectedFilters[section.id] === 'object' && selectedFilters[section.id] !== null && !Array.isArray(selectedFilters[section.id])
+                          ? selectedFilters[section.id].max ?? section.max ?? 100
+                          : Array.isArray(selectedFilters[section.id])
+                          ? selectedFilters[section.id][1]
+                          : section.max ?? 100
+                      }
                       onChange={(e) => {
                         const value = parseInt(e.target.value)
-                        handleFilterChange(section.id, [section.min || 0, value])
+                        handleFilterChange(section.id, { min: section.min || 0, max: value })
                       }}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#1a3a5c]"
                     />
                     <div className="flex justify-between mt-2 text-sm text-gray-600">
                       <span>${section.min || 0}</span>
                       <span className="font-medium text-[#1a3a5c]">
-                        ${selectedFilters[section.id]?.[1] || section.max || 100}
+                        ${
+                          typeof selectedFilters[section.id] === 'object' && selectedFilters[section.id] !== null && !Array.isArray(selectedFilters[section.id])
+                            ? selectedFilters[section.id].max ?? section.max ?? 100
+                            : Array.isArray(selectedFilters[section.id])
+                            ? selectedFilters[section.id][1]
+                            : section.max ?? 100
+                        }
                       </span>
                     </div>
                   </div>
@@ -214,6 +250,32 @@ export function FilterSidebar({ filters, onFilterChange, onClearFilters, onClose
                     })}
                   </div>
                 )}
+
+                {section.type === 'select' && section.options?.map((option) => {
+                  const isSelected = selectedFilters[section.id]?.includes(option.value) || false
+                  return (
+                    <label key={option.value} className="flex items-center space-x-3 text-sm cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          const current = selectedFilters[section.id] || []
+                          const newValue = e.target.checked
+                            ? [...current, option.value]
+                            : current.filter((v: string) => v !== option.value)
+                          handleFilterChange(section.id, newValue.length > 0 ? newValue : undefined)
+                        }}
+                        className="w-4 h-4 text-[#1a3a5c] border-gray-300 rounded focus:ring-[#1a3a5c]"
+                      />
+                      <span className="text-gray-600 group-hover:text-[#1a3a5c] transition-colors">
+                        {option.label}
+                      </span>
+                      {option.count !== undefined && (
+                        <span className="text-gray-400 text-xs">({option.count})</span>
+                      )}
+                    </label>
+                  )
+                })}
               </div>
             )}
           </div>

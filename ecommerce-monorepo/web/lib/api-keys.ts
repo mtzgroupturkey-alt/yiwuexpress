@@ -8,6 +8,7 @@ export interface ApiKeys {
   deepseekApiKey?: string | null;
   qwenApiKey?: string | null;
   kimiApiKey?: string | null;
+  cerebrasApiKey?: string | null;
 }
 
 /**
@@ -24,6 +25,7 @@ export async function getApiKeys(): Promise<ApiKeys> {
         deepseekApiKey: true,
         qwenApiKey: true,
         kimiApiKey: true,
+        cerebrasApiKey: true,
       },
     });
 
@@ -35,6 +37,7 @@ export async function getApiKeys(): Promise<ApiKeys> {
         deepseekApiKey: settings.deepseekApiKey || process.env.DEEPSEEK_API_KEY,
         qwenApiKey: settings.qwenApiKey || process.env.QWEN_API_KEY,
         kimiApiKey: settings.kimiApiKey || process.env.KIMI_API_KEY,
+        cerebrasApiKey: settings.cerebrasApiKey || process.env.CEREBRAS_API_KEY,
       };
     }
   } catch (error) {
@@ -48,5 +51,6 @@ export async function getApiKeys(): Promise<ApiKeys> {
     deepseekApiKey: process.env.DEEPSEEK_API_KEY,
     qwenApiKey: process.env.QWEN_API_KEY,
     kimiApiKey: process.env.KIMI_API_KEY,
+    cerebrasApiKey: process.env.CEREBRAS_API_KEY,
   };
 }

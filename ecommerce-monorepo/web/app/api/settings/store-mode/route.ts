@@ -1,14 +1,14 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
-
-const prisma = new PrismaClient()
 
 // GET /api/settings/store-mode - Get current store mode
 export async function GET(request: Request) {
   try {
-    const settings = await prisma.systemSettings.findFirst()
+    const settings = await prisma.systemSettings.findUnique({
+      where: { singletonKey: 'SINGLETON' },
+    })
 
     if (!settings) {
       // Return default if no settings exist
@@ -54,11 +54,11 @@ export async function PUT(request: Request) {
       )
     }
 
-    // Atomic upsert using the singleton settings record pattern.
+    // Atomic upsert against the DB-enforced singleton row (unique singletonKey).
     const settings = await prisma.systemSettings.upsert({
-      where: { id: 'singleton' },
+      where: { singletonKey: 'SINGLETON' },
       update: { storeMode },
-      create: { id: 'singleton', storeMode },
+      create: { singletonKey: 'SINGLETON', storeMode },
     })
 
     return NextResponse.json({

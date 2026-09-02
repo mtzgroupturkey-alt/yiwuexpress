@@ -33,10 +33,11 @@
       "ru": "俄语",
       "zh": "中文"
     },
-    "allProducts": "全部商品"
+    "allProducts": "全部商品",
+    "categories": "分类"
   },
   "Footer": {
-    "tagline": "连接全球与中国市场的国际贸易与物流平台。",
+    "tagline": "您值得信赖的中国全球贸易与国际物流合作伙伴。",
     "company": "公司",
     "resources": "资源",
     "legal": "法律",
@@ -45,7 +46,7 @@
     "newsletterPlaceholder": "您的邮箱地址",
     "subscribe": "订阅",
     "rights": "版权所有。",
-    "aboutText": "以专业的物流、清关及来自中国的采购服务，连接全球企业。",
+    "aboutText": "您值得信赖的全球贸易与供应链解决方案合作伙伴。我们连接全球采购商与优质中国制造商，提供全流程海陆空国际物流、严格质量检验、高效进出口报关清关及专业全球仓储派送服务。",
     "quickLinks": "快速链接",
     "supportHelp": "支持与帮助",
     "getInTouch": "联系我们",
@@ -59,6 +60,8 @@
     "cookies": "Cookie 政策",
     "sitemap": "网站地图",
     "brandSubtitle": "Global Trade",
+    "registeredWebsiteName": "备案网站名称：Mengti Ci Trade (梦体磁贸易)",
+    "icpLicense": "浙ICP备2022029773号-5",
     "links": {
       "about": "关于我们",
       "services": "服务",
@@ -243,7 +246,7 @@
     }
   },
   "About": {
-    "pageTitle": "关于 Global Trade",
+    "pageTitle": "关于 {name}",
     "pageDescription": "15 年来，我们以透明、快速和可靠的服务，将全球企业与中国最大的批发市场连接在一起",
     "breadcrumb": "关于我们",
     "stats": {
@@ -275,22 +278,22 @@
     },
     "testimonials": {
       "heading": "成长型企业的信赖之选",
-      "subheading": "看看像您这样的公司，如何借助 Global Trade 实现采购成功。",
-      "quote1": "Global Trade 彻底改变了我们的采购流程。过去需要数月的事情，现在几周就能完成，质量控制也更好。",
+      "subheading": "看看像您这样的公司，如何借助 {name} 实现采购成功。",
+      "quote1": "{name} 彻底改变了我们的采购流程。过去需要数月的事情，现在几周就能完成，质量控制也更好。",
       "author1Title": "采购总监",
       "quote2": "他们对中国市场的专业洞察为我们节省了 35% 的成本，同时提升了产品质量。服务卓越。",
       "author2Title": "供应链经理"
     },
     "cta": {
       "title": "准备好变革您的采购了吗？",
-      "subtitle": "加入已借助 Global Trade 实现更智能采购的 15,000+ 家企业。获取专属报价，感受专业带来的不同。",
+      "subtitle": "加入已借助 {name} 实现更智能采购的 15,000+ 家企业。获取专属报价，感受专业带来的不同。",
       "getQuote": "免费获取报价",
       "exploreServices": "探索服务",
       "questions": "有疑问？我们随时为您解答",
       "scheduleCall": "预约通话"
     },
     "story": {
-      "badge": "关于 GLOBAL TRADE",
+      "badge": "关于 {name}",
       "title": "从中国市场的成功走向全球",
       "subtitle": "15 年，将中国制造业枢纽与全球企业紧密相连",
       "hqTitle": "我们在中国的总部",
@@ -443,7 +446,7 @@
       "express": "快递"
     },
     "whyChoose": {
-      "title": "为何选择 Global Trade 做批发？",
+      "title": "为何选择 {name} 做批发？",
       "point1": "直接对接中国制造商与供应商",
       "point2": "有竞争力的批量价格与灵活起订量",
       "point3": "质量检验与出口单证",
@@ -831,6 +834,11 @@
     "termsConditions": "条款与条件"
   },
   "Product": {
+    "newBadge": "新品",
+    "soldOut": "已售罄",
+    "loadMore": "加载更多商品",
+    "noProductsTitle": "未找到商品",
+    "noProductsMessage": "没有找到符合您条件的商品。",
     "from": "起",
     "specWeight": "重量",
     "specHsCode": "海关编码",
@@ -924,6 +932,7 @@
     "itemsAdded": "已添加 {n} 件商品",
     "skuLabel": "货号：",
     "lowStock": "库存紧张",
+    "flashSale": "限时秒杀",
     "quickView": "快速查看",
     "minOrder": "最小订单：{n} 件",
     "added": "已添加！",
@@ -981,7 +990,7 @@
     "breadcrumbShop": "商店",
     "pageDescSearch": "找到 {n} 件符合搜索条件的商品",
     "pageDescCategory": "探索我们的 {name} 系列",
-    "pageDescDefault": "为您家和生意发现高品质厨具与厨房必需品",
+    "pageDescDefault": "发现优质商品与一手货源，直接对接中国制造商",
     "noProductsFound": "未找到商品",
     "tryAdjusting": "请尝试调整筛选条件或搜索关键词",
     "checkBackSoon": "新品即将上架",
@@ -1304,5 +1313,17 @@
     "errPayment": "请选择支付方式",
     "subtotal": "小计",
     "total": "合计"
+  },
+  "NotFound": {
+    "title": "页面未找到",
+    "description": "您访问的页面不存在或已被移除。",
+    "backHome": "返回首页",
+    "browseProducts": "浏览商品"
+  },
+  "Error": {
+    "title": "出了点问题",
+    "description": "发生了意外错误，请重试。",
+    "retry": "重试",
+    "backHome": "返回首页"
   }
 }

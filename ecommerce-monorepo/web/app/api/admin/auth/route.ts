@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { getTokenFromRequest, verifyToken } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,8 +22,19 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Check if user is admin
-    if (payload.role !== 'ADMIN') {
+    // Check if user is admin and fetch fresh user details
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        profilePhoto: true,
+      },
+    })
+
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },
         { status: 403 }
@@ -32,9 +44,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ 
       valid: true,
       user: {
-        id: payload.userId,
-        email: payload.email,
-        role: payload.role
+        id: user.id,
+        email: user.email,
+        name: user.name || user.email.split('@')[0],
+        role: user.role,
+        profilePhoto: user.profilePhoto,
       }
     })
   } catch (error) {

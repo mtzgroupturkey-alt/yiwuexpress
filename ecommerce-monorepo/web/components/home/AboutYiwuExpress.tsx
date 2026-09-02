@@ -229,7 +229,7 @@ export function AboutYiwuExpress() {
                   <span className="text-lg">→</span>
                 </LocaleLink>
                 <LocaleLink 
-                  href="/contact"
+                  href="/quotes"
                   className="bg-white border-2 border-[#1a3a5c] text-[#1a3a5c] px-8 py-4 rounded-xl font-bold text-base hover:bg-[#1a3a5c] hover:text-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
                   {t('getQuote')}
@@ -308,68 +308,110 @@ export function AboutYiwuExpress() {
           </div>
         </motion.div>
 
-        {/* Process Timeline */}
+        {/* Process Interactive Workflow Timeline */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="mb-16"
+          transition={{ duration: 0.8, delay: 0.7 }}
+          className="mb-20"
         >
-          <h3 className="text-3xl md:text-4xl font-bold text-center text-[#1a3a5c] mb-10">
-            {t('howTitle')}
-          </h3>
-          <div className="grid md:grid-cols-4 gap-4 md:gap-6">
-            {process.map((item, index) => (
-              <div key={index} className="relative">
-                {/* Connector Line (desktop only) */}
-                {index < process.length - 1 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-full h-1 bg-[#c9a84c] opacity-30" />
-                )}
-                
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 relative z-10">
-                  <div className="bg-[#1a3a5c] text-white text-3xl font-black w-16 h-16 rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                    {item.step}
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#c9a84c]/10 border border-[#c9a84c]/30 text-[#1a3a5c] text-xs font-bold uppercase tracking-wider mb-3">
+              ✦ End-To-End Sourcing Cycle
+            </span>
+            <h3 className="text-3xl md:text-5xl font-black text-[#1a3a5c] tracking-tight">
+              {t('howTitle')}
+            </h3>
+          </div>
+
+          {/* Interactive Process Cards with Glowing Progress Line */}
+          <div className="relative">
+            {/* Background glowing connection beam (Desktop) */}
+            <div className="hidden lg:block absolute top-1/2 left-10 right-10 h-0.5 -translate-y-12 bg-gradient-to-r from-[#1a3a5c]/20 via-[#c9a84c] to-[#1a3a5c]/20 z-0" />
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+              {process.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={isVisible ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.8 + (index * 0.1) }}
+                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                  className="group relative bg-white rounded-3xl p-7 shadow-xl shadow-gray-200/50 hover:shadow-2xl hover:shadow-[#c9a84c]/10 border border-gray-100/90 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                >
+                  {/* Subtle top accent gradient */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#c9a84c] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="w-14 h-14 rounded-2xl bg-[#1a3a5c] text-[#c9a84c] font-black text-xl flex items-center justify-center shadow-lg group-hover:scale-110 group-hover:bg-gradient-to-br group-hover:from-[#1a3a5c] group-hover:to-[#0d2a4a] transition-all duration-300">
+                        {item.step}
+                      </div>
+                      <span className="text-xs font-black tracking-widest text-gray-300 group-hover:text-[#c9a84c] transition-colors">
+                        PHASE 0{index + 1}
+                      </span>
+                    </div>
+
+                    <h4 className="text-xl font-extrabold text-[#1a3a5c] mb-3 tracking-tight group-hover:text-[#0d2a4a] transition-colors">
+                      {t(item.titleKey as any)}
+                    </h4>
+                    <p className="text-gray-600 text-sm leading-relaxed">
+                      {t(item.descriptionKey as any)}
+                    </p>
                   </div>
-                  <h4 className="text-xl font-bold text-[#1a3a5c] mb-2">{t(item.titleKey as any)}</h4>
-                   <p className="text-gray-600">{t(item.descriptionKey as any)}</p>
-                </div>
-              </div>
-            ))}
+
+                  <div className="mt-6 pt-4 border-t border-gray-50 flex items-center gap-2 text-xs font-bold text-[#c9a84c]">
+                    <span>Step Verified</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#c9a84c]" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
 
-        {/* Trust Badges */}
+        {/* Trust Badges - Modern Enterprise Glassmorphism Container */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={isVisible ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="bg-gradient-to-br from-[#1a3a5c] via-[#1a3a5c] to-[#0d2a4a] rounded-3xl p-8 md:p-12 text-center shadow-2xl border border-[#c9a84c]/20"
+          className="relative bg-gradient-to-br from-[#0f2744] via-[#1a3a5c] to-[#0a192c] rounded-3xl p-8 md:p-14 text-center shadow-2xl border border-white/10 overflow-hidden"
         >
-          <BadgeCheck className="w-20 h-20 text-[#c9a84c] mx-auto mb-6 drop-shadow-2xl" />
-          <h3 className="text-3xl md:text-5xl font-black mb-6 text-white tracking-tight">
-            {t('trustTitle')}
-          </h3>
-          <p className="text-white text-lg md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed font-medium">
-            {t('trustDesc1')}<span className="text-[#c9a84c] font-bold">50+ countries</span>{t('trustDesc2')}{companyName}{t('trustDesc3')}
-          </p>
-          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-            <div className="flex flex-col md:flex-row items-center gap-3 bg-white/5 backdrop-blur-sm px-6 py-4 rounded-xl hover:bg-white/10 transition-all duration-300">
-              <div className="bg-[#c9a84c] p-3 rounded-xl shadow-lg">
-                <Clock className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-white font-bold text-lg">{t('support247')}</span>
+          {/* Ambient Glow Mesh Background */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#c9a84c]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto mb-6 shadow-xl">
+              <BadgeCheck className="w-9 h-9 text-[#c9a84c]" />
             </div>
-            <div className="flex flex-col md:flex-row items-center gap-3 bg-white/5 backdrop-blur-sm px-6 py-4 rounded-xl hover:bg-white/10 transition-all duration-300">
-              <div className="bg-[#c9a84c] p-3 rounded-xl shadow-lg">
-                <Shield className="w-7 h-7 text-white" />
+            
+            <h3 className="text-3xl md:text-5xl font-black mb-5 text-white tracking-tight">
+              {t('trustTitle')}
+            </h3>
+            <p className="text-white/85 text-base md:text-xl mb-10 max-w-3xl mx-auto leading-relaxed font-normal">
+              {t('trustDesc1')}<span className="text-[#deb859] font-bold">50+ countries</span>{t('trustDesc2')}<span className="text-white font-bold">{companyName}</span>{t('trustDesc3')}
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+              <div className="flex items-center gap-3.5 bg-white/5 backdrop-blur-md border border-white/10 px-6 py-3.5 rounded-2xl hover:bg-white/10 transition-all duration-300">
+                <div className="bg-[#c9a84c] p-2.5 rounded-xl shadow-md">
+                  <Clock className="w-5 h-5 text-[#0f2744]" />
+                </div>
+                <span className="text-white font-bold text-sm md:text-base">{t('support247')}</span>
               </div>
-              <span className="text-white font-bold text-lg">{t('securePayments')}</span>
-            </div>
-            <div className="flex flex-col md:flex-row items-center gap-3 bg-white/5 backdrop-blur-sm px-6 py-4 rounded-xl hover:bg-white/10 transition-all duration-300">
-              <div className="bg-[#c9a84c] p-3 rounded-xl shadow-lg">
-                <BadgeCheck className="w-7 h-7 text-white" />
+              <div className="flex items-center gap-3.5 bg-white/5 backdrop-blur-md border border-white/10 px-6 py-3.5 rounded-2xl hover:bg-white/10 transition-all duration-300">
+                <div className="bg-[#c9a84c] p-2.5 rounded-xl shadow-md">
+                  <Shield className="w-5 h-5 text-[#0f2744]" />
+                </div>
+                <span className="text-white font-bold text-sm md:text-base">{t('securePayments')}</span>
               </div>
-              <span className="text-white font-bold text-lg">{t('verified')}</span>
+              <div className="flex items-center gap-3.5 bg-white/5 backdrop-blur-md border border-white/10 px-6 py-3.5 rounded-2xl hover:bg-white/10 transition-all duration-300">
+                <div className="bg-[#c9a84c] p-2.5 rounded-xl shadow-md">
+                  <BadgeCheck className="w-5 h-5 text-[#0f2744]" />
+                </div>
+                <span className="text-white font-bold text-sm md:text-base">{t('verified')}</span>
+              </div>
             </div>
           </div>
         </motion.div>

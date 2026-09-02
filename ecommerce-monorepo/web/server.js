@@ -68,17 +68,33 @@ function serveUpload(req, res, pathname) {
   })
 }
 
-// Load environment variables
-require('dotenv').config({ path: '.env.local' })
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'production') {
+  if (fs.existsSync('.env.production')) {
+    require('dotenv').config({ path: '.env.production' })
+  } else if (fs.existsSync('.env')) {
+    require('dotenv').config({ path: '.env' })
+  } else {
+    require('dotenv').config()
+  }
+} else {
+  if (fs.existsSync('.env.local')) {
+    require('dotenv').config({ path: '.env.local' })
+  } else if (fs.existsSync('.env')) {
+    require('dotenv').config({ path: '.env' })
+  } else {
+    require('dotenv').config()
+  }
+}
 
 const dev = process.env.NODE_ENV !== 'production'
-const hostname = process.env.HOSTNAME || 'localhost'
+const hostname = process.env.HOSTNAME || (dev ? 'localhost' : '0.0.0.0')
 const port = parseInt(process.env.PORT || '3001', 10)
 
 // Validate port configuration
 if (!port || isNaN(port)) {
   console.error('❌ ERROR: Invalid PORT configuration')
-  console.error('Please check your .env.local file')
+  console.error('Please check your environment configuration')
   process.exit(1)
 }
 
@@ -110,14 +126,14 @@ app.prepare().then(() => {
 
 To fix this:
 1. Stop any process using port ${port}:
-   netstat -ano | findstr :${port}
-   taskkill /PID [PID] /F
+   - Linux: fuser -k ${port}/tcp  or  lsof -ti :${port} | xargs kill -9
+   - Windows: netstat -ano | findstr :${port}
 
-2. Or change the port in .env.local
+2. Or configure PORT in environment (.env / .env.production / .env.local)
 
 Current configuration:
 - PORT: ${port}
-- Check: .env.local file
+- NODE_ENV: ${process.env.NODE_ENV || 'not set'}
         `)
         process.exit(1)
       }

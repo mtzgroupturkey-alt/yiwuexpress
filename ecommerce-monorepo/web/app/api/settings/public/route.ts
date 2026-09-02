@@ -10,9 +10,11 @@ export async function GET(request: NextRequest) {
     const locale = request.nextUrl.searchParams.get('locale') || 'en'
 
     // Get system settings (public information only)
-    let settings = await prisma.systemSettings.findFirst({
+    const settings = await prisma.systemSettings.findUnique({
+      where: { singletonKey: 'SINGLETON' },
       select: {
         companyName: true,
+        siteTagline: true,
         companyAddress: true,
         companyPhone: true,
         companyEmail: true,
@@ -27,9 +29,12 @@ export async function GET(request: NextRequest) {
         timezone: true,
         language: true,
         storeMode: true,
-        // Don't expose sensitive information
-        businessLicense: false,
-        taxRegistrationNumber: false,
+        facebookUrl: true,
+        twitterUrl: true,
+        linkedinUrl: true,
+        instagramUrl: true,
+        whatsappNumber: true,
+        wechatId: true,
         translations: {
           where: { locale: { in: [locale, 'en'] } },
           select: { locale: true, key: true, value: true }
@@ -37,33 +42,38 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // If no settings exist, return defaults
-    if (!settings) {
-      settings = {
-        companyName: 'Global Trade',
-        companyAddress: 'China',
-        companyPhone: '+86 579 8555 1234',
-        companyEmail: 'info@yiwuexpress.com',
-        companyWebsite: 'https://yiwuexpress.com',
-        companyDescription: 'Leading logistics and trade services provider connecting China to the world',
-        companyLogo: '',
-        companyLogoHeight: 40,
-        companyFavicon: '',
-        primaryColor: '#1a3a5c',
-        accentColor: '#c9a84c',
-        currency: 'USD',
-        timezone: 'Asia/Shanghai',
-        language: 'en',
-        storeMode: 'WHOLESALE',
-        translations: []
-      }
+    // If no settings exist, use defaults
+    const effectiveSettings = settings ?? {
+      companyName: 'Global Trade',
+      siteTagline: 'Global Trade & Logistics Platform',
+      companyAddress: 'China',
+      companyPhone: '+86 579 8555 1234',
+      companyEmail: 'info@yiwuexpress.com',
+      companyWebsite: 'https://yiwuexpress.com',
+      companyDescription: 'Leading logistics and trade services provider connecting China to the world',
+      companyLogo: '',
+      companyLogoHeight: 40,
+      companyFavicon: '',
+      primaryColor: '#1a3a5c',
+      accentColor: '#c9a84c',
+      currency: 'USD',
+      timezone: 'Asia/Shanghai',
+      language: 'en',
+      storeMode: 'WHOLESALE',
+      facebookUrl: null,
+      twitterUrl: null,
+      linkedinUrl: null,
+      instagramUrl: null,
+      whatsappNumber: null,
+      wechatId: null,
+      translations: []
     }
 
     // Expand-and-Contract read-path localization for company-facing copy.
-    const localizedName = localizeSystemSetting(settings.translations, 'companyName', settings.companyName, locale)
-    const localizedDescription = localizeSystemSetting(settings.translations, 'companyDescription', settings.companyDescription, locale)
+    const localizedName = localizeSystemSetting(effectiveSettings.translations, 'companyName', effectiveSettings.companyName, locale)
+    const localizedDescription = localizeSystemSetting(effectiveSettings.translations, 'companyDescription', effectiveSettings.companyDescription, locale)
 
-    const { translations, ...publicSettings } = settings
+    const { translations, ...publicSettings } = effectiveSettings
 
     return NextResponse.json({
       settings: {

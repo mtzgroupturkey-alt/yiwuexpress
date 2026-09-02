@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, CreditCard, Building2, Wallet, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { CompanyName } from '@/components/ui/CompanyName'
 
 interface Order {
   id: string
@@ -221,7 +222,7 @@ export default function PaymentPage() {
             <p className="font-semibold text-yellow-800 mb-2">Bank Transfer Instructions</p>
             <div className="space-y-1 text-yellow-700">
               <p><strong>Bank:</strong> Bank of China, China Branch</p>
-              <p><strong>Account Name:</strong> Global Trade TRADING CO., LTD</p>
+              <p><strong>Account Name:</strong> <CompanyName uppercase /> TRADING CO., LTD</p>
               <p><strong>Account Number:</strong> 1234 5678 9012 3456</p>
               <p><strong>SWIFT/BIC:</strong> BKCHCNBJ</p>
               <p className="mt-2"><strong>Amount:</strong> ${order.total.toFixed(2)} USD</p>

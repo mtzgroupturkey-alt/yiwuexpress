@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -226,18 +226,35 @@ export function HeroSlider() {
                   getContentClasses()
                 )}>
 
-                  {/* Text Content */}
-                  <div className={cn(
-                    'text-white space-y-6 flex-1',
-                    getTextAlignment(),
-                    alignment === 'center' ? 'items-center' :
-                    alignment === 'right' ? 'items-end' : 'items-start'
-                  )}>
+                  {/* Text Content with Staggered Motion */}
+                  <motion.div 
+                    initial="hidden"
+                    animate="show"
+                    variants={{
+                      hidden: {},
+                      show: {
+                        transition: {
+                          staggerChildren: 0.1,
+                          delayChildren: 0.1
+                        }
+                      }
+                    }}
+                    className={cn(
+                      'text-white space-y-6 flex-1',
+                      getTextAlignment(),
+                      alignment === 'center' ? 'items-center' :
+                      alignment === 'right' ? 'items-end' : 'items-start'
+                    )}
+                  >
                     {/* Badge */}
                     {slide.badgeText && (
-                      <span
+                      <motion.span
+                        variants={{
+                          hidden: { opacity: 0, y: -15, scale: 0.9 },
+                          show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4 } }
+                        }}
                         className={cn(
-                          'inline-block text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg backdrop-blur-sm border border-white/20',
+                          'inline-block text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full shadow-lg backdrop-blur-md border border-white/20',
                           alignment === 'center' && 'mx-auto',
                           alignment === 'right' && 'ml-auto'
                         )}
@@ -247,75 +264,115 @@ export function HeroSlider() {
                         }}
                       >
                         {slide.badgeText}
-                      </span>
+                      </motion.span>
                     )}
 
                     {/* Subtitle */}
                     {slide.subtitle && (
-                      <p className={cn(
-                        'text-sm md:text-base uppercase tracking-[0.15em] text-gradient-gold font-semibold',
-                        getTextAlignment()
-                      )}>
+                      <motion.p 
+                        variants={{
+                          hidden: { opacity: 0, y: 10 },
+                          show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+                        }}
+                        className={cn(
+                          'text-sm md:text-base uppercase tracking-[0.15em] text-amber-300 font-semibold',
+                          getTextAlignment()
+                        )}
+                      >
                         {slide.subtitle}
-                      </p>
+                      </motion.p>
                     )}
 
-                    {/* Title - Premium Mobile Sizing */}
-                    <h1 className={cn(
-                      'font-bold tracking-tight text-5xl sm:text-6xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight text-shadow-lg font-["Outfit",sans-serif]',
-                      getTextAlignment()
-                    )}>
+                    {/* Title */}
+                    <motion.h1 
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+                      }}
+                      className={cn(
+                        'font-bold tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight text-shadow-lg break-words font-["Outfit",sans-serif]',
+                        getTextAlignment()
+                      )}
+                    >
                       {slide.title}
-                    </h1>
+                    </motion.h1>
 
                     {/* Description */}
                     {slide.description && (
-                      <p className={cn(
-                        'text-white/80 text-base md:text-lg leading-relaxed max-w-xl',
-                        getTextAlignment()
-                      )}>
+                      <motion.p 
+                        variants={{
+                          hidden: { opacity: 0, y: 15 },
+                          show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+                        }}
+                        className={cn(
+                          'text-white/85 text-base md:text-lg leading-relaxed max-w-xl font-normal',
+                          getTextAlignment()
+                        )}
+                      >
                         {slide.description}
-                      </p>
+                      </motion.p>
                     )}
 
                     {/* Buttons */}
-                    <div className={cn(
-                      'flex flex-wrap gap-4 pt-2',
-                      getJustifyContent()
-                    )}>
+                    <motion.div 
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+                      }}
+                      className={cn(
+                        'flex flex-wrap gap-4 pt-2',
+                        getJustifyContent()
+                      )}
+                    >
                       <LocaleLink
                         href={slide.ctaLink}
-                        className="bg-gradient-to-r from-[#c9a84c] via-[#d4b15c] to-[#e8d48b] text-[#1a1a2e] px-8 py-3 rounded-full font-bold text-sm md:text-base transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-gold-lg inline-flex items-center gap-2 shadow-gold"
+                        className="bg-gradient-to-r from-[#c9a84c] via-[#d4b15c] to-[#e8d48b] text-[#1a1a2e] px-8 py-3.5 rounded-full font-bold text-sm md:text-base transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/25 inline-flex items-center gap-2 group"
                       >
                         {slide.ctaText}
-                        <span className="text-lg">â†’</span>
+                        <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
                       </LocaleLink>
 
                       {slide.secondaryCtaText && slide.secondaryCtaLink && (
                         <LocaleLink
                           href={slide.secondaryCtaLink}
-                          className="glass text-white px-8 py-3 rounded-full font-semibold text-sm md:text-base transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 inline-flex items-center gap-2"
+                          className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-3.5 rounded-full font-semibold text-sm md:text-base transition-all duration-300 hover:bg-white/20 hover:scale-105 inline-flex items-center gap-2"
                         >
                           {slide.secondaryCtaText}
                         </LocaleLink>
                       )}
-                    </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
 
-                  {/* Product Image */}
+                  {/* Floating Product Image */}
                   {slide.productImageUrl && (
-                    <div className={cn(
-                      'flex-shrink-0',
-                      getImageOrder(),
-                      getImageJustify()
-                    )}>
-                      <img
-                        src={slide.productImageUrl}
-                        alt={slide.title}
-                        loading="eager"
-                        className="w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain drop-shadow-2xl"
-                      />
-                    </div>
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.85, y: 20 }}
+                      animate={{ 
+                        opacity: 1, 
+                        scale: 1,
+                        y: [0, -10, 0]
+                      }}
+                      transition={{ 
+                        opacity: { duration: 0.6, delay: 0.3 },
+                        scale: { duration: 0.6, delay: 0.3 },
+                        y: { duration: 4, repeat: Infinity, ease: 'easeInOut' }
+                      }}
+                      className={cn(
+                        'flex-shrink-0',
+                        getImageOrder(),
+                        getImageJustify()
+                      )}
+                    >
+                      <div className="relative group">
+                        <div className="absolute -inset-4 bg-gradient-to-r from-[#c9a84c]/20 to-blue-500/20 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity" />
+                        <img
+                          src={slide.productImageUrl}
+                          alt={slide.title}
+                          loading="eager"
+                          className="relative w-48 h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 object-contain drop-shadow-2xl"
+                        />
+                      </div>
+                    </motion.div>
                   )}
                 </div>
               </div>
@@ -323,12 +380,28 @@ export function HeroSlider() {
           </motion.div>
         </AnimatePresence>
 
+        {/* Top Slide Progress Bar */}
+        {!isPaused && slides.length > 1 && (
+          <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-30 overflow-hidden">
+            <motion.div 
+              key={`progress-${currentIndex}`}
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ 
+                duration: slides[currentIndex]?.slideDuration || 5, 
+                ease: 'linear' 
+              }}
+              className="h-full bg-gradient-to-r from-[#c9a84c] to-[#e8d48b]"
+            />
+          </div>
+        )}
+
         {/* Navigation Controls - Glass Effect */}
         {slides.length > 1 && (
           <>
             <button
               onClick={goToPrevious}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 glass text-white p-3 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 hover:shadow-2xl"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/15 backdrop-blur-md border border-white/20 text-white p-3 rounded-full transition-all duration-300 hover:bg-white/30 hover:scale-110 hover:shadow-xl"
               aria-label="Previous slide"
             >
               <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
@@ -336,7 +409,7 @@ export function HeroSlider() {
 
             <button
               onClick={goToNext}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 glass text-white p-3 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110 hover:shadow-2xl"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/15 backdrop-blur-md border border-white/20 text-white p-3 rounded-full transition-all duration-300 hover:bg-white/30 hover:scale-110 hover:shadow-xl"
               aria-label="Next slide"
             >
               <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
@@ -344,20 +417,20 @@ export function HeroSlider() {
 
             <button
               onClick={() => setIsPaused(!isPaused)}
-              className="absolute bottom-20 left-4 z-20 glass text-white p-2.5 rounded-full transition-all duration-300 hover:bg-white/40 hover:scale-110"
+              className="absolute bottom-6 left-6 z-20 bg-white/15 backdrop-blur-md border border-white/20 text-white p-2.5 rounded-full transition-all duration-300 hover:bg-white/30 hover:scale-110 shadow-lg"
               aria-label={isPaused ? 'Play' : 'Pause'}
             >
               {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
             </button>
 
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2.5 items-center">
               {slides.map((_, index) => (
                 <button
                   key={index}
                   className={`transition-all duration-300 rounded-full ${
                     index === currentIndex
-                      ? 'w-10 h-3 bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] shadow-gold'
-                      : 'w-3 h-3 bg-white/50 hover:bg-white/70'
+                      ? 'w-8 h-2.5 bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] shadow-md shadow-amber-500/30'
+                      : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/70'
                   }`}
                   onClick={() => goToSlide(index)}
                   aria-label={`Go to slide ${index + 1}`}

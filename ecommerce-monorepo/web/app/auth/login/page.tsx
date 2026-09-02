@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Building, Mail, Lock, Globe } from 'lucide-react'
+import { Mail, Lock, Globe, ArrowRight, ArrowLeft, AlertCircle, Sparkles } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { SmokeyBackground } from '@/components/ui/login-form'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -34,10 +35,6 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('[LOGIN] Starting login process...')
-    console.log('[LOGIN] Current URL:', window.location.href)
-    console.log('[LOGIN] Protocol:', window.location.protocol)
-    
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields')
       return
@@ -46,48 +43,23 @@ export default function LoginPage() {
     try {
       setIsLoading(true)
       setError('')
-
-      console.log('[LOGIN] Calling login API...')
       
-      // ✅ MIGRATED TO COOKIE-BASED AUTH - useAuth handles httpOnly cookies
       const user = await login(formData.email, formData.password)
       
-      console.log('[LOGIN] Login successful!', { 
-        userId: user.id, 
-        role: user.role,
-        email: user.email 
-      })
-      
-      // Get redirect URL from query params
       const urlParams = new URLSearchParams(window.location.search)
       const redirectUrl = urlParams.get('redirect')
       
-      console.log('[LOGIN] Redirect URL from params:', redirectUrl)
-      
-      // Redirect based on role or redirect parameter
       let targetUrl = '/dashboard'
       
       if (redirectUrl && redirectUrl !== '/') {
-        // If there's a redirect URL, use it
         targetUrl = redirectUrl
-        console.log('[LOGIN] Using redirect parameter:', targetUrl)
       } else if (user.role === 'ADMIN') {
         targetUrl = '/admin'
-        console.log('[LOGIN] Admin user, redirecting to:', targetUrl)
       } else if (user.role === 'SUPPLIER') {
         targetUrl = '/dashboard/supplier'
-        console.log('[LOGIN] Supplier user, redirecting to:', targetUrl)
-      } else {
-        // Customer (USER role) - redirect to dashboard
-        console.log('[LOGIN] Customer user, redirecting to:', targetUrl)
       }
       
-      console.log('[LOGIN] Final redirect URL:', targetUrl)
-      console.log('[LOGIN] Performing redirect with window.location.href...')
-      
-      // Force HTTPS if in production
       if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
-        console.warn('[LOGIN] WARNING: Using HTTP in production, forcing HTTPS redirect')
         window.location.href = `https://${window.location.host}${targetUrl}`
       } else {
         window.location.href = targetUrl
@@ -100,163 +72,141 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      {/* Back to Website Link */}
-      <div className="absolute top-4 left-4">
+    <main className="relative min-h-screen w-full bg-[#0a1526] overflow-hidden flex items-center justify-center p-4 sm:p-6">
+      {/* Interactive WebGL Smokey Background */}
+      <SmokeyBackground color="#1a3a5c" backdropBlurAmount="md" className="absolute inset-0 z-0 opacity-80" />
+
+      {/* Top Left Navigation Link */}
+      <div className="absolute top-6 left-6 z-20">
         <Link 
           href="/" 
-          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-[#1a3a5c] transition-colors group"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 transition-all group shadow-sm"
         >
-          <svg 
-            className="w-5 h-5 transition-transform group-hover:-translate-x-1" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Website
+          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Website</span>
         </Link>
       </div>
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex items-center justify-center">
-          {companyLogo ? (
-            <img
-              src={companyLogo}
-              alt={`${companyName} Logo`}
-              className="h-16 w-auto object-contain"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}>
-              <Globe size={24} className="text-white" />
-            </div>
-          )}
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-          Sign in to {companyName}
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Access your logistics dashboard
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                    <Lock className="w-3 h-3 text-white" />
-                  </div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
+      {/* Glassmorphism Card */}
+      <div className="relative z-10 w-full max-w-md p-8 sm:p-10 space-y-6 bg-slate-900/60 backdrop-blur-2xl rounded-3xl border border-white/15 shadow-2xl shadow-black/50">
+        {/* Brand Header */}
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            {companyLogo ? (
+              <img
+                src={companyLogo}
+                alt={`${companyName} Logo`}
+                className="h-12 w-auto object-contain drop-shadow-md"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#c9a84c] to-[#a0843e] shadow-lg shadow-[#c9a84c]/20">
+                <Globe size={24} className="text-white" />
               </div>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="admin@yiwuexpress.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="/auth/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                  Forgot password?
-                </Link>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
-                </span>
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </form>
-
-          {/* Don't have an account */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign up
-              </Link>
+            )}
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Sign in to {companyName}
+            </h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-300 font-medium">
+              Access your sourcing & logistics portal
             </p>
           </div>
+        </div>
 
-          {/* Back to Website Link - Mobile friendly */}
-          <div className="mt-4 text-center sm:hidden">
-            <Link 
-              href="/" 
-              className="text-sm font-medium text-gray-500 hover:text-[#1a3a5c]"
+        {/* Error Alert */}
+        {error && (
+          <div className="p-3.5 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center gap-2.5 text-red-200 text-xs">
+            <AlertCircle size={16} className="shrink-0 text-red-400" />
+            <p>{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Email Input with Animated Floating Label */}
+          <div className="relative z-0">
+            <input
+              type="email"
+              id="floating_email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-slate-600 appearance-none focus:outline-none focus:ring-0 focus:border-[#c9a84c] peer transition-colors"
+              placeholder=" " 
+            />
+            <label
+              htmlFor="floating_email"
+              className="absolute text-sm text-slate-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-[#c9a84c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 flex items-center gap-2"
             >
-              ← Back to Website
+              <Mail size={15} />
+              Email Address
+            </label>
+          </div>
+
+          {/* Password Input with Animated Floating Label */}
+          <div className="relative z-0">
+            <input
+              type="password"
+              id="floating_password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              className="block py-3 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-slate-600 appearance-none focus:outline-none focus:ring-0 focus:border-[#c9a84c] peer transition-colors"
+              placeholder=" "
+            />
+            <label
+              htmlFor="floating_password"
+              className="absolute text-sm text-slate-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-[#c9a84c] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 flex items-center gap-2"
+            >
+              <Lock size={15} />
+              Password
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between text-xs">
+            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+              <input
+                type="checkbox"
+                className="w-4 h-4 rounded border-slate-700 bg-slate-800/80 text-[#c9a84c] focus:ring-0 focus:ring-offset-0"
+              />
+              <span>Remember me</span>
+            </label>
+            <Link 
+              href="/auth/forgot-password" 
+              className="text-slate-300 hover:text-white transition-colors"
+            >
+              Forgot password?
             </Link>
           </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="group w-full flex items-center justify-center py-3.5 px-4 bg-gradient-to-r from-[#1a3a5c] via-[#2563eb] to-[#1a3a5c] bg-[length:200%_auto] hover:bg-right rounded-xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 shadow-lg shadow-blue-900/30 transition-all duration-500 disabled:opacity-50"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Signing in...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                Sign In
+                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+              </span>
+            )}
+          </button>
+        </form>
+
+        {/* Sign Up Link */}
+        <div className="pt-2 text-center text-xs text-slate-400">
+          Don't have an account?{' '}
+          <Link href="/register" className="font-semibold text-[#c9a84c] hover:text-[#deb859] transition-colors">
+            Sign up now
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

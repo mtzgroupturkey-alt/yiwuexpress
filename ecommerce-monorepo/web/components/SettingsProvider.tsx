@@ -1,11 +1,13 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { useLocale } from 'next-intl'
 import DynamicFavicon from './DynamicFavicon'
 
 interface CompanySettings {
   id?: string
   companyName: string
+  siteTagline?: string
   companyAddress?: string
   companyPhone?: string
   companyEmail?: string
@@ -51,12 +53,13 @@ interface SettingsProviderProps {
 }
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
+  const locale = useLocale()
   const [settings, setSettings] = useState<CompanySettings | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings/public')
+      const response = await fetch(`/api/settings/public?locale=${encodeURIComponent(locale || 'en')}`)
       if (response.ok) {
         const data = await response.json()
         setSettings(data.settings)
@@ -70,7 +73,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   useEffect(() => {
     fetchSettings()
-  }, [])
+  }, [locale])
 
   const refreshSettings = () => {
     setLoading(true)

@@ -3,9 +3,12 @@
 import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Building2, Users, Package, Globe } from 'lucide-react'
+import { useSettings } from '@/components/SettingsProvider'
 
 export function StorySection() {
   const t = useTranslations('About')
+  const { settings } = useSettings()
+  const companyName = settings?.companyName || 'Global Trade'
 
   const highlights = [
     { icon: Building2, label: t('story.highlightLocalPresence'), value: 'Yiwu HQ' },
@@ -41,7 +44,7 @@ export function StorySection() {
           <div className="space-y-2">
             <div className="inline-block">
               <span className="text-secondary-400 font-black tracking-widest text-xs uppercase bg-black/30 px-4 py-2 rounded-full border border-secondary-400/20">
-                {t('story.badge')}
+                {t('story.badge', { name: companyName.toUpperCase() })}
               </span>
             </div>
              <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight font-display text-white">

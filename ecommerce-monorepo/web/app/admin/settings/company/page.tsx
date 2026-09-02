@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import {
@@ -11,6 +11,7 @@ import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from 
 interface CompanySettings {
   id?: string
   companyName: string
+  siteTagline: string
   companyAddress: string
   companyPhone: string
   companyEmail: string
@@ -44,8 +45,9 @@ export default function CompanyInfoPage() {
   const [translations, setTranslations] = useState<TranslationRow[]>([])
   
   const [settings, setSettings] = useState<CompanySettings>({
-    companyName: 'Global Trade',
-    companyAddress: '',
+      companyName: 'Global Trade',
+      siteTagline: '',
+      companyAddress: '',
     companyPhone: '',
     companyEmail: '',
     companyWebsite: '',
@@ -110,8 +112,9 @@ export default function CompanyInfoPage() {
           // Ensure all string fields are never null
           setSettings({
             ...data.settings,
-            companyName: safeString(data.settings.companyName) || 'Global Trade',
-            companyAddress: safeString(data.settings.companyAddress),
+      companyName: safeString(data.settings.companyName) || 'Global Trade',
+      siteTagline: safeString(data.settings.siteTagline) || '',
+      companyAddress: safeString(data.settings.companyAddress),
             companyPhone: safeString(data.settings.companyPhone),
             companyEmail: safeString(data.settings.companyEmail),
             companyWebsite: safeString(data.settings.companyWebsite),
@@ -363,6 +366,17 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Site Tagline / Slogan</label>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={settings.siteTagline}
+                onChange={(e) => handleInputChange('siteTagline', e.target.value)}
+                placeholder="e.g. Your trusted partner for global trade"
+              />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
               <div className="relative">
                 <Globe size={18} className="absolute left-3 top-3 text-gray-400" />
@@ -430,10 +444,11 @@ export default function CompanyInfoPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Localized Name / Description / Address (RU / ZH)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Localized Name / Tagline / Description / Address (RU / ZH)</label>
               <LocalizedFieldsForm
                 fields={[
                   { key: 'companyName', label: 'Company Name' },
+                  { key: 'siteTagline', label: 'Site Tagline / Slogan' },
                   { key: 'companyDescription', label: 'Company Description', textarea: true },
                   { key: 'companyAddress', label: 'Company Address', textarea: true },
                 ]}

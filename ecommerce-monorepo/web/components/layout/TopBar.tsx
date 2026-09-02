@@ -1,11 +1,15 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LocaleLink } from '@/components/LocaleLink'
 import { Container } from '@/components/ui/Container'
 import TextType from '@/components/ui/TextType'
+import { useSettings } from '@/components/SettingsProvider'
 
 export function TopBar() {
+  const { settings } = useSettings()
+  const companyName = settings?.companyName || 'Global Trade'
+
   const topBarLinks = [
     { name: 'Home', href: '/' },
     { name: 'About Us', href: '/about' },
@@ -42,7 +46,7 @@ export function TopBar() {
             <span className="text-[#c9a84c] text-sm drop-shadow-lg">âœ¦</span>
             <TextType
               text={[
-                "WELCOME TO Global Trade - PREMIUM KITCHENWARE FROM CHINA",
+                `WELCOME TO ${companyName.toUpperCase()} - PREMIUM KITCHENWARE FROM CHINA`,
                 "GLOBAL TRADE SOLUTIONS - QUALITY YOU CAN TRUST",
                 "WHOLESALE & RETAIL - BEST PRICES GUARANTEED"
               ]}

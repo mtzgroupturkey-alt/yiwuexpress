@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -52,6 +52,7 @@ export default function Footer() {
   const locale = useLocale() // Get current locale
   const [logoUrl, setLogoUrl] = useState('')
   const [companyName, setCompanyName] = useState('Global Trade')
+  const [siteTagline, setSiteTagline] = useState('')
   const [accentColor, setAccentColor] = useState('#c9a84c')
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   
@@ -76,13 +77,14 @@ export default function Footer() {
 
   useEffect(() => {
     // Fetch settings for branding, contact info, and social media
-    fetch('/api/settings')
+    fetch(`/api/settings/public?locale=${locale}`)
       .then(res => res.json())
       .then(data => {
         if (data.settings) {
           // Branding
           if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
           if (data.settings.companyName) setCompanyName(data.settings.companyName)
+          if (data.settings.siteTagline) setSiteTagline(data.settings.siteTagline)
           if (data.settings.accentColor) {
             setAccentColor(data.settings.accentColor)
             document.documentElement.style.setProperty('--accent-color', data.settings.accentColor)
@@ -116,7 +118,7 @@ export default function Footer() {
           setContactInfo({
             address: getLocalizedValue('companyAddress', data.settings.companyAddress || 'China, Zhejiang, China'),
             phone: data.settings.companyPhone || '+86 579 8555 1234',
-            email: data.settings.companyEmail || 'info@globaltrade.com'
+            email: data.settings.companyEmail || 'info@yiwuexpress.com'
           })
 
           // Social media links
@@ -145,28 +147,28 @@ export default function Footer() {
   
   
   const serviceLinks = [
-    { label: tl('airFreight'), href: '/services/air-freight' },
-    { label: tl('seaFreight'), href: '/services/sea-freight' },
-    { label: tl('customsClearance'), href: '/services/customs' },
-    { label: tl('warehousing'), href: '/services/warehousing' },
-    { label: tl('sourcingServices'), href: '/services/sourcing' },
-    { label: tl('doorToDoor'), href: '/services/door-to-door' },
+    { label: tl('airFreight'), href: '/services?type=shipping' },
+    { label: tl('seaFreight'), href: '/services?type=shipping' },
+    { label: tl('customsClearance'), href: '/services?type=customs' },
+    { label: tl('warehousing'), href: '/services?type=warehousing' },
+    { label: tl('sourcingServices'), href: '/services?type=sourcing' },
+    { label: tl('doorToDoor'), href: '/services?type=shipping' },
   ]
 
   const companyLinks = [
     { label: tl('aboutUs'), href: '/about' },
     { label: tl('globalNetwork'), href: '/network' },
     { label: tl('careers'), href: '/careers' },
-    { label: tl('partners'), href: '/partners' },
-    { label: tl('newsUpdates'), href: '/news' },
-    { label: tl('sustainability'), href: '/sustainability' },
+    { label: tl('partners'), href: '/contact' },
+    { label: tl('newsUpdates'), href: '/blog' },
+    { label: tl('sustainability'), href: '/about' },
   ]
 
   const supportLinks = [
     { label: tl('trackShipment'), href: '/track' },
     { label: tl('getQuote'), href: '/quotes' },
     { label: tl('faq'), href: '/faq' },
-    { label: tl('supportCenter'), href: '/support' },
+    { label: tl('supportCenter'), href: '/contact' },
     { label: tl('contactUs'), href: '/contact' },
     { label: tl('termsConditions'), href: '/terms' },
   ]
@@ -250,11 +252,11 @@ export default function Footer() {
       <Container maxWidth="2xl" className="relative z-10 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           
-          {/* COLUMN 1: Logo + About Us */}
-          <div>
-            <div className="flex items-center space-x-3 mb-5">
+          {/* COLUMN 1: Logo + Brand Tagline + About Us */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3.5">
               {logoUrl ? (
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600 flex items-center justify-center p-2 shadow-[0_8px_32px_rgba(201,168,76,0.3)] ring-2 ring-secondary-500/20">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-2 shadow-[0_8px_32px_rgba(201,168,76,0.25)] flex-shrink-0">
                   <img
                     src={logoUrl}
                     alt={`${companyName} Logo`}
@@ -262,19 +264,37 @@ export default function Footer() {
                   />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600 flex items-center justify-center shadow-[0_8px_32px_rgba(201,168,76,0.3)] ring-2 ring-secondary-500/20">
-                  <Truck className="w-7 h-7 text-white drop-shadow-lg" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600 flex items-center justify-center shadow-[0_8px_32px_rgba(201,168,76,0.3)] ring-2 ring-secondary-500/20 flex-shrink-0">
+                  <Truck className="w-6 h-6 text-primary-950 drop-shadow-sm font-bold" />
                 </div>
               )}
               <div>
-                <h2 className="text-xl font-bold text-white drop-shadow-lg">{companyName}</h2>
-                <p className="text-secondary-400 text-xs font-semibold">{t('brandSubtitle')}</p>
+                <h2 className="text-xl font-extrabold text-white tracking-tight drop-shadow-md">{companyName}</h2>
+                <div className="inline-flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-400 animate-pulse"></span>
+                  <p className="text-secondary-300 text-xs font-semibold tracking-wide">
+                    {siteTagline || t('brandSubtitle')}
+                  </p>
+                </div>
               </div>
             </div>
             
             <p className="text-gray-300/90 leading-relaxed text-sm">
               {t('aboutText')}
             </p>
+
+            {/* Core Capabilities Pills */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
+                Global Logistics
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
+                Direct Sourcing
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
+                Customs Clearance
+              </span>
+            </div>
           </div>
 
           {/* COLUMN 2: Quick Links */}
@@ -393,15 +413,15 @@ export default function Footer() {
       </Container>
 
 
-      {/* Bottom Bar - Premium Design with Border Glow */}
+      {/* Bottom Bar - Premium Design with Border Glow & ICP Compliance */}
       <div className="relative z-10 border-t border-gray-700/40">
         {/* Top border glow */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-secondary-500/30 to-transparent"></div>
         
         <Container maxWidth="2xl" className="py-7">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-gray-400 text-sm">
-              Â© {currentYear} <span className="text-white font-bold drop-shadow-lg">{companyName}</span>. {t('rights')}
+            <div className="text-gray-400 text-sm text-center md:text-left">
+              © {currentYear} <span className="text-white font-bold drop-shadow-lg">{companyName}</span>. {t('rights')}
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
               <LocaleLink href="/privacy" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
@@ -417,6 +437,25 @@ export default function Footer() {
                 {t('sitemap')}
               </LocaleLink>
             </div>
+          </div>
+
+          {/* Chinese MIIT ICP & Website Registration Compliance Bar */}
+          <div className="mt-4 pt-4 border-t border-gray-800/80 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-400">
+            <span className="inline-flex items-center gap-1.5 text-gray-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary-400/80"></span>
+              {t('registeredWebsiteName')}
+            </span>
+            <span className="hidden sm:inline text-gray-700">|</span>
+            <a
+              href="https://beian.miit.gov.cn/#/Integrated/index"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-gray-400 hover:text-secondary-300 transition-colors underline-offset-4 hover:underline"
+              title="Ministry of Industry and Information Technology (MIIT) ICP License"
+            >
+              <Shield className="w-3.5 h-3.5 text-secondary-400" />
+              <span>{t('icpLicense')}</span>
+            </a>
           </div>
         </Container>
       </div>

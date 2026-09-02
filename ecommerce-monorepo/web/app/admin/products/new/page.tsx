@@ -169,6 +169,7 @@ export default function NewProductPage() {
 
       const response = await fetch('/api/products', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       })
@@ -190,20 +191,34 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.push('/admin/products')}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Modern Header */}
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Add New Product</h1>
-          <p className="text-gray-600">Create a new product in your catalog</p>
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+            <button onClick={() => router.push('/admin/products')} className="hover:text-[#1a3a5c] transition-colors">Products</button>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">New</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3a5c]">Add New Product</h1>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => router.push('/admin/products')}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmit(onSubmit)} 
+            disabled={submitting}
+            className="rounded-xl bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white hover:opacity-90 transition-opacity"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {submitting ? 'Creating...' : 'Create Product'}
+          </Button>
         </div>
       </div>
 
@@ -212,52 +227,45 @@ export default function NewProductPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="sku">SKU *</Label>
-                    <Input id="sku" {...register('sku')} />
-                    {errors.sku && (
-                      <p className="text-red-600 text-sm mt-1">{errors.sku.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="categoryId">Category</Label>
-                    <CategoryDropdown
-                      categories={categories}
-                      value={selectedCategoryId}
-                      onChange={(value) => setValue('categoryId', value || '')}
-                      placeholder="Select a category..."
-                      searchPlaceholder="Search categories..."
-                      clearable
-                      showPath
-                      showLevelIndicator
-                    />
-                  </div>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Basic Information</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="sku" className="text-xs font-bold text-gray-700 uppercase tracking-wider">SKU *</Label>
+                  <Input id="sku" {...register('sku')} className="rounded-xl bg-gray-50/50 focus:bg-white transition-colors" />
+                  {errors.sku && <p className="text-red-600 text-sm mt-1">{errors.sku.message}</p>}
                 </div>
-
-                <div>
-                  <Label htmlFor="name" className="sr-only">Product Name *</Label>
-                  <ProductTranslationForm
-                    disabled={submitting}
-                    initialValues={translations}
-                    onChange={setTranslations}
+                <div className="space-y-2">
+                  <Label htmlFor="categoryId" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Category</Label>
+                  <CategoryDropdown
+                    categories={categories}
+                    value={selectedCategoryId}
+                    onChange={(value) => setValue('categoryId', value || '')}
+                    placeholder="Select a category..."
+                    searchPlaceholder="Search categories..."
+                    clearable
+                    showPath
+                    showLevelIndicator
                   />
                 </div>
+              </div>
 
-                <div>
-                  <Label htmlFor="slug">Slug *</Label>
-                  <Input id="slug" {...register('slug')} />
-                  {errors.slug && (
-                    <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="sr-only">Product Name *</Label>
+                <ProductTranslationForm
+                  disabled={submitting}
+                  initialValues={translations}
+                  onChange={setTranslations}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="slug" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Slug *</Label>
+                <Input id="slug" {...register('slug')} className="rounded-xl bg-gray-50/50 focus:bg-white transition-colors" />
+                {errors.slug && <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>}
+              </div>
+            </div>
 
             {/* Dynamic Attributes */}
             <ProductAttributesSection
@@ -267,276 +275,188 @@ export default function NewProductPage() {
             />
 
             {/* Pricing */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Pricing</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="price">Price ($) *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      {...register('price', { valueAsNumber: true })}
-                    />
-                    {errors.price && (
-                      <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="compareAtPrice">Compare at Price ($)</Label>
-                    <Input
-                      id="compareAtPrice"
-                      type="number"
-                      step="0.01"
-                      {...register('compareAtPrice', { valueAsNumber: true })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="costPrice">Cost Price ($)</Label>
-                    <Input
-                      id="costPrice"
-                      type="number"
-                      step="0.01"
-                      {...register('costPrice', { valueAsNumber: true })}
-                    />
-                  </div>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Pricing</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="price" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Price ($) *</Label>
+                  <Input id="price" type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="rounded-xl" />
+                  {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="wholesalePrice">Wholesale Price ($)</Label>
-                    <Input
-                      id="wholesalePrice"
-                      type="number"
-                      step="0.01"
-                      {...register('wholesalePrice', { valueAsNumber: true })}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="minOrderQty">Min Order Quantity</Label>
-                    <Input
-                      id="minOrderQty"
-                      type="number"
-                      {...register('minOrderQty', { valueAsNumber: true })}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="compareAtPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Compare at Price ($)</Label>
+                  <Input id="compareAtPrice" type="number" step="0.01" {...register('compareAtPrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
-              </CardContent>
-            </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="costPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Cost Price ($)</Label>
+                  <Input id="costPrice" type="number" step="0.01" {...register('costPrice', { valueAsNumber: true })} className="rounded-xl" />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="wholesalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Wholesale Price ($)</Label>
+                  <Input id="wholesalePrice" type="number" step="0.01" {...register('wholesalePrice', { valueAsNumber: true })} className="rounded-xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="minOrderQty" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Min Order Quantity</Label>
+                  <Input id="minOrderQty" type="number" {...register('minOrderQty', { valueAsNumber: true })} className="rounded-xl" />
+                </div>
+              </div>
+            </div>
 
             {/* Inventory */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Inventory</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="stock">Stock Quantity *</Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      {...register('stock', { valueAsNumber: true })}
-                    />
-                    {errors.stock && (
-                      <p className="text-red-600 text-sm mt-1">{errors.stock.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="lowStockThreshold">Low Stock Threshold</Label>
-                    <Input
-                      id="lowStockThreshold"
-                      type="number"
-                      {...register('lowStockThreshold', { valueAsNumber: true })}
-                    />
-                  </div>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Inventory</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Stock Quantity *</Label>
+                  <Input id="stock" type="number" {...register('stock', { valueAsNumber: true })} className="rounded-xl" />
+                  {errors.stock && <p className="text-red-600 text-sm mt-1">{errors.stock.message}</p>}
                 </div>
-              </CardContent>
-            </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="lowStockThreshold" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Low Stock Threshold</Label>
+                  <Input id="lowStockThreshold" type="number" {...register('lowStockThreshold', { valueAsNumber: true })} className="rounded-xl" />
+                </div>
+              </div>
+            </div>
 
             {/* Compliance & Shipping */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Compliance & Shipping</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="weightKg">Weight (kg) *</Label>
-                    <Input
-                      id="weightKg"
-                      type="number"
-                      step="0.01"
-                      {...register('weightKg', { valueAsNumber: true })}
-                    />
-                    {errors.weightKg && (
-                      <p className="text-red-600 text-sm mt-1">{errors.weightKg.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="hsCode">HS Code</Label>
-                    <Input id="hsCode" {...register('hsCode')} />
-                  </div>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Compliance & Shipping</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="weightKg" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Weight (kg) *</Label>
+                  <Input id="weightKg" type="number" step="0.01" {...register('weightKg', { valueAsNumber: true })} className="rounded-xl" />
+                  {errors.weightKg && <p className="text-red-600 text-sm mt-1">{errors.weightKg.message}</p>}
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="countryOfOrigin">Country of Origin</Label>
-                    <Input id="countryOfOrigin" {...register('countryOfOrigin')} />
-                  </div>
-                  <div>
-                    <Label htmlFor="material">Material</Label>
-                    <Input id="material" {...register('material')} />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hsCode" className="text-xs font-bold text-gray-700 uppercase tracking-wider">HS Code</Label>
+                  <Input id="hsCode" {...register('hsCode')} className="rounded-xl" />
                 </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" {...register('fragile')} className="w-4 h-4" />
-                    <span className="text-sm">Fragile</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" {...register('exportRestricted')} className="w-4 h-4" />
-                    <span className="text-sm">Export Restricted</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" {...register('dangerousGoods')} className="w-4 h-4" />
-                    <span className="text-sm">Dangerous Goods</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input type="checkbox" {...register('batteryIncluded')} className="w-4 h-4" />
-                    <span className="text-sm">Battery Included</span>
-                  </label>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="countryOfOrigin" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Country of Origin</Label>
+                  <Input id="countryOfOrigin" {...register('countryOfOrigin')} className="rounded-xl" />
                 </div>
-              </CardContent>
-            </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="material" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Material</Label>
+                  <Input id="material" {...register('material')} className="rounded-xl" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" {...register('fragile')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
+                  <span className="text-sm font-medium group-hover:text-gray-900">Fragile</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" {...register('exportRestricted')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
+                  <span className="text-sm font-medium group-hover:text-gray-900">Export Restricted</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" {...register('dangerousGoods')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
+                  <span className="text-sm font-medium group-hover:text-gray-900">Dangerous Goods</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <input type="checkbox" {...register('batteryIncluded')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
+                  <span className="text-sm font-medium group-hover:text-gray-900">Battery Included</span>
+                </label>
+              </div>
+            </div>
 
             {/* Images & Videos */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Images & Videos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ProductMediaUpload
-                  media={media}
-                  onChange={setMedia}
-                  maxItems={15}
-                />
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Product Images & Videos</h2>
+              <ProductMediaUpload
+                media={media}
+                onChange={setMedia}
+                maxItems={15}
+              />
+            </div>
 
             {/* SEO */}
-            <Card>
-              <CardHeader>
-                <CardTitle>SEO</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="metaTitle">Meta Title</Label>
-                  <Input id="metaTitle" {...register('metaTitle')} />
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">SEO</h2>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="metaTitle" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Meta Title</Label>
+                  <Input id="metaTitle" {...register('metaTitle')} className="rounded-xl" />
                 </div>
-                <div>
-                  <Label htmlFor="metaDescription">Meta Description</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="metaDescription" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Meta Description</Label>
                   <textarea
                     id="metaDescription"
                     {...register('metaDescription')}
                     rows={3}
-                    className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                    className="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-[#1a3a5c]/20 focus:border-[#1a3a5c] transition-all"
                   />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" {...register('isActive')} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Active</span>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Status</h2>
+              <div className="space-y-4">
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" {...register('isActive')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
+                  <span className="text-sm font-medium group-hover:text-gray-900">Active (Visible)</span>
                 </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" {...register('isFeatured')} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Featured</span>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <input type="checkbox" {...register('isFeatured')} className="w-5 h-5 rounded text-amber-500 focus:ring-amber-500" />
+                  <span className="text-sm font-medium group-hover:text-gray-900">Featured</span>
                 </label>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Flash Sale */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Flash Sale</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" {...register('isFlashSale')} className="w-4 h-4" />
-                  <span className="text-sm font-medium">Enable Flash Sale</span>
-                </label>
-                {watch('isFlashSale') && (
-                  <>
-                    <div>
-                      <Label htmlFor="flashSalePrice">Flash Sale Price ($)</Label>
-                      <Input
-                        id="flashSalePrice"
-                        type="number"
-                        step="0.01"
-                        {...register('flashSalePrice', { valueAsNumber: true })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="flashSaleStart">Start Date</Label>
-                      <Input
-                        id="flashSaleStart"
-                        type="datetime-local"
-                        {...register('flashSaleStart')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="flashSaleEnd">End Date</Label>
-                      <Input
-                        id="flashSaleEnd"
-                        type="datetime-local"
-                        {...register('flashSaleEnd')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="flashSaleStock">Flash Sale Stock</Label>
-                      <Input
-                        id="flashSaleStock"
-                        type="number"
-                        {...register('flashSaleStock', { valueAsNumber: true })}
-                      />
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Flash Sale</h2>
+              <label className="flex items-center gap-3 cursor-pointer group mb-4">
+                <input type="checkbox" {...register('isFlashSale')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
+                <span className="text-sm font-medium group-hover:text-gray-900">Enable Flash Sale</span>
+              </label>
+              
+              {watch('isFlashSale') && (
+                <div className="space-y-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                  <div className="space-y-2">
+                    <Label htmlFor="flashSalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Flash Sale Price ($)</Label>
+                    <Input id="flashSalePrice" type="number" step="0.01" {...register('flashSalePrice', { valueAsNumber: true })} className="rounded-xl bg-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="flashSaleStart" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Start Date</Label>
+                    <Input id="flashSaleStart" type="datetime-local" {...register('flashSaleStart')} className="rounded-xl bg-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="flashSaleEnd" className="text-xs font-bold text-gray-700 uppercase tracking-wider">End Date</Label>
+                    <Input id="flashSaleEnd" type="datetime-local" {...register('flashSaleEnd')} className="rounded-xl bg-white" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="flashSaleStock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Flash Sale Stock</Label>
+                    <Input id="flashSaleStock" type="number" {...register('flashSaleStock', { valueAsNumber: true })} className="rounded-xl bg-white" />
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Actions */}
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  <Save className="w-4 h-4 mr-2" />
-                  {submitting ? 'Creating...' : 'Create Product'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => router.push('/admin/products')}
-                >
-                  Cancel
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-3 sticky top-6">
+              <Button type="submit" className="w-full rounded-xl bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white hover:opacity-90 h-11" disabled={submitting}>
+                <Save className="w-4 h-4 mr-2" />
+                {submitting ? 'Creating...' : 'Create Product'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-xl h-11 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
+                onClick={() => router.push('/admin/products')}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </div>
       </form>

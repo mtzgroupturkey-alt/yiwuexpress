@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
-import Link from 'next/link'
+import { useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { ShoppingCart, Eye, FileText, Check } from 'lucide-react'
 import { WishlistButton } from './WishlistButton'
@@ -17,12 +17,18 @@ interface Product {
   name: string
   description?: string
   price: number
+  compareAtPrice?: number
   image?: string
   category?: string
   stock?: number
   minOrder?: number
   minOrderQty?: number
   wholesalePrice?: number
+  isFlashSale?: boolean
+  flashSalePrice?: number | null
+  flashSaleStock?: number | null
+  flashSaleStart?: string | null
+  flashSaleEnd?: string | null
   colors?: { label: string; value: string }[]
 }
 
@@ -36,6 +42,7 @@ export default function ProductCard({
   onAddToCart
 }: ProductCardProps) {
   const t = useTranslations('Product')
+  const router = useRouter()
   const { isWholesale, isRetail } = useStoreMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { enableWholesaleSession } = useSessionMode()
@@ -48,8 +55,28 @@ export default function ProductCard({
   // In pure WHOLESALE mode the B2C retail cart path is hidden so wholesale
   // customers cannot bypass MOQ via the standard cart/checkout flow.
   const showRetailCart = isRetail
-  const displayPrice = hasWholesale ? product.wholesalePrice : product.price
-  const priceLabel = hasWholesale ? t('from') : ''
+  // Flash sale only counts when explicitly flagged, window is valid, and stock remains.
+  const now = Date.now()
+  const flashStart = product.flashSaleStart ? new Date(product.flashSaleStart).getTime() : 0
+  const flashEnd = product.flashSaleEnd ? new Date(product.flashSaleEnd).getTime() : 0
+  const isFlashSaleActive =
+    !!product.isFlashSale &&
+    !!product.flashSalePrice &&
+    product.flashSalePrice > 0 &&
+    product.flashSalePrice < product.price &&
+    (flashStart === 0 || now >= flashStart) &&
+    (flashEnd === 0 || now < flashEnd) &&
+    (product.flashSaleStock == null || product.flashSaleStock > 0)
+  // Choose the lowest valid price; flash sale wins over wholesale for display.
+  const candidatePrice = isFlashSaleActive
+    ? product.flashSalePrice!
+    : hasWholesale
+    ? product.wholesalePrice!
+    : product.price
+  const displayPrice = candidatePrice
+  const priceLabel = hasWholesale && !isFlashSaleActive ? t('from') : ''
+  // Check for compareAtPrice (strikethrough original price)
+  const hasDiscount = product.compareAtPrice != null && product.compareAtPrice > displayPrice!
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -89,9 +116,8 @@ export default function ProductCard({
   }
 
   return (
-    <LocaleLink href={`/products/${product.slug}`}>
       <div
-        className="group relative bg-white rounded-xl overflow-hidden border border-gray-100/80 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col h-full"
+        className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100/90 shadow-sm hover:shadow-2xl hover:shadow-gray-200/80 hover:-translate-y-2 transition-all duration-300 cursor-pointer flex flex-col h-full"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -103,8 +129,8 @@ export default function ProductCard({
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`object-cover transition-transform duration-500 ${
-                isHovered ? 'scale-105' : 'scale-100'
+              className={`object-cover transition-transform duration-700 ease-out ${
+                isHovered ? 'scale-110' : 'scale-100'
               }`}
               onError={() => setImageError(true)}
             />
@@ -115,19 +141,29 @@ export default function ProductCard({
           )}
 
           {/* Image Overlay Gradient on Hover */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent transition-opacity duration-300 ${
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent transition-opacity duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`} />
 
           {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
+          <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
+            {isFlashSaleActive && (
+              <span className="bg-red-600/95 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md animate-pulse">
+                {t('flashSale')}
+              </span>
+            )}
             {hasWholesale && (
-              <span className="bg-secondary-500 text-white text-xs font-semibold px-2 py-1 rounded shadow-sm">
+              <span className="bg-[#1a3a5c]/95 backdrop-blur-md text-[#deb859] text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-md border border-[#c9a84c]/30">
                 {t('wholesalePrice')}
               </span>
             )}
-            {product.stock && product.stock < 10 && (
-              <span className="bg-accent-500 text-white text-xs font-semibold px-2 py-1 rounded shadow-sm">
+            {hasDiscount && (
+              <span className="bg-emerald-600/95 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md">
+                {t('savePct', { pct: Math.round(((product.compareAtPrice! - displayPrice!) / product.compareAtPrice!) * 100) })}
+              </span>
+            )}
+            {product.stock != null && product.stock > 0 && product.stock < 10 && (
+              <span className="bg-orange-500/95 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md">
                 {t('lowStock')}
               </span>
             )}
@@ -136,26 +172,26 @@ export default function ProductCard({
           {/* Wishlist Button */}
           <WishlistButton
             productId={product.id}
-            className="absolute top-2 right-2 z-10"
+            className="absolute top-2.5 right-2.5 z-10 hover:scale-110 transition-transform shadow-md rounded-full"
             size="md"
           />
 
-          {/* Quick View Button (appears on hover) — navigates to product detail page */}
+          {/* Quick View Button (slide-up on hover) */}
           <div
-            className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/50 to-transparent transition-opacity duration-300 ${
-              isHovered ? 'opacity-100' : 'opacity-0'
+            className={`absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent transition-all duration-300 z-10 ${
+              isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
             }`}
           >
               <button
-                className="w-full py-2 bg-white/95 backdrop-blur-sm text-gray-800 font-medium text-sm rounded-lg hover:bg-white transition-all flex items-center justify-center gap-2"
+                className="w-full py-2 bg-white/95 backdrop-blur-md text-gray-900 font-bold text-xs rounded-xl hover:bg-white transition-all flex items-center justify-center gap-1.5 shadow-lg active:scale-95 hover:text-[#1a3a5c]"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  window.location.href = `/products/${product.slug}`
+                  router.push(`/products/${product.slug}`)
                 }}
                 aria-label={t('quickView') + ' ' + product.name}
               >
-                <Eye className="w-4 h-4" />
+                <Eye className="w-3.5 h-3.5 text-[#c9a84c]" />
                 {t('quickView')}
               </button>
           </div>
@@ -165,15 +201,20 @@ export default function ProductCard({
         <div className="p-3 sm:p-4 flex-1 flex flex-col">
           {/* Category */}
           {product.category && (
-            <p className="text-xs text-secondary-500 font-medium mb-1 uppercase tracking-wide">
+            <p className="text-[11px] text-secondary-500 font-bold mb-1 uppercase tracking-wider">
               {product.category}
             </p>
           )}
 
           {/* Product Name */}
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-            {product.name}
-          </h3>
+          <LocaleLink
+            href={`/products/${product.slug}`}
+            className="after:absolute after:inset-0 after:z-0 after:content-['']"
+          >
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1.5 line-clamp-2 leading-tight group-hover:text-[#1a3a5c] transition-colors">
+              {product.name}
+            </h3>
+          </LocaleLink>
 
           {/* Color Swatches */}
           {product.colors && product.colors.length > 0 && (
@@ -181,20 +222,20 @@ export default function ProductCard({
               {product.colors.slice(0, 4).map(color => (
                 <div
                   key={color.value}
-                  className="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0"
+                  className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0 shadow-xs"
                   style={{ backgroundColor: color.value }}
                   title={color.label}
                 />
               ))}
               {product.colors.length > 4 && (
-                <span className="text-xs text-gray-400 ml-1">+{product.colors.length - 4}</span>
+                <span className="text-[10px] text-gray-400 ml-1">+{product.colors.length - 4}</span>
               )}
             </div>
           )}
 
           {/* Description */}
           {product.description && (
-            <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-gray-500 mb-2 line-clamp-2 leading-relaxed">
               {product.description}
             </p>
           )}
@@ -203,27 +244,36 @@ export default function ProductCard({
           <div className="flex-1"></div>
 
           {/* Pricing */}
-          <div className="flex items-baseline gap-2 mb-3">
+          <div className="flex items-baseline gap-2 mb-2 flex-wrap">
             {priceLabel && (
-              <span className="text-xs text-gray-500 font-medium">
+              <span className="text-xs text-gray-400 font-medium">
                 {priceLabel}
               </span>
             )}
-            <span className="text-lg sm:text-xl font-bold text-secondary-500">
+            <span className={`text-lg sm:text-xl font-extrabold tracking-tight ${isFlashSaleActive ? 'text-red-600' : 'text-[#1a3a5c]'}`}>
               ${displayPrice?.toFixed(2)}
             </span>
-            {hasWholesale && product.price && (
-              <span className="text-xs sm:text-sm text-gray-400 line-through">
+            {(isFlashSaleActive || hasWholesale) && product.price && (
+              <span className="text-xs text-gray-400 line-through">
                 ${product.price.toFixed(2)}
+              </span>
+            )}
+            {hasDiscount && product.compareAtPrice && (
+              <span className="text-xs text-gray-400 line-through">
+                ${product.compareAtPrice.toFixed(2)}
               </span>
             )}
           </div>
 
-          {/* Min Order Info */}
+          {/* Min Order Info Badge */}
           {product.minOrder && product.minOrder > 1 && (
-              <p className="text-xs text-gray-500 mb-2">
-                {t('minOrder', { n: product.minOrder })}
-              </p>
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[11px] font-semibold">
+                <span>MOQ:</span>
+                <span className="text-gray-900 font-bold">{product.minOrder}</span>
+                <span>units</span>
+              </span>
+            </div>
           )}
 
           {/* Add to Cart Button - hidden in pure WHOLESALE mode */}
@@ -231,7 +281,7 @@ export default function ProductCard({
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart || (product.stock !== undefined && product.stock === 0)}
-              className={`w-full py-2 sm:py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              className={`relative z-10 w-full py-2 sm:py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                 isAddingToCart
                   ? 'bg-success text-white'
                   : product.stock === 0
@@ -263,7 +313,7 @@ export default function ProductCard({
             <button
               onClick={handleAddToQuoteList}
               disabled={isAddingToQuote || (product.stock !== undefined && product.stock === 0)}
-              className={`w-full mt-2 py-2 sm:py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              className={`relative z-10 w-full mt-2 py-2 sm:py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
                 isAddingToQuote
                   ? 'bg-blue-600 text-white'
                   : product.stock === 0
@@ -291,15 +341,14 @@ export default function ProductCard({
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                window.location.href = `/wholesale?product=${product.id}`
+                router.push(`/wholesale?product=${product.id}`)
               }}
-              className="w-full mt-2 py-1.5 text-xs sm:text-sm text-secondary-600 font-medium hover:text-secondary-700 transition-colors"
+              className="relative z-10 w-full mt-2 py-1.5 text-xs sm:text-sm text-secondary-600 font-medium hover:text-secondary-700 transition-colors"
               >
               {t('requestWholesaleQuote')}
             </button>
           )}
         </div>
       </div>
-    </LocaleLink>
   )
 }

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -9,6 +9,7 @@ import { Mail, Lock, User, Phone, MapPin, Eye, EyeOff, Loader2 } from 'lucide-re
 import Navbar from '@/components/navbar'
 import Footer from '@/components/footer'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { CompanyName } from '@/components/ui/CompanyName'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -41,9 +42,7 @@ export default function RegisterPage() {
 
     try {
       await registerUser(formData)
-      // Redirect to homepage after successful registration
-      navigate('/')
-      router.refresh()
+      navigate('/login')
     } catch (err: any) {
       setError(err.message || 'Registration failed')
     }
@@ -61,7 +60,7 @@ export default function RegisterPage() {
               Create Your Account
             </h1>
             <p className="text-gray-600">
-              Join Global Trade and start shopping from China
+              Join <CompanyName /> and start shopping from China
             </p>
           </div>
 

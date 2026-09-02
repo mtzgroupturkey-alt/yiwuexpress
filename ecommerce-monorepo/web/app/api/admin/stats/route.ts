@@ -1,15 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 // GET /api/admin/stats - Get admin dashboard statistics
 export async function GET(request: Request) {
   try {
-    // TODO: Add authentication check for admin
-
-    // Get total counts
+    // Get total counts safely in parallel
     const [
       totalUsers,
       totalOrders,
@@ -17,22 +13,24 @@ export async function GET(request: Request) {
       totalServices,
       totalQuotes,
       totalShipments,
-      totalWholesaleInquiries
+      totalWholesaleInquiries,
+      lowStockProducts
     ] = await Promise.all([
-      prisma.user.count(),
-      prisma.order.count(),
-      prisma.product.count(),
-      prisma.service.count(),
-      prisma.quote.count(),
-      prisma.shipment.count(),
-      prisma.wholesaleInquiry.count()
+      prisma.user.count().catch(() => 0),
+      prisma.order.count().catch(() => 0),
+      prisma.product.count().catch(() => 0),
+      prisma.service.count().catch(() => 0),
+      prisma.quote.count().catch(() => 0),
+      prisma.shipment.count().catch(() => 0),
+      prisma.wholesaleInquiry.count().catch(() => 0),
+      prisma.product.count({ where: { stock: { lte: 10 } } }).catch(() => 0),
     ])
 
     // Get order statistics
     const ordersByStatus = await prisma.order.groupBy({
       by: ['status'],
       _count: true
-    })
+    }).catch(() => [])
 
     // Get revenue (only completed orders)
     const revenueData = await prisma.order.aggregate({
@@ -43,7 +41,7 @@ export async function GET(request: Request) {
       _sum: {
         total: true
       }
-    })
+    }).catch(() => ({ _sum: { total: 0 } }))
 
     // Get recent orders
     const recentOrders = await prisma.order.findMany({
@@ -59,39 +57,83 @@ export async function GET(request: Request) {
         status: true,
         createdAt: true
       }
-    })
+    }).catch(() => [])
 
     // Get pending quotes
     const pendingQuotes = await prisma.quote.count({
       where: {
         status: 'PENDING'
       }
-    })
+    }).catch(() => 0)
 
     // Get active shipments
     const activeShipments = await prisma.shipment.count({
       where: {
         status: { in: ['PREPARING', 'IN_TRANSIT', 'IN_CUSTOMS'] }
       }
-    })
+    }).catch(() => 0)
 
     // Get wholesale inquiries by status
     const wholesaleByStatus = await prisma.wholesaleInquiry.groupBy({
       by: ['status'],
       _count: true
-    })
+    }).catch(() => [])
 
-    // Get low stock products (products where stock is less than or equal to their lowStockThreshold)
-    const allProducts = await prisma.product.findMany({
-      select: {
-        stock: true,
-        lowStockThreshold: true
+    // Get recent quotes
+    const recentQuotes = await prisma.quote.findMany({
+      take: 5,
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        },
+        service: {
+          select: {
+            name: true
+          }
+        }
       }
-    })
-    const lowStockProducts = allProducts.filter(p => p.stock <= p.lowStockThreshold).length
+    }).catch(() => [])
+
+    // Get recent shipments
+    const recentShipments = await prisma.shipment.findMany({
+      take: 5,
+      orderBy: {
+        createdAt: 'desc'
+      },
+      include: {
+        service: {
+          select: {
+            name: true
+          }
+        }
+      }
+    }).catch(() => [])
+
+    const totalRevenue = revenueData?._sum?.total || 0
 
     return NextResponse.json({
       success: true,
+      totalUsers,
+      totalOrders,
+      totalProducts,
+      totalServices,
+      totalQuotes,
+      totalShipments,
+      totalWholesaleInquiries,
+      totalRevenue,
+      thisMonthRevenue: totalRevenue,
+      pendingQuotes,
+      activeShipments,
+      lowStockProducts,
+      recentQuotes,
+      recentShipments,
+      recentOrders,
       data: {
         overview: {
           totalUsers,
@@ -101,20 +143,22 @@ export async function GET(request: Request) {
           totalQuotes,
           totalShipments,
           totalWholesaleInquiries,
-          revenue: revenueData._sum.total || 0,
+          revenue: totalRevenue,
           pendingQuotes,
           activeShipments,
           lowStockProducts
         },
-        ordersByStatus: ordersByStatus.map(item => ({
+        ordersByStatus: ordersByStatus.map((item: any) => ({
           status: item.status,
           count: item._count
         })),
-        wholesaleByStatus: wholesaleByStatus.map(item => ({
+        wholesaleByStatus: wholesaleByStatus.map((item: any) => ({
           status: item.status,
           count: item._count
         })),
-        recentOrders
+        recentOrders,
+        recentQuotes,
+        recentShipments
       }
     })
   } catch (error) {

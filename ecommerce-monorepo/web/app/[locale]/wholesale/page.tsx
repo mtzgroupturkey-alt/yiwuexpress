@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
@@ -10,9 +10,12 @@ import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { useSettings } from '@/components/SettingsProvider'
 
 export default function WholesalePage() {
   const t = useTranslations('Wholesale')
+  const { settings } = useSettings()
+  const companyName = settings?.companyName || 'Global Trade'
   const router = useRouter()
   const navigate = useLocaleNav()
   const [isLoading, setIsLoading] = useState(false)
@@ -383,7 +386,7 @@ export default function WholesalePage() {
               </div>
 
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
-                <p className="font-medium mb-2">{t('whyChoose.title')}</p>
+                <p className="font-medium mb-2">{t('whyChoose.title', { name: companyName })}</p>
                 <ul className="space-y-1 ml-4 list-disc">
                   <li>{t('whyChoose.point1')}</li>
                   <li>{t('whyChoose.point2')}</li>

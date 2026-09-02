@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -148,7 +148,7 @@ export function MainHeader() {
                     height: isSticky ? '36px' : '44px',
                   }}
                 >
-                  {settings?.companyName?.substring(0, 2).toUpperCase() || 'YE'}
+                  {(settings?.companyName || 'Global Trade').split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'GT'}
                 </div>
               )}
               <span

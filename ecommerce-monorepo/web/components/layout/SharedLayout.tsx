@@ -4,6 +4,7 @@ import { TwoRowNavbar } from './TwoRowNavbar'
 import { HeroSlider } from '@/components/home/HeroSlider'
 import { PageHero } from './PageHero'
 import Footer from '@/components/footer'
+import { BackToTop } from '@/components/ui/BackToTop'
 
 interface BreadcrumbItem {
   name: string
@@ -55,6 +56,9 @@ export function SharedLayout({
 
       {/* Footer - Always visible */}
       <Footer />
+
+      {/* Floating Back to Top Button */}
+      <BackToTop />
     </div>
   )
 }

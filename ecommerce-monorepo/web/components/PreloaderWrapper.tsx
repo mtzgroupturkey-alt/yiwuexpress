@@ -3,7 +3,17 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Preloader } from '@/components/ui/Preloader'
 
-export function PreloaderWrapper({ children }: { children: React.ReactNode }) {
+interface PreloaderWrapperProps {
+  children: React.ReactNode
+  initialLogo?: string | null
+  initialCompanyName?: string | null
+}
+
+export function PreloaderWrapper({ 
+  children,
+  initialLogo,
+  initialCompanyName
+}: PreloaderWrapperProps) {
   const [showPreloader, setShowPreloader] = useState(true)
 
   const handleComplete = useCallback(() => {
@@ -12,7 +22,13 @@ export function PreloaderWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {showPreloader && <Preloader onComplete={handleComplete} />}
+      {showPreloader && (
+        <Preloader 
+          onComplete={handleComplete} 
+          initialLogo={initialLogo}
+          initialCompanyName={initialCompanyName}
+        />
+      )}
       <div style={{ opacity: showPreloader ? 0 : 1, transition: 'opacity 0.3s ease' }}>
         {children}
       </div>

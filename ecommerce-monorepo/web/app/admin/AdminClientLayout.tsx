@@ -15,7 +15,6 @@ import {
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 import { Providers } from '@/components/providers'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import DynamicFavicon from '@/components/DynamicFavicon'
 
 interface NavItem {
   href: string
@@ -147,8 +146,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
   const { isAdmin, loading, user } = useAdminAuth()
   const [logoUrl, setLogoUrl] = useState('')
-  const [faviconUrl, setFaviconUrl] = useState('')
   const [companyName, setCompanyName] = useState('Global Trade')
+  const [companyEmail, setCompanyEmail] = useState('')
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   const [accentColor, setAccentColor] = useState('#c9a84c')
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({})
@@ -191,18 +190,24 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (mounted) {
-      fetch('/api/settings')
+      // Detect browser locale (e.g. "zh", "ru", "en") to get localised company name
+      const browserLocale =
+        (typeof navigator !== 'undefined' && navigator.language?.split('-')[0]) || 'en'
+
+      fetch(`/api/settings/public?locale=${encodeURIComponent(browserLocale)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.settings) {
-            if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
-            if (data.settings.companyFavicon) setFaviconUrl(data.settings.companyFavicon)
-            if (data.settings.companyName) setCompanyName(data.settings.companyName)
-            if (data.settings.primaryColor) setPrimaryColor(data.settings.primaryColor)
-            if (data.settings.accentColor) setAccentColor(data.settings.accentColor)
+          const s = data.settings
+          if (s) {
+            if (s.companyLogo)   setLogoUrl(s.companyLogo)
+            // Use localized name; fall back to 'Global Trade' if empty/null
+            setCompanyName((s.companyName || '').trim() || 'Global Trade')
+            if (s.companyEmail) setCompanyEmail(s.companyEmail)
+            if (s.primaryColor) setPrimaryColor(s.primaryColor)
+            if (s.accentColor)  setAccentColor(s.accentColor)
           }
         })
-        .catch(err => console.error(err))
+        .catch(err => console.error('[admin layout] settings fetch error:', err))
     }
   }, [mounted])
 
@@ -255,8 +260,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {faviconUrl && <DynamicFavicon faviconUrl={faviconUrl} />}
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div 
@@ -449,7 +453,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
           {/* Right side actions */}
           <div className="flex items-center gap-2 lg:gap-3">
-            {/* View Website (New Tab) */}
             <a
               href="/en"
               target="_blank"
@@ -472,8 +475,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               <span>View Website</span>
               <ExternalLink size={12} className="opacity-70 group-hover:opacity-100" />
             </a>
-
-            <button className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors" title="Notifications">
+            <button className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
               <Bell size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: accentColor }}></span>
             </button>
@@ -497,7 +499,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   {user?.name || user?.email?.split('@')[0] || 'Admin'}
                 </p>
                 <p className="text-[11px] text-gray-400 leading-tight">
-                  {user?.email || 'admin@globaltrade.com'}
+                  {user?.email || companyEmail || 'admin@globaltrade.com'}
                 </p>
               </div>
             </div>

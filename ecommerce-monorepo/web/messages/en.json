@@ -33,10 +33,11 @@
       "ru": "Russian",
       "zh": "Chinese"
     },
-    "allProducts": "All Products"
+    "allProducts": "All Products",
+    "categories": "Categories"
   },
   "Footer": {
-    "tagline": "Global trade and logistics platform connecting businesses worldwide from China.",
+    "tagline": "Your trusted partner in global trade and logistics from China.",
     "company": "Company",
     "resources": "Resources",
     "legal": "Legal",
@@ -45,7 +46,7 @@
     "newsletterPlaceholder": "Your email address",
     "subscribe": "Subscribe",
     "rights": "All rights reserved.",
-    "aboutText": "Connecting businesses worldwide with professional logistics, customs clearance, and sourcing services from China.",
+    "aboutText": "Your premier partner for international trade and supply chain solutions. Connecting global businesses directly with verified Chinese manufacturers, delivering end-to-end air & sea freight, rigorous quality control, expedited customs clearance, and warehousing worldwide.",
     "quickLinks": "Quick Links",
     "supportHelp": "Support & Help",
     "getInTouch": "Get In Touch",
@@ -59,6 +60,8 @@
     "cookies": "Cookie Policy",
     "sitemap": "Sitemap",
     "brandSubtitle": "Global Trade",
+    "registeredWebsiteName": "Registered Website: Mengti Ci Trade",
+    "icpLicense": "Zhejiang ICP No. 2022029773-5",
     "links": {
       "about": "About Us",
       "services": "Services",
@@ -243,7 +246,7 @@
     }
   },
   "About": {
-    "pageTitle": "About Global Trade",
+    "pageTitle": "About {name}",
     "pageDescription": "15 years connecting global businesses to China's largest wholesale market with transparency, speed, and reliability",
     "breadcrumb": "About",
     "stats": {
@@ -275,22 +278,22 @@
     },
     "testimonials": {
       "heading": "Trusted by Growing Businesses",
-      "subheading": "See how companies like yours achieve sourcing success with Global Trade.",
-      "quote1": "Global Trade transformed our sourcing process. What used to take months now takes weeks, with better quality control.",
+      "subheading": "See how companies like yours achieve sourcing success with {name}.",
+      "quote1": "{name} transformed our sourcing process. What used to take months now takes weeks, with better quality control.",
       "author1Title": "Procurement Director",
       "quote2": "Their China market expertise saved us 35% on costs while improving product quality. Exceptional service.",
       "author2Title": "Supply Chain Manager"
     },
     "cta": {
       "title": "Ready to Transform Your Sourcing?",
-      "subtitle": "Join 15,000+ businesses already sourcing smarter with Global Trade. Get a custom quote and see the difference expertise makes.",
+      "subtitle": "Join 15,000+ businesses already sourcing smarter with {name}. Get a custom quote and see the difference expertise makes.",
       "getQuote": "Get Free Quote",
       "exploreServices": "Explore Services",
       "questions": "Questions? We're here to help",
       "scheduleCall": "Schedule a Call"
     },
     "story": {
-      "badge": "ABOUT GLOBAL TRADE",
+      "badge": "ABOUT {name}",
       "title": "From China Market to Global Success",
       "subtitle": "15 Years of Bridging China's Manufacturing Hub with Global Businesses",
       "hqTitle": "Our China Headquarters",
@@ -443,7 +446,7 @@
       "express": "Express Courier"
     },
     "whyChoose": {
-      "title": "Why Choose Global Trade for Wholesale?",
+      "title": "Why Choose {name} for Wholesale?",
       "point1": "Direct access to China manufacturers and suppliers",
       "point2": "Competitive bulk pricing and flexible MOQ",
       "point3": "Quality inspection and export documentation",
@@ -831,6 +834,11 @@
     "termsConditions": "Terms & Conditions"
   },
   "Product": {
+    "newBadge": "NEW",
+    "soldOut": "Sold Out",
+    "loadMore": "Load More Products",
+    "noProductsTitle": "No Products Found",
+    "noProductsMessage": "We couldn't find any products matching your criteria.",
     "from": "From",
     "specWeight": "Weight",
     "specHsCode": "HS Code",
@@ -924,6 +932,7 @@
     "itemsAdded": "{n} item(s) added",
     "skuLabel": "SKU: ",
     "lowStock": "LOW STOCK",
+    "flashSale": "FLASH SALE",
     "quickView": "Quick View",
     "minOrder": "Min. order: {n} units",
     "added": "Added!",
@@ -981,7 +990,7 @@
     "breadcrumbShop": "Shop",
     "pageDescSearch": "Found {n} products matching your search",
     "pageDescCategory": "Explore our collection of {name}",
-    "pageDescDefault": "Discover quality kitchenware and kitchen essentials for your home or business",
+    "pageDescDefault": "Discover quality products and wholesale essentials direct from manufacturers in China",
     "noProductsFound": "No Products Found",
     "tryAdjusting": "Try adjusting your filters or search query",
     "checkBackSoon": "Check back soon for new products",
@@ -1304,5 +1313,17 @@
     "errPayment": "Payment method is required",
     "subtotal": "Subtotal",
     "total": "Total"
+  },
+  "NotFound": {
+    "title": "Page Not Found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "backHome": "Back to Home",
+    "browseProducts": "Browse Products"
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "retry": "Try Again",
+    "backHome": "Back to Home"
   }
 }

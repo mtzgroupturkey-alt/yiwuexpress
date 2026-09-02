@@ -1,14 +1,14 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/settings - Get system settings
 export async function GET(request: Request) {
   try {
-    // Get first system settings record (there should only be one)
-    const settings = await prisma.systemSettings.findFirst({
+    // SystemSettings is a singleton addressed by singletonKey.
+    const settings = await prisma.systemSettings.findUnique({
+      where: { singletonKey: 'SINGLETON' },
       include: { translations: true }, // Include translations
     })
 
@@ -57,37 +57,28 @@ export async function GET(request: Request) {
 // PUT /api/settings - Update system settings (Admin only)
 export async function PUT(request: Request) {
   try {
-    // TODO: Add authentication check for admin
+    // Authorization: only ADMIN may change system settings.
+    await requireRole(request, ['ADMIN'])
+
     const body = await request.json()
 
-    // Get existing settings
-    const existing = await prisma.systemSettings.findFirst()
+    // SystemSettings is a singleton addressed by singletonKey. Upsert so a
+    // save always targets the one canonical row instead of spawning a new one.
+    const settings = await prisma.systemSettings.upsert({
+      where: { singletonKey: 'SINGLETON' },
+      update: body,
+      create: { ...body, singletonKey: 'SINGLETON' },
+    })
 
-    if (existing) {
-      // Update existing settings
-      const settings = await prisma.systemSettings.update({
-        where: { id: existing.id },
-        data: body
-      })
-
-      return NextResponse.json({
-        success: true,
-        settings: settings,
-        message: 'Settings updated successfully'
-      })
-    } else {
-      // Create new settings
-      const settings = await prisma.systemSettings.create({
-        data: body
-      })
-
-      return NextResponse.json({
-        success: true,
-        settings: settings,
-        message: 'Settings created successfully'
-      }, { status: 201 })
-    }
+    return NextResponse.json({
+      success: true,
+      settings: settings,
+      message: 'Settings updated successfully'
+    })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error updating system settings:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update system settings' },

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Pause, Play, Sparkles, ArrowRight, Zap } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Container } from '@/components/ui/Container'
+import { useSettings } from '@/components/SettingsProvider'
 
 interface HeroSlide {
   id: string
@@ -31,6 +32,8 @@ interface HeroSlide {
 }
 
 export function ModernHeroSlider() {
+  const { settings } = useSettings()
+  const companyName = settings?.companyName || 'Global Trade'
   const [[page, direction], setPage] = useState([0, 0])
   const [isPaused, setIsPaused] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -204,7 +207,7 @@ export function ModernHeroSlider() {
                 style={{ fontFamily: 'Outfit, sans-serif' }}
               >
                 <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
-                  Global Trade
+                  {companyName}
                 </span>
               </motion.h1>
 
