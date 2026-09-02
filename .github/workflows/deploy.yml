@@ -58,8 +58,44 @@ jobs:
 
             # 2. Update code from GitHub
             echo "📥 Fetching and syncing git branch..."
-            git fetch origin
-            git reset --hard origin/production || git reset --hard origin/main || git pull origin
+            
+            # Configure git to handle TLS issues
+            git config --global http.version HTTP/1.1
+            git config --global http.postBuffer 524288000
+            git config --global http.sslVerify true
+            
+            # Try fetch with retry logic
+            max_retries=3
+            retry_count=0
+            
+            while [ $retry_count -lt $max_retries ]; do
+              echo "Attempt $((retry_count + 1)) of $max_retries..."
+              
+              if git fetch origin --depth=1; then
+                echo "✅ Git fetch succeeded"
+                break
+              else
+                retry_count=$((retry_count + 1))
+                if [ $retry_count -lt $max_retries ]; then
+                  echo "⚠️ Fetch failed, retrying in 5 seconds..."
+                  sleep 5
+                  
+                  # Try alternative: force IPv4
+                  git config --global http.version HTTP/1.1
+                else
+                  echo "❌ All fetch attempts failed, trying alternative method..."
+                  # Fallback: re-clone if fetch completely fails
+                  cd ..
+                  BACKUP_DIR="${TARGET_DIR}_backup_$(date +%s)"
+                  mv "$TARGET_DIR" "$BACKUP_DIR"
+                  git clone --depth=1 --branch production https://github.com/mtzgroupturkey-alt/dromkok.git "$TARGET_DIR" || \
+                    git clone --depth=1 --branch main https://github.com/mtzgroupturkey-alt/dromkok.git "$TARGET_DIR"
+                  cd "$TARGET_DIR"
+                fi
+              fi
+            done
+            
+            git reset --hard origin/production || git reset --hard origin/main || true
 
             # 3. Clean install & database sync
             echo "📦 Installing npm dependencies..."
