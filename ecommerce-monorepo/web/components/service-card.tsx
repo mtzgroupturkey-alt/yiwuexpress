@@ -102,7 +102,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-primary-600">
-              ${service.price.toFixed(2)}
+              ${typeof service.price === 'number' ? service.price.toFixed(2) : (Number(service.price) || 0).toFixed(2)}
             </div>
             <div className="text-sm text-gray-500">{t('card.startingPrice')}</div>
           </div>

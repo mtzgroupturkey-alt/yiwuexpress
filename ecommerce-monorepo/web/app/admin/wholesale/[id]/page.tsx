@@ -17,9 +17,10 @@ interface WholesaleInquiry {
   email: string
   phone?: string
   status: string
-  quantity: number
+  quantity?: number
+  products?: Array<{ quantity?: number; name?: string; targetPrice?: number }>
   targetPrice?: number
-  message: string
+  message?: string
   deliveryAddress?: any
   adminNotes?: string
   internalNotes?: string
@@ -37,7 +38,7 @@ interface WholesaleInquiry {
   quotedAt?: string
   quoteValidUntil?: string
   quoteNotes?: string
-  quotes?: Array<{ id: string; status: string; unitPrice: number; quantity: number; totalPrice: number; validUntil: string; createdAt: string; notes?: string }>
+  quotes?: Array<{ id: string; status: string; unitPrice: number; quantity?: number; totalPrice: number; validUntil: string; createdAt: string; notes?: string }>
 }
 
 export default function AdminWholesaleDetailPage({ params }: { params: { id: string } }) {
@@ -72,7 +73,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
         setNewStatus(data.data.status)
         setQuoteData(prev => ({
           ...prev,
-          quantity: data.data.quantity.toString()
+          quantity: data.data.quantity?.toString() || (Array.isArray(data.data.products) ? data.data.products.reduce((s: number, p: any) => s + (p?.quantity || 0), 0).toString() : '')
         }))
       } else {
         alert('Wholesale inquiry not found')
@@ -147,7 +148,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
         setShowQuoteForm(false)
         setQuoteData({
           unitPrice: '',
-          quantity: inquiry?.quantity.toString() || '',
+          quantity: inquiry?.quantity?.toString() || (Array.isArray(inquiry?.products) ? inquiry.products.reduce((s: number, p: any) => s + (p?.quantity || 0), 0).toString() : ''),
           validUntil: '',
           notes: ''
         })
@@ -273,7 +274,13 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Quantity Requested</p>
-                  <p className="text-lg font-semibold">{inquiry.quantity.toLocaleString()} units</p>
+                  <p className="text-lg font-semibold">
+                    {typeof inquiry.quantity === 'number'
+                      ? `${inquiry.quantity.toLocaleString()} units`
+                      : Array.isArray(inquiry.products) && inquiry.products.length > 0
+                      ? `${inquiry.products.reduce((s: number, p: any) => s + (p?.quantity || 0), 0).toLocaleString()} units`
+                      : 'N/A'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Target Price</p>
@@ -392,7 +399,11 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <p className="text-gray-600">Quantity</p>
-                          <p className="font-semibold">{quote.quantity.toLocaleString()} units</p>
+                          <p className="font-semibold">
+                            {typeof quote.quantity === 'number'
+                              ? `${quote.quantity.toLocaleString()} units`
+                              : 'N/A'}
+                          </p>
                         </div>
                         <div>
                           <p className="text-gray-600">Total Price</p>

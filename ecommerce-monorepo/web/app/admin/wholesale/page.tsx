@@ -16,9 +16,10 @@ interface WholesaleInquiry {
   email: string
   phone?: string
   status: string
-  quantity: number
+  quantity?: number
+  products?: Array<{ quantity?: number; name?: string; targetPrice?: number }>
   targetPrice?: number
-  message: string
+  message?: string
   createdAt: string
   user?: {
     name?: string
@@ -94,6 +95,17 @@ export default function AdminWholesalePage() {
       expired: 'bg-gray-100 text-gray-800'
     }
     return colors[status] || 'bg-gray-100 text-gray-800'
+  }
+
+  const formatQuantity = (inquiry: WholesaleInquiry) => {
+    if (typeof inquiry.quantity === 'number') {
+      return inquiry.quantity.toLocaleString()
+    }
+    if (Array.isArray(inquiry.products) && inquiry.products.length > 0) {
+      const total = inquiry.products.reduce((sum, p) => sum + (p?.quantity || 0), 0)
+      if (total > 0) return total.toLocaleString()
+    }
+    return 'N/A'
   }
 
   const displayInquiries = filteredInquiries.slice((page - 1) * limit, page * limit)
@@ -262,7 +274,7 @@ export default function AdminWholesalePage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {inquiry.quantity.toLocaleString()} units
+                        {formatQuantity(inquiry)} units
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -314,7 +326,7 @@ export default function AdminWholesalePage() {
                   <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                     <div>
                       <span className="text-gray-500">Quantity:</span>{' '}
-                      {inquiry.quantity.toLocaleString()} units
+                      {formatQuantity(inquiry)} units
                     </div>
                     <div>
                       <span className="text-gray-500">Target:</span>{' '}

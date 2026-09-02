@@ -4,11 +4,11 @@ import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { Providers } from '@/components/providers'
 import { SettingsProvider } from '@/components/SettingsProvider'
-import { StoreModeProvider } from '@/contexts/StoreModeContext'
-import { SessionModeProvider } from '@/contexts/SessionModeContext'
+import { StoreSessionProvider } from '@/components/providers/StoreSessionProvider'
 import { WholesaleInquiryProvider } from '@/contexts/WholesaleInquiryContext'
 import { PreloaderWrapper } from '@/components/PreloaderWrapper'
 import { getCompanyName, getSiteTagline, getCompanyDescription, getSystemSettings } from '@/lib/company'
+import { getServerSettings } from '@/lib/settings/server-settings'
 import { routing } from '@/i18n/routing'
 
 export const dynamic = 'force-dynamic'
@@ -29,65 +29,42 @@ export async function generateMetadata({
   const companyDescription = await getCompanyDescription(locale)
   const companyFavicon = settings?.companyFavicon || '/favicon.svg'
 
-  const title = siteTagline
-    ? `${companyName} | ${siteTagline}`
-    : `${companyName} | Global Trade & Logistics Platform`
-
-  const description =
-    companyDescription ||
-    `${companyName} - International trade and logistics platform connecting businesses worldwide from China.`
-
   return {
-    title,
-    description,
-    keywords: [companyName, 'International Trade', 'Logistics', 'Shipping from China', 'B2B Sourcing', 'Customs Clearance', 'China Market'],
-    authors: [{ name: companyName, url: 'https://dromkok.com' }],
-    creator: companyName,
-    publisher: companyName,
-    formatDetection: {
-      email: false,
-      address: false,
-      telephone: false,
+    title: {
+      template: `%s | ${companyName}`,
+      default: siteTagline
+        ? `${companyName} - ${siteTagline}`
+        : `${companyName} - Premium Global E-Commerce & Freight Solutions`,
     },
-    openGraph: {
-      type: 'website',
-      locale: locale === 'zh' ? 'zh_CN' : locale === 'ru' ? 'ru_RU' : 'en_US',
-      url: 'https://dromkok.com',
-      title,
-      description,
-      siteName: companyName,
-      images: [
-        {
-          url: '/og-image.png',
-          width: 1200,
-          height: 630,
-          alt: `${companyName} - Global Trade Solutions from China`,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ['/og-image.png'],
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
+    description:
+      companyDescription ||
+      `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
+    metadataBase: new URL('https://yiwuexpress.com'),
     icons: {
       icon: companyFavicon,
       shortcut: companyFavicon,
       apple: companyFavicon,
     },
-    manifest: '/manifest.json',
+    openGraph: {
+      type: 'website',
+      siteName: companyName,
+      title: `${companyName} - Global Trade & Logistics Platform`,
+      description: `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
+      images: [
+        {
+          url: settings?.companyLogo || '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: `${companyName} Platform`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${companyName} - Global Trade & Logistics Platform`,
+      description: `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
+      images: [settings?.companyLogo || '/og-image.png'],
+    },
   }
 }
 
@@ -111,10 +88,10 @@ export default async function LocaleLayout({
     notFound()
   }
 
-  const settings = await getSystemSettings(locale)
-  const companyName = settings?.companyName || (await getCompanyName(locale))
-  const companyLogo = settings?.companyLogo || null
-  const companyFavicon = settings?.companyFavicon || '/favicon.svg'
+  const serverSettings = await getServerSettings(locale)
+  const companyName = serverSettings.companyName || (await getCompanyName(locale))
+  const companyLogo = serverSettings.companyLogo || null
+  const companyFavicon = serverSettings.companyFavicon || '/favicon.svg'
   const messages = await getMessages()
 
   return (
@@ -160,17 +137,18 @@ export default async function LocaleLayout({
       <script src="/unregister-sw.js" defer></script>
       <NextIntlClientProvider messages={messages}>
         <PreloaderWrapper initialLogo={companyLogo} initialCompanyName={companyName}>
-          <StoreModeProvider>
-            <SessionModeProvider>
-              <WholesaleInquiryProvider>
-                <Providers>
-                  <SettingsProvider>
-                    {children}
-                  </SettingsProvider>
-                </Providers>
-              </WholesaleInquiryProvider>
-            </SessionModeProvider>
-          </StoreModeProvider>
+          <StoreSessionProvider
+            initialStoreMode={serverSettings.storeMode as any}
+            initialSettings={serverSettings}
+          >
+            <WholesaleInquiryProvider>
+              <Providers>
+                <SettingsProvider initialSettings={serverSettings}>
+                  {children}
+                </SettingsProvider>
+              </Providers>
+            </WholesaleInquiryProvider>
+          </StoreSessionProvider>
         </PreloaderWrapper>
       </NextIntlClientProvider>
     </>

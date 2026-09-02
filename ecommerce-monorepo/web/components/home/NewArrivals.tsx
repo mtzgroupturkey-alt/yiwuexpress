@@ -55,8 +55,8 @@ export function NewArrivals() {
           className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 pb-4 border-b border-gray-100 gap-4"
         >
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-700 text-xs font-semibold uppercase tracking-wider mb-2.5">
-              <span>🚀</span> Just Added
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-700 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2.5">
+              <span>🚀</span> {locale === 'zh' ? '最新上市' : locale === 'ru' ? 'Новые поступления' : 'Just Added'}
             </div>
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-[#1a3a5c]">
               {t('title')}

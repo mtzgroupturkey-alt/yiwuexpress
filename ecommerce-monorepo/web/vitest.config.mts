@@ -16,6 +16,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      '@monorepo/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
+      'zod': path.resolve(__dirname, 'node_modules/zod'),
     },
   },
 })

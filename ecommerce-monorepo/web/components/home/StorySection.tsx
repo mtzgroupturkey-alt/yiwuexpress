@@ -1,18 +1,27 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Building2, Users, Package, Globe } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 
 export function StorySection() {
   const t = useTranslations('About')
+  const locale = useLocale()
   const { settings } = useSettings()
   const companyName = settings?.companyName || 'Global Trade'
 
   const highlights = [
-    { icon: Building2, label: t('story.highlightLocalPresence'), value: 'Yiwu HQ' },
-    { icon: Users, label: t('story.highlightTeamSize'), value: '50+ Experts' },
+    { 
+      icon: Building2, 
+      label: t('story.highlightLocalPresence'), 
+      value: locale === 'ru' ? 'Хаб в Иу' : locale === 'zh' ? '义乌集货总仓' : 'China Hub HQ' 
+    },
+    { 
+      icon: Users, 
+      label: t('story.highlightTeamSize'), 
+      value: locale === 'ru' ? '50+ экспертов' : locale === 'zh' ? '50+ 专家团队' : '50+ Experts' 
+    },
     { icon: Package, label: t('story.highlightDailyOrders'), value: '500+' },
     { icon: Globe, label: t('story.highlightSuccessRate'), value: '99.7%' },
   ]

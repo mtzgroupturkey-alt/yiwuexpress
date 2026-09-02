@@ -94,8 +94,8 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-700 text-xs font-semibold uppercase tracking-wider mb-3">
-            <span>✨</span> Popular Collections
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <span>✨</span> {locale === 'zh' ? '热门分类' : locale === 'ru' ? 'Популярные категории' : 'Popular Categories'}
           </div>
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">
             {sectionTitle}

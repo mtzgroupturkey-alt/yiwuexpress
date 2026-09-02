@@ -24,7 +24,7 @@
       "searchPlaceholder": "搜索产品..."
     },
     "announce": {
-      "welcome": "欢迎 — 来自中国的优质厨具",
+      "welcome": "欢迎 — 来自中国的优质工业机械与五金装备",
       "solutions": "全球贸易解决方案 — 品质值得信赖",
       "wholesale": "批发与零售 — 保证最优惠价格"
     },
@@ -118,6 +118,23 @@
     "weightPerUnit": "重量：{n} 千克/件",
     "cartItems": "购物车商品 ({n})",
     "startShopping": "开始购物",
+    "continueShoppingCta": "继续购物",
+    "proceedToCheckout": "前往结账",
+    "clearCart": "清空购物车",
+    "clearCartConfirm": "您确定要清空购物车吗？",
+    "unitPrice": "单价",
+    "subtotalLabel": "小计",
+    "shippingCalculated": "运费在下一步计算",
+    "taxCalculated": "税费在结账时计算",
+    "enterPromoCode": "输入优惠码",
+    "applyPromo": "应用",
+    "promoApplied": "优惠码已应用",
+    "promoInvalid": "无效的优惠码",
+    "discount": "折扣",
+    "estimatedTotal": "预估总计",
+    "savedForLater": "稍后购买 ({n})",
+    "moveToCart": "移至购物车",
+    "saveForLater": "稍后购买",
     "addSomeProducts": "添加一些商品到购物车开始购物",
     "pageDescCart": "查看您购物车中的商品",
     "pageDescEmpty": "您的购物车是空的",
@@ -149,7 +166,7 @@
     },
     "category": {
       "featuredTitle": "按分类选购",
-      "featuredSubtitle": "探索我们丰富的厨具产品。从专业厨具到日常用品。",
+      "featuredSubtitle": "探索我们丰富的工业机械、数控机床与专业五金工具产品。",
       "parentTitle": "浏览全部分类",
       "parentSubtitle": "探索我们完整的产品分类。",
       "empty": "暂无可用分类。",
@@ -157,12 +174,12 @@
     },
     "featured": {
       "title": "精选产品",
-      "subtitle": "我们精心挑选的高端厨具",
+      "subtitle": "为您精心挑选的高端工业机械与精密制造装备",
       "viewAll": "查看全部"
     },
     "newArrivals": {
       "title": "新品上架",
-      "subtitle": "来自中国的最新厨具，抢先体验",
+      "subtitle": "源头工厂最新下线工业机床与车间工具，现货直供",
       "viewAll": "查看全部"
     },
     "about": {

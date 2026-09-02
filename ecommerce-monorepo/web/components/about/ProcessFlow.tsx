@@ -1,11 +1,20 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Search, MessageSquare, ShoppingCart, Truck, CheckCircle } from 'lucide-react'
 
 export function ProcessFlow() {
   const t = useTranslations('About')
+  const locale = useLocale()
+
+  const durations: Record<string, string[]> = {
+    en: ['24-48 hours', '2-3 days', '3-7 days', '12-18 days', 'Ongoing'],
+    ru: ['24-48 часов', '2-3 дня', '3-7 дней', '12-18 дней', 'Постоянно'],
+    zh: ['24-48 小时', '2-3 工作日', '3-7 工作日', '12-18 天', '持续支持']
+  }
+
+  const d = durations[locale] || durations.en
 
   const steps = [
     {
@@ -13,35 +22,35 @@ export function ProcessFlow() {
       title: t('process.step1Title'),
       description: t('process.step1Desc'),
       icon: Search,
-      duration: '24-48 hours'
+      duration: d[0]
     },
     {
       step: '2', 
       title: t('process.step2Title'),
       description: t('process.step2Desc'),
       icon: MessageSquare,
-      duration: '2-3 days'
+      duration: d[1]
     },
     {
       step: '3',
       title: t('process.step3Title'), 
       description: t('process.step3Desc'),
       icon: ShoppingCart,
-      duration: '3-7 days'
+      duration: d[2]
     },
     {
       step: '4',
       title: t('process.step4Title'),
       description: t('process.step4Desc'),
       icon: Truck,
-      duration: '12-18 days'
+      duration: d[3]
     },
     {
       step: '5',
       title: t('process.step5Title'),
       description: t('process.step5Desc'),
       icon: CheckCircle,
-      duration: 'Ongoing'
+      duration: d[4]
     }
   ]
 

@@ -24,7 +24,7 @@
       "searchPlaceholder": "Search for products..."
     },
     "announce": {
-      "welcome": "WELCOME — PREMIUM KITCHENWARE FROM CHINA",
+      "welcome": "WELCOME — INDUSTRIAL MACHINERY & TOOLS DIRECT FROM CHINA",
       "solutions": "GLOBAL TRADE SOLUTIONS — QUALITY YOU CAN TRUST",
       "wholesale": "WHOLESALE & RETAIL — BEST PRICES GUARANTEED"
     },
@@ -149,7 +149,7 @@
     },
     "category": {
       "featuredTitle": "Shop by Category",
-      "featuredSubtitle": "Explore our wide range of kitchenware products. From professional cookware to everyday essentials.",
+      "featuredSubtitle": "Explore our wide range of industrial equipment, CNC machinery, power tools, and hardware.",
       "parentTitle": "Browse by Category",
       "parentSubtitle": "Explore our complete range of product categories.",
       "empty": "No categories available yet.",
@@ -157,12 +157,12 @@
     },
     "featured": {
       "title": "Featured Products",
-      "subtitle": "Our handpicked selection of premium kitchenware",
+      "subtitle": "Our handpicked selection of premium industrial machinery & precision equipment",
       "viewAll": "View All"
     },
     "newArrivals": {
       "title": "New Arrivals",
-      "subtitle": "Fresh from China — discover our latest kitchenware",
+      "subtitle": "Fresh from Tier-1 factories — discover our latest industrial tools and machinery",
       "viewAll": "View All"
     },
     "about": {

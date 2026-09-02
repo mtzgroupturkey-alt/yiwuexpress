@@ -1,32 +1,13 @@
-'use client'
+﻿'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, ReactNode } from 'react'
 import { useLocale } from 'next-intl'
 import DynamicFavicon from './DynamicFavicon'
+import { useSettingsStore, CompanySettings, DEFAULT_SETTINGS } from '@/stores/settingsStore'
 
-interface CompanySettings {
-  id?: string
-  companyName: string
-  siteTagline?: string
-  companyAddress?: string
-  companyPhone?: string
-  companyEmail?: string
-  companyWebsite?: string
-  businessLicense?: string
-  taxRegistrationNumber?: string
-  companyDescription?: string
-  companyLogo?: string
-  companyLogoHeight?: number
-  companyFavicon?: string
-  primaryColor: string
-  accentColor: string
-  currency: string
-  timezone: string
-  language: string
-  storeMode?: 'WHOLESALE' | 'RETAIL' | 'BOTH'
-}
+export type { CompanySettings }
 
-interface SettingsContextType {
+export interface SettingsContextType {
   settings: CompanySettings | null
   loading: boolean
   refreshSettings: () => void
@@ -37,32 +18,47 @@ interface SettingsContextType {
 }
 
 const SettingsContext = createContext<SettingsContextType>({
-  settings: null,
-  loading: true,
+  settings: DEFAULT_SETTINGS,
+  loading: false,
   refreshSettings: () => {},
   storeMode: 'WHOLESALE',
   isWholesaleOnly: true,
   isRetailOnly: false,
-  isHybridMode: false
+  isHybridMode: false,
 })
 
 export const useSettings = () => useContext(SettingsContext)
 
 interface SettingsProviderProps {
+  initialSettings?: CompanySettings | null
   children: ReactNode
 }
 
-export function SettingsProvider({ children }: SettingsProviderProps) {
+export function SettingsProvider({ initialSettings, children }: SettingsProviderProps) {
   const locale = useLocale()
-  const [settings, setSettings] = useState<CompanySettings | null>(null)
-  const [loading, setLoading] = useState(true)
+  const settings = useSettingsStore((state) => state.settings)
+  const loading = useSettingsStore((state) => state.loading)
+  const setSettings = useSettingsStore((state) => state.setSettings)
+  const setLoading = useSettingsStore((state) => state.setLoading)
+  const initializeSettings = useSettingsStore((state) => state.initializeSettings)
+
+  useEffect(() => {
+    if (initialSettings) {
+      initializeSettings(initialSettings)
+    }
+  }, [initialSettings, initializeSettings])
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch(`/api/settings/public?locale=${encodeURIComponent(locale || 'en')}`)
+      setLoading(true)
+      const response = await fetch(
+        `/api/settings/public?locale=${encodeURIComponent(locale || 'en')}`
+      )
       if (response.ok) {
         const data = await response.json()
-        setSettings(data.settings)
+        if (data.settings) {
+          setSettings(data.settings)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch settings:', error)
@@ -71,26 +67,20 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   }
 
-  useEffect(() => {
-    fetchSettings()
-  }, [locale])
-
-  const refreshSettings = () => {
-    setLoading(true)
-    fetchSettings()
-  }
-
   const storeMode = settings?.storeMode || 'WHOLESALE'
 
-  const value: SettingsContextType = {
-    settings,
-    loading,
-    refreshSettings,
-    storeMode,
-    isWholesaleOnly: storeMode === 'WHOLESALE',
-    isRetailOnly: storeMode === 'RETAIL',
-    isHybridMode: storeMode === 'BOTH',
-  }
+  const value: SettingsContextType = useMemo(
+    () => ({
+      settings: settings || DEFAULT_SETTINGS,
+      loading,
+      refreshSettings: fetchSettings,
+      storeMode,
+      isWholesaleOnly: storeMode === 'WHOLESALE',
+      isRetailOnly: storeMode === 'RETAIL',
+      isHybridMode: storeMode === 'BOTH',
+    }),
+    [settings, loading, storeMode]
+  )
 
   return (
     <SettingsContext.Provider value={value}>

@@ -286,13 +286,13 @@ export default function Footer() {
             {/* Core Capabilities Pills */}
             <div className="flex flex-wrap gap-1.5 pt-1">
               <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
-                Global Logistics
+                {locale === 'zh' ? '全球物流' : locale === 'ru' ? 'Международная логистика' : 'Global Logistics'}
               </span>
               <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
-                Direct Sourcing
+                {locale === 'zh' ? '源头直采' : locale === 'ru' ? 'Прямые закупки' : 'Direct Sourcing'}
               </span>
               <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
-                Customs Clearance
+                {locale === 'zh' ? '双清报关' : locale === 'ru' ? 'Таможенное оформление' : 'Customs Clearance'}
               </span>
             </div>
           </div>
@@ -307,8 +307,8 @@ export default function Footer() {
               {[
                 ...serviceLinks.slice(0, 3),
                 ...companyLinks.slice(0, 3)
-              ].map((link) => (
-                <li key={link.href}>
+              ].map((link, idx) => (
+                <li key={`${link.href}-${link.label}-${idx}`}>
                   <LocaleLink 
                     href={link.href}
                     className="text-sm text-gray-300/90 hover:text-secondary-300 transition-all duration-300 inline-flex items-center group hover:translate-x-1"
@@ -328,8 +328,8 @@ export default function Footer() {
               <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
             </h3>
             <ul className="space-y-3">
-              {supportLinks.map((link) => (
-                <li key={link.href}>
+              {supportLinks.map((link, idx) => (
+                <li key={`${link.href}-${link.label}-${idx}`}>
                   <LocaleLink 
                     href={link.href}
                     className="text-sm text-gray-300/90 hover:text-secondary-300 transition-all duration-300 inline-flex items-center group hover:translate-x-1"

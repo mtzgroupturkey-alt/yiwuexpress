@@ -80,6 +80,26 @@ export interface GitStatus {
   clean: boolean;
 }
 
+export interface GitBranchInfo {
+  name: string;
+  current: boolean;
+}
+
+export interface GitLogEntry {
+  commit: string;
+  author: string;
+  date: string;
+  message: string;
+}
+
+export interface IncomingCommit {
+  hash: string;
+  shortHash: string;
+  author: string;
+  date: string;
+  message: string;
+}
+
 export interface LocalServerStatus {
   dev: {
     running: boolean;

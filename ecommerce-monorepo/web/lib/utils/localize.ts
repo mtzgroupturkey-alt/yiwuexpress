@@ -248,9 +248,16 @@ export function localizeHeroSlide(
 export interface RawServiceFromDb {
   id: string
   name: string
+  slug?: string
   description?: string | null
-  coverage?: string | null
+  price?: number
   duration?: string | null
+  coverage?: string | null
+  type?: string
+  image?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
   translations?: Array<{
     locale: string
     name: string
@@ -258,9 +265,10 @@ export interface RawServiceFromDb {
     coverage?: string | null
     duration?: string | null
   }> | null
+  [key: string]: any
 }
 
-export interface LocalizedService {
+export interface LocalizedService extends RawServiceFromDb {
   id: string
   name: string
   description: string
@@ -268,10 +276,10 @@ export interface LocalizedService {
   duration: string | null
 }
 
-export function localizeService(
-  service: RawServiceFromDb,
+export function localizeService<T extends RawServiceFromDb>(
+  service: T,
   locale: string
-): LocalizedService {
+): T & LocalizedService {
   const target = String(locale)
   const translations = service.translations ?? []
 
@@ -283,6 +291,7 @@ export function localizeService(
 
   if (resolution) {
     return {
+      ...service,
       id: service.id,
       name: resolution.name,
       description: resolution.description ?? service.description ?? '',
@@ -292,6 +301,7 @@ export function localizeService(
   }
 
   return {
+    ...service,
     id: service.id,
     name: service.name,
     description: service.description ?? '',

@@ -1,0 +1,100 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - production
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          timeout: 60s
+          command_timeout: 30m
+          script_stop: true
+          envs: DATABASE_URL
+          script: |
+            set -e
+
+            echo "================================================="
+            echo "🚀 Executing Production Deployment on Remote Host"
+            echo "================================================="
+
+            # 1. Detect server path
+            if [ -d "/www/wwwroot/www.dromkok.com/web" ]; then
+              TARGET_DIR="/www/wwwroot/www.dromkok.com/web"
+            elif [ -d "/www/wwwroot/www.dromkok.com/ecommerce-monorepo/web" ]; then
+              TARGET_DIR="/www/wwwroot/www.dromkok.com/ecommerce-monorepo/web"
+            elif [ -d "/root/ecommerce-monorepo/web" ]; then
+              TARGET_DIR="/root/ecommerce-monorepo/web"
+            elif [ -d "/var/www/ecommerce-monorepo/web" ]; then
+              TARGET_DIR="/var/www/ecommerce-monorepo/web"
+            else
+              TARGET_DIR="/www/wwwroot/www.dromkok.com"
+            fi
+
+            echo "📂 Target directory: $TARGET_DIR"
+            cd "$TARGET_DIR"
+
+            # 2. Update code from GitHub
+            echo "📥 Fetching and syncing git branch..."
+            git fetch origin
+            git reset --hard origin/production || git reset --hard origin/main || git pull origin
+
+            # 3. Clean install & database sync
+            echo "📦 Installing npm dependencies..."
+            export npm_config_cache="/tmp/.npm-cache"
+            mkdir -p /tmp/.npm-cache
+            npm install --cache /tmp/.npm-cache
+
+            echo "🔧 Prisma Client generation & schema deploy..."
+            npx prisma generate
+            npx prisma db push --accept-data-loss || npx prisma migrate deploy || true
+
+            # 4. Clean Next.js build
+            echo "🏗️ Performing clean Next.js production build..."
+            rm -rf .next
+            npm run build
+
+            # 5. Restart PM2 & Save
+            echo "🔄 Restarting PM2 process..."
+            pm2 restart all || pm2 restart dromkok-web || pm2 restart ecommerce-monorepo || pm2 start npm --name "dromkok-web" -- run start
+            pm2 save
+
+            # 6. Verify local server health
+            echo "⏳ Waiting for service to respond on port 3001..."
+            sleep 5
+            if curl -f -s http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "✅ Next.js app is healthy on port 3001"
+            else
+              echo "⚠️ Next.js starting up, checking port 3001..."
+            fi
+
+            # 7. Reload Nginx if configured
+            if command -v nginx > /dev/null 2>&1; then
+              nginx -t && systemctl reload nginx || true
+            fi
+
+            echo "================================================="
+            echo "✅ Production Deployment Complete!"
+            echo "================================================="

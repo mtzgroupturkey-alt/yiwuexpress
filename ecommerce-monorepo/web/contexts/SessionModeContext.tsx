@@ -1,37 +1,22 @@
-'use client'
+﻿'use client'
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { useStoreSessionStore, SessionCartMode } from '@/stores/storeSessionStore'
 
-/**
- * Active session cart mode.
- *
- * This is the *visitor's* current intent and is distinct from the global
- * admin-configured `StoreMode` (`WHOLESALE` | `RETAIL` | `BOTH`). When the
- * store runs in `BOTH` mode the buyer starts in `retail` and may morph the
- * header anchor to `wholesale` via the manual toggle or by interacting with a
- * wholesale pricing tier on a product page.
- *
- * The two modes are mutually exclusive in the header viewport — only one
- * semantic cart anchor is ever mounted at a time.
- */
-export type SessionCartMode = 'retail' | 'wholesale'
+export type { SessionCartMode }
 
-interface SessionModeContextType {
+export interface SessionModeContextType {
   sessionMode: SessionCartMode
   isWholesaleSession: boolean
   isRetailSession: boolean
-  /** Morph the active session to wholesale (B2B). */
   enableWholesaleSession: () => void
-  /** Morph the active session back to retail (B2C). */
   enableRetailSession: () => void
-  /** Toggle between the two modes. */
   toggleSessionMode: () => void
 }
 
 const SessionModeContext = createContext<SessionModeContextType | undefined>(undefined)
 
 export function SessionModeProvider({ children }: { children: ReactNode }) {
-  // Default fallback: B2C Retail mode unless the URL already requested wholesale.
   const [sessionMode, setSessionMode] = useState<SessionCartMode>('retail')
 
   useEffect(() => {
@@ -39,15 +24,27 @@ export function SessionModeProvider({ children }: { children: ReactNode }) {
     const params = new URLSearchParams(window.location.search)
     if (params.get('mode') === 'wholesale') {
       setSessionMode('wholesale')
+      useStoreSessionStore.getState().enableWholesaleSession()
     }
   }, [])
 
-  const enableWholesaleSession = useCallback(() => setSessionMode('wholesale'), [])
-  const enableRetailSession = useCallback(() => setSessionMode('retail'), [])
-  const toggleSessionMode = useCallback(
-    () => setSessionMode((prev) => (prev === 'wholesale' ? 'retail' : 'wholesale')),
-    []
-  )
+  const enableWholesaleSession = useCallback(() => {
+    setSessionMode('wholesale')
+    useStoreSessionStore.getState().enableWholesaleSession()
+  }, [])
+
+  const enableRetailSession = useCallback(() => {
+    setSessionMode('retail')
+    useStoreSessionStore.getState().enableRetailSession()
+  }, [])
+
+  const toggleSessionMode = useCallback(() => {
+    setSessionMode((prev) => {
+      const next = prev === 'wholesale' ? 'retail' : 'wholesale'
+      useStoreSessionStore.getState().setSessionMode(next)
+      return next
+    })
+  }, [])
 
   const value: SessionModeContextType = {
     sessionMode,
@@ -58,17 +55,23 @@ export function SessionModeProvider({ children }: { children: ReactNode }) {
     toggleSessionMode,
   }
 
-  return (
-    <SessionModeContext.Provider value={value}>
-      {children}
-    </SessionModeContext.Provider>
-  )
+  return <SessionModeContext.Provider value={value}>{children}</SessionModeContext.Provider>
 }
 
-export function useSessionMode() {
+export function useSessionMode(): SessionModeContextType {
   const context = useContext(SessionModeContext)
-  if (context === undefined) {
-    throw new Error('useSessionMode must be used within a SessionModeProvider')
+  if (context) {
+    return context
   }
-  return context
+
+  // Fallback to Zustand store if used outside Provider
+  const store = useStoreSessionStore.getState()
+  return {
+    sessionMode: store.sessionMode,
+    isWholesaleSession: store.isWholesaleSession,
+    isRetailSession: store.isRetailSession,
+    enableWholesaleSession: store.enableWholesaleSession,
+    enableRetailSession: store.enableRetailSession,
+    toggleSessionMode: store.toggleSessionMode,
+  }
 }
