@@ -103,13 +103,20 @@ fi
 # Re-ensure permissions for node / next build
 chmod -R u+rwX "$PROJECT_PATH" 2>/dev/null || true
 
-# 5. Install dependencies (clean install from lockfile)
+# 5. Install dependencies (clean install with isolated cache)
 log "${BLUE}📦 Installing dependencies (npm ci)...${NC}"
-if npm ci 2>&1 | tee -a "$LOG_FILE"; then
+export npm_config_cache="/tmp/.npm-cache"
+mkdir -p /tmp/.npm-cache
+if npm ci --cache /tmp/.npm-cache 2>&1 | tee -a "$LOG_FILE"; then
     log "${GREEN}✅ Dependencies installed${NC}"
 else
-    log "${RED}❌ Failed to install dependencies${NC}"
-    exit 1
+    log "${YELLOW}⚠️ npm ci failed, trying npm install fallback...${NC}"
+    if npm install --cache /tmp/.npm-cache 2>&1 | tee -a "$LOG_FILE"; then
+        log "${GREEN}✅ Dependencies installed via fallback${NC}"
+    else
+        log "${RED}❌ Failed to install dependencies${NC}"
+        exit 1
+    fi
 fi
 
 # 6. Generate Prisma Client
