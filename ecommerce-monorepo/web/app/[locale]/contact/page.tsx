@@ -92,6 +92,7 @@ export default function ContactPage() {
       breadcrumbs={[
         { name: t('breadcrumb'), href: '/contact' }
       ]}
+      pageSlug="contact"
       backgroundImage="/images/contact-bg.jpg"
     >
       <div className="bg-gray-50">

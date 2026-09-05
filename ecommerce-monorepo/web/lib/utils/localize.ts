@@ -458,10 +458,14 @@ export interface RawPageBannerFromDb {
   id?: string
   title?: string | null
   subtitle?: string | null
+  imageUrl?: string | null
+  mobileImageUrl?: string | null
+  overlayColor?: string | null
   translations?: Array<{ locale: string; title?: string | null; subtitle?: string | null }> | null
+  [key: string]: any
 }
 
-export function localizePageBanner(banner: RawPageBannerFromDb, locale: string) {
+export function localizePageBanner<T extends RawPageBannerFromDb>(banner: T, locale: string): T {
   const target = String(locale)
   const row = resolveByLocale(
     banner.translations,
@@ -469,7 +473,7 @@ export function localizePageBanner(banner: RawPageBannerFromDb, locale: string) 
     (t) => Boolean((t.title && t.title.trim().length > 0) || (t.subtitle && t.subtitle.trim().length > 0))
   )
   return {
-    id: banner.id,
+    ...banner,
     title: row?.title ?? banner.title ?? null,
     subtitle: row?.subtitle ?? banner.subtitle ?? null,
   }

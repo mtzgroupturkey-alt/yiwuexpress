@@ -26,6 +26,8 @@ import { ProcessFlow } from '@/components/about/ProcessFlow'
 import { ClientLogos } from '@/components/about/ClientLogos'
 import { AboutContactCTA } from '@/components/about/AboutContactCTA'
 import { getCompanyName } from '@/lib/company'
+import { getBreadcrumbBackground } from '@/lib/breadcrumb-service'
+import { localizePageBanner } from '@/lib/utils/localize'
 
 export default async function AboutPage({
   params,
@@ -249,14 +251,19 @@ export default async function AboutPage({
     }
   ]
 
+  const rawBanner = await getBreadcrumbBackground({ pageType: 'static', pageSlug: 'about' })
+  const banner = rawBanner ? localizePageBanner(rawBanner, locale) : null
+
   return (
     <SharedLayout 
-      pageTitle={t('pageTitle', { name: companyName })}
-      pageDescription={t('pageDescription')}
+      pageTitle={banner?.title || t('pageTitle', { name: companyName })}
+      pageDescription={banner?.subtitle || t('pageDescription')}
       breadcrumbs={[
         { name: t('breadcrumb'), href: '/about' }
       ]}
-      backgroundImage="/images/services-bg.jpg"
+      pageSlug="about"
+      backgroundImage={banner?.imageUrl || undefined}
+      overlayColor={banner?.overlayColor || undefined}
     >
       <div className="bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#060d17] dark:via-[#0a1628] dark:to-[#060d17]">
         {/* Top Story Narrative Section */}

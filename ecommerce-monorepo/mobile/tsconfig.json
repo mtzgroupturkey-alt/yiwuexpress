@@ -8,6 +8,12 @@
       ],
       "@/assets/*": [
         "./assets/*"
+      ],
+      "@monorepo/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "@monorepo/shared/*": [
+        "../../packages/shared/src/*"
       ]
     }
   },

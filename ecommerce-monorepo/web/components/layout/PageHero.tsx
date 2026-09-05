@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -17,6 +17,7 @@ interface PageHeroProps {
   description?: string
   breadcrumbs?: BreadcrumbItem[]
   backgroundImage?: string
+  overlayColor?: string
   pageSlug?: string // For static pages: 'about', 'contact', etc.
   categoryId?: string // For category pages
 }
@@ -29,7 +30,20 @@ interface BreadcrumbSetting {
   subtitle?: string
 }
 
-export function PageHero({ title, description, breadcrumbs, backgroundImage, pageSlug, categoryId }: PageHeroProps) {
+function formatGradientOverlay(overlay?: string | null): string {
+  if (!overlay) return 'rgba(26, 26, 46, 0.85), rgba(26, 58, 92, 0.85)'
+  const trimmed = overlay.trim()
+  const rgbaMatches = trimmed.match(/rgba?\([^)]+\)/g)
+  if (rgbaMatches && rgbaMatches.length === 1) {
+    return `${trimmed}, ${trimmed}`
+  }
+  if (!trimmed.includes(',')) {
+    return `${trimmed}, ${trimmed}`
+  }
+  return trimmed
+}
+
+export function PageHero({ title, description, breadcrumbs, backgroundImage, overlayColor, pageSlug, categoryId }: PageHeroProps) {
   const defaultBreadcrumbs: BreadcrumbItem[] = breadcrumbs || []
   const pathname = usePathname()
   const [bgSettings, setBgSettings] = useState<BreadcrumbSetting | null>(null)
@@ -39,9 +53,14 @@ export function PageHero({ title, description, breadcrumbs, backgroundImage, pag
     const fetchBreadcrumbBackground = async () => {
       try {
         // Auto-detect page slug from pathname if not provided
-        const detectedSlug = pageSlug || pathname?.split('/')[1] || ''
+        // Pathname can be /en/about or /about - handle locale prefix
+        const segments = pathname?.split('/').filter(Boolean) || []
+        const hasLocale = segments[0] && segments[0].length === 2
+        const currentLocale = hasLocale ? segments[0] : 'en'
+        const detectedSlug = pageSlug || (hasLocale ? segments[1] : segments[0]) || ''
         
         const params = new URLSearchParams()
+        params.append('locale', currentLocale)
         if (categoryId) {
           params.append('categoryId', categoryId)
         } else if (detectedSlug) {
@@ -74,7 +93,7 @@ export function PageHero({ title, description, breadcrumbs, backgroundImage, pag
   // Use settings from database if available, otherwise fallback to prop
   const finalBgImage = bgSettings?.imageUrl || backgroundImage
   const finalMobileBg = bgSettings?.mobileImageUrl
-  const finalOverlay = bgSettings?.overlayColor || 'rgba(26, 26, 46, 0.85), rgba(26, 58, 92, 0.85)'
+  const finalOverlay = formatGradientOverlay(bgSettings?.overlayColor || overlayColor)
   const finalTitle = bgSettings?.title || title
   const finalDescription = bgSettings?.subtitle || description
 
@@ -82,9 +101,10 @@ export function PageHero({ title, description, breadcrumbs, backgroundImage, pag
     <section 
       className="relative bg-gradient-to-br from-[#1a1a2e] via-[#1a3a5c] to-[#2a4a6c] overflow-hidden"
       style={finalBgImage ? {
-        backgroundImage: `linear-gradient(${finalOverlay}), url(${finalBgImage})`,
+        backgroundImage: `linear-gradient(${finalOverlay}), url("${finalBgImage}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       } : {}}
     >
       <Container>

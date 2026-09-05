@@ -1,7 +1,5 @@
-﻿# Node / package manager artefacts
+# Node / package manager artefacts
 node_modules/
-yarn.lock
-package-lock.json
 # Next.js / Vite / other build artefacts
 .next/
 out/
@@ -19,5 +17,4 @@ Thumbs.db
 .env.local
 .env.*.local
 # Misc generated files
-*.lock
 *.tgz

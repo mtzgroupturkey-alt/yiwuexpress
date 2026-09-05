@@ -439,19 +439,14 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Chinese MIIT ICP & Website Registration Compliance Bar */}
-          <div className="mt-4 pt-4 border-t border-gray-800/80 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-400">
-            <span className="inline-flex items-center gap-1.5 text-gray-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary-400/80"></span>
-              {t('registeredWebsiteName')}
-            </span>
-            <span className="hidden sm:inline text-gray-700">|</span>
+          {/* Chinese MIIT ICP Compliance Bar */}
+          <div className="mt-4 pt-4 border-t border-gray-800/80 flex items-center justify-center text-xs text-gray-400">
             <a
               href="https://beian.miit.gov.cn/#/Integrated/index"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-gray-400 hover:text-secondary-300 transition-colors underline-offset-4 hover:underline"
-              title="Ministry of Industry and Information Technology (MIIT) ICP License"
+              title="工业和信息化部网站备案系统"
             >
               <Shield className="w-3.5 h-3.5 text-secondary-400" />
               <span>{t('icpLicense')}</span>

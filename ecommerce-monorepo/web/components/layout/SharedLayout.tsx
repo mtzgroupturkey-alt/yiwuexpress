@@ -19,6 +19,8 @@ interface SharedLayoutProps {
   breadcrumbs?: BreadcrumbItem[]
   backgroundImage?: string
   categoryId?: string
+  pageSlug?: string
+  overlayColor?: string
 }
 
 export function SharedLayout({ 
@@ -28,7 +30,9 @@ export function SharedLayout({
   pageDescription,
   breadcrumbs,
   backgroundImage,
-  categoryId
+  categoryId,
+  pageSlug,
+  overlayColor
 }: SharedLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden">
@@ -45,7 +49,9 @@ export function SharedLayout({
           description={pageDescription}
           breadcrumbs={breadcrumbs}
           backgroundImage={backgroundImage}
+          overlayColor={overlayColor}
           categoryId={categoryId}
+          pageSlug={pageSlug}
         />
       )}
       

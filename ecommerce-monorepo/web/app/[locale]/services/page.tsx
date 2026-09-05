@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
@@ -56,6 +56,7 @@ export default function ServicesPage() {
       breadcrumbs={[
         { name: t('breadcrumb'), href: '/services' }
       ]}
+      pageSlug="services"
       backgroundImage="/images/services-bg.jpg"
     >
       <div className="bg-gray-50">
