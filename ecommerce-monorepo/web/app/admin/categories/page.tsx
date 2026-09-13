@@ -14,6 +14,8 @@ import {
   X, Sparkles, FolderPlus
 } from 'lucide-react'
 import { ImageUpload } from '@/components/admin/ImageUpload'
+import { localizeCategory } from '@/lib/utils/localize'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 import {
   ProductTranslationForm,
   validateTranslations,
@@ -76,6 +78,7 @@ function CategoryAvatar({ src, name, size = 'md' }: { src?: string | null; name:
 }
 
 export default function AdminCategoriesPage() {
+  const { locale, dict, t } = useAdminLocale()
   const [categories, setCategories] = useState<Category[]>([])
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -293,7 +296,7 @@ export default function AdminCategoriesPage() {
     try {
       const enName = translations.en?.name?.trim()
       if (!enName) {
-        alert('English name is required')
+        alert(dict.categories.englishNameRequired)
         setSubmitting(false)
         return
       }
@@ -341,18 +344,18 @@ export default function AdminCategoriesPage() {
         handleCancelEdit()
         fetchCategories()
       } else {
-        alert(result.error || 'Failed to save category')
+        alert(result.error || dict.categories.categorySaveFailed)
       }
     } catch (error) {
       console.error('Error saving category:', error)
-      alert('Failed to save category')
+      alert(dict.categories.categorySaveFailed)
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Delete category "${name}"? This cannot be undone.`)) {
+    if (!confirm(dict.categories.deleteCategoryConfirm.replace('{name}', name))) {
       return
     }
 
@@ -367,11 +370,11 @@ export default function AdminCategoriesPage() {
       if (result.success) {
         fetchCategories()
       } else {
-        alert(result.error || 'Failed to delete category')
+        alert(result.error || dict.categories.categoryDeleteFailed)
       }
     } catch (error) {
       console.error('Error deleting category:', error)
-      alert('Failed to delete category')
+      alert(dict.categories.categoryDeleteFailed)
     } finally {
       setDeleting(null)
     }
@@ -399,7 +402,7 @@ export default function AdminCategoriesPage() {
             <button
               onClick={() => toggleCategory(category.id)}
               className="w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-500 transition-colors shrink-0"
-              title={isExpanded ? 'Collapse subcategories' : 'Expand subcategories'}
+              title={isExpanded ? dict.categories.collapseAll : dict.categories.expandAll}
             >
               <ChevronRight 
                 size={16} 
@@ -412,15 +415,17 @@ export default function AdminCategoriesPage() {
             </div>
           )}
           
-          <CategoryAvatar src={category.image} name={category.name} size="md" />
+          <CategoryAvatar src={category.image} name={category.translations ? localizeCategory(category, locale).name : category.name} size="md" />
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-gray-900 text-sm truncate">{category.name}</h3>
+              <h3 className="font-bold text-gray-900 text-sm truncate">
+                {category.translations ? localizeCategory(category, locale).name : category.name}
+              </h3>
               {category.isFeatured && (
                 <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                   <Star size={10} className="fill-amber-500 text-amber-500" />
-                  Featured
+                  {dict.products.featured}
                 </span>
               )}
             </div>
@@ -429,36 +434,36 @@ export default function AdminCategoriesPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700">
-              {category._count?.products || 0} products
+              {category._count?.products || 0} {dict.products.title.toLowerCase()}
             </span>
             {children.length > 0 && (
               <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700">
-                {children.length} subcategories
+                {children.length} {dict.categories.subcategories.toLowerCase()}
               </span>
             )}
             {category.showInMenu && (
               <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                In Menu
+                {dict.categories.displayInMenu}
               </span>
             )}
             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
               category.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-400 border-gray-200'
             }`}>
-              {category.isActive ? 'Active' : 'Inactive'}
+              {category.isActive ? dict.common.active : dict.common.inactive}
             </span>
           </div>
 
           <div className="flex items-center gap-1 shrink-0 ml-1">
             <button
               onClick={() => handleAddSubcategory(category.id)}
-              title="Add Subcategory"
+              title={dict.categories.addCategory}
               className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
             >
               <FolderPlus size={15} />
             </button>
             <button
               onClick={() => handleEdit(category)}
-              title="Edit category"
+              title={dict.common.edit}
               className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             >
               <Edit size={15} />
@@ -466,7 +471,7 @@ export default function AdminCategoriesPage() {
             <button
               onClick={() => handleDelete(category.id, category.name)}
               disabled={deleting === category.id}
-              title="Delete category"
+              title={dict.common.delete}
               className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
             >
               <Trash2 size={15} />
@@ -490,13 +495,13 @@ export default function AdminCategoriesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Category Architecture</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">{dict.categories.title}</h1>
             <span className="px-2.5 py-0.5 text-xs font-bold bg-[#1a3a5c]/10 text-[#1a3a5c] rounded-full">
-              {categories.length} total
+              {categories.length} {dict.common.total.toLowerCase()}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Build and manage hierarchical taxonomy, multilingual names, homepage featured tags, and navigation menu settings.
+            {dict.categories.subtitle}
           </p>
         </div>
 
@@ -513,7 +518,7 @@ export default function AdminCategoriesPage() {
             className="bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] hover:from-[#152e4a] hover:to-[#1d4ed8] text-white shadow-md shadow-blue-900/10 rounded-xl px-4 py-2.5 font-bold text-xs inline-flex items-center gap-1.5 transition-all active:scale-95"
           >
             {showForm && !editingCategory ? <X size={15} /> : <Plus size={15} />}
-            <span>{showForm && !editingCategory ? 'Close Form' : 'Add New Category'}</span>
+            <span>{showForm && !editingCategory ? dict.common.close : dict.categories.addCategory}</span>
           </Button>
         </div>
       </div>
@@ -524,7 +529,7 @@ export default function AdminCategoriesPage() {
             <FolderTree size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Total Categories</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.categories.title}</p>
             <p className="text-lg font-black text-gray-900">{categories.length}</p>
           </div>
         </div>
@@ -534,7 +539,7 @@ export default function AdminCategoriesPage() {
             <Layers size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Root Categories</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.categories.parentCategory}</p>
             <p className="text-lg font-black text-emerald-600">{rootCategories.length}</p>
           </div>
         </div>
@@ -544,7 +549,7 @@ export default function AdminCategoriesPage() {
             <CornerDownRight size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Subcategories</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.categories.subcategories}</p>
             <p className="text-lg font-black text-purple-600">{totalSubcategories}</p>
           </div>
         </div>
@@ -554,7 +559,7 @@ export default function AdminCategoriesPage() {
             <Package size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Assigned Products</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.products.title}</p>
             <p className="text-lg font-black text-amber-600">{totalProducts}</p>
           </div>
         </div>
@@ -567,7 +572,7 @@ export default function AdminCategoriesPage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search categories by name or slug..."
+                placeholder={dict.common.search}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10 h-10 bg-gray-50/50 border-gray-200 focus:bg-white rounded-xl text-xs"
@@ -582,7 +587,7 @@ export default function AdminCategoriesPage() {
                 onClick={handleExpandAll}
                 className="rounded-xl text-xs font-semibold h-10 px-3"
               >
-                Expand All
+                {dict.categories.expandAll}
               </Button>
               <Button
                 type="button"
@@ -591,7 +596,7 @@ export default function AdminCategoriesPage() {
                 onClick={handleCollapseAll}
                 className="rounded-xl text-xs font-semibold h-10 px-3"
               >
-                Collapse All
+                {dict.categories.collapseAll}
               </Button>
             </div>
           </div>
@@ -600,30 +605,32 @@ export default function AdminCategoriesPage() {
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
               <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
                 <FolderTree size={16} className="text-[#1a3a5c]" />
-                Taxonomy Hierarchy
+                {dict.categories.taxonomyHierarchy}
               </h2>
               <span className="text-xs text-gray-400 font-medium">
-                {rootCategories.length} root levels · {totalSubcategories} branches
+                {dict.categories.rootLevelsAndBranches
+                  .replace('{root}', String(rootCategories.length))
+                  .replace('{branches}', String(totalSubcategories))}
               </span>
             </div>
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin border-t-[#1a3a5c]"></div>
-                <p className="text-xs font-medium text-gray-500 mt-3">Loading category tree...</p>
+                <p className="text-xs font-medium text-gray-500 mt-3">{dict.categories.loadingCategoryTree}</p>
               </div>
             ) : rootCategories.length === 0 ? (
               <div className="text-center py-16">
                 <div className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center mx-auto mb-3 border border-gray-100">
                   <FolderTree size={28} />
                 </div>
-                <h3 className="text-base font-bold text-gray-900 mb-1">No categories found</h3>
+                <h3 className="text-base font-bold text-gray-900 mb-1">{dict.categories.noCategoriesFound}</h3>
                 <p className="text-xs text-gray-500 mb-4 max-w-sm mx-auto">
-                  {search ? 'No categories matched your search term.' : 'Get started by creating your first product category.'}
+                  {search ? dict.categories.noCategoriesSearchMatch : dict.categories.noCategoriesEmptyState}
                 </p>
                 <Button onClick={() => setShowForm(true)} className="bg-[#1a3a5c] text-white text-xs font-bold rounded-xl">
                   <Plus size={14} className="mr-1" />
-                  Add First Category
+                  {dict.categories.addFirstCategory}
                 </Button>
               </div>
             ) : (
@@ -644,7 +651,7 @@ export default function AdminCategoriesPage() {
                   <Sparkles size={16} />
                 </div>
                 <h2 className="text-base font-bold text-gray-900">
-                  {editingCategory ? 'Edit Category' : 'New Category'}
+                  {editingCategory ? dict.categories.editCategory : dict.categories.newCategory}
                 </h2>
               </div>
               <button
@@ -662,27 +669,27 @@ export default function AdminCategoriesPage() {
               />
 
               <div>
-                <Label htmlFor="slug" className="text-xs font-semibold text-gray-700">URL Slug *</Label>
+                <Label htmlFor="slug" className="text-xs font-semibold text-gray-700">{dict.categories.slugLabel}</Label>
                 <Input
                   id="slug"
                   {...register('slug')}
                   className="mt-1 h-9 text-xs rounded-xl"
-                  placeholder="e.g., kitchenware-appliances"
+                  placeholder={dict.categories.slugPlaceholder}
                 />
                 {errors.slug && (
                   <p className="text-red-500 text-[11px] mt-1">{errors.slug.message}</p>
                 )}
-                <p className="text-[11px] text-gray-400 mt-1">Auto-generated from canonical English title</p>
+                <p className="text-[11px] text-gray-400 mt-1">{dict.categories.slugHelper}</p>
               </div>
 
               <div>
-                <Label htmlFor="parentId" className="text-xs font-semibold text-gray-700">Parent Category</Label>
+                <Label htmlFor="parentId" className="text-xs font-semibold text-gray-700">{dict.categories.parentCategory}</Label>
                 <select
                   id="parentId"
                   {...register('parentId')}
                   className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a3a5c] focus:border-[#1a3a5c] bg-gray-50/50"
                 >
-                  <option value="">None (Top-Level Root Category)</option>
+                  <option value="">{dict.categories.topLevelRoot}</option>
                   {hierarchicalCategories
                     .filter(c => !editingCategory || c.id !== editingCategory.id)
                     .map(cat => {
@@ -696,7 +703,7 @@ export default function AdminCategoriesPage() {
                     })}
                 </select>
                 <p className="text-[11px] text-gray-400 mt-1">
-                  Nest category under a parent for hierarchical tree browsing
+                  {dict.categories.parentHelper}
                 </p>
               </div>
 
@@ -708,16 +715,16 @@ export default function AdminCategoriesPage() {
                     setValue('image', url)
                   }}
                   folder="categories"
-                  label="Category Photo"
+                  label={dict.categories.categoryPhoto}
                 />
               </div>
 
               <div>
-                <Label htmlFor="icon" className="text-xs font-semibold text-gray-700">Icon Key (Optional)</Label>
+                <Label htmlFor="icon" className="text-xs font-semibold text-gray-700">{dict.categories.iconLabel}</Label>
                 <Input 
                   id="icon" 
                   {...register('icon')}
-                  placeholder="e.g., utensils, truck, box, ship"
+                  placeholder={dict.categories.iconPlaceholder}
                   className="mt-1 h-9 text-xs rounded-xl"
                 />
               </div>
@@ -725,16 +732,16 @@ export default function AdminCategoriesPage() {
               <div className="pt-3 border-t border-gray-100 space-y-3">
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
                   <div>
-                    <p className="text-xs font-bold text-gray-800">Active Status</p>
-                    <p className="text-[11px] text-gray-400">Visible across storefront & API</p>
+                    <p className="text-xs font-bold text-gray-800">{dict.categories.activeStatus}</p>
+                    <p className="text-[11px] text-gray-400">{dict.categories.activeStatusHelper}</p>
                   </div>
                   <input type="checkbox" {...register('isActive')} className="w-4 h-4 rounded text-[#1a3a5c]" />
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
                   <div>
-                    <p className="text-xs font-bold text-gray-800">Show in Navigation Menu</p>
-                    <p className="text-[11px] text-gray-400">Display in top header menu flyouts</p>
+                    <p className="text-xs font-bold text-gray-800">{dict.categories.showInNavMenu}</p>
+                    <p className="text-[11px] text-gray-400">{dict.categories.showInNavMenuHelper}</p>
                   </div>
                   <input type="checkbox" {...register('showInMenu')} className="w-4 h-4 rounded text-[#1a3a5c]" />
                 </div>
@@ -743,9 +750,9 @@ export default function AdminCategoriesPage() {
                   <div>
                     <p className="text-xs font-bold text-gray-800 flex items-center gap-1">
                       <Star size={13} className="text-amber-500 fill-amber-500" />
-                      Featured on Homepage
+                      {dict.categories.featuredHomepage}
                     </p>
-                    <p className="text-[11px] text-gray-400">Highlight in "Shop by Category" showcase</p>
+                    <p className="text-[11px] text-gray-400">{dict.categories.featuredHomepageHelper}</p>
                   </div>
                   <input type="checkbox" {...register('isFeatured')} className="w-4 h-4 rounded text-amber-500" />
                 </div>
@@ -757,7 +764,7 @@ export default function AdminCategoriesPage() {
                   disabled={submitting}
                   className="flex-1 bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white text-xs font-bold rounded-xl py-2.5"
                 >
-                  {submitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Create Category'}
+                  {submitting ? dict.common.saving : editingCategory ? dict.categories.updateCategory : dict.categories.createCategory}
                 </Button>
                 <Button
                   type="button"
@@ -765,7 +772,7 @@ export default function AdminCategoriesPage() {
                   onClick={handleCancelEdit}
                   className="rounded-xl text-xs font-semibold"
                 >
-                  Cancel
+                  {dict.common.cancel}
                 </Button>
               </div>
             </form>

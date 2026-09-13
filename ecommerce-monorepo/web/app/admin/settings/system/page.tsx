@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Cog, Key, Loader2, Save, Eye, EyeOff } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface SystemSettings {
   id?: string
@@ -21,6 +22,7 @@ interface SystemSettings {
 }
 
 export default function SystemSettingsPage() {
+  const { dict, locale } = useAdminLocale()
   const [settings, setSettings] = useState<SystemSettings>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -100,8 +102,8 @@ export default function SystemSettingsPage() {
             <Cog size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">System Settings</h2>
-            <p className="text-sm text-gray-500">Configure AI translation API keys and system preferences</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.system}</h2>
+            <p className="text-sm text-gray-500">{dict.settings.subtitle}</p>
           </div>
         </div>
       </div>

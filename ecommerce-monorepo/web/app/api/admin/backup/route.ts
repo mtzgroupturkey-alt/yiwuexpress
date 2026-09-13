@@ -49,18 +49,7 @@ export async function GET(req: NextRequest) {
           }
         }
       }),
-      prisma.shipment.findMany({
-        include: {
-          service: true,
-          user: {
-            select: {
-              email: true,
-              name: true,
-              companyName: true,
-            }
-          }
-        }
-      }),
+      prisma.container.findMany({ include: { carrier: true, agent: true } }),
       prisma.companyInfo.findMany(),
       prisma.systemSettings.findMany()
     ])
@@ -122,7 +111,7 @@ export async function POST(req: NextRequest) {
 
     // If clearExisting is true, delete existing data first (except users and system settings)
     if (clearExisting) {
-      await prisma.shipment.deleteMany()
+      await prisma.container.deleteMany()
       await prisma.quote.deleteMany()
       await prisma.service.deleteMany()
       await prisma.companyInfo.deleteMany()
@@ -197,19 +186,15 @@ export async function POST(req: NextRequest) {
     if (data.shipments && data.shipments.length > 0) {
       for (const shipment of data.shipments) {
         try {
-          await prisma.shipment.create({
+          await prisma.container.create({
             data: {
               id: shipment.id,
-              trackingNumber: shipment.trackingNumber,
-              userId: shipment.userId,
-              serviceId: shipment.serviceId,
-              origin: shipment.origin,
-              destination: shipment.destination,
-              status: shipment.status,
-              estimatedDelivery: shipment.estimatedDelivery ? new Date(shipment.estimatedDelivery) : null,
-              actualDelivery: shipment.actualDelivery ? new Date(shipment.actualDelivery) : null,
-              carrier: shipment.carrier,
-              notes: shipment.notes,
+              containerNumber: shipment.containerNumber || shipment.trackingNumber || ('CONT-' + Date.now()),
+              status: 'PLANNING',
+              routeType: 'SEA',
+              origin: shipment.origin || 'China',
+              destination: shipment.destination || 'Destination',
+              arrivalDate: shipment.estimatedDelivery ? new Date(shipment.estimatedDelivery) : null,
               createdAt: shipment.createdAt ? new Date(shipment.createdAt) : undefined,
               updatedAt: shipment.updatedAt ? new Date(shipment.updatedAt) : undefined,
             }

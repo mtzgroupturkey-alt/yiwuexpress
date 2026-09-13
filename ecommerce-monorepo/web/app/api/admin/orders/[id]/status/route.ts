@@ -1,8 +1,22 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 
-const prisma = new PrismaClient()
+// Valid statuses — stored as UPPERCASE in DB.
+// Accept both 'pending' and 'PENDING' from callers for backward compat.
+const VALID_STATUSES = [
+  'PENDING',
+  'PAYMENT_PENDING',
+  'PAID',
+  'PROCESSING',
+  'SHIPPED',
+  'IN_TRANSIT',
+  'OUT_FOR_DELIVERY',
+  'DELIVERED',
+  'CANCELLED',
+  'REFUNDED',
+  'FAILED',
+]
 
 // PUT /api/admin/orders/[id]/status - Update order status
 export async function PUT(
@@ -12,41 +26,26 @@ export async function PUT(
   try {
     const { id } = params
     const body = await request.json()
-    const { status, notes } = body
+    const { status: rawStatus, notes } = body
 
-    if (!status) {
+    if (!rawStatus) {
       return NextResponse.json(
         { success: false, error: 'Status is required' },
         { status: 400 }
       )
     }
 
-    // Validate status
-    const validStatuses = [
-      'pending',
-      'payment_pending',
-      'paid',
-      'processing',
-      'shipped',
-      'in_transit',
-      'out_for_delivery',
-      'delivered',
-      'cancelled',
-      'refunded',
-      'failed'
-    ]
+    // Normalize to UPPERCASE so both 'shipped' and 'SHIPPED' work
+    const status = String(rawStatus).toUpperCase().replace(/-/g, '_')
 
-    if (!validStatuses.includes(status)) {
+    if (!VALID_STATUSES.includes(status)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid status' },
+        { success: false, error: `Invalid status "${rawStatus}". Valid values: ${VALID_STATUSES.join(', ')}` },
         { status: 400 }
       )
     }
 
-    // Check if order exists
-    const existing = await prisma.order.findUnique({
-      where: { id }
-    })
+    const existing = await prisma.order.findUnique({ where: { id } })
 
     if (!existing) {
       return NextResponse.json(
@@ -55,25 +54,19 @@ export async function PUT(
       )
     }
 
-    // Update order status
     const updated = await prisma.order.update({
       where: { id },
       data: {
         status,
-        adminNotes: notes ? `${existing.adminNotes || ''}\n[${new Date().toISOString()}] Status changed to ${status}: ${notes}`.trim() : existing.adminNotes
+        adminNotes: notes
+          ? `${existing.adminNotes || ''}\n[${new Date().toISOString()}] Status changed to ${status}: ${notes}`.trim()
+          : existing.adminNotes
       },
       include: {
         user: true,
-        items: {
-          include: {
-            product: true
-          }
-        }
+        items: { include: { product: true } }
       }
     })
-
-    // TODO: Send notification to customer about status change
-    // TODO: Create notification record
 
     return NextResponse.json({
       success: true,

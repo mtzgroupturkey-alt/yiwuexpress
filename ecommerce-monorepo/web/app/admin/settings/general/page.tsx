@@ -5,6 +5,7 @@ import {
   Settings, Save, AlertCircle, CheckCircle, RefreshCw, Store, ShoppingBag, Users
 } from 'lucide-react'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface GeneralSettings {
   storeMode: 'WHOLESALE' | 'RETAIL' | 'BOTH'
@@ -54,6 +55,7 @@ const STORE_MODES = [
 
 export default function GeneralSettingsPage() {
   const { isAdmin, loading: authLoading } = useAdminAuth()
+  const { dict, locale } = useAdminLocale()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -147,7 +149,7 @@ export default function GeneralSettingsPage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Loading general settings...</p>
+          <p className="text-sm text-gray-500">{dict.common.loading}</p>
         </div>
       </div>
     )
@@ -162,8 +164,8 @@ export default function GeneralSettingsPage() {
             <Settings size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">General Settings</h2>
-            <p className="text-sm text-gray-500">Configure your store mode and general preferences</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.general}</h2>
+            <p className="text-sm text-gray-500">{dict.settings.subtitle}</p>
           </div>
         </div>
         <button
@@ -176,7 +178,7 @@ export default function GeneralSettingsPage() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50"
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          Refresh
+          {dict.common.reset}
         </button>
       </div>
 
@@ -197,13 +199,53 @@ export default function GeneralSettingsPage() {
 
       {/* Store Mode Selection */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Store Mode</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">{dict.settings.storeMode}</h3>
         <p className="text-sm text-gray-600 mb-6">
-          Select how your e-commerce platform should operate. This setting affects pricing display, checkout flow, and minimum order requirements.
+          {dict.settings.storeModeDesc}
         </p>
         
         <div className="space-y-4">
-          {STORE_MODES.map((mode) => {
+          {[
+            {
+              value: 'WHOLESALE',
+              label: dict.settings.wholesaleOnly,
+              description: dict.settings.wholesaleOnlyDesc,
+              icon: Store,
+              features: [
+                'Wholesale pricing displayed',
+                'Minimum order quantity (MOQ) enforced',
+                'Company/registration fields at checkout',
+                'Tax exemption options available',
+                'Guest checkout allowed'
+              ]
+            },
+            {
+              value: 'RETAIL',
+              label: dict.settings.retailOnly,
+              description: dict.settings.retailOnlyDesc,
+              icon: ShoppingBag,
+              features: [
+                'Consumer pricing (MSRP)',
+                'No MOQ requirements',
+                'Simple checkout with shipping address',
+                'Standard tax calculation',
+                'Customer account optional'
+              ]
+            },
+            {
+              value: 'BOTH',
+              label: dict.settings.bothHybrid,
+              description: dict.settings.bothHybridDesc,
+              icon: Users,
+              features: [
+                'Both pricing tiers visible',
+                'User can switch between modes',
+                'Different checkout flows based on selection',
+                'Maximum flexibility for customers',
+                'Supports all pricing strategies'
+              ]
+            }
+          ].map((mode) => {
             const Icon = mode.icon
             const isSelected = settings.storeMode === mode.value
             
@@ -260,12 +302,9 @@ export default function GeneralSettingsPage() {
           <div className="flex items-start gap-3">
             <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-blue-900 mb-1">Important Note</p>
+              <p className="text-sm font-semibold text-blue-900 mb-1">{dict.settings.importantNote}</p>
               <p className="text-sm text-blue-700">
-                Changing the store mode will affect how products are displayed and how checkout works. 
-                {settings.storeMode === 'WHOLESALE' && ' Currently in Wholesale mode: MOQ requirements are enforced and wholesale pricing is displayed.'}
-                {settings.storeMode === 'RETAIL' && ' Currently in Retail mode: No MOQ requirements and retail pricing is displayed.'}
-                {settings.storeMode === 'BOTH' && ' Currently in Hybrid mode: Both pricing options are available to customers.'}
+                {dict.settings.storeModeNote}
               </p>
             </div>
           </div>
@@ -281,7 +320,7 @@ export default function GeneralSettingsPage() {
           style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
         >
           <Save size={18} />
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? dict.common.saving : dict.common.save}
         </button>
       </div>
     </div>

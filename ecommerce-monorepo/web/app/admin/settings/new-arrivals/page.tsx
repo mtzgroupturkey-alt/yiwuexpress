@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, GripVertical, ArrowLeft, Package } from 'lucide-react'
 import Link from 'next/link'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface Product {
   id: string
@@ -25,6 +26,7 @@ interface Product {
 
 export default function NewArrivalsSettings() {
   const router = useRouter()
+  const { dict, locale } = useAdminLocale()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -127,20 +129,20 @@ export default function NewArrivalsSettings() {
               onClick={() => router.push('/admin/settings')}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Settings
+              {dict.common.back}
             </Button>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Sparkles className="w-8 h-8 text-blue-500" />
-            New Arrivals
+            {dict.newArrivals.title}
           </h1>
           <p className="text-gray-600 mt-1">
-            Manage which products appear in the New Arrivals section on the homepage
+            {dict.newArrivals.subtitle}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            💡 Drag items to reorder • Toggle switches to show/hide • Go to{' '}
+            💡 {dict.newArrivals.toReorder} • {dict.newArrivals.toRemove} • Go to{' '}
             <Link href="/admin/products" className="text-primary-600 hover:underline">
-              Products
+              {dict.products.title}
             </Link>{' '}
             to mark more products as new arrivals
           </p>
@@ -150,10 +152,10 @@ export default function NewArrivalsSettings() {
       {/* New Arrivals Card */}
       <Card>
         <CardHeader>
-          <CardTitle>New Arrivals ({products.length})</CardTitle>
+          <CardTitle>{dict.newArrivals.countTitle.replace('{count}', products.length.toString())}</CardTitle>
           <CardDescription>
-            Select and order products to showcase as new arrivals on the homepage.
-            {products.length === 0 && ' No products are currently marked as new arrivals.'}
+            {dict.newArrivals.subtitle}
+            {products.length === 0 && ` ${dict.newArrivals.noNewArrivalsYet}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -165,16 +167,16 @@ export default function NewArrivalsSettings() {
             <div className="text-center py-12">
               <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No new arrivals yet
+                {dict.newArrivals.noNewArrivalsYet}
               </h3>
               <p className="text-gray-600 mb-6">
-                Go to Products management and toggle the "New Arrival" switch to add products here.
+                {dict.newArrivals.noNewArrivalsDesc}
               </p>
               <Button
                 onClick={() => router.push('/admin/products')}
                 className="bg-primary-600 hover:bg-primary-700"
               >
-                Go to Products
+                {dict.settings.goToProducts}
               </Button>
             </div>
           ) : (
@@ -230,10 +232,10 @@ export default function NewArrivalsSettings() {
                         checked={product.isNewArrival}
                         onCheckedChange={() => handleToggleNewArrival(product.id, product.isNewArrival)}
                       />
-                      <span className="text-sm text-gray-600">New Arrival</span>
+                      <span className="text-sm text-gray-600">{dict.products.newArrival}</span>
                     </div>
-                    <span className="text-sm text-gray-500 w-16 text-right">
-                      Order: {index + 1}
+                    <span className="text-sm text-gray-500 w-24 text-right">
+                      {dict.newArrivals.orderNumber.replace('{order}', (index + 1).toString())}
                     </span>
                   </div>
                 </div>
@@ -246,23 +248,23 @@ export default function NewArrivalsSettings() {
       {/* Help Card */}
       <Card className="bg-purple-50 border-purple-200">
         <CardContent className="p-6">
-          <h3 className="font-semibold text-purple-900 mb-2">📚 How to Manage New Arrivals</h3>
+          <h3 className="font-semibold text-purple-900 mb-2">📚 {dict.newArrivals.howToManage}</h3>
           <ul className="space-y-2 text-sm text-purple-800">
             <li className="flex items-start gap-2">
-              <span className="font-semibold min-w-[120px]">To Add Products:</span>
-              <span>Go to Admin → Products → Toggle the "New Arrival" switch</span>
+              <span className="font-semibold min-w-[140px]">{dict.common.add}:</span>
+              <span>{dict.newArrivals.toAdd}</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="font-semibold min-w-[120px]">To Reorder:</span>
-              <span>Drag and drop products using the grip handle (⋮⋮)</span>
+              <span className="font-semibold min-w-[140px]">{dict.common.reorder}:</span>
+              <span>{dict.newArrivals.toReorder}</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="font-semibold min-w-[120px]">To Remove:</span>
-              <span>Toggle off the "New Arrival" switch</span>
+              <span className="font-semibold min-w-[140px]">{dict.common.delete}:</span>
+              <span>{dict.newArrivals.toRemove}</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="font-semibold min-w-[120px]">Homepage Display:</span>
-              <span>New arrivals appear in order on the homepage</span>
+              <span className="font-semibold min-w-[140px]">{dict.common.display}:</span>
+              <span>{dict.newArrivals.homepageDisplay}</span>
             </li>
           </ul>
         </CardContent>

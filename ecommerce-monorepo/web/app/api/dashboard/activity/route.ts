@@ -27,17 +27,15 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    const recentShipments = await prisma.shipment.findMany({
+    const recentOrders = await prisma.order.findMany({
       where: { userId: userId },
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
         id: true,
-        trackingNumber: true,
+        orderNumber: true,
         status: true,
         createdAt: true,
-        origin: true,
-        destination: true
       }
     })
 
@@ -50,12 +48,12 @@ export async function GET(request: NextRequest) {
         status: quote.status,
         date: new Date(quote.createdAt).toLocaleDateString()
       })),
-      ...recentShipments.map(shipment => ({
-        id: `shipment-${shipment.id}`,
-        type: 'shipment' as const,
-        title: `Shipment ${shipment.trackingNumber}`,
-        status: shipment.status,
-        date: new Date(shipment.createdAt).toLocaleDateString()
+      ...recentOrders.map(order => ({
+        id: `order-${order.id}`,
+        type: 'order' as const,
+        title: `Order #${order.orderNumber}`,
+        status: order.status,
+        date: new Date(order.createdAt).toLocaleDateString()
       }))
     ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10)
 

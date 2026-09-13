@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 const statusColors: Record<string, string> = {
   REQUESTED: 'bg-yellow-100 text-yellow-800',
@@ -21,6 +22,7 @@ const statusColors: Record<string, string> = {
 
 export default function AdminReturnsPage() {
   const router = useRouter()
+  const { dict, locale } = useAdminLocale()
   const [returns, setReturns] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -78,12 +80,12 @@ export default function AdminReturnsPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Returns Management</h1>
-          <p className="text-gray-600 mt-1">Review and process customer returns</p>
+          <h1 className="text-3xl font-bold">{dict.returns.title}</h1>
+          <p className="text-gray-600 mt-1">{dict.returns.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-lg px-4 py-2">
-            {total} Returns
+            {total} {dict.common.total}
           </Badge>
         </div>
       </div>
@@ -94,7 +96,7 @@ export default function AdminReturnsPage() {
           <div className="flex gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search by return number, order number, or email..."
+                placeholder={dict.common.search}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -104,11 +106,11 @@ export default function AdminReturnsPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 border rounded-md"
             >
-              <option value="all">All Status</option>
+              <option value="all">{dict.products.filterByStatus}</option>
               <option value="REQUESTED">Requested</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-              <option value="RETURN_SHIPPED">Return Shipped</option>
+              <option value="APPROVED">{dict.status.APPROVED}</option>
+              <option value="REJECTED">{dict.status.REJECTED}</option>
+              <option value="RETURN_SHIPPED">{dict.status.SHIPPED}</option>
               <option value="RECEIVED">Received</option>
               <option value="INSPECTING">Inspecting</option>
               <option value="REFUND_PROCESSED">Refund Processed</option>
@@ -116,7 +118,7 @@ export default function AdminReturnsPage() {
               <option value="CLOSED">Closed</option>
             </select>
             <Button onClick={() => fetchReturns()}>
-              Search
+              {dict.common.search}
             </Button>
           </div>
         </CardContent>
@@ -127,13 +129,13 @@ export default function AdminReturnsPage() {
         <Card>
           <CardContent className="py-20 text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-            <p className="mt-4 text-gray-600">Loading returns...</p>
+            <p className="mt-4 text-gray-600">{dict.common.loading}</p>
           </CardContent>
         </Card>
       ) : returns.length === 0 ? (
         <Card>
           <CardContent className="py-20 text-center">
-            <p className="text-gray-600">No returns found</p>
+            <p className="text-gray-600">{dict.common.noData}</p>
           </CardContent>
         </Card>
       ) : (
@@ -159,19 +161,19 @@ export default function AdminReturnsPage() {
 
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-600">Order:</span>{' '}
+                        <span className="text-gray-600">{dict.returns.order}:</span>{' '}
                         <span className="font-medium">{returnItem.order.orderNumber}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Customer:</span>{' '}
+                        <span className="text-gray-600">{dict.returns.customer}:</span>{' '}
                         <span className="font-medium">{returnItem.order.customerName}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Email:</span>{' '}
+                        <span className="text-gray-600">{dict.returns.email}:</span>{' '}
                         <span className="font-medium">{returnItem.order.customerEmail}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Requested:</span>{' '}
+                        <span className="text-gray-600">{dict.returns.requested}:</span>{' '}
                         <span className="font-medium">{formatDate(returnItem.createdAt)}</span>
                       </div>
                     </div>
@@ -184,7 +186,7 @@ export default function AdminReturnsPage() {
 
                     {returnItem.adminNotes && (
                       <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                        <span className="font-medium text-blue-900">Admin Notes:</span>{' '}
+                        <span className="font-medium text-blue-900">{dict.common.notes}:</span>{' '}
                         <span className="text-blue-800">{returnItem.adminNotes}</span>
                       </div>
                     )}
@@ -198,7 +200,7 @@ export default function AdminReturnsPage() {
                       {returnItem.refundMethod ? (
                         returnItem.refundMethod.replace(/_/g, ' ')
                       ) : (
-                        'Refund pending'
+                        dict.returns.refundPending
                       )}
                     </div>
                     <Button
@@ -209,7 +211,7 @@ export default function AdminReturnsPage() {
                         router.push(`/admin/returns/${returnItem.id}`)
                       }}
                     >
-                      Review →
+                      {dict.returns.reviewAction}
                     </Button>
                   </div>
                 </div>
@@ -217,7 +219,7 @@ export default function AdminReturnsPage() {
                 {/* Return Items Preview */}
                 <div className="mt-4 pt-4 border-t">
                   <div className="text-sm font-medium text-gray-700 mb-2">
-                    Items to Return: {returnItem.items.length}
+                    {dict.returns.itemsToReturn}: {returnItem.items.length}
                   </div>
                   <div className="flex gap-2">
                     {returnItem.items.slice(0, 3).map((item: any, idx: number) => (

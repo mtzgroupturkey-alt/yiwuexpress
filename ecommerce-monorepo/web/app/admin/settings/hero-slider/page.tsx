@@ -20,6 +20,7 @@ import { ImageUpload } from '@/components/admin/ImageUpload'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { toast } from '@/components/ui/use-toast'
 import { GripVertical, Pencil, Trash2, Plus, Eye, EyeOff, Save, Image as ImageIcon, Link2, Copy, Loader2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface HeroSlide {
   id: string
@@ -227,14 +228,14 @@ function SortableSlideItem({ slide, onEdit, onDelete, onDuplicate, onToggleActiv
   )
 }
 
-export default function HeroSliderSettings() {
+export default function HeroSliderSettingsPage() {
+  const { dict, locale } = useAdminLocale()
+  const queryClient = useQueryClient()
   const [slides, setSlides] = useState<HeroSlide[]>([])
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
-
-  const queryClient = useQueryClient()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -422,17 +423,17 @@ export default function HeroSliderSettings() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#1a3a5c]">Hero Slider Settings</h1>
-          <p className="text-gray-500">Manage the main hero slides displayed on your homepage</p>
+          <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.settings.heroSlider}</h1>
+          <p className="text-gray-500">{dict.settings.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleAdd} className="bg-[#1a3a5c] hover:bg-[#2a5a8c]">
             <Plus className="w-4 h-4 mr-2" />
-            Add Slide
+            {dict.common.add}
           </Button>
           <Button onClick={handleSaveOrder} disabled={isSaving} className="bg-green-600 hover:bg-green-700">
             <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save Order'}
+            {isSaving ? dict.common.loading : dict.common.save}
           </Button>
         </div>
       </div>
@@ -664,11 +665,13 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
     }
   }
 
+  const { dict } = useAdminLocale()
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{initialData ? 'Edit Slide' : 'Add New Slide'}</DialogTitle>
+          <DialogTitle>{initialData ? dict.settings.editSlide : dict.settings.addSlide}</DialogTitle>
           <DialogDescription>
             Configure the slide content, images, and call-to-action buttons.
           </DialogDescription>
@@ -677,17 +680,17 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
         <form onSubmit={handleSubmit} className="space-y-6">
           <Tabs defaultValue="content" className="space-y-4">
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="media">Media & Design</TabsTrigger>
-              <TabsTrigger value="layout">Layout</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-              <TabsTrigger value="translations">Translations</TabsTrigger>
+              <TabsTrigger value="content">{dict.products.basicInfo}</TabsTrigger>
+              <TabsTrigger value="media">{dict.products.mediaGallery}</TabsTrigger>
+              <TabsTrigger value="layout">{dict.settings.textButtonAlignment}</TabsTrigger>
+              <TabsTrigger value="settings">{dict.settings.general}</TabsTrigger>
+              <TabsTrigger value="translations">{dict.products.translations}</TabsTrigger>
             </TabsList>
 
             {/* CONTENT TAB */}
             <TabsContent value="content" className="space-y-4">
               <div>
-                <Label>Slide Title *</Label>
+                <Label>{dict.settings.slideTitle} *</Label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -696,7 +699,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 />
               </div>
               <div>
-                <Label>Subtitle</Label>
+                <Label>{dict.settings.slideSubtitle}</Label>
                 <Input
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
@@ -704,7 +707,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 />
               </div>
               <div>
-                <Label>Description</Label>
+                <Label>{dict.settings.slideDescription}</Label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -713,7 +716,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 />
               </div>
               <div>
-                <Label>Badge Text</Label>
+                <Label>{dict.settings.badgeText}</Label>
                 <Input
                   value={badgeText}
                   onChange={(e) => setBadgeText(e.target.value)}
@@ -721,7 +724,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 />
               </div>
               <div>
-                <Label>Badge Color</Label>
+                <Label>{dict.settings.badgeColor}</Label>
                 <div className="flex items-center gap-4">
                   <Input
                     type="color"
@@ -743,14 +746,14 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
             {/* MEDIA TAB */}
             <TabsContent value="media" className="space-y-4">
               <div>
-                <Label>Background Image (Desktop) *</Label>
+                <Label>{dict.settings.backgroundImage} *</Label>
                 <div className="mt-2">
                   <ImageUpload value={imageUrl} onChange={setImageUrl} folder="hero" />
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Recommended: 1920x800px, max 2MB</p>
               </div>
               <div>
-                <Label>Product Image (Right Side) - Optional</Label>
+                <Label>{dict.settings.productImage}</Label>
                 <div className="mt-2">
                   <ImageUpload value={productImageUrl} onChange={setProductImageUrl} folder="hero/products" />
                 </div>
@@ -879,15 +882,15 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
             {/* SETTINGS TAB */}
             <TabsContent value="settings" className="space-y-4">
               <div>
-                <Label>Primary CTA Text</Label>
+                <Label>{dict.settings.primaryCtaText}</Label>
                 <Input value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="SHOP NOW" />
               </div>
               <div>
-                <Label>Primary CTA Link</Label>
+                <Label>{dict.settings.primaryCtaLink}</Label>
                 <Input value={ctaLink} onChange={(e) => setCtaLink(e.target.value)} placeholder="/products" />
               </div>
               <div>
-                <Label>Secondary CTA Text (Optional)</Label>
+                <Label>{dict.settings.secondaryCtaText} ({dict.common.viewDetails})</Label>
                 <Input
                   value={secondaryCtaText}
                   onChange={(e) => setSecondaryCtaText(e.target.value)}
@@ -895,7 +898,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 />
               </div>
               <div>
-                <Label>Secondary CTA Link (Optional)</Label>
+                <Label>{dict.settings.secondaryCtaLink} ({dict.common.viewDetails})</Label>
                 <Input
                   value={secondaryCtaLink}
                   onChange={(e) => setSecondaryCtaLink(e.target.value)}
@@ -903,7 +906,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 />
               </div>
               <div>
-                <Label>Slide Duration (seconds)</Label>
+                <Label>{dict.settings.slideDuration}</Label>
                 <Input
                   type="number"
                   value={slideDuration}
@@ -914,7 +917,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 <p className="text-xs text-gray-500 mt-1">How long this slide should display before auto-advancing</p>
               </div>
               <div>
-                <Label>Motion Type</Label>
+                <Label>{dict.settings.motionType}</Label>
                 <select
                   value={motionType}
                   onChange={(e) => setMotionType(e.target.value)}
@@ -930,7 +933,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 <p className="text-xs text-gray-500 mt-1">Choose the animation style for this slide transition</p>
               </div>
               <div className="flex items-center justify-between">
-                <Label>Active</Label>
+                <Label>{dict.common.active}</Label>
                 <Switch checked={isActive} onCheckedChange={setIsActive} />
               </div>
             </TabsContent>
@@ -943,19 +946,47 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                   Russian and Chinese translations below. Leave a field blank to fall back to English.
                 </div>
                 <AutoTranslateButton
-                  enFields={{
-                    title: title,
-                    subtitle: subtitle,
-                    description: description,
-                    badgeText: badgeText,
-                    ctaText: ctaText,
-                    secondaryCtaText: secondaryCtaText,
+                  allFields={{
+                    en: {
+                      title: title,
+                      subtitle: subtitle,
+                      description: description,
+                      badgeText: badgeText,
+                      ctaText: ctaText,
+                      secondaryCtaText: secondaryCtaText,
+                    },
+                    ru: {
+                      title: translations.ru?.title || '',
+                      subtitle: translations.ru?.subtitle || '',
+                      description: translations.ru?.description || '',
+                      badgeText: translations.ru?.badgeText || '',
+                      ctaText: translations.ru?.ctaText || '',
+                      secondaryCtaText: translations.ru?.secondaryCtaText || '',
+                    },
+                    zh: {
+                      title: translations.zh?.title || '',
+                      subtitle: translations.zh?.subtitle || '',
+                      description: translations.zh?.description || '',
+                      badgeText: translations.zh?.badgeText || '',
+                      ctaText: translations.zh?.ctaText || '',
+                      secondaryCtaText: translations.zh?.secondaryCtaText || '',
+                    },
                   }}
                   onTranslated={(result) => {
+                    if (result.en) {
+                      if (result.en.title) setTitle(result.en.title)
+                      if (result.en.subtitle) setSubtitle(result.en.subtitle)
+                      if (result.en.description) setDescription(result.en.description)
+                      if (result.en.badgeText) setBadgeText(result.en.badgeText)
+                      if (result.en.ctaText) setCtaText(result.en.ctaText)
+                      if (result.en.secondaryCtaText) setSecondaryCtaText(result.en.secondaryCtaText)
+                    }
                     setTranslations((prev) => {
                       const next = { ...prev }
                       for (const locale of Object.keys(result)) {
-                        next[locale] = { ...emptyTranslation(), ...next[locale], ...result[locale] }
+                        if (locale === 'ru' || locale === 'zh') {
+                          next[locale] = { ...emptyTranslation(), ...next[locale], ...result[locale] }
+                        }
                       }
                       return next
                     })
@@ -1030,10 +1061,10 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {dict.common.cancel}
             </Button>
             <Button type="submit" className="bg-[#1a3a5c] hover:bg-[#2a5a8c]">
-              {initialData ? 'Update' : 'Create'} Slide
+              {dict.common.save}
             </Button>
           </DialogFooter>
         </form>

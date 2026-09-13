@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Zap, GripVertical, ArrowLeft, Package, Clock, DollarSign, Calendar, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface Product {
   id: string
@@ -32,6 +33,7 @@ interface Product {
 
 export default function FlashSalesSettings() {
   const router = useRouter()
+  const { dict } = useAdminLocale()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -223,22 +225,15 @@ export default function FlashSalesSettings() {
               onClick={() => router.push('/admin/settings')}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Settings
+              {dict.common.back}
             </Button>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Zap className="w-8 h-8 text-orange-500" />
-            Flash Sales
+            {dict.settings.flashSales}
           </h1>
           <p className="text-gray-600 mt-1">
-            Manage time-limited special offers for mobile app users
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            💡 Drag items to reorder • Toggle switches to enable/disable • Go to{' '}
-            <Link href="/admin/products" className="text-primary-600 hover:underline">
-              Products
-            </Link>{' '}
-            to add more flash sale products
+            {dict.settings.flashSalesDesc}
           </p>
         </div>
       </div>
@@ -248,10 +243,10 @@ export default function FlashSalesSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-orange-500" />
-            Flash Sale Products ({products.length})
+            {dict.settings.flashSales} ({products.length})
           </CardTitle>
           <CardDescription>
-            Products currently configured for flash sales
+            {dict.settings.flashSalesDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -262,12 +257,9 @@ export default function FlashSalesSettings() {
           ) : products.length === 0 ? (
             <div className="text-center py-12">
               <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">No flash sale products configured</p>
-              <p className="text-sm text-gray-500 mb-4">
-                Go to Products page and enable flash sale for products you want to feature
-              </p>
+              <p className="text-gray-600 mb-2">{dict.products.noMediaAdded || 'No products'}</p>
               <Button onClick={() => router.push('/admin/products')}>
-                Go to Products
+                {dict.settings.goToProducts}
               </Button>
             </div>
           ) : (

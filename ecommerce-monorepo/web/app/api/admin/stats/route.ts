@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       prisma.product.count().catch(() => 0),
       prisma.service.count().catch(() => 0),
       prisma.quote.count().catch(() => 0),
-      prisma.shipment.count().catch(() => 0),
+      prisma.container.count().catch(() => 0),
       prisma.wholesaleInquiry.count().catch(() => 0),
       prisma.product.count({ where: { stock: { lte: 10 } } }).catch(() => 0),
     ])
@@ -66,10 +66,10 @@ export async function GET(request: Request) {
       }
     }).catch(() => 0)
 
-    // Get active shipments
-    const activeShipments = await prisma.shipment.count({
+    // Get active containers
+    const activeShipments = await prisma.container.count({
       where: {
-        status: { in: ['PREPARING', 'IN_TRANSIT', 'IN_CUSTOMS'] }
+        status: { in: ['LOADING', 'DEPARTED', 'IN_TRANSIT', 'AT_CUSTOMS'] }
       }
     }).catch(() => 0)
 
@@ -100,18 +100,12 @@ export async function GET(request: Request) {
       }
     }).catch(() => [])
 
-    // Get recent shipments
-    const recentShipments = await prisma.shipment.findMany({
+    // Get recent containers
+    const recentShipments = await prisma.container.findMany({
       take: 5,
-      orderBy: {
-        createdAt: 'desc'
-      },
+      orderBy: { createdAt: 'desc' },
       include: {
-        service: {
-          select: {
-            name: true
-          }
-        }
+        carrier: { select: { name: true } }
       }
     }).catch(() => [])
 

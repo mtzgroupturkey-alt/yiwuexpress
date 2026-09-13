@@ -10,12 +10,20 @@ import { Switch } from '@/components/ui/switch'
 import {
   Plus, Search, Edit, Trash2, Eye, Package, Star, Sparkles,
   Zap, ArrowUpDown, Filter, RefreshCw, Layers, CheckCircle2,
-  AlertTriangle, XCircle, ExternalLink, ChevronLeft, ChevronRight
+  AlertTriangle, XCircle, ExternalLink, ChevronLeft, ChevronRight,
+  CheckSquare, Square, X
 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { localizeProduct } from '@/lib/utils/localize'
-
-const ADMIN_LOCALE = 'en'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 interface Product {
   id: string
@@ -107,24 +115,84 @@ function ProductThumbnail({
 
 export default function AdminProductsPage() {
   const router = useRouter()
+  const { locale, dict, t } = useAdminLocale()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [flatCategories, setFlatCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filtersLoaded, setFiltersLoaded] = useState(false)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [bulkProcessing, setBulkProcessing] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const limit = 20
+
+  const toggleSelectAll = () => {
+    const currentIds = products.map(p => p.id)
+    const allSelected = currentIds.every(id => selectedIds.includes(id))
+    if (allSelected) {
+      setSelectedIds(prev => prev.filter(id => !currentIds.includes(id)))
+    } else {
+      setSelectedIds(prev => Array.from(new Set([...prev, ...currentIds])))
+    }
+  }
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
+
+  const handleBulkAction = async (action: 'TOGGLE_STATUS' | 'DELETE', isActive?: boolean) => {
+    if (selectedIds.length === 0) return
+
+    if (action === 'DELETE') {
+      const confirmMsg = (dict.bulk?.confirmBulkDelete || 'Are you sure you want to delete {count} selected item(s)?').replace('{count}', selectedIds.length.toString())
+      if (!window.confirm(confirmMsg)) return
+    }
+
+    setBulkProcessing(true)
+    try {
+      const res = await fetch('/api/admin/products/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ids: selectedIds,
+          action,
+          isActive,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSelectedIds([])
+        fetchProducts()
+      } else {
+        alert(data.error || 'Failed to process bulk action')
+      }
+    } catch (err) {
+      console.error('Bulk action error:', err)
+      alert('Network error')
+    } finally {
+      setBulkProcessing(false)
+    }
+  }
 
   useEffect(() => {
     const savedFilters = localStorage.getItem('adminProductsFilters')
     if (savedFilters) {
       try {
         const filters = JSON.parse(savedFilters)
-        if (filters.search) setSearch(filters.search)
+        if (filters.search) {
+          setSearch(filters.search)
+          setDebouncedSearch(filters.search)
+        }
         if (filters.categoryFilter) setCategoryFilter(filters.categoryFilter)
         if (filters.page) setPage(filters.page)
       } catch (error) {
@@ -133,6 +201,14 @@ export default function AdminProductsPage() {
     }
     setFiltersLoaded(true)
   }, [])
+
+  // Debounce search query by 350ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const flattenCategories = (cats: any[]): any[] => {
     const result: any[] = []
@@ -150,10 +226,10 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     if (filtersLoaded) {
-      const filters = { search, categoryFilter, page }
+      const filters = { search: debouncedSearch, categoryFilter, page }
       localStorage.setItem('adminProductsFilters', JSON.stringify(filters))
     }
-  }, [search, categoryFilter, page, filtersLoaded])
+  }, [debouncedSearch, categoryFilter, page, filtersLoaded])
 
   useEffect(() => {
     fetchCategories()
@@ -163,7 +239,7 @@ export default function AdminProductsPage() {
     if (filtersLoaded) {
       fetchProducts()
     }
-  }, [page, search, categoryFilter, filtersLoaded])
+  }, [page, debouncedSearch, categoryFilter, filtersLoaded])
   
   useEffect(() => {
     if (flatCategories.length > 0 && categoryFilter) {
@@ -201,7 +277,7 @@ export default function AdminProductsPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        ...(search && { search }),
+        ...(debouncedSearch && { search: debouncedSearch }),
         ...(categorySlug && { category: categorySlug })
       })
 
@@ -220,23 +296,27 @@ export default function AdminProductsPage() {
     }
   }
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return
+  const confirmDeleteProduct = async () => {
+    if (!productToDelete) return
 
+    setDeleting(true)
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
+      const response = await fetch(`/api/admin/products/${productToDelete.id}`, {
         method: 'DELETE'
       })
 
       const data = await response.json()
       if (data.success) {
+        setProductToDelete(null)
         fetchProducts()
       } else {
-        alert(data.error || 'Failed to delete product')
+        alert(data.error || dict.common.errorOccurred)
       }
     } catch (error) {
       console.error('Error deleting product:', error)
-      alert('Failed to delete product')
+      alert(dict.common.errorOccurred)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -322,18 +402,18 @@ export default function AdminProductsPage() {
   const lowStockCount = products.filter(p => p.stock < 10).length
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="w-full max-w-full min-w-0 space-y-6 pb-12">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Products Catalog</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">{dict.products.title}</h1>
             <span className="px-2.5 py-0.5 text-xs font-bold bg-[#1a3a5c]/10 text-[#1a3a5c] rounded-full">
-              {totalCount} total
+              {totalCount} {dict.common.total.toLowerCase()}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Manage product listings, pricing, multilingual readiness, inventory, and promotions.
+            {dict.products.subtitle}
           </p>
         </div>
 
@@ -343,7 +423,7 @@ export default function AdminProductsPage() {
             className="bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] hover:from-[#152e4a] hover:to-[#1d4ed8] text-white shadow-md shadow-blue-900/10 rounded-xl px-4 py-2.5 font-bold text-xs inline-flex items-center gap-1.5 transition-all active:scale-95"
           >
             <Plus size={16} />
-            <span>Add New Product</span>
+            <span>{dict.products.addProduct}</span>
           </Button>
         </div>
       </div>
@@ -355,7 +435,7 @@ export default function AdminProductsPage() {
             <Package size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Total Products</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.dashboard.totalProducts}</p>
             <p className="text-lg font-black text-gray-900">{totalCount}</p>
           </div>
         </div>
@@ -365,7 +445,7 @@ export default function AdminProductsPage() {
             <CheckCircle2 size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Active Listings</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.common.active}</p>
             <p className="text-lg font-black text-emerald-600">{activeCount}</p>
           </div>
         </div>
@@ -375,7 +455,7 @@ export default function AdminProductsPage() {
             <Star size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Featured Items</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.products.featured}</p>
             <p className="text-lg font-black text-amber-600">{featuredCount}</p>
           </div>
         </div>
@@ -385,7 +465,7 @@ export default function AdminProductsPage() {
             <AlertTriangle size={18} />
           </div>
           <div>
-            <p className="text-xs text-gray-500 font-medium">Low Stock (&lt;10)</p>
+            <p className="text-xs text-gray-500 font-medium">{dict.dashboard.lowStock}</p>
             <p className="text-lg font-black text-red-600">{lowStockCount}</p>
           </div>
         </div>
@@ -397,7 +477,7 @@ export default function AdminProductsPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search products by title, SKU, or keyword..."
+            placeholder={dict.products.searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 h-10 bg-gray-50/50 border-gray-200 focus:bg-white rounded-xl text-xs"
@@ -409,8 +489,8 @@ export default function AdminProductsPage() {
             categories={categories}
             value={categoryFilter}
             onChange={setCategoryFilter}
-            placeholder="All Categories"
-            searchPlaceholder="Search categories..."
+            placeholder={dict.products.filterByCategory}
+            searchPlaceholder={dict.products.searchPlaceholder}
             clearable
             showPath
             showLevelIndicator={false}
@@ -427,7 +507,7 @@ export default function AdminProductsPage() {
           }}
           className="h-10 px-4 rounded-xl text-xs font-semibold text-gray-600 border-gray-200 hover:bg-gray-50 shrink-0"
         >
-          Clear Filters
+          {dict.common.reset}
         </Button>
       </div>
 
@@ -435,48 +515,70 @@ export default function AdminProductsPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin border-t-[#1a3a5c]"></div>
-          <p className="text-xs font-medium text-gray-500 mt-3">Loading product inventory...</p>
+          <p className="text-xs font-medium text-gray-500 mt-3">{dict.common.loading}</p>
         </div>
       ) : products.length === 0 ? (
         <div className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm">
           <div className="w-16 h-16 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center mx-auto mb-4 border border-gray-100">
             <Package size={28} />
           </div>
-          <h3 className="text-base font-bold text-gray-900 mb-1">No products found</h3>
+          <h3 className="text-base font-bold text-gray-900 mb-1">{dict.common.noData}</h3>
           <p className="text-xs text-gray-500 mb-5 max-w-sm mx-auto">
-            {search || categoryFilter ? 'No products matched your active filters. Try resetting search criteria.' : 'Your product catalog is empty. Start adding your inventory.'}
+            {search || categoryFilter ? dict.common.noData : dict.products.subtitle}
           </p>
           <Button onClick={() => router.push('/admin/products/new')} className="bg-[#1a3a5c] text-white text-xs font-bold rounded-xl">
             <Plus size={14} className="mr-1.5" />
-            Add First Product
+            {dict.products.addProduct}
           </Button>
         </div>
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden lg:block bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+          <div className="hidden lg:block bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden w-full max-w-full">
+            <div className="overflow-x-auto w-full max-w-full">
+              <table className="w-full text-left border-collapse min-w-[950px]">
                 <thead>
                   <tr className="bg-gray-50/80 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-5">Product Info</th>
-                    <th className="py-3.5 px-4">SKU</th>
-                    <th className="py-3.5 px-4">Price</th>
-                    <th className="py-3.5 px-4">Stock</th>
-                    <th className="py-3.5 px-3 text-center">Featured</th>
-                    <th className="py-3.5 px-3 text-center">New</th>
-                    <th className="py-3.5 px-3 text-center">Flash</th>
-                    <th className="py-3.5 px-4">Status</th>
-                    <th className="py-3.5 px-5 text-right">Actions</th>
+                    <th className="py-3.5 px-4 w-10">
+                      <input
+                        type="checkbox"
+                        checked={products.length > 0 && products.every(p => selectedIds.includes(p.id))}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </th>
+                    <th className="py-3.5 px-4">{dict.products.productName}</th>
+                    <th className="py-3.5 px-4">{dict.products.sku}</th>
+                    <th className="py-3.5 px-4">{dict.common.price}</th>
+                    <th className="py-3.5 px-4">{dict.products.stock}</th>
+                    <th className="py-3.5 px-3 text-center">{dict.products.featured}</th>
+                    <th className="py-3.5 px-3 text-center">{dict.products.newArrival}</th>
+                    <th className="py-3.5 px-3 text-center">{dict.products.flashSale}</th>
+                    <th className="py-3.5 px-4">{dict.common.status}</th>
+                    {/* Sticky Right Action Header */}
+                    <th className="py-3.5 px-5 text-center sticky right-0 z-20 bg-gray-100/95 backdrop-blur-xs border-l border-gray-200/90 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.06)] min-w-[140px]">
+                      {dict.common.actions}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 text-xs">
                   {products.map((product) => {
-                    const localized = localizeProduct(product, ADMIN_LOCALE)
+                    const localized = localizeProduct(product, locale)
+                    const isSelected = selectedIds.includes(product.id)
                     return (
-                      <tr key={product.id} className="hover:bg-blue-50/30 transition-colors group">
+                      <tr key={product.id} className={`hover:bg-blue-50/30 transition-colors group ${isSelected ? 'bg-blue-50/40' : ''}`}>
+                        {/* Checkbox */}
+                        <td className="py-4 px-4">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelectOne(product.id)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          />
+                        </td>
+
                         {/* Product Info */}
-                        <td className="py-4 px-5">
+                        <td className="py-4 px-4">
                           <div className="flex items-center gap-3.5">
                             <ProductThumbnail src={product.thumbnail} alt={localized.name} />
                             <div className="min-w-0">
@@ -519,7 +621,7 @@ export default function AdminProductsPage() {
                             <span className={`w-1.5 h-1.5 rounded-full ${
                               product.stock === 0 ? 'bg-red-500' : product.stock < 10 ? 'bg-amber-500' : 'bg-emerald-500'
                             }`} />
-                            {product.stock} in stock
+                            {product.stock} {product.stock === 0 ? dict.products.outOfStock : dict.products.inStock}
                           </span>
                         </td>
 
@@ -529,7 +631,7 @@ export default function AdminProductsPage() {
                             <Switch
                               checked={product.isFeatured}
                               onCheckedChange={() => handleToggleFeatured(product.id, product.isFeatured)}
-                              title={product.isFeatured ? 'Remove Featured' : 'Mark Featured'}
+                              title={dict.products.featured}
                             />
                           </div>
                         </td>
@@ -540,7 +642,7 @@ export default function AdminProductsPage() {
                             <Switch
                               checked={product.isNewArrival}
                               onCheckedChange={() => handleToggleNewArrival(product.id, product.isNewArrival)}
-                              title={product.isNewArrival ? 'Remove New Arrival' : 'Mark New Arrival'}
+                              title={dict.products.newArrival}
                             />
                           </div>
                         </td>
@@ -551,7 +653,7 @@ export default function AdminProductsPage() {
                             <Switch
                               checked={product.isFlashSale}
                               onCheckedChange={() => handleToggleFlashSale(product.id, product.isFlashSale)}
-                              title={product.isFlashSale ? 'Remove Flash Sale' : 'Mark Flash Sale'}
+                              title={dict.products.flashSale}
                             />
                           </div>
                         </td>
@@ -566,19 +668,19 @@ export default function AdminProductsPage() {
                                 : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200'
                             }`}
                           >
-                            {product.isActive ? 'Active' : 'Inactive'}
+                            {product.isActive ? dict.common.active : dict.common.inactive}
                           </button>
                         </td>
 
-                        {/* Actions */}
-                        <td className="py-4 px-5 text-right">
-                          <div className="flex items-center justify-end gap-1">
+                        {/* Sticky Right Actions Column */}
+                        <td className="py-4 px-5 text-right sticky right-0 z-10 bg-white/95 group-hover:bg-blue-50/95 backdrop-blur-xs border-l border-gray-200/90 shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.06)] transition-colors min-w-[140px]">
+                          <div className="flex items-center justify-center gap-1.5">
                             <a
-                              href={`/en/products/${product.slug || product.id}`}
+                              href={`/${locale}/products/${product.slug || product.id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="View on storefront"
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-100/70 rounded-lg transition-colors"
+                              title={dict.common.view}
                             >
                               <ExternalLink size={15} />
                             </a>
@@ -586,17 +688,17 @@ export default function AdminProductsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => router.push(`/admin/products/${product.id}/edit`)}
-                              className="p-1.5 h-auto text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                              title="Edit product"
+                              className="p-1.5 h-auto text-gray-400 hover:text-emerald-600 hover:bg-emerald-100/70 rounded-lg transition-colors"
+                              title={dict.common.edit}
                             >
                               <Edit size={15} />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDelete(product.id, product.name)}
-                              className="p-1.5 h-auto text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete product"
+                              onClick={() => setProductToDelete({ id: product.id, name: product.name })}
+                              className="p-1.5 h-auto text-gray-400 hover:text-red-600 hover:bg-red-100/70 rounded-lg transition-colors"
+                              title={dict.common.delete}
                             >
                               <Trash2 size={15} />
                             </Button>
@@ -613,7 +715,7 @@ export default function AdminProductsPage() {
           {/* Mobile & Tablet Card View */}
           <div className="lg:hidden space-y-3.5">
             {products.map((product) => {
-              const localized = localizeProduct(product, ADMIN_LOCALE)
+              const localized = localizeProduct(product, locale)
               return (
                 <div key={product.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                   <div className="flex gap-3.5">
@@ -623,7 +725,7 @@ export default function AdminProductsPage() {
                       <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {product.sku || '—'}</p>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="font-bold text-gray-900 text-sm">${Number(product.price).toFixed(2)}</span>
-                        <span className="text-[11px] text-gray-500 font-medium">Stock: {product.stock}</span>
+                        <span className="text-[11px] text-gray-500 font-medium">{dict.products.stock}: {product.stock}</span>
                       </div>
                       <TranslationBadges product={product} />
                     </div>
@@ -631,21 +733,21 @@ export default function AdminProductsPage() {
 
                   <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 text-xs">
                     <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50">
-                      <span className="text-gray-500 font-medium">Featured</span>
+                      <span className="text-gray-500 font-medium">{dict.products.featured}</span>
                       <Switch
                         checked={product.isFeatured}
                         onCheckedChange={() => handleToggleFeatured(product.id, product.isFeatured)}
                       />
                     </div>
                     <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50">
-                      <span className="text-gray-500 font-medium">New</span>
+                      <span className="text-gray-500 font-medium">{dict.products.newArrival}</span>
                       <Switch
                         checked={product.isNewArrival}
                         onCheckedChange={() => handleToggleNewArrival(product.id, product.isNewArrival)}
                       />
                     </div>
                     <div className="flex items-center justify-between p-2 rounded-xl bg-gray-50">
-                      <span className="text-gray-500 font-medium">Active</span>
+                      <span className="text-gray-500 font-medium">{dict.common.active}</span>
                       <Switch
                         checked={product.isActive}
                         onCheckedChange={() => handleToggleActive(product.id, product.isActive)}
@@ -661,10 +763,10 @@ export default function AdminProductsPage() {
                       onClick={() => router.push(`/admin/products/${product.id}/edit`)}
                     >
                       <Edit size={13} className="mr-1.5" />
-                      Edit
+                      {dict.common.edit}
                     </Button>
                     <a
-                      href={`/en/products/${product.slug || product.id}`}
+                      href={`/${locale}/products/${product.slug || product.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3 py-2 border rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 flex items-center justify-center"
@@ -674,7 +776,7 @@ export default function AdminProductsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(product.id, product.name)}
+                      onClick={() => setProductToDelete({ id: product.id, name: product.name })}
                       className="px-3 rounded-xl text-red-600 hover:bg-red-50 hover:border-red-200"
                     >
                       <Trash2 size={13} />
@@ -689,7 +791,7 @@ export default function AdminProductsPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs">
               <p className="text-xs text-gray-500 font-medium">
-                Showing page <span className="font-bold text-gray-900">{page}</span> of <span className="font-bold text-gray-900">{totalPages}</span>
+                {dict.common.showing} <span className="font-bold text-gray-900">{page}</span> {dict.common.of} <span className="font-bold text-gray-900">{totalPages}</span>
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -700,7 +802,7 @@ export default function AdminProductsPage() {
                   className="rounded-xl text-xs font-semibold"
                 >
                   <ChevronLeft size={14} className="mr-1" />
-                  Previous
+                  {dict.common.previous}
                 </Button>
                 <Button
                   variant="outline"
@@ -709,13 +811,104 @@ export default function AdminProductsPage() {
                   disabled={page === totalPages}
                   className="rounded-xl text-xs font-semibold"
                 >
-                  Next
+                  {dict.common.next}
                   <ChevronRight size={14} className="ml-1" />
                 </Button>
               </div>
             </div>
           )}
         </>
+      )}
+
+      {/* Styled Delete Confirmation Dialog */}
+      <Dialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <DialogContent className="max-w-md p-6 bg-white rounded-2xl border border-gray-100 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <AlertTriangle className="text-red-600" size={20} />
+              <span>{dict.common.delete} {dict.products.productName}</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-gray-500 mt-2">
+              {dict.common.confirmDelete}
+            </DialogDescription>
+          </DialogHeader>
+
+          {productToDelete && (
+            <div className="my-3 p-3 bg-red-50/60 rounded-xl border border-red-100 text-xs font-medium text-gray-800">
+              <p className="font-bold text-gray-900">{productToDelete.name}</p>
+              <p className="text-gray-400 text-[11px] font-mono mt-0.5">ID: {productToDelete.id}</p>
+            </div>
+          )}
+
+          <DialogFooter className="mt-4 flex items-center justify-end gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={deleting}
+              onClick={() => setProductToDelete(null)}
+              className="rounded-xl text-xs font-semibold px-4 border-gray-200"
+            >
+              {dict.common.cancel}
+            </Button>
+            <Button
+              size="sm"
+              disabled={deleting}
+              onClick={confirmDeleteProduct}
+              className="rounded-xl text-xs font-bold px-4 bg-red-600 hover:bg-red-700 text-white shadow-sm shadow-red-900/20"
+            >
+              {deleting ? dict.common.loading : dict.common.delete}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Floating Bulk Actions Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/90 text-white backdrop-blur-md px-5 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4 animate-in fade-in-50 slide-in-from-bottom-5">
+          <div className="flex items-center gap-2 pr-3 border-r border-white/20 text-xs font-bold">
+            <CheckSquare size={16} className="text-emerald-400" />
+            <span>
+              {(dict.bulk?.selectedCount || '{count} selected').replace('{count}', selectedIds.length.toString())}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              disabled={bulkProcessing}
+              onClick={() => handleBulkAction('TOGGLE_STATUS', true)}
+              className="h-8 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
+            >
+              {dict.bulk?.bulkActive || 'Set Active'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={bulkProcessing}
+              onClick={() => handleBulkAction('TOGGLE_STATUS', false)}
+              className="h-8 px-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold"
+            >
+              {dict.bulk?.bulkInactive || 'Set Inactive'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={bulkProcessing}
+              onClick={() => handleBulkAction('DELETE')}
+              className="h-8 px-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold gap-1"
+            >
+              <Trash2 size={13} />
+              <span>{dict.bulk?.bulkDelete || 'Delete'}</span>
+            </Button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setSelectedIds([])}
+            className="p-1 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-colors ml-1"
+            title={dict.common.close}
+          >
+            <X size={16} />
+          </button>
+        </div>
       )}
     </div>
   )

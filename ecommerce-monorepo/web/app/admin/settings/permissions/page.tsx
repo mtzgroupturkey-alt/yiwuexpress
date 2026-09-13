@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Shield, Plus, Edit, Trash2, Users, Save, X, Check } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface Permission {
   id?: string
@@ -54,6 +55,7 @@ const PARENT_MENUS = RESOURCES.filter(r => r.level === 0 && RESOURCES.some(child
   .map(r => r.key)
 
 export default function PermissionsPage() {
+  const { dict, locale } = useAdminLocale()
   const [activeTab, setActiveTab] = useState<'roles' | 'users'>('roles')
   const [roles, setRoles] = useState<Role[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -101,7 +103,7 @@ export default function PermissionsPage() {
   }
 
   const handleDeleteRole = async (roleId: string) => {
-    if (!confirm('Are you sure you want to delete this role?')) return
+    if (!confirm(dict.permissions.deleteRoleConfirm)) return
 
     try {
       const token = localStorage.getItem('token')
@@ -114,10 +116,10 @@ export default function PermissionsPage() {
         fetchRoles()
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to delete role')
+        alert(error.error || dict.common.errorOccurred)
       }
     } catch (error) {
-      alert('Failed to delete role')
+      alert(dict.common.errorOccurred)
     }
   }
 
@@ -130,8 +132,8 @@ export default function PermissionsPage() {
             <Shield size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Permissions Management</h2>
-            <p className="text-sm text-gray-500">Manage roles and user access controls</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.permissions.title}</h2>
+            <p className="text-sm text-gray-500">{dict.permissions.subtitle}</p>
           </div>
         </div>
       </div>
@@ -146,7 +148,7 @@ export default function PermissionsPage() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          Permission Roles
+          {dict.permissions.rolesTab}
         </button>
         <button
           onClick={() => setActiveTab('users')}
@@ -156,7 +158,7 @@ export default function PermissionsPage() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          User Permissions
+          {dict.permissions.usersTab}
         </button>
       </div>
 
@@ -165,7 +167,7 @@ export default function PermissionsPage() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-600">
-              Create permission roles with default access levels for different user types
+              {dict.permissions.rolesDesc}
             </p>
             <button
               onClick={() => {
@@ -175,7 +177,7 @@ export default function PermissionsPage() {
               className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg flex items-center gap-2"
             >
               <Plus size={18} />
-              New Role
+              {dict.permissions.newRole}
             </button>
           </div>
 
@@ -195,18 +197,18 @@ export default function PermissionsPage() {
                   </div>
                   {role.isSystem && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
-                      System
+                      {dict.permissions.systemRole}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
                   <Users size={16} />
-                  <span>{role._count?.users || 0} users</span>
+                  <span>{dict.permissions.usersCount.replace('{count}', (role._count?.users || 0).toString())}</span>
                 </div>
 
                 <div className="text-xs text-gray-600 mb-4">
-                  <p className="font-semibold mb-1">Permissions:</p>
+                  <p className="font-semibold mb-1">{dict.permissions.permissionsLabel}:</p>
                   <div className="space-y-1">
                     {role.permissions.slice(0, 3).map((perm) => (
                       <div key={perm.resource} className="flex items-center gap-1">
@@ -229,7 +231,7 @@ export default function PermissionsPage() {
                     className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg flex items-center justify-center gap-2"
                   >
                     <Edit size={16} />
-                    Edit
+                    {dict.common.edit}
                   </button>
                   {!role.isSystem && (
                     <button
@@ -250,18 +252,18 @@ export default function PermissionsPage() {
       {activeTab === 'users' && (
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Assign permission roles to users or set custom permissions
+            {dict.permissions.usersDesc}
           </p>
 
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Company</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Custom</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{dict.users.user}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{dict.users.companyName}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{dict.users.role}</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">{dict.permissions.customCount.replace('{count}', '')}</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase">{dict.common.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -282,13 +284,13 @@ export default function PermissionsPage() {
                           {user.permissionRole.name}
                         </span>
                       ) : (
-                        <span className="text-sm text-gray-400">No role</span>
+                        <span className="text-sm text-gray-400">{dict.permissions.noRole}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       {user.customPermissions.length > 0 ? (
                         <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded">
-                          {user.customPermissions.length} custom
+                          {dict.permissions.customCount.replace('{count}', user.customPermissions.length.toString())}
                         </span>
                       ) : (
                         <span className="text-sm text-gray-400">-</span>
@@ -302,7 +304,7 @@ export default function PermissionsPage() {
                         }}
                         className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded text-sm"
                       >
-                        Edit Permissions
+                        {dict.permissions.editPermissions}
                       </button>
                     </td>
                   </tr>
@@ -317,6 +319,7 @@ export default function PermissionsPage() {
       {showRoleModal && (
         <RoleModal
           role={editingRole}
+          dict={dict}
           onClose={() => {
             setShowRoleModal(false)
             setEditingRole(null)
@@ -334,6 +337,7 @@ export default function PermissionsPage() {
         <UserPermissionModal
           user={editingUser}
           roles={roles}
+          dict={dict}
           onClose={() => {
             setShowUserModal(false)
             setEditingUser(null)
@@ -352,10 +356,12 @@ export default function PermissionsPage() {
 // Role Modal Component
 function RoleModal({ 
   role, 
+  dict,
   onClose, 
   onSuccess 
 }: { 
   role: Role | null
+  dict: any
   onClose: () => void
   onSuccess: () => void
 }) {
@@ -391,7 +397,7 @@ function RoleModal({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      alert('Role name is required')
+      alert(`${dict.permissions.roleName} is required`)
       return
     }
 
@@ -415,22 +421,20 @@ function RoleModal({
         onSuccess()
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to save role')
+        alert(error.error || dict.common.errorOccurred)
       }
     } catch (error) {
-      alert('Failed to save role')
+      alert(dict.common.errorOccurred)
     } finally {
       setSaving(false)
     }
   }
 
   const togglePermission = (resource: string, type: 'canView' | 'canCreate' | 'canEdit' | 'canDelete') => {
-    console.log('Toggle permission:', resource, type)
     setPermissions(prev => {
       const updated = prev.map(p => 
         p.resource === resource ? { ...p, [type]: !p[type] } : p
       )
-      console.log('Updated permissions:', updated.find(p => p.resource === resource))
       return updated
     })
   }
@@ -465,7 +469,7 @@ function RoleModal({
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <h3 className="text-xl font-bold text-gray-900">
-            {role ? 'Edit Role' : 'Create New Role'}
+            {role ? dict.permissions.editRole : dict.permissions.newRole}
           </h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />
@@ -475,7 +479,7 @@ function RoleModal({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Role Name *
+              {dict.permissions.roleName} *
             </label>
             <input
               type="text"
@@ -488,7 +492,7 @@ function RoleModal({
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Description
+              {dict.permissions.roleDescription}
             </label>
             <textarea
               value={description}
@@ -501,7 +505,7 @@ function RoleModal({
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Default Permissions
+              {dict.permissions.permissionsLabel}
             </label>
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <table className="w-full">
@@ -510,49 +514,45 @@ function RoleModal({
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Resource</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                       <div className="flex flex-col items-center gap-1">
-                        <span>View</span>
+                        <span>{dict.common.view}</span>
                         <input
                           type="checkbox"
                           checked={permissions.every(p => p.canView)}
                           onChange={() => toggleAllPermissions('canView')}
                           className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                          title="Toggle all View permissions"
                         />
                       </div>
                     </th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                       <div className="flex flex-col items-center gap-1">
-                        <span>Create</span>
+                        <span>{dict.common.create || dict.common.add}</span>
                         <input
                           type="checkbox"
                           checked={permissions.every(p => p.canCreate)}
                           onChange={() => toggleAllPermissions('canCreate')}
                           className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                          title="Toggle all Create permissions"
                         />
                       </div>
                     </th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                       <div className="flex flex-col items-center gap-1">
-                        <span>Edit</span>
+                        <span>{dict.common.edit}</span>
                         <input
                           type="checkbox"
                           checked={permissions.every(p => p.canEdit)}
                           onChange={() => toggleAllPermissions('canEdit')}
                           className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                          title="Toggle all Edit permissions"
                         />
                       </div>
                     </th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                       <div className="flex flex-col items-center gap-1">
-                        <span>Delete</span>
+                        <span>{dict.common.delete}</span>
                         <input
                           type="checkbox"
                           checked={permissions.every(p => p.canDelete)}
                           onChange={() => toggleAllPermissions('canDelete')}
                           className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                          title="Toggle all Delete permissions"
                         />
                       </div>
                     </th>
@@ -561,9 +561,7 @@ function RoleModal({
                 <tbody className="divide-y divide-gray-200">
                   {RESOURCES.map((resource) => {
                     const perm = permissions.find(p => p.resource === resource.key)
-                    // Only parent rows (level 0) with children get special treatment
                     const isParentRow = resource.level === 0 && RESOURCES.some(r => r.parent === resource.key)
-                    // Submenu rows are level 1 - they should be individually clickable
                     const isSubmenu = resource.level === 1
                     
                     return (
@@ -598,17 +596,17 @@ function RoleModal({
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
           >
-            Cancel
+            {dict.common.cancel}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold rounded-lg flex items-center gap-2"
           >
-            {saving ? 'Saving...' : (
+            {saving ? dict.common.saving : (
               <>
                 <Save size={18} />
-                Save Role
+                {dict.common.save} {dict.users.role}
               </>
             )}
           </button>
@@ -622,11 +620,13 @@ function RoleModal({
 function UserPermissionModal({ 
   user, 
   roles,
+  dict,
   onClose, 
   onSuccess 
 }: { 
   user: User
   roles: Role[]
+  dict: any
   onClose: () => void
   onSuccess: () => void
 }) {
@@ -636,7 +636,6 @@ function UserPermissionModal({
   // Initialize custom permissions - merge existing with all resources
   const [customPermissions, setCustomPermissions] = useState<Permission[]>(() => {
     if (user.customPermissions.length > 0) {
-      // Merge existing permissions with all resources
       return RESOURCES.map(r => {
         const existing = user.customPermissions.find(p => p.resource === r.key)
         return existing || {
@@ -648,7 +647,6 @@ function UserPermissionModal({
         }
       })
     }
-    // No custom permissions - all unchecked
     return RESOURCES.map(r => ({
       resource: r.key,
       canView: false,
@@ -680,10 +678,10 @@ function UserPermissionModal({
         onSuccess()
       } else {
         const error = await res.json()
-        alert(error.error || 'Failed to update permissions')
+        alert(error.error || dict.common.errorOccurred)
       }
     } catch (error) {
-      alert('Failed to update permissions')
+      alert(dict.common.errorOccurred)
     } finally {
       setSaving(false)
     }
@@ -727,7 +725,7 @@ function UserPermissionModal({
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Edit User Permissions</h3>
+            <h3 className="text-xl font-bold text-gray-900">{dict.permissions.editPermissions}</h3>
             <p className="text-sm text-gray-500 mt-1">{user.name} ({user.email})</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -744,7 +742,7 @@ function UserPermissionModal({
                 onChange={() => setUseCustom(false)}
                 className="w-4 h-4 text-purple-600"
               />
-              <span className="font-semibold text-gray-900">Assign Permission Role</span>
+              <span className="font-semibold text-gray-900">{dict.users.selectPermissionRole}</span>
             </label>
 
             {!useCustom && (
@@ -753,7 +751,7 @@ function UserPermissionModal({
                 onChange={(e) => setSelectedRoleId(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
               >
-                <option value="">No Role</option>
+                <option value="">{dict.permissions.noRole}</option>
                 {roles.map(role => (
                   <option key={role.id} value={role.id}>
                     {role.name} {role.description && `- ${role.description}`}
@@ -771,7 +769,7 @@ function UserPermissionModal({
                 onChange={() => setUseCustom(true)}
                 className="w-4 h-4 text-purple-600"
               />
-              <span className="font-semibold text-gray-900">Set Custom Permissions</span>
+              <span className="font-semibold text-gray-900">{dict.permissions.customCount.replace('{count}', '')}</span>
             </label>
 
             {useCustom && (
@@ -782,49 +780,45 @@ function UserPermissionModal({
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Resource</th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                         <div className="flex flex-col items-center gap-1">
-                          <span>View</span>
+                          <span>{dict.common.view}</span>
                           <input
                             type="checkbox"
                             checked={customPermissions.every(p => p.canView)}
                             onChange={() => toggleAllPermissions('canView')}
                             className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                            title="Toggle all View permissions"
                           />
                         </div>
                       </th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                         <div className="flex flex-col items-center gap-1">
-                          <span>Create</span>
+                          <span>{dict.common.create || dict.common.add}</span>
                           <input
                             type="checkbox"
                             checked={customPermissions.every(p => p.canCreate)}
                             onChange={() => toggleAllPermissions('canCreate')}
                             className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                            title="Toggle all Create permissions"
                           />
                         </div>
                       </th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                         <div className="flex flex-col items-center gap-1">
-                          <span>Edit</span>
+                          <span>{dict.common.edit}</span>
                           <input
                             type="checkbox"
                             checked={customPermissions.every(p => p.canEdit)}
                             onChange={() => toggleAllPermissions('canEdit')}
                             className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                            title="Toggle all Edit permissions"
                           />
                         </div>
                       </th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
                         <div className="flex flex-col items-center gap-1">
-                          <span>Delete</span>
+                          <span>{dict.common.delete}</span>
                           <input
                             type="checkbox"
                             checked={customPermissions.every(p => p.canDelete)}
                             onChange={() => toggleAllPermissions('canDelete')}
                             className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
-                            title="Toggle all Delete permissions"
                           />
                         </div>
                       </th>
@@ -833,9 +827,7 @@ function UserPermissionModal({
                   <tbody className="divide-y divide-gray-200">
                     {RESOURCES.map((resource) => {
                       const perm = customPermissions.find(p => p.resource === resource.key)
-                      // Only parent rows (level 0) with children get special treatment
                       const isParentRow = resource.level === 0 && RESOURCES.some(r => r.parent === resource.key)
-                      // Submenu rows are level 1 - they should be individually clickable
                       const isSubmenu = resource.level === 1
                       
                       return (
@@ -871,17 +863,17 @@ function UserPermissionModal({
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
           >
-            Cancel
+            {dict.common.cancel}
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold rounded-lg flex items-center gap-2"
           >
-            {saving ? 'Saving...' : (
+            {saving ? dict.common.saving : (
               <>
                 <Save size={18} />
-                Save Permissions
+                {dict.common.save} {dict.permissions.permissionsLabel}
               </>
             )}
           </button>

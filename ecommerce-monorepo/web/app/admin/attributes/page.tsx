@@ -12,8 +12,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { toast } from 'react-hot-toast'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { AttributeForm } from '@/components/admin/AttributeForm'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 export default function AttributeManager() {
+  const { dict, locale } = useAdminLocale()
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAttribute, setEditingAttribute] = useState<any>(null)
@@ -53,10 +55,10 @@ export default function AttributeManager() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-attributes'] })
       queryClient.invalidateQueries({ queryKey: ['categories', 'with-attributes'] })
-      toast.success('Attribute deleted successfully')
+      toast.success(dict.common.deleteSuccess)
     },
     onError: () => {
-      toast.error('Failed to delete attribute')
+      toast.error(dict.common.errorOccurred)
     },
   })
 
@@ -82,7 +84,7 @@ export default function AttributeManager() {
   }
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this attribute?')) {
+    if (confirm(dict.attributes.deleteConfirm)) {
       deleteAttribute.mutate(id)
     }
   }
@@ -116,9 +118,9 @@ export default function AttributeManager() {
     <Container maxWidth="2xl" className="py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#1a3a5c]">Attribute Manager</h1>
+          <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.attributes.title}</h1>
           <p className="text-gray-500">
-            Define custom product attributes for each category
+            {dict.attributes.subtitle}
           </p>
         </div>
         <Button
@@ -130,7 +132,7 @@ export default function AttributeManager() {
           disabled={!selectedCategoryId}
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Attribute
+          {dict.attributes.addAttribute}
         </Button>
       </div>
 
@@ -139,13 +141,13 @@ export default function AttributeManager() {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>Categories</CardTitle>
-              <CardDescription>Select a category to manage its attributes</CardDescription>
+              <CardTitle>{dict.categories.title}</CardTitle>
+              <CardDescription>{dict.attributes.selectCategoryHelp}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
                 {isLoading ? (
-                  <div className="text-center py-4 text-gray-500">Loading...</div>
+                  <div className="text-center py-4 text-gray-500">{dict.common.loading}</div>
                 ) : (
                   (() => {
                     // Build category hierarchy
@@ -214,35 +216,35 @@ export default function AttributeManager() {
             <CardHeader>
               <CardTitle>
                 {selectedCategoryId
-                  ? categories?.data?.find((c: any) => c.id === selectedCategoryId)?.name || 'Attributes'
-                  : 'Select a category'}
+                  ? categories?.data?.find((c: any) => c.id === selectedCategoryId)?.name || dict.attributes.title
+                  : dict.attributes.selectCategory}
               </CardTitle>
               <CardDescription>
                 {selectedCategoryId
-                  ? 'Manage product attributes for this category'
-                  : 'Please select a category from the left panel'}
+                  ? dict.attributes.subtitle
+                  : dict.attributes.selectCategoryHelp}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {!selectedCategoryId ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p>Select a category to manage its attributes</p>
+                  <p>{dict.attributes.selectCategoryHelp}</p>
                 </div>
               ) : isLoading ? (
-                <div className="text-center py-8 text-gray-500">Loading attributes...</div>
+                <div className="text-center py-8 text-gray-500">{dict.attributes.loadingAttributes}</div>
               ) : (
                 <>
                   {categoryAttributes?.category?.hasParent && (
                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-sm text-blue-800">
-                        ℹ️ This category inherits attributes from its parent category. Inherited attributes are shown with a light blue background and cannot be edited here.
+                        ℹ️ {dict.attributes.inheritedNotice}
                       </p>
                     </div>
                   )}
                   
                   {categoryAttributes?.data?.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                      <p>No attributes defined for this category</p>
+                      <p>{dict.attributes.noAttributes}</p>
                       <Button
                         onClick={() => {
                           setEditingAttribute(null)
@@ -252,19 +254,19 @@ export default function AttributeManager() {
                         className="mt-4"
                       >
                         <Plus className="w-4 h-4 mr-2" />
-                        Add First Attribute
+                        {dict.attributes.addFirstAttribute}
                       </Button>
                     </div>
                   ) : (
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Attribute</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Required</TableHead>
-                          <TableHead>Filterable</TableHead>
-                          <TableHead>Visible</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{dict.attributes.attributeName}</TableHead>
+                          <TableHead>{dict.attributes.attributeType}</TableHead>
+                          <TableHead>{dict.attributes.required}</TableHead>
+                          <TableHead>{dict.attributes.filterable}</TableHead>
+                          <TableHead>{dict.attributes.visible}</TableHead>
+                          <TableHead className="text-right">{dict.common.actions}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -278,14 +280,14 @@ export default function AttributeManager() {
                                 <span className="font-medium">{attr.name}</span>
                                 {attr.isInherited && (
                                   <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
-                                    Inherited from {attr.inheritedFrom}
+                                    {dict.attributes.inheritedFrom.replace('{parent}', attr.inheritedFrom || '')}
                                   </Badge>
                                 )}
                               </div>
                             </TableCell>
                             <TableCell>
                               <Badge className={getAttributeTypeBadge(attr.type)}>
-                                {attr.type}
+                                {dict.attributes.types[attr.type as keyof typeof dict.attributes.types] || attr.type}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -326,7 +328,7 @@ export default function AttributeManager() {
                                 </>
                               )}
                               {attr.isInherited && (
-                                <span className="text-xs text-gray-400">Read-only</span>
+                                <span className="text-xs text-gray-400">{dict.attributes.readOnly}</span>
                               )}
                             </TableCell>
                           </TableRow>
@@ -345,9 +347,9 @@ export default function AttributeManager() {
       <Dialog open={isDialogOpen} onOpenChange={() => handleDialogClose()}>
         <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle>{editingAttribute ? 'Edit Attribute' : 'Add Attribute'}</DialogTitle>
+            <DialogTitle>{editingAttribute ? dict.attributes.editAttribute : dict.attributes.addAttribute}</DialogTitle>
             <DialogDescription>
-              Define a custom attribute for this category
+              {dict.attributes.subtitle}
             </DialogDescription>
           </DialogHeader>
 

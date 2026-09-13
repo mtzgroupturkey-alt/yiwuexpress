@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Search, Plus, Edit, Trash2, Globe } from 'lucide-react'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { localizeCountry } from '@/lib/utils/localize'
 
 interface Country {
   id: string
@@ -28,6 +30,7 @@ interface Country {
 
 export default function AdminCountriesPage() {
   const router = useRouter()
+  const { dict, locale } = useAdminLocale()
   const [countries, setCountries] = useState<Country[]>([])
   const [filteredCountries, setFilteredCountries] = useState<Country[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,11 +66,15 @@ export default function AdminCountriesPage() {
 
     if (search) {
       const searchLower = search.toLowerCase()
-      filtered = filtered.filter(country =>
-        country.name.toLowerCase().includes(searchLower) ||
-        country.code.toLowerCase().includes(searchLower) ||
-        country.currency.toLowerCase().includes(searchLower)
-      )
+      filtered = filtered.filter(country => {
+        const loc = localizeCountry(country as any, locale)
+        const nameToMatch = (loc.name || country.name || '').toLowerCase()
+        return (
+          nameToMatch.includes(searchLower) ||
+          country.code.toLowerCase().includes(searchLower) ||
+          country.currency.toLowerCase().includes(searchLower)
+        )
+      })
     }
 
     setFilteredCountries(filtered)
@@ -105,12 +112,12 @@ export default function AdminCountriesPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Countries</h1>
-          <p className="text-gray-600">Manage shipping destinations and configurations</p>
+          <h1 className="text-3xl font-bold text-gray-900">{dict.countries.title}</h1>
+          <p className="text-gray-600">{dict.countries.subtitle}</p>
         </div>
         <Button onClick={() => router.push('/admin/countries/new')}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Country
+          {dict.countries.addCountry}
         </Button>
       </div>
 
@@ -121,7 +128,7 @@ export default function AdminCountriesPage() {
             <div className="text-2xl font-bold text-gray-900">
               {countries.length}
             </div>
-            <p className="text-sm text-gray-600">Total Countries</p>
+            <p className="text-sm text-gray-600">{dict.countries.title} ({dict.common.total})</p>
           </CardContent>
         </Card>
         <Card>
@@ -129,7 +136,7 @@ export default function AdminCountriesPage() {
             <div className="text-2xl font-bold text-gray-900">
               {countries.filter(c => c.isActive).length}
             </div>
-            <p className="text-sm text-gray-600">Active Countries</p>
+            <p className="text-sm text-gray-600">{dict.common.active}</p>
           </CardContent>
         </Card>
         <Card>
@@ -137,7 +144,7 @@ export default function AdminCountriesPage() {
             <div className="text-2xl font-bold text-gray-900">
               {countries.reduce((sum, c) => sum + (c.shippingRates?.length || 0), 0)}
             </div>
-            <p className="text-sm text-gray-600">Total Shipping Rates</p>
+            <p className="text-sm text-gray-600">{dict.countries.shippingAvailable}</p>
           </CardContent>
         </Card>
       </div>
@@ -150,7 +157,7 @@ export default function AdminCountriesPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search by name, code, or currency..."
+                placeholder={dict.common.search}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -158,7 +165,7 @@ export default function AdminCountriesPage() {
             </div>
             {search && (
               <Button variant="outline" onClick={() => setSearch('')}>
-                Clear
+                {dict.common.reset}
               </Button>
             )}
           </div>
@@ -174,16 +181,14 @@ export default function AdminCountriesPage() {
         <Card>
           <CardContent className="p-12 text-center">
             <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No countries found</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{dict.common.noData}</h3>
             <p className="text-gray-600 mb-4">
-              {countries.length === 0 
-                ? "Get started by adding your first country configuration"
-                : "No countries match your search"}
+              {dict.countries.subtitle}
             </p>
             {countries.length === 0 && (
               <Button onClick={() => router.push('/admin/countries/new')}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add First Country
+                {dict.countries.addCountry}
               </Button>
             )}
           </CardContent>
@@ -196,22 +201,22 @@ export default function AdminCountriesPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Country
+                    {dict.countries.countryName}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Currency
+                    {dict.countries.currency}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Delivery SLA
+                    {dict.shipments.eta}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Shipping Rates
+                    {dict.countries.shippingAvailable}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
+                    {dict.common.status}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
+                    {dict.common.actions}
                   </th>
                 </tr>
               </thead>

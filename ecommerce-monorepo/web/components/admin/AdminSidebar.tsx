@@ -1,141 +1,24 @@
-﻿'use client'
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import {
-  LayoutDashboard, Package, FileText, Ship, Users,
-  Settings, LogOut, Menu, X, ChevronRight, Globe,
-  TrendingUp, ChevronDown, Eye, CheckCircle,
-  MapPin, Building, Sliders, Mail, Shield, Database,
-  ShoppingBag, ShoppingCart, MessageSquare, Plus, FolderTree, Tag, Image as ImageIcon,
-  Building2, ClipboardList, DollarSign, Truck, Server, LucideIcon
+  Search,
+  Globe,
+  Menu,
+  X,
+  LogOut,
+  User as UserIcon,
 } from 'lucide-react'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
+import { navigationConfig, ADMIN_NAV_ITEMS } from './navigationConfig'
+import { SidebarGroup } from './SidebarGroup'
+import { SidebarItem } from './SidebarItem'
+import { cn } from '@/lib/utils'
 
-export interface AdminNavItem {
-  href: string
-  label: string
-  icon: LucideIcon
-  subItems?: AdminNavItem[]
-}
-
-export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { 
-    href: '/admin/products', 
-    label: 'Products', 
-    icon: ShoppingBag,
-    subItems: [
-      { href: '/admin/products', label: 'All Products', icon: Eye },
-      { href: '/admin/products/new', label: 'Add Product', icon: Plus },
-    ]
-  },
-  { 
-    href: '/admin/categories', 
-    label: 'Categories', 
-    icon: FolderTree,
-    subItems: [
-      { href: '/admin/categories', label: 'All Categories', icon: Eye },
-      { href: '/admin/categories/menu', label: 'Menu Manager', icon: Sliders },
-    ]
-  },
-  { 
-    href: '/admin/attributes', 
-    label: 'Attributes', 
-    icon: Tag,
-  },
-  { 
-    href: '/admin/suppliers', 
-    label: 'Suppliers', 
-    icon: Building2,
-  },
-  { 
-    href: '/admin/purchase-orders', 
-    label: 'Purchase Orders', 
-    icon: ClipboardList,
-    subItems: [
-      { href: '/admin/purchase-orders', label: 'All Purchase Orders', icon: Eye },
-      { href: '/admin/purchase-orders/new', label: 'Create Purchase Order', icon: Plus },
-    ]
-  },
-  { 
-    href: '/admin/orders', 
-    label: 'Sales Orders', 
-    icon: ShoppingCart,
-    subItems: [
-      { href: '/admin/orders', label: 'All Orders', icon: Eye },
-      { href: '/admin/orders?status=pending', label: 'Pending Orders', icon: CheckCircle },
-    ]
-  },
-  { 
-    href: '/admin/wholesale', 
-    label: 'Wholesale', 
-    icon: MessageSquare,
-    subItems: [
-      { href: '/admin/wholesale', label: 'All Inquiries', icon: Eye },
-      { href: '/admin/wholesale?status=new', label: 'New Inquiries', icon: Plus },
-    ]
-  },
-  { 
-    href: '/admin/countries', 
-    label: 'Countries', 
-    icon: Globe,
-    subItems: [
-      { href: '/admin/countries', label: 'All Countries', icon: Eye },
-      { href: '/admin/countries/new', label: 'Add Country', icon: Plus },
-    ]
-  },
-  { 
-    href: '/admin/currencies', 
-    label: 'Currencies', 
-    icon: DollarSign,
-  },
-  { href: '/admin/services', label: 'Services', icon: Package },
-  { 
-    href: '/admin/quotes', 
-    label: 'Quotes', 
-    icon: FileText,
-    subItems: [
-      { href: '/admin/quotes', label: 'View Quotes', icon: Eye },
-      { href: '/admin/quotes?tab=pending', label: 'Approve/Reject', icon: CheckCircle },
-    ]
-  },
-  { 
-    href: '/admin/shipments', 
-    label: 'Shipments', 
-    icon: Ship,
-    subItems: [
-      { href: '/admin/shipments', label: 'All Shipments', icon: Ship },
-      { href: '/admin/containers', label: 'Containers', icon: Package },
-      { href: '/admin/shipments?tab=tracking', label: 'Tracking', icon: MapPin },
-    ]
-  },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/reviews', label: 'Reviews', icon: MessageSquare },
-  { href: '/admin/testimonials', label: 'Testimonials', icon: ImageIcon },
-  { 
-    href: '/admin/settings', 
-    label: 'Settings', 
-    icon: Settings,
-    subItems: [
-      { href: '/admin/settings/general', label: 'General', icon: Settings },
-      { href: '/admin/settings/hero-slider', label: 'Hero Slider', icon: Sliders },
-      { href: '/admin/settings/featured-products', label: 'Featured Products', icon: ShoppingBag },
-      { href: '/admin/settings/new-arrivals', label: 'New Arrivals', icon: Package },
-      { href: '/admin/settings/flash-sales', label: 'Flash Sales', icon: TrendingUp },
-      { href: '/admin/settings/breadcrumb', label: 'Breadcrumb Backgrounds', icon: Image as any },
-      { href: '/admin/settings/company', label: 'Company Info', icon: Building },
-      { href: '/admin/settings/contact-locations', label: 'Contact Locations', icon: MapPin },
-      { href: '/admin/settings/system', label: 'System Settings', icon: Sliders },
-      { href: '/admin/settings/shipping-methods', label: 'Shipping Methods', icon: Truck },
-      { href: '/admin/settings/notifications', label: 'Notifications', icon: Mail },
-      { href: '/admin/settings/permissions', label: 'Permissions', icon: Shield },
-      { href: '/admin/settings/backup', label: 'Backup & Export', icon: Database },
-      { href: '/admin/deploy/local', label: 'Local Deployment', icon: Server },
-    ]
-  },
-]
+export { ADMIN_NAV_ITEMS }
 
 export interface AdminSidebarProps {
   sidebarOpen: boolean
@@ -144,8 +27,8 @@ export interface AdminSidebarProps {
   setMobileMenuOpen: (open: boolean) => void
   logoUrl?: string
   companyName: string
-  primaryColor: string
-  accentColor: string
+  primaryColor?: string
+  accentColor?: string
   onLogout: () => void
 }
 
@@ -161,187 +44,285 @@ export function AdminSidebar({
   onLogout,
 }: AdminSidebarProps) {
   const pathname = usePathname()
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({})
+  const { dict } = useAdminLocale()
 
+  // Track expanded groups (all collapsed by default except current active group)
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(['dashboard'])
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Live badge counts from /api/admin/stats
+  const [badgeCounts, setBadgeCounts] = useState<{
+    pendingOrders: number
+    pendingQuotes: number
+    lowStock: number
+    newInquiries: number
+  }>({
+    pendingOrders: 0,
+    pendingQuotes: 0,
+    lowStock: 0,
+    newInquiries: 0,
+  })
+
+  // Fetch real-time pending notification counts
   useEffect(() => {
-    const initialExpanded: Record<string, boolean> = {}
-    ADMIN_NAV_ITEMS.forEach(item => {
-      if (item.subItems) {
-        const isActive = item.subItems.some(sub => pathname.startsWith(sub.href))
-        if (isActive) {
-          initialExpanded[item.href] = true
+    fetch('/api/admin/stats')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success || data.pendingQuotes !== undefined) {
+          const quotes = data.pendingQuotes ?? data.data?.overview?.pendingQuotes ?? 0
+          const lowStock = data.lowStockProducts ?? data.data?.overview?.lowStockProducts ?? 0
+          const pendingOrdersItem = (data.ordersByStatus || data.data?.ordersByStatus || []).find(
+            (s: any) => s.status === 'PENDING'
+          )
+          const pendingOrders = pendingOrdersItem
+            ? pendingOrdersItem.count || pendingOrdersItem._count || 0
+            : 0
+
+          const newInquiriesItem = (data.wholesaleByStatus || data.data?.wholesaleByStatus || []).find(
+            (s: any) => s.status === 'NEW'
+          )
+          const newInquiries = newInquiriesItem
+            ? newInquiriesItem.count || newInquiriesItem._count || 0
+            : 0
+
+          setBadgeCounts({
+            pendingOrders,
+            pendingQuotes: quotes,
+            lowStock,
+            newInquiries,
+          })
         }
+      })
+      .catch((err) => console.error('Error fetching sidebar badges:', err))
+  }, [pathname])
+
+  // Automatically expand the group containing the active page
+  useEffect(() => {
+    navigationConfig.forEach((group) => {
+      const isInside = group.items.some(
+        (item) =>
+          pathname === item.href ||
+          (item.href !== '/admin' && pathname.startsWith(item.href))
+      )
+      if (isInside) {
+        setExpandedGroups((prev) => (prev.includes(group.id) ? prev : [...prev, group.id]))
       }
     })
-    setExpandedMenus(prev => ({ ...prev, ...initialExpanded }))
   }, [pathname])
+
+  const toggleGroup = (groupId: string) => {
+    setExpandedGroups((prev) =>
+      prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
+    )
+  }
+
+  // Filter groups and items when searching
+  const filteredGroups = navigationConfig
+    .map((group) => {
+      if (!searchQuery.trim()) return group
+
+      const q = searchQuery.toLowerCase().trim()
+      const groupMatches =
+        group.label.toLowerCase().includes(q) ||
+        ((dict?.nav as any)?.[group.translationKey] || '').toLowerCase().includes(q)
+
+      const matchingItems = group.items.filter((item) => {
+        const itemLabel = (dict?.nav as any)?.[item.translationKey] || item.label
+        return itemLabel.toLowerCase().includes(q) || item.href.toLowerCase().includes(q)
+      })
+
+      if (groupMatches || matchingItems.length > 0) {
+        return {
+          ...group,
+          items: groupMatches ? group.items : matchingItems,
+        }
+      }
+      return null
+    })
+    .filter(Boolean) as typeof navigationConfig
+
+  const renderSidebarBody = (isMobile: boolean = false, isCollapsed: boolean = false) => (
+    <div className="flex flex-col h-full bg-white text-slate-800">
+      {/* 1. Header / Logo Area */}
+      <div
+        className={cn(
+          'flex items-center h-16 border-b border-slate-100 shrink-0',
+          isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
+        )}
+      >
+        <Link
+          href="/admin"
+          onClick={() => isMobile && setMobileMenuOpen(false)}
+          title={companyName || 'Dromkok'}
+          className={cn('flex items-center min-w-0', isCollapsed ? 'justify-center' : 'gap-2.5')}
+        >
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-100 overflow-hidden relative shrink-0">
+            {logoUrl ? (
+              <Image src={logoUrl} alt="Logo" fill sizes="32px" className="object-contain" />
+            ) : (
+              <Globe size={18} className="text-blue-600" />
+            )}
+          </div>
+          {!isCollapsed && (
+            <div className="min-w-0">
+              <span className="font-bold text-sm tracking-tight text-slate-900 block truncate">
+                {companyName || 'Dromkok'}
+              </span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block -mt-0.5">
+                Admin Console
+              </span>
+            </div>
+          )}
+        </Link>
+
+        {isMobile && (
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
+
+      {/* 2. Menu Search Filter Bar (only when expanded) */}
+      {!isCollapsed && (
+        <div className="px-3 pt-3 pb-2 border-b border-slate-100 shrink-0">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder={dict?.commandPalette?.searchPlaceholder || 'Search menu...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200 rounded-lg outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800 placeholder:text-slate-400"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 3. Navigation Groups List */}
+      <nav
+        className={cn(
+          'flex-1 overflow-y-auto space-y-1',
+          isCollapsed ? 'px-2 py-3 divide-y-0' : 'px-3 py-3 divide-y divide-slate-100/80'
+        )}
+      >
+        {filteredGroups.map((group) => {
+          const isExpanded = searchQuery.trim().length > 0 || expandedGroups.includes(group.id)
+
+          return (
+            <div key={group.id} className={cn(!isCollapsed && 'pt-2 first:pt-0')}>
+              <SidebarGroup
+                group={group}
+                isExpanded={isExpanded}
+                onToggle={() => {
+                  if (isCollapsed) {
+                    setSidebarOpen(true)
+                  }
+                  toggleGroup(group.id)
+                }}
+                currentPathname={pathname}
+                dict={dict}
+                badgeCounts={badgeCounts}
+                isCollapsed={isCollapsed}
+                onItemClick={() => isMobile && setMobileMenuOpen(false)}
+              />
+            </div>
+          )
+        })}
+
+        {!isCollapsed && filteredGroups.length === 0 && (
+          <div className="text-center py-8 text-xs text-slate-400">
+            No menu items match &quot;{searchQuery}&quot;
+          </div>
+        )}
+      </nav>
+
+      {/* 4. Footer: Profile & Logout */}
+      <div
+        className={cn(
+          'border-t border-slate-100 bg-slate-50/70 shrink-0 space-y-1',
+          isCollapsed ? 'p-2 flex flex-col items-center' : 'p-3'
+        )}
+      >
+        <Link
+          href="/admin/users"
+          onClick={() => isMobile && setMobileMenuOpen(false)}
+          title="Administrator (admin@dromkok.com)"
+          className={cn(
+            'rounded-xl hover:bg-white border border-transparent hover:border-slate-200/80 transition-all group',
+            isCollapsed
+              ? 'w-10 h-10 flex items-center justify-center'
+              : 'flex items-center gap-2.5 px-2.5 py-1.5'
+          )}
+        >
+          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
+            <UserIcon size={14} />
+          </div>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold text-slate-900 truncate">Administrator</div>
+              <div className="text-[11px] text-slate-400 truncate">admin@dromkok.com</div>
+            </div>
+          )}
+        </Link>
+
+        <button
+          type="button"
+          onClick={onLogout}
+          title={dict?.nav?.logout || 'Sign Out'}
+          className={cn(
+            'rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors',
+            isCollapsed
+              ? 'w-10 h-10 flex items-center justify-center'
+              : 'w-full flex items-center gap-2.5 px-2.5 py-1.5 text-left'
+          )}
+        >
+          <LogOut size={15} />
+          {!isCollapsed && <span>{dict?.nav?.logout || 'Sign Out'}</span>}
+        </button>
+      </div>
+    </div>
+  )
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile Drawer Backdrop */}
       {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-xs transition-opacity animate-in fade-in-50"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Mobile Drawer Panel */}
       <aside
-        className={`
-          ${sidebarOpen ? 'w-64' : 'w-20'} 
-          flex-shrink-0 transition-all duration-300 ease-in-out
-          fixed lg:static inset-y-0 left-0 z-50
-          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
-        style={{ 
-          background: `linear-gradient(180deg, ${primaryColor}dd 0%, ${primaryColor} 60%, ${primaryColor}dd 100%)` 
-        }}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-2xl transition-transform duration-300 ease-out lg:hidden ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
-        {/* Header / Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
-          {sidebarOpen && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 overflow-hidden relative">
-                {logoUrl ? (
-                  <Image 
-                    src={logoUrl} 
-                    alt="Logo" 
-                    fill
-                    sizes="32px"
-                    className="object-contain"
-                  />
-                ) : (
-                  <Globe size={16} className="text-white" />
-                )}
-              </div>
-              <span className="text-white font-bold text-sm tracking-wider truncate max-w-[140px]">{companyName}</span>
-            </div>
-          )}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors hidden lg:block"
-            aria-label="Toggle sidebar"
-          >
-            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors lg:hidden"
-            aria-label="Close mobile menu"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        {renderSidebarBody(true, false)}
+      </aside>
 
-        {/* Admin Panel Badge */}
-        {sidebarOpen && (
-          <div className="mx-4 mt-4 mb-2 px-3 py-1.5 rounded-lg text-center" style={{ background: `${accentColor}26`, border: `1px solid ${accentColor}4D` }}>
-            <span className="text-xs font-semibold tracking-widest" style={{ color: accentColor }}>ADMIN PANEL</span>
-          </div>
+      {/* Desktop Persistent Sidebar (w-72 when expanded, w-20 rail when collapsed) */}
+      <aside
+        className={cn(
+          'hidden lg:flex flex-col shrink-0 border-r border-slate-200/90 h-screen transition-all duration-300 ease-in-out',
+          sidebarOpen ? 'w-72' : 'w-20'
         )}
-
-        {/* Nav Items List */}
-        <nav className="mt-4 px-2 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-          {ADMIN_NAV_ITEMS.map((item) => {
-            const hasSubItems = item.subItems && item.subItems.length > 0
-            const isExpanded = expandedMenus[item.href]
-            const isParentActive = (pathname.startsWith(item.href) && item.href !== '/admin') ||
-              (item.subItems?.some(sub => pathname === sub.href || pathname.startsWith(sub.href + '/')) ?? false)
-            const isExactActive = pathname === item.href
-            const Icon = item.icon
-
-            const toggleMenu = (e: React.MouseEvent) => {
-              if (hasSubItems) {
-                e.preventDefault()
-                setExpandedMenus(prev => ({
-                  ...prev,
-                  [item.href]: !prev[item.href]
-                }))
-              }
-            }
-
-            return (
-              <div key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={toggleMenu}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${
-                    isParentActive
-                      ? 'text-white'
-                      : 'text-white/60 hover:text-white hover:bg-white/10'
-                  }`}
-                  style={isParentActive ? { background: `${accentColor}33`, border: `1px solid ${accentColor}4D` } : {}}
-                >
-                  <Icon 
-                    size={20} 
-                    className={isParentActive ? '' : 'group-hover:scale-110 transition-transform'} 
-                    style={isParentActive ? { color: accentColor } : {}} 
-                  />
-                  {sidebarOpen && (
-                    <>
-                      <span className="flex-1 font-medium text-sm">{item.label}</span>
-                      {hasSubItems ? (
-                        <ChevronDown 
-                          size={14} 
-                          className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                          style={isParentActive ? { color: accentColor } : {}} 
-                        />
-                      ) : (
-                        isExactActive && <ChevronRight size={14} style={{ color: accentColor }} />
-                      )}
-                    </>
-                  )}
-                </Link>
-
-                {hasSubItems && isExpanded && sidebarOpen && (
-                  <div className="mt-1 ml-3 pl-6 border-l border-white/10 space-y-1">
-                    {item.subItems!.map((subItem) => {
-                      const SubIcon = subItem.icon
-                      const isSubActive = pathname === subItem.href || 
-                                         (subItem.href.includes('?') && pathname === subItem.href.split('?')[0])
-                      
-                      return (
-                        <Link
-                          key={subItem.href}
-                          href={subItem.href}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-xs ${
-                            isSubActive
-                              ? 'text-white bg-white/10'
-                              : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                          }`}
-                        >
-                          <SubIcon 
-                            size={14} 
-                            style={isSubActive ? { color: accentColor } : {}} 
-                          />
-                          <span className="flex-1">{subItem.label}</span>
-                          {isSubActive && (
-                            <div 
-                              className="w-1.5 h-1.5 rounded-full" 
-                              style={{ background: accentColor }}
-                            />
-                          )}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </nav>
-
-        {/* Bottom Logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-2 border-t border-white/10" style={{ width: sidebarOpen ? '16rem' : '5rem' }}>
-          <button
-            onClick={onLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all w-full text-left"
-          >
-            <LogOut size={18} />
-            {sidebarOpen && <span className="text-sm">Logout</span>}
-          </button>
-        </div>
+      >
+        {renderSidebarBody(false, !sidebarOpen)}
       </aside>
     </>
   )

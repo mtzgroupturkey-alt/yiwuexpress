@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { BreadcrumbForm } from '@/components/admin/BreadcrumbForm'
 import { toast } from 'react-hot-toast'
 import { Pencil, Trash2, Plus } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface BreadcrumbSetting {
   id: string
@@ -34,6 +35,7 @@ interface BreadcrumbSetting {
 }
 
 export default function BreadcrumbSettingsPage() {
+  const { dict } = useAdminLocale()
   const [editingItem, setEditingItem] = useState<BreadcrumbSetting | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('static')
@@ -183,33 +185,33 @@ export default function BreadcrumbSettingsPage() {
     <Container maxWidth="2xl" className="py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-[#1a3a5c]">Breadcrumb Settings</h1>
+          <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.settings.breadcrumb}</h1>
           <p className="text-gray-500">Manage background images for breadcrumbs across your store</p>
         </div>
         <Button onClick={handleNew} className="bg-[#1a3a5c] hover:bg-[#2a5a8c]">
           <Plus className="w-4 h-4 mr-2" />
-          Add New
+          {dict.common.add}
         </Button>
       </div>
 
       <Tabs defaultValue="static" value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="static">
-            Static Pages {staticPages.length > 0 && (
+            {dict.settings.staticPages} {staticPages.length > 0 && (
               <span className="ml-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
                 {staticPages.length}
               </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="shop">
-            Shop Default {shopDefault.length > 0 && (
+            {dict.settings.shopDefault} {shopDefault.length > 0 && (
               <span className="ml-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
                 {shopDefault.length}
               </span>
             )}
           </TabsTrigger>
           <TabsTrigger value="categories">
-            Categories {categorySettings.length > 0 && (
+            {dict.categories.title} {categorySettings.length > 0 && (
               <span className="ml-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
                 {categorySettings.length}
               </span>

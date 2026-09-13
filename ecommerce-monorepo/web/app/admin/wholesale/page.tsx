@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Search, Eye, MessageSquare, Download } from 'lucide-react'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 interface WholesaleInquiry {
   id: string
@@ -32,6 +33,7 @@ interface WholesaleInquiry {
 
 export default function AdminWholesalePage() {
   const router = useRouter()
+  const { locale, dict, t } = useAdminLocale()
   const [inquiries, setInquiries] = useState<WholesaleInquiry[]>([])
   const [filteredInquiries, setFilteredInquiries] = useState<WholesaleInquiry[]>([])
   const [loading, setLoading] = useState(true)
@@ -116,12 +118,12 @@ export default function AdminWholesalePage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Wholesale Inquiries</h1>
-          <p className="text-gray-600">Manage and process wholesale requests</p>
+          <h1 className="text-3xl font-bold text-gray-900">{dict.wholesale.title}</h1>
+          <p className="text-gray-600">{dict.wholesale.subtitle}</p>
         </div>
         <Button variant="outline">
           <Download className="w-4 h-4 mr-2" />
-          Export Inquiries
+          {dict.common.export}
         </Button>
       </div>
 
@@ -132,7 +134,7 @@ export default function AdminWholesalePage() {
             <div className="text-2xl font-bold text-gray-900">
               {inquiries.filter(i => i.status === 'new').length}
             </div>
-            <p className="text-sm text-gray-600">New Inquiries</p>
+            <p className="text-sm text-gray-600">{dict.status.NEW}</p>
           </CardContent>
         </Card>
         <Card>
@@ -140,7 +142,7 @@ export default function AdminWholesalePage() {
             <div className="text-2xl font-bold text-gray-900">
               {inquiries.filter(i => i.status === 'quoted').length}
             </div>
-            <p className="text-sm text-gray-600">Quoted</p>
+            <p className="text-sm text-gray-600">{dict.quotes.proposedPrice}</p>
           </CardContent>
         </Card>
         <Card>
@@ -148,7 +150,7 @@ export default function AdminWholesalePage() {
             <div className="text-2xl font-bold text-gray-900">
               {inquiries.filter(i => i.status === 'negotiating').length}
             </div>
-            <p className="text-sm text-gray-600">Negotiating</p>
+            <p className="text-sm text-gray-600">{dict.status.PROCESSING}</p>
           </CardContent>
         </Card>
         <Card>
@@ -156,7 +158,7 @@ export default function AdminWholesalePage() {
             <div className="text-2xl font-bold text-gray-900">
               {inquiries.filter(i => i.status === 'converted').length}
             </div>
-            <p className="text-sm text-gray-600">Converted</p>
+            <p className="text-sm text-gray-600">{dict.status.COMPLETED}</p>
           </CardContent>
         </Card>
       </div>
@@ -169,7 +171,7 @@ export default function AdminWholesalePage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search by company, contact name, or email..."
+                placeholder={dict.common.search}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -180,18 +182,16 @@ export default function AdminWholesalePage() {
               onValueChange={(value) => setStatusFilter(value)}
             >
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={dict.common.status} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="reviewing">Reviewing</SelectItem>
-                <SelectItem value="quoted">Quoted</SelectItem>
-                <SelectItem value="negotiating">Negotiating</SelectItem>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="converted">Converted</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="">{dict.common.all}</SelectItem>
+                <SelectItem value="new">{dict.status.NEW}</SelectItem>
+                <SelectItem value="reviewing">{dict.status.PENDING}</SelectItem>
+                <SelectItem value="quoted">{dict.status.APPROVED}</SelectItem>
+                <SelectItem value="negotiating">{dict.status.PROCESSING}</SelectItem>
+                <SelectItem value="accepted">{dict.status.COMPLETED}</SelectItem>
+                <SelectItem value="rejected">{dict.status.REJECTED}</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -201,7 +201,7 @@ export default function AdminWholesalePage() {
                 setStatusFilter('')
               }}
             >
-              Clear
+              {dict.common.reset}
             </Button>
           </div>
         </CardContent>
@@ -216,11 +216,11 @@ export default function AdminWholesalePage() {
         <Card>
           <CardContent className="p-12 text-center">
             <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No inquiries found</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{dict.common.noData}</h3>
             <p className="text-gray-600">
               {inquiries.length === 0 
-                ? "No wholesale inquiries have been submitted yet"
-                : "No inquiries match your filters"}
+                ? dict.common.noData
+                : dict.common.noData}
             </p>
           </CardContent>
         </Card>
@@ -232,25 +232,25 @@ export default function AdminWholesalePage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Company
+                    {dict.wholesale.companyName}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Contact
+                    {dict.wholesale.contactPerson}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Quantity
+                    {dict.wholesale.quantity}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Target Price
+                    {dict.wholesale.targetPrice}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
+                    {dict.common.status}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Date
+                    {dict.common.date}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Actions
+                    {dict.common.actions}
                   </th>
                 </tr>
               </thead>
@@ -284,7 +284,7 @@ export default function AdminWholesalePage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge className={getStatusColor(inquiry.status)}>
-                        {inquiry.status.toUpperCase()}
+                        {t(inquiry.status.toUpperCase(), inquiry.status.toUpperCase())}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -299,7 +299,7 @@ export default function AdminWholesalePage() {
                         onClick={() => router.push(`/admin/wholesale/${inquiry.id}`)}
                       >
                         <Eye className="w-4 h-4 mr-1" />
-                        View
+                        {dict.common.view}
                       </Button>
                     </td>
                   </tr>
@@ -320,7 +320,7 @@ export default function AdminWholesalePage() {
                       <p className="text-sm text-gray-500">{inquiry.email}</p>
                     </div>
                     <Badge className={getStatusColor(inquiry.status)}>
-                      {inquiry.status.toUpperCase()}
+                      {t(inquiry.status.toUpperCase(), inquiry.status.toUpperCase())}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm mb-3">
@@ -337,14 +337,16 @@ export default function AdminWholesalePage() {
                       {new Date(inquiry.createdAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    onClick={() => router.push(`/admin/wholesale/${inquiry.id}`)}
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Details
-                  </Button>
+                  <div className="pt-2">
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => router.push(`/admin/wholesale/${inquiry.id}`)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      {dict.common.viewDetails}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -358,17 +360,17 @@ export default function AdminWholesalePage() {
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
-                Previous
+                {dict.common.previous}
               </Button>
-              <span className="flex items-center px-4">
-                Page {page} of {totalPages}
+              <span className="flex items-center px-4 text-xs">
+                {dict.common.showing} {page} {dict.common.of} {totalPages}
               </span>
               <Button
                 variant="outline"
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
               >
-                Next
+                {dict.common.next}
               </Button>
             </div>
           )}

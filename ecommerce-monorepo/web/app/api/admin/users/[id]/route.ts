@@ -13,6 +13,9 @@ const updateUserSchema = z.object({
   phone: z.string().optional(),
   country: z.string().optional(),
   isActive: z.boolean().optional(),
+  userType: z.enum(['RETAIL', 'WHOLESALE', 'BOTH']).optional(),
+  verificationStatus: z.enum(['UNVERIFIED', 'PENDING', 'APPROVED', 'REJECTED', 'DOCUMENTS_REQUIRED']).optional(),
+  verificationNotes: z.string().optional(),
   // Supplier fields
   companyName: z.string().optional(),
   businessType: z.enum(['MANUFACTURER', 'WHOLESALER', 'DISTRIBUTOR']).optional(),
@@ -144,6 +147,17 @@ export async function PUT(
     if (validatedData.country !== undefined) updateData.country = validatedData.country
     if (validatedData.isActive !== undefined) updateData.isActive = validatedData.isActive
     if (validatedData.profilePhoto !== undefined) updateData.profilePhoto = validatedData.profilePhoto
+    if (validatedData.userType) updateData.userType = validatedData.userType
+    if (validatedData.verificationStatus) {
+      updateData.verificationStatus = validatedData.verificationStatus
+      if (validatedData.verificationStatus === 'APPROVED') {
+        updateData.isVerified = true
+        updateData.verifiedAt = new Date()
+      } else if (validatedData.verificationStatus === 'REJECTED') {
+        updateData.isVerified = false
+      }
+    }
+    if (validatedData.verificationNotes !== undefined) updateData.verificationNotes = validatedData.verificationNotes
 
     // Only hash password if provided (blank = no change)
     if (validatedData.password) {

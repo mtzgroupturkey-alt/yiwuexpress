@@ -15,9 +15,6 @@ export async function GET(request: Request) {
     const countries = await prisma.country.findMany({
       where: activeOnly ? { isActive: true } : undefined,
       include: {
-        shippingRates: {
-          where: { isActive: true }
-        },
         translations: true,
       },
       orderBy: {

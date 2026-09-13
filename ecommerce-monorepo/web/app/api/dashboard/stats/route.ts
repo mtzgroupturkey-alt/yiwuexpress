@@ -18,18 +18,18 @@ export async function GET(request: NextRequest) {
       where: { userId: userId }
     })
 
-    // Get user's shipment counts
-    const activeShipments = await prisma.shipment.count({
+    // Get user's order shipments counts
+    const activeShipments = await prisma.order.count({
       where: {
         userId: userId,
-        status: { in: ['pending', 'processing', 'shipped', 'in_transit'] }
+        status: { in: ['CONFIRMED', 'PROCESSING', 'SHIPPED'] }
       }
     })
 
-    const completedShipments = await prisma.shipment.count({
+    const completedShipments = await prisma.order.count({
       where: {
         userId: userId,
-        status: 'delivered'
+        status: 'DELIVERED'
       }
     })
 

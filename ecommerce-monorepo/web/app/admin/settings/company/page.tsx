@@ -6,6 +6,7 @@ import {
   MapPin, Hash, Palette, AlertCircle, CheckCircle, Upload, RefreshCw
 } from 'lucide-react'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
 
 interface CompanySettings {
@@ -37,6 +38,7 @@ interface CompanySettings {
 
 export default function CompanyInfoPage() {
   const { isAdmin, loading: authLoading } = useAdminAuth()
+  const { dict, locale } = useAdminLocale()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -297,7 +299,7 @@ export default function CompanyInfoPage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Loading company settings...</p>
+          <p className="text-sm text-gray-500">{dict.common.loading}</p>
         </div>
       </div>
     )
@@ -312,8 +314,8 @@ export default function CompanyInfoPage() {
             <Building2 size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Company Information</h2>
-            <p className="text-sm text-gray-500">Manage your business details and branding</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.companyInfo}</h2>
+            <p className="text-sm text-gray-500">{dict.settings.subtitle}</p>
           </div>
         </div>
         <button
@@ -350,12 +352,12 @@ export default function CompanyInfoPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Building2 size={18} className="text-gray-600" />
-            Basic Information
+            {dict.products.basicInfo}
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.companyName}</label>
               <input
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -366,7 +368,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Site Tagline / Slogan</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.siteTagline}</label>
               <input
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -391,7 +393,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.address}</label>
               <div className="relative">
                 <MapPin size={18} className="absolute left-3 top-3 text-gray-400" />
                 <textarea
@@ -405,7 +407,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.contactPhone}</label>
               <div className="relative">
                 <Phone size={18} className="absolute left-3 top-3 text-gray-400" />
                 <input
@@ -419,7 +421,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.contactEmail}</label>
               <div className="relative">
                 <Mail size={18} className="absolute left-3 top-3 text-gray-400" />
                 <input
@@ -433,7 +435,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.common.description}</label>
               <textarea
                 rows={4}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -444,7 +446,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Localized Name / Tagline / Description / Address (RU / ZH)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.products.translations} (RU / ZH)</label>
               <LocalizedFieldsForm
                 fields={[
                   { key: 'companyName', label: 'Company Name' },
@@ -463,12 +465,12 @@ export default function CompanyInfoPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <FileText size={18} className="text-gray-600" />
-            Legal Information
+            {dict.settings.legalInfo}
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Business License Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.businessLicenseNumber}</label>
               <div className="relative">
                 <Hash size={18} className="absolute left-3 top-3 text-gray-400" />
                 <input
@@ -482,7 +484,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tax Registration Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.taxRegistrationNumber}</label>
               <div className="relative">
                 <Hash size={18} className="absolute left-3 top-3 text-gray-400" />
                 <input
@@ -501,9 +503,9 @@ export default function CompanyInfoPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Globe size={18} className="text-gray-600" />
-            Social Media Links
+            {dict.settings.socialMediaLinks}
           </h3>
-          <p className="text-sm text-gray-500 mb-4">These links appear in the website footer. Leave a field empty to hide that icon.</p>
+          <p className="text-sm text-gray-500 mb-4">{dict.settings.socialMediaSubtitle}</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -596,12 +598,12 @@ export default function CompanyInfoPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Palette size={18} className="text-gray-600" />
-            Branding & Preferences
+            {dict.settings.brandingPreferences}
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Primary Color</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.primaryColor}</label>
               <div className="flex gap-2">
                 <input
                   type="color"
@@ -619,7 +621,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Accent Color</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.accentColor}</label>
               <div className="flex gap-2">
                 <input
                   type="color"
@@ -637,7 +639,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.currencyLabel}</label>
               <select
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={settings.currency}
@@ -652,7 +654,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.timezoneLabel}</label>
               <select
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={settings.timezone}
@@ -667,7 +669,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.languageLabel}</label>
               <select
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={settings.language}
@@ -682,7 +684,7 @@ export default function CompanyInfoPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.companyLogo}</label>
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
                 {settings.companyLogo && (
                   <div className="relative w-20 h-20 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
@@ -697,7 +699,7 @@ export default function CompanyInfoPage() {
                   <div className="flex items-center gap-2">
                     <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-xl cursor-pointer shadow-sm transition-colors">
                       <Upload size={16} />
-                      {uploading ? 'Uploading...' : 'Upload Logo'}
+                      {uploading ? dict.settings.uploadingLogo : dict.settings.uploadLogo}
                       <input
                         type="file"
                         accept="image/*"
@@ -712,14 +714,14 @@ export default function CompanyInfoPage() {
                         onClick={() => handleInputChange('companyLogo', '')}
                         className="px-3 py-2 text-sm text-red-600 hover:text-red-700 font-medium"
                       >
-                        Remove
+                        {dict.settings.removeLogo}
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">Supports PNG, JPG, JPEG or SVG. Max 2MB.</p>
+                  <p className="text-xs text-gray-500">{dict.settings.supportsPngJpgSvg}</p>
                   
                   <div className="pt-2">
-                    <span className="text-xs text-gray-400 block mb-1">Or enter Logo URL manually:</span>
+                    <span className="text-xs text-gray-400 block mb-1">{dict.settings.orEnterLogoUrl}</span>
                     <input
                       type="text"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -734,7 +736,7 @@ export default function CompanyInfoPage() {
               {/* Logo Height Setting */}
               <div className="mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Logo Height (pixels)
+                  {dict.settings.logoHeightPixels}
                 </label>
                 <input
                   type="number"
@@ -746,13 +748,13 @@ export default function CompanyInfoPage() {
                   placeholder="40"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Recommended: 30-50px. Current: {settings.companyLogoHeight}px
+                  {dict.settings.recommendedLogoHeight.replace('{height}', String(settings.companyLogoHeight))}
                 </p>
               </div>
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Website Favicon</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.websiteFavicon}</label>
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
                 {settings.companyFavicon && (
                   <div className="flex flex-col items-center gap-2">
@@ -779,7 +781,7 @@ export default function CompanyInfoPage() {
                   <div className="flex items-center gap-2">
                     <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-xl cursor-pointer shadow-sm transition-colors">
                       <Upload size={16} />
-                      {uploading ? 'Uploading...' : 'Upload Favicon'}
+                      {uploading ? dict.settings.uploadingLogo : dict.settings.uploadFavicon}
                       <input
                         type="file"
                         accept=".ico,.png,.svg,image/x-icon,image/vnd.microsoft.icon,image/png,image/svg+xml"
@@ -794,14 +796,14 @@ export default function CompanyInfoPage() {
                         onClick={() => handleInputChange('companyFavicon', '')}
                         className="px-3 py-2 text-sm text-red-600 hover:text-red-700 font-medium"
                       >
-                        Remove
+                        {dict.settings.removeLogo}
                       </button>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">Supports ICO, PNG, or SVG. Recommended size: 32x32px or 16x16px. Max 1MB.</p>
+                  <p className="text-xs text-gray-500">{dict.settings.supportsIcoPngSvg}</p>
                   
                   <div className="pt-2">
-                    <span className="text-xs text-gray-400 block mb-1">Or enter Favicon URL manually:</span>
+                    <span className="text-xs text-gray-400 block mb-1">{dict.settings.orEnterFaviconUrl}</span>
                     <input
                       type="text"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -825,7 +827,7 @@ export default function CompanyInfoPage() {
             style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
           >
             <Save size={18} />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? dict.common.saving : dict.common.save}
           </button>
         </div>
       </form>

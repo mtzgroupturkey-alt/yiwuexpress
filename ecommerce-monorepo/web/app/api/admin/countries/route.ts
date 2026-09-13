@@ -23,12 +23,7 @@ export async function GET(request: Request) {
 
     const countries = await prisma.country.findMany({
       where,
-      include: {
-        shippingRates: {
-          orderBy: { carrier: 'asc' }
-        },
-        translations: true,
-      },
+      include: { translations: true },
       orderBy: { name: 'asc' }
     })
 

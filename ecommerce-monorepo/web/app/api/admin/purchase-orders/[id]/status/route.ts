@@ -11,6 +11,25 @@ export async function PUT(
     const body = await request.json()
     const { status } = body
 
+    const VALID_STATUSES = [
+      'DRAFT',
+      'PENDING',
+      'SENT',
+      'CONFIRMED',
+      'SHIPPED',
+      'IN_TRANSIT',
+      'RECEIVED',
+      'CANCELLED',
+      'CLOSED',
+    ]
+
+    if (!status || !VALID_STATUSES.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
     const purchaseOrder = await prisma.purchaseOrder.update({
       where: { id: params.id },
       data: {

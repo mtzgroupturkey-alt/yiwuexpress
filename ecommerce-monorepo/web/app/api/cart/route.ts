@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     const user = await requireAuth(request)
     
     const body = await request.json()
-    const { productId, quantity } = body
+    const { productId, quantity, variantId, mode: itemMode } = body
 
     if (!productId || !quantity) {
       return NextResponse.json(
@@ -131,19 +131,33 @@ export async function POST(request: Request) {
       )
     }
 
-    // Fetch store mode for MOQ validation
+    // Fetch store mode
     const settings = await prisma.systemSettings.findFirst()
-    const storeMode = settings?.storeMode || 'WHOLESALE'
+    const systemStoreMode = settings?.storeMode || 'WHOLESALE'
+    const targetMode = itemMode ? itemMode.toUpperCase() : (systemStoreMode === 'BOTH' ? 'WHOLESALE' : systemStoreMode)
 
-    // Validate MOQ based on store mode
-    if (storeMode === 'WHOLESALE' || storeMode === 'BOTH') {
+    // Check channel availability
+    if (targetMode === 'RETAIL' && !product.availableForRetail) {
+      return NextResponse.json(
+        { success: false, error: 'This product is not available for retail purchase' },
+        { status: 400 }
+      )
+    }
+    if (targetMode === 'WHOLESALE' && !product.availableForWholesale) {
+      return NextResponse.json(
+        { success: false, error: 'This product is not available for wholesale purchase' },
+        { status: 400 }
+      )
+    }
+
+    // Validate MOQ based on mode
+    if (targetMode === 'WHOLESALE') {
       const minQty = product.minOrderQty || 1
-      
       if (quantity < minQty) {
         return NextResponse.json(
           {
             success: false,
-            error: `Minimum order quantity is ${minQty} units for this product in ${storeMode.toLowerCase()} mode`
+            error: `Minimum order quantity is ${minQty} units for wholesale mode`
           },
           { status: 400 }
         )
@@ -165,7 +179,12 @@ export async function POST(request: Request) {
 
     if (!cart) {
       cart = await prisma.cart.create({
-        data: { userId: user.id }
+        data: { userId: user.id, mode: targetMode }
+      })
+    } else if (cart.mode !== targetMode) {
+      await prisma.cart.update({
+        where: { id: cart.id },
+        data: { mode: targetMode }
       })
     }
 
@@ -174,7 +193,8 @@ export async function POST(request: Request) {
       where: {
         cartId: cart.id,
         productId,
-        variantId: null
+        variantId: variantId || null,
+        mode: targetMode
       }
     })
 
@@ -191,7 +211,7 @@ export async function POST(request: Request) {
       }
 
       // Re-validate MOQ for new quantity
-      if (storeMode === 'WHOLESALE' || storeMode === 'BOTH') {
+      if (targetMode === 'WHOLESALE') {
         const minQty = product.minOrderQty || 1
         if (newQuantity < minQty) {
           return NextResponse.json(
@@ -227,6 +247,8 @@ export async function POST(request: Request) {
         data: {
           cartId: cart.id,
           productId,
+          variantId: variantId || null,
+          mode: targetMode,
           quantity
         },
         include: {

@@ -36,6 +36,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
     const role = searchParams.get('role') || ''
+    const verificationStatus = searchParams.get('verificationStatus') || ''
 
     const where: any = {}
     
@@ -50,6 +51,10 @@ export async function GET(request: NextRequest) {
       where.role = role
     }
 
+    if (verificationStatus) {
+      where.verificationStatus = verificationStatus
+    }
+
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
@@ -58,6 +63,10 @@ export async function GET(request: NextRequest) {
           name: true,
           email: true,
           role: true,
+          userType: true,
+          verificationStatus: true,
+          verificationNotes: true,
+          verifiedAt: true,
           companyName: true,
           businessType: true,
           taxId: true,
@@ -80,8 +89,7 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               quotes: true,
-              shipments: true,
-            },
+                          },
           },
           // NO PASSWORD
         },

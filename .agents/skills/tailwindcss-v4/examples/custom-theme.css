@@ -1,0 +1,157 @@
+/* 
+ * Custom Theme Example for Tailwind CSS v4
+ * This file demonstrates comprehensive theme customization using @theme
+ */
+
+@import "tailwindcss";
+
+@theme {
+  /* ==========================================
+   * COLORS - Using oklch for P3 display support
+   * ========================================== */
+  
+  /* Primary palette */
+  --color-primary-50: oklch(0.97 0.02 250);
+  --color-primary-100: oklch(0.93 0.04 250);
+  --color-primary-200: oklch(0.86 0.08 250);
+  --color-primary-300: oklch(0.76 0.12 250);
+  --color-primary-400: oklch(0.66 0.16 250);
+  --color-primary-500: oklch(0.55 0.2 250);
+  --color-primary-600: oklch(0.48 0.18 250);
+  --color-primary-700: oklch(0.40 0.15 250);
+  --color-primary-800: oklch(0.33 0.12 250);
+  --color-primary-900: oklch(0.27 0.10 250);
+  --color-primary-950: oklch(0.20 0.08 250);
+
+  /* Semantic colors */
+  --color-success: oklch(0.65 0.2 145);
+  --color-warning: oklch(0.75 0.18 85);
+  --color-error: oklch(0.6 0.22 25);
+  --color-info: oklch(0.65 0.15 230);
+
+  /* Neutral/Gray */
+  --color-surface: oklch(0.98 0.005 250);
+  --color-surface-dark: oklch(0.15 0.01 250);
+
+  /* ==========================================
+   * TYPOGRAPHY
+   * ========================================== */
+  
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: "Cal Sans", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Font sizes with line heights */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  /* ==========================================
+   * SPACING
+   * ========================================== */
+  
+  --spacing-128: 32rem;
+  --spacing-144: 36rem;
+  --spacing-160: 40rem;
+  --spacing-192: 48rem;
+
+  /* ==========================================
+   * BREAKPOINTS
+   * ========================================== */
+  
+  --breakpoint-xs: 475px;
+  --breakpoint-3xl: 1920px;
+
+  /* ==========================================
+   * SHADOWS
+   * ========================================== */
+  
+  --shadow-soft: 0 2px 15px -3px oklch(0 0 0 / 0.1), 
+                 0 4px 6px -4px oklch(0 0 0 / 0.1);
+  --shadow-glow: 0 0 15px oklch(0.55 0.2 250 / 0.4);
+
+  /* ==========================================
+   * BORDER RADIUS
+   * ========================================== */
+  
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+
+  /* ==========================================
+   * ANIMATIONS
+   * ========================================== */
+  
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.4s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-pulse-soft: pulse-soft 2s infinite;
+}
+
+/* Custom keyframes */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ==========================================
+ * CUSTOM UTILITIES (using @utility)
+ * ========================================== */
+
+@utility glass {
+  background: oklch(1 0 0 / 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid oklch(1 0 0 / 0.2);
+}
+
+@utility text-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-400),
+    var(--color-primary-600)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

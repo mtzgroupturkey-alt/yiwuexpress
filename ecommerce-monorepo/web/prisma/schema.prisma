@@ -12,8 +12,8 @@ datasource db {
 }
 
 model User {
-  id                 String             @id @default(cuid())
-  email              String             @unique
+  id                 String    @id @default(cuid())
+  email              String    @unique
   password           String
   name               String
   companyName        String?
@@ -21,27 +21,31 @@ model User {
   taxId              String?
   country            String?
   phone              String?
-  profilePhoto       String?            // Profile photo URL or base64
-  role               String             @default("USER") // USER, SUPPLIER, ADMIN
+  profilePhoto       String? // Profile photo URL or base64
+  role               String    @default("USER") // USER, SUPPLIER, ADMIN
   roleId             String?
   resetToken         String?
   resetTokenExpiry   DateTime?
-  isActive           Boolean            @default(true)
-  isVerified         Boolean            @default(false)
+  isActive           Boolean   @default(true)
+  isVerified         Boolean   @default(false)
+  userType           String    @default("RETAIL") // "RETAIL", "WHOLESALE", "BOTH"
+  verificationStatus String    @default("UNVERIFIED") // "UNVERIFIED", "PENDING", "APPROVED", "REJECTED", "DOCUMENTS_REQUIRED"
+  verificationNotes  String?
+  verifiedAt         DateTime?
   lastLoginAt        DateTime?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
   // Supplier reference (only for SUPPLIER role)
-  supplierId         String?            @unique
-  supplierProfile    SupplierProfile?   @relation(fields: [supplierId], references: [id])
-  
+  supplierId      String?          @unique
+  supplierProfile SupplierProfile? @relation(fields: [supplierId], references: [id])
+
   company            CompanyInfo?
   quotes             Quote[]
-  shipments          Shipment[]
-  permissionRole     PermissionRole?    @relation(fields: [roleId], references: [id])
+  permissionRole     PermissionRole?        @relation(fields: [roleId], references: [id])
   customPermissions  UserPermission[]
   activityLogs       ActivityLog[]
+  adminActivityLogs  AdminActivityLog[]
   addresses          Address[]
   cart               Cart?
   emailLogs          EmailLog[]
@@ -52,26 +56,29 @@ model User {
   wishlistItems      WishlistItem[]
   reviews            Review[]
   reviewReplies      ReviewReply[]
-  
+  verificationDocs   VerificationDocument[]
+  contractPrices     ContractPrice[]
+  targetedPurchaseOrders PurchaseOrder[] @relation("TargetCustomerPOs")
+
   @@index([email])
   @@index([role])
+  @@index([verificationStatus])
 }
 
 model Service {
-  id          String     @id @default(cuid())
-  name        String
-  slug        String     @unique
-  description String?
-  price       Float
-  duration    String?
-  coverage    String?
-  type        String
-  image       String?
-  isActive    Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  quotes      Quote[]
-  shipments   Shipment[]
+  id           String               @id @default(cuid())
+  name         String
+  slug         String               @unique
+  description  String?
+  price        Float
+  duration     String?
+  coverage     String?
+  type         String
+  image        String?
+  isActive     Boolean              @default(true)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  quotes       Quote[]
   translations ServiceTranslation[]
 
   @@map("Service")
@@ -117,42 +124,6 @@ model Quote {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Shipment {
-  id                String    @id @default(cuid())
-  trackingNumber    String    @unique
-  userId            String
-  serviceId         String
-  
-  // Order link
-  orderId           String?
-  orderNumber       String?
-  
-  // Shipping method
-  shippingMethodId  String?
-  shippingMethod    ShippingMethod? @relation(fields: [shippingMethodId], references: [id])
-  
-  origin            String
-  destination       String
-  currentLocation   String?
-  status            String    @default("PREPARING")
-  statusHistory     Json?
-  estimatedDelivery DateTime?
-  actualDelivery    DateTime?
-  carrier           String?
-  weight            Float?
-  dimensions        String?
-  notes             String?
-  shippedAt         DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  service           Service   @relation(fields: [serviceId], references: [id])
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([orderId])
-  @@index([trackingNumber])
-  @@index([status])
-}
-
 model CompanyInfo {
   id            String   @id @default(cuid())
   userId        String   @unique
@@ -169,11 +140,11 @@ model CompanyInfo {
 }
 
 model SystemSettings {
-  id                    String   @id @default(cuid())
+  id                    String  @id @default(cuid())
   // Enforces the intended singleton: exactly one row, addressable deterministically
   // via findUnique/upsert on singletonKey. See migration add_system_settings_singleton_key.
-  singletonKey          String   @unique @default("SINGLETON")
-  companyName           String   @default("Global Trade")
+  singletonKey          String  @unique @default("SINGLETON")
+  companyName           String  @default("Global Trade")
   siteTagline           String?
   companyAddress        String?
   companyPhone          String?
@@ -183,32 +154,32 @@ model SystemSettings {
   taxRegistrationNumber String?
   companyDescription    String?
   companyLogo           String?
-  companyLogoHeight     Int      @default(40)
+  companyLogoHeight     Int     @default(40)
   companyFavicon        String?
-  primaryColor          String   @default("#1a3a5c")
-  accentColor           String   @default("#c9a84c")
-  currency              String   @default("USD")
-  timezone              String   @default("Asia/Shanghai")
-  language              String   @default("en")
-  emailNotifications    Boolean  @default(true)
-  smsNotifications      Boolean  @default(false)
-  maintenanceMode       Boolean  @default(false)
-  storeMode             String   @default("WHOLESALE") // WHOLESALE, RETAIL, BOTH
+  primaryColor          String  @default("#1a3a5c")
+  accentColor           String  @default("#c9a84c")
+  currency              String  @default("USD")
+  timezone              String  @default("Asia/Shanghai")
+  language              String  @default("en")
+  emailNotifications    Boolean @default(true)
+  smsNotifications      Boolean @default(false)
+  maintenanceMode       Boolean @default(false)
+  storeMode             String  @default("WHOLESALE") // WHOLESALE, RETAIL, BOTH
   facebookUrl           String?
   twitterUrl            String?
   linkedinUrl           String?
   instagramUrl          String?
   wechatId              String?
   whatsappNumber        String?
-  
+
   // AI Translation API Keys
-  openrouterApiKey      String?
-  geminiApiKey          String?
-  deepseekApiKey        String?
-  qwenApiKey            String?
-  kimiApiKey            String?
-  cerebrasApiKey        String?
-  
+  openrouterApiKey String?
+  geminiApiKey     String?
+  deepseekApiKey   String?
+  qwenApiKey       String?
+  kimiApiKey       String?
+  cerebrasApiKey   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -222,13 +193,13 @@ model SystemSettings {
 // "companyDescription", "companyAddress"). The legacy columns on SystemSettings
 // remain the English source of truth / fallback. Unique per (setting, locale, key).
 model SystemSettingTranslation {
-  id               String   @id @default(cuid())
-  systemSettingId  String
-  locale           String
-  key              String
-  value            String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(cuid())
+  systemSettingId String
+  locale          String
+  key             String
+  value           String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   systemSetting SystemSettings @relation(fields: [systemSettingId], references: [id], onDelete: Cascade)
 
@@ -238,17 +209,17 @@ model SystemSettingTranslation {
 }
 
 model ContactLocation {
-  id        String   @id @default(cuid())
-  type      String   @default("HUB") // HEADQUARTERS, HUB
-  city      String
-  address   String?
-  phone     String?
-  email     String?
-  hours     String?
-  sortOrder Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String                       @id @default(cuid())
+  type         String                       @default("HUB") // HEADQUARTERS, HUB
+  city         String
+  address      String?
+  phone        String?
+  email        String?
+  hours        String?
+  sortOrder    Int                          @default(0)
+  isActive     Boolean                      @default(true)
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
   translations ContactLocationTranslation[]
 
   @@map("contact_locations")
@@ -257,14 +228,14 @@ model ContactLocation {
 // Expand-and-Contract: per-locale contact location copy. Legacy `city`/`address`/
 // `hours` on ContactLocation remain the source of truth until read paths migrate.
 model ContactLocationTranslation {
-  id               String   @id @default(cuid())
+  id                String   @id @default(cuid())
   contactLocationId String
-  locale           String
-  city             String
-  address          String?
-  hours            String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  locale            String
+  city              String
+  address           String?
+  hours             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   contactLocation ContactLocation @relation(fields: [contactLocationId], references: [id], onDelete: Cascade)
 
@@ -315,8 +286,8 @@ model UserPermission {
 }
 
 model Country {
-  id                 String             @id @default(cuid())
-  code               String             @unique
+  id                 String               @id @default(cuid())
+  code               String               @unique
   name               String
   currency           String
   currencySymbol     String
@@ -326,11 +297,10 @@ model Country {
   paymentMethods     String[]
   deliverySLA        String
   restrictedProducts String[]
-  isActive           Boolean            @default(true)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
   orders             Order[]
-  shippingRates      ShippingRate[]
   wholesaleInquiries WholesaleInquiry[]
   translations       CountryTranslation[]
 
@@ -354,43 +324,25 @@ model CountryTranslation {
   @@map("country_translations")
 }
 
-model ShippingRate {
-  id            String   @id @default(cuid())
-  countryId     String
-  carrier       String
-  serviceType   String
-  baseRate      Float
-  ratePerKg     Float
-  minWeight     Float?
-  maxWeight     Float?
-  estimatedDays String
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  country       Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
-
-  @@map("shipping_rates")
-}
-
 model Category {
-  id                 String              @id @default(cuid())
-  name               String              @unique
-  slug               String              @unique
+  id                 String                @id @default(cuid())
+  name               String                @unique
+  slug               String                @unique
   description        String?
   image              String?
   parentId           String?
-  level              Int                 @default(1)
-  displayOrder       Int                 @default(0)
-  menuOrder          Int                 @default(0)
-  isActive           Boolean             @default(true)
-  showInMenu         Boolean             @default(true)
-  isFeatured         Boolean             @default(false)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  level              Int                   @default(1)
+  displayOrder       Int                   @default(0)
+  menuOrder          Int                   @default(0)
+  isActive           Boolean               @default(true)
+  showInMenu         Boolean               @default(true)
+  isFeatured         Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
   icon               String?
   breadcrumbSettings BreadcrumbSetting[]
-  parent             Category?           @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
-  children           Category[]          @relation("CategoryHierarchy")
+  parent             Category?             @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children           Category[]            @relation("CategoryHierarchy")
   attributes         CategoryAttribute[]
   products           Product[]
   translations       CategoryTranslation[]
@@ -417,61 +369,70 @@ model CategoryTranslation {
 }
 
 model Product {
-  id                   String              @id @default(cuid())
-  sku                  String              @unique
-  name                 String
-  slug                 String              @unique
-  description          String?
-  categoryId           String?
-  price                Float
-  compareAtPrice       Float?
-  costPrice            Float?
-  purchaseCurrency     String?               // Currency used for purchases (CNY)
-  purchasePrice        Float?                // Price in purchase currency
-  prices               Json?                 // Multi-currency prices: { "USD": 150.00, "CNY": 1080.00 }
-  images               String[]
-  videos               String[]            @default([])
-  thumbnail            String?
-  stock                Int                 @default(0)
-  lowStockThreshold    Int                 @default(10)
-  hsCode               String?
-  weightKg             Float
-  dimensions           Json?
-  declaredCustomsValue Float?
-  countryOfOrigin      String              @default("China")
-  material             String?
-  fragile              Boolean             @default(false)
-  exportRestricted     Boolean             @default(false)
-  dangerousGoods       Boolean             @default(false)
-  batteryIncluded      Boolean             @default(false)
-  requiredExportDocs   String[]
-  minOrderQty          Int                 @default(1)
-  wholesalePrice       Float?
-  metaTitle            String?
-  metaDescription      String?
-  isActive             Boolean             @default(true)
-  isFeatured           Boolean             @default(false)
-  featuredOrder        Int                 @default(999)
-  isNewArrival         Boolean             @default(false)
-  newArrivalOrder      Int                 @default(999)
-  isFlashSale          Boolean             @default(false)
-  flashSaleOrder       Int                 @default(999)
-  flashSalePrice       Float?
-  flashSaleStart       DateTime?
-  flashSaleEnd         DateTime?
-  flashSaleStock       Int?
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  attributeValues      AttributeValue[]
-  cartItems            CartItem[]
-  orderItems           OrderItem[]
-  variants             ProductVariant[]
-  category             Category?           @relation(fields: [categoryId], references: [id])
-  suppliers            ProductSupplier[]
-  purchaseOrderItems   PurchaseOrderItem[]
-  wishlistItems        WishlistItem[]
-  reviews              Review[]
-  translations         ProductTranslation[]
+  id                    String                 @id @default(cuid())
+  sku                   String                 @unique
+  name                  String
+  slug                  String                 @unique
+  description           String?
+  categoryId            String?
+  price                 Float
+  compareAtPrice        Float?
+  costPrice             Float?
+  purchaseCurrency      String? // Currency used for purchases (CNY)
+  purchasePrice         Float? // Price in purchase currency
+  prices                Json? // Multi-currency prices: { "USD": 150.00, "CNY": 1080.00 }
+  images                String[]
+  videos                String[]               @default([])
+  thumbnail             String?
+  stock                 Int                    @default(0)
+  lowStockThreshold     Int                    @default(10)
+  hsCode                String?
+  weightKg              Float
+  dimensions            Json?
+  declaredCustomsValue  Float?
+  countryOfOrigin       String                 @default("China")
+  material              String?
+  fragile               Boolean                @default(false)
+  exportRestricted      Boolean                @default(false)
+  dangerousGoods        Boolean                @default(false)
+  batteryIncluded       Boolean                @default(false)
+  requiredExportDocs    String[]
+  minOrderQty           Int                    @default(1)
+  wholesalePrice        Float?
+  metaTitle             String?
+  metaDescription       String?
+  isActive              Boolean                @default(true)
+  availableForRetail    Boolean                @default(true)
+  availableForWholesale Boolean                @default(true)
+  isFeatured            Boolean                @default(false)
+  featuredOrder         Int                    @default(999)
+  isNewArrival          Boolean                @default(false)
+  newArrivalOrder       Int                    @default(999)
+  isFlashSale           Boolean                @default(false)
+  flashSaleOrder        Int                    @default(999)
+  flashSalePrice        Float?
+  flashSaleStart        DateTime?
+  flashSaleEnd          DateTime?
+  flashSaleStock        Int?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  attributeValues       AttributeValue[]
+  cartItems             CartItem[]
+  orderItems            OrderItem[]
+  variants              ProductVariant[]
+  category              Category?              @relation(fields: [categoryId], references: [id])
+  suppliers             ProductSupplier[]
+  purchaseOrderItems    PurchaseOrderItem[]
+  wishlistItems         WishlistItem[]
+  reviews               Review[]
+  translations          ProductTranslation[]
+  contractPrices        ContractPrice[]
+  stockMovements        StockMovement[]
+  warehouseStocks       WarehouseStock[]
+  containerItems        ContainerItem[]
+  lowStockAlerts        LowStockAlert[]
+  stockTransferItems    StockTransferItem[]
+  returnSupplierItems   ReturnToSupplierItem[]
 
   @@map("products")
 }
@@ -495,8 +456,8 @@ model ProductTranslation {
 }
 
 model Order {
-  id                 String           @id @default(cuid())
-  orderNumber        String           @unique
+  id                 String    @id @default(cuid())
+  orderNumber        String    @unique
   userId             String
   customerName       String
   customerEmail      String
@@ -512,57 +473,69 @@ model Order {
   billingState       String?
   billingPostalCode  String?
   billingCountry     String?
-  status             String           @default("PENDING")
+  status             String    @default("PENDING")
+  mode               String    @default("RETAIL") // "RETAIL" | "WHOLESALE"
   paymentMethod      String
-  paymentStatus      String           @default("UNPAID")
+  paymentStatus      String    @default("UNPAID")
   paidAt             DateTime?
   subtotal           Float
   shippingFee        Float
-  tax                Float            @default(0)
-  discount           Float            @default(0)
+  tax                Float     @default(0)
+  discount           Float     @default(0)
   total              Float
-  currency           String           @default("USD") // Sales currency
-  exchangeRate       Float?           // Rate used at time of order
-  purchaseCost       Float?           // Cost in base currency
-  profit             Float?           // Profit in base currency
-  profitMargin       Float?           // Profit percentage
-  
+  currency           String    @default("USD") // Sales currency
+  exchangeRate       Float? // Rate used at time of order
+  purchaseCost       Float? // Cost in base currency
+  profit             Float? // Profit in base currency
+  profitMargin       Float? // Profit percentage
+
   // Carrier type: COMPANY or CUSTOMER
-  carrierType        String           @default("COMPANY")
-  customerCarrier    String?
-  customerCarrierContact String?
+  carrierType             String  @default("COMPANY")
+  customerCarrier         String?
+  customerCarrierContact  String?
   customerCarrierTracking String?
-  customerCarrierNotes String?
-  
-  carrier            String?
-  trackingNumber     String?
-  shippingMethod     String?
-  shippingCost       Float?
-  shippedAt          DateTime?
-  estimatedDelivery  DateTime?
-  actualDelivery     DateTime?
-  trackingHistory    Json[]
-  customsStatus      String?
-  customsDocs        Json?
-  
+  customerCarrierNotes    String?
+
+  carrier           String?
+  trackingNumber    String?
+  shippingMethod    String?
+  shippingCost      Float?
+  shippedAt         DateTime?
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+  trackingHistory   Json[]
+  customsStatus     String?
+  customsDocs       Json?
+
   // Container relation
-  containerId        String?
-  container          Container?       @relation(fields: [containerId], references: [id])
-  containerNumber    String?
-  
-  customerNotes      String?
-  adminNotes         String?
-  hasException       Boolean          @default(false)
-  exceptionType      String?
-  exceptionNotes     String?
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  emailLogs          EmailLog[]
-  exceptions         OrderException[]
-  items              OrderItem[]
-  shippingCountry    Country          @relation(fields: [shippingCountryId], references: [id])
-  user               User             @relation(fields: [userId], references: [id])
-  returns            Return[]
+  containerId     String?
+  container       Container? @relation(fields: [containerId], references: [id])
+  containerNumber String?
+
+  // Warehouse & Sales Flow
+  warehouseId          String?
+  warehouse            Warehouse?      @relation(fields: [warehouseId], references: [id])
+  reservationExpiresAt DateTime?
+  salesType            OrderSalesType  @default(RETAIL)
+  isDirectContainer    Boolean         @default(false)
+  stockMovements       StockMovement[]
+
+  customerNotes    String?
+  adminNotes       String?
+  hasException     Boolean           @default(false)
+  exceptionType    String?
+  exceptionNotes   String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  emailLogs        EmailLog[]
+  exceptions       OrderException[]
+  items            OrderItem[]
+  shippingCountry  Country           @relation(fields: [shippingCountryId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+  returns          Return[]
+  customerPayments CustomerPayment[]
+  linkedPurchaseOrder PurchaseOrder? @relation("POLinkedOrder")
+  singleContainer Container[] @relation("ContainerSingleOrder")
 
   @@index([containerId])
   @@map("orders")
@@ -610,6 +583,7 @@ model OrderException {
 model Cart {
   id        String     @id @default(cuid())
   userId    String     @unique
+  mode      String     @default("RETAIL") // "RETAIL" | "WHOLESALE"
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   items     CartItem[]
@@ -623,6 +597,7 @@ model CartItem {
   cartId    String
   productId String
   variantId String?
+  mode      String          @default("RETAIL") // "RETAIL" | "WHOLESALE"
   quantity  Int             @default(1)
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
@@ -727,6 +702,7 @@ model ProductVariant {
   product            Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
   tieredPrices       TieredPrice[]
   purchaseOrderItems PurchaseOrderItem[] // NEW
+  stockMovements     StockMovement[]
 
   @@map("product_variants")
 }
@@ -867,21 +843,21 @@ model HeroSlideTranslation {
 }
 
 model Attribute {
-  id           String              @id @default(cuid())
+  id           String                 @id @default(cuid())
   name         String
-  slug         String              @unique
+  slug         String                 @unique
   type         AttributeType
-  options      Json?               // For SELECT/MULTISELECT: ["Red", "Blue"]
-  colorOptions Json?               // For COLOR/COLOR_MULTI: [{"label":"Red","value":"#FF0000"}]
+  options      Json? // For SELECT/MULTISELECT: ["Red", "Blue"]
+  colorOptions Json? // For COLOR/COLOR_MULTI: [{"label":"Red","value":"#FF0000"}]
   placeholder  String?
   helperText   String?
-  isRequired   Boolean             @default(false)
-  isFilterable Boolean             @default(true)
-  isVariant    Boolean             @default(false)
-  displayOrder Int                 @default(0)
-  isActive     Boolean             @default(true)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  isRequired   Boolean                @default(false)
+  isFilterable Boolean                @default(true)
+  isVariant    Boolean                @default(false)
+  displayOrder Int                    @default(0)
+  isActive     Boolean                @default(true)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
   values       AttributeValue[]
   categories   CategoryAttribute[]
   translations AttributeTranslation[]
@@ -892,12 +868,12 @@ model Attribute {
 // Expand-and-Contract: per-locale attribute name. Legacy `name` on Attribute
 // remains the source of truth until read paths migrate (Phase 3+).
 model AttributeTranslation {
-  id         String   @id @default(cuid())
+  id          String   @id @default(cuid())
   attributeId String
-  locale     String
-  name       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  locale      String
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
 
@@ -925,16 +901,16 @@ model CategoryAttribute {
 }
 
 model AttributeValue {
-  id          String          @id @default(cuid())
-  attributeId String
-  productId   String
-  variantId   String?
-  value       String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  attribute   Attribute       @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  product     Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
-  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  id           String                      @id @default(cuid())
+  attributeId  String
+  productId    String
+  variantId    String?
+  value        String
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
+  attribute    Attribute                   @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  product      Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant      ProductVariant?             @relation(fields: [variantId], references: [id], onDelete: Cascade)
   translations AttributeValueTranslation[]
 
   @@index([productId])
@@ -961,7 +937,7 @@ model AttributeValueTranslation {
 }
 
 model BreadcrumbSetting {
-  id             String    @id @default(cuid())
+  id             String                  @id @default(cuid())
   pageType       String
   pageSlug       String?
   categoryId     String?
@@ -970,10 +946,10 @@ model BreadcrumbSetting {
   overlayColor   String?
   title          String?
   subtitle       String?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  category       Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isActive       Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  category       Category?               @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   translations   PageBannerTranslation[]
 
   @@unique([pageType, pageSlug])
@@ -985,13 +961,13 @@ model BreadcrumbSetting {
 // `subtitle` on BreadcrumbSetting remain the source of truth until read paths
 // migrate (Phase 3+). Named PageBannerTranslation per the localization roadmap.
 model PageBannerTranslation {
-  id                  String   @id @default(cuid())
-  pageBannerId        String
-  locale              String
-  title               String?
-  subtitle            String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id           String   @id @default(cuid())
+  pageBannerId String
+  locale       String
+  title        String?
+  subtitle     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   pageBanner BreadcrumbSetting @relation(fields: [pageBannerId], references: [id], onDelete: Cascade)
 
@@ -1014,7 +990,6 @@ enum AttributeType {
   DATE
 }
 
-
 // ============================================
 // PURCHASE MANAGEMENT SYSTEM
 // ============================================
@@ -1023,46 +998,47 @@ enum AttributeType {
 // SUPPLIER PROFILE (for SUPPLIER role users)
 // ============================================================
 model SupplierProfile {
-  id             String              @id @default(cuid())
-  companyName    String
-  businessType   String?             // MANUFACTURER, WHOLESALER, DISTRIBUTOR
-  taxId          String?
-  vatNumber      String?
-  phone          String?
-  address        String?
-  website        String?
-  description    String?
-  logo           String?
-  paymentTerms   String?             // "net30", "net60", "prepayment"
-  currency       String              @default("USD")
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  
+  id           String   @id @default(cuid())
+  companyName  String
+  businessType String? // MANUFACTURER, WHOLESALER, DISTRIBUTOR
+  taxId        String?
+  vatNumber    String?
+  phone        String?
+  address      String?
+  website      String?
+  description  String?
+  logo         String?
+  paymentTerms String? // "net30", "net60", "prepayment"
+  currency     String   @default("USD")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   // One-to-one with User
-  user           User?
-  
+  user User?
+
   @@map("supplier_profiles")
 }
 
 model Supplier {
-  id             String              @id @default(cuid())
-  name           String
-  companyName    String?
-  email          String?
-  phone          String?
-  address        String?
-  contactPerson  String?
-  taxId          String?
-  paymentTerms   String?             // "net30", "net60", "prepayment"
-  currency       String              @default("USD")
-  notes          String?
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  purchaseOrders PurchaseOrder[]
-  products       ProductSupplier[]
-  translations   SupplierTranslation[]
+  id                String                @id @default(cuid())
+  name              String
+  companyName       String?
+  email             String?
+  phone             String?
+  address           String?
+  contactPerson     String?
+  taxId             String?
+  paymentTerms      String? // "net30", "net60", "prepayment"
+  currency          String                @default("USD")
+  notes             String?
+  isActive          Boolean               @default(true)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  purchaseOrders    PurchaseOrder[]
+  returnsToSupplier ReturnToSupplier[]
+  products          ProductSupplier[]
+  translations      SupplierTranslation[]
 
   @@map("suppliers")
 }
@@ -1087,32 +1063,52 @@ model SupplierTranslation {
 }
 
 model PurchaseOrder {
-  id               String              @id @default(cuid())
-  poNumber         String              @unique
-  supplierId       String
-  status           String              @default("DRAFT") // DRAFT, PENDING, SENT, CONFIRMED, SHIPPED, RECEIVED, CANCELLED, CLOSED
-  subtotal         Float
-  tax              Float
-  shippingCost     Float
-  discount         Float               @default(0)
-  total            Float
-  currency         String              @default("USD")
-  exchangeRate     Float?              // Rate used at time of purchase
-  costInBase       Float?              // Total cost converted to base currency
-  orderDate        DateTime            @default(now())
-  expectedDelivery DateTime?
-  receivedDate     DateTime?
-  paidDate         DateTime?
-  notes            String?
-  internalNotes    String?
-  isUrgent         Boolean             @default(false)
-  isPaid           Boolean             @default(false)
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  supplier         Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  items            PurchaseOrderItem[]
-  payments         SupplierPayment[]
+  id                     String              @id @default(cuid())
+  poNumber               String              @unique
+  supplierId             String
+  status                 String              @default("DRAFT") // DRAFT, PENDING, SENT, CONFIRMED, SHIPPED, RECEIVED, CANCELLED, CLOSED
+  subtotal               Float
+  tax                    Float
+  shippingCost           Float
+  discount               Float               @default(0)
+  total                  Float
+  currency               String              @default("USD")
+  exchangeRate           Float? // Rate used at time of purchase
+  costInBase             Float? // Total cost converted to base currency
+  orderDate              DateTime            @default(now())
+  expectedDelivery       DateTime?
+  receivedDate           DateTime?
+  paidDate               DateTime?
+  notes                  String?
+  internalNotes          String?
+  isUrgent               Boolean             @default(false)
+  isPaid                 Boolean             @default(false)
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  supplier               Supplier            @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  items                  PurchaseOrderItem[]
+  payments               SupplierPayment[]
+  containerId            String?
+  container              Container?          @relation(fields: [containerId], references: [id])
+  destinationWarehouseId String?
+  destinationWarehouse   Warehouse?          @relation(fields: [destinationWarehouseId], references: [id])
+  directToBelarus        Boolean             @default(false)
 
+  // Purchase destination lifecycle
+  purchaseDestination    PurchaseDestination @default(CHINA_WAREHOUSE)
+  targetCustomerId       String?
+  targetCustomer         User?               @relation("TargetCustomerPOs", fields: [targetCustomerId], references: [id])
+  shippingAddress        Json?
+  linkedOrderId          String?             @unique
+  linkedOrder            Order?              @relation("POLinkedOrder", fields: [linkedOrderId], references: [id])
+  singleContainer        Container[]         @relation("ContainerSinglePO")
+
+  containerItems         ContainerItem[]
+  returnsToSupplier      ReturnToSupplier[]
+
+  @@index([destinationWarehouseId])
+  @@index([targetCustomerId])
+  @@index([purchaseDestination])
   @@map("purchase_orders")
 }
 
@@ -1120,11 +1116,11 @@ model PurchaseOrderItem {
   id                String          @id @default(cuid())
   purchaseOrderId   String
   productId         String?
-  variantId         String?         // NEW: Reference to specific variant
-  productName       String          // Snapshot
-  productSku        String          // Snapshot
-  variantName       String?         // NEW: Variant description (e.g., "10-inch, Silver")
-  variantAttributes Json?           // NEW: { "Size": "10\"", "Color": "Silver" }
+  variantId         String? // NEW: Reference to specific variant
+  productName       String // Snapshot
+  productSku        String // Snapshot
+  variantName       String? // NEW: Variant description (e.g., "10-inch, Silver")
+  variantAttributes Json? // NEW: { "Size": "10\"", "Color": "Silver" }
   quantity          Int
   unitPrice         Float
   total             Float
@@ -1144,9 +1140,9 @@ model SupplierPayment {
   purchaseOrderId String
   amount          Float
   currency        String        @default("USD")
-  paymentMethod   String        // "bank_transfer", "cash", "check", "paypal"
+  paymentMethod   String // "bank_transfer", "cash", "check", "paypal"
   paymentDate     DateTime
-  reference       String?       // Payment reference number
+  reference       String? // Payment reference number
   notes           String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -1159,9 +1155,9 @@ model ProductSupplier {
   id          String   @id @default(cuid())
   productId   String
   supplierId  String
-  supplierSku String?  // Supplier's SKU
-  costPrice   Float    // Purchase price from supplier
-  leadTime    Int?     // Days to deliver
+  supplierSku String? // Supplier's SKU
+  costPrice   Float // Purchase price from supplier
+  leadTime    Int? // Days to deliver
   isPreferred Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -1172,7 +1168,6 @@ model ProductSupplier {
   @@map("product_suppliers")
 }
 
-
 // ============================================
 // MULTI-CURRENCY MANAGEMENT SYSTEM
 // ============================================
@@ -1180,13 +1175,13 @@ model ProductSupplier {
 model Currency {
   id                    String    @id @default(cuid())
   code                  String    @unique // USD, CNY, EUR, RUB, etc.
-  name                  String    // US Dollar, Chinese Yuan, etc.
-  symbol                String    // $, ¥, €, ₽, etc.
+  name                  String // US Dollar, Chinese Yuan, etc.
+  symbol                String // $, ¥, €, ₽, etc.
   symbolPosition        String    @default("before") // before, after
   decimalPlaces         Int       @default(2)
   isBase                Boolean   @default(false) // Base currency for reporting
   isActive              Boolean   @default(true)
-  exchangeRate          Float?    // Rate against base currency
+  exchangeRate          Float? // Rate against base currency
   exchangeRateUpdatedAt DateTime?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
@@ -1200,7 +1195,7 @@ model ExchangeRateHistory {
   toCurrency   String
   rate         Float
   date         DateTime @default(now())
-  source       String?  // "manual", "api", "admin"
+  source       String? // "manual", "api", "admin"
   notes        String?
   createdAt    DateTime @default(now())
 
@@ -1223,107 +1218,302 @@ model WishlistItem {
 // ============================================================
 // SHIPPING METHOD - Dynamic shipping modes
 // ============================================================
-model ShippingMethod {
-  id                    String   @id @default(cuid())
-  name                  String   // "Sea Freight", "Truck", "Train", "Air", "Multi-modal"
-  slug                  String   @unique // "sea", "truck", "train", "air", "multi-modal"
-  description           String?
-  
-  // Default statuses for this shipping method
-  defaultStatuses       Json?    // ["LOADING", "IN_TRANSIT", "CUSTOMS", "DELIVERED"]
-  
-  // Custom statuses allowed
-  customStatusesAllowed Boolean  @default(true)
-  
-  isActive              Boolean  @default(true)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  
-  containers            Container[]
-  shipments             Shipment[]
-  translations          ShippingMethodTranslation[]
-
-  @@map("shipping_methods")
-}
 
 // Expand-and-Contract: per-locale shipping method copy. Legacy `name`/
 // `description` on ShippingMethod remain the source of truth until read paths
 // migrate (Phase 3+).
-model ShippingMethodTranslation {
-  id          String   @id @default(cuid())
-  shippingMethodId String
-  locale      String
-  name        String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  shippingMethod ShippingMethod @relation(fields: [shippingMethodId], references: [id], onDelete: Cascade)
+// ============================================================
+// LOGISTICS & SHIPPING (SIMPLIFIED CONTAINER-CENTRIC SYSTEM)
+// ============================================================
 
-  @@unique([shippingMethodId, locale])
-  @@index([locale])
-  @@map("shipping_method_translations")
+enum RouteType {
+  SEA
+  AIR
+  LAND
+  MULTI
 }
 
-// ============================================================
-// CONTAINER - With dynamic shipping method
-// ============================================================
-model Container {
-  id                  String           @id @default(cuid())
-  containerNumber     String           @unique
-  shippingMethodId    String?
-  
-  vesselName          String?
-  voyageNumber        String?
-  
-  methodDetails       Json?            // { "route": "Yiwu-Moscow", "transitPoints": [...] }
-  
-  status              String           @default("PLANNING")
-  statusHistory       Json?            // Array of { status, timestamp, location, note }
-  
-  origin              String
-  destination         String
-  transitPoints       Json?            // ["Yiwu", "Almaty", "Moscow"]
-  
-  estimatedDeparture  DateTime?
-  estimatedArrival    DateTime?
-  actualDeparture     DateTime?
-  actualArrival       DateTime?
-  
-  containerType       String?          // 20ft, 40ft, 40ft HC
-  weight              Float?
-  volume              Float?
-  
-  notes               String?
-  
-  shippingMethod      ShippingMethod?  @relation(fields: [shippingMethodId], references: [id])
-  orders              Order[]
-  
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+enum ContainerStatus {
+  PLANNING
+  LOADING
+  DEPARTED
+  IN_TRANSIT
+  AT_CUSTOMS
+  CUSTOMS_CLEARED
+  ARRIVED
+  WAREHOUSE_RECEIVED
+  DELIVERED
+  CANCELLED
+}
 
-  @@index([containerNumber])
-  @@index([status])
+enum WarehouseType {
+  PROCUREMENT
+  DISTRIBUTION
+  TRANSIT
+  RETURN
+}
+
+enum ZoneType {
+  RECEIVING
+  STORAGE
+  PICKING
+  PACKING
+  SHIPPING
+  DAMAGED
+  RETURNS
+  STAGING
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  DISMISSED
+}
+
+enum StockMovementType {
+  PURCHASE_RECEIPT
+  CONTAINER_DISPATCH
+  CONTAINER_RECEIPT
+  ORDER_RESERVED
+  ORDER_FULFILLED
+  ORDER_CANCELLED_RESTOCK
+  CUSTOMER_RETURN
+  SUPPLIER_RETURN
+  TRANSFER_OUT
+  TRANSFER_IN
+  ADJUSTMENT
+  DIRECT_CONTAINER_DELIVERY
+  RESERVATION_EXPIRED
+  // Legacy aliases
+  ORDER_DECREMENT
+  PO_RECEIVE
+  RETURN
+}
+
+enum PurchaseDestination {
+  CHINA_WAREHOUSE
+  DIRECT_TO_CONTAINER
+  DIRECT_TO_CUSTOMER
+}
+
+enum LoadingType {
+  FROM_WAREHOUSE
+  DIRECT_FROM_PO
+  DIRECT_TO_CUSTOMER
+  MIXED
+}
+
+enum CustomsStatus {
+  PENDING
+  DOCS_SUBMITTED
+  INSPECTION
+  DUTIES_PAID
+  CLEARED
+  REJECTED
+}
+
+enum AllocMethod {
+  VALUE
+  WEIGHT
+  CBM
+  UNITS
+}
+
+enum OrderSalesType {
+  RETAIL
+  WHOLESALE
+  DIRECT_CONTAINER
+}
+
+enum TransferStatus {
+  DRAFT
+  PENDING_APPROVAL
+  IN_TRANSIT
+  PARTIALLY_RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReturnStatus {
+  DRAFT
+  APPROVED
+  PACKED
+  SHIPPED
+  DELIVERED
+  REFUNDED
+  CANCELLED
+}
+
+enum RefundMethod {
+  ORIGINAL_PAYMENT
+  STORE_CREDIT
+  REPLACEMENT
+}
+
+model Carrier {
+  id         String      @id @default(cuid())
+  name       String
+  code       String      @unique
+  isActive   Boolean     @default(true)
+  containers Container[]
+  routes     Route[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@map("carriers")
+}
+
+model Agent {
+  id         String         @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  company    String?
+  isActive   Boolean        @default(true)
+  containers Container[]
+  payments   AgentPayment[]
+  costItems  CostItem[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@map("shipping_agents")
+}
+
+model Container {
+  id              String          @id @default(cuid())
+  containerNumber String          @unique
+  carrierId       String?
+  carrier         Carrier?        @relation(fields: [carrierId], references: [id])
+  agentId         String?
+  agent           Agent?          @relation(fields: [agentId], references: [id])
+  routeType       RouteType       @default(SEA)
+  origin          String
+  destination     String
+  departureDate   DateTime?
+  arrivalDate     DateTime?
+  costItems       CostItem[]
+  agentPayments   AgentPayment[]
+  totalCost       Float?          @default(0)
+  totalAgentFees  Float?          @default(0)
+  status          ContainerStatus @default(PLANNING)
+  notes           String?
+
+  // Multi-warehouse & Logistics enhancements
+  sourceWarehouseId      String?
+  sourceWarehouse        Warehouse?    @relation("SourceContainers", fields: [sourceWarehouseId], references: [id])
+  destinationWarehouseId String?
+  destinationWarehouse   Warehouse?    @relation("DestinationContainers", fields: [destinationWarehouseId], references: [id])
+  loadingType            LoadingType   @default(FROM_WAREHOUSE)
+  customsStatus          CustomsStatus @default(PENDING)
+  allocationMethod       AllocMethod   @default(VALUE)
+
+  // Flow 3: Direct Container Sale (B2B - No Belarus Warehouse)
+  shipToCustomerDirectly Boolean @default(false)
+  directCustomerId       String?
+  directOrderId          String?
+
+  // Direct & Linked Assignment
+  purchaseOrderId        String?
+  purchaseOrder          PurchaseOrder?  @relation("ContainerSinglePO", fields: [purchaseOrderId], references: [id])
+  customerOrderId        String?
+  customerOrder          Order?          @relation("ContainerSingleOrder", fields: [customerOrderId], references: [id])
+
+  items          ContainerItem[]
+  purchaseOrders PurchaseOrder[]
+  orders         Order[]
+  routes         Route[]
+  stockTransfers StockTransfer[]
+  stockMovements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sourceWarehouseId])
+  @@index([destinationWarehouseId])
   @@map("containers")
 }
 
+model CostItem {
+  id               String    @id @default(cuid())
+  containerId      String
+  container        Container @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  agentId          String?
+  agent            Agent?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  title            String
+  amount           Float
+  currency         String    @default("USD")
+  notes            String?
+  isPaid           Boolean   @default(false)
+  paidDate         DateTime?
+  paidAmount       Float?
+  paymentReference String?
+  createdBy        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([containerId])
+  @@index([agentId])
+  @@map("cost_items")
+}
+
+model AgentPayment {
+  id            String    @id @default(cuid())
+  agentId       String
+  agent         Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  containerId   String?
+  container     Container? @relation(fields: [containerId], references: [id], onDelete: SetNull)
+  amount        Float
+  currency      String    @default("USD")
+  description   String?
+  paymentDate   DateTime  @default(now())
+  paymentMethod String?
+  reference     String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([agentId])
+  @@index([containerId])
+  @@map("agent_payments")
+}
+
+model Route {
+  id          String    @id @default(cuid())
+  containerId String
+  container   Container @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  type        RouteType
+  legOrder    Int
+  origin      String
+  destination String
+  distance    Float?
+  duration    Float?
+  carrierId   String?
+  carrier     Carrier?  @relation(fields: [carrierId], references: [id])
+  cost        Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("routes")
+}
+
 model Review {
-  id                 String        @id @default(cuid())
+  id                 String   @id @default(cuid())
   productId          String
   userId             String
-  rating             Int           // 1 to 5
+  rating             Int // 1 to 5
   title              String
   comment            String
-  images             String[]      // Array of image URLs
-  isVerifiedPurchase Boolean       @default(false)
-  isApproved         Boolean       @default(false)
-  helpfulCount       Int           @default(0)
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  
-  product            Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  replies            ReviewReply[]
+  images             String[] // Array of image URLs
+  isVerifiedPurchase Boolean  @default(false)
+  isApproved         Boolean  @default(false)
+  helpfulCount       Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies ReviewReply[]
 
   @@index([productId])
   @@index([userId])
@@ -1340,8 +1530,8 @@ model ReviewReply {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@index([userId])
@@ -1355,8 +1545,8 @@ model Testimonial {
   role       String
   quote      String
   rating     Int      @default(5)
-  avatar     String?  // Avatar image URL
-  image      String?  // Secondary customer photo
+  avatar     String? // Avatar image URL
+  image      String? // Secondary customer photo
   isFeatured Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -1370,14 +1560,14 @@ model Testimonial {
 // `company` on Testimonial remain the source of truth until read paths migrate
 // (Phase 3+). Note `name` stays single-language (person's name, not translated).
 model TestimonialTranslation {
-  id          String   @id @default(cuid())
+  id            String   @id @default(cuid())
   testimonialId String
-  locale      String
-  quote       String
-  role        String?
-  company     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  locale        String
+  quote         String
+  role          String?
+  company       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   testimonial Testimonial @relation(fields: [testimonialId], references: [id], onDelete: Cascade)
 
@@ -1387,23 +1577,23 @@ model TestimonialTranslation {
 }
 
 model Deployment {
-  id              String   @id @default(cuid())
+  id               String    @id @default(cuid())
   deploymentNumber String
-  environment     String
-  status          String   @default("in-progress")
-  type            String   @default("deploy") // deploy, rollback
-  branch          String?
-  commitHash      String?
-  commitMessage   String?
-  triggeredBy     String?
-  metadata        Json?
-  startedAt       DateTime @default(now())
-  completedAt     DateTime?
-  duration        Int?
-  logs            String?
-  error           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  environment      String
+  status           String    @default("in-progress")
+  type             String    @default("deploy") // deploy, rollback
+  branch           String?
+  commitHash       String?
+  commitMessage    String?
+  triggeredBy      String?
+  metadata         Json?
+  startedAt        DateTime  @default(now())
+  completedAt      DateTime?
+  duration         Int?
+  logs             String?
+  error            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@map("deployments")
 }
@@ -1431,14 +1621,14 @@ model EmailTemplate {
 // Expand-and-Contract: per-locale email copy. Legacy columns on EmailTemplate
 // remain the English source of truth / fallback.
 model EmailTemplateTranslation {
-  id         String   @id @default(cuid())
+  id              String   @id @default(cuid())
   emailTemplateId String
-  locale     String
-  subject    String
-  bodyHtml   String
-  bodyText   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  locale          String
+  subject         String
+  bodyHtml        String
+  bodyText        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   emailTemplate EmailTemplate @relation(fields: [emailTemplateId], references: [id], onDelete: Cascade)
 
@@ -1447,3 +1637,444 @@ model EmailTemplateTranslation {
   @@map("email_template_translations")
 }
 
+model CustomerPayment {
+  id            String   @id @default(cuid())
+  orderId       String
+  amount        Float
+  currency      String   @default("USD")
+  paymentMethod String // "stripe", "paypal", "bank_transfer", "cash"
+  paymentDate   DateTime @default(now())
+  reference     String? // Transaction or reference number
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("customer_payments")
+}
+
+model JournalEntry {
+  id          String   @id @default(cuid())
+  entryNumber String   @unique
+  date        DateTime @default(now())
+  type        String // "DEBIT", "CREDIT"
+  category    String // "REVENUE", "COGS", "EXPENSE", "ASSET", "LIABILITY", "EQUITY"
+  account     String // e.g., "Accounts Receivable", "Accounts Payable", "Cash", "Sales Revenue"
+  amount      Float
+  currency    String   @default("USD")
+  description String
+  reference   String? // Reference to orderId, poId, invoiceId, etc.
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([category])
+  @@index([account])
+  @@map("journal_entries")
+}
+
+model PageContent {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  content     String // Rich HTML content
+  metaTitle   String?
+  metaDesc    String?
+  isPublished Boolean  @default(true)
+  author      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@map("page_contents")
+}
+
+model VerificationDocument {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       String // "BUSINESS_LICENSE" | "TAX_CERTIFICATE" | "ID_CARD" | "IMPORT_EXPORT_LICENSE"
+  fileUrl    String
+  fileName   String
+  fileSize   Int      @default(0)
+  status     String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  notes      String?
+  uploadedAt DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("verification_documents")
+}
+
+model Discount {
+  id           String  @id @default(cuid())
+  code         String  @unique
+  description  String?
+  discountType String // "PERCENTAGE", "FIXED_AMOUNT", "FREE_SHIPPING"
+  value        Float
+  targetMode   String  @default("BOTH") // "RETAIL", "WHOLESALE", "BOTH"
+
+  minSpend          Float?
+  minQuantity       Int?
+  maxDiscountAmount Float?
+  usageLimit        Int?
+  usedCount         Int    @default(0)
+  perUserLimit      Int?   @default(1)
+
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+  @@map("discounts")
+}
+
+model ContractPrice {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customPrice Float
+  currency    String    @default("USD")
+  minQuantity Int       @default(1)
+  validUntil  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+  @@map("contract_prices")
+}
+
+model StockMovement {
+  id          String             @id @default(cuid())
+  productId   String?
+  variantId   String?
+  warehouseId String?
+  warehouse   Warehouse?         @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+  type        StockMovementType?
+  typeString  String? // legacy fallback
+  quantity    Int // Positive for additions, negative for deductions
+  unitCost    Float?
+  totalCost   Float?
+  reference   String? // Order Number, PO Number, Container Number, Transfer Number, etc.
+  containerId String?
+  container   Container?         @relation(fields: [containerId], references: [id], onDelete: SetNull)
+  transferId  String?
+  transfer    StockTransfer?     @relation(fields: [transferId], references: [id], onDelete: SetNull)
+  returnId    String?
+  orderId     String?
+  order       Order?             @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  notes       String?
+  createdAt   DateTime           @default(now())
+
+  product Product?        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([variantId])
+  @@index([warehouseId])
+  @@index([type])
+  @@index([containerId])
+  @@index([transferId])
+  @@index([reference])
+  @@map("stock_movements")
+}
+
+// ============================================================
+// WAREHOUSE & INVENTORY MANAGEMENT SYSTEM
+// ============================================================
+
+model Warehouse {
+  id                   String        @id @default(cuid())
+  name                 String
+  code                 String        @unique // e.g. "CN-YW", "BY-MS"
+  type                 WarehouseType @default(DISTRIBUTION)
+  country              String // "China", "Belarus"
+  city                 String
+  address              String
+  contactPerson        String?
+  contactPhone         String?
+  contactEmail         String?
+  isActive             Boolean       @default(true)
+  isDefaultProcurement Boolean       @default(false)
+  isDefaultSales       Boolean       @default(false)
+  notes                String?
+
+  zones             WarehouseZone[]
+  stocks            WarehouseStock[]
+  movements         StockMovement[]
+  sourceTransfers   StockTransfer[]    @relation("SourceTransfers")
+  destTransfers     StockTransfer[]    @relation("DestTransfers")
+  sourceContainers  Container[]        @relation("SourceContainers")
+  destContainers    Container[]        @relation("DestinationContainers")
+  orders            Order[]
+  purchaseOrders    PurchaseOrder[]
+  returnsToSupplier ReturnToSupplier[]
+  containerItems    ContainerItem[]
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  LowStockAlert LowStockAlert[]
+
+  @@index([code])
+  @@index([country])
+  @@index([isActive])
+  @@map("warehouses")
+}
+
+model WarehouseZone {
+  id             String         @id @default(cuid())
+  warehouseId    String
+  warehouse      Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  code           String // e.g. "Z-REC", "Z-STOR", "Z-PICK"
+  name           String
+  type           ZoneType       @default(STORAGE)
+  tempControlled Boolean        @default(false)
+  minTemp        Float?
+  maxTemp        Float?
+  isActive       Boolean        @default(true)
+  bays           WarehouseBay[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([warehouseId, code])
+  @@index([warehouseId])
+  @@map("warehouse_zones")
+}
+
+model WarehouseBay {
+  id        String          @id @default(cuid())
+  zoneId    String
+  zone      WarehouseZone   @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  code      String // e.g. "BAY-01"
+  name      String?
+  aisle     String? // "A1", "A2"
+  rack      String? // "R1", "R2"
+  level     Int             @default(1)
+  maxWeight Float?
+  maxCbm    Float?
+  isActive  Boolean         @default(true)
+  slots     WarehouseSlot[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([zoneId, code])
+  @@index([zoneId])
+  @@map("warehouse_bays")
+}
+
+model WarehouseSlot {
+  id        String           @id @default(cuid())
+  bayId     String
+  bay       WarehouseBay     @relation(fields: [bayId], references: [id], onDelete: Cascade)
+  code      String // e.g. "SLOT-01-A"
+  name      String?
+  barcode   String?          @unique
+  maxWeight Float?
+  maxCbm    Float?
+  isActive  Boolean          @default(true)
+  stocks    WarehouseStock[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@unique([bayId, code])
+  @@index([bayId])
+  @@map("warehouse_slots")
+}
+
+model WarehouseStock {
+  id           String         @id @default(cuid())
+  warehouseId  String
+  warehouse    Warehouse      @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  slotId       String?
+  slot         WarehouseSlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  quantity     Int            @default(0) // Physical on-hand in this warehouse/slot
+  reservedQty  Int            @default(0) // Reserved for pending customer orders
+  avgCost      Float          @default(0) // Weighted average cost per unit
+  reorderPoint Int            @default(10)
+  maxStock     Int?
+  locationCode String? // e.g. "BY-MS-Z-STOR-B01-L2-S01"
+  locationPath String? // e.g. "Zone A > Bay 1 > Level 2 > Slot 1"
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([warehouseId, productId])
+  @@index([warehouseId])
+  @@index([productId])
+  @@index([slotId])
+  @@map("warehouse_stocks")
+}
+
+model ContainerItem {
+  id                String         @id @default(cuid())
+  containerId       String
+  container         Container      @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity          Int
+  unitCost          Float          @default(0) // Supplier purchase price
+  totalCost         Float          @default(0)
+  weight            Float? // Total weight (kg)
+  cbm               Float? // Total volume (m³)
+  source            String         @default("WAREHOUSE") // "WAREHOUSE" or "PO"
+  sourcePoId        String?
+  sourcePo          PurchaseOrder? @relation(fields: [sourcePoId], references: [id], onDelete: SetNull)
+  sourceWarehouseId String?
+  sourceWarehouse   Warehouse?     @relation(fields: [sourceWarehouseId], references: [id], onDelete: SetNull)
+
+  // Landed Cost calculation results
+  allocatedCost     Float @default(0) // Share of container freight/duties/costs
+  landedCostPerUnit Float @default(0) // unitCost + (allocatedCost / quantity)
+
+  // Quality Control on Container Receipt
+  receivedQty  Int? // Actual received sound units
+  damagedQty   Int?    @default(0) // Damaged goods
+  rejectedQty  Int?    @default(0) // Rejected goods
+  qualityNotes String? // Notes on damages / defects
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([containerId])
+  @@index([productId])
+  @@index([sourcePoId])
+  @@index([sourceWarehouseId])
+  @@map("container_items")
+}
+
+model StockTransfer {
+  id                     String              @id @default(cuid())
+  transferNumber         String              @unique // e.g. "TR-2026-001"
+  sourceWarehouseId      String
+  sourceWarehouse        Warehouse           @relation("SourceTransfers", fields: [sourceWarehouseId], references: [id])
+  destinationWarehouseId String
+  destinationWarehouse   Warehouse           @relation("DestTransfers", fields: [destinationWarehouseId], references: [id])
+  containerId            String?
+  container              Container?          @relation(fields: [containerId], references: [id], onDelete: SetNull)
+  status                 TransferStatus      @default(DRAFT)
+  requestedBy            String?
+  approvedBy             String?
+  notes                  String?
+  items                  StockTransferItem[]
+  movements              StockMovement[]
+  shippedAt              DateTime?
+  receivedAt             DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  @@index([sourceWarehouseId])
+  @@index([destinationWarehouseId])
+  @@index([status])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id           String        @id @default(cuid())
+  transferId   String
+  transfer     StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  requestedQty Int
+  shippedQty   Int           @default(0)
+  receivedQty  Int           @default(0)
+  unitCost     Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([transferId])
+  @@index([productId])
+  @@map("stock_transfer_items")
+}
+
+model ReturnToSupplier {
+  id              String                 @id @default(cuid())
+  returnNumber    String                 @unique // e.g. "RTS-2026-001"
+  supplierId      String
+  supplier        Supplier               @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  warehouseId     String
+  warehouse       Warehouse              @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder?         @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+  status          ReturnStatus           @default(DRAFT)
+  totalAmount     Float                  @default(0)
+  reason          String
+  refundMethod    RefundMethod           @default(STORE_CREDIT)
+  notes           String?
+  items           ReturnToSupplierItem[]
+  shippedAt       DateTime?
+  refundedAt      DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@index([supplierId])
+  @@index([warehouseId])
+  @@index([status])
+  @@map("returns_to_supplier")
+}
+
+model ReturnToSupplierItem {
+  id          String           @id @default(cuid())
+  returnId    String
+  return      ReturnToSupplier @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity    Int
+  unitPrice   Float
+  totalAmount Float
+  reason      String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([returnId])
+  @@index([productId])
+  @@map("return_to_supplier_items")
+}
+
+model LowStockAlert {
+  id           String      @id @default(cuid())
+  warehouseId  String
+  warehouse    Warehouse   @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId    String?
+  currentStock Int
+  minStock     Int
+  status       AlertStatus @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+  resolvedAt   DateTime?
+
+  @@index([warehouseId])
+  @@index([productId])
+  @@index([status])
+  @@map("low_stock_alerts")
+}
+
+model AdminActivityLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action    String // CREATE, UPDATE, DELETE, APPROVE, REJECT
+  entity    String // Warehouse, Product, Order, Container, PurchaseOrder
+  entityId  String?
+  changes   Json? // Before/after values
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("admin_activity_logs")
+}

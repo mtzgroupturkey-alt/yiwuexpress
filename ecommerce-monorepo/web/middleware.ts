@@ -3,6 +3,7 @@ import { verifyTokenEdge, getTokenFromRequest } from '@/lib/auth'
 import * as jose from 'jose'
 import createIntlMiddleware from 'next-intl/middleware'
 import { routing } from '@/i18n/routing'
+import { checkRateLimit } from '@/lib/edge-rate-limit'
 
 // next-intl middleware handles locale detection + redirect for localized paths.
 const intlMiddleware = createIntlMiddleware(routing)
@@ -54,13 +55,24 @@ function isBypassPath(pathname: string): boolean {
 async function authMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Handle CORS for /uploads static files
-  if (pathname.startsWith('/uploads')) {
-    const response = NextResponse.next()
-    response.headers.set('Access-Control-Allow-Origin', '*')
-    response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS')
-    response.headers.set('Access-Control-Allow-Headers', 'Accept, Content-Type')
-    return response
+  // Rate limiting for sensitive endpoints (auth and checkout)
+  if (pathname.startsWith('/api/auth/') || pathname.startsWith('/api/checkout') || pathname === '/api/orders') {
+    const ip = request.ip || request.headers.get('x-forwarded-for') || '127.0.0.1'
+    const limit = pathname.startsWith('/api/auth/login') ? 10 : 30
+    const { allowed, remaining, resetInSeconds } = checkRateLimit(ip, limit, 60)
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': resetInSeconds.toString(),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      )
+    }
   }
 
   // Skip middleware for public routes

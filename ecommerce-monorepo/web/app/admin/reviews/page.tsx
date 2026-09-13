@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Check, Trash2, ShieldAlert, Star, MessageSquare, ExternalLink } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 interface Review {
   id: string
@@ -28,6 +29,7 @@ interface Review {
 
 export default function AdminReviewsPage() {
   const router = useRouter()
+  const { dict, locale } = useAdminLocale()
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [actioningId, setActioningId] = useState<string | null>(null)
@@ -93,23 +95,23 @@ export default function AdminReviewsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <MessageSquare className="w-8 h-8 text-primary-600" />
-            Review Moderation
+            {dict.reviews.title}
           </h1>
-          <p className="text-gray-500 mt-1">Approve or remove customer product reviews</p>
+          <p className="text-gray-500 mt-1">{dict.reviews.subtitle}</p>
         </div>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto" />
-          <p className="text-gray-500 mt-4">Loading reviews...</p>
+          <p className="text-gray-500 mt-4">{dict.common.loading}</p>
         </div>
       ) : reviews.length === 0 ? (
         <Card className="text-center py-12 border border-dashed border-gray-300">
           <CardContent>
             <ShieldAlert className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Found</h3>
-            <p className="text-gray-500">There are no reviews submitted yet.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{dict.common.noData}</h3>
+            <p className="text-gray-500">{dict.reviews.subtitle}</p>
           </CardContent>
         </Card>
       ) : (
@@ -124,21 +126,21 @@ export default function AdminReviewsPage() {
                       <span className="text-sm text-gray-500">({review.user.email})</span>
                       {review.isVerifiedPurchase && (
                         <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100 font-semibold text-xs">
-                          Verified Purchase
+                          {dict.reviews.verifiedPurchase}
                         </Badge>
                       )}
                       {review.isApproved ? (
                         <Badge className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs">
-                          Approved
+                          {dict.reviews.approvedBadge}
                         </Badge>
                       ) : (
                         <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold text-xs">
-                          Pending Approval
+                          {dict.reviews.pendingApproval}
                         </Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-primary-700 font-medium">
-                      <span>Product:</span>
+                      <span>{dict.reviews.product}:</span>
                       <span className="font-bold">{review.product.name}</span>
                       <a href={`/products/${review.product.slug}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary-800 inline-flex items-center gap-0.5">
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -170,7 +172,7 @@ export default function AdminReviewsPage() {
                       className="bg-green-600 hover:bg-green-700 text-white font-bold gap-1 text-xs"
                     >
                       <Check className="w-4 h-4" />
-                      Approve Review
+                      {dict.reviews.approveReview}
                     </Button>
                   )}
                   <Button
@@ -180,7 +182,7 @@ export default function AdminReviewsPage() {
                     className="border-red-200 text-red-600 hover:bg-red-50 font-bold gap-1 text-xs"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Delete Review
+                    {dict.reviews.deleteReview}
                   </Button>
                 </div>
               </CardContent>

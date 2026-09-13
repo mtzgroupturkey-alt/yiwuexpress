@@ -34,6 +34,8 @@
       "zh": "中文"
     },
     "allProducts": "全部商品",
+    "catalog": "商品分类",
+    "trackOrder": "物流查询",
     "categories": "分类"
   },
   "Footer": {

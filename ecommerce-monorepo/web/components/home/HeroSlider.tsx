@@ -1,24 +1,17 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
-import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ChevronLeft, 
   ChevronRight, 
-  Pause, 
-  Play, 
   Sparkles, 
   ArrowRight, 
   ShieldCheck, 
-  Award, 
-  Layers, 
-  Zap,
-  TrendingUp,
-  PackageCheck,
-  Building2,
-  CheckCircle2
+  Tag,
+  Clock,
+  SendHorizontal
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
@@ -52,14 +45,14 @@ interface HeroSlide {
 const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
   {
     id: 'slide-machinery',
-    title: 'Industrial Machinery & Precision Engineering',
+    title: 'Industrial Machinery & Precision CNC Equipment',
     subtitle: 'FACTORY-DIRECT B2B WHOLESALE & RETAIL',
-    description: 'Direct procurement from Tier-1 Chinese manufacturers. High-precision CNC centers, hydraulic presses, automation machinery, and industrial production lines with full CE & ISO certification.',
+    description: 'Direct procurement from Tier-1 Chinese manufacturers. High-precision CNC centers, hydraulic presses, automated production lines with full CE & ISO certification.',
     imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1920&q=85',
     mobileImageUrl: null,
     productImageUrl: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
     badgeText: 'PREMIUM INDUSTRIAL SELECTION',
-    badgeColor: '#c9a84c',
+    badgeColor: '#0055A4',
     ctaText: 'Explore Machinery Catalog',
     ctaLink: '/products?category=machinery',
     secondaryCtaText: 'Request Wholesale RFQ',
@@ -81,7 +74,7 @@ const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
     mobileImageUrl: null,
     productImageUrl: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=800&q=80',
     badgeText: 'PRO TOOLS & EQUIPMENT',
-    badgeColor: '#c9a84c',
+    badgeColor: '#0055A4',
     ctaText: 'Shop Power Tools',
     ctaLink: '/products?category=tools',
     secondaryCtaText: 'Download Wholesale List',
@@ -103,7 +96,7 @@ const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
     mobileImageUrl: null,
     productImageUrl: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
     badgeText: 'WHOLESALE PRICING GUARANTEED',
-    badgeColor: '#c9a84c',
+    badgeColor: '#0055A4',
     ctaText: 'Start Wholesale Order',
     ctaLink: '/wholesale',
     secondaryCtaText: 'View On-Sale Items',
@@ -121,6 +114,7 @@ const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
 export function HeroSlider() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [countdown, setCountdown] = useState({ hours: 7, minutes: 42, seconds: 19 })
   const { settings } = useSettings()
   const locale = useLocale()
 
@@ -133,6 +127,7 @@ export function HeroSlider() {
   const fetchedSlides: HeroSlide[] = data?.data || []
   const slides: HeroSlide[] = fetchedSlides.length > 0 ? fetchedSlides : DEFAULT_CINEMATIC_SLIDES
 
+  // Autoplay ticker
   useEffect(() => {
     if (isPaused || slides.length <= 1) return
 
@@ -142,6 +137,19 @@ export function HeroSlider() {
 
     return () => clearInterval(timer)
   }, [currentIndex, slides, isPaused])
+
+  // Live countdown timer for Flash Deals mini-banner
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 }
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 }
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 }
+        return { hours: 23, minutes: 59, seconds: 59 }
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   const currentSlide = slides[currentIndex] || slides[0]
 
@@ -162,6 +170,13 @@ export function HeroSlider() {
       statPorts: 'Global Ports',
       verifiedDirect: 'Verified Factory Direct',
       defaultBadge: 'INDUSTRIAL GRADE & CE CERTIFIED',
+      promoTopTitle: 'Express Direct Factory Sourcing',
+      promoTopSub: 'Get container loads & custom OEM quotes within 24 hours',
+      promoTopCta: 'Request Quick RFQ',
+      promoBottomTitle: 'Flash Discounts of the Day',
+      promoBottomSub: 'Save up to 40% on certified machinery stock',
+      promoBottomCta: 'View Flash Deals',
+      dealEndsIn: 'Ends in',
     },
     ru: {
       factoryStock: 'Готово к отгрузке',
@@ -179,6 +194,13 @@ export function HeroSlider() {
       statPorts: 'Портов мира',
       verifiedDirect: 'Проверенный производитель',
       defaultBadge: 'ПРОМЫШЛЕННЫЙ СТАНДАРТ · CE/EAC',
+      promoTopTitle: 'Прямые поставки с фабрик Китая',
+      promoTopSub: 'Контейнерные партии и OEM под ключ за 24 часа',
+      promoTopCta: 'Запросить расчет (RFQ)',
+      promoBottomTitle: 'Суперцены и Акции дня',
+      promoBottomSub: 'Скидки до 40% на промышленный склад',
+      promoBottomCta: 'Смотреть скидки',
+      dealEndsIn: 'До конца:',
     },
     zh: {
       factoryStock: '工厂现货直发',
@@ -196,6 +218,13 @@ export function HeroSlider() {
       statPorts: '全球通达港口',
       verifiedDirect: '认证源头工厂直供',
       defaultBadge: '工业级制造 · CE与ISO认证',
+      promoTopTitle: '源头工厂集采直供',
+      promoTopSub: '整柜大宗集采 · 24小时专属RFQ核价',
+      promoTopCta: '立即发起询价',
+      promoBottomTitle: '每日特价限时秒杀',
+      promoBottomSub: '工厂爆款现货直降高达 40%',
+      promoBottomCta: '查看特价专区',
+      dealEndsIn: '距结束:',
     }
   }
 
@@ -203,36 +232,36 @@ export function HeroSlider() {
 
   return (
     <div 
-      className="relative w-full min-h-[580px] lg:min-h-[720px] bg-[#0a1628] text-white overflow-hidden flex flex-col justify-between"
+      className="relative w-full min-h-[580px] lg:min-h-[660px] bg-[#0a1628] text-white overflow-hidden flex flex-col justify-between"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* 1. Cinematic Background Layer with Animated Meshes & Particles */}
+      {/* 1. Cinematic Background Layer with 700ms cross-fade transition */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide.id}
-            initial={{ opacity: 0, scale: 1.05 }}
+            initial={{ opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
             className="absolute inset-0"
           >
             <img
               src={currentSlide.imageUrl}
               alt={currentSlide.title}
-              className="w-full h-full object-cover object-center brightness-[0.4] contrast-125"
+              className="w-full h-full object-cover object-center brightness-[0.32] contrast-125"
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Ambient Dark Navy & Gold Radial Glows */}
+        {/* Ambient Dark Navy & Radial Glows */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a1628] via-[#0a1628]/85 to-[#0a1628]/60" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-black/30" />
-        <div className="absolute -top-32 right-1/4 w-[500px] h-[500px] bg-[#c9a84c]/15 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-primary-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute -top-32 right-1/4 w-[500px] h-[500px] bg-[#0055A4]/20 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-[#0055A4]/15 rounded-full blur-[120px] pointer-events-none" />
 
-        {/* High-Tech Geometric Grid Lines */}
+        {/* Geometric Grid Lines */}
         <div 
           className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
@@ -242,25 +271,25 @@ export function HeroSlider() {
         />
       </div>
 
-      {/* 2. Main Hero Slide Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 pt-16 sm:pt-20 lg:pt-24 pb-12 flex-1 flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center w-full">
+      {/* 2. Main Hero Slide Content: 70% Slider + 30% Dual Mini-Banners */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 pt-10 sm:pt-14 lg:pt-16 pb-10 flex-1 flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch w-full">
           
-          {/* Left Column: Narrative, Typography & CTAs */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Left / Center: 68% Slider Area */}
+          <div className="lg:col-span-8 flex flex-col justify-center space-y-6">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentSlide.id}
-                initial={{ opacity: 0, y: 25 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
                 className="space-y-5"
               >
                 {/* Badge Tag */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-widest bg-gradient-to-r from-[#c9a84c]/20 to-amber-500/20 text-[#e5c158] border border-[#c9a84c]/40 backdrop-blur-md shadow-sm">
-                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-[#c9a84c]" />
+                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-blue-600/30 text-blue-200 border border-blue-400/40 backdrop-blur-md shadow-sm">
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse text-amber-400" />
                     {currentSlide.badgeText || t.defaultBadge}
                   </span>
 
@@ -272,26 +301,26 @@ export function HeroSlider() {
 
                 {/* Subtitle */}
                 {currentSlide.subtitle && (
-                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-[#c9a84c] font-bold">
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-amber-400 font-bold">
                     {currentSlide.subtitle}
                   </p>
                 )}
 
                 {/* Big Bold Headline */}
-                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] text-white font-['Outfit',sans-serif]">
                   {currentSlide.title}
                 </h1>
 
                 {/* Description */}
-                <p className="text-gray-300 text-sm sm:text-base lg:text-lg leading-relaxed max-w-2xl">
+                <p className="text-gray-300 text-sm sm:text-base leading-relaxed max-w-2xl line-clamp-3">
                   {currentSlide.description}
                 </p>
 
-                {/* CTA Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-3">
+                {/* CTA Action Buttons with Gradient & Hover Lift */}
+                <div className="flex flex-col sm:flex-row gap-3.5 pt-2">
                   <LocaleLink
                     href={currentSlide.ctaLink}
-                    className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-gradient-to-r from-[#c9a84c] via-[#d4b55e] to-[#c9a84c] text-primary-950 font-black text-sm uppercase tracking-wider shadow-gold hover:shadow-gold-lg hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 group"
+                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#0055A4] via-[#0066c0] to-[#0055A4] text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-1 active:translate-y-0 transition-all duration-200 group border border-blue-400/30"
                   >
                     <span>{currentSlide.ctaText}</span>
                     <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
@@ -300,7 +329,7 @@ export function HeroSlider() {
                   {currentSlide.secondaryCtaText && (
                     <LocaleLink
                       href={currentSlide.secondaryCtaLink || '/wholesale'}
-                      className="inline-flex items-center justify-center px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-sm uppercase tracking-wider backdrop-blur-md hover:border-white/40 transition-all duration-200"
+                      className="inline-flex items-center justify-center px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs sm:text-sm uppercase tracking-wider backdrop-blur-md hover:border-white/40 hover:-translate-y-0.5 transition-all duration-200"
                     >
                       <span>{currentSlide.secondaryCtaText}</span>
                     </LocaleLink>
@@ -310,68 +339,75 @@ export function HeroSlider() {
             </AnimatePresence>
           </div>
 
-          {/* Right Column: Floating 3D Product & Spec Card */}
-          <div className="lg:col-span-5 relative hidden lg:block">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentSlide.id}
-                initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="relative"
-              >
-                {/* Floating Glassmorphism Spec Container */}
-                <div className="relative rounded-3xl bg-gradient-to-br from-white/15 via-white/5 to-white/10 p-4 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden group">
-                  <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-gray-950">
-                    <img
-                      src={currentSlide.productImageUrl || currentSlide.imageUrl}
-                      alt={currentSlide.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/90 via-transparent to-transparent" />
+          {/* Right Column: Two Stacked Mini-Banners with Glassmorphism Overlay */}
+          <div className="lg:col-span-4 hidden lg:flex flex-col gap-4 justify-between">
+            {/* Top Mini-Banner: Express Direct Factory Sourcing RFQ */}
+            <LocaleLink
+              href="/wholesale"
+              className="group relative rounded-3xl bg-black/40 backdrop-blur-md p-5 border-l-4 border-l-blue-500 border-t border-r border-b border-white/15 hover:border-blue-400/60 shadow-xl overflow-hidden transition-all duration-300 flex flex-col justify-between flex-1 hover:-translate-y-1"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-blue-500/20 transition-all" />
+              
+              <div className="space-y-2 relative z-10">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-extrabold uppercase">
+                  <SendHorizontal className="w-3 h-3 text-blue-400" />
+                  <span>B2B Fast Sourcing</span>
+                </div>
+                <h3 className="text-base font-black text-white group-hover:text-blue-300 transition-colors leading-snug">
+                  {t.promoTopTitle}
+                </h3>
+                <p className="text-xs text-gray-300 line-clamp-2">
+                  {t.promoTopSub}
+                </p>
+              </div>
 
-                    {/* Top Right Spec Tag */}
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 text-[11px] font-bold text-[#e5c158] flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5 text-amber-400" />
-                      {t.factoryStock}
-                    </div>
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-blue-300 group-hover:text-white transition-colors">
+                <span>{t.promoTopCta}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </LocaleLink>
 
-                    {/* Bottom Product Info */}
-                    <div className="absolute bottom-4 left-4 right-4 space-y-1">
-                      <div className="text-xs text-[#c9a84c] font-bold uppercase tracking-wider">
-                        {t.wholesaleRetail}
-                      </div>
-                      <div className="text-sm font-bold text-white truncate">
-                        {t.subheading}
-                      </div>
-                    </div>
+            {/* Bottom Mini-Banner: Flash Deals with Live Countdown */}
+            <LocaleLink
+              href="/products?onSale=true"
+              className="group relative rounded-3xl bg-black/40 backdrop-blur-md p-5 border-l-4 border-l-[#DC2626] border-t border-r border-b border-white/15 hover:border-red-500/60 shadow-xl overflow-hidden transition-all duration-300 flex flex-col justify-between flex-1 hover:-translate-y-1"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-red-500/20 transition-all" />
+              
+              <div className="space-y-2 relative z-10">
+                <div className="flex items-center justify-between">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/25 border border-red-500/40 text-red-200 text-[10px] font-extrabold uppercase">
+                    <Tag className="w-3 h-3 text-red-400" />
+                    <span>SUPER PRICE</span>
                   </div>
-
-                  {/* Spec Chips Bar */}
-                  <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/10 text-center">
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                      <div className="text-[10px] text-gray-400 font-medium">{t.moq}</div>
-                      <div className="text-xs font-bold text-white mt-0.5">{t.moqUnits}</div>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                      <div className="text-[10px] text-gray-400 font-medium">{t.clearance}</div>
-                      <div className="text-xs font-bold text-[#e5c158] mt-0.5">{t.clearanceVal}</div>
-                    </div>
-                    <div className="p-2 rounded-xl bg-white/5 border border-white/10">
-                      <div className="text-[10px] text-gray-400 font-medium">{t.dispatch}</div>
-                      <div className="text-xs font-bold text-emerald-400 mt-0.5">{t.dispatchVal}</div>
-                    </div>
+                  
+                  {/* Live Countdown Clock */}
+                  <div className="flex items-center gap-1 text-[11px] text-amber-300 font-mono font-bold bg-black/50 px-2 py-0.5 rounded-md border border-amber-400/20">
+                    <Clock className="w-3 h-3 text-amber-400" />
+                    <span>{String(countdown.hours).padStart(2, '0')}:{String(countdown.minutes).padStart(2, '0')}:{String(countdown.seconds).padStart(2, '0')}</span>
                   </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+
+                <h3 className="text-base font-black text-white group-hover:text-amber-300 transition-colors leading-snug">
+                  {t.promoBottomTitle}
+                </h3>
+                <p className="text-xs text-gray-300 line-clamp-2">
+                  {t.promoBottomSub}
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs font-bold text-amber-300 group-hover:text-white transition-colors">
+                <span>{t.promoBottomCta}</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </LocaleLink>
           </div>
+
         </div>
       </div>
 
       {/* 3. Bottom Live Inventory Metrics Counter & Slide Navigation Bar */}
-      <div className="relative z-10 border-t border-white/10 bg-[#0a1628]/80 backdrop-blur-md py-4">
+      <div className="relative z-10 border-t border-white/10 bg-[#0a1628]/85 backdrop-blur-md py-3.5">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
           
           {/* Live Platform Statistics */}
@@ -379,23 +415,23 @@ export function HeroSlider() {
             <div className="flex items-center gap-2.5">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <div>
-                <div className="text-base font-extrabold text-white">10,000+</div>
+                <div className="text-sm sm:text-base font-extrabold text-white">10,000+</div>
                 <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{t.statSkus}</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <div className="w-2 h-2 rounded-full bg-[#c9a84c]" />
-              <div>
-                <div className="text-base font-extrabold text-white">2,500+</div>
-                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{t.statFactories}</div>
               </div>
             </div>
 
             <div className="flex items-center gap-2.5">
               <div className="w-2 h-2 rounded-full bg-blue-400" />
               <div>
-                <div className="text-base font-extrabold text-white">99.7%</div>
+                <div className="text-sm sm:text-base font-extrabold text-white">2,500+</div>
+                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{t.statFactories}</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-amber-400" />
+              <div>
+                <div className="text-sm sm:text-base font-extrabold text-white">99.7%</div>
                 <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{t.statPassRate}</div>
               </div>
             </div>
@@ -403,7 +439,7 @@ export function HeroSlider() {
             <div className="flex items-center gap-2.5">
               <div className="w-2 h-2 rounded-full bg-purple-400" />
               <div>
-                <div className="text-base font-extrabold text-white">180+</div>
+                <div className="text-sm sm:text-base font-extrabold text-white">180+</div>
                 <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">{t.statPorts}</div>
               </div>
             </div>
@@ -412,7 +448,7 @@ export function HeroSlider() {
           {/* Slide Indicators & Controls */}
           {slides.length > 1 && (
             <div className="flex items-center gap-3 self-end md:self-auto">
-              <span className="text-xs font-mono font-bold text-[#c9a84c]">
+              <span className="text-xs font-mono font-bold text-blue-300">
                 0{currentIndex + 1} <span className="text-gray-500">/ 0{slides.length}</span>
               </span>
 
@@ -422,8 +458,8 @@ export function HeroSlider() {
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
                     className={cn(
-                      'h-1.5 rounded-full transition-all duration-300',
-                      idx === currentIndex ? 'w-8 bg-[#c9a84c]' : 'w-2 bg-white/20 hover:bg-white/40'
+                      'h-1.5 rounded-full transition-all duration-300 cursor-pointer',
+                      idx === currentIndex ? 'w-8 bg-[#0055A4]' : 'w-2 bg-white/20 hover:bg-white/40'
                     )}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
@@ -433,14 +469,14 @@ export function HeroSlider() {
               <div className="flex items-center gap-1 ml-2">
                 <button
                   onClick={() => setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1))}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
                   aria-label="Previous slide"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setCurrentIndex((prev) => (prev + 1) % slides.length)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+                  className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
                   aria-label="Next slide"
                 >
                   <ChevronRight className="w-4 h-4" />

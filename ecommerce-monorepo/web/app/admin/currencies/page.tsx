@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { DollarSign, TrendingUp, RefreshCw, Plus, Edit2, Save, X, Calendar, History, Check, AlertCircle, Download, Zap, Trash2 } from 'lucide-react'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 interface Currency {
   id: string
@@ -29,6 +30,7 @@ interface ExchangeRateHistory {
 }
 
 export default function CurrenciesPage() {
+  const { dict, locale } = useAdminLocale()
   const [currencies, setCurrencies] = useState<Currency[]>([])
   const [history, setHistory] = useState<ExchangeRateHistory[]>([])
   const [loading, setLoading] = useState(true)
@@ -323,7 +325,7 @@ export default function CurrenciesPage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
-          <p className="text-sm text-gray-500">Loading currencies...</p>
+          <p className="text-sm text-gray-500">{dict.common.loading}</p>
         </div>
       </div>
     )
@@ -334,19 +336,19 @@ export default function CurrenciesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Currency Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{dict.currencies.title}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Manage exchange rates and currency settings
+            {dict.currencies.subtitle}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleAdd}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            title="Add new currency"
+            title={dict.common.add}
           >
             <Plus size={18} />
-            <span>Add Currency</span>
+            <span>{dict.currencies.addCurrency}</span>
           </button>
           {apiConfigured && (
             <button
@@ -358,12 +360,12 @@ export default function CurrenciesPage() {
               {syncing ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Syncing...</span>
+                  <span>{dict.currencies.syncing}</span>
                 </>
               ) : (
                 <>
                   <Zap size={18} />
-                  <span>Sync Rates</span>
+                  <span>{dict.currencies.syncRates}</span>
                 </>
               )}
             </button>
@@ -376,7 +378,7 @@ export default function CurrenciesPage() {
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <RefreshCw size={18} />
-            <span>Refresh</span>
+            <span>{dict.common.refresh}</span>
           </button>
         </div>
       </div>
@@ -396,7 +398,7 @@ export default function CurrenciesPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Total Currencies</p>
+              <p className="text-gray-600 text-sm font-medium">{dict.currencies.totalCurrencies}</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{currencies.length}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -408,7 +410,7 @@ export default function CurrenciesPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Active Currencies</p>
+              <p className="text-gray-600 text-sm font-medium">{dict.currencies.activeCurrencies}</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{currencies.filter(c => c.isActive).length}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -420,7 +422,7 @@ export default function CurrenciesPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Base Currency</p>
+              <p className="text-gray-600 text-sm font-medium">{dict.currencies.baseCurrency}</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{baseCurrency?.code || 'N/A'}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -432,7 +434,7 @@ export default function CurrenciesPage() {
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Rate Updates</p>
+              <p className="text-gray-600 text-sm font-medium">{dict.currencies.rateUpdates}</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{history.length}</p>
             </div>
             <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
@@ -455,7 +457,7 @@ export default function CurrenciesPage() {
           >
             <div className="flex items-center gap-2">
               <DollarSign size={18} />
-              <span>Currencies</span>
+              <span>{dict.currencies.title}</span>
             </div>
           </button>
           <button
@@ -468,7 +470,7 @@ export default function CurrenciesPage() {
           >
             <div className="flex items-center gap-2">
               <History size={18} />
-              <span>Exchange Rate History</span>
+              <span>{dict.currencies.rateHistory}</span>
             </div>
           </button>
         </nav>
@@ -481,13 +483,13 @@ export default function CurrenciesPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Currency</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Code</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Symbol</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Exchange Rate</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Last Updated</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                  <th className="text-right px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.countries.currency}</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.currencies.code}</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.currencies.symbol}</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.currencies.rate}</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.common.updatedAt}</th>
+                  <th className="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.common.status}</th>
+                  <th className="text-right px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">{dict.common.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -734,7 +736,7 @@ export default function CurrenciesPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Add New Currency</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{dict.currencies.addCurrency}</h2>
               <button
                 onClick={() => setShowAddDialog(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -746,22 +748,21 @@ export default function CurrenciesPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Currency Code <span className="text-red-500">*</span>
+                  {dict.currencies.code} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
+                  maxLength={3}
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase"
                   placeholder="e.g., EUR"
-                  maxLength={3}
                 />
-                <p className="text-xs text-gray-500 mt-1">3-letter ISO currency code</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Currency Name <span className="text-red-500">*</span>
+                  {dict.currencies.currencyName} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -774,7 +775,7 @@ export default function CurrenciesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Symbol <span className="text-red-500">*</span>
+                  {dict.currencies.symbol} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -787,21 +788,21 @@ export default function CurrenciesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Symbol Position
+                  {dict.currencies.symbolPosition}
                 </label>
                 <select
                   value={formData.symbolPosition}
                   onChange={(e) => setFormData({ ...formData, symbolPosition: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="before">Before (e.g., $100)</option>
-                  <option value="after">After (e.g., 100€)</option>
+                  <option value="before">{dict.currencies.beforeAmount}</option>
+                  <option value="after">{dict.currencies.afterAmount}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Decimal Places
+                  {dict.currencies.decimalPlaces}
                 </label>
                 <input
                   type="number"
@@ -815,7 +816,7 @@ export default function CurrenciesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Exchange Rate to {baseCurrency?.code}
+                  {dict.currencies.exchangeRateTo.replace('{base}', baseCurrency?.code || 'USD')}
                 </label>
                 <input
                   type="number"
@@ -839,7 +840,7 @@ export default function CurrenciesPage() {
                   className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
                 <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
-                  Active
+                  {dict.common.active}
                 </label>
               </div>
             </div>
@@ -850,7 +851,7 @@ export default function CurrenciesPage() {
                 disabled={saving}
                 className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                Cancel
+                {dict.common.cancel}
               </button>
               <button
                 onClick={handleSaveAdd}
@@ -860,12 +861,12 @@ export default function CurrenciesPage() {
                 {saving ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Adding...</span>
+                    <span>{dict.common.saving}</span>
                   </>
                 ) : (
                   <>
                     <Plus size={18} />
-                    <span>Add Currency</span>
+                    <span>{dict.currencies.addCurrency}</span>
                   </>
                 )}
               </button>
@@ -879,7 +880,7 @@ export default function CurrenciesPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Edit Currency</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{dict.currencies.editCurrency}</h2>
               <button
                 onClick={() => setShowEditDialog(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -891,7 +892,7 @@ export default function CurrenciesPage() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Currency Code
+                  {dict.currencies.code}
                 </label>
                 <input
                   type="text"
@@ -899,12 +900,12 @@ export default function CurrenciesPage() {
                   disabled
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-500 mt-1">Currency code cannot be changed</p>
+                <p className="text-xs text-gray-500 mt-1">{dict.currencies.codeCannotBeChanged}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Currency Name <span className="text-red-500">*</span>
+                  {dict.currencies.currencyName} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -917,7 +918,7 @@ export default function CurrenciesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Symbol <span className="text-red-500">*</span>
+                  {dict.currencies.symbol} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -930,21 +931,21 @@ export default function CurrenciesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Symbol Position
+                  {dict.currencies.symbolPosition}
                 </label>
                 <select
                   value={formData.symbolPosition}
                   onChange={(e) => setFormData({ ...formData, symbolPosition: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
-                  <option value="before">Before (e.g., $100)</option>
-                  <option value="after">After (e.g., 100€)</option>
+                  <option value="before">{dict.currencies.beforeAmount}</option>
+                  <option value="after">{dict.currencies.afterAmount}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Decimal Places
+                  {dict.currencies.decimalPlaces}
                 </label>
                 <input
                   type="number"
@@ -959,7 +960,7 @@ export default function CurrenciesPage() {
               {!selectedCurrency.isBase && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Exchange Rate to {baseCurrency?.code}
+                    {dict.currencies.exchangeRateTo.replace('{base}', baseCurrency?.code || 'USD')}
                   </label>
                   <input
                     type="number"
@@ -978,7 +979,7 @@ export default function CurrenciesPage() {
               {selectedCurrency.isBase && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-sm text-blue-800">
-                    <strong>Base Currency:</strong> Exchange rate is always 1.0 and cannot be changed.
+                    <strong>{dict.currencies.baseCurrency}:</strong> Exchange rate is always 1.0 and cannot be changed.
                   </p>
                 </div>
               )}
@@ -992,7 +993,7 @@ export default function CurrenciesPage() {
                   className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
                 />
                 <label htmlFor="editIsActive" className="text-sm font-medium text-gray-700">
-                  Active
+                  {dict.common.active}
                 </label>
               </div>
             </div>
@@ -1003,7 +1004,7 @@ export default function CurrenciesPage() {
                 disabled={saving}
                 className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                Cancel
+                {dict.common.cancel}
               </button>
               <button
                 onClick={handleSaveEdit}
@@ -1013,12 +1014,12 @@ export default function CurrenciesPage() {
                 {saving ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Saving...</span>
+                    <span>{dict.common.saving}</span>
                   </>
                 ) : (
                   <>
                     <Save size={18} />
-                    <span>Save Changes</span>
+                    <span>{dict.common.save}</span>
                   </>
                 )}
               </button>
@@ -1036,13 +1037,13 @@ export default function CurrenciesPage() {
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                   <AlertCircle size={20} className="text-red-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">Delete Currency</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{dict.currencies.deleteCurrency}</h2>
               </div>
             </div>
             
             <div className="p-6 space-y-4">
               <p className="text-gray-700">
-                Are you sure you want to delete <strong>{selectedCurrency.name} ({selectedCurrency.code})</strong>?
+                {dict.currencies.deleteConfirm.replace('{code}', `${selectedCurrency.name} (${selectedCurrency.code})`)}
               </p>
 
               {selectedCurrency.isBase && (
@@ -1083,7 +1084,7 @@ export default function CurrenciesPage() {
                 disabled={saving}
                 className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
               >
-                Cancel
+                {dict.common.cancel}
               </button>
               {!selectedCurrency.isBase && (
                 <button
@@ -1099,7 +1100,7 @@ export default function CurrenciesPage() {
                   ) : (
                     <>
                       <Trash2 size={18} />
-                      <span>Delete Currency</span>
+                      <span>{dict.currencies.deleteCurrency}</span>
                     </>
                   )}
                 </button>

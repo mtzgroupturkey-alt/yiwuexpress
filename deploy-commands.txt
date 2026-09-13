@@ -1,0 +1,30 @@
+DEPLOYMENT COMMANDS FOR SITE TAGLINE FEATURE
+=============================================
+
+SSH into the server first:
+  ssh djdn@39.175.57.2 -p 22
+
+Then run these commands on the server:
+  cd /var/www/dromkok/ecommerce-monorepo/web
+  git pull origin production
+  npm run db:generate
+  npm run db:push
+  npm run build
+  pm2 restart dromkok-web
+  pm2 logs dromkok-web --lines 20
+
+WHAT EACH COMMAND DOES:
+-----------------------
+1. git pull          - Downloads latest code with siteTagline changes
+2. db:generate       - Regenerates Prisma client with new schema
+3. db:push           - Adds siteTagline column to database
+4. build             - Builds Next.js with updated schema
+5. pm2 restart       - Restarts the production server
+6. pm2 logs          - Shows logs to verify it worked
+
+AFTER DEPLOYMENT:
+-----------------
+Visit: https://dromkok.com/admin/settings/company
+Add your tagline in the new "Site Tagline / Subtitle" field
+Save changes
+Check browser tab titles show: "Page | Your Tagline"

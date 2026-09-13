@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ColorSelector } from '@/components/ui/ColorSelector'
 import { ColorSwatch } from '@/components/ui/ColorSwatch'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface ProductAttributesSectionProps {
   categoryId: string | null | undefined
@@ -18,6 +19,7 @@ export function ProductAttributesSection({
   initialValues = {},
   onChange,
 }: ProductAttributesSectionProps) {
+  const { dict } = useAdminLocale()
   const [categoryAttributes, setCategoryAttributes] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>(initialValues)
   const [loading, setLoading] = useState(false)
@@ -294,8 +296,8 @@ export function ProductAttributesSection({
   if (loading) {
     return (
       <Card>
-        <CardHeader><CardTitle>Product Attributes</CardTitle></CardHeader>
-        <CardContent><p className="text-sm text-gray-500 animate-pulse">Loading attributes…</p></CardContent>
+        <CardHeader><CardTitle>{dict.products.productAttributes}</CardTitle></CardHeader>
+        <CardContent><p className="text-sm text-gray-500 animate-pulse">{dict.products.loadingAttributes}</p></CardContent>
       </Card>
     )
   }
@@ -304,8 +306,8 @@ export function ProductAttributesSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Product Attributes</CardTitle>
-        <p className="text-sm text-gray-600">Category-specific attributes for this product</p>
+        <CardTitle>{dict.products.productAttributes}</CardTitle>
+        <p className="text-sm text-gray-600">{dict.products.categoryAttributesSubtitle}</p>
       </CardHeader>
       <CardContent className="space-y-5">
         {categoryAttributes.map(attribute => (

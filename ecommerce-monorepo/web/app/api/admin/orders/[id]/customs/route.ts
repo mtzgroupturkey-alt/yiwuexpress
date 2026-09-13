@@ -4,46 +4,50 @@ import { prisma } from '@/lib/db'
 import jwt from 'jsonwebtoken'
 import PDFDocument from 'pdfkit'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 
-// Verify admin authentication
+// Verify admin authentication (supports Bearer token or httpOnly cookie)
 async function verifyAdmin(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return null
-    }
+    const token = getTokenFromRequest(request)
+    if (!token) return null
 
-    const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
-    
+    const payload = verifyToken(token)
+    if (!payload?.userId) return null
+
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: payload.userId },
       select: { id: true, role: true }
     })
 
-    if (user?.role !== 'ADMIN') {
-      return null
-    }
-
+    if (user?.role !== 'ADMIN') return null
     return user
   } catch (error) {
     return null
   }
 }
 
-// POST /api/admin/orders/[id]/customs - Generate customs documents
+// GET & POST /api/admin/orders/[id]/customs - Generate customs PDF invoice
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return generateCustomsInvoice(request, params.id)
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  return generateCustomsInvoice(request, params.id)
+}
+
+async function generateCustomsInvoice(request: NextRequest, id: string) {
   try {
     const admin = await verifyAdmin(request)
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { id } = params
 
     // Fetch order with all details
     const order = await prisma.order.findUnique({

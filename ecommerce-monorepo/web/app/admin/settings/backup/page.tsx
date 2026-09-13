@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { Database, Download, Upload, Archive, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 export default function BackupPage() {
+  const { dict, locale } = useAdminLocale()
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -130,8 +132,8 @@ export default function BackupPage() {
             <Database size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Backup & Export</h2>
-            <p className="text-sm text-gray-500">Manage data backups and export options</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.backup}</h2>
+            <p className="text-sm text-gray-500">{dict.settings.subtitle}</p>
           </div>
         </div>
       </div>

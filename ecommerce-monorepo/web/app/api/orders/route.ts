@@ -1,16 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { logger } from '@/lib/logger'
 
-const prisma = new PrismaClient()
-
 // GET /api/orders - Get user's orders
 export async function GET(request: Request) {
   try {
-    // IDOR Protection: Get userId from authenticated token, not request
     const user = await requireAuth(request)
     
     const { searchParams } = new URL(request.url)
@@ -69,12 +66,10 @@ export async function GET(request: Request) {
 // POST /api/orders - Create a new order
 export async function POST(request: Request) {
   try {
-    // IDOR Protection: Get userId from authenticated token, not request body
     const user = await requireAuth(request)
     
     const body = await request.json()
 
-    // Validate required fields (userId no longer required from request)
     const requiredFields = [
       'customerName',
       'customerEmail',
@@ -115,16 +110,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // Generate order number
-    const orderNumber = `YWE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
-
-    // Calculate totals
+    // Pre-validate products and build order items BEFORE transaction
     let subtotal = 0
-    const orderItems = []
+    const orderItems: any[] = []
+    const stockDecrements: Array<{ productId: string; variantId?: string; quantity: number; productName: string }> = []
 
     for (const item of body.items) {
       const product = await prisma.product.findUnique({
-        where: { id: item.productId }
+        where: { id: item.productId },
+        include: { variants: { where: item.variantId ? { id: item.variantId } : undefined } }
       })
 
       if (!product || !product.isActive) {
@@ -141,11 +135,24 @@ export async function POST(request: Request) {
         )
       }
 
+      // Check variant stock if variant specified
+      if (item.variantId) {
+        const variant = product.variants.find((v: any) => v.id === item.variantId)
+        if (variant && variant.stock < item.quantity) {
+          return NextResponse.json(
+            { success: false, error: `Insufficient variant stock for ${product.name}` },
+            { status: 400 }
+          )
+        }
+      }
+
       const itemTotal = product.price * item.quantity
       subtotal += itemTotal
 
       orderItems.push({
         productId: product.id,
+        variantId: item.variantId || null,
+        variantAttributes: item.variantAttributes || null,
         productName: product.name,
         productSku: product.sku,
         productImage: product.thumbnail,
@@ -153,86 +160,131 @@ export async function POST(request: Request) {
         price: product.price,
         total: itemTotal
       })
+
+      stockDecrements.push({
+        productId: product.id,
+        variantId: item.variantId || undefined,
+        quantity: item.quantity,
+        productName: product.name,
+      })
     }
 
     const shippingFee = body.shippingFee || 0
     const tax = body.tax || 0
     const discount = body.discount || 0
     const total = subtotal + shippingFee + tax - discount
+    const orderNumber = `YWE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
 
-    // Create order with items (use userId from token)
-    const order = await prisma.order.create({
-      data: {
-        orderNumber,
-        userId: user.id,
-        customerName: body.customerName,
-        customerEmail: body.customerEmail,
-        customerPhone: body.customerPhone,
-        companyName: body.companyName,
-        shippingAddress: body.shippingAddress,
-        shippingCity: body.shippingCity,
-        shippingState: body.shippingState,
-        shippingPostalCode: body.shippingPostalCode,
-        shippingCountryId: body.shippingCountryId,
-        billingAddress: body.billingAddress,
-        billingCity: body.billingCity,
-        billingState: body.billingState,
-        billingPostalCode: body.billingPostalCode,
-        billingCountry: body.billingCountry,
-        status: 'PENDING',
-        paymentMethod: body.paymentMethod,
-        paymentStatus: 'UNPAID',
-        subtotal,
-        shippingFee,
-        tax,
-        discount,
-        total,
-        customerNotes: body.customerNotes,
-        trackingHistory: [
-          {
-            status: 'PENDING',
-            notes: 'Order created',
-            timestamp: new Date().toISOString(),
-            location: 'China'
-          }
-        ],
-        items: {
-          create: orderItems
-        }
-      },
-      include: {
-        items: {
-          include: {
-            product: true
+    // ── ATOMIC TRANSACTION ──────────────────────────────────────────────────
+    // Order creation + stock decrements happen together. If any decrement fails
+    // (e.g. concurrent order already took the last unit) the entire transaction
+    // rolls back and no order is persisted.
+    const order = await prisma.$transaction(async (tx) => {
+      // 1. Create order
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber,
+          userId: user.id,
+          customerName: body.customerName,
+          customerEmail: body.customerEmail,
+          customerPhone: body.customerPhone,
+          companyName: body.companyName,
+          shippingAddress: body.shippingAddress,
+          shippingCity: body.shippingCity,
+          shippingState: body.shippingState,
+          shippingPostalCode: body.shippingPostalCode,
+          shippingCountryId: body.shippingCountryId,
+          billingAddress: body.billingAddress,
+          billingCity: body.billingCity,
+          billingState: body.billingState,
+          billingPostalCode: body.billingPostalCode,
+          billingCountry: body.billingCountry,
+          status: 'PENDING',
+          mode: (body.mode ? body.mode.toUpperCase() : 'RETAIL'),
+          paymentMethod: body.paymentMethod,
+          paymentStatus: 'UNPAID',
+          subtotal,
+          shippingFee,
+          tax,
+          discount,
+          total,
+          customerNotes: body.customerNotes,
+          trackingHistory: [
+            {
+              status: 'PENDING',
+              notes: 'Order created',
+              timestamp: new Date().toISOString(),
+              location: 'China'
+            }
+          ],
+          items: {
+            create: orderItems
           }
         },
-        shippingCountry: true
-      }
-    })
-
-    // Update product stock
-    for (const item of body.items) {
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: {
-            decrement: item.quantity
-          }
+        include: {
+          items: {
+            include: {
+              product: true
+            }
+          },
+          shippingCountry: true
         }
       })
-    }
 
-    // Clear user's cart if exists (use userId from token)
-    const cart = await prisma.cart.findUnique({
-      where: { userId: user.id }
-    })
-    if (cart) {
-      await prisma.cartItem.deleteMany({
-        where: { cartId: cart.id }
+      // 2. Decrement Product.stock for each item (inside transaction)
+      for (const dec of stockDecrements) {
+        const updated = await tx.product.updateMany({
+          where: {
+            id: dec.productId,
+            stock: { gte: dec.quantity } // guard: only decrement if enough stock remains
+          },
+          data: { stock: { decrement: dec.quantity } }
+        })
+
+        if (updated.count === 0) {
+          throw new Error(`Insufficient stock for ${dec.productName} (concurrent order conflict)`)
+        }
+      }
+
+      // 3. Decrement ProductVariant.stock for variant items (inside transaction)
+      for (const dec of stockDecrements) {
+        if (!dec.variantId) continue
+        const updated = await tx.productVariant.updateMany({
+          where: {
+            id: dec.variantId,
+            stock: { gte: dec.quantity }
+          },
+          data: { stock: { decrement: dec.quantity } }
+        })
+
+        if (updated.count === 0) {
+          throw new Error(`Insufficient variant stock for ${dec.productName} (concurrent order conflict)`)
+        }
+      }
+
+      // 4. Record stock movements for audit trail
+      await tx.stockMovement.createMany({
+        data: stockDecrements.map((dec) => ({
+          productId: dec.productId,
+          variantId: dec.variantId || null,
+          type: 'ORDER_DECREMENT',
+          quantity: -dec.quantity,
+          reference: newOrder.orderNumber,
+          notes: `Stock decremented for order ${newOrder.orderNumber}`,
+        }))
       })
+
+      return newOrder
+    })
+    // ── END TRANSACTION ─────────────────────────────────────────────────────
+
+    // Clear user's cart if exists
+    const cart = await prisma.cart.findUnique({ where: { userId: user.id } })
+    if (cart) {
+      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
     }
 
-    // Send order confirmation email (non-blocking)
+    // Non-blocking side effects
     sendOrderConfirmationEmail(order.customerEmail, {
       customerName: order.customerName,
       orderNumber: order.orderNumber,
@@ -241,7 +293,6 @@ export async function POST(request: Request) {
       orderId: order.id,
     }).catch((err) => logger.error('Failed to send order confirmation email', err))
 
-    // Create notification for user
     prisma.notification.create({
       data: {
         userId: user.id,
@@ -252,7 +303,6 @@ export async function POST(request: Request) {
       },
     }).catch((err) => logger.error('Failed to create notification', err))
 
-    // Log email in EmailLog table (non-blocking)
     prisma.emailLog.create({
       data: {
         orderId: order.id,
@@ -277,7 +327,7 @@ export async function POST(request: Request) {
     }
     console.error('Error creating order:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to create order' },
+      { success: false, error: error instanceof Error ? error.message : 'Failed to create order' },
       { status: 500 }
     )
   }

@@ -1,8 +1,11 @@
 'use client'
 
 import { Key, Code, Webhook, Shield, Globe, Settings } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 export default function ApiSettingsPage() {
+  const { dict } = useAdminLocale()
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -12,8 +15,8 @@ export default function ApiSettingsPage() {
             <Key size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">API Settings</h2>
-            <p className="text-sm text-gray-500">Manage API keys, webhooks, and integrations</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.apiSettings}</h2>
+            <p className="text-sm text-gray-500">{dict.settings.apiSettingsSubtitle}</p>
           </div>
         </div>
       </div>
@@ -23,16 +26,16 @@ export default function ApiSettingsPage() {
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
           <Key size={32} className="text-purple-500" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">API Management</h3>
-        <p className="text-gray-500 mb-6">API key management and third-party integrations will be available here.</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{dict.settings.apiManagement}</h3>
+        <p className="text-gray-500 mb-6">{dict.settings.apiManagementDesc}</p>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-lg mx-auto">
           {[
-            { icon: Code, label: 'API Keys' },
-            { icon: Webhook, label: 'Webhooks' },
-            { icon: Shield, label: 'Rate Limiting' },
-            { icon: Globe, label: 'CORS Settings' },
-            { icon: Settings, label: 'Integrations' },
+            { icon: Code, label: dict.settings.apiKeys },
+            { icon: Webhook, label: dict.settings.webhooks },
+            { icon: Shield, label: dict.settings.rateLimiting },
+            { icon: Globe, label: dict.settings.corsSettings },
+            { icon: Settings, label: dict.settings.integrations },
           ].map(({ icon: Icon, label }) => (
             <div key={label} className="p-3 rounded-xl bg-gray-50 border border-gray-100">
               <Icon size={20} className="text-gray-400 mx-auto mb-1" />

@@ -9,6 +9,8 @@ import { Check, Trash2, Star, MessageSquareQuote, ShieldAlert } from 'lucide-rea
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { localizeTestimonial } from '@/lib/utils/localize'
 
 interface TestimonialTranslationRow {
   quote: string
@@ -43,6 +45,7 @@ function emptyTestimonialTranslation(): TestimonialTranslationRow {
 
 export default function AdminTestimonialsPage() {
   const router = useRouter()
+  const { dict, locale } = useAdminLocale()
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
   const [actioningId, setActioningId] = useState<string | null>(null)
@@ -173,16 +176,16 @@ export default function AdminTestimonialsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <MessageSquareQuote className="w-8 h-8 text-primary-600" />
-            Testimonials Moderation
+            {dict.testimonials.title}
           </h1>
-          <p className="text-gray-500 mt-1">Manage and feature customer testimonials</p>
+          <p className="text-gray-500 mt-1">{dict.testimonials.subtitle}</p>
         </div>
       </div>
 
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto" />
-          <p className="text-gray-500 mt-4">Loading testimonials...</p>
+          <p className="text-gray-500 mt-4">{dict.common.loading}</p>
         </div>
       ) : error ? (
         <div className="text-center text-red-500 py-12">{error}</div>
@@ -190,8 +193,8 @@ export default function AdminTestimonialsPage() {
         <Card className="text-center py-12 border border-dashed border-gray-300">
           <CardContent>
             <ShieldAlert className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Testimonials Found</h3>
-            <p className="text-gray-500">There are no testimonials available.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{dict.common.noData}</h3>
+            <p className="text-gray-500">{dict.testimonials.subtitle}</p>
           </CardContent>
         </Card>
       ) : (
@@ -334,18 +337,38 @@ export default function AdminTestimonialsPage() {
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-gray-900">Translations (Russian / Chinese)</h3>
                   <AutoTranslateButton
-                    enFields={{
-                      quote: editForm.quote,
-                      role: editForm.role,
-                      company: editForm.company,
+                    allFields={{
+                      en: {
+                        quote: editForm.quote,
+                        role: editForm.role,
+                        company: editForm.company,
+                      },
+                      ru: {
+                        quote: editForm.translations.ru?.quote || '',
+                        role: editForm.translations.ru?.role || '',
+                        company: editForm.translations.ru?.company || '',
+                      },
+                      zh: {
+                        quote: editForm.translations.zh?.quote || '',
+                        role: editForm.translations.zh?.role || '',
+                        company: editForm.translations.zh?.company || '',
+                      },
                     }}
                     onTranslated={(result) => {
                       setEditForm(prev => {
                         const translations = { ...prev.translations }
                         for (const locale of Object.keys(result)) {
-                          translations[locale] = { ...emptyTestimonialTranslation(), ...translations[locale], ...result[locale] }
+                          if (locale === 'ru' || locale === 'zh') {
+                            translations[locale] = { ...emptyTestimonialTranslation(), ...translations[locale], ...result[locale] }
+                          }
                         }
-                        return { ...prev, translations }
+                        return {
+                          ...prev,
+                          quote: result.en?.quote || prev.quote,
+                          role: result.en?.role || prev.role,
+                          company: result.en?.company || prev.company,
+                          translations,
+                        }
                       })
                     }}
                   />

@@ -1,0 +1,223 @@
+# Cargo.toml Template
+
+Workspace dependencies template for Rust backend projects.
+
+```toml
+[workspace]
+resolver = "2"
+members = [
+    "bin/api-server",
+    "lib/domain",
+    "lib/services",
+    "lib/database",
+]
+
+[workspace.dependencies]
+# ====== Internal Crates ======
+domain = { path = "lib/domain" }
+services = { path = "lib/services" }
+database = { path = "lib/database" }
+
+# ====== Async Runtime ======
+tokio = { version = "1", features = ["full"] }
+tokio-stream = "0.1"
+async-trait = "0.1"
+futures = "0.3"
+futures-util = "0.3"
+
+# ====== Web Framework ======
+# poem - Lightweight async web framework
+poem = { version = "3.1", features = [] }
+poem-openapi = { version = "5.1", features = ["swagger-ui"] }
+
+# Alternative: axum
+# axum = { version = "0.7", features = ["macros"] }
+# axum-extra = { version = "0.9", features = ["typed-header"] }
+
+# ====== gRPC ======
+tonic = "0.12"
+tonic-build = "0.12"
+tonic-reflection = "0.12"
+tonic-web = "0.12"
+prost = "0.13"
+
+# ====== Database ======
+# SeaORM - async ORM
+sea-orm = { version = "1.1", features = [
+    "sqlx-postgres",
+    "runtime-tokio-rustls",
+    "macros",
+] }
+sea-orm-migration = "1.1"
+
+# Alternative: SQLx (raw queries)
+# sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono"] }
+
+# ====== Serialization ======
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# ====== Error Handling ======
+thiserror = "2.0"
+anyhow = "1.0"
+
+# ====== Utilities ======
+uuid = { version = "1.11", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+bytes = "1.9"
+indexmap = "2.6"
+parking_lot = "0.11"
+regex = "1.11"
+
+# ====== Configuration ======
+config = "0.14"
+dotenv = "0.15"
+clap = { version = "4.5", features = ["derive", "env"] }
+
+# ====== Logging & Tracing ======
+log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "std"] }
+
+# ====== Telemetry (Optional) ======
+opentelemetry = "0.28"
+opentelemetry-otlp = "0.28"
+opentelemetry_sdk = "0.28"
+tracing-opentelemetry = "0.29"
+
+# ====== Metrics (Optional) ======
+metrics = "0.24"
+metrics-exporter-prometheus = "0.16"
+autometrics = "2.0"
+
+# ====== HTTP Client ======
+reqwest = { version = "0.12", features = ["stream", "json"] }
+
+# ====== Security ======
+rustls = "0.23"
+jsonwebtoken = "9"
+
+# ====== Validation ======
+validator = { version = "0.18", features = ["derive"] }
+
+# ====== Testing ======
+mockall = "0.13"
+test-log = "0.2"
+
+# ====== Derive Macros ======
+derive_more = "1.0"
+num_enum = "0.7"
+```
+
+## Crate-specific Cargo.toml
+
+### lib/domain/Cargo.toml
+
+```toml
+[package]
+name = "domain"
+version = "0.1.0"
+edition = "2021"
+
+# Domain has minimal dependencies
+[dependencies]
+thiserror.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+```
+
+### lib/services/Cargo.toml
+
+```toml
+[package]
+name = "services"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+domain.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
+mockall.workspace = true
+```
+
+### lib/database/Cargo.toml
+
+```toml
+[package]
+name = "database"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+domain.workspace = true
+services.workspace = true
+sea-orm.workspace = true
+sea-orm-migration.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
+```
+
+### bin/api-server/Cargo.toml
+
+```toml
+[package]
+name = "api-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Internal
+domain.workspace = true
+services.workspace = true
+database.workspace = true
+
+# Runtime
+tokio.workspace = true
+
+# Web
+poem.workspace = true
+poem-openapi.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Utilities
+uuid.workspace = true
+chrono.workspace = true
+
+# Config
+clap.workspace = true
+dotenv.workspace = true
+config.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Optional: Metrics
+# metrics.workspace = true
+# metrics-exporter-prometheus.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
+```

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Smart 3D Warehouse Management (Realistic Navigation)</title>
+  <!-- Bootstrap 5 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; box-sizing: border-box; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #0b0f19; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+    #app-container { display: flex; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+    /* ====================================================
+       DESKTOP SIDEBAR STYLES (>= 992px)
+       ==================================================== */
+    #sidebar {
+      width: 420px; min-width: 380px; height: 100%; background: #111827;
+      border-right: 1px solid #1f2937; display: flex; flex-direction: column;
+      z-index: 30; box-shadow: 6px 0 35px rgba(0,0,0,0.7);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-header {
+      padding: 16px 20px; background: #0b0f19; border-bottom: 1px solid #1f2937;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .sidebar-content {
+      flex: 1; overflow-y: auto; padding: 18px; scrollbar-width: thin;
+      scrollbar-color: #374151 #111827;
+    }
+
+    /* 3D Canvas Area */
+    #canvas-wrapper {
+      flex: 1; height: 100%; position: relative; background: #0b0f19; overflow: hidden;
+    }
+    #canvas-container { width: 100%; height: 100%; cursor: grab; }
+    #canvas-container:active { cursor: grabbing; }
+
+    /* Floating View Controls (Desktop) */
+    .viewport-controls {
+      position: absolute; top: 16px; left: 16px; z-index: 20;
+      background: rgba(17, 24, 39, 0.92); backdrop-filter: blur(12px);
+      border: 1px solid #374151; border-radius: 12px; padding: 6px;
+      display: flex; gap: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      max-width: calc(100vw - 32px); overflow-x: auto;
+    }
+    .btn-control {
+      background: #1f2937; color: #cbd5e1; border: 1px solid #374151;
+      padding: 7px 12px; font-size: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+    }
+    .btn-control:hover, .btn-control.active { background: #2563eb; color: #fff; border-color: #3b82f6; }
+
+    /* Product Cards in Sidebar */
+    .sample-item {
+      background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sample-item:hover, .sample-item:active { border-color: #3b82f6; background: rgba(30, 58, 138, 0.35); transform: translateX(2px); }
+    .badge-loc { font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 700; }
+
+    /* Floating Item Detail Card (Desktop) */
+    #item-detail-card {
+      position: absolute; top: 16px; right: 16px; z-index: 25;
+      background: rgba(17, 24, 39, 0.96); backdrop-filter: blur(14px);
+      border: 1px solid #3b82f6; border-radius: 14px; padding: 18px 20px;
+      width: 350px; display: none; box-shadow: 0 16px 40px rgba(0,0,0,0.75);
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    .code-badge {
+      background: #1e3a8a; color: #93c5fd; padding: 4px 9px; border-radius: 6px;
+      font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 700;
+    }
+
+    /* Legend Box */
+    .legend-box {
+      position: absolute; bottom: 16px; right: 16px; z-index: 15;
+      background: rgba(17, 24, 39, 0.88); backdrop-filter: blur(10px);
+      border: 1px solid #374151; border-radius: 12px; padding: 10px 16px;
+      font-size: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+    .legend-indicator { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: middle; }
+
+    /* Mobile Header & Bottom Action Bar */
+    #mobile-header { display: none; }
+    #mobile-bottom-bar { display: none; }
+    #sidebar-backdrop { display: none; }
+
+    /* ====================================================
+       MOBILE & TABLET RESPONSIVE (< 992px)
+       ==================================================== */
+    @media (max-width: 991px) {
+      #app-container { flex-direction: column; }
+
+      #mobile-header {
+        display: flex; align-items: center; justify-content: space-between;
+        height: 58px; background: #0b0f19; border-bottom: 1px solid #1f2937;
+        padding: 0 14px; z-index: 35; position: relative;
+      }
+      .mobile-title {
+        font-size: 14px; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 8px;
+      }
+      .btn-catalog-toggle {
+        background: #2563eb; color: #fff; border: none; padding: 7px 14px;
+        border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+      }
+
+      #sidebar {
+        position: fixed; top: 0; left: 0; width: 85%; max-width: 380px; height: 100%;
+        box-shadow: 8px 0 40px rgba(0,0,0,0.85); transform: translateX(-100%);
+        z-index: 50;
+      }
+      #sidebar.show-drawer { transform: translateX(0); }
+
+      #sidebar-backdrop {
+        display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+        backdrop-filter: blur(4px); z-index: 45; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+      }
+      #sidebar-backdrop.show { opacity: 1; pointer-events: auto; }
+
+      #canvas-wrapper { width: 100vw; height: calc(100vh - 58px); }
+
+      .viewport-controls {
+        top: 10px; left: 10px; right: 10px; padding: 4px; border-radius: 10px;
+        gap: 5px; max-width: calc(100vw - 20px); overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .viewport-controls::-webkit-scrollbar { display: none; }
+      .btn-control { padding: 6px 10px; font-size: 11px; }
+
+      .legend-box { display: none; }
+
+      #item-detail-card {
+        position: fixed; top: auto; bottom: 0; left: 0; right: 0;
+        width: 100%; max-width: 100%; border-radius: 20px 20px 0 0;
+        border: 1px solid #3b82f6; border-bottom: none;
+        padding: 16px 18px 24px 18px; z-index: 40;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.85);
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+      #mobile-bottom-bar {
+        position: absolute; bottom: 12px; left: 12px; right: 12px; z-index: 25;
+        display: flex; gap: 8px; justify-content: center;
+      }
+      .btn-mobile-pill {
+        background: rgba(17, 24, 39, 0.92); border: 1px solid #374151; color: #fff;
+        padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      }
+    }
+  </style>
+
+  <!-- Three.js, Controls & Tween.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+</head>
+<body>
+
+<div id="app-container">
+
+  <!-- Mobile Top Header Bar -->
+  <div id="mobile-header">
+    <div class="mobile-title">
+      <i class="fa fa-warehouse text-primary"></i> 3D Warehouse WMS
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn-catalog-toggle" onclick="openSidebarDrawer()">
+        <i class="fa fa-boxes-stacked"></i> Products List
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer Dimming Backdrop -->
+  <div id="sidebar-backdrop" onclick="closeSidebarDrawer()"></div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <h6 class="mb-0 fw-bold text-white"><i class="fa fa-warehouse text-primary me-2"></i> Inventory & Locations</h6>
+        <small class="text-secondary" style="font-size: 11px;">Select item to navigate realistic route</small>
+      </div>
+      <button type="button" class="btn-close btn-close-white d-lg-none" onclick="closeSidebarDrawer()"></button>
+    </div>
+
+    <div class="sidebar-content">
+      <!-- Search Input Section -->
+      <div class="mb-3">
+        <label class="form-label small text-secondary fw-semibold">Search Barcode, SKU, or Location:</label>
+        <div class="input-group">
+          <input type="text" id="searchInput" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="e.g. R2-03-02, SKF, FL-08" value="R2-03-02">
+          <button class="btn btn-primary btn-sm px-3" onclick="handleSearch()"><i class="fa fa-search"></i></button>
+        </div>
+        <div class="small mt-1 text-info" id="searchFeedback">Tap any item below to view in 3D:</div>
+      </div>
+
+      <!-- Sample Products List -->
+      <div id="sampleList"></div>
+
+      <hr class="border-secondary my-3">
+
+      <!-- Warehouse Addressing Reference -->
+      <div class="bg-dark p-3 rounded-3 border border-secondary small">
+        <div class="fw-bold text-white mb-2"><i class="fa fa-cubes-stacked text-warning me-1"></i> Warehouse Format:</div>
+        <ul class="list-unstyled mb-0 text-secondary" style="font-size: 12px; line-height: 1.8;">
+          <li><b class="text-light">R1 - R6:</b> Multi-tier Pallet Racks</li>
+          <li><b class="text-light">FL-07 - FL-12:</b> Left Wall Staging Bays</li>
+          <li><b class="text-light">BL-13 - BL-17:</b> End Bulk Shipping Lanes</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="p-2 text-center text-secondary border-top border-secondary small" style="font-size: 11px;">
+      Camera Locked: Free 3D Orbiting (Selection only changes via Search or Product List)
+    </div>
+  </div>
+
+  <!-- 3D Canvas Wrapper -->
+  <div id="canvas-wrapper">
+    
+    <!-- Top Viewport Controls -->
+    <div class="viewport-controls">
+      <button class="btn-control" onclick="setCameraPreset('iso')"><i class="fa fa-cube"></i> Isometric</button>
+      <button class="btn-control" onclick="setCameraPreset('top')"><i class="fa fa-layer-group"></i> 2D Plan</button>
+      <button class="btn-control" onclick="setCameraPreset('aisle')"><i class="fa fa-walking"></i> Aisle</button>
+      <button class="btn-control" id="btn-heatmap" onclick="toggleHeatmap()"><i class="fa fa-fire"></i> Heatmap</button>
+      <button class="btn-control" id="btn-labels" onclick="toggleLabels()"><i class="fa fa-tags"></i> Numbers: ON</button>
+      <button class="btn-control" id="btn-rotate" onclick="toggleAutoRotate()"><i class="fa fa-sync"></i> Auto-Spin</button>
+      <button class="btn-control d-none d-lg-inline-flex" onclick="toggleFullscreen()"><i class="fa fa-expand"></i> Fullscreen</button>
+    </div>
+
+    <!-- Item Detail Card -->
+    <div id="item-detail-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="badge bg-primary text-white" id="card-category">Industrial Parts</span>
+        <button type="button" class="btn-close btn-close-white btn-sm" onclick="closeDetailCard()"></button>
+      </div>
+      <h6 class="fw-bold mb-1 text-white text-truncate" id="card-name">SKF Deep Groove Ball Bearing 6204</h6>
+      <div class="text-secondary small mb-2" id="card-sku">SKU: PRD-1001</div>
+      
+      <div class="p-2 p-md-3 rounded bg-dark border border-secondary mb-2 small">
+        <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+          <span class="text-secondary">Location Code:</span>
+          <span class="code-badge" id="card-location">R2-03-02</span>
+        </div>
+        <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+          <span class="text-secondary">Current On-Hand:</span>
+          <span class="text-warning fw-bold" id="card-stock">45 Palletized Cartons</span>
+        </div>
+        
+        <!-- Step-by-Step Wayfinding -->
+        <div class="mt-2 pt-2 border-top border-secondary">
+          <div class="text-info fw-bold mb-1" style="font-size: 11px;"><i class="fa fa-route me-1"></i> PICKING WAYFINDING:</div>
+          <div id="card-breadcrumbs" class="text-light" style="font-size: 12px; line-height: 1.6;"></div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-6">
+          <button class="btn btn-sm btn-outline-info w-100 py-2" onclick="refocusTarget()"><i class="fa fa-crosshairs me-1"></i> Zoom In</button>
+        </div>
+        <div class="col-6 d-lg-none">
+          <button class="btn btn-sm btn-primary w-100 py-2" onclick="openSidebarDrawer()"><i class="fa fa-list me-1"></i> More Items</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Legend Box -->
+    <div class="legend-box">
+      <div class="fw-bold mb-1 text-white-50 small">Legend:</div>
+      <div class="d-flex align-items-center mb-1">
+        <span class="legend-indicator" style="background: #2563eb;"></span>
+        <span>Pallet Racks (R1 - R6)</span>
+      </div>
+      <div class="d-flex align-items-center mb-1">
+        <span class="legend-indicator" style="background: #0284c7;"></span>
+        <span>Wall Bays (FL-07 - FL-12)</span>
+      </div>
+      <div class="d-flex align-items-center mb-1">
+        <span class="legend-indicator" style="background: #38bdf8;"></span>
+        <span>Laser Wayfinding Route</span>
+      </div>
+      <div class="d-flex align-items-center">
+        <span class="legend-indicator" style="background: #eab308;"></span>
+        <span>Forklift Drive Lanes</span>
+      </div>
+    </div>
+
+    <!-- Mobile Quick Floating Action Button -->
+    <div id="mobile-bottom-bar">
+      <button class="btn-mobile-pill" onclick="openSidebarDrawer()">
+        <i class="fa fa-search text-primary"></i> Find Product / Rack
+      </button>
+    </div>
+
+    <!-- 3D Canvas -->
+    <div id="canvas-container"></div>
+  </div>
+
+</div>
+
+<script>
+  function openSidebarDrawer() {
+    document.getElementById('sidebar').classList.add('show-drawer');
+    document.getElementById('sidebar-backdrop').classList.add('show');
+  }
+
+  function closeSidebarDrawer() {
+    document.getElementById('sidebar').classList.remove('show-drawer');
+    document.getElementById('sidebar-backdrop').classList.remove('show');
+  }
+
+  const productsDB = [
+    {
+      sku: "PRD-1001",
+      name: "SKF Deep Groove Ball Bearing 6204",
+      category: "Industrial Bearings",
+      location: "R2-03-02",
+      stock: "45 Palletized Cartons",
+      occupancy: "Full (100%)",
+      route: { zone: "Rack R2", bay: "Bay 3 (Count 3 bays right along open aisle)", level: "Level 2 (Middle shelf tier - eye level)" }
+    },
+    {
+      sku: "PRD-1002",
+      name: "Heavy Diesel Engine Oil Filter",
+      category: "Automotive Spares",
+      location: "R1-02-03",
+      stock: "120 Sealed Cartons",
+      occupancy: "Full (100%)",
+      route: { zone: "Rack R1", bay: "Bay 2 (Second bay along aisle)", level: "Level 3 (Top tier - reach truck)" }
+    },
+    {
+      sku: "PRD-1003",
+      name: "Industrial Relay Module Terminal",
+      category: "Electrical Equipment",
+      location: "R4-01-01",
+      stock: "250 Unit Packs",
+      occupancy: "Partial (65%)",
+      route: { zone: "Rack R4", bay: "Bay 1 (First bay along aisle)", level: "Level 1 (Ground tier - manual pick)" }
+    },
+    {
+      sku: "PRD-1004",
+      name: "Shell Tellus Hydraulic Oil Drums",
+      category: "Fluids & Lubricants",
+      location: "FL-08",
+      stock: "4 Palletized Drums (200L)",
+      occupancy: "Full (100%)",
+      route: { zone: "Left Wall Staging", bay: "Bay FL-08 (Opposite Rack R2)", level: "Ground Floor Pallet Pad" }
+    },
+    {
+      sku: "PRD-1005",
+      name: "1000L Heavy Industrial Compressor",
+      category: "Machinery & Equipment",
+      location: "FL-11",
+      stock: "2 Complete Units",
+      occupancy: "Full (100%)",
+      route: { zone: "Left Wall Staging", bay: "Bay FL-11 (Opposite Rack R5)", level: "Heavy Equipment Pad" }
+    },
+    {
+      sku: "PRD-1006",
+      name: "Imported Cargo Transit Consignment",
+      category: "Cross-dock Staging",
+      location: "BL-14-01",
+      stock: "320 Labeled Boxes",
+      occupancy: "High Turnover (90%)",
+      route: { zone: "End Bulk Area", bay: "Lane BL-14 (Lane 2 from left)", level: "Front Section 01 (Entrance)" }
+    },
+    {
+      sku: "PRD-1007",
+      name: "Solid Wooden Project Export Crates",
+      category: "Oversized Cargo",
+      location: "BL-16-02",
+      stock: "8 Heavy Skids",
+      occupancy: "Staged (80%)",
+      route: { zone: "End Bulk Area", bay: "Lane BL-16 (Lane 4 from left)", level: "Deep Section 02 (Back wall)" }
+    }
+  ];
+
+  const sampleContainer = document.getElementById('sampleList');
+  productsDB.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'sample-item';
+    div.onclick = () => selectProduct(item);
+    div.innerHTML = `
+      <div style="overflow:hidden; padding-right:8px;">
+        <div class="text-light fw-bold small text-truncate">${item.name}</div>
+        <div class="text-secondary" style="font-size: 11px;">${item.sku} | ${item.stock}</div>
+      </div>
+      <span class="badge bg-primary badge-loc flex-shrink-0">${item.location}</span>
+    `;
+    sampleContainer.appendChild(div);
+  });
+
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0e131f);
+  scene.fog = new THREE.FogExp2(0x0e131f, 0.007);
+
+  const camera = new THREE.PerspectiveCamera(44, container.clientWidth / container.clientHeight, 0.5, 1000);
+  camera.position.set(48, 62, 75);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  container.appendChild(renderer.domElement);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.maxPolarAngle = Math.PI / 2.02;
+  controls.minDistance = 6;
+  controls.maxDistance = 180;
+  controls.target.set(0, 4, 5);
+  controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+
+  function createConcreteCanvasTexture() {
+    const cvs = document.createElement('canvas');
+    cvs.width = 512; cvs.height = 512;
+    const ctx = cvs.getContext('2d');
+    ctx.fillStyle = "#272c36";
+    ctx.fillRect(0, 0, 512, 512);
+    for (let i = 0; i < 20000; i++) {
+      const g = Math.floor(30 + Math.random() * 30);
+      ctx.fillStyle = `rgb(${g}, ${g+2}, ${g+5})`;
+      ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+    }
+    ctx.strokeStyle = "#171a21";
+    ctx.lineWidth = 3;
+    for (let x = 0; x <= 512; x += 128) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 512); ctx.stroke();
+    }
+    for (let y = 0; y <= 512; y += 128) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(cvs);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(6, 9);
+    return tex;
+  }
+
+  function createHazardStripeTexture() {
+    const cvs = document.createElement('canvas');
+    cvs.width = 256; cvs.height = 64;
+    const ctx = cvs.getContext('2d');
+    ctx.fillStyle = "#facc15";
+    ctx.fillRect(0, 0, 256, 64);
+    ctx.fillStyle = "#1e293b";
+    for (let i = -64; i < 320; i += 32) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i + 20, 0);
+      ctx.lineTo(i - 10, 64);
+      ctx.lineTo(i - 30, 64);
+      ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(cvs);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  function createCardboardTexture() {
+    const cvs = document.createElement('canvas');
+    cvs.width = 256; cvs.height = 256;
+    const ctx = cvs.getContext('2d');
+    ctx.fillStyle = "#b88a57";
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(140, 40, 95, 60);
+    ctx.fillStyle = "#111827";
+    ctx.fillRect(150, 48, 75, 8);
+    for (let b = 150; b < 225; b += 3) {
+      ctx.fillRect(b, 62, 2, 28);
+    }
+    ctx.fillStyle = "#2563eb";
+    ctx.fillRect(20, 180, 50, 40);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px monospace";
+    ctx.fillText("UP ↑", 28, 205);
+    return new THREE.CanvasTexture(cvs);
+  }
+
+  const labelsGroup = new THREE.Group();
+  scene.add(labelsGroup);
+
+  function createTextSprite(text, bgColor, textColor) {
+    const cvs = document.createElement('canvas');
+    cvs.width = 256; cvs.height = 128;
+    const ctx = cvs.getContext('2d');
+    ctx.fillStyle = bgColor;
+    if (ctx.roundRect) ctx.roundRect(8, 8, 240, 112, 24); else ctx.fillRect(8, 8, 240, 112);
+    ctx.fill();
+    ctx.strokeStyle = textColor;
+    ctx.lineWidth = 6;
+    if (ctx.roundRect) ctx.roundRect(8, 8, 240, 112, 24); else ctx.strokeRect(8, 8, 240, 112);
+    ctx.stroke();
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 56px 'Roboto Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, 128, 64);
+
+    const tex = new THREE.CanvasTexture(cvs);
+    const spriteMat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sprite = new THREE.Sprite(spriteMat);
+    sprite.scale.set(4.5, 2.25, 1);
+    return sprite;
+  }
+
+  function createFloorNumberStencil(text, width = 6, height = 3, bg = "#1e293b", fg = "#facc15") {
+    const cvs = document.createElement('canvas');
+    cvs.width = 256; cvs.height = 128;
+    const ctx = cvs.getContext('2d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 256, 128);
+    ctx.strokeStyle = fg;
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, 248, 120);
+    ctx.fillStyle = fg;
+    ctx.font = "bold 64px 'Roboto Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, 128, 64);
+
+    const tex = new THREE.CanvasTexture(cvs);
+    const planeGeo = new THREE.PlaneGeometry(width, height);
+    const planeMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.95 });
+    const mesh = new THREE.Mesh(planeGeo, planeMat);
+    mesh.rotation.x = -Math.PI / 2;
+    return mesh;
+  }
+
+  const floorMat = new THREE.MeshStandardMaterial({ map: createConcreteCanvasTexture(), roughness: 0.65, metalness: 0.12 });
+  const rackBlueMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.35, metalness: 0.5 });
+  const rackOrangeMat = new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.3, metalness: 0.4 });
+  const woodPalletMat = new THREE.MeshStandardMaterial({ color: 0xc49a68, roughness: 0.85, metalness: 0.05 });
+  const boxMat = new THREE.MeshStandardMaterial({ map: createCardboardTexture(), roughness: 0.85 });
+  const steelTrussMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5, metalness: 0.8 });
+
+  scene.add(new THREE.HemisphereLight(0xe2e8f0, 0x1e293b, 0.65));
+  const mainSun = new THREE.DirectionalLight(0xfff7ed, 0.9);
+  mainSun.position.set(45, 85, 45);
+  mainSun.castShadow = true;
+  mainSun.shadow.mapSize.width = 1024;
+  mainSun.shadow.mapSize.height = 1024;
+  mainSun.shadow.bias = -0.0004;
+  const shadowRange = 65;
+  mainSun.shadow.camera.left = -shadowRange;
+  mainSun.shadow.camera.right = shadowRange;
+  mainSun.shadow.camera.top = shadowRange;
+  mainSun.shadow.camera.bottom = -shadowRange;
+  mainSun.shadow.camera.near = 10;
+  mainSun.shadow.camera.far = 180;
+  scene.add(mainSun);
+
+  const fillSun = new THREE.DirectionalLight(0x93c5fd, 0.4);
+  fillSun.position.set(-40, 50, -40);
+  scene.add(fillSun);
+
+  [
+    { x: 12, y: 22, z: -25 },
+    { x: 12, y: 22, z: 0 },
+    { x: -16, y: 22, z: -25 },
+    { x: -16, y: 22, z: 0 },
+    { x: 0, y: 22, z: 35 }
+  ].forEach(pos => {
+    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.8, 0.8, 16), new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.2 }));
+    lamp.position.set(pos.x, pos.y, pos.z);
+    scene.add(lamp);
+
+    const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    bulb.position.set(pos.x, pos.y - 0.4, pos.z);
+    scene.add(bulb);
+
+    const ptLight = new THREE.PointLight(0xfffbeb, 0.8, 45, 1.2);
+    ptLight.position.set(pos.x, pos.y - 1, pos.z);
+    scene.add(ptLight);
+
+    const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 8), new THREE.MeshBasicMaterial({ color: 0x334155 }));
+    wire.position.set(pos.x, pos.y + 4, pos.z);
+    scene.add(wire);
+  });
+
+  const floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(85, 130), floorMat);
+  floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.receiveShadow = true;
+  scene.add(floorMesh);
+
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x1f293d, roughness: 0.9, metalness: 0.1 });
+  const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(130, 26), wallMat);
+  leftWall.position.set(-42.5, 13, 0);
+  leftWall.rotation.y = Math.PI / 2;
+  leftWall.receiveShadow = true;
+  scene.add(leftWall);
+
+  const backWall = new THREE.Mesh(new THREE.PlaneGeometry(85, 26), wallMat);
+  backWall.position.set(0, 13, -65);
+  backWall.receiveShadow = true;
+  scene.add(backWall);
+
+  function createFloorSafetyLine(x, z, length, isHorizontal) {
+    const hTex = createHazardStripeTexture();
+    hTex.repeat.set(length / 2, 1);
+    const lineMat = new THREE.MeshBasicMaterial({ map: hTex, transparent: true, opacity: 0.9 });
+    const lineGeo = isHorizontal ? new THREE.PlaneGeometry(length, 0.7) : new THREE.PlaneGeometry(0.7, length);
+    const mesh = new THREE.Mesh(lineGeo, lineMat);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(x, 0.03, z);
+    scene.add(mesh);
+  }
+  createFloorSafetyLine(-2, 0, 110, false);
+  createFloorSafetyLine(-28, 0, 110, false);
+  createFloorSafetyLine(34, 0, 110, false);
+  createFloorSafetyLine(0, 18, 70, true);
+
+  for (let tz = -55; tz <= 55; tz += 22) {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(85, 0.9, 0.5), steelTrussMat);
+    beam.position.set(0, 25.5, tz);
+    scene.add(beam);
+  }
+
+  function createRealisticPalletGroup() {
+    const palletGroup = new THREE.Group();
+    for (let i = -1.6; i <= 1.6; i += 0.8) {
+      const plank = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.08, 0.5), woodPalletMat);
+      plank.position.set(0, 0.44, i);
+      plank.castShadow = true;
+      palletGroup.add(plank);
+    }
+    [-1.5, 0, 1.5].forEach(bx => {
+      [-1.4, 0, 1.4].forEach(bz => {
+        const block = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.36, 0.45), woodPalletMat);
+        block.position.set(bx, 0.22, bz);
+        block.castShadow = true;
+        palletGroup.add(block);
+      });
+      const bottomPlank = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.06, 3.4), woodPalletMat);
+      bottomPlank.position.set(bx, 0.03, 0);
+      bottomPlank.castShadow = true;
+      palletGroup.add(bottomPlank);
+    });
+    return palletGroup;
+  }
+
+  const locationMeshMap = {};
+  const interactivePickObjects = [];
+
+  // 1. GENERATE RACKS (R1 to R6)
+  for (let r = 1; r <= 6; r++) {
+    const rackZ = -44 + (r - 1) * 10.5;
+
+    for (let bay = 1; bay <= 5; bay++) {
+      const frameX = 2 + (bay - 1) * 6.5;
+
+      [-1.8, 1.8].forEach(fz => {
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.22, 10.5, 0.22), rackBlueMat);
+        col.position.set(frameX, 5.25, rackZ + fz);
+        col.castShadow = true;
+        scene.add(col);
+      });
+
+      for (let cr = 1; cr <= 4; cr++) {
+        const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.8), steelTrussMat);
+        strut.position.set(frameX, cr * 2.2, rackZ);
+        strut.rotation.x = (cr % 2 === 0 ? 1 : -1) * 1.05;
+        scene.add(strut);
+      }
+    }
+
+    const rackSignSprite = createTextSprite(`RACK ${r}`, "#1e3a8a", "#ffffff");
+    rackSignSprite.position.set(0.5, 11.2, rackZ);
+    labelsGroup.add(rackSignSprite);
+
+    for (let bay = 1; bay <= 4; bay++) {
+      const bayCenterX = 5.25 + (bay - 1) * 6.5;
+
+      for (let lvl = 1; lvl <= 3; lvl++) {
+        const beamY = 1.0 + (lvl - 1) * 3.1;
+
+        [-1.75, 1.75].forEach(bz => {
+          const beam = new THREE.Mesh(new THREE.BoxGeometry(6.3, 0.35, 0.15), rackOrangeMat);
+          beam.position.set(bayCenterX, beamY, rackZ + bz);
+          beam.castShadow = true;
+          scene.add(beam);
+        });
+
+        const shelfDeck = new THREE.Mesh(new THREE.BoxGeometry(6.1, 0.08, 3.4), new THREE.MeshStandardMaterial({ color: 0x3b4252, roughness: 0.6, metalness: 0.6 }));
+        shelfDeck.position.set(bayCenterX, beamY + 0.1, rackZ);
+        shelfDeck.receiveShadow = true;
+        scene.add(shelfDeck);
+
+        const pallet = createRealisticPalletGroup();
+        pallet.position.set(bayCenterX, beamY + 0.15, rackZ);
+        scene.add(pallet);
+
+        const boxStack = new THREE.Group();
+        [-0.85, 0.85].forEach((cx, idx1) => {
+          [-0.75, 0.75].forEach((cz, idx2) => {
+            const bMesh = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.0, 1.3), boxMat);
+            bMesh.position.set(cx, 1.0, cz);
+            bMesh.castShadow = true;
+            boxStack.add(bMesh);
+          });
+        });
+        [-0.5, 0.5].forEach(cx => {
+          const bMesh = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 1.4), boxMat);
+          bMesh.position.set(cx, 1.95, 0);
+          bMesh.castShadow = true;
+          boxStack.add(bMesh);
+        });
+
+        const wrapMat = new THREE.MeshPhysicalMaterial({
+          color: 0xffffff, transmission: 0.6, opacity: 0.35, transparent: true, roughness: 0.15, reflectivity: 0.9
+        });
+        const plasticWrap = new THREE.Mesh(new THREE.BoxGeometry(3.3, 2.3, 3.1), wrapMat);
+        plasticWrap.position.set(0, 1.45, 0);
+        boxStack.add(plasticWrap);
+
+        boxStack.position.set(bayCenterX, beamY + 0.15, rackZ);
+        scene.add(boxStack);
+
+        const code = `R${r}-0${bay}-0${lvl}`;
+        const occRate = (r === 2 && bay === 3 && lvl === 2) ? 0.95 : Math.random();
+        const heatColor = occRate > 0.7 ? 0xef4444 : (occRate > 0.35 ? 0xf59e0b : 0x10b981);
+
+        // ROUTE WAYPOINTS:
+        // The picker walks along the open aisle between the racks (Z = rackZ + 3.6), NOT on top of the boxes!
+        const standingAislePoint = new THREE.Vector3(bayCenterX, 0.05, rackZ + 3.6);
+
+        shelfDeck.userData = {
+          code: code,
+          type: 'rack',
+          targetCenter: new THREE.Vector3(bayCenterX, beamY + 2.0, rackZ),
+          standingPoint: standingAislePoint,
+          rackAisleZ: rackZ + 3.6,
+          shelfLevel: lvl,
+          highlightMeshes: [shelfDeck, plasticWrap],
+          heatColor: heatColor,
+          heatMesh: plasticWrap
+        };
+        locationMeshMap[code] = shelfDeck;
+        plasticWrap.userData = shelfDeck.userData;
+        interactivePickObjects.push(plasticWrap);
+      }
+
+      const bayStencil = createFloorNumberStencil(`BAY ${bay}`, 3.2, 1.4, "#0f172a", "#60a5fa");
+      bayStencil.position.set(bayCenterX, 0.04, rackZ + 3.2);
+      labelsGroup.add(bayStencil);
+    }
+  }
+
+  // 2. FLOOR PALLET BAYS (FL-07 to FL-12)
+  for (let f = 7; f <= 12; f++) {
+    const bayZ = -44 + (f - 7) * 10.5;
+    const bayX = -17;
+    const code = (f < 10) ? `FL-0${f}` : `FL-${f}`;
+
+    const pOutline = new THREE.Mesh(new THREE.PlaneGeometry(10.5, 7.8), new THREE.MeshBasicMaterial({ color: 0xeab308, wireframe: true }));
+    pOutline.rotation.x = -Math.PI / 2;
+    pOutline.position.set(bayX, 0.04, bayZ);
+    scene.add(pOutline);
+
+    const bayPad = new THREE.Mesh(new THREE.BoxGeometry(10.2, 0.06, 7.5), new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.8, transparent: true, opacity: 0.3 }));
+    bayPad.position.set(bayX, 0.03, bayZ);
+    bayPad.receiveShadow = true;
+    scene.add(bayPad);
+
+    const bayNumFloor = createFloorNumberStencil(code, 4.2, 1.8, "#172554", "#38bdf8");
+    bayNumFloor.position.set(bayX + 3.2, 0.05, bayZ);
+    bayNumFloor.rotation.z = Math.PI / 2;
+    labelsGroup.add(bayNumFloor);
+
+    const baySign = createTextSprite(code, "#0369a1", "#ffffff");
+    baySign.position.set(bayX + 6.2, 3.5, bayZ);
+    labelsGroup.add(baySign);
+
+    let clickableTarget = bayPad;
+    if (f === 8) {
+      [-2, 2].forEach(dx => {
+        [-1.6, 1.6].forEach(dz => {
+          const drum = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 3.2, 20), new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.7, roughness: 0.3 }));
+          drum.position.set(bayX + dx, 1.6, bayZ + dz);
+          drum.castShadow = true;
+          scene.add(drum);
+          clickableTarget = drum;
+        });
+      });
+    } else {
+      const crate = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.4, 4.2), new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.4, roughness: 0.6 }));
+      crate.position.set(bayX, 1.7, bayZ);
+      crate.castShadow = true;
+      scene.add(crate);
+      clickableTarget = crate;
+    }
+
+    // Picker stands on the open aisle floor right in front of the bay (X = -8, NOT inside the cargo)
+    const standingAislePoint = new THREE.Vector3(-8, 0.05, bayZ);
+
+    bayPad.userData = {
+      code: code,
+      type: 'floor_bay',
+      targetCenter: new THREE.Vector3(bayX, 3.2, bayZ),
+      standingPoint: standingAislePoint,
+      highlightMeshes: [bayPad],
+      heatColor: 0xef4444,
+      heatMesh: bayPad
+    };
+    locationMeshMap[code] = bayPad;
+    clickableTarget.userData = bayPad.userData;
+    interactivePickObjects.push(clickableTarget);
+  }
+
+  // 3. BULK TRANSIT FLOOR LANES (BL-13 to BL-17)
+  for (let b = 13; b <= 17; b++) {
+    const laneX = -21 + (b - 13) * 9.8;
+
+    const laneHeadStencil = createFloorNumberStencil(`LANE ${b}`, 5.5, 2.2, "#451a03", "#f59e0b");
+    laneHeadStencil.position.set(laneX, 0.05, 20);
+    labelsGroup.add(laneHeadStencil);
+
+    const laneBanner = createTextSprite(`LANE ${b}`, "#b45309", "#ffffff");
+    laneBanner.position.set(laneX, 7.5, 23);
+    labelsGroup.add(laneBanner);
+
+    for (let sec = 1; sec <= 2; sec++) {
+      const laneZ = 32 + (sec - 1) * 16;
+      const code = `BL-${b}-0${sec}`;
+
+      const lanePad = new THREE.Mesh(new THREE.BoxGeometry(8.2, 0.08, 14), new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.7, transparent: true, opacity: 0.35 }));
+      lanePad.position.set(laneX, 0.04, laneZ);
+      lanePad.receiveShadow = true;
+      scene.add(lanePad);
+
+      const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(8.2, 0.08, 14));
+      lanePad.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xf59e0b, linewidth: 2 })));
+
+      const bulkBox = new THREE.Mesh(new THREE.BoxGeometry(6.6, 3.2, 10.5), new THREE.MeshStandardMaterial({
+        color: (b % 2 === 0) ? 0x0369a1 : 0xb45309, metalness: 0.5, roughness: 0.5
+      }));
+      bulkBox.position.set(laneX, 1.6, laneZ);
+      bulkBox.castShadow = true;
+      scene.add(bulkBox);
+
+      const secStencil = createFloorNumberStencil(`SEC 0${sec}`, 3.5, 1.4, "#292524", "#fbbf24");
+      secStencil.position.set(laneX, 0.05, laneZ - 5);
+      labelsGroup.add(secStencil);
+
+      // Picker stops right in front of the staged cargo
+      const standingAislePoint = new THREE.Vector3(laneX, 0.05, laneZ - 6.2);
+
+      lanePad.userData = {
+        code: code,
+        type: 'bulk_lane',
+        targetCenter: new THREE.Vector3(laneX, 3.5, laneZ),
+        standingPoint: standingAislePoint,
+        highlightMeshes: [lanePad, bulkBox],
+        heatColor: 0xf59e0b,
+        heatMesh: bulkBox
+      };
+      locationMeshMap[code] = lanePad;
+      bulkBox.userData = lanePad.userData;
+      interactivePickObjects.push(bulkBox);
+    }
+  }
+
+  // 4. FORKLIFT
+  function createForklift() {
+    const flGroup = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.8, 5.0), new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.4 }));
+    body.position.set(0, 1.3, 0);
+    body.castShadow = true;
+    flGroup.add(body);
+
+    const cage = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.6, 3.0), new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.8, roughness: 0.3 }));
+    cage.position.set(0, 3.2, -0.4);
+    flGroup.add(cage);
+
+    const mast = new THREE.Mesh(new THREE.BoxGeometry(2.2, 5.5, 0.4), cage.material);
+    mast.position.set(0, 2.8, 2.7);
+    flGroup.add(mast);
+
+    [-0.7, 0.7].forEach(fx => {
+      const fork = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.08, 2.4), new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.9 }));
+      fork.position.set(fx, 0.2, 3.9);
+      flGroup.add(fork);
+    });
+
+    [-1.6, 1.6].forEach(wx => {
+      [-1.6, 1.6].forEach(wz => {
+        const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.6, 16), new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.9 }));
+        wheel.rotateZ(Math.PI / 2);
+        wheel.position.set(wx, 0.65, wz);
+        flGroup.add(wheel);
+      });
+    });
+
+    flGroup.position.set(-2, 0, 10);
+    flGroup.rotation.y = -Math.PI / 4;
+    return flGroup;
+  }
+  scene.add(createForklift());
+
+  // ====================================================
+  // 5. ACCURATE AISLE ROUTING (ALONG REAL WALKWAYS ONLY)
+  // ====================================================
+  const routeLineGroup = new THREE.Group();
+  scene.add(routeLineGroup);
+  let routeMesh = null;
+  let activeCurve = null;
+
+  function drawFloorRoute(targetMeta) {
+    while (routeLineGroup.children.length > 0) {
+      routeLineGroup.remove(routeLineGroup.children[0]);
+    }
+
+    const curve = new THREE.CurvePath();
+
+    // Start point: Entrance / Loading Dock Highway Corridor
+    const startPoint = new THREE.Vector3(-2, 0.08, 55);
+
+    if (targetMeta.type === 'rack') {
+      // 1. Walk straight down Main Corridor (-2, Z) until reaching the Rack's open aisle
+      const aisleZ = targetMeta.rackAisleZ;
+      const turnPoint = new THREE.Vector3(-2, 0.08, aisleZ);
+      curve.add(new THREE.LineCurve3(startPoint, turnPoint));
+
+      // 2. Turn 90 degrees and walk along the OPEN AISLE floor between racks
+      const standPoint = targetMeta.standingPoint;
+      curve.add(new THREE.LineCurve3(turnPoint, standPoint));
+
+      // 3. Stop on the floor in front of the bay, then draw a vertical indicator pointing up to the shelf
+      const targetShelfPoint = new THREE.Vector3(targetMeta.targetCenter.x, targetMeta.targetCenter.y, targetMeta.targetCenter.z);
+      
+      // Vertical indicator line going up to shelf
+      const vertGeo = new THREE.BufferGeometry().setFromPoints([standPoint, targetShelfPoint]);
+      const vertLine = new THREE.Line(vertGeo, new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 0.4, gapSize: 0.2 }));
+      vertLine.computeLineDistances();
+      routeLineGroup.add(vertLine);
+
+    } else if (targetMeta.type === 'floor_bay') {
+      // Walk down main aisle to the bay's Z position
+      const turnPoint = new THREE.Vector3(-2, 0.08, targetMeta.standingPoint.z);
+      curve.add(new THREE.LineCurve3(startPoint, turnPoint));
+      // Step to the aisle edge in front of the pallet
+      curve.add(new THREE.LineCurve3(turnPoint, targetMeta.standingPoint));
+
+    } else if (targetMeta.type === 'bulk_lane') {
+      // Walk to cross aisle intersection (Z = 20), turn along cross aisle, then walk down lane entrance
+      const crossAislePoint = new THREE.Vector3(-2, 0.08, 20);
+      curve.add(new THREE.LineCurve3(startPoint, crossAislePoint));
+      const laneEntry = new THREE.Vector3(targetMeta.standingPoint.x, 0.08, 20);
+      curve.add(new THREE.LineCurve3(crossAislePoint, laneEntry));
+      curve.add(new THREE.LineCurve3(laneEntry, targetMeta.standingPoint));
+    }
+
+    activeCurve = curve;
+
+    // Floor Glowing Tube
+    const tubeGeo = new THREE.TubeGeometry(curve, 64, 0.28, 8, false);
+    const tubeMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 });
+    routeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+    routeLineGroup.add(routeMesh);
+
+    // Realistic Floor Stoppage Marker (Circle pad where picker stands)
+    const standPadGeo = new THREE.RingGeometry(0.3, 1.4, 24);
+    standPadGeo.rotateX(-Math.PI / 2);
+    const standPad = new THREE.Mesh(standPadGeo, new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide }));
+    standPad.position.set(targetMeta.standingPoint.x, 0.09, targetMeta.standingPoint.z);
+    routeLineGroup.add(standPad);
+
+    // Light pulses (4 slowly moving markers along the floor path)
+    for (let i = 0; i < 4; i++) {
+      const pulseGeo = new THREE.SphereGeometry(0.42, 12, 12);
+      const pulseMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+      pulse.userData = { offset: i * 0.25 };
+      routeLineGroup.add(pulse);
+    }
+  }
+
+  // HOLOGRAPHIC SCANNER & BEACON
+  const beaconGroup = new THREE.Group();
+  beaconGroup.add(new THREE.Mesh(new THREE.RingGeometry(2.2, 2.4, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide })));
+
+  const scanCone = new THREE.Mesh(
+    new THREE.ConeGeometry(2.6, 6, 32, 1, true).rotateX(Math.PI),
+    new THREE.MeshPhysicalMaterial({ color: 0xef4444, transmission: 0.9, transparent: true, opacity: 0.45, roughness: 0.1, side: THREE.DoubleSide })
+  );
+  scanCone.position.y = 3;
+  beaconGroup.add(scanCone);
+
+  const beaconDiamond = new THREE.Mesh(new THREE.OctahedronGeometry(0.9), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  beaconDiamond.position.y = 6.8;
+  beaconGroup.add(beaconDiamond);
+  beaconGroup.visible = false;
+  scene.add(beaconGroup);
+
+  let activeTarget = null;
+  let autoRotate = false;
+  let showLabels = true;
+  let heatmapMode = false;
+
+  function handleSearch() {
+    const raw = document.getElementById('searchInput').value.trim();
+    if (!raw) return;
+    const term = raw.toUpperCase();
+
+    const product = productsDB.find(p => p.location === term || p.sku.toUpperCase() === term || p.name.toUpperCase().includes(term));
+    if (product) {
+      selectProduct(product);
+    } else if (locationMeshMap[term]) {
+      locateByCode(term, {
+        name: 'Direct Location Query',
+        sku: 'Location Bin',
+        category: 'Warehouse Storage',
+        location: term,
+        stock: 'Available in WMS Database',
+        occupancy: 'Verified',
+        route: parseLocationRoute(term)
+      });
+      closeSidebarDrawer();
+    } else {
+      document.getElementById('searchFeedback').innerHTML = `<span class="text-danger"><i class="fa fa-triangle-exclamation"></i> "${raw}" not found!</span>`;
+    }
+  }
+
+  function parseLocationRoute(code) {
+    if (code.startsWith('R')) {
+      const parts = code.split('-');
+      return { zone: `Rack ${parts[0]}`, bay: `Bay ${parseInt(parts[1])} along open aisle`, level: `Shelf Level ${parseInt(parts[2])}` };
+    } else if (code.startsWith('FL')) {
+      return { zone: `Left Wall Pallet Zone`, bay: `Bay ${code}`, level: `Ground Floor Pallet Position` };
+    } else if (code.startsWith('BL')) {
+      const parts = code.split('-');
+      return { zone: `Bulk Shipping Area`, bay: `Lane ${parts[1]}`, level: `Section ${parts[2]}` };
+    }
+    return { zone: code, bay: "-", level: "-" };
+  }
+
+  function selectProduct(prod) {
+    document.getElementById('searchInput').value = prod.location;
+    locateByCode(prod.location, prod);
+    closeSidebarDrawer();
+  }
+
+  function locateByCode(code, meta) {
+    const targetObj = locationMeshMap[code];
+    const feedback = document.getElementById('searchFeedback');
+
+    if (!targetObj) {
+      feedback.innerHTML = `<span class="text-danger">Location ${code} not found in model.</span>`;
+      return;
+    }
+
+    feedback.innerHTML = `<span class="text-success"><i class="fa fa-circle-check"></i> Found "${meta.name}" at <b>${code}</b>.</span>`;
+
+    if (activeTarget && activeTarget.userData.highlightMeshes) {
+      activeTarget.userData.highlightMeshes.forEach(m => {
+        if (m.material.emissive) m.material.emissive.setHex(0x000000);
+      });
+    }
+
+    if (targetObj.userData.highlightMeshes) {
+      targetObj.userData.highlightMeshes.forEach(m => {
+        if (m.material.emissive) m.material.emissive.setHex(0xd97706);
+      });
+    }
+    activeTarget = targetObj;
+
+    const center = targetObj.userData.targetCenter;
+    beaconGroup.position.set(center.x, center.y, center.z);
+    beaconGroup.visible = true;
+
+    // Draw realistic route along walkways only (NEVER over boxes)
+    drawFloorRoute(targetObj.userData);
+
+    // Populate Detail Card
+    const card = document.getElementById('item-detail-card');
+    document.getElementById('card-name').innerText = meta.name;
+    document.getElementById('card-sku').innerText = `SKU: ${meta.sku}`;
+    document.getElementById('card-category').innerText = meta.category;
+    document.getElementById('card-location').innerText = meta.location;
+    document.getElementById('card-stock').innerText = meta.stock;
+    
+    const route = meta.route || parseLocationRoute(code);
+    document.getElementById('card-breadcrumbs').innerHTML = `
+      <div><i class="fa fa-arrow-right text-primary me-1"></i> <b>Aisle:</b> ${route.zone}</div>
+      <div><i class="fa fa-arrow-right text-primary me-1"></i> <b>Bay:</b> ${route.bay}</div>
+      <div><i class="fa fa-arrow-right text-primary me-1"></i> <b>Level:</b> ${route.level}</div>
+    `;
+    card.style.display = 'block';
+
+    const isMobile = window.innerWidth < 992;
+    const targetCamPos = {
+      x: center.x + (isMobile ? 12 : 14),
+      y: center.y + (isMobile ? 16 : 14),
+      z: center.z + (isMobile ? 22 : 18)
+    };
+    new TWEEN.Tween(camera.position).to(targetCamPos, 1300).easing(TWEEN.Easing.Cubic.InOut).start();
+    new TWEEN.Tween(controls.target).to({ x: center.x, y: center.y, z: center.z }, 1300).easing(TWEEN.Easing.Cubic.InOut).start();
+  }
+
+  function refocusTarget() {
+    if (activeTarget) {
+      const center = activeTarget.userData.targetCenter;
+      new TWEEN.Tween(camera.position).to({ x: center.x + 10, y: center.y + 9, z: center.z + 12 }, 800).easing(TWEEN.Easing.Quadratic.Out).start();
+    }
+  }
+
+  function closeDetailCard() {
+    document.getElementById('item-detail-card').style.display = 'none';
+  }
+
+  function toggleLabels() {
+    showLabels = !showLabels;
+    labelsGroup.visible = showLabels;
+    const btn = document.getElementById('btn-labels');
+    btn.innerHTML = showLabels ? '<i class="fa fa-tags"></i> Numbers: ON' : '<i class="fa fa-tags"></i> Numbers: OFF';
+    btn.classList.toggle('active', showLabels);
+  }
+
+  function toggleHeatmap() {
+    heatmapMode = !heatmapMode;
+    const btn = document.getElementById('btn-heatmap');
+    btn.innerHTML = heatmapMode ? '<i class="fa fa-fire"></i> Heatmap: ON' : '<i class="fa fa-fire"></i> Heatmap';
+    btn.classList.toggle('active', heatmapMode);
+
+    Object.values(locationMeshMap).forEach(loc => {
+      if (loc.userData.heatMesh) {
+        if (heatmapMode) {
+          loc.userData.originalColor = loc.userData.heatMesh.material.color.getHex();
+          loc.userData.heatMesh.material.color.setHex(loc.userData.heatColor);
+          loc.userData.heatMesh.material.opacity = 0.85;
+        } else {
+          if (loc.userData.originalColor) loc.userData.heatMesh.material.color.setHex(loc.userData.originalColor);
+          loc.userData.heatMesh.material.opacity = 0.35;
+        }
+      }
+    });
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+    }
+  }
+
+  function setCameraPreset(mode) {
+    let camPos = { x: 48, y: 62, z: 75 };
+    let lookTarget = { x: 0, y: 4, z: 5 };
+
+    if (mode === 'top') {
+      camPos = { x: 0, y: 105, z: 0.1 };
+      lookTarget = { x: 0, y: 0, z: 0 };
+    } else if (mode === 'aisle') {
+      camPos = { x: -6, y: 3.5, z: 28 };
+      lookTarget = { x: 5, y: 4, z: -20 };
+    }
+
+    new TWEEN.Tween(camera.position).to(camPos, 1300).easing(TWEEN.Easing.Cubic.InOut).start();
+    new TWEEN.Tween(controls.target).to(lookTarget, 1300).easing(TWEEN.Easing.Cubic.InOut).start();
+  }
+
+  function toggleAutoRotate() {
+    autoRotate = !autoRotate;
+    controls.autoRotate = autoRotate;
+    controls.autoRotateSpeed = 1.2;
+    document.getElementById('btn-rotate').classList.toggle('active', autoRotate);
+  }
+
+  // RAYCASTING
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  // Raycast interaction disabled so orbiting/looking around doesn't switch products
+  function onPointerInteract(clientX, clientY) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(interactivePickObjects, true);
+
+    if (intersects.length > 0) {
+      let hit = intersects[0].object;
+      while (hit && !hit.userData.code && hit.parent) hit = hit.parent;
+      if (hit && hit.userData.code) {
+        const code = hit.userData.code;
+        const prod = productsDB.find(p => p.location === code);
+        if (prod) {
+          selectProduct(prod);
+        } else {
+          locateByCode(code, {
+            name: 'Inspected Slot',
+            sku: 'Bin Coordinate',
+            category: 'Storage Bay',
+            location: code,
+            stock: 'In Database',
+            occupancy: 'Verified',
+            route: parseLocationRoute(code)
+          });
+        }
+      }
+    }
+  }
+
+  // Canvas clicking is locked exclusively for camera navigation (Orbit/Pan/Zoom).
+  // Product selection will NEVER change when tapping/clicking on the 3D scene.
+  // Selection ONLY changes when searching or explicitly picking from the Products List.
+
+  // REALISTIC SLOW ANIMATION LOOP
+  function animate(time) {
+    requestAnimationFrame(animate);
+    TWEEN.update(time);
+    controls.update();
+
+    if (beaconGroup.visible) {
+      beaconDiamond.rotation.y = time * 0.003;
+      beaconDiamond.rotation.x = Math.sin(time * 0.002) * 0.5;
+      scanCone.rotation.y = -time * 0.002;
+      const s = 1 + Math.sin(time * 0.007) * 0.2;
+      beaconGroup.children[0].scale.set(s, s, s);
+    }
+
+    // REALISTIC SLOW AGV / WALKING SPEED (0.00012 instead of 0.0006)
+    if (routeLineGroup.children.length > 1 && activeCurve) {
+      routeLineGroup.children.forEach(child => {
+        if (child.userData && child.userData.offset !== undefined) {
+          // Slowed down by 5x to realistic smooth movement speed
+          const t = (time * 0.00012 + child.userData.offset) % 1;
+          const pt = activeCurve.getPointAt(t);
+          if (pt) {
+            child.position.set(pt.x, pt.y + 0.15, pt.z);
+          }
+        }
+      });
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  function handleResize() {
+    const wrapper = document.getElementById('canvas-wrapper');
+    const w = wrapper.clientWidth;
+    const h = wrapper.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', handleResize);
+
+  window.addEventListener('DOMContentLoaded', () => {
+    handleResize();
+    setTimeout(() => {
+      selectProduct(productsDB[0]);
+    }, 600);
+  });
+</script>
+
+</body>
+</html>

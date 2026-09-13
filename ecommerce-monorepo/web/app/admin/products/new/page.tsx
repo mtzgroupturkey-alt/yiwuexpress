@@ -19,6 +19,7 @@ import {
   validateTranslations,
   type TranslationPayload
 } from '@/components/admin/ProductTranslationForm'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface MediaItem {
   url: string
@@ -62,6 +63,7 @@ type ProductForm = z.input<typeof productSchema>
 
 export default function NewProductPage() {
   const router = useRouter()
+  const { dict } = useAdminLocale()
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -177,14 +179,14 @@ export default function NewProductPage() {
       const result = await response.json()
 
       if (result.success) {
-        alert('Product created successfully!')
+        alert(dict.products.productCreatedSuccess)
         router.push('/admin/products')
       } else {
-        alert(result.error || 'Failed to create product')
+        alert(result.error || dict.products.createFailed)
       }
     } catch (error) {
       console.error('Error creating product:', error)
-      alert('Failed to create product')
+      alert(dict.products.createFailed)
     } finally {
       setSubmitting(false)
     }
@@ -196,11 +198,11 @@ export default function NewProductPage() {
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <button onClick={() => router.push('/admin/products')} className="hover:text-[#1a3a5c] transition-colors">Products</button>
+            <button onClick={() => router.push('/admin/products')} className="hover:text-[#1a3a5c] transition-colors">{dict.nav.products}</button>
             <span>/</span>
-            <span className="text-gray-900 font-medium">New</span>
+            <span className="text-gray-900 font-medium">{dict.products.newBreadcrumb}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3a5c]">Add New Product</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3a5c]">{dict.products.addProduct}</h1>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -209,7 +211,7 @@ export default function NewProductPage() {
             className="rounded-xl"
             onClick={() => router.push('/admin/products')}
           >
-            Cancel
+            {dict.common.cancel}
           </Button>
           <Button 
             onClick={handleSubmit(onSubmit)} 
@@ -217,7 +219,7 @@ export default function NewProductPage() {
             className="rounded-xl bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white hover:opacity-90 transition-opacity"
           >
             <Save className="w-4 h-4 mr-2" />
-            {submitting ? 'Creating...' : 'Create Product'}
+            {submitting ? dict.products.creatingProduct : dict.products.addProduct}
           </Button>
         </div>
       </div>
@@ -228,22 +230,22 @@ export default function NewProductPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Basic Information</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.basicInfo}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="sku" className="text-xs font-bold text-gray-700 uppercase tracking-wider">SKU *</Label>
+                  <Label htmlFor="sku" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.sku} *</Label>
                   <Input id="sku" {...register('sku')} className="rounded-xl bg-gray-50/50 focus:bg-white transition-colors" />
                   {errors.sku && <p className="text-red-600 text-sm mt-1">{errors.sku.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="categoryId" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Category</Label>
+                  <Label htmlFor="categoryId" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.category}</Label>
                   <CategoryDropdown
                     categories={categories}
                     value={selectedCategoryId}
                     onChange={(value) => setValue('categoryId', value || '')}
-                    placeholder="Select a category..."
-                    searchPlaceholder="Search categories..."
+                    placeholder={dict.products.selectCategory}
+                    searchPlaceholder={dict.products.searchCategories}
                     clearable
                     showPath
                     showLevelIndicator
@@ -252,7 +254,7 @@ export default function NewProductPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name" className="sr-only">Product Name *</Label>
+                <Label htmlFor="name" className="sr-only">{dict.products.productName} *</Label>
                 <ProductTranslationForm
                   disabled={submitting}
                   initialValues={translations}
@@ -261,7 +263,7 @@ export default function NewProductPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="slug" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Slug *</Label>
+                <Label htmlFor="slug" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.slug} *</Label>
                 <Input id="slug" {...register('slug')} className="rounded-xl bg-gray-50/50 focus:bg-white transition-colors" />
                 {errors.slug && <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>}
               </div>
@@ -276,29 +278,29 @@ export default function NewProductPage() {
 
             {/* Pricing */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Pricing</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.pricing}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Price ($) *</Label>
+                  <Label htmlFor="price" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.priceWithSymbol} *</Label>
                   <Input id="price" type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="rounded-xl" />
                   {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="compareAtPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Compare at Price ($)</Label>
+                  <Label htmlFor="compareAtPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.compareAtPriceWithSymbol}</Label>
                   <Input id="compareAtPrice" type="number" step="0.01" {...register('compareAtPrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="costPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Cost Price ($)</Label>
+                  <Label htmlFor="costPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.costPriceWithSymbol}</Label>
                   <Input id="costPrice" type="number" step="0.01" {...register('costPrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="wholesalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Wholesale Price ($)</Label>
+                  <Label htmlFor="wholesalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.wholesalePriceWithSymbol}</Label>
                   <Input id="wholesalePrice" type="number" step="0.01" {...register('wholesalePrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="minOrderQty" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Min Order Quantity</Label>
+                  <Label htmlFor="minOrderQty" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.minOrderQuantityLabel}</Label>
                   <Input id="minOrderQty" type="number" {...register('minOrderQty', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
               </div>
@@ -306,15 +308,15 @@ export default function NewProductPage() {
 
             {/* Inventory */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Inventory</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.inventory}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Stock Quantity *</Label>
+                  <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.stockQuantity} *</Label>
                   <Input id="stock" type="number" {...register('stock', { valueAsNumber: true })} className="rounded-xl" />
                   {errors.stock && <p className="text-red-600 text-sm mt-1">{errors.stock.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lowStockThreshold" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Low Stock Threshold</Label>
+                  <Label htmlFor="lowStockThreshold" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.lowStockThreshold}</Label>
                   <Input id="lowStockThreshold" type="number" {...register('lowStockThreshold', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
               </div>
@@ -322,51 +324,51 @@ export default function NewProductPage() {
 
             {/* Compliance & Shipping */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Compliance & Shipping</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.complianceShipping}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="weightKg" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Weight (kg) *</Label>
+                  <Label htmlFor="weightKg" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.weightKg} *</Label>
                   <Input id="weightKg" type="number" step="0.01" {...register('weightKg', { valueAsNumber: true })} className="rounded-xl" />
                   {errors.weightKg && <p className="text-red-600 text-sm mt-1">{errors.weightKg.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="hsCode" className="text-xs font-bold text-gray-700 uppercase tracking-wider">HS Code</Label>
+                  <Label htmlFor="hsCode" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.hsCode}</Label>
                   <Input id="hsCode" {...register('hsCode')} className="rounded-xl" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="countryOfOrigin" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Country of Origin</Label>
+                  <Label htmlFor="countryOfOrigin" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.countryOfOrigin}</Label>
                   <Input id="countryOfOrigin" {...register('countryOfOrigin')} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="material" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Material</Label>
+                  <Label htmlFor="material" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.material}</Label>
                   <Input id="material" {...register('material')} className="rounded-xl" />
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('fragile')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Fragile</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.fragile}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('exportRestricted')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Export Restricted</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.exportRestricted}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('dangerousGoods')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Dangerous Goods</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.dangerousGoods}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('batteryIncluded')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Battery Included</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.batteryIncluded}</span>
                 </label>
               </div>
             </div>
 
             {/* Images & Videos */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Product Images & Videos</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.imagesVideos}</h2>
               <ProductMediaUpload
                 media={media}
                 onChange={setMedia}
@@ -376,14 +378,14 @@ export default function NewProductPage() {
 
             {/* SEO */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">SEO</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.seo}</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="metaTitle" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Meta Title</Label>
+                  <Label htmlFor="metaTitle" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.metaTitle}</Label>
                   <Input id="metaTitle" {...register('metaTitle')} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="metaDescription" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Meta Description</Label>
+                  <Label htmlFor="metaDescription" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.metaDescription}</Label>
                   <textarea
                     id="metaDescription"
                     {...register('metaDescription')}
@@ -399,43 +401,43 @@ export default function NewProductPage() {
           <div className="space-y-6">
             {/* Status */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Status</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.statusSection}</h2>
               <div className="space-y-4">
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <input type="checkbox" {...register('isActive')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Active (Visible)</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.activeVisible}</span>
                 </label>
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <input type="checkbox" {...register('isFeatured')} className="w-5 h-5 rounded text-amber-500 focus:ring-amber-500" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Featured</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.featured}</span>
                 </label>
               </div>
             </div>
 
             {/* Flash Sale */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Flash Sale</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.flashSale}</h2>
               <label className="flex items-center gap-3 cursor-pointer group mb-4">
                 <input type="checkbox" {...register('isFlashSale')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                <span className="text-sm font-medium group-hover:text-gray-900">Enable Flash Sale</span>
+                <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.enableFlashSale}</span>
               </label>
               
               {watch('isFlashSale') && (
                 <div className="space-y-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">
                   <div className="space-y-2">
-                    <Label htmlFor="flashSalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Flash Sale Price ($)</Label>
+                    <Label htmlFor="flashSalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.flashSalePriceWithSymbol}</Label>
                     <Input id="flashSalePrice" type="number" step="0.01" {...register('flashSalePrice', { valueAsNumber: true })} className="rounded-xl bg-white" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="flashSaleStart" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Start Date</Label>
+                    <Label htmlFor="flashSaleStart" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.startDate}</Label>
                     <Input id="flashSaleStart" type="datetime-local" {...register('flashSaleStart')} className="rounded-xl bg-white" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="flashSaleEnd" className="text-xs font-bold text-gray-700 uppercase tracking-wider">End Date</Label>
+                    <Label htmlFor="flashSaleEnd" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.endDate}</Label>
                     <Input id="flashSaleEnd" type="datetime-local" {...register('flashSaleEnd')} className="rounded-xl bg-white" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="flashSaleStock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Flash Sale Stock</Label>
+                    <Label htmlFor="flashSaleStock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.flashSaleStock}</Label>
                     <Input id="flashSaleStock" type="number" {...register('flashSaleStock', { valueAsNumber: true })} className="rounded-xl bg-white" />
                   </div>
                 </div>
@@ -446,7 +448,7 @@ export default function NewProductPage() {
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-3 sticky top-6">
               <Button type="submit" className="w-full rounded-xl bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white hover:opacity-90 h-11" disabled={submitting}>
                 <Save className="w-4 h-4 mr-2" />
-                {submitting ? 'Creating...' : 'Create Product'}
+                {submitting ? dict.products.creatingProduct : dict.products.addProduct}
               </Button>
               <Button
                 type="button"
@@ -454,7 +456,7 @@ export default function NewProductPage() {
                 className="w-full rounded-xl h-11 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
                 onClick={() => router.push('/admin/products')}
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
             </div>
           </div>

@@ -1,8 +1,9 @@
-﻿'use client'
+'use client'
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
+import { AdminLocaleProvider } from './contexts/AdminLocaleContext'
 import { Providers } from '@/components/providers'
 import DynamicFavicon from '@/components/DynamicFavicon'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
@@ -22,7 +23,37 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true)
+    if (typeof window !== 'undefined') {
+      try {
+        const savedState = localStorage.getItem('admin_sidebar_open')
+        if (savedState !== null) {
+          setSidebarOpen(savedState === 'true')
+          return
+        }
+      } catch (e) {
+        console.error('Failed to read sidebar state from localStorage:', e)
+      }
+
+      // Default fallback by screen size: >= 1280px expanded, 1024-1279px collapsed icon rail
+      if (window.innerWidth < 1280 && window.innerWidth >= 1024) {
+        setSidebarOpen(false)
+      }
+    }
   }, [])
+
+  const handleToggleSidebar = (newStateOrUpdater: boolean | ((prev: boolean) => boolean)) => {
+    setSidebarOpen((prev) => {
+      const next = typeof newStateOrUpdater === 'function' ? newStateOrUpdater(prev) : newStateOrUpdater
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('admin_sidebar_open', String(next))
+        } catch (e) {
+          console.error('Failed to save sidebar state to localStorage:', e)
+        }
+      }
+      return next
+    })
+  }
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -113,7 +144,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Extracted Admin Sidebar */}
       <AdminSidebar
         sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
+        setSidebarOpen={handleToggleSidebar}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
         logoUrl={logoUrl}
@@ -123,19 +154,25 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         onLogout={handleLogout}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden w-full lg:w-auto">
+      {/* Main Content Area - Dynamic flex-1 with min-w-0 prevents rightward viewport overflow */}
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         {/* Extracted Admin Header */}
         <AdminHeader
           companyName={companyName}
           primaryColor={primaryColor}
           accentColor={accentColor}
           user={user}
+          sidebarOpen={sidebarOpen}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          onToggleDesktopSidebar={() => handleToggleSidebar((prev) => !prev)}
         />
 
-        {/* Page Content Slot */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        {/* Page Content Slot - scrollable with min-w-0 and overflow-x-hidden */}
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 lg:p-6">
+          <div className="w-full max-w-full">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   )
@@ -145,7 +182,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <Providers>
       <AdminAuthProvider>
-        <AdminLayoutContent>{children}</AdminLayoutContent>
+        <AdminLocaleProvider>
+          <AdminLayoutContent>{children}</AdminLayoutContent>
+        </AdminLocaleProvider>
       </AdminAuthProvider>
     </Providers>
   )

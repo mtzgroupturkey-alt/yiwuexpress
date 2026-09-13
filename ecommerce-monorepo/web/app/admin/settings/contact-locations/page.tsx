@@ -6,6 +6,7 @@ import {
   Building2, Building, AlertCircle, CheckCircle, RefreshCw, ArrowUpDown
 } from 'lucide-react'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 
 interface ContactLocation {
@@ -34,6 +35,7 @@ const emptyForm = {
 
 export default function ContactLocationsPage() {
   const { isAdmin, loading: authLoading } = useAdminAuth()
+  const { dict } = useAdminLocale()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -200,7 +202,7 @@ export default function ContactLocationsPage() {
             <MapPin size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Contact Locations</h2>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.contactLocations}</h2>
             <p className="text-sm text-gray-500">Manage headquarters and logistics hubs shown on the contact page</p>
           </div>
         </div>
@@ -212,7 +214,7 @@ export default function ContactLocationsPage() {
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            Refresh
+            {dict.common.refresh}
           </button>
           <button
             type="button"
@@ -221,7 +223,7 @@ export default function ContactLocationsPage() {
             style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
           >
             <Plus size={16} />
-            Add Location
+            {dict.settings.addLocation}
           </button>
         </div>
       </div>
@@ -245,7 +247,7 @@ export default function ContactLocationsPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900">
-              {editing ? 'Edit Location' : 'New Location'}
+              {editing ? dict.settings.editLocation : dict.settings.newLocation}
             </h3>
             <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
               <X size={20} />
@@ -254,19 +256,19 @@ export default function ContactLocationsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.locationType}</label>
               <select
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={form.type}
                 onChange={(e) => handleInput('type', e.target.value)}
               >
-                <option value="HEADQUARTERS">Headquarters</option>
-                <option value="HUB">Logistics Hub</option>
+                <option value="HEADQUARTERS">{dict.settings.hqLocation}</option>
+                <option value="HUB">{dict.settings.hubLocation}</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City / Office Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.cityOfficeName} *</label>
               <input
                 type="text"
                 required
@@ -278,7 +280,7 @@ export default function ContactLocationsPage() {
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.address}</label>
               <textarea
                 rows={2}
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -289,7 +291,7 @@ export default function ContactLocationsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.phone}</label>
               <input
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -300,7 +302,7 @@ export default function ContactLocationsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.email}</label>
               <input
                 type="email"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -311,7 +313,7 @@ export default function ContactLocationsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Working Hours</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.operatingHours}</label>
               <input
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -324,17 +326,39 @@ export default function ContactLocationsPage() {
             {/* Translations (RU / ZH) */}
             <div className="md:col-span-2 border border-dashed border-gray-200 rounded-xl p-4 bg-gray-50 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-600">Translations (optional)</p>
+                <p className="text-sm font-medium text-gray-600">{dict.products.translations} (optional)</p>
                 <AutoTranslateButton
-                  enFields={{ city: form.city, address: form.address, hours: form.hours }}
+                  allFields={{
+                    en: { city: form.city, address: form.address, hours: form.hours },
+                    ru: {
+                      city: translations.ru?.city || '',
+                      address: translations.ru?.address || '',
+                      hours: translations.ru?.hours || '',
+                    },
+                    zh: {
+                      city: translations.zh?.city || '',
+                      address: translations.zh?.address || '',
+                      hours: translations.zh?.hours || '',
+                    },
+                  }}
                   onTranslated={(result) => {
+                    if (result.en) {
+                      setForm((prev) => ({
+                        ...prev,
+                        city: result.en.city || prev.city,
+                        address: result.en.address || prev.address,
+                        hours: result.en.hours || prev.hours,
+                      }))
+                    }
                     setTranslations((prev) => {
                       const next = { ...prev }
                       for (const locale of Object.keys(result)) {
-                        next[locale] = {
-                          city: result[locale].city || prev[locale]?.city || '',
-                          address: result[locale].address || prev[locale]?.address || '',
-                          hours: result[locale].hours || prev[locale]?.hours || '',
+                        if (locale === 'ru' || locale === 'zh') {
+                          next[locale] = {
+                            city: result[locale].city || prev[locale]?.city || '',
+                            address: result[locale].address || prev[locale]?.address || '',
+                            hours: result[locale].hours || prev[locale]?.hours || '',
+                          }
                         }
                       }
                       return next
@@ -371,7 +395,7 @@ export default function ContactLocationsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Sort Order</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{dict.settings.sortOrder}</label>
               <input
                 type="number"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -388,7 +412,7 @@ export default function ContactLocationsPage() {
                 onChange={(e) => handleInput('isActive', e.target.checked)}
                 className="w-4 h-4"
               />
-              <label htmlFor="isActive" className="text-sm font-medium text-gray-700">Active (visible on contact page)</label>
+              <label htmlFor="isActive" className="text-sm font-medium text-gray-700">{dict.settings.activeVisibleContact}</label>
             </div>
           </div>
 
@@ -398,7 +422,7 @@ export default function ContactLocationsPage() {
               onClick={() => setShowForm(false)}
               className="px-5 py-2.5 rounded-xl text-gray-600 border border-gray-300 hover:bg-gray-50 text-sm font-medium"
             >
-              Cancel
+              {dict.common.cancel}
             </button>
             <button
               type="submit"
@@ -407,7 +431,7 @@ export default function ContactLocationsPage() {
               style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
             >
               <Save size={16} />
-              {saving ? 'Saving...' : 'Save Location'}
+              {saving ? dict.common.saving : dict.common.save}
             </button>
           </div>
         </form>
@@ -421,7 +445,7 @@ export default function ContactLocationsPage() {
       ) : locations.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100">
           <MapPin size={40} className="text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No contact locations yet. Click &quot;Add Location&quot; to create one.</p>
+          <p className="text-gray-500">{dict.settings.noLocationsYet}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

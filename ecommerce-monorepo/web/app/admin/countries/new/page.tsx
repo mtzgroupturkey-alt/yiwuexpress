@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save } from 'lucide-react'
 import { LocalizedFieldsForm, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 const countrySchema = z.object({
   code: z.string().min(2, 'Country code is required (e.g., US, CN)').max(2, 'Country code must be 2 characters'),
@@ -26,6 +27,7 @@ type CountryForm = z.infer<typeof countrySchema>
 
 export default function NewCountryPage() {
   const router = useRouter()
+  const { dict } = useAdminLocale()
   const [submitting, setSubmitting] = useState(false)
   const [translations, setTranslations] = useState<TranslationRow[]>([])
 
@@ -75,14 +77,14 @@ export default function NewCountryPage() {
       const result = await response.json()
 
       if (result.success) {
-        alert('Country created successfully!')
+        alert(dict.countries.countryCreatedSuccess)
         router.push('/admin/countries')
       } else {
-        alert(result.error || 'Failed to create country')
+        alert(result.error || dict.countries.createFailed)
       }
     } catch (error) {
       console.error('Error creating country:', error)
-      alert('Failed to create country')
+      alert(dict.countries.createFailed)
     } finally {
       setSubmitting(false)
     }
@@ -98,11 +100,11 @@ export default function NewCountryPage() {
           onClick={() => router.push('/admin/countries')}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {dict.common.back}
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Add New Country</h1>
-          <p className="text-gray-600">Configure a new shipping destination</p>
+          <h1 className="text-3xl font-bold text-gray-900">{dict.countries.addCountry}</h1>
+          <p className="text-gray-600">{dict.countries.subtitle}</p>
         </div>
       </div>
 
@@ -113,12 +115,12 @@ export default function NewCountryPage() {
             {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle>{dict.products.basicInfo}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="code">Country Code *</Label>
+                    <Label htmlFor="code">{dict.countries.code} *</Label>
                     <Input
                       id="code"
                       {...register('code')}
@@ -132,7 +134,7 @@ export default function NewCountryPage() {
                     <p className="text-sm text-gray-500 mt-1">2-letter ISO code</p>
                   </div>
                   <div>
-                    <Label htmlFor="name">Country Name *</Label>
+                    <Label htmlFor="name">{dict.countries.countryName} *</Label>
                     <Input
                       id="name"
                       {...register('name')}
@@ -155,7 +157,7 @@ export default function NewCountryPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="currency">Currency Code *</Label>
+                    <Label htmlFor="currency">{dict.countries.currencyCode} *</Label>
                     <Input
                       id="currency"
                       {...register('currency')}
@@ -169,7 +171,7 @@ export default function NewCountryPage() {
                     <p className="text-sm text-gray-500 mt-1">3-letter currency code</p>
                   </div>
                   <div>
-                    <Label htmlFor="currencySymbol">Currency Symbol *</Label>
+                    <Label htmlFor="currencySymbol">{dict.countries.currencySymbol} *</Label>
                     <Input
                       id="currencySymbol"
                       {...register('currencySymbol')}
@@ -184,7 +186,7 @@ export default function NewCountryPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="flag">Flag (Emoji or URL)</Label>
+                  <Label htmlFor="flag">{dict.countries.flag}</Label>
                   <Input
                     id="flag"
                     {...register('flag')}
@@ -201,11 +203,11 @@ export default function NewCountryPage() {
             {/* Delivery Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>Delivery Configuration</CardTitle>
+                <CardTitle>{dict.countries.deliveryConfiguration}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="deliverySLA">Delivery SLA</Label>
+                  <Label htmlFor="deliverySLA">{dict.countries.deliverySLA}</Label>
                   <Input
                     id="deliverySLA"
                     {...register('deliverySLA')}
@@ -220,7 +222,7 @@ export default function NewCountryPage() {
                 </div>
 
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 className="font-semibold text-sm text-blue-900 mb-2">ℹ️ About Delivery SLA</h4>
+                  <h4 className="font-semibold text-sm text-blue-900 mb-2">ℹ️ {dict.countries.aboutDeliverySLA}</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Define expected delivery times for each shipping method</li>
                     <li>• Format: "Method: X-Y days, Method2: X-Y days"</li>
@@ -233,11 +235,11 @@ export default function NewCountryPage() {
             {/* Additional Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>Additional Configuration</CardTitle>
+                <CardTitle>{dict.countries.additionalConfig}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">📦 Shipping Methods</h4>
+                  <h4 className="font-semibold text-sm mb-2">📦 {dict.countries.shippingMethods}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     After creating this country, configure shipping methods (Standard, Express, Sea Freight) with rates and estimated delivery times.
                   </p>
@@ -247,7 +249,7 @@ export default function NewCountryPage() {
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">📋 Customs Rules</h4>
+                  <h4 className="font-semibold text-sm mb-2">📋 {dict.countries.customsRules}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Configure duty rates, VAT rates, threshold amounts, and required documentation for customs clearance.
                   </p>
@@ -257,7 +259,7 @@ export default function NewCountryPage() {
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">💳 Payment Methods</h4>
+                  <h4 className="font-semibold text-sm mb-2">💳 {dict.countries.paymentMethods}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Select accepted payment methods for this country (Bank Transfer, Crypto, PayPal, Stripe, etc.)
                   </p>
@@ -267,7 +269,7 @@ export default function NewCountryPage() {
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">🚫 Restricted Products</h4>
+                  <h4 className="font-semibold text-sm mb-2">🚫 {dict.countries.restrictedProducts}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Define product categories that cannot be shipped to this country (dangerous goods, batteries, liquids, etc.)
                   </p>
@@ -284,13 +286,13 @@ export default function NewCountryPage() {
             {/* Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Status</CardTitle>
+                <CardTitle>{dict.common.status}</CardTitle>
               </CardHeader>
               <CardContent>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" {...register('isActive')} className="w-4 h-4" />
                   <div>
-                    <span className="text-sm font-medium">Active</span>
+                    <span className="text-sm font-medium">{dict.common.active}</span>
                     <p className="text-xs text-gray-500">
                       Customers can ship to this country
                     </p>
@@ -304,7 +306,7 @@ export default function NewCountryPage() {
               <CardContent className="p-4 space-y-2">
                 <Button type="submit" className="w-full" disabled={submitting}>
                   <Save className="w-4 h-4 mr-2" />
-                  {submitting ? 'Creating...' : 'Create Country'}
+                  {submitting ? dict.common.loading : dict.countries.addCountry}
                 </Button>
                 <Button
                   type="button"
@@ -312,7 +314,7 @@ export default function NewCountryPage() {
                   className="w-full"
                   onClick={() => router.push('/admin/countries')}
                 >
-                  Cancel
+                  {dict.common.cancel}
                 </Button>
               </CardContent>
             </Card>
@@ -320,7 +322,7 @@ export default function NewCountryPage() {
             {/* Help */}
             <Card>
               <CardHeader>
-                <CardTitle>Quick Guide</CardTitle>
+                <CardTitle>{dict.countries.quickGuide}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-gray-600 space-y-2">
                 <p><strong>Required Fields:</strong></p>

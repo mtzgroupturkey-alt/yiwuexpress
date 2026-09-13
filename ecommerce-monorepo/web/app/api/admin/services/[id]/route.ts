@@ -31,13 +31,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             status: true,
             createdAt: true,
           }
-        },
-        shipments: {
-          select: {
-            id: true,
-            status: true,
-            createdAt: true,
-          }
         }
       }
     })
@@ -158,8 +151,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       where: { id: params.id },
       include: {
         quotes: true,
-        shipments: true,
-      }
+              }
     })
 
     if (!service) {
@@ -169,7 +161,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       )
     }
 
-    if (service.quotes.length > 0 || service.shipments.length > 0) {
+    if (service.quotes.length > 0) {
       // Instead of deleting, deactivate the service
       const updatedService = await prisma.service.update({
         where: { id: params.id },

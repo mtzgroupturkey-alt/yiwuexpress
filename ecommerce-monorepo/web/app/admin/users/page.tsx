@@ -9,6 +9,7 @@ import {
   Camera, Loader2
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 import ClientOnly from '@/components/ClientOnly'
 
 interface User {
@@ -23,6 +24,10 @@ interface User {
   phone: string | null
   role: string
   roleId: string | null
+  userType?: string
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'DOCUMENTS_REQUIRED'
+  verificationNotes?: string | null
+  verifiedAt?: string | null
   permissionRole: {
     id: string
     name: string
@@ -65,10 +70,11 @@ const roleColors: Record<string, { bg: string; text: string; border: string }> =
   USER: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
 }
 
-type TabId = 'all' | 'admin' | 'customer' | 'supplier'
+type TabId = 'all' | 'admin' | 'customer' | 'supplier' | 'b2bPending'
 
 const tabs: { id: TabId; label: string; icon: string; color: string }[] = [
   { id: 'all', label: 'All Users', icon: '👥', color: 'text-gray-700' },
+  { id: 'b2bPending', label: 'B2B Verification', icon: '📋', color: 'text-indigo-700' },
   { id: 'admin', label: 'Admin Users', icon: '🛡️', color: 'text-purple-700' },
   { id: 'customer', label: 'Customers', icon: '👤', color: 'text-blue-700' },
   { id: 'supplier', label: 'Suppliers', icon: '🏭', color: 'text-amber-700' },
@@ -76,6 +82,7 @@ const tabs: { id: TabId; label: string; icon: string; color: string }[] = [
 
 export default function AdminUsersPage() {
   const { isAdmin, loading: authLoading } = useAdminAuth()
+  const { dict, locale } = useAdminLocale()
   const [mounted, setMounted] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
@@ -105,6 +112,9 @@ export default function AdminUsersPage() {
     role: 'USER',
     password: '',
     permissionRoleId: '',
+    userType: 'RETAIL',
+    verificationStatus: 'UNVERIFIED',
+    verificationNotes: '',
   })
 
   const [addFormData, setAddFormData] = useState({
@@ -121,16 +131,24 @@ export default function AdminUsersPage() {
     permissionRoleId: '',
   })
 
+  const [verificationFilter, setVerificationFilter] = useState('')
+
   useEffect(() => {
     if (!authLoading && isAdmin) {
       fetchUsers()
       fetchPermissionRoles()
     }
-  }, [pagination.page, searchTerm, roleFilter, authLoading, isAdmin])
+  }, [pagination.page, searchTerm, roleFilter, verificationFilter, authLoading, isAdmin])
 
   useEffect(() => {
-    const roleMap: Record<TabId, string> = { all: '', admin: 'ADMIN', customer: 'USER', supplier: 'SUPPLIER' }
-    setRoleFilter(roleMap[activeTab])
+    if (activeTab === 'b2bPending') {
+      setRoleFilter('')
+      setVerificationFilter('PENDING')
+    } else {
+      const roleMap: Record<TabId, string> = { all: '', admin: 'ADMIN', customer: 'USER', supplier: 'SUPPLIER', b2bPending: '' }
+      setRoleFilter(roleMap[activeTab])
+      setVerificationFilter('')
+    }
     setPagination(prev => ({ ...prev, page: 1 }))
   }, [activeTab])
 
@@ -192,6 +210,7 @@ export default function AdminUsersPage() {
       
       if (searchTerm) params.append('search', searchTerm)
       if (roleFilter) params.append('role', roleFilter)
+      if (verificationFilter) params.append('verificationStatus', verificationFilter)
 
       const response = await fetch(`/api/admin/users?${params}`, {
         credentials: 'include',
@@ -242,6 +261,9 @@ export default function AdminUsersPage() {
       role: user.role,
       password: '', // Don't populate password
       permissionRoleId: user.roleId || '',
+      userType: user.userType || 'RETAIL',
+      verificationStatus: user.verificationStatus || 'UNVERIFIED',
+      verificationNotes: user.verificationNotes || '',
     })
     setEditPhotoPreview(user.profilePhoto || null)
     setShowEditModal(true)
@@ -480,6 +502,9 @@ export default function AdminUsersPage() {
       role: 'USER',
       password: '',
       permissionRoleId: '',
+      userType: 'RETAIL',
+      verificationStatus: 'UNVERIFIED',
+      verificationNotes: '',
     })
   }
 
@@ -505,13 +530,13 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage admin users, customers, and suppliers</p>
+          <h1 className="text-2xl font-bold text-gray-900">{dict.users.title}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{dict.users.subtitle}</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
             <Users size={16} />
-            <span>{pagination.total} Total Users</span>
+            <span>{pagination.total} {dict.common.total}</span>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -519,14 +544,19 @@ export default function AdminUsersPage() {
             style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
           >
             <Plus size={18} />
-            Add User
+            {dict.users.addUser}
           </button>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 flex gap-1">
-        {tabs.map(tab => (
+        {[
+          { id: 'all' as TabId, label: dict.users.allUsers, icon: '👥', color: 'text-gray-700' },
+          { id: 'admin' as TabId, label: dict.header.console, icon: '🛡️', color: 'text-purple-700' },
+          { id: 'customer' as TabId, label: dict.orders.customer, icon: '👤', color: 'text-blue-700' },
+          { id: 'supplier' as TabId, label: dict.suppliers.title, icon: '🏭', color: 'text-amber-700' },
+        ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -549,7 +579,7 @@ export default function AdminUsersPage() {
             <Search size={20} className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
-              placeholder={`Search ${activeTab === 'all' ? 'users' : activeTab === 'admin' ? 'admin users' : activeTab === 'customer' ? 'customers' : 'suppliers'} by name, email, or company...`}
+              placeholder={dict.common.search}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -564,7 +594,7 @@ export default function AdminUsersPage() {
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-              <p className="text-sm text-gray-500">Loading users...</p>
+              <p className="text-sm text-gray-500">{dict.common.loading}</p>
             </div>
           </div>
         ) : error ? (
@@ -580,14 +610,14 @@ export default function AdminUsersPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">User</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Company</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Contact</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Role</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Permissions</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Activity</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Joined</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.users.userName}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.wholesale.companyName}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.suppliers.phone}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.users.role}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.users.permissions}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.dashboard.customerActivity}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.users.createdAt}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -596,8 +626,7 @@ export default function AdminUsersPage() {
                       <td colSpan={8} className="py-16 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <Users size={40} className="text-gray-300" />
-                          <p className="text-gray-500 font-medium">No users found</p>
-                          <p className="text-sm text-gray-400">Try adjusting your search or filter</p>
+                          <p className="text-gray-500 font-medium">{dict.common.noData}</p>
                         </div>
                       </td>
                     </tr>
@@ -658,9 +687,26 @@ export default function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${roleColors[user.role as keyof typeof roleColors]?.bg || 'bg-gray-50'} ${roleColors[user.role as keyof typeof roleColors]?.text || 'text-gray-600'} ${roleColors[user.role as keyof typeof roleColors]?.border || 'border-gray-200'}`}>
-                          {user.role}
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${roleColors[user.role as keyof typeof roleColors]?.bg || 'bg-gray-50'} ${roleColors[user.role as keyof typeof roleColors]?.text || 'text-gray-600'} ${roleColors[user.role as keyof typeof roleColors]?.border || 'border-gray-200'}`}>
+                            {user.role}
+                          </span>
+                          {user.userType && user.userType !== 'RETAIL' && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                              {user.userType}
+                            </span>
+                          )}
+                          {user.verificationStatus && user.verificationStatus !== 'UNVERIFIED' && (
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                              user.verificationStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                              user.verificationStatus === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                              user.verificationStatus === 'DOCUMENTS_REQUIRED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                              'bg-rose-50 text-rose-700 border-rose-200'
+                            }`}>
+                              {user.verificationStatus}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 px-6">
                         {user.permissionRole ? (
@@ -782,7 +828,7 @@ export default function AdminUsersPage() {
 
                 {/* Profile Photo */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.profilePhoto}</label>
                   <div className="flex items-center gap-4">
                     {addPhotoPreview ? (
                       <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
@@ -809,9 +855,9 @@ export default function AdminUsersPage() {
                         {photoUploading ? (
                           <span className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            Uploading...
+                            {dict.users.uploadingPhoto}
                           </span>
-                        ) : 'Upload Photo'}
+                        ) : dict.users.uploadPhoto}
                       </button>
                       {addPhotoPreview && (
                         <button
@@ -819,7 +865,7 @@ export default function AdminUsersPage() {
                           onClick={() => { setAddPhotoPreview(null); setAddFormData(prev => ({ ...prev, profilePhoto: '' })) }}
                           className="px-4 py-1 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
-                          Remove
+                          {dict.common.delete}
                         </button>
                       )}
                       <input
@@ -835,7 +881,7 @@ export default function AdminUsersPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.companyName}</label>
                     <input
                       type="text"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -844,13 +890,13 @@ export default function AdminUsersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.businessType}</label>
                     <select
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       value={addFormData.businessType}
                       onChange={(e) => setAddFormData(prev => ({ ...prev, businessType: e.target.value }))}
                     >
-                      <option value="">Select type</option>
+                      <option value="">{dict.common.selectOption}</option>
                       <option value="retailer">Retailer</option>
                       <option value="wholesaler">Wholesaler</option>
                       <option value="distributor">Distributor</option>
@@ -861,7 +907,7 @@ export default function AdminUsersPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.taxId}</label>
                     <input
                       type="text"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -870,7 +916,7 @@ export default function AdminUsersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.phone}</label>
                     <input
                       type="text"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -879,7 +925,7 @@ export default function AdminUsersPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.country}</label>
                     <input
                       type="text"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -890,7 +936,7 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.role}</label>
                   <select
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={addFormData.role}
@@ -904,15 +950,14 @@ export default function AdminUsersPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Permission Role
-                    <span className="text-xs text-gray-500 ml-2">(Optional - Controls access to admin panel features)</span>
+                    {dict.users.permissionRole}
                   </label>
                   <select
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     value={addFormData.permissionRoleId}
                     onChange={(e) => setAddFormData(prev => ({ ...prev, permissionRoleId: e.target.value }))}
                   >
-                    <option value="">No Permission Role</option>
+                    <option value="">{dict.users.noPermissionRole}</option>
                     {permissionRoles.map(role => (
                       <option key={role.id} value={role.id}>
                         {role.name} {role.description && `- ${role.description}`}
@@ -927,14 +972,14 @@ export default function AdminUsersPage() {
                     onClick={resetAddForm}
                     className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    Cancel
+                    {dict.common.cancel}
                   </button>
                   <button
                     type="submit"
                     className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
                     style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
                   >
-                    Create User
+                    {dict.users.addUser}
                   </button>
                 </div>
               </form>
@@ -950,12 +995,12 @@ export default function AdminUsersPage() {
             if (e.target === e.currentTarget) closeEditModal()
           }}>
             <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Edit User</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">{dict.users.editUser}</h2>
 
             <form onSubmit={handleUpdateUser} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.fullName}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -964,7 +1009,7 @@ export default function AdminUsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.email}</label>
                   <input
                     type="email"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -975,7 +1020,7 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.password}</label>
                 <input
                   type="password"
                   placeholder="Leave blank to keep current password"
@@ -987,7 +1032,7 @@ export default function AdminUsersPage() {
 
               {/* Profile Photo */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.uploadPhoto}</label>
                 <div className="flex items-center gap-4">
                   {editPhotoPreview ? (
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
@@ -1014,9 +1059,9 @@ export default function AdminUsersPage() {
                       {photoUploading ? (
                         <span className="flex items-center gap-2">
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Uploading...
+                          {dict.users.uploading}
                         </span>
-                      ) : 'Upload Photo'}
+                      ) : dict.users.uploadPhoto}
                     </button>
                     {editPhotoPreview && (
                       <button
@@ -1024,7 +1069,7 @@ export default function AdminUsersPage() {
                         onClick={() => { setEditPhotoPreview(null); setEditFormData(prev => ({ ...prev, profilePhoto: '' })) }}
                         className="px-4 py-1 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
-                        Remove
+                        {dict.users.removePhoto}
                       </button>
                     )}
                     <input
@@ -1040,7 +1085,7 @@ export default function AdminUsersPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.companyName}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1049,24 +1094,24 @@ export default function AdminUsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Business Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.businessType}</label>
                   <select
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={editFormData.businessType}
                     onChange={(e) => setEditFormData(prev => ({ ...prev, businessType: e.target.value }))}
                   >
-                    <option value="">Select type</option>
-                    <option value="retailer">Retailer</option>
-                    <option value="wholesaler">Wholesaler</option>
-                    <option value="distributor">Distributor</option>
-                    <option value="manufacturer">Manufacturer</option>
+                    <option value="">{dict.users.selectBusinessType}</option>
+                    <option value="retailer">{dict.users.retailer}</option>
+                    <option value="wholesaler">{dict.users.wholesaler}</option>
+                    <option value="distributor">{dict.users.distributor}</option>
+                    <option value="manufacturer">{dict.users.manufacturer}</option>
                   </select>
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tax ID</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.taxId}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1075,7 +1120,7 @@ export default function AdminUsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.phone}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1084,7 +1129,7 @@ export default function AdminUsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.country}</label>
                   <input
                     type="text"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1095,29 +1140,67 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.role}</label>
                 <select
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={editFormData.role}
                   onChange={(e) => setEditFormData(prev => ({ ...prev, role: e.target.value }))}
                 >
-                  <option value="USER">User</option>
-                  <option value="SUPPLIER">Supplier</option>
-                  <option value="ADMIN">Admin</option>
+                  <option value="USER">{dict.users.user}</option>
+                  <option value="SUPPLIER">{dict.users.supplier}</option>
+                  <option value="ADMIN">{dict.users.admin}</option>
                 </select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-purple-50/40 border border-purple-100">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">User Type</label>
+                  <select
+                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-purple-500"
+                    value={editFormData.userType}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, userType: e.target.value }))}
+                  >
+                    <option value="RETAIL">RETAIL (B2C)</option>
+                    <option value="WHOLESALE">WHOLESALE (B2B)</option>
+                    <option value="BOTH">BOTH (Hybrid)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">B2B Verification</label>
+                  <select
+                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-purple-500"
+                    value={editFormData.verificationStatus}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, verificationStatus: e.target.value as any }))}
+                  >
+                    <option value="UNVERIFIED">UNVERIFIED</option>
+                    <option value="PENDING">PENDING REVIEW</option>
+                    <option value="APPROVED">APPROVED (Verified)</option>
+                    <option value="DOCUMENTS_REQUIRED">DOCUMENTS REQUIRED</option>
+                    <option value="REJECTED">REJECTED</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Verification Notes / Rejection Reason</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Valid business license verified"
+                    className="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-white"
+                    value={editFormData.verificationNotes}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, verificationNotes: e.target.value }))}
+                  />
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Permission Role
-                  <span className="text-xs text-gray-500 ml-2">(Controls access to admin panel features)</span>
+                  {dict.users.permissionRole}
                 </label>
                 <select
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   value={editFormData.permissionRoleId}
                   onChange={(e) => setEditFormData(prev => ({ ...prev, permissionRoleId: e.target.value }))}
                 >
-                  <option value="">No Permission Role</option>
+                  <option value="">{dict.users.noPermissionRole}</option>
                   {permissionRoles.map(role => (
                     <option key={role.id} value={role.id}>
                       {role.name} {role.description && `- ${role.description}`}
@@ -1137,14 +1220,14 @@ export default function AdminUsersPage() {
                   onClick={closeEditModal}
                   className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {dict.common.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
                   style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}
                 >
-                  Update User
+                  {dict.common.save}
                 </button>
               </div>
             </form>

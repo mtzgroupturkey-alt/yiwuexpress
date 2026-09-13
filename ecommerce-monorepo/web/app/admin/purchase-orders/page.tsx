@@ -1,14 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Eye, Search, FileDown, Filter, Edit, Trash2 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Plus, Eye, Search, FileDown, Filter, Edit, Trash2, Loader2 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 const getStatusBadge = (status: string) => {
   const config: Record<string, { bg: string; text: string; label: string }> = {
@@ -17,12 +26,13 @@ const getStatusBadge = (status: string) => {
     SENT: { bg: 'bg-blue-500', text: 'text-white', label: 'SENT' },
     CONFIRMED: { bg: 'bg-indigo-500', text: 'text-white', label: 'CONFIRMED' },
     SHIPPED: { bg: 'bg-purple-500', text: 'text-white', label: 'SHIPPED' },
+    IN_TRANSIT: { bg: 'bg-cyan-600', text: 'text-white', label: 'IN_TRANSIT' },
     RECEIVED: { bg: 'bg-green-500', text: 'text-white', label: 'RECEIVED' },
     CANCELLED: { bg: 'bg-red-500', text: 'text-white', label: 'CANCELLED' },
     CLOSED: { bg: 'bg-gray-600', text: 'text-white', label: 'CLOSED' },
   }
   
-  const statusConfig = config[status] || config.DRAFT
+  const statusConfig = config[status] || { bg: 'bg-slate-500', text: 'text-white', label: status || 'DRAFT' }
   
   return (
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text}`}>
@@ -50,9 +60,33 @@ interface PurchaseOrder {
 }
 
 export default function PurchaseOrdersPage() {
+  const { dict, locale } = useAdminLocale()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+
+  const handleStatusChange = async (poId: string, newStatus: string) => {
+    setUpdatingId(poId)
+    try {
+      const res = await fetch(`/api/admin/purchase-orders/${poId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Failed to update status')
+      }
+      toast.success(`PO status updated to ${newStatus}`)
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] })
+    } catch (error: any) {
+      toast.error(error.message || 'Error updating status')
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   const { data: purchaseOrders, isLoading } = useQuery<{ purchaseOrders: PurchaseOrder[] }>({
     queryKey: ['purchase-orders'],
@@ -94,13 +128,13 @@ export default function PurchaseOrdersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#1a3a5c]">Purchase Orders</h1>
-          <p className="text-gray-500 mt-1">Manage purchases from suppliers</p>
+          <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.purchaseOrders.title}</h1>
+          <p className="text-gray-500 mt-1">{dict.purchaseOrders.subtitle}</p>
         </div>
         <Link href="/admin/purchase-orders/new">
           <Button className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90">
             <Plus className="w-4 h-4 mr-2" />
-            Create Purchase Order
+            {dict.purchaseOrders.createPO}
           </Button>
         </Link>
       </div>
@@ -109,7 +143,7 @@ export default function PurchaseOrdersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Total POs</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">{dict.purchaseOrders.title} ({dict.common.total})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-[#1a3a5c]">{stats.total}</div>
@@ -117,7 +151,7 @@ export default function PurchaseOrdersPage() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">{dict.status.PROCESSING}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
@@ -126,7 +160,7 @@ export default function PurchaseOrdersPage() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Completed</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">{dict.status.DELIVERED}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.received}</div>
@@ -135,7 +169,7 @@ export default function PurchaseOrdersPage() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Value (USD)</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">{dict.purchaseOrders.totalCost} (USD)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-[#1a3a5c]">${stats.value.toFixed(2)}</div>
@@ -148,14 +182,14 @@ export default function PurchaseOrdersPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>All Purchase Orders</CardTitle>
-              <CardDescription>Track and manage all purchase orders</CardDescription>
+              <CardTitle>{dict.purchaseOrders.title}</CardTitle>
+              <CardDescription>{dict.purchaseOrders.subtitle}</CardDescription>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Search PO..."
+                  placeholder={dict.common.search}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-9"
@@ -166,14 +200,15 @@ export default function PurchaseOrdersPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="h-10 px-3 rounded-md border border-gray-300"
               >
-                <option value="">All Status</option>
+                <option value="">{dict.products.filterByStatus}</option>
                 <option value="DRAFT">Draft</option>
-                <option value="PENDING">Pending</option>
+                <option value="PENDING">{dict.status.PENDING}</option>
                 <option value="SENT">Sent</option>
                 <option value="CONFIRMED">Confirmed</option>
-                <option value="SHIPPED">Shipped</option>
+                <option value="SHIPPED">{dict.status.SHIPPED}</option>
+                <option value="IN_TRANSIT">In Transit</option>
                 <option value="RECEIVED">Received</option>
-                <option value="CANCELLED">Cancelled</option>
+                <option value="CANCELLED">{dict.status.CANCELLED}</option>
                 <option value="CLOSED">Closed</option>
               </select>
             </div>
@@ -188,14 +223,14 @@ export default function PurchaseOrdersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>PO Number</TableHead>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Expected Delivery</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{dict.purchaseOrders.poNumber}</TableHead>
+                  <TableHead>{dict.purchaseOrders.supplier}</TableHead>
+                  <TableHead>{dict.purchaseOrders.orderDate}</TableHead>
+                  <TableHead>{dict.orders.itemsCount}</TableHead>
+                  <TableHead>{dict.purchaseOrders.totalCost}</TableHead>
+                  <TableHead>{dict.purchaseOrders.expectedDate}</TableHead>
+                  <TableHead>{dict.common.status}</TableHead>
+                  <TableHead className="text-right">{dict.common.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -227,7 +262,37 @@ export default function PurchaseOrdersPage() {
                           : '-'}
                       </TableCell>
                       <TableCell>
-                        {getStatusBadge(po.status)}
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={po.status}
+                            onValueChange={(val) => handleStatusChange(po.id, val)}
+                            disabled={updatingId === po.id}
+                          >
+                            <SelectTrigger className="h-8 w-[130px] text-xs font-semibold">
+                              <SelectValue>
+                                {updatingId === po.id ? (
+                                  <div className="flex items-center gap-1.5 text-gray-500">
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Updating...</span>
+                                  </div>
+                                ) : (
+                                  getStatusBadge(po.status)
+                                )}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="DRAFT">DRAFT</SelectItem>
+                              <SelectItem value="PENDING">PENDING</SelectItem>
+                              <SelectItem value="SENT">SENT</SelectItem>
+                              <SelectItem value="CONFIRMED">CONFIRMED</SelectItem>
+                              <SelectItem value="SHIPPED">SHIPPED</SelectItem>
+                              <SelectItem value="IN_TRANSIT">IN_TRANSIT</SelectItem>
+                              <SelectItem value="RECEIVED">RECEIVED</SelectItem>
+                              <SelectItem value="CANCELLED">CANCELLED</SelectItem>
+                              <SelectItem value="CLOSED">CLOSED</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">

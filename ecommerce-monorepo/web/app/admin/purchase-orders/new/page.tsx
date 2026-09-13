@@ -11,10 +11,19 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
-import { ArrowLeft, Plus, Trash2, Save, Package, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Save, Package, Copy, Check, ChevronDown, ChevronUp, Warehouse, Ship, UserCheck, ShieldCheck, Info } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import Link from 'next/link'
 import { ProductSearchSelect } from '@/components/admin/ProductSearchSelect'
 import { CurrencySelector } from '@/components/ui/CurrencySelector'
+import { SupplierSelector } from '@/components/admin/SupplierSelector'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface POItem {
   id: string
@@ -37,6 +46,7 @@ interface POItem {
 export default function NewPurchaseOrderPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { dict } = useAdminLocale()
   const [formData, setFormData] = useState({
     supplierId: '',
     orderDate: new Date().toISOString().split('T')[0],
@@ -48,6 +58,15 @@ export default function NewPurchaseOrderPage() {
     tax: 0,
     shippingCost: 0,
     discount: 0,
+    purchaseDestination: 'CHINA_WAREHOUSE' as 'CHINA_WAREHOUSE' | 'DIRECT_TO_CONTAINER' | 'DIRECT_TO_CUSTOMER',
+    targetCustomerId: '',
+    shippingAddress: {
+      address: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'Belarus',
+    },
   })
   const [items, setItems] = useState<POItem[]>([])
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false)
@@ -56,6 +75,19 @@ export default function NewPurchaseOrderPage() {
   const [isSupplierOpen, setIsSupplierOpen] = useState(false)
   const [itemVariantAttributes, setItemVariantAttributes] = useState<Record<string, any[]>>({})
   const [expandedVariantForms, setExpandedVariantForms] = useState<Record<string, boolean>>({})
+
+  // Fetch B2B customers for Direct to Customer destination
+  const { data: customersData } = useQuery({
+    queryKey: ['b2b-customers'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/users?limit=200')
+      if (!res.ok) return { users: [] }
+      return res.json()
+    },
+  })
+  const b2bCustomers = (customersData?.users || []).filter((u: any) =>
+    u.userType === 'WHOLESALE' || u.userType === 'BOTH' || u.businessType || u.companyName
+  )
 
   const { data: suppliers } = useQuery({
     queryKey: ['suppliers'],
@@ -355,6 +387,11 @@ export default function NewPurchaseOrderPage() {
       return
     }
 
+    if (formData.purchaseDestination === 'DIRECT_TO_CUSTOMER' && !formData.targetCustomerId) {
+      toast.error('Please select a Target B2B Customer for Direct to Customer delivery')
+      return
+    }
+
     const data = {
       ...formData,
       subtotal: calculateSubtotal(),
@@ -380,82 +417,249 @@ export default function NewPurchaseOrderPage() {
           <Link href="/admin/purchase-orders">
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {dict.common.back}
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-[#1a3a5c]">Create Purchase Order</h1>
-            <p className="text-gray-500 mt-1">Select products from your catalog to purchase from suppliers</p>
+            <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.purchaseOrders.createPO}</h1>
+            <p className="text-gray-500 mt-1">{dict.purchaseOrders.subtitle}</p>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 🆕 PURCHASE DESTINATION SELECTION CARD */}
+        <Card className="border-indigo-200 shadow-xs bg-gradient-to-br from-white via-indigo-50/20 to-white">
+          <CardHeader className="pb-3 border-b border-indigo-100">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                <Ship className="w-4 h-4" />
+              </div>
+              <div>
+                <CardTitle className="text-base font-bold text-foreground">
+                  {dict.purchaseOrders.purchaseDestination || 'Purchase Destination & Logistics Lifecycle'} *
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {dict.purchaseOrders.destinationLifecycle || 'Determines whether goods enter China warehouse stock, ship directly in a container, or deliver to a B2B client.'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Option 1: Store in China Warehouse */}
+              <div
+                onClick={() => setFormData({ ...formData, purchaseDestination: 'CHINA_WAREHOUSE' })}
+                className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                  formData.purchaseDestination === 'CHINA_WAREHOUSE'
+                    ? 'border-emerald-600 bg-emerald-50/40 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <Warehouse className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="radio"
+                    name="purchaseDestination"
+                    checked={formData.purchaseDestination === 'CHINA_WAREHOUSE'}
+                    onChange={() => setFormData({ ...formData, purchaseDestination: 'CHINA_WAREHOUSE' })}
+                    className="mt-1 text-emerald-600 focus:ring-emerald-500"
+                  />
+                </div>
+                <h4 className="font-bold text-sm text-foreground mt-2">
+                  {dict.purchaseOrders.storeInChina || 'Store in China Warehouse'}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {dict.purchaseOrders.storeInChinaDesc || 'Goods will be received into China Procurement DC inventory first for storage or selective dispatch.'}
+                </p>
+                <Badge variant="outline" className="mt-2.5 text-[10px] bg-white border-emerald-300 text-emerald-800">
+                  Default Procurement
+                </Badge>
+              </div>
+
+              {/* Option 2: Direct to Container for Belarus */}
+              <div
+                onClick={() => setFormData({ ...formData, purchaseDestination: 'DIRECT_TO_CONTAINER' })}
+                className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                  formData.purchaseDestination === 'DIRECT_TO_CONTAINER'
+                    ? 'border-sky-600 bg-sky-50/40 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
+                    <Ship className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="radio"
+                    name="purchaseDestination"
+                    checked={formData.purchaseDestination === 'DIRECT_TO_CONTAINER'}
+                    onChange={() => setFormData({ ...formData, purchaseDestination: 'DIRECT_TO_CONTAINER' })}
+                    className="mt-1 text-sky-600 focus:ring-sky-500"
+                  />
+                </div>
+                <h4 className="font-bold text-sm text-foreground mt-2">
+                  {dict.purchaseOrders.directToContainer || 'Direct to Container for Belarus'}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {dict.purchaseOrders.directToContainerDesc || 'Goods bypass China warehouse and load directly into a container heading for Belarus DC.'}
+                </p>
+                <Badge variant="outline" className="mt-2.5 text-[10px] bg-white border-sky-300 text-sky-800">
+                  FCL / Cross-docking
+                </Badge>
+              </div>
+
+              {/* Option 3: Direct to Customer - B2B */}
+              <div
+                onClick={() => setFormData({ ...formData, purchaseDestination: 'DIRECT_TO_CUSTOMER' })}
+                className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${
+                  formData.purchaseDestination === 'DIRECT_TO_CUSTOMER'
+                    ? 'border-indigo-600 bg-indigo-50/40 shadow-xs'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0">
+                    <UserCheck className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="radio"
+                    name="purchaseDestination"
+                    checked={formData.purchaseDestination === 'DIRECT_TO_CUSTOMER'}
+                    onChange={() => setFormData({ ...formData, purchaseDestination: 'DIRECT_TO_CUSTOMER' })}
+                    className="mt-1 text-indigo-600 focus:ring-indigo-500"
+                  />
+                </div>
+                <h4 className="font-bold text-sm text-foreground mt-2">
+                  {dict.purchaseOrders.directToCustomer || 'Direct to Customer - B2B'}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {dict.purchaseOrders.directToCustomerDesc || 'Wholesale container order shipped directly to buyer address with auto-created sales order.'}
+                </p>
+                <Badge variant="outline" className="mt-2.5 text-[10px] bg-white border-indigo-300 text-indigo-800">
+                  Wholesale Direct
+                </Badge>
+              </div>
+            </div>
+
+            {/* Conditional B2B Target Customer & Delivery Address Fields */}
+            {formData.purchaseDestination === 'DIRECT_TO_CUSTOMER' && (
+              <div className="mt-4 p-4 rounded-xl bg-indigo-50/60 border border-indigo-200 space-y-4 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-indigo-700" />
+                    <span className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                      B2B Direct Delivery Configuration
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-indigo-700 font-medium">
+                    {dict.purchaseOrders.directContainerOrderNotice || 'Linked wholesale sales order will be auto-generated.'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="targetCustomerSelect" className="text-xs font-semibold">
+                      {dict.purchaseOrders.targetCustomer || 'Target Customer (B2B)'} *
+                    </Label>
+                    <Select
+                      value={formData.targetCustomerId}
+                      onValueChange={(val) => setFormData({ ...formData, targetCustomerId: val })}
+                    >
+                      <SelectTrigger id="targetCustomerSelect" className="bg-white">
+                        <SelectValue placeholder={dict.purchaseOrders.selectTargetCustomer || 'Select B2B Customer...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {b2bCustomers.map((cust: any) => (
+                          <SelectItem key={cust.id} value={cust.id}>
+                            {cust.companyName ? `${cust.companyName} (${cust.name})` : cust.name} — {cust.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="destCountry" className="text-xs font-semibold">
+                      {dict.purchaseOrders.country || 'Destination Country'}
+                    </Label>
+                    <Input
+                      id="destCountry"
+                      className="bg-white"
+                      value={formData.shippingAddress.country}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          shippingAddress: { ...formData.shippingAddress, country: e.target.value },
+                        })
+                      }
+                      placeholder="e.g. Belarus"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <Label htmlFor="destStreet" className="text-xs font-semibold">
+                      {dict.purchaseOrders.streetAddress || 'Street Address'}
+                    </Label>
+                    <Input
+                      id="destStreet"
+                      className="bg-white"
+                      value={formData.shippingAddress.address}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          shippingAddress: { ...formData.shippingAddress, address: e.target.value },
+                        })
+                      }
+                      placeholder="e.g. Pr. Dzerzhinskogo 104, Office 402"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="destCity" className="text-xs font-semibold">
+                      {dict.purchaseOrders.city || 'City'}
+                    </Label>
+                    <Input
+                      id="destCity"
+                      className="bg-white"
+                      value={formData.shippingAddress.city}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          shippingAddress: { ...formData.shippingAddress, city: e.target.value },
+                        })
+                      }
+                      placeholder="e.g. Minsk"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Supplier & Order Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Order Information</CardTitle>
-            <CardDescription>Basic purchase order details</CardDescription>
+            <CardTitle>{dict.purchaseOrders.orderInformation}</CardTitle>
+            <CardDescription>{dict.purchaseOrders.basicDetails}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="supplierId">Supplier *</Label>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="Search and select supplier..."
-                    value={
-                      formData.supplierId
-                        ? suppliers?.suppliers?.find((s: any) => s.id === formData.supplierId)?.name || ''
-                        : supplierSearch
-                    }
-                    onChange={(e) => {
-                      setSupplierSearch(e.target.value)
-                      setIsSupplierOpen(true)
-                      if (!e.target.value) {
-                        setFormData({ ...formData, supplierId: '' })
-                      }
-                    }}
-                    onFocus={() => setIsSupplierOpen(true)}
-                    className="h-10"
-                  />
-                  {isSupplierOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
-                      {suppliers?.suppliers
-                        ?.filter((supplier: any) =>
-                          supplier.name.toLowerCase().includes(supplierSearch.toLowerCase())
-                        )
-                        .map((supplier: any) => (
-                          <div
-                            key={supplier.id}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                            onClick={() => {
-                              setFormData({ ...formData, supplierId: supplier.id })
-                              setSupplierSearch('')
-                              setIsSupplierOpen(false)
-                            }}
-                          >
-                            {supplier.name}
-                          </div>
-                        ))}
-                      {suppliers?.suppliers?.filter((supplier: any) =>
-                        supplier.name.toLowerCase().includes(supplierSearch.toLowerCase())
-                      ).length === 0 && (
-                        <div className="px-3 py-2 text-gray-500 text-sm">No suppliers found</div>
-                      )}
-                    </div>
-                  )}
-                  {/* Click outside to close */}
-                  {isSupplierOpen && (
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setIsSupplierOpen(false)}
-                    />
-                  )}
-                </div>
-              </div>
-<div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SupplierSelector
+                suppliers={suppliers?.suppliers || []}
+                selectedSupplierId={formData.supplierId}
+                onSelectSupplier={(supplierId) => setFormData({ ...formData, supplierId })}
+                label={dict.purchaseOrders.supplier || 'Supplier'}
+                placeholder={dict.purchaseOrders.supplierPlaceholder || 'Search and select supplier...'}
+                noResultsText={dict.purchaseOrders.noSuppliersFound || 'No suppliers found'}
+                required
+              />
+
               <CurrencySelector
                 currency={formData.currency}
                 onCurrencyChange={(currency) => setFormData({ ...formData, currency })}
@@ -464,10 +668,9 @@ export default function NewPurchaseOrderPage() {
                 baseCurrency="USD"
               />
             </div>
- </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="orderDate">Order Date *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="orderDate" className="block text-sm font-medium">{dict.purchaseOrders.orderDate} *</Label>
                 <div className="relative">
                   <Input
                     id="orderDate"
@@ -478,12 +681,12 @@ export default function NewPurchaseOrderPage() {
                     style={{
                       colorScheme: 'light',
                     }}
-                    className="[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    className="[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:cursor-pointer bg-white"
                   />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="expectedDelivery">Expected Delivery</Label>
+              <div className="space-y-2">
+                <Label htmlFor="expectedDelivery" className="block text-sm font-medium">{dict.purchaseOrders.expectedDate}</Label>
                 <div className="relative">
                   <Input
                     id="expectedDelivery"
@@ -493,7 +696,7 @@ export default function NewPurchaseOrderPage() {
                     style={{
                       colorScheme: 'light',
                     }}
-                    className="[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    className="[&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:cursor-pointer bg-white"
                   />
                 </div>
               </div>
@@ -507,7 +710,7 @@ export default function NewPurchaseOrderPage() {
                 onChange={(e) => setFormData({ ...formData, isUrgent: e.target.checked })}
                 className="w-4 h-4"
               />
-              <Label htmlFor="isUrgent">Mark as Urgent</Label>
+              <Label htmlFor="isUrgent">{dict.purchaseOrders.markUrgent}</Label>
             </div>
           </CardContent>
         </Card>
@@ -517,8 +720,8 @@ export default function NewPurchaseOrderPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Order Items</CardTitle>
-                <CardDescription>Add products from your catalog to this purchase order</CardDescription>
+                <CardTitle>{dict.purchaseOrders.orderItems}</CardTitle>
+                <CardDescription>{dict.purchaseOrders.orderItemsSubtitle}</CardDescription>
               </div>
               <Button
                 type="button"
@@ -528,7 +731,7 @@ export default function NewPurchaseOrderPage() {
                 disabled={productsLoading}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Product
+                {dict.purchaseOrders.addProduct}
               </Button>
             </div>
           </CardHeader>
@@ -537,8 +740,8 @@ export default function NewPurchaseOrderPage() {
               {items.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg bg-gray-50">
                   <Package className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                  <p className="text-lg font-medium text-gray-600">No products added yet</p>
-                  <p className="text-sm text-gray-500 mt-1">Click "Add Product" to select from your catalog</p>
+                  <p className="text-lg font-medium text-gray-600">{dict.purchaseOrders.noProductsAdded}</p>
+                  <p className="text-sm text-gray-500 mt-1">{dict.purchaseOrders.clickAddProductHint}</p>
                 </div>
               ) : (
                 <>
@@ -574,7 +777,7 @@ export default function NewPurchaseOrderPage() {
                                   [item.id]: !isExpanded
                                 }))}
                                 className="text-gray-600 hover:text-gray-800 h-9 px-2"
-                                title={isExpanded ? "Hide variants" : "Show variants"}
+                                title={isExpanded ? dict.purchaseOrders.hideVariants : dict.purchaseOrders.showVariants}
                               >
                                 {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                               </Button>
@@ -585,7 +788,7 @@ export default function NewPurchaseOrderPage() {
                               size="sm"
                               onClick={() => duplicateItem(item)}
                               className="text-blue-600 hover:text-blue-700 h-9 px-2.5"
-                              title="Duplicate item"
+                              title={dict.purchaseOrders.duplicateItem}
                             >
                               <Copy className="w-4 h-4" />
                             </Button>
@@ -595,6 +798,7 @@ export default function NewPurchaseOrderPage() {
                               size="sm"
                               onClick={() => removeItem(item.id)}
                               className="text-red-500 hover:text-red-700 h-9 px-2.5"
+                              title={dict.purchaseOrders.removeItem}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -737,7 +941,7 @@ export default function NewPurchaseOrderPage() {
 
                         <div className="grid grid-cols-3 gap-2.5 pt-1">
                           <div>
-                            <Label className="text-xs font-medium mb-1 block">Quantity</Label>
+                            <Label className="text-xs font-medium mb-1 block">{dict.purchaseOrders.quantity}</Label>
                             <Input
                               type="number"
                               value={item.quantity}
@@ -747,7 +951,7 @@ export default function NewPurchaseOrderPage() {
                             />
                           </div>
                           <div>
-                            <Label className="text-xs font-medium mb-1 block">Unit Price ({formData.currency})</Label>
+                            <Label className="text-xs font-medium mb-1 block">{dict.purchaseOrders.unitCost} ({formData.currency})</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -758,7 +962,7 @@ export default function NewPurchaseOrderPage() {
                             />
                           </div>
                           <div>
-                            <Label className="text-xs font-medium mb-1 block">Total ({formData.currency})</Label>
+                            <Label className="text-xs font-medium mb-1 block">{dict.common.total} ({formData.currency})</Label>
                             <div className="text-base font-semibold mt-1.5 text-gray-900">{item.total.toFixed(2)}</div>
                           </div>
                         </div>
@@ -774,12 +978,12 @@ export default function NewPurchaseOrderPage() {
         {/* Totals */}
         <Card>
           <CardHeader>
-            <CardTitle>Order Totals</CardTitle>
+            <CardTitle>{dict.orders.orderSummary}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="tax">Tax</Label>
+                <Label htmlFor="tax">{dict.orders.tax}</Label>
                 <Input
                   id="tax"
                   type="number"
@@ -790,7 +994,7 @@ export default function NewPurchaseOrderPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="shippingCost">Shipping Cost</Label>
+                <Label htmlFor="shippingCost">{dict.orders.shipping}</Label>
                 <Input
                   id="shippingCost"
                   type="number"
@@ -803,7 +1007,7 @@ export default function NewPurchaseOrderPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="discount">Discount</Label>
+                <Label htmlFor="discount">{dict.orders.discount || 'Discount'}</Label>
                 <Input
                   id="discount"
                   type="number"
@@ -817,23 +1021,23 @@ export default function NewPurchaseOrderPage() {
 
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Subtotal ({formData.currency}):</span>
+                <span>{dict.orders.subtotal} ({formData.currency}):</span>
                 <span className="font-medium">{calculateSubtotal().toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Tax ({formData.currency}):</span>
+                <span>{dict.orders.tax} ({formData.currency}):</span>
                 <span className="font-medium">{formData.tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Shipping ({formData.currency}):</span>
+                <span>{dict.orders.shipping} ({formData.currency}):</span>
                 <span className="font-medium">{formData.shippingCost.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Discount ({formData.currency}):</span>
+                <span>{dict.orders.discount || 'Discount'} ({formData.currency}):</span>
                 <span className="font-medium text-red-500">-{formData.discount.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">
-                <span>Total ({formData.currency}):</span>
+                <span>{dict.common.total} ({formData.currency}):</span>
                 <span className="text-[#1a3a5c]">{calculateTotal().toFixed(2)}</span>
               </div>
               {formData.currency !== 'USD' && (
@@ -855,11 +1059,11 @@ export default function NewPurchaseOrderPage() {
         {/* Notes */}
         <Card>
           <CardHeader>
-            <CardTitle>Additional Information</CardTitle>
+            <CardTitle>{dict.purchaseOrders.additionalInfo}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="notes">Notes (visible to supplier)</Label>
+              <Label htmlFor="notes">{dict.purchaseOrders.notesVisibleToSupplier}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
@@ -868,7 +1072,7 @@ export default function NewPurchaseOrderPage() {
               />
             </div>
             <div>
-              <Label htmlFor="internalNotes">Internal Notes (internal only)</Label>
+              <Label htmlFor="internalNotes">{dict.purchaseOrders.internalNotes}</Label>
               <Textarea
                 id="internalNotes"
                 value={formData.internalNotes}
@@ -883,7 +1087,7 @@ export default function NewPurchaseOrderPage() {
         <div className="flex justify-end gap-3">
           <Link href="/admin/purchase-orders">
             <Button type="button" variant="outline">
-              Cancel
+              {dict.common.cancel}
             </Button>
           </Link>
           <Button
@@ -892,7 +1096,7 @@ export default function NewPurchaseOrderPage() {
             disabled={createPOMutation.isPending}
           >
             <Save className="w-4 h-4 mr-2" />
-            {createPOMutation.isPending ? 'Creating...' : 'Create Purchase Order'}
+            {createPOMutation.isPending ? dict.purchaseOrders.creatingPO : dict.purchaseOrders.createPO}
           </Button>
         </div>
       </form>
@@ -901,9 +1105,9 @@ export default function NewPurchaseOrderPage() {
       <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>Select Products from Catalog</DialogTitle>
+            <DialogTitle>{dict.purchaseOrders.selectProductsCatalog}</DialogTitle>
             <DialogDescription>
-              Choose products from your registered catalog to add to this purchase order
+              {dict.purchaseOrders.selectProductsCatalogSubtitle}
             </DialogDescription>
           </DialogHeader>
           {productsLoading ? (

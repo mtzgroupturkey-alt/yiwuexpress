@@ -13,12 +13,7 @@ export async function GET(
     const country = await prisma.country.findUnique({
       where: { code: params.code.toUpperCase() },
       include: {
-        shippingRates: {
-          where: { isActive: true },
-          orderBy: {
-            baseRate: 'asc'
-          }
-        }
+        translations: true
       }
     })
 

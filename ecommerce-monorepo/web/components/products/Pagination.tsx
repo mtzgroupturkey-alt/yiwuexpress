@@ -37,11 +37,11 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   if (totalPages <= 1) return null
 
   return (
-    <div className="flex items-center justify-center space-x-2 mt-8">
+    <div className="flex items-center justify-center gap-1.5 mt-10">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-3 py-2 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+        className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1524] text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
         aria-label={t('prevPage')}
       >
         <ChevronLeft className="w-4 h-4" />
@@ -51,12 +51,12 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         <button
           key={index}
           onClick={() => typeof page === 'number' && onPageChange(page)}
-          className={`px-4 py-2 rounded transition-colors ${
+          className={`w-10 h-10 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
             page === currentPage
-              ? 'bg-[#1a3a5c] text-white font-medium'
+              ? 'bg-[#0055A4] text-white shadow-md'
               : page === '...'
-                ? 'cursor-default text-gray-400'
-                : 'hover:bg-gray-50 border border-gray-200 text-gray-700'
+                ? 'cursor-default text-slate-400 bg-transparent'
+                : 'bg-white dark:bg-[#0B1524] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-[#0055A4] hover:text-[#0055A4] shadow-xs'
           }`}
           disabled={page === '...'}
           aria-label={typeof page === 'number' ? t('goToPage', { n: page }) : undefined}
@@ -69,7 +69,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-3 py-2 rounded border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+        className="w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0B1524] text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
         aria-label={t('nextPage')}
       >
         <ChevronRight className="w-4 h-4" />

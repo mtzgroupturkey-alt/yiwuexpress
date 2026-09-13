@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Check, AlertCircle, Sparkles } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export type TranslationLocale = 'en' | 'ru' | 'zh'
 
@@ -87,6 +88,7 @@ export function LocalizedFieldsForm({
   autoTranslate = true,
   autoTranslateLocales = ['ru', 'zh'],
 }: LocalizedFieldsFormProps) {
+  const { dict } = useAdminLocale()
   const [activeTab, setActiveTab] = useState<TranslationLocale>('en')
   const [translations, setTranslations] = useState<Record<TranslationLocale, TranslationEntry>>(() =>
     buildInitial(fields, initialValues)
@@ -119,22 +121,43 @@ export function LocalizedFieldsForm({
     })
   }
 
-  const enComplete = fields.every(
-    (f) => (translations[requiredLocale][f.key] ?? '').trim().length > 0
+  // Source can be active tab if filled, or any tab that has all fields filled, or at least has non-empty fields
+  const activeTabComplete = fields.some(
+    (f) => (translations[activeTab][f.key] ?? '').trim().length > 0
+  )
+  const anyTabComplete = LOCALES.some(({ code }) =>
+    fields.some((f) => (translations[code][f.key] ?? '').trim().length > 0)
   )
 
   const handleAutoTranslate = async () => {
-    if (!enComplete || translating) return
+    if (!anyTabComplete || translating) return
     setTranslating(true)
     try {
+      // Determine source locale: prefer activeTab if it has content, otherwise find first tab with content
+      let sourceLocale: TranslationLocale = activeTab
+      if (!activeTabComplete) {
+        for (const { code } of LOCALES) {
+          if (fields.some((f) => (translations[code][f.key] ?? '').trim().length > 0)) {
+            sourceLocale = code
+            break
+          }
+        }
+      }
+
       const sourceFields: Record<string, string> = {}
-      for (const f of fields) sourceFields[f.key] = translations[requiredLocale][f.key] ?? ''
+      for (const f of fields) {
+        const val = translations[sourceLocale][f.key] ?? ''
+        if (val.trim().length > 0) sourceFields[f.key] = val
+      }
+
+      const allLocales: TranslationLocale[] = ['en', 'ru', 'zh']
+      const targetLocales = allLocales.filter((l) => l !== sourceLocale)
 
       const res = await fetch('/api/admin/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ fields: sourceFields, targetLocales: autoTranslateLocales }),
+        body: JSON.stringify({ fields: sourceFields, targetLocales }),
       })
       const data = await res.json()
       if (!res.ok || !data.success) {
@@ -142,7 +165,7 @@ export function LocalizedFieldsForm({
         return
       }
       const incoming: Record<string, Record<string, string>> = data.translations || {}
-      for (const locale of autoTranslateLocales) {
+      for (const locale of targetLocales) {
         if (incoming[locale]) {
           const cleaned: Partial<TranslationEntry> = {}
           for (const f of fields) {
@@ -181,16 +204,16 @@ export function LocalizedFieldsForm({
   return (
     <div className="rounded-lg border border-gray-200 bg-white">
       {/* Auto-translate trigger */}
-      {autoTranslate && autoTranslateLocales.length > 0 && (
+      {autoTranslate && (
         <div className="flex items-center justify-end gap-2 border-b border-gray-200 px-3 py-2">
           <button
             type="button"
             onClick={handleAutoTranslate}
-            disabled={disabled || translating || !enComplete}
+            disabled={disabled || translating || !anyTabComplete}
             title={
-              enComplete
-                ? 'Auto-translate from English using AI'
-                : 'Fill in the English fields first to enable auto-translation'
+              anyTabComplete
+                ? 'Auto-translate using AI'
+                : 'Fill in any language tab first to enable auto-translation'
             }
             className={[
               'group relative inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold text-white',
@@ -203,7 +226,7 @@ export function LocalizedFieldsForm({
               className={translating ? 'w-4 h-4 animate-spin' : 'w-4 h-4'}
               aria-hidden
             />
-            {translating ? 'Translating…' : '✨ Auto-Translate'}
+            {translating ? dict.common.translating : `✨ ${dict.common.autoTranslate}`}
           </button>
         </div>
       )}

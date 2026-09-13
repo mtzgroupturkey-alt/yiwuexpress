@@ -1,0 +1,201 @@
+================================================================================
+EXACT COMMANDS TO FIX PRODUCTION SERVER
+================================================================================
+
+PART 1: ON YOUR WINDOWS COMPUTER (PowerShell)
+================================================================================
+
+Step 1: Open PowerShell and navigate to project
+------------------------------------------------
+cd C:\wamp64\www\yiwuexpress
+
+
+Step 2: Create favicon.ico if it doesn't exist
+-----------------------------------------------
+Copy-Item "ecommerce-monorepo\web\public\favicon.svg" "ecommerce-monorepo\web\public\favicon.ico"
+
+
+Step 3: Upload favicon to server
+---------------------------------
+scp -P 22 "ecommerce-monorepo\web\public\favicon.ico" djdn@39.175.57.2:/www/wwwroot/www.dromkok.com/web/public/
+
+(Enter your SSH password when prompted)
+
+
+================================================================================
+PART 2: ON THE LINUX SERVER (SSH)
+================================================================================
+
+Step 4: Connect to server
+--------------------------
+ssh -p 22 djdn@39.175.57.2
+
+(Enter your SSH password)
+
+
+Step 5: Navigate to web directory
+----------------------------------
+cd /www/wwwroot/www.dromkok.com/web
+
+
+Step 6: Generate Prisma Client with Linux binary
+-------------------------------------------------
+npx prisma generate
+
+
+Step 7: Sync database schema
+-----------------------------
+npx prisma db push --accept-data-loss
+
+
+Step 8: Clear build cache
+--------------------------
+rm -rf .next
+
+
+Step 9: Rebuild application
+----------------------------
+NODE_ENV=production npm run build
+
+
+Step 10: Restart PM2
+---------------------
+pm2 restart dromkok-web
+
+
+Step 11: Save PM2 configuration
+--------------------------------
+pm2 save
+
+
+Step 12: Exit SSH
+------------------
+exit
+
+
+================================================================================
+PART 3: VERIFY THE FIX
+================================================================================
+
+Step 13: Test API endpoints (run on Windows PowerShell)
+--------------------------------------------------------
+# Test public settings API
+Invoke-WebRequest -Uri "https://dromkok.com/api/settings/public" -Method Get
+
+# Test admin settings API  
+Invoke-WebRequest -Uri "https://dromkok.com/api/admin/settings/company" -Method Get
+
+# Test favicon
+Invoke-WebRequest -Uri "https://dromkok.com/favicon.ico" -Method Get
+
+
+Step 14: Open site in browser
+------------------------------
+https://dromkok.com
+
+(Press F12 and check Console - should have no 500 errors)
+
+
+================================================================================
+QUICK COPY/PASTE SECTIONS
+================================================================================
+
+WINDOWS (PowerShell):
+---------------------
+cd C:\wamp64\www\yiwuexpress
+Copy-Item "ecommerce-monorepo\web\public\favicon.svg" "ecommerce-monorepo\web\public\favicon.ico"
+scp -P 22 "ecommerce-monorepo\web\public\favicon.ico" djdn@39.175.57.2:/www/wwwroot/www.dromkok.com/web/public/
+
+
+LINUX SERVER (after SSH):
+--------------------------
+cd /www/wwwroot/www.dromkok.com/web
+npx prisma generate
+npx prisma db push --accept-data-loss
+rm -rf .next
+NODE_ENV=production npm run build
+pm2 restart dromkok-web
+pm2 save
+exit
+
+
+VERIFY (Windows PowerShell):
+-----------------------------
+Invoke-WebRequest -Uri "https://dromkok.com/api/settings/public" -Method Get
+Invoke-WebRequest -Uri "https://dromkok.com/api/admin/settings/company" -Method Get
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+If "npx prisma generate" fails:
+--------------------------------
+npm install @prisma/client
+npx prisma generate
+
+
+If database connection fails:
+------------------------------
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Test connection
+psql "postgresql://ecommerce:LzZH5p5SnRtNKfMy@localhost:5432/ecommerce" -c "\l"
+
+
+If PM2 shows errors:
+--------------------
+pm2 logs dromkok-web --lines 50
+
+
+If build fails:
+---------------
+# Install dependencies
+npm install
+
+# Try build again
+NODE_ENV=production npm run build
+
+
+================================================================================
+EXPECTED RESULTS
+================================================================================
+
+After Step 11 (pm2 save), check PM2 status:
+pm2 status
+
+Should show:
+│ dromkok-web │ online │ ...
+
+After Step 13 (API tests), should see:
+StatusCode        : 200
+StatusDescription : OK
+
+After Step 14 (browser), should see:
+- Site loads correctly
+- No red errors in browser console (F12)
+- Favicon appears in browser tab
+
+
+================================================================================
+TIME ESTIMATE
+================================================================================
+
+Part 1 (Windows):  1-2 minutes
+Part 2 (Server):   3-4 minutes
+Part 3 (Verify):   1 minute
+
+Total: 5-7 minutes
+
+
+================================================================================
+NOTES
+================================================================================
+
+- Enter SSH password when prompted (3 times total)
+- Wait for each command to complete before running the next
+- The build step (Step 9) takes longest (~2 minutes)
+- If any step fails, note the error and ask for help
+
+================================================================================

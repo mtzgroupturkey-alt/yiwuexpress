@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Save, Trash2, Truck } from 'lucide-react'
 import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 const countrySchema = z.object({
   code: z.string().min(2, 'Country code is required').max(2, 'Country code must be 2 characters'),
@@ -36,6 +37,7 @@ interface ShippingRate {
 
 export default function EditCountryPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { dict } = useAdminLocale()
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -125,21 +127,21 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
       const result = await response.json()
 
       if (result.success) {
-        alert('Country updated successfully!')
+        alert(dict.countries.countryUpdatedSuccess)
         router.push('/admin/countries')
       } else {
-        alert(result.error || 'Failed to update country')
+        alert(result.error || dict.countries.updateFailed)
       }
     } catch (error) {
       console.error('Error updating country:', error)
-      alert('Failed to update country')
+      alert(dict.countries.updateFailed)
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this country? This action cannot be undone.')) {
+    if (!confirm(dict.common.confirmDelete)) {
       return
     }
 
@@ -152,14 +154,14 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
       const result = await response.json()
 
       if (result.success) {
-        alert('Country deleted successfully!')
+        alert(dict.countries.countryDeletedSuccess)
         router.push('/admin/countries')
       } else {
-        alert(result.error || 'Failed to delete country')
+        alert(result.error || dict.countries.deleteFailed)
       }
     } catch (error) {
       console.error('Error deleting country:', error)
-      alert('Failed to delete country')
+      alert(dict.countries.deleteFailed)
     } finally {
       setDeleting(false)
     }
@@ -170,7 +172,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading country...</p>
+          <p className="mt-4 text-gray-600">{dict.countries.loadingCountry}</p>
         </div>
       </div>
     )
@@ -187,11 +189,11 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
             onClick={() => router.push('/admin/countries')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {dict.common.back}
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Country</h1>
-            <p className="text-gray-600">Update country configuration</p>
+            <h1 className="text-3xl font-bold text-gray-900">{dict.countries.editCountry}</h1>
+            <p className="text-gray-600">{dict.countries.subtitle}</p>
           </div>
         </div>
         <Button
@@ -201,7 +203,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
           disabled={deleting}
         >
           <Trash2 className="w-4 h-4 mr-2" />
-          {deleting ? 'Deleting...' : 'Delete Country'}
+          {deleting ? dict.common.loading : dict.common.delete}
         </Button>
       </div>
 
@@ -212,12 +214,12 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
             {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle>{dict.products.basicInfo}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="code">Country Code *</Label>
+                    <Label htmlFor="code">{dict.countries.code} *</Label>
                     <Input
                       id="code"
                       {...register('code')}
@@ -231,7 +233,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                     <p className="text-sm text-gray-500 mt-1">2-letter ISO code</p>
                   </div>
                   <div>
-                    <Label htmlFor="name">Country Name *</Label>
+                    <Label htmlFor="name">{dict.countries.countryName} *</Label>
                     <Input
                       id="name"
                       {...register('name')}
@@ -255,7 +257,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="currency">Currency Code *</Label>
+                    <Label htmlFor="currency">{dict.countries.currencyCode} *</Label>
                     <Input
                       id="currency"
                       {...register('currency')}
@@ -269,7 +271,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                     <p className="text-sm text-gray-500 mt-1">3-letter currency code</p>
                   </div>
                   <div>
-                    <Label htmlFor="currencySymbol">Currency Symbol *</Label>
+                    <Label htmlFor="currencySymbol">{dict.countries.currencySymbol} *</Label>
                     <Input
                       id="currencySymbol"
                       {...register('currencySymbol')}
@@ -284,7 +286,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                 </div>
 
                 <div>
-                  <Label htmlFor="flag">Flag (Emoji or URL)</Label>
+                  <Label htmlFor="flag">{dict.countries.flag}</Label>
                   <Input
                     id="flag"
                     {...register('flag')}
@@ -301,11 +303,11 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
             {/* Delivery Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>Delivery Configuration</CardTitle>
+                <CardTitle>{dict.countries.deliveryConfiguration}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="deliverySLA">Delivery SLA</Label>
+                  <Label htmlFor="deliverySLA">{dict.countries.deliverySLA}</Label>
                   <Input
                     id="deliverySLA"
                     {...register('deliverySLA')}
@@ -327,7 +329,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
                     <Truck className="w-5 h-5" />
-                    Shipping Rates ({shippingRates.length})
+                    {dict.countries.shippingRates} ({shippingRates.length})
                   </CardTitle>
                   <Button
                     type="button"
@@ -335,7 +337,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                     variant="outline"
                     disabled
                   >
-                    Add Rate (Coming Soon)
+                    {dict.countries.addShippingRate}
                   </Button>
                 </div>
               </CardHeader>
@@ -351,15 +353,15 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                               Estimated: {rate.estimatedDays || 'N/A'}
                             </p>
                           </div>
-                          <Badge variant="secondary">Active</Badge>
+                          <Badge variant="secondary">{dict.common.active}</Badge>
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div>
-                            <p className="text-gray-600">Base Rate</p>
+                            <p className="text-gray-600">{dict.countries.baseRate}</p>
                             <p className="font-semibold">${rate.baseRate.toFixed(2)}</p>
                           </div>
                           <div>
-                            <p className="text-gray-600">Per KG Rate</p>
+                            <p className="text-gray-600">{dict.countries.ratePerKg}</p>
                             <p className="font-semibold">${rate.ratePerKg.toFixed(2)}</p>
                           </div>
                         </div>
@@ -379,46 +381,34 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
             {/* Additional Configuration */}
             <Card>
               <CardHeader>
-                <CardTitle>Additional Configuration</CardTitle>
+                <CardTitle>{dict.countries.additionalConfig}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">📦 Shipping Methods</h4>
+                  <h4 className="font-semibold text-sm mb-2">📦 {dict.countries.shippingMethods}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Configure shipping methods (Standard, Express, Sea Freight) from the Shipping Rates section
                   </p>
-                  <p className="text-sm text-gray-500 italic">
-                    ShippingMethods JSON structure with rates and estimated delivery times
-                  </p>
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">📋 Customs Rules</h4>
+                  <h4 className="font-semibold text-sm mb-2">📋 {dict.countries.customsRules}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Configure duty rates, VAT rates, threshold amounts, and required documents
                   </p>
-                  <p className="text-sm text-gray-500 italic">
-                    Coming soon: Customs rules configuration interface
-                  </p>
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">💳 Payment Methods</h4>
+                  <h4 className="font-semibold text-sm mb-2">💳 {dict.countries.paymentMethods}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Select accepted payment methods: Bank Transfer, Crypto, PayPal, Stripe
                   </p>
-                  <p className="text-sm text-gray-500 italic">
-                    Coming soon: Payment method selection interface
-                  </p>
                 </div>
 
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-2">🚫 Restricted Products</h4>
+                  <h4 className="font-semibold text-sm mb-2">🚫 {dict.countries.restrictedProducts}</h4>
                   <p className="text-sm text-gray-600 mb-3">
                     Define product categories that cannot be shipped to this country
-                  </p>
-                  <p className="text-sm text-gray-500 italic">
-                    Coming soon: Dangerous goods, batteries, liquids, food items restrictions
                   </p>
                 </div>
               </CardContent>
@@ -430,13 +420,13 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
             {/* Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Status</CardTitle>
+                <CardTitle>{dict.common.status}</CardTitle>
               </CardHeader>
               <CardContent>
                 <label className="flex items-center gap-2">
                   <input type="checkbox" {...register('isActive')} className="w-4 h-4" />
                   <div>
-                    <span className="text-sm font-medium">Active</span>
+                    <span className="text-sm font-medium">{dict.common.active}</span>
                     <p className="text-xs text-gray-500">
                       Customers can ship to this country
                     </p>
@@ -450,7 +440,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
               <CardContent className="p-4 space-y-2">
                 <Button type="submit" className="w-full" disabled={submitting}>
                   <Save className="w-4 h-4 mr-2" />
-                  {submitting ? 'Updating...' : 'Update Country'}
+                  {submitting ? dict.common.loading : dict.common.save}
                 </Button>
                 <Button
                   type="button"
@@ -458,7 +448,7 @@ export default function EditCountryPage({ params }: { params: { id: string } }) 
                   className="w-full"
                   onClick={() => router.push('/admin/countries')}
                 >
-                  Cancel
+                  {dict.common.cancel}
                 </Button>
               </CardContent>
             </Card>

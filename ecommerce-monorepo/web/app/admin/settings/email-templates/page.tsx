@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { LocalizedFieldsForm, translationsArrayToInitial, TranslationRow } from '@/components/admin/LocalizedFieldsForm'
 import { toast } from 'react-hot-toast'
 import { Plus, Pencil, Trash2, Mail } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface EmailTemplateData {
   id: string
@@ -26,6 +27,7 @@ interface EmailTemplateData {
 }
 
 export default function EmailTemplatesPage() {
+  const { dict } = useAdminLocale()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editing, setEditing] = useState<EmailTemplateData | null>(null)
   const queryClient = useQueryClient()
@@ -34,7 +36,7 @@ export default function EmailTemplatesPage() {
     queryKey: ['email-templates'],
     queryFn: async () => {
       const res = await fetch('/api/admin/email-templates')
-      if (!res.ok) throw new Error('Failed to fetch email templates')
+      if (!res.ok) throw new Error(dict.settings.templateSaveFailed)
       return res.json()
     },
   })
@@ -52,33 +54,33 @@ export default function EmailTemplatesPage() {
       )
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Failed to save email template')
+        throw new Error(err.error || dict.settings.templateSaveFailed)
       }
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] })
-      toast.success('Email template saved successfully')
+      toast.success(dict.settings.templateSavedSuccess)
       setIsDialogOpen(false)
       setEditing(null)
     },
     onError: (err: any) => {
-      toast.error(err.message || 'Failed to save email template')
+      toast.error(err.message || dict.settings.templateSaveFailed)
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await fetch(`/api/admin/email-templates/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete email template')
+      if (!res.ok) throw new Error(dict.settings.templateDeleteFailed)
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['email-templates'] })
-      toast.success('Email template deleted successfully')
+      toast.success(dict.settings.templateDeletedSuccess)
     },
     onError: () => {
-      toast.error('Failed to delete email template')
+      toast.error(dict.settings.templateDeleteFailed)
     },
   })
 
@@ -86,8 +88,8 @@ export default function EmailTemplatesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#1a3a5c]">Email Templates</h1>
-          <p className="text-gray-500 mt-1">Manage localized transactional email templates</p>
+          <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.settings.emailTemplates}</h1>
+          <p className="text-gray-500 mt-1">{dict.settings.emailTemplatesSubtitle}</p>
         </div>
         <Button
           onClick={() => {
@@ -97,14 +99,14 @@ export default function EmailTemplatesPage() {
           className="bg-[#1a3a5c] hover:bg-[#1a3a5c]/90"
         >
           <Plus className="w-4 h-4 mr-2" />
-          New Template
+          {dict.settings.newTemplate}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Email Templates</CardTitle>
-          <CardDescription>English is the canonical fallback; RU / ZH override per locale</CardDescription>
+          <CardTitle>{dict.settings.allEmailTemplates}</CardTitle>
+          <CardDescription>{dict.settings.emailTemplatesHelp}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -115,12 +117,12 @@ export default function EmailTemplatesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Subject (EN)</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Translations</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{dict.settings.templateType}</TableHead>
+                  <TableHead>{dict.common.name}</TableHead>
+                  <TableHead>{dict.settings.templateSubject}</TableHead>
+                  <TableHead>{dict.common.status}</TableHead>
+                  <TableHead>{dict.settings.templateTranslations}</TableHead>
+                  <TableHead className="text-right">{dict.common.actions}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -132,7 +134,7 @@ export default function EmailTemplatesPage() {
                       <TableCell>{tpl.subject}</TableCell>
                       <TableCell>
                         <Badge variant={tpl.isActive ? 'default' : 'secondary'}>
-                          {tpl.isActive ? 'Active' : 'Inactive'}
+                          {tpl.isActive ? dict.common.active : dict.common.inactive}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -156,7 +158,7 @@ export default function EmailTemplatesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            if (confirm(`Delete email template "${tpl.name}"?`)) {
+                            if (confirm(dict.settings.deleteTemplateConfirm.replace('{name}', tpl.name))) {
                               deleteMutation.mutate(tpl.id)
                             }
                           }}
@@ -169,7 +171,7 @@ export default function EmailTemplatesPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-gray-500 py-8">
-                      No email templates found
+                      {dict.settings.noEmailTemplatesFound}
                     </TableCell>
                   </TableRow>
                 )}
@@ -182,12 +184,13 @@ export default function EmailTemplatesPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? 'Edit Email Template' : 'New Email Template'}</DialogTitle>
+            <DialogTitle>{editing ? dict.settings.editTemplate : dict.settings.newTemplateTitle}</DialogTitle>
             <DialogDescription>
-              {editing ? 'Update template content and translations' : 'Create a new localized email template'}
+              {editing ? dict.settings.editTemplateDesc : dict.settings.newTemplateDesc}
             </DialogDescription>
           </DialogHeader>
           <EmailTemplateForm
+            dict={dict}
             initialData={editing}
             onSave={(payload) => saveMutation.mutate(payload)}
             onCancel={() => {
@@ -207,11 +210,13 @@ function EmailTemplateForm({
   onSave,
   onCancel,
   isSubmitting,
+  dict,
 }: {
   initialData: EmailTemplateData | null
   onSave: (data: any) => void
   onCancel: () => void
   isSubmitting: boolean
+  dict: any
 }) {
   const [type, setType] = useState(initialData?.type || '')
   const [name, setName] = useState(initialData?.name || '')
@@ -252,7 +257,7 @@ function EmailTemplateForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="type">Type *</Label>
+          <Label htmlFor="type">{dict.settings.templateType} *</Label>
           <Input
             id="type"
             value={type}
@@ -263,7 +268,7 @@ function EmailTemplateForm({
           />
         </div>
         <div>
-          <Label htmlFor="name">Name *</Label>
+          <Label htmlFor="name">{dict.common.name} *</Label>
           <Input
             id="name"
             value={name}
@@ -282,11 +287,11 @@ function EmailTemplateForm({
           onChange={(e) => setIsActive(e.target.checked)}
           className="w-4 h-4"
         />
-        <Label htmlFor="isActive">Active</Label>
+        <Label htmlFor="isActive">{dict.common.active}</Label>
       </div>
 
       <div>
-        <Label htmlFor="subject">Subject (EN) *</Label>
+        <Label htmlFor="subject">{dict.settings.templateSubject} *</Label>
         <Input
           id="subject"
           value={subject}
@@ -296,7 +301,7 @@ function EmailTemplateForm({
       </div>
 
       <div>
-        <Label htmlFor="bodyHtml">HTML Body (EN) *</Label>
+        <Label htmlFor="bodyHtml">{dict.settings.htmlBodyEn} *</Label>
         <Textarea
           id="bodyHtml"
           value={bodyHtml}
@@ -305,12 +310,12 @@ function EmailTemplateForm({
           required
         />
         <p className="text-sm text-gray-500 mt-1">
-          Use {'{placeholders}'} for dynamic content (e.g. {'{name}'}, {'{orderNumber}'}).
+          {dict.settings.placeholdersHelp}
         </p>
       </div>
 
       <div>
-        <Label htmlFor="bodyText">Text Body (EN)</Label>
+        <Label htmlFor="bodyText">{dict.settings.textBodyEn}</Label>
         <Textarea
           id="bodyText"
           value={bodyText}
@@ -320,12 +325,12 @@ function EmailTemplateForm({
       </div>
 
       <div>
-        <Label className="mb-2 block">Localized Content (RU / ZH)</Label>
+        <Label className="mb-2 block">{dict.suppliers.localizedFields}</Label>
         <LocalizedFieldsForm
           fields={[
-            { key: 'subject', label: 'Subject' },
-            { key: 'bodyHtml', label: 'HTML Body', textarea: true },
-            { key: 'bodyText', label: 'Text Body', textarea: true },
+            { key: 'subject', label: dict.settings.templateSubject },
+            { key: 'bodyHtml', label: dict.settings.htmlBodyEn, textarea: true },
+            { key: 'bodyText', label: dict.settings.textBodyEn, textarea: true },
           ]}
           initialValues={translations}
           onChange={setTranslations}
@@ -334,10 +339,10 @@ function EmailTemplateForm({
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {dict.common.cancel}
         </Button>
         <Button type="submit" className="bg-[#1a3a5c]" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : 'Save Template'}
+          {isSubmitting ? dict.common.saving : dict.settings.saveTemplate}
         </Button>
       </DialogFooter>
     </form>

@@ -4,9 +4,8 @@ import { useTranslations, useLocale } from 'next-intl'
 import { useQuery } from '@tanstack/react-query'
 import { LocaleLink } from '@/components/LocaleLink'
 import { api } from '@/lib/api'
-import Link from 'next/link'
 import Image from 'next/image'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, ArrowUpRight } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { Skeleton } from '@/components/ui/skeleton'
 import { motion } from 'framer-motion'
@@ -30,7 +29,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
   const locale = useLocale()
   const queryParams = variant === 'parent'
     ? `parent=null&featured=true&locale=${locale}`
-    : `featured=true&limit=6&locale=${locale}`
+    : `featured=true&limit=8&locale=${locale}`
 
   const { data, isLoading } = useQuery({
     queryKey: ['categories', variant],
@@ -49,20 +48,18 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-gray-50">
+      <section className="py-12 bg-[#F8FAFC] dark:bg-[#060D17]">
         <Container maxWidth="2xl">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">{sectionTitle}</h2>
-            <p className="text-gray-600 mt-3 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-              {sectionSubtitle}
-            </p>
+          <div className="flex items-center justify-between mb-8">
+            <Skeleton className="h-8 w-64 rounded-lg" />
+            <Skeleton className="h-8 w-28 rounded-lg" />
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <Skeleton className="w-24 h-24 md:w-32 md:h-32 rounded-full" />
-                <Skeleton className="h-4 w-20 mt-3" />
-                <Skeleton className="h-3 w-12 mt-1" />
+              <div key={i} className="p-4 bg-white dark:bg-[#0B1524] rounded-2xl border border-slate-200/80 dark:border-slate-800">
+                <Skeleton className="w-full aspect-square rounded-xl mb-3" />
+                <Skeleton className="h-4 w-3/4 mx-auto rounded" />
+                <Skeleton className="h-3 w-1/2 mx-auto mt-2 rounded" />
               </div>
             ))}
           </div>
@@ -72,110 +69,105 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
   }
 
   if (categories.length === 0) {
-    return (
-      <section className="py-16 bg-gray-50">
-        <Container maxWidth="2xl">
-          <div className="text-center py-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">{sectionTitle}</h2>
-            <p className="text-gray-600 mt-3 text-base md:text-lg">{t('empty')}</p>
-          </div>
-        </Container>
-      </section>
-    )
+    return null
   }
 
   return (
-    <section className="py-16 bg-gray-50 overflow-hidden">
+    <section className="py-10 md:py-14 bg-[#F8FAFC] dark:bg-[#060D17] overflow-hidden">
       <Container maxWidth="2xl">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            <span>✨</span> {locale === 'zh' ? '热门分类' : locale === 'ru' ? 'Популярные категории' : 'Popular Categories'}
+        {/* Header - CIS Marketplace Headline */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0055A4]/10 text-[#0055A4] dark:bg-[#0055A4]/25 dark:text-blue-300 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+              <span className="w-2 h-2 rounded-full bg-[#0055A4] animate-ping" />
+              {locale === 'zh' ? '热门商品分类' : locale === 'ru' ? 'Категории товаров' : 'Popular Categories'}
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              {sectionTitle}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl">
+              {sectionSubtitle}
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1a3a5c]">
-            {sectionTitle}
-          </h2>
-          <p className="text-gray-500 mt-2 max-w-2xl mx-auto text-sm md:text-base">
-            {sectionSubtitle}
-          </p>
-        </motion.div>
 
+          <LocaleLink
+            href="/products"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#0055A4] hover:text-[#003E7E] dark:text-blue-400 group flex-shrink-0 transition-colors"
+          >
+            <span>{t('viewAll')}</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </LocaleLink>
+        </div>
+
+        {/* CIS Card Grid (emall.by / 5element.by tile style) */}
         <motion.div 
           initial="hidden"
           whileInView="show"
-          viewport={{ once: true, margin: '-50px' }}
+          viewport={{ once: true, margin: '-40px' }}
           variants={{
             hidden: {},
             show: {
-              transition: {
-                staggerChildren: 0.08
-              }
+              transition: { staggerChildren: 0.05 }
             }
           }}
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 md:gap-8"
+          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"
         >
           {categories.map((category) => (
             <motion.div
               key={category.id}
               variants={{
-                hidden: { opacity: 0, y: 25, scale: 0.95 },
-                show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }
+                hidden: { opacity: 0, y: 15, scale: 0.98 },
+                show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.35, ease: 'easeOut' } }
               }}
             >
               <LocaleLink
                 href={`/products?category=${category.slug}`}
-                className="group flex flex-col items-center outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a84c] focus-visible:ring-offset-4 rounded-2xl p-2 transition-transform"
+                className="group relative flex flex-col items-center p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#0B1524] border border-slate-200/90 dark:border-slate-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_24px_rgba(0,85,164,0.12)] hover:border-[#0055A4]/40 dark:hover:border-[#0055A4]/50 transition-all duration-300 hover:-translate-y-1 block h-full overflow-hidden"
               >
-                <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36">
-                  {/* Subtle animated ambient glow */}
-                  <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-[#1a3a5c]/20 via-[#c9a84c]/25 to-[#1a3a5c]/10 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
+                {/* Arrow icon on hover */}
+                <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:bg-[#0055A4] group-hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 scale-75 group-hover:scale-100 z-10">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
+
+                {/* Product Image / Icon Container */}
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 my-2 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-2xl bg-slate-50 dark:bg-slate-800/60 group-hover:bg-[#0055A4]/5 transition-colors duration-300" />
                   
-                  <div className="relative w-full h-full rounded-full overflow-hidden ring-4 ring-white shadow-premium-lg group-hover:ring-[#c9a84c]/80 group-hover:scale-105 transition-all duration-500">
-                    {category.image ? (
+                  {category.image ? (
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20">
                       <Image
                         src={category.image}
                         alt={category.name}
                         fill
-                        sizes="(max-width: 768px) 96px, (max-width: 1024px) 128px, 144px"
-                        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        sizes="(max-width: 640px) 80px, 96px"
+                        className="object-contain group-hover:scale-110 transition-transform duration-500 ease-out"
                       />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl">
-                        <span className="group-hover:scale-110 transition-transform duration-300">📦</span>
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                      📦
+                    </div>
+                  )}
                 </div>
 
-                <h3 className="mt-3.5 text-sm md:text-base font-semibold text-gray-800 text-center group-hover:text-[#1a3a5c] transition-colors">
-                  {category.name}
-                </h3>
+                {/* Category Name & Count */}
+                <div className="mt-2 text-center w-full">
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 line-clamp-2 leading-tight group-hover:text-[#0055A4] transition-colors">
+                    {category.name}
+                  </h3>
 
-                <div className="w-0 h-0.5 bg-gradient-to-r from-transparent via-[#c9a84c] to-transparent group-hover:w-12 transition-all duration-300 mt-1.5" />
+                  {category.productCount !== undefined && category.productCount > 0 && (
+                    <span className="inline-block mt-1.5 text-[11px] font-semibold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full group-hover:bg-[#0055A4]/10 group-hover:text-[#0055A4] transition-colors">
+                      {category.productCount} {locale === 'zh' ? '件商品' : locale === 'ru' ? 'товаров' : 'items'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Accent Bottom Line */}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0055A4] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
               </LocaleLink>
             </motion.div>
           ))}
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-center mt-12"
-        >
-          <LocaleLink
-            href="/products"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-50 border border-gray-200 text-[#1a3a5c] font-semibold text-sm rounded-full shadow-sm hover:shadow-md hover:border-[#c9a84c]/50 hover:text-[#c9a84c] transition-all duration-300 group outline-none"
-          >
-            {t('viewAll')}
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </LocaleLink>
         </motion.div>
       </Container>
     </section>

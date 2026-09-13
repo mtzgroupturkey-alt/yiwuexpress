@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "skills": {
+    "accessibility": {
+      "source": "thedesignproject/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/accessibility/SKILL.md",
+      "computedHash": "ebfa09617a2ac4fd64afd73267726b787145a8d14294df3f8802b462c91594ab"
+    },
+    "agent-skills-creator": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/agent-skills-creator/SKILL.md",
+      "computedHash": "0ee158e637fa103b3840460cd0e41eef992cb366e7dd1d4fddb7e4b1f9b43853"
+    },
+    "agents-md": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/agents-md/SKILL.md",
+      "computedHash": "3db30f131bd31aa6fe08406eef60b064fe3e9e6ecef7c4c064489d404d0d5606"
+    },
+    "autoship": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/autoship/SKILL.md",
+      "computedHash": "abf64d58ced8aa68c6192329e384d4454632b2d1da973f4a81384c73ee638520"
+    },
+    "ax-audit": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ax-audit/SKILL.md",
+      "computedHash": "fd0ecfe96d5e030f2a9a2c36a5a5eacee75391fedc47eae51b8b126ff2ee4d0d"
+    },
+    "codebase-architecture": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/codebase-architecture/SKILL.md",
+      "computedHash": "faa808861f79fda66fec5be588e28e37fc3a9c1da4fdfcb9be2f82e8f3a09149"
+    },
+    "docs-writing": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/docs-writing/SKILL.md",
+      "computedHash": "8c717ae2380e77f06ae0a55cb76ad1b65bc7c29991481ba1d24ab245a327d408"
+    },
+    "dx-audit": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/dx-audit/SKILL.md",
+      "computedHash": "251d7677be7ba7615c95691d812f3ba103d0097ac258e3fb3103f1975b7f2d7f"
+    },
+    "eli5": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/eli5/SKILL.md",
+      "computedHash": "2fd29578b4e5ed85014e51da5953df8899e9c0cf8aff275b5e866fb4321d0824"
+    },
+    "extract-design-system": {
+      "source": "thedesignproject/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/extract-design-system/SKILL.md",
+      "computedHash": "c66852c6bc6e0267dbcc9651fa698701387fc11c5058104bc33e67f495936f7e"
+    },
+    "figma-generate-design": {
+      "source": "thedesignproject/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/figma-generate-design/SKILL.md",
+      "computedHash": "f9df76236663398855fb988da53039c4d587341d5ace4851ad0b09ef3c268106"
+    },
+    "figma-use": {
+      "source": "thedesignproject/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/figma-use/SKILL.md",
+      "computedHash": "7f4249c65c0dde3042748a285e05e51c0f5bd3b88136b7d465f4876d577ae17e"
+    },
+    "frontend-design": {
+      "source": "thedesignproject/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "739fdfda7f74445ad6b300d6eeba31a82aed276664242580206cd564e6fee3f6"
+    },
+    "multi-tenant-architecture": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/multi-tenant-architecture/SKILL.md",
+      "computedHash": "3c7c23c84104faf618e90accea450825f0298defb2e23d47123a7548360068a2"
+    },
+    "optimise-seo": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/optimise-seo/SKILL.md",
+      "computedHash": "7d5bf83f59153e974e53551313e1c9d57ea8339e9da8f428226c6f35ce480ede"
+    },
+    "planning": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/planning/SKILL.md",
+      "computedHash": "dbf207da557f99a5c22d5279d86504f147c76d020683c9c42a4365bffec64cc0"
+    },
+    "pr-babysitter": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pr-babysitter/SKILL.md",
+      "computedHash": "1f86d183578d5d3e70141f511e8ba01541c573144b4913c7011ab06ae99fb751"
+    },
+    "pr-creator": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pr-creator/SKILL.md",
+      "computedHash": "ba51b377a9c79440795891402ff22c1c93cdbfed7e56e74b4ec998958acc1e14"
+    },
+    "pr-reviewer": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pr-reviewer/SKILL.md",
+      "computedHash": "127ddf80bb8ee9e8d95e6b32792da63c37ff7d1082f7d89d2f2f8f832e48463a"
+    },
+    "presentation-creator": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/presentation-creator/SKILL.md",
+      "computedHash": "2f1eceff0d34709e6f918d4dd46e11a65c614c17029c8806774541e656ff07ed"
+    },
+    "product-design": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/product-design/SKILL.md",
+      "computedHash": "9afbd31f6779a69d23dd0b51750a3ec711ddb4d4274189b2433c7e7d7f162427"
+    },
+    "readme-creator": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/readme-creator/SKILL.md",
+      "computedHash": "c70375d5cd3b5020fd58b04d715742e2edfc43b40961115719117be565233884"
+    },
+    "ruflo": {
+      "source": "ruvnet/ruflo",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "ec14735840185a12a5d2ca3e6016e8546d52aead903f4ed696f0fdec1e65ad95"
+    },
+    "save-md": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/save-md/SKILL.md",
+      "computedHash": "e7efdcce163e2af0fd44d8eba93ebfd78150b7b1469594cfcaab99f87dbd8b05"
+    },
+    "scaffold-cli": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/scaffold-cli/SKILL.md",
+      "computedHash": "65d35bc92c09efb0fdb7d5904abfd935fd5d278d47a7a3608b8af25cfb15108a"
+    },
+    "scaffold-nextjs": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/scaffold-nextjs/SKILL.md",
+      "computedHash": "c354d81bc9c02355548a2184192b984a5f10ae49cc214e2d74de56ed279c23b4"
+    },
+    "seo-program": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/seo-program/SKILL.md",
+      "computedHash": "53ff4e8015b2e15f7d5d4d489b51124b47b7b8c5c440e808d88df20081fd59fc"
+    },
+    "tidy": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tidy/SKILL.md",
+      "computedHash": "be3f7654ed3d49e2c736515cd4e6edf06bbfd1dcd3f001469e4c07da6df09162"
+    },
+    "typography-audit": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/typography-audit/SKILL.md",
+      "computedHash": "eb8b30d292ab1579484ae01ad7af51a31905084a946d8e60d9ff9303be8ba73d"
+    },
+    "ui-animation": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-animation/SKILL.md",
+      "computedHash": "564e852b45cdb9e4430a79428454983912abdfbfc01c2e27971cd72f176c9770"
+    },
+    "ui-design": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-design/SKILL.md",
+      "computedHash": "b469dc4337cf81489573a23a5e78ebe17cfa855c1c64b6c5253481cc44d33e6f"
+    },
+    "ui-verification": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-verification/SKILL.md",
+      "computedHash": "7f5241c518db5e358e0425d5a8956851c0a0f9b73c58557bae196bfbae32b829"
+    }
+  }
+}

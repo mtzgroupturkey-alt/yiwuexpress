@@ -15,12 +15,7 @@ export async function GET(
 
     const country = await prisma.country.findUnique({
       where: { id },
-      include: {
-        shippingRates: {
-          orderBy: { carrier: 'asc' }
-        },
-        translations: true,
-      }
+      include: { translations: true }
     })
 
     if (!country) {
@@ -120,7 +115,7 @@ export async function PUT(
 
     const withTranslations = await prisma.country.findUnique({
       where: { id },
-      include: { translations: true, shippingRates: true }
+      include: { translations: true,  }
     })
 
     return NextResponse.json({
@@ -144,22 +139,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = params
-
-    // Check if country has shipping rates
-    const rateCount = await prisma.shippingRate.count({
-      where: { countryId: id }
-    })
-
-    if (rateCount > 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Cannot delete country with existing shipping rates. Remove rates first or mark country as inactive.' 
-        },
-        { status: 400 }
-      )
-    }
-
     await prisma.country.delete({
       where: { id }
     })

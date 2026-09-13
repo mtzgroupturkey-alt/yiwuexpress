@@ -5,7 +5,7 @@ description: Ruflo is a multi-agent orchestration platform for AI coding agents 
 
 # Ruflo
 
-Ruflo is a cross-agent orchestration layer that ships as three npm packages: `ruflo` (thin wrapper), `claude-flow` (umbrella), and `@claude-flow/cli` (implementation). Users invoke it as `npx ruflo <command>`.
+Ruflo (v3.31.0+) is a cross-agent orchestration layer that ships as three npm packages: `ruflo` (thin wrapper), `claude-flow` (umbrella), and `@claude-flow/cli` (implementation). Users invoke it as `npx ruflo <command>`.
 
 ## When to invoke ruflo
 
@@ -61,10 +61,13 @@ Full plugin list + descriptions: `npx ruflo plugins list`.
 
 ## Cross-agent installation
 
-Ruflo installs into whatever agent the project uses. To pull the full plugin
-skill catalog (30+ plugins, ~267 skills), run:
+Ruflo installs into whatever agent the project uses (auto-detected by skills.sh):
 
 ```bash
+# Just the core ruflo skill (this one)
+npx skills add ruvnet/ruflo --skill ruflo --yes
+
+# Or the full catalog (267 skills across all plugins — much larger install)
 npx skills add ruvnet/ruflo --all
 ```
 
@@ -73,3 +76,7 @@ npx skills add ruvnet/ruflo --all
 - Repository: https://github.com/ruvnet/ruflo
 - Issues: https://github.com/ruvnet/ruflo/issues
 - Sponsor: https://github.com/sponsors/ruvnet
+
+## Version
+
+Current: 3.31.0 (stable, published to npm as `ruflo@latest` / `claude-flow@latest` / `@claude-flow/cli@latest`).

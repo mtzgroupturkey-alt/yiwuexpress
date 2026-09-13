@@ -33,6 +33,7 @@ import {
   RefreshCw,
   AlertCircle,
 } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface CategoryItem {
   id: string
@@ -91,6 +92,7 @@ function SortableCategoryItem({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const { dict } = useAdminLocale()
   const hasChildren = category.children && category.children.length > 0
 
   return (
@@ -140,16 +142,16 @@ function SortableCategoryItem({
               </span>
               {!category.showInMenu && (
                 <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
-                  Hidden
+                  {dict.categories.categoryHiddenFromMenu || 'Hidden'}
                 </span>
               )}
               {category.isFeatured && (
                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
-                  Featured
+                  {dict.products.featured}
                 </span>
               )}
               <span className="text-xs text-gray-400">
-                ({category.productCount} products)
+                ({category.productCount} {dict.nav.products})
               </span>
             </div>
             {category.slug && (
@@ -165,7 +167,7 @@ function SortableCategoryItem({
               className={`p-1.5 rounded hover:bg-gray-100 transition ${
                 category.showInMenu ? 'text-blue-500' : 'text-gray-400'
               }`}
-              title={category.showInMenu ? 'Hide from menu' : 'Show in menu'}
+              title={category.showInMenu ? dict.categories.categoryHiddenFromMenu : dict.categories.categoryShownInMenu}
             >
               {category.showInMenu ? (
                 <Eye className="w-4 h-4" />
@@ -178,7 +180,7 @@ function SortableCategoryItem({
             <button
               onClick={() => onEdit(category)}
               className="p-1.5 rounded hover:bg-gray-100 transition text-gray-500 hover:text-[#1a3a5c]"
-              title="Edit category"
+              title={dict.categories.editCategory}
             >
               <Pencil className="w-4 h-4" />
             </button>
@@ -187,7 +189,7 @@ function SortableCategoryItem({
             <button
               onClick={() => onDelete(category.id)}
               className="p-1.5 rounded hover:bg-red-50 transition text-gray-500 hover:text-red-500"
-              title="Delete category"
+              title={dict.common.delete}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -215,6 +217,7 @@ function SortableCategoryItem({
 }
 
 export default function CategoryMenuManager() {
+  const { dict } = useAdminLocale()
   const [categories, setCategories] = useState<CategoryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -515,11 +518,10 @@ export default function CategoryMenuManager() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-[#1a3a5c]">
-            Category Menu Manager
+            {dict.categories.menuManager}
           </h1>
           <p className="text-gray-500 mt-1">
-            Drag and drop to reorder categories, create hierarchies, and control menu
-            visibility
+            {dict.categories.menuManagerSubtitle}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -528,14 +530,14 @@ export default function CategoryMenuManager() {
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {dict.common.refresh}
           </button>
           <button
             onClick={handleAdd}
             className="px-4 py-2 text-sm font-medium text-white bg-[#1a3a5c] rounded-lg hover:bg-[#2a5a8c] transition flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            Add Category
+            {dict.categories.addCategory}
           </button>
           <button
             onClick={handleSaveOrder}
@@ -543,7 +545,7 @@ export default function CategoryMenuManager() {
             className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-4 h-4" />
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? dict.common.saving : dict.common.save}
           </button>
         </div>
       </div>
@@ -568,10 +570,9 @@ export default function CategoryMenuManager() {
       {/* Main Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Menu Structure</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{dict.categories.menuStructure}</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Drag categories up/down to reorder. Use the eye icon to show/hide from
-            menu.
+            {dict.categories.menuStructureSubtitle}
           </p>
         </div>
 
@@ -579,20 +580,19 @@ export default function CategoryMenuManager() {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-[#1a3a5c] rounded-full animate-spin"></div>
-              <p className="text-gray-500 mt-4">Loading categories...</p>
+              <p className="text-gray-500 mt-4">{dict.categories.loadingCategoryTree}</p>
             </div>
           ) : categories.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 mb-4">
-                No categories found. Create your first category to start building your
-                menu.
+                {dict.categories.noCategoriesEmptyState}
               </p>
               <button
                 onClick={handleAdd}
                 className="px-4 py-2 text-sm font-medium text-white bg-[#1a3a5c] rounded-lg hover:bg-[#2a5a8c] transition inline-flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add Category
+                {dict.categories.addCategory}
               </button>
             </div>
           ) : (
@@ -624,8 +624,7 @@ export default function CategoryMenuManager() {
 
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <p className="text-sm text-gray-600">
-            💡 <strong>Tip:</strong> Drag and drop to reorder. Changes are saved when you
-            click "Save Changes". Up to 3 levels of nesting supported.
+            💡 {dict.categories.menuTip}
           </p>
         </div>
       </div>

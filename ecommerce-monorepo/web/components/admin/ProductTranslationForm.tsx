@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Check, AlertCircle } from 'lucide-react'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
+import { RichTextEditor } from '@/components/admin/RichTextEditor'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export type TranslationLocale = 'en' | 'ru' | 'zh'
 
@@ -52,6 +54,7 @@ export function ProductTranslationForm({
   onChange,
   disabled = false
 }: ProductTranslationFormProps) {
+  const { dict } = useAdminLocale()
   const [activeTab, setActiveTab] = useState<TranslationLocale>('en')
   const [translations, setTranslations] = useState<TranslationPayload>(() =>
     buildInitial(initialValues)
@@ -82,7 +85,12 @@ export function ProductTranslationForm({
       {/* Auto-translate trigger */}
       <div className="flex items-center justify-end gap-2 border-b border-gray-200 px-3 py-2">
         <AutoTranslateButton
-          enFields={{ name: translations.en.name, description: translations.en.description }}
+          sourceLocale={activeTab}
+          allFields={{
+            en: { name: translations.en.name, description: translations.en.description },
+            ru: { name: translations.ru.name, description: translations.ru.description },
+            zh: { name: translations.zh.name, description: translations.zh.description },
+          }}
           onTranslated={(result) => {
             const next = { ...translations }
             for (const locale of Object.keys(result)) {
@@ -170,12 +178,12 @@ export function ProductTranslationForm({
                   <span className="text-base" aria-hidden>
                     {LOCALES.find((l) => l.code === code)?.flag}
                   </span>
-                  {label} Name
+                  {label} {dict.common.name}
                   {required ? (
                     <span className="text-red-600">*</span>
                   ) : (
                     <span className="text-xs font-normal text-gray-500">
-                      (optional, recommended)
+                      {dict.products.optionalRecommended}
                     </span>
                   )}
                 </label>
@@ -186,7 +194,7 @@ export function ProductTranslationForm({
                   disabled={disabled}
                   onChange={(e) => update(code, 'name', e.target.value)}
                   onBlur={() => handleBlur(code)}
-                  placeholder={`Enter ${label} product name`}
+                  placeholder={dict.products.enterNamePlaceholder.replace('{label}', label)}
                   className={[
                     'w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2',
                     showEnError
@@ -197,27 +205,23 @@ export function ProductTranslationForm({
                 {showEnError && (
                   <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    English name is required before submitting.
+                    {dict.products.nameRequiredError}
                   </p>
                 )}
               </div>
 
               <div>
                 <label
-                  htmlFor={`translation-${code}-description`}
                   className="mb-1.5 block text-sm font-semibold text-gray-800"
                 >
-                  {label} Description
+                  {label} {dict.common.description}
                   {required && <span className="text-red-600"> *</span>}
                 </label>
-                <textarea
-                  id={`translation-${code}-description`}
+                <RichTextEditor
                   value={entry.description}
                   disabled={disabled}
-                  rows={6}
-                  onChange={(e) => update(code, 'description', e.target.value)}
-                  placeholder={`Enter ${label} product description`}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm leading-relaxed focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                  onChange={(html) => update(code, 'description', html)}
+                  placeholder={dict.products.enterDescPlaceholder.replace('{label}', label)}
                 />
               </div>
             </div>

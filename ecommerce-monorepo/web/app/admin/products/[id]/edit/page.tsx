@@ -19,6 +19,7 @@ import {
   validateTranslations,
   type TranslationPayload
 } from '@/components/admin/ProductTranslationForm'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface MediaItem {
   url: string
@@ -46,6 +47,8 @@ const productSchema = z.object({
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   isActive: z.boolean().default(true),
+  availableForRetail: z.boolean().default(true),
+  availableForWholesale: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
   isFlashSale: z.boolean().default(false),
   flashSalePrice: z.number().optional(),
@@ -62,6 +65,7 @@ type ProductForm = z.input<typeof productSchema>
 
 export default function EditProductPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { dict } = useAdminLocale()
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -131,6 +135,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           metaTitle: product.metaTitle || '',
           metaDescription: product.metaDescription || '',
           isActive: product.isActive,
+          availableForRetail: product.availableForRetail ?? true,
+          availableForWholesale: product.availableForWholesale ?? true,
           isFeatured: product.isFeatured,
           isFlashSale: product.isFlashSale,
           flashSalePrice: product.flashSalePrice || undefined,
@@ -188,12 +194,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           setAttributeValues(product.attributes)
         }
       } else {
-        alert('Product not found')
+        alert(dict.products.productNotFound)
         router.push('/admin/products')
       }
     } catch (error) {
       console.error('Error fetching product:', error)
-      alert('Failed to load product')
+      alert(dict.products.loadProductFailed)
     } finally {
       setLoading(false)
     }
@@ -205,7 +211,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       // Validate translations: English name is mandatory.
       if (!translations || !validateTranslations(translations).valid) {
         alert(validateTranslations(translations ?? ({} as TranslationPayload)).error ||
-          'English (EN) translation name is required.')
+          dict.products.nameRequiredError)
         setSubmitting(false)
         return
       }
@@ -249,21 +255,21 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       const result = await response.json()
 
       if (result.success) {
-        alert('Product updated successfully!')
+        alert(dict.products.productUpdatedSuccess)
         router.push('/admin/products')
       } else {
-        alert(result.error || 'Failed to update product')
+        alert(result.error || dict.products.updateFailed)
       }
     } catch (error) {
       console.error('Error updating product:', error)
-      alert('Failed to update product')
+      alert(dict.products.updateFailed)
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    if (!confirm(dict.products.deleteConfirm)) {
       return
     }
 
@@ -276,14 +282,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       const result = await response.json()
 
       if (result.success) {
-        alert('Product deleted successfully!')
+        alert(dict.products.productDeletedSuccess)
         router.push('/admin/products')
       } else {
-        alert(result.error || 'Failed to delete product')
+        alert(result.error || dict.products.deleteFailed)
       }
     } catch (error) {
       console.error('Error deleting product:', error)
-      alert('Failed to delete product')
+      alert(dict.products.deleteFailed)
     } finally {
       setDeleting(false)
     }
@@ -294,7 +300,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product...</p>
+          <p className="mt-4 text-gray-600">{dict.products.loadingProduct}</p>
         </div>
       </div>
     )
@@ -306,11 +312,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <button onClick={() => router.push('/admin/products')} className="hover:text-[#1a3a5c] transition-colors">Products</button>
+            <button onClick={() => router.push('/admin/products')} className="hover:text-[#1a3a5c] transition-colors">{dict.nav.products}</button>
             <span>/</span>
-            <span className="text-gray-900 font-medium">Edit</span>
+            <span className="text-gray-900 font-medium">{dict.products.editBreadcrumb}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3a5c]">Edit Product</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1a3a5c]">{dict.products.editProduct}</h1>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -321,7 +327,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             disabled={deleting}
           >
             <Trash2 className="w-4 h-4 mr-2" />
-            {deleting ? 'Deleting...' : 'Delete'}
+            {deleting ? dict.common.loading : dict.common.delete}
           </Button>
           <Button
             type="button"
@@ -329,7 +335,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             className="rounded-xl hidden sm:flex"
             onClick={() => router.push('/admin/products')}
           >
-            Cancel
+            {dict.common.cancel}
           </Button>
           <Button 
             onClick={handleSubmit(onSubmit)} 
@@ -337,7 +343,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             className="rounded-xl bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white hover:opacity-90 transition-opacity"
           >
             <Save className="w-4 h-4 mr-2" />
-            {submitting ? 'Saving...' : 'Save Changes'}
+            {submitting ? dict.products.savingProduct : dict.common.save}
           </Button>
         </div>
       </div>
@@ -348,22 +354,22 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Basic Information</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.basicInfo}</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="sku" className="text-xs font-bold text-gray-700 uppercase tracking-wider">SKU *</Label>
+                  <Label htmlFor="sku" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.sku} *</Label>
                   <Input id="sku" {...register('sku')} className="rounded-xl bg-gray-50/50 focus:bg-white transition-colors" />
                   {errors.sku && <p className="text-red-600 text-sm mt-1">{errors.sku.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="categoryId" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Category</Label>
+                  <Label htmlFor="categoryId" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.category}</Label>
                   <CategoryDropdown
                     categories={categories}
                     value={selectedCategoryId}
                     onChange={(value) => setValue('categoryId', value || '')}
-                    placeholder="Select a category..."
-                    searchPlaceholder="Search categories..."
+                    placeholder={dict.products.selectCategory}
+                    searchPlaceholder={dict.products.searchCategories}
                     clearable
                     showPath
                     showLevelIndicator
@@ -372,7 +378,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name" className="sr-only">Product Name *</Label>
+                <Label htmlFor="name" className="sr-only">{dict.products.productName} *</Label>
                 {translations && (
                   <ProductTranslationForm
                     initialValues={translations}
@@ -383,7 +389,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="slug" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Slug *</Label>
+                <Label htmlFor="slug" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.slug} *</Label>
                 <Input id="slug" {...register('slug')} className="rounded-xl bg-gray-50/50 focus:bg-white transition-colors" />
                 {errors.slug && <p className="text-red-600 text-sm mt-1">{errors.slug.message}</p>}
               </div>
@@ -398,29 +404,29 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
             {/* Pricing */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Pricing</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.pricing}</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="price" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Price ($) *</Label>
+                  <Label htmlFor="price" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.priceWithSymbol} *</Label>
                   <Input id="price" type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="rounded-xl" />
                   {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="compareAtPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Compare at Price ($)</Label>
+                  <Label htmlFor="compareAtPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.compareAtPriceWithSymbol}</Label>
                   <Input id="compareAtPrice" type="number" step="0.01" {...register('compareAtPrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="costPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Cost Price ($)</Label>
+                  <Label htmlFor="costPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.costPriceWithSymbol}</Label>
                   <Input id="costPrice" type="number" step="0.01" {...register('costPrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="wholesalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Wholesale Price ($)</Label>
+                  <Label htmlFor="wholesalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.wholesalePriceWithSymbol}</Label>
                   <Input id="wholesalePrice" type="number" step="0.01" {...register('wholesalePrice', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="minOrderQty" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Min Order Quantity</Label>
+                  <Label htmlFor="minOrderQty" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.minOrderQuantityLabel}</Label>
                   <Input id="minOrderQty" type="number" {...register('minOrderQty', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
               </div>
@@ -428,15 +434,15 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
             {/* Inventory */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Inventory</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.inventory}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Stock Quantity *</Label>
+                  <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.stockQuantity} *</Label>
                   <Input id="stock" type="number" {...register('stock', { valueAsNumber: true })} className="rounded-xl" />
                   {errors.stock && <p className="text-red-600 text-sm mt-1">{errors.stock.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lowStockThreshold" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Low Stock Threshold</Label>
+                  <Label htmlFor="lowStockThreshold" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.lowStockThreshold}</Label>
                   <Input id="lowStockThreshold" type="number" {...register('lowStockThreshold', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
               </div>
@@ -444,51 +450,51 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
             {/* Compliance & Shipping */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Compliance & Shipping</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.complianceShipping}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="weightKg" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Weight (kg) *</Label>
+                  <Label htmlFor="weightKg" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.weightKg} *</Label>
                   <Input id="weightKg" type="number" step="0.01" {...register('weightKg', { valueAsNumber: true })} className="rounded-xl" />
                   {errors.weightKg && <p className="text-red-600 text-sm mt-1">{errors.weightKg.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="hsCode" className="text-xs font-bold text-gray-700 uppercase tracking-wider">HS Code</Label>
+                  <Label htmlFor="hsCode" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.hsCode}</Label>
                   <Input id="hsCode" {...register('hsCode')} className="rounded-xl" />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="countryOfOrigin" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Country of Origin</Label>
+                  <Label htmlFor="countryOfOrigin" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.countryOfOrigin}</Label>
                   <Input id="countryOfOrigin" {...register('countryOfOrigin')} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="material" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Material</Label>
+                  <Label htmlFor="material" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.material}</Label>
                   <Input id="material" {...register('material')} className="rounded-xl" />
                 </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('fragile')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Fragile</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.fragile}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('exportRestricted')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Export Restricted</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.exportRestricted}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('dangerousGoods')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Dangerous Goods</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.dangerousGoods}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <input type="checkbox" {...register('batteryIncluded')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Battery Included</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.batteryIncluded}</span>
                 </label>
               </div>
             </div>
 
             {/* Images & Videos */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Product Images & Videos</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.imagesVideos}</h2>
               <ProductMediaUpload
                 media={media}
                 onChange={setMedia}
@@ -498,14 +504,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
             {/* SEO */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">SEO</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.seo}</h2>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="metaTitle" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Meta Title</Label>
+                  <Label htmlFor="metaTitle" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.metaTitle}</Label>
                   <Input id="metaTitle" {...register('metaTitle')} className="rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="metaDescription" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Meta Description</Label>
+                  <Label htmlFor="metaDescription" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.metaDescription}</Label>
                   <textarea
                     id="metaDescription"
                     {...register('metaDescription')}
@@ -521,43 +527,60 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           <div className="space-y-6">
             {/* Status */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Status</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.statusSection}</h2>
               <div className="space-y-4">
                 <label className="flex items-center gap-3 cursor-pointer group">
                   <input type="checkbox" {...register('isActive')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Active (Visible)</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.activeVisible}</span>
                 </label>
-                <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="pt-2 border-t border-gray-100 space-y-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">Sales Channels</span>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" {...register('availableForRetail')} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" />
+                    <div>
+                      <span className="text-sm font-medium group-hover:text-gray-900 block">Available for Retail (B2C)</span>
+                      <span className="text-[11px] text-gray-400">Listed for consumer checkout</span>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" {...register('availableForWholesale')} className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500" />
+                    <div>
+                      <span className="text-sm font-medium group-hover:text-gray-900 block">Available for Wholesale (B2B)</span>
+                      <span className="text-[11px] text-gray-400">Listed with MOQ and tiered pricing</span>
+                    </div>
+                  </label>
+                </div>
+                <label className="flex items-center gap-3 cursor-pointer group pt-2 border-t border-gray-100">
                   <input type="checkbox" {...register('isFeatured')} className="w-5 h-5 rounded text-amber-500 focus:ring-amber-500" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">Featured</span>
+                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.featured}</span>
                 </label>
               </div>
             </div>
 
             {/* Flash Sale */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">Flash Sale</h2>
+              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.flashSale}</h2>
               <label className="flex items-center gap-3 cursor-pointer group mb-4">
                 <input type="checkbox" {...register('isFlashSale')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                <span className="text-sm font-medium group-hover:text-gray-900">Enable Flash Sale</span>
+                <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.enableFlashSale}</span>
               </label>
               
               {watch('isFlashSale') && (
                 <div className="space-y-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">
                   <div className="space-y-2">
-                    <Label htmlFor="flashSalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Flash Sale Price ($)</Label>
+                    <Label htmlFor="flashSalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.flashSalePriceWithSymbol}</Label>
                     <Input id="flashSalePrice" type="number" step="0.01" {...register('flashSalePrice', { valueAsNumber: true })} className="rounded-xl bg-white" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="flashSaleStart" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Start Date</Label>
+                    <Label htmlFor="flashSaleStart" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.startDate}</Label>
                     <Input id="flashSaleStart" type="datetime-local" {...register('flashSaleStart')} className="rounded-xl bg-white" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="flashSaleEnd" className="text-xs font-bold text-gray-700 uppercase tracking-wider">End Date</Label>
+                    <Label htmlFor="flashSaleEnd" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.endDate}</Label>
                     <Input id="flashSaleEnd" type="datetime-local" {...register('flashSaleEnd')} className="rounded-xl bg-white" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="flashSaleStock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">Flash Sale Stock</Label>
+                    <Label htmlFor="flashSaleStock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.flashSaleStock}</Label>
                     <Input id="flashSaleStock" type="number" {...register('flashSaleStock', { valueAsNumber: true })} className="rounded-xl bg-white" />
                   </div>
                 </div>
@@ -568,7 +591,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-3 sticky top-6">
               <Button type="submit" className="w-full rounded-xl bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white hover:opacity-90 h-11" disabled={submitting}>
                 <Save className="w-4 h-4 mr-2" />
-                {submitting ? 'Saving...' : 'Save Changes'}
+                {submitting ? dict.products.savingProduct : dict.common.save}
               </Button>
               <Button
                 type="button"
@@ -576,7 +599,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 className="w-full rounded-xl h-11 border-gray-200 hover:bg-gray-50 hover:text-gray-900"
                 onClick={() => router.push('/admin/products')}
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Upload, X, Link2, Image as ImageIcon, Video as VideoIcon, Play } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface MediaItem {
   url: string
@@ -19,6 +20,7 @@ interface ProductMediaUploadProps {
 }
 
 export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMediaUploadProps) {
+  const { dict } = useAdminLocale()
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [urlInput, setUrlInput] = useState('')
@@ -66,7 +68,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
 
     // Check if adding these files would exceed maxItems
     if (media.length + files.length > maxItems) {
-      setError(`Maximum ${maxItems} media items allowed`)
+      setError(dict.products.mediaMaxAllowed.replace('{max}', maxItems.toString()))
       return
     }
 
@@ -83,7 +85,11 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
         // Validate file size
         const maxSize = type === 'video' ? 100 * 1024 * 1024 : 5 * 1024 * 1024 // 100MB for video, 5MB for image
         if (file.size > maxSize) {
-          setError(`${file.name} is too large. Maximum size is ${type === 'video' ? '100MB' : '5MB'}`)
+          setError(
+            dict.products.mediaTooLarge
+              .replace('{name}', file.name)
+              .replace('{max}', type === 'video' ? '100MB' : '5MB')
+          )
           continue
         }
 
@@ -91,13 +97,13 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
         if (type === 'image') {
           const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/jpg']
           if (!validTypes.includes(file.type)) {
-            setError(`${file.name} is not a valid image format`)
+            setError(dict.products.invalidImageFormat.replace('{name}', file.name))
             continue
           }
         } else {
           const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']
           if (!validTypes.includes(file.type)) {
-            setError(`${file.name} is not a valid video format (MP4, WebM, MOV, AVI, MKV)`)
+            setError(dict.products.invalidVideoFormat.replace('{name}', file.name))
             continue
           }
         }
@@ -105,68 +111,58 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
         // Upload to server
         const formData = new FormData()
         formData.append('file', file)
-        formData.append('type', 'products')
-        formData.append('mediaType', type)
-
-        // Get auth token from localStorage
-        const token = localStorage.getItem('token')
+        formData.append('type', type)
 
         const response = await fetch('/api/admin/upload', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
           body: formData
         })
 
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error || 'Upload failed')
-        }
+        const data = await response.json()
 
-        const { url } = await response.json()
-        uploadedItems.push({ url, type })
+        if (data.success && data.url) {
+          uploadedItems.push({
+            url: data.url,
+            type
+          })
+        } else {
+          setError(`Failed to upload ${file.name}: ${data.error || 'Unknown error'}`)
+        }
       }
 
-      // Add uploaded items to existing media
-      onChange([...media, ...uploadedItems])
-      setIsUploading(false)
-      
-      // Reset file inputs
-      if (imageInputRef.current) imageInputRef.current.value = ''
-      if (videoInputRef.current) videoInputRef.current.value = ''
+      if (uploadedItems.length > 0) {
+        onChange([...media, ...uploadedItems])
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to upload media. Please try again.')
-      console.error('Upload error:', err)
+      setError(`Upload failed: ${err.message}`)
+    } finally {
       setIsUploading(false)
+      // Reset input
+      if (type === 'image' && imageInputRef.current) {
+        imageInputRef.current.value = ''
+      }
+      if (type === 'video' && videoInputRef.current) {
+        videoInputRef.current.value = ''
+      }
     }
   }
 
   const handleAddUrl = () => {
-    if (!urlInput.trim()) {
-      setError('Please enter a valid URL')
-      return
-    }
+    if (!urlInput.trim()) return
 
-    // Check if we've reached the max items
+    // Check if adding this URL would exceed maxItems
     if (media.length >= maxItems) {
-      setError(`Maximum ${maxItems} media items allowed`)
+      setError(dict.products.mediaMaxAllowed.replace('{max}', maxItems.toString()))
       return
     }
 
-    // Basic URL validation
-    try {
-      new URL(urlInput)
-    } catch {
-      setError('Please enter a valid URL')
-      return
-    }
+    const type = detectMediaType(urlInput.trim())
+    
+    onChange([...media, {
+      url: urlInput.trim(),
+      type
+    }])
 
-    // Detect media type
-    const type = detectMediaType(urlInput)
-
-    // Add URL to media
-    onChange([...media, { url: urlInput.trim(), type }])
     setUrlInput('')
     setShowUrlInput(false)
     setError(null)
@@ -211,9 +207,9 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-semibold">Product Images & Videos</Label>
+        <Label className="text-base font-semibold">{dict.products.imagesVideos}</Label>
         <span className="text-sm text-gray-500">
-          {media.length} / {maxItems} items ({media.filter(m => m.type === 'image').length} images, {media.filter(m => m.type === 'video').length} videos)
+          {media.length} / {maxItems} items ({media.filter(m => m.type === 'image').length} {dict.products.imageBadge.toLowerCase()}s, {media.filter(m => m.type === 'video').length} {dict.products.videoBadge.toLowerCase()}s)
         </span>
       </div>
 
@@ -227,7 +223,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
           className="flex items-center gap-2"
         >
           <ImageIcon className="w-4 h-4" />
-          {isUploading ? 'Uploading...' : 'Upload Images'}
+          {isUploading ? dict.common.loading : dict.products.uploadImages}
         </Button>
 
         <Button
@@ -238,7 +234,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
           className="flex items-center gap-2"
         >
           <VideoIcon className="w-4 h-4" />
-          {isUploading ? 'Uploading...' : 'Upload Videos'}
+          {isUploading ? dict.common.loading : dict.products.uploadVideos}
         </Button>
 
         <Button
@@ -249,7 +245,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
           className="flex items-center gap-2"
         >
           <Link2 className="w-4 h-4" />
-          Add from URL
+          {dict.products.addFromUrl}
         </Button>
 
         <input
@@ -277,7 +273,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
           <CardContent className="pt-4">
             <div className="space-y-3">
               <p className="text-sm text-gray-600">
-                Enter image or video URL (supports YouTube, Vimeo, direct links)
+                {dict.products.enterMediaUrlPrompt}
               </p>
               <div className="flex gap-2">
                 <Input
@@ -293,7 +289,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                   onClick={handleAddUrl}
                   disabled={!urlInput.trim()}
                 >
-                  Add
+                  {dict.common.add}
                 </Button>
                 <Button
                   type="button"
@@ -304,7 +300,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                     setError(null)
                   }}
                 >
-                  Cancel
+                  {dict.common.cancel}
                 </Button>
               </div>
             </div>
@@ -322,8 +318,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
       {/* Helper Text */}
       <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
         <p className="text-sm text-blue-800">
-          <strong>ðŸ’¡ Tips:</strong> First image = product thumbnail. Videos: max 100MB, Images: max 5MB. 
-          Supported: MP4, WebM, MOV for videos | JPEG, PNG, WebP, GIF for images
+          <strong>💡 {dict.products.mediaTips}</strong>
         </p>
       </div>
 
@@ -365,7 +360,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                   {/* Thumbnail Badge */}
                   {index === 0 && item.type === 'image' && (
                     <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                      Thumbnail
+                      {dict.products.thumbnailBadge}
                     </div>
                   )}
 
@@ -374,12 +369,12 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                     {item.type === 'video' ? (
                       <div className="bg-red-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
                         <VideoIcon className="w-3 h-3" />
-                        Video
+                        {dict.products.videoBadge}
                       </div>
                     ) : (
                       <div className="bg-green-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
                         <ImageIcon className="w-3 h-3" />
-                        Image
+                        {dict.products.imageBadge}
                       </div>
                     )}
                   </div>
@@ -395,7 +390,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                       className="h-8 w-8 p-0"
                       title="Move up"
                     >
-                      â†‘
+                      ↑
                     </Button>
                     <Button
                       type="button"
@@ -406,7 +401,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
                       className="h-8 w-8 p-0"
                       title="Move down"
                     >
-                      â†“
+                      ↓
                     </Button>
                     <Button
                       type="button"
@@ -423,7 +418,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
 
                 {/* Media URL Display */}
                 <p className="text-xs text-gray-500 mt-2 truncate" title={item.url}>
-                  {item.url.startsWith('http') ? 'ðŸ”— URL' : 'ðŸ“ Uploaded'} â€¢ {item.type}
+                  {item.url.startsWith('http') ? '🔗 URL' : '📁 Uploaded'} • {item.type}
                 </p>
               </CardContent>
             </Card>
@@ -436,8 +431,8 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
               <ImageIcon className="w-12 h-12 opacity-50" />
               <VideoIcon className="w-12 h-12 opacity-50" />
             </div>
-            <p className="text-sm font-medium">No images or videos added yet</p>
-            <p className="text-xs mt-1">Upload from computer or add from URL</p>
+            <p className="text-sm font-medium">{dict.products.noMediaAdded}</p>
+            <p className="text-xs mt-1">{dict.products.uploadFromComputerOrUrl}</p>
           </CardContent>
         </Card>
       )}

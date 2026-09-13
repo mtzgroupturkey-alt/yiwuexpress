@@ -8,10 +8,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { getApiKeys } from '@/lib/api-keys'
 
-const TARGET_LOCALES = ['ru', 'zh'] as const
+const TARGET_LOCALES = ['en', 'ru', 'zh'] as const
 type TargetLocale = (typeof TARGET_LOCALES)[number]
 
 const LOCALE_NAMES: Record<TargetLocale, string> = {
+  en: 'English',
   ru: 'Russian',
   zh: 'Simplified Chinese',
 }
@@ -43,20 +44,25 @@ interface TranslateRequest {
  * to every provider model (OpenRouter, DeepSeek, Qwen, Moonshot, Gemini). Do not alter.
  */
 const SYSTEM_PROMPT =
-  'You are an expert e-commerce and logistics translator. Translate the provided key-value dictionary into the requested target locales. ' +
+  'You are an expert multi-lingual e-commerce and logistics translator. The source data can be in English, Russian, or Chinese. ' +
+  'Translate the provided key-value dictionary into each of the requested target locales accurately. ' +
   'Maintain all HTML tags, variables, placeholders, or layout structures exactly as they are. ' +
-  'Return your answer strictly as a valid, parsable minified JSON object mapping each locale to its translated key-value pairs. ' +
+  'Return your answer strictly as a valid, parsable minified JSON object mapping each requested target locale to its translated key-value pairs. ' +
   'Do not include markdown codeblocks, backticks (e.g. ```json), or any conversational prose.'
 
 // Few-shot example to anchor the expected JSON shape.
 const FEW_SHOT_EXAMPLE = {
+  en: {
+    name: 'Heavy Duty Shipping Box',
+    description: 'Double-walled corrugated cardboard box for international cargo.',
+  },
   ru: {
     name: 'Прочная транспортная коробка',
     description: 'Двухслойная коробка из гофрокартона для международных грузов.',
   },
   zh: {
     name: '重型运输箱',
-    description: '用于国际貨物的双层瓦楞纸箱。',
+    description: '用于国际货物的双层瓦楞纸箱。',
   },
 }
 

@@ -1,0 +1,219 @@
+================================================================================
+PRODUCTION SERVER ERROR FIX - CHECKLIST
+================================================================================
+
+Server: 39.175.57.2 (djdn@22)
+Domain: dromkok.com
+Path: /www/wwwroot/www.dromkok.com/web
+
+================================================================================
+PRE-FIX CHECKS
+================================================================================
+
+[ ] PowerShell opened
+[ ] In directory: C:\wamp64\www\yiwuexpress
+[ ] SSH access to server works
+[ ] Have database password: LzZH5p5SnRtNKfMy
+
+================================================================================
+STEP 1: DIAGNOSE (30 seconds)
+================================================================================
+
+Command:
+  .\check-production-env.ps1
+
+Check for:
+  [ ] .env.production exists
+  [ ] DATABASE_URL is set
+  [ ] JWT_SECRET is set (64+ chars)
+  [ ] NEXT_PUBLIC_API_URL is set
+  [ ] Database connection works
+  [ ] Prisma Client installed
+  [ ] PM2 process running
+
+If all checks pass: ✓ Go to Step 2
+If checks fail: → Fix issues below, then retry
+
+================================================================================
+STEP 2: AUTO-FIX (2-3 minutes)
+================================================================================
+
+Command:
+  .\quick-fix-production.ps1
+
+Watch for:
+  [ ] Favicon created and uploaded
+  [ ] Prisma Client regenerated
+  [ ] Database schema synced
+  [ ] Application rebuilt
+  [ ] PM2 restarted
+  [ ] Endpoints tested
+
+Expected output:
+  [ ] /api/settings/public: ✓ 200 OK
+  [ ] /api/admin/settings/company: ✓ 200 OK
+  [ ] /favicon.ico: ✓ 200 OK
+
+If all pass: ✓ Go to Step 3 (Verify)
+If some fail: → Check "Common Issues" below
+
+================================================================================
+STEP 3: VERIFY (1 minute)
+================================================================================
+
+Manual tests:
+  [ ] Open https://dromkok.com (site loads)
+  [ ] Check browser console (no 500 errors)
+  [ ] API works: curl https://dromkok.com/api/settings/public
+  [ ] Favicon visible in browser tab
+  [ ] Admin panel: https://dromkok.com/admin
+  
+SSH verification:
+  [ ] pm2 status (shows "online")
+  [ ] pm2 logs (no errors in last 20 lines)
+
+If all pass: ✓ DONE! Success!
+If issues remain: → Check troubleshooting below
+
+================================================================================
+COMMON ISSUES & FIXES
+================================================================================
+
+ISSUE 1: .env.production missing
+---------------------------------
+Fix:
+  1. ssh -p 22 djdn@39.175.57.2
+  2. cd /www/wwwroot/www.dromkok.com/web
+  3. nano .env.production
+  4. Add required variables (see EXECUTE-FIX-NOW.md)
+  5. Save and exit
+  6. pm2 restart dromkok-web
+  7. Re-run: .\quick-fix-production.ps1
+
+ISSUE 2: Database connection failed
+------------------------------------
+Fix:
+  1. ssh -p 22 djdn@39.175.57.2
+  2. sudo systemctl status postgresql
+  3. If not running: sudo systemctl start postgresql
+  4. Test: psql "postgresql://ecommerce:PASSWORD@localhost:5432/ecommerce" -c "\l"
+  5. Re-run: .\quick-fix-production.ps1
+
+ISSUE 3: Prisma Client error
+-----------------------------
+Fix:
+  1. ssh -p 22 djdn@39.175.57.2
+  2. cd /www/wwwroot/www.dromkok.com/web
+  3. npx prisma generate
+  4. npx prisma db push --accept-data-loss
+  5. pm2 restart dromkok-web
+  6. Re-run: .\quick-fix-production.ps1
+
+ISSUE 4: PM2 not running
+-------------------------
+Fix:
+  1. ssh -p 22 djdn@39.175.57.2
+  2. pm2 list
+  3. pm2 restart dromkok-web
+  4. pm2 save
+  5. pm2 logs dromkok-web --lines 50
+
+ISSUE 5: Still getting 500 errors
+----------------------------------
+Check logs:
+  ssh -p 22 djdn@39.175.57.2 'pm2 logs dromkok-web --err --lines 100'
+
+Common error messages:
+  "Cannot find module @prisma/client" → npm install @prisma/client
+  "JWT_SECRET is not defined" → Add to .env.production
+  "Database connection error" → Check DATABASE_URL
+  "Invalid prisma invocation" → npx prisma db push
+
+================================================================================
+QUICK REFERENCE COMMANDS
+================================================================================
+
+# Diagnose
+.\check-production-env.ps1
+
+# Fix
+.\quick-fix-production.ps1
+
+# Full diagnostic
+.\diagnose-and-fix-production.ps1
+
+# Connect to server
+ssh -p 22 djdn@39.175.57.2
+
+# Check PM2
+ssh -p 22 djdn@39.175.57.2 'pm2 status'
+
+# View logs
+ssh -p 22 djdn@39.175.57.2 'pm2 logs dromkok-web --lines 50'
+
+# Restart
+ssh -p 22 djdn@39.175.57.2 'pm2 restart dromkok-web'
+
+# Test API
+curl https://dromkok.com/api/settings/public
+
+================================================================================
+ENVIRONMENT VARIABLES REFERENCE
+================================================================================
+
+Required in .env.production:
+
+DATABASE_URL="postgresql://ecommerce:LzZH5p5SnRtNKfMy@localhost:5432/ecommerce"
+JWT_SECRET="<64-char-secret-here>"
+NEXT_PUBLIC_API_URL=https://dromkok.com
+NODE_ENV=production
+
+Generate JWT_SECRET:
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+Your fix is successful when:
+
+✓ No 500 errors in browser console
+✓ APIs return 200 OK with JSON data
+✓ Favicon appears in browser tab
+✓ PM2 status shows "online"
+✓ PM2 logs show no errors
+✓ https://dromkok.com loads correctly
+✓ Admin panel accessible
+
+================================================================================
+FILES REFERENCE
+================================================================================
+
+Quick Start:
+  - START-HERE-PRODUCTION-FIX.md (overview)
+  - EXECUTE-FIX-NOW.md (step-by-step)
+  - This file (checklist)
+
+Scripts:
+  - check-production-env.ps1 (diagnostic)
+  - quick-fix-production.ps1 (auto-fix)
+  - diagnose-and-fix-production.ps1 (full diagnostic)
+
+Documentation:
+  - PRODUCTION-FIX-SUMMARY.md (complete summary)
+  - PRODUCTION-ERRORS-FIX-GUIDE.md (detailed guide)
+  - README-PRODUCTION-FIX.md (quick reference)
+
+================================================================================
+NOTES
+================================================================================
+
+- Scripts tested on Windows PowerShell
+- Server runs Ubuntu 24.04 Linux
+- Prisma requires platform-specific binaries
+- Always regenerate Prisma after schema changes
+- Keep .env.production secure (never commit to git)
+
+================================================================================
+LAST UPDATED: 2026-08-20
+================================================================================

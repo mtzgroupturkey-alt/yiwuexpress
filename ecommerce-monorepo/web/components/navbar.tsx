@@ -153,6 +153,14 @@ export default function Navbar() {
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[#c9a84c] to-[#1a3a5c] group-hover:w-full transition-all duration-300"></span>
             </LocaleLink>
             
+            <LocaleLink
+              href="/products"
+              className="px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] hover:from-[#2a5a8c] hover:to-[#1a3a5c] transition-all duration-300 rounded-lg relative group"
+            >
+              {locale === 'ru' ? 'Каталог' : locale === 'zh' ? '全部分类' : 'Catalog'}
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#c9a84c] group-hover:w-full transition-all duration-300"></span>
+            </LocaleLink>
+            
             <MegaMenu />
             
             {navItems.slice(1).map((item) => (
@@ -328,6 +336,14 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
+              </LocaleLink>
+              
+              <LocaleLink
+                href="/products"
+                className="px-4 py-3 text-white font-semibold text-sm bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] hover:from-[#2a5a8c] hover:to-[#1a3a5c] transition-all duration-200 rounded-lg mx-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {locale === 'ru' ? 'Каталог' : locale === 'zh' ? '全部分类' : 'Catalog'}
               </LocaleLink>
               
               <LocaleLink

@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Star, GripVertical, ArrowLeft, Package } from 'lucide-react'
 import Link from 'next/link'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface Product {
   id: string
@@ -25,6 +26,7 @@ interface Product {
 
 export default function FeaturedProductsSettings() {
   const router = useRouter()
+  const { dict } = useAdminLocale()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -127,22 +129,18 @@ export default function FeaturedProductsSettings() {
               onClick={() => router.push('/admin/settings')}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Settings
+              {dict.common.back}
             </Button>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Star className="w-8 h-8 text-yellow-500" />
-            Featured Products
+            {dict.settings.featuredProducts}
           </h1>
           <p className="text-gray-600 mt-1">
-            Manage which products appear in the Featured Products section on the homepage
+            {dict.settings.featuredProductsDesc}
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            💡 Drag items to reorder • Toggle switches to show/hide • Go to{' '}
-            <Link href="/admin/products" className="text-primary-600 hover:underline">
-              Products
-            </Link>{' '}
-            to mark more products as featured
+            💡 {dict.settings.featuredProductsHelp}
           </p>
         </div>
       </div>
@@ -150,10 +148,9 @@ export default function FeaturedProductsSettings() {
       {/* Featured Products Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Featured Products ({products.length})</CardTitle>
+          <CardTitle>{dict.settings.featuredProducts} ({products.length})</CardTitle>
           <CardDescription>
-            Select and order products to feature on the homepage.
-            {products.length === 0 && ' No products are currently featured.'}
+            {dict.settings.featuredProductsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -165,16 +162,16 @@ export default function FeaturedProductsSettings() {
             <div className="text-center py-12">
               <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No featured products yet
+                {dict.settings.noFeaturedProducts}
               </h3>
               <p className="text-gray-600 mb-6">
-                Go to Products management and toggle the "Featured" switch to add products here.
+                {dict.settings.noFeaturedProductsHelp}
               </p>
               <Button
                 onClick={() => router.push('/admin/products')}
                 className="bg-primary-600 hover:bg-primary-700"
               >
-                Go to Products
+                {dict.settings.goToProducts}
               </Button>
             </div>
           ) : (

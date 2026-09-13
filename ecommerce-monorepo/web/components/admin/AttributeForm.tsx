@@ -11,6 +11,7 @@ import { DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { Plus, X, Palette } from 'lucide-react'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface AttributeFormProps {
   initialData?: any
@@ -24,21 +25,8 @@ interface ColorEntry {
   value: string // hex
 }
 
-const attributeTypes = [
-  { value: 'TEXT',        label: 'Text' },
-  { value: 'TEXTAREA',    label: 'Text Area' },
-  { value: 'NUMBER',      label: 'Number' },
-  { value: 'SELECT',      label: 'Select (Dropdown)' },
-  { value: 'MULTISELECT', label: 'Multi Select' },
-  { value: 'COLOR',       label: 'Color Picker (Single)' },
-  { value: 'COLOR_MULTI', label: 'Color Picker (Multi-Select)' },
-  { value: 'FILE',        label: 'File Upload' },
-  { value: 'URL',         label: 'URL/Link' },
-  { value: 'CHECKBOX',    label: 'Checkbox' },
-  { value: 'DATE',        label: 'Date' },
-]
-
 export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: AttributeFormProps) {
+  const { dict } = useAdminLocale()
   const [name, setName] = useState(initialData?.name || '')
   const [slug, setSlug] = useState(initialData?.slug || '')
   const [type, setType] = useState(initialData?.type || 'TEXT')
@@ -54,6 +42,20 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
   const [isFilterable, setIsFilterable] = useState(initialData?.isFilterable !== false)
   const [isVariant, setIsVariant] = useState(initialData?.isVariant || false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const attributeTypes = [
+    { value: 'TEXT',        label: dict.attributes.types.TEXT },
+    { value: 'TEXTAREA',    label: dict.attributes.types.TEXTAREA },
+    { value: 'NUMBER',      label: dict.attributes.types.NUMBER },
+    { value: 'SELECT',      label: dict.attributes.types.SELECT },
+    { value: 'MULTISELECT', label: dict.attributes.types.MULTISELECT },
+    { value: 'COLOR',       label: dict.attributes.types.COLOR },
+    { value: 'COLOR_MULTI', label: dict.attributes.types.COLOR_MULTI },
+    { value: 'FILE',        label: dict.attributes.types.FILE },
+    { value: 'URL',         label: dict.attributes.types.URL },
+    { value: 'CHECKBOX',    label: dict.attributes.types.CHECKBOX },
+    { value: 'DATE',        label: dict.attributes.types.DATE },
+  ]
 
   // Phase 2: translations for locales other than English (name field)
   const [translations, setTranslations] = useState<Record<string, { name: string }>>(() => {
@@ -96,18 +98,18 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
     e.preventDefault()
 
     if (!categoryId) {
-      toast.error('Please select a category from the left sidebar first')
+      toast.error(dict.attributes.selectCategoryHelp)
       return
     }
-    if (!name.trim()) { toast.error('Attribute name is required'); return }
-    if (!type)         { toast.error('Attribute type is required'); return }
+    if (!name.trim()) { toast.error(`${dict.attributes.attributeName} is required`); return }
+    if (!type)         { toast.error(`${dict.attributes.attributeType} is required`); return }
 
     if (isSelectType && !options.trim()) {
-      toast.error('Options are required for SELECT and MULTISELECT types')
+      toast.error(dict.attributes.optionsHelp)
       return
     }
     if (isColorType && colorOptions.length === 0) {
-      toast.error('Add at least one color option for COLOR type attributes')
+      toast.error(dict.attributes.colorOptionsSingleHelp)
       return
     }
 
@@ -146,12 +148,12 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
       })
       const result = await res.json()
 
-      if (!res.ok) throw new Error(result.error || 'Failed to save attribute')
+      if (!res.ok) throw new Error(result.error || dict.common.errorOccurred)
 
-      toast.success(initialData ? 'Attribute updated' : 'Attribute created')
+      toast.success(initialData ? dict.common.updateSuccess : dict.common.saveSuccess)
       onSuccess()
     } catch (error: any) {
-      toast.error(error.message || 'Failed to save attribute')
+      toast.error(error.message || dict.common.errorOccurred)
     } finally {
       setIsSubmitting(false)
     }
@@ -162,21 +164,30 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
       <div className="space-y-4 pb-4">
       {/* Name */}
       <div>
-        <Label>Attribute Name *</Label>
+        <Label>{dict.attributes.attributeName} *</Label>
         <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Colors" required />
       </div>
 
       {/* Translations (RU / ZH) */}
       <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-gray-600">Translations (optional)</p>
+          <p className="text-xs font-medium text-gray-600">{dict.products.translations} ({dict.common.optional})</p>
           <AutoTranslateButton
-            enFields={{ name }}
+            allFields={{
+              en: { name },
+              ru: { name: translations.ru?.name || '' },
+              zh: { name: translations.zh?.name || '' },
+            }}
             onTranslated={(result) => {
+              if (result.en?.name && !name.trim()) {
+                setName(result.en.name)
+              }
               setTranslations((prev) => {
                 const next = { ...prev }
                 for (const locale of Object.keys(result)) {
-                  next[locale] = { name: result[locale].name || prev[locale]?.name || '' }
+                  if (locale === 'ru' || locale === 'zh') {
+                    next[locale] = { name: result[locale].name || prev[locale]?.name || '' }
+                  }
                 }
                 return next
               })
@@ -189,7 +200,7 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
             <Input
               value={translations[locale]?.name || ''}
               onChange={e => updateTranslation(locale, e.target.value)}
-              placeholder={`Name (${locale})`}
+              placeholder={`${dict.common.name} (${locale.toUpperCase()})`}
               className="flex-1"
             />
           </div>
@@ -198,17 +209,17 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
 
       {/* Slug */}
       <div>
-        <Label>Slug</Label>
+        <Label>{dict.products.slug}</Label>
         <Input value={slug} onChange={e => setSlug(e.target.value)} placeholder="e.g., colors" />
-        <p className="text-xs text-gray-500 mt-1">Leave empty to auto-generate from name</p>
+        <p className="text-xs text-gray-500 mt-1">{dict.attributes.slugHelp}</p>
       </div>
 
       {/* Type */}
       <div>
-        <Label>Attribute Type *</Label>
+        <Label>{dict.attributes.attributeType} *</Label>
         <Select value={type} onValueChange={setType}>
           <SelectTrigger>
-            <SelectValue placeholder="Select type" />
+            <SelectValue placeholder={dict.attributes.selectTypePlaceholder} />
           </SelectTrigger>
           <SelectContent>
             {attributeTypes.map(t => (
@@ -221,9 +232,9 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
       {/* Options for SELECT / MULTISELECT */}
       {isSelectType && (
         <div>
-          <Label>Options *</Label>
+          <Label>{dict.attributes.options} *</Label>
           <Input value={options} onChange={e => setOptions(e.target.value)} placeholder="S, M, L, XL" />
-          <p className="text-xs text-gray-500 mt-1">Comma-separated list</p>
+          <p className="text-xs text-gray-500 mt-1">{dict.attributes.optionsHelp}</p>
         </div>
       )}
 
@@ -232,12 +243,12 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
         <div>
           <Label className="flex items-center gap-2">
             <Palette className="w-4 h-4 text-[#1a3a5c]" />
-            Color Options *
+            {dict.attributes.colorOptions} *
           </Label>
           <p className="text-xs text-gray-500 mb-3">
             {type === 'COLOR_MULTI'
-              ? 'Users can select multiple colors from this list'
-              : 'Users will pick one color from this list'}
+              ? dict.attributes.colorOptionsMultiHelp
+              : dict.attributes.colorOptionsSingleHelp}
           </p>
 
           <div className="space-y-2 mb-3">
@@ -254,7 +265,7 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
                       value={color.value}
                       onChange={e => updateColorOption(i, 'value', e.target.value)}
                       className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                      title="Pick color"
+                      title={dict.attributes.colorOptions}
                     />
                   </div>
                 </div>
@@ -271,7 +282,7 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
                 <Input
                   value={color.label}
                   onChange={e => updateColorOption(i, 'label', e.target.value)}
-                  placeholder="Color name (e.g., Red)"
+                  placeholder={dict.attributes.colorNamePlaceholder}
                   className="flex-1"
                 />
 
@@ -289,20 +300,20 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
 
             {colorOptions.length === 0 && (
               <div className="text-center py-6 text-gray-400 text-sm border border-dashed border-gray-200 rounded-lg">
-                No colors added yet. Click "Add Color" below.
+                {dict.attributes.noColorsYet}
               </div>
             )}
           </div>
 
           <Button type="button" variant="outline" size="sm" onClick={addColorOption}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Color
+            {dict.attributes.addColor}
           </Button>
 
           {/* Live preview */}
           {colorOptions.filter(c => c.value && c.label).length > 0 && (
             <div className="mt-3 p-3 bg-white border border-gray-200 rounded-lg">
-              <p className="text-xs text-gray-500 mb-2 font-medium">Preview:</p>
+              <p className="text-xs text-gray-500 mb-2 font-medium">{dict.attributes.preview}:</p>
               <div className="flex flex-wrap gap-3">
                 {colorOptions
                   .filter(c => c.value && c.label)
@@ -325,37 +336,37 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
 
       {/* Placeholder */}
       <div>
-        <Label>Placeholder</Label>
+        <Label>{dict.attributes.placeholder}</Label>
         <Input value={placeholder} onChange={e => setPlaceholder(e.target.value)} placeholder="e.g., Select color..." />
       </div>
 
       {/* Helper Text */}
       <div>
-        <Label>Helper Text</Label>
-        <Textarea value={helperText} onChange={e => setHelperText(e.target.value)} placeholder="Additional instructions" rows={2} />
+        <Label>{dict.attributes.helperText}</Label>
+        <Textarea value={helperText} onChange={e => setHelperText(e.target.value)} placeholder={dict.attributes.helperTextPlaceholder} rows={2} />
       </div>
 
       {/* Toggles */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Required</Label>
-          <p className="text-xs text-gray-500">Must be filled when adding products</p>
+          <Label>{dict.attributes.required}</Label>
+          <p className="text-xs text-gray-500">{dict.attributes.requiredHelp}</p>
         </div>
         <Switch checked={isRequired} onCheckedChange={setIsRequired} />
       </div>
 
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Filterable</Label>
-          <p className="text-xs text-gray-500">Can be used as a filter on product listing</p>
+          <Label>{dict.attributes.filterable}</Label>
+          <p className="text-xs text-gray-500">{dict.attributes.filterableHelp}</p>
         </div>
         <Switch checked={isFilterable} onCheckedChange={setIsFilterable} />
       </div>
 
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label>Used for Variants</Label>
-          <p className="text-xs text-gray-500">Can be used to create product variants (SKU)</p>
+          <Label>{dict.attributes.usedForVariants}</Label>
+          <p className="text-xs text-gray-500">{dict.attributes.usedForVariantsHelp}</p>
         </div>
         <Switch checked={isVariant} onCheckedChange={setIsVariant} />
       </div>
@@ -363,10 +374,10 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
 
       <DialogFooter className="sticky bottom-0 bg-white pt-4 border-t mt-4 flex-shrink-0">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          Cancel
+          {dict.common.cancel}
         </Button>
         <Button type="submit" className="bg-[#1a3a5c] hover:bg-[#2a5a8c]" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving...' : (initialData ? 'Update' : 'Create')} Attribute
+          {isSubmitting ? dict.common.saving : (initialData ? dict.common.update : dict.common.save)} {dict.attributes.attributeName}
         </Button>
       </DialogFooter>
     </form>

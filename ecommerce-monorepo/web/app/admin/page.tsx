@@ -9,6 +9,7 @@ import {
   ShieldCheck, Activity, Layers, ArrowUpRight, Sparkles
 } from 'lucide-react'
 import { useAdminAuth } from './contexts/AdminAuthContext'
+import { useAdminLocale } from './contexts/AdminLocaleContext'
 import { useSettings } from '@/components/SettingsProvider'
 
 interface Stats {
@@ -49,7 +50,7 @@ interface Stats {
 }
 
 function StatCard({
-  label, value, icon: Icon, color, subtext, href
+  label, value, icon: Icon, color, subtext, href, manageLabel = 'Manage'
 }: {
   label: string
   value: string | number
@@ -57,6 +58,7 @@ function StatCard({
   color: string
   subtext?: string
   href?: string
+  manageLabel?: string
 }) {
   const content = (
     <div className="group relative bg-white rounded-2xl p-5 shadow-sm hover:shadow-xl hover:shadow-gray-200/60 border border-gray-100/90 transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col justify-between h-full">
@@ -74,7 +76,7 @@ function StatCard({
       </div>
       {href && (
         <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-xs font-semibold text-[#1a3a5c] group-hover:text-[#c9a84c] transition-colors">
-          <span>Manage</span>
+          <span>{manageLabel}</span>
           <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
         </div>
       )}
@@ -84,7 +86,7 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, label }: { status: string; label?: string }) {
   const styles: Record<string, string> = {
     PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
     APPROVED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -99,7 +101,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   return (
     <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${styles[status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-      {status}
+      {label || status}
     </span>
   )
 }
@@ -111,6 +113,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const { isAdmin, user } = useAdminAuth()
   const { settings, storeMode } = useSettings()
+  const { locale, dict, t } = useAdminLocale()
 
   const companyName = settings?.companyName || 'Global Trade'
 
@@ -164,7 +167,7 @@ export default function AdminDashboard() {
     <div className="flex items-center justify-center min-h-[400px]">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin border-t-[#1a3a5c]"></div>
-        <p className="text-sm font-medium text-gray-500">Loading management console...</p>
+        <p className="text-sm font-medium text-gray-500">{dict.common.loading}</p>
       </div>
     </div>
   )
@@ -178,7 +181,7 @@ export default function AdminDashboard() {
           onClick={fetchStats}
           className="mt-2 px-4 py-2 bg-[#1a3a5c] text-white text-xs font-semibold rounded-xl hover:bg-[#0d2a4a] transition"
         >
-          Try Again
+          {dict.common.refresh}
         </button>
       </div>
     </div>
@@ -194,13 +197,13 @@ export default function AdminDashboard() {
         <div className="relative z-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[#deb859] text-xs font-bold uppercase tracking-wider mb-2">
             <Sparkles size={12} />
-            <span>Management Console</span>
+            <span>{dict.header.console}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Welcome back, {displayName}
+            {displayName}
           </h1>
           <p className="text-white/75 text-xs sm:text-sm mt-1">
-            {companyName} Platform Overview · {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {companyName} {dict.dashboard.subtitle}
           </p>
         </div>
 
@@ -209,15 +212,15 @@ export default function AdminDashboard() {
             onClick={fetchStats}
             disabled={refreshing}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white transition active:scale-95 disabled:opacity-50"
-            title="Refresh dashboard data"
+            title={dict.common.refresh}
           >
             <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-            <span>{refreshing ? 'Refreshing...' : 'Refresh'}</span>
+            <span>{refreshing ? dict.common.loading : dict.common.refresh}</span>
           </button>
 
           <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Live System</span>
+            <span>{dict.common.active}</span>
           </div>
         </div>
       </div>
@@ -225,52 +228,58 @@ export default function AdminDashboard() {
       {/* Primary KPI Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <StatCard
-          label="Total Revenue"
+          label={dict.dashboard.totalRevenue}
           value={`$${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           icon={DollarSign}
           color="bg-gradient-to-br from-emerald-500 to-emerald-700"
-          subtext="Completed sales"
+          subtext={dict.orders.title}
           href="/admin/orders"
+          manageLabel={dict.common.manage}
         />
         <StatCard
-          label="Sales Orders"
+          label={dict.dashboard.totalOrders}
           value={totalOrders}
           icon={ShoppingCart}
           color="bg-gradient-to-br from-blue-600 to-indigo-700"
-          subtext="Customer orders"
+          subtext={dict.orders.title}
           href="/admin/orders"
+          manageLabel={dict.common.manage}
         />
         <StatCard
-          label="Catalog Products"
+          label={dict.dashboard.totalProducts}
           value={totalProducts}
           icon={ShoppingBag}
           color="bg-gradient-to-br from-purple-500 to-purple-700"
-          subtext="Active listings"
+          subtext={dict.products.allProducts}
           href="/admin/products"
+          manageLabel={dict.common.manage}
         />
         <StatCard
-          label="Quotes / RFQs"
+          label={dict.dashboard.pendingQuotes}
           value={totalQuotes}
           icon={FileText}
           color="bg-gradient-to-br from-[#c9a84c] to-[#a0843e]"
-          subtext={`${pendingQuotes} pending action`}
+          subtext={`${pendingQuotes} ${dict.status.PENDING}`}
           href="/admin/quotes"
+          manageLabel={dict.common.manage}
         />
         <StatCard
-          label="Shipments"
+          label={dict.dashboard.activeShipments}
           value={totalShipments}
           icon={Ship}
           color="bg-gradient-to-br from-cyan-600 to-blue-700"
-          subtext={`${activeShipments} in transit`}
+          subtext={`${activeShipments} ${dict.status.IN_TRANSIT}`}
           href="/admin/shipments"
+          manageLabel={dict.common.manage}
         />
         <StatCard
-          label="Wholesale Leads"
+          label={dict.dashboard.wholesaleInquiries}
           value={totalInquiries}
           icon={MessageSquare}
           color="bg-gradient-to-br from-amber-500 to-orange-600"
-          subtext="B2B inquiries"
+          subtext={dict.wholesale.title}
           href="/admin/wholesale"
+          manageLabel={dict.common.manage}
         />
       </div>
 
@@ -279,19 +288,19 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2">
             <Layers size={16} className="text-[#c9a84c]" />
-            Quick Management Shortcuts
+            {dict.dashboard.quickActions}
           </h2>
-          <span className="text-xs text-gray-400 font-medium">1-Click Fast Navigation</span>
+          <span className="text-xs text-gray-400 font-medium">{dict.header.console}</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { href: '/admin/products/new', label: 'Add Product', icon: Plus, color: '#1a3a5c' },
-            { href: '/admin/orders', label: 'Manage Orders', icon: ShoppingCart, color: '#2563eb' },
-            { href: '/admin/wholesale', label: 'Wholesale RFQs', icon: MessageSquare, color: '#d97706' },
-            { href: '/admin/quotes', label: 'Review Quotes', icon: FileText, color: '#c9a84c' },
-            { href: '/admin/shipments', label: 'Track Shipments', icon: Ship, color: '#059669' },
-            { href: '/admin/settings/company', label: 'Company Settings', icon: Globe, color: '#7c3aed' },
+            { href: '/admin/products/new', label: dict.products.addProduct, icon: Plus, color: '#1a3a5c' },
+            { href: '/admin/orders', label: dict.orders.title, icon: ShoppingCart, color: '#2563eb' },
+            { href: '/admin/wholesale', label: dict.wholesale.title, icon: MessageSquare, color: '#d97706' },
+            { href: '/admin/quotes', label: dict.quotes.title, icon: FileText, color: '#c9a84c' },
+            { href: '/admin/shipments', label: dict.shipments.title, icon: Ship, color: '#059669' },
+            { href: '/admin/settings/company', label: dict.settings.companyInfo, icon: Globe, color: '#7c3aed' },
           ].map(({ href, label, icon: Icon, color }) => (
             <Link
               key={href}
@@ -320,13 +329,13 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
                 <FileText size={17} className="text-[#c9a84c]" />
-                Recent Quotes & Sourcing Inquiries
+                {dict.dashboard.recentQuotes}
               </h3>
               <Link
                 href="/admin/quotes"
                 className="text-xs font-bold text-[#1a3a5c] hover:text-[#c9a84c] inline-flex items-center gap-1 transition-colors"
               >
-                View all <ArrowUpRight size={13} />
+                {dict.dashboard.viewAll} <ArrowUpRight size={13} />
               </Link>
             </div>
 
@@ -334,7 +343,7 @@ export default function AdminDashboard() {
               {recentQuotes.length === 0 ? (
                 <div className="py-12 text-center text-gray-400 text-sm">
                   <FileText size={28} className="mx-auto mb-2 opacity-40 text-gray-400" />
-                  No quotes submitted yet
+                  {dict.common.noData}
                 </div>
               ) : (
                 recentQuotes.map((q: any) => (
@@ -344,16 +353,16 @@ export default function AdminDashboard() {
                         {(q.user?.name?.[0] || q.user?.email?.[0] || 'Q').toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-800 truncate">{q.user?.name || q.user?.email || 'Guest User'}</p>
+                        <p className="text-xs font-bold text-gray-800 truncate">{q.user?.name || q.user?.email || dict.orders.guestCustomer}</p>
                         <p className="text-[11px] text-gray-400 truncate mt-0.5">
-                          {q.service?.name || 'General Service'} · {q.origin || 'China'} → {q.destination || 'Global'}
+                          {q.service?.name || dict.nav.services} · {q.origin || 'China'} → {q.destination || 'Global'}
                         </p>
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <StatusBadge status={q.status} />
+                      <StatusBadge status={q.status} label={t(q.status)} />
                       <p className="text-xs font-bold text-gray-900 mt-1">
-                        {q.price ? `$${Number(q.price).toFixed(2)}` : 'Custom Quote'}
+                        {q.price ? `$${Number(q.price).toFixed(2)}` : dict.quotes.title}
                       </p>
                     </div>
                   </div>
@@ -369,13 +378,13 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
               <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
                 <Ship size={17} className="text-[#1a3a5c]" />
-                Recent Logistics & Cargo Shipments
+                {dict.dashboard.recentShipments}
               </h3>
               <Link
                 href="/admin/shipments"
                 className="text-xs font-bold text-[#1a3a5c] hover:text-[#c9a84c] inline-flex items-center gap-1 transition-colors"
               >
-                View all <ArrowUpRight size={13} />
+                {dict.dashboard.viewAll} <ArrowUpRight size={13} />
               </Link>
             </div>
 
@@ -383,7 +392,7 @@ export default function AdminDashboard() {
               {recentShipments.length === 0 ? (
                 <div className="py-12 text-center text-gray-400 text-sm">
                   <Ship size={28} className="mx-auto mb-2 opacity-40 text-gray-400" />
-                  No shipments logged yet
+                  {dict.common.noData}
                 </div>
               ) : (
                 recentShipments.map((s: any) => (
@@ -398,8 +407,8 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <StatusBadge status={s.status} />
-                      <p className="text-[11px] text-gray-400 mt-1">{s.service?.name || 'Freight'}</p>
+                      <StatusBadge status={s.status} label={t(s.status)} />
+                      <p className="text-[11px] text-gray-400 mt-1">{s.service?.name || dict.nav.shipments}</p>
                     </div>
                   </div>
                 ))
@@ -413,22 +422,22 @@ export default function AdminDashboard() {
       <div className="bg-gray-50/80 rounded-3xl p-5 border border-gray-200/80 flex flex-wrap items-center justify-between gap-4 text-xs">
         <div className="flex items-center gap-2 text-gray-600">
           <ShieldCheck size={16} className="text-emerald-600" />
-          <span className="font-semibold text-gray-700">Platform Security:</span>
-          <span>Role-Based Access Control Active</span>
+          <span className="font-semibold text-gray-700">{dict.dashboard.platformSecurity}</span>
+          <span>{dict.dashboard.rbacActive}</span>
         </div>
 
         <div className="flex items-center gap-6 text-gray-500 font-medium">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Database: PostgreSQL Online
+            {dict.dashboard.dbOnline}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-            Store Mode: {storeMode || 'WHOLESALE'}
+            {dict.dashboard.storeMode} {storeMode || 'WHOLESALE'}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-purple-500"></span>
-            Supported Locales: EN, RU, ZH
+            {dict.dashboard.supportedLocales}
           </span>
         </div>
       </div>

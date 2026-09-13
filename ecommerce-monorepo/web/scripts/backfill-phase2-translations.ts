@@ -35,18 +35,7 @@ async function main() {
   }
   console.log(`AttributeValues backfilled: ${values.length}`)
 
-  // ---- ShippingMethods ----
-  const methods = await prisma.shippingMethod.findMany({
-    select: { id: true, name: true, description: true }
-  })
-  for (const m of methods) {
-    await prisma.shippingMethodTranslation.upsert({
-      where: { shippingMethodId_locale: { shippingMethodId: m.id, locale: 'en' } },
-      create: { shippingMethodId: m.id, locale: 'en', name: m.name, description: m.description ?? null },
-      update: { name: m.name, description: m.description ?? null },
-    })
-  }
-  console.log(`ShippingMethods backfilled: ${methods.length}`)
+
 
   // ---- ContactLocations ----
   const locations = await prisma.contactLocation.findMany({

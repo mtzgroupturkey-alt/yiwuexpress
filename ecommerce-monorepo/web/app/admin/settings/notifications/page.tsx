@@ -1,8 +1,10 @@
 'use client'
 
 import { Bell, Mail, MessageSquare, Smartphone, Volume2, AlertCircle } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 export default function NotificationsPage() {
+  const { dict, locale } = useAdminLocale()
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -12,8 +14,8 @@ export default function NotificationsPage() {
             <Bell size={20} className="text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Notifications</h2>
-            <p className="text-sm text-gray-500">Configure email and system notification preferences</p>
+            <h2 className="text-xl font-bold text-gray-900">{dict.settings.notifications}</h2>
+            <p className="text-sm text-gray-500">{dict.settings.subtitle}</p>
           </div>
         </div>
       </div>

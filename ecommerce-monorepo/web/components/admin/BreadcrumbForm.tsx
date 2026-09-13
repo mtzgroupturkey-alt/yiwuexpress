@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { DialogFooter } from '@/components/ui/dialog'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface BreadcrumbFormProps {
   initialData: any
@@ -18,6 +19,7 @@ interface BreadcrumbFormProps {
 }
 
 export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: BreadcrumbFormProps) {
+  const { dict } = useAdminLocale()
   const [pageType, setPageType] = useState(initialData?.pageType || 'static')
   const [pageSlug, setPageSlug] = useState(initialData?.pageSlug || '')
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || '')
@@ -72,15 +74,15 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Page Type */}
       <div>
-        <Label>Page Type</Label>
+        <Label>{dict.settings.pageType}</Label>
         <Select value={pageType} onValueChange={setPageType}>
           <SelectTrigger>
-            <SelectValue placeholder="Select page type" />
+            <SelectValue placeholder={dict.common.selectOption} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="static">Static Page</SelectItem>
-            <SelectItem value="shop_default">Shop Default</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
+            <SelectItem value="static">{dict.settings.staticPages}</SelectItem>
+            <SelectItem value="shop_default">{dict.settings.shopDefault}</SelectItem>
+            <SelectItem value="category">{dict.categories.title}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -88,10 +90,10 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
       {/* Static Page Selection */}
       {pageType === 'static' && (
         <div>
-          <Label>Static Page</Label>
+          <Label>{dict.settings.staticPages}</Label>
           <Select value={pageSlug} onValueChange={setPageSlug}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a page" />
+              <SelectValue placeholder={dict.common.selectOption} />
             </SelectTrigger>
             <SelectContent>
               {staticPageOptions.map((option) => (
@@ -107,14 +109,14 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
       {/* Category Selection */}
       {pageType === 'category' && (
         <div>
-          <Label>Category</Label>
+          <Label>{dict.categories.title}</Label>
           <div className="mt-2">
             <CategoryDropdown
               categories={categories}
               value={categoryId}
               onChange={setCategoryId}
-              placeholder="Search and select a category..."
-              searchPlaceholder="Type to search categories..."
+              placeholder={dict.categories.searchCategories}
+              searchPlaceholder={dict.categories.searchCategories}
               showPath={true}
               showLevelIndicator={true}
               clearable={true}
@@ -131,7 +133,7 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
 
       {/* Image Upload */}
       <div>
-        <Label>Background Image</Label>
+        <Label>{dict.settings.backgroundImage}</Label>
         <div className="mt-2">
           <ImageUpload
             value={imageUrl}
@@ -163,7 +165,7 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
 
       {/* Overlay Color */}
       <div>
-        <Label>Overlay Color</Label>
+        <Label>{dict.settings.overlayColor}</Label>
         <div className="flex items-center gap-4">
           <Input
             type="text"
@@ -180,7 +182,7 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
 
       {/* Title */}
       <div>
-        <Label>Title (Optional)</Label>
+        <Label>{dict.settings.slideTitle} ({dict.common.viewDetails})</Label>
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -190,7 +192,7 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
 
       {/* Subtitle */}
       <div>
-        <Label>Subtitle (Optional)</Label>
+        <Label>{dict.settings.slideSubtitle} ({dict.common.viewDetails})</Label>
         <Input
           value={subtitle}
           onChange={(e) => setSubtitle(e.target.value)}
@@ -200,7 +202,7 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
 
       {/* Translations (RU / ZH) */}
       <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
-        <p className="text-xs font-medium text-gray-600">Translations (optional)</p>
+        <p className="text-xs font-medium text-gray-600">{dict.products.translations} (optional)</p>
         {(['ru', 'zh'] as const).map((locale) => (
           <div key={locale} className="space-y-2">
             <div className="flex items-center gap-2">
@@ -224,16 +226,16 @@ export function BreadcrumbForm({ initialData, categories, onSave, onCancel }: Br
 
       {/* Active Status */}
       <div className="flex items-center justify-between">
-        <Label>Active</Label>
+        <Label>{dict.common.active}</Label>
         <Switch checked={isActive} onCheckedChange={setIsActive} />
       </div>
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
+          {dict.common.cancel}
         </Button>
         <Button type="submit" className="bg-[#1a3a5c] hover:bg-[#2a5a8c]">
-          Save Setting
+          {dict.common.save}
         </Button>
       </DialogFooter>
     </form>

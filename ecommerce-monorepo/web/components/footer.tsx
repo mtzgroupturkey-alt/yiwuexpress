@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { Truck, Mail, Phone, MapPin, Shield } from 'lucide-react'
-import Link from 'next/link'
+import { Truck, Mail, Phone, MapPin, Shield, Clock, ArrowRight, CreditCard } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { LocaleLink } from '@/components/LocaleLink'
-import { GlobeInteractive } from '@/components/ui/cobe-globe-interactive'
 
-// Brand SVG icons (lucide-react does not ship brand logos)
+// Brand SVG icons
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em" {...props}>
     <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5 3.66 9.15 8.44 9.94v-7.03H7.9v-2.9h2.54V9.85c0-2.52 1.5-3.91 3.78-3.91 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.9h-2.34V22c4.78-.79 8.43-4.94 8.43-9.94Z" />
@@ -49,21 +47,17 @@ const WeChatIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function Footer() {
   const t = useTranslations('Footer')
   const tl = useTranslations('FooterLinks')
-  const locale = useLocale() // Get current locale
+  const locale = useLocale()
   const [logoUrl, setLogoUrl] = useState('')
   const [companyName, setCompanyName] = useState('Global Trade')
   const [siteTagline, setSiteTagline] = useState('')
-  const [accentColor, setAccentColor] = useState('#c9a84c')
-  const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
   
-  // Contact information state
   const [contactInfo, setContactInfo] = useState({
     address: 'China, Zhejiang, China',
     phone: '+86 579 8555 1234',
-    email: 'info@globaltrade.com'
+    email: 'info@yiwuexpress.com'
   })
   
-  // Social media links state
   const [socialLinks, setSocialLinks] = useState({
     facebookUrl: '',
     twitterUrl: '',
@@ -73,45 +67,24 @@ export default function Footer() {
     whatsappNumber: ''
   })
 
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [subscribed, setSubscribed] = useState(false)
+
   const currentYear = new Date().getFullYear()
 
   useEffect(() => {
-    // Fetch settings for branding, contact info, and social media
     fetch(`/api/settings/public?locale=${locale}`)
       .then(res => res.json())
       .then(data => {
         if (data.settings) {
-          // Branding
           if (data.settings.companyLogo) setLogoUrl(data.settings.companyLogo)
           if (data.settings.companyName) setCompanyName(data.settings.companyName)
           if (data.settings.siteTagline) setSiteTagline(data.settings.siteTagline)
-          if (data.settings.accentColor) {
-            setAccentColor(data.settings.accentColor)
-            document.documentElement.style.setProperty('--accent-color', data.settings.accentColor)
-          }
-          if (data.settings.primaryColor) {
-            setPrimaryColor(data.settings.primaryColor)
-            document.documentElement.style.setProperty('--primary-color', data.settings.primaryColor)
-          }
           
-          // Contact information with translation support
           const translations = data.settings.translations || []
-          
-          // Helper function to get localized value
           const getLocalizedValue = (key: string, fallback: string) => {
-            // Try current locale
-            const localeTrans = translations.find(
-              (t: any) => t.locale === locale && t.key === key
-            )
+            const localeTrans = translations.find((item: any) => item.locale === locale && item.key === key)
             if (localeTrans && localeTrans.value) return localeTrans.value
-            
-            // Fallback to English
-            const enTrans = translations.find(
-              (t: any) => t.locale === 'en' && t.key === key
-            )
-            if (enTrans && enTrans.value) return enTrans.value
-            
-            // Fallback to main field
             return fallback
           }
           
@@ -121,7 +94,6 @@ export default function Footer() {
             email: data.settings.companyEmail || 'info@yiwuexpress.com'
           })
 
-          // Social media links
           setSocialLinks({
             facebookUrl: data.settings.facebookUrl || '',
             twitterUrl: data.settings.twitterUrl || '',
@@ -133,26 +105,31 @@ export default function Footer() {
         }
       })
       .catch(err => console.error(err))
-  }, [locale]) // Re-fetch when locale changes
+  }, [locale])
 
-  // Helper to darken color for hover effect
-  const adjustColor = (color: string, amount: number) => {
-    const clamp = (num: number) => Math.min(Math.max(num, 0), 255)
-    const hex = color.replace('#', '')
-    const r = clamp(parseInt(hex.substr(0, 2), 16) + amount)
-    const g = clamp(parseInt(hex.substr(2, 2), 16) + amount)
-    const b = clamp(parseInt(hex.substr(4, 2), 16) + amount)
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newsletterEmail) return
+    setSubscribed(true)
+    setTimeout(() => setSubscribed(false), 4000)
+    setNewsletterEmail('')
   }
-  
-  
+
+  const dynamicSocialLinks = [
+    ...(socialLinks.facebookUrl ? [{ icon: FacebookIcon, href: socialLinks.facebookUrl, label: 'Facebook' }] : []),
+    ...(socialLinks.twitterUrl ? [{ icon: XIcon, href: socialLinks.twitterUrl, label: 'X (Twitter)' }] : []),
+    ...(socialLinks.linkedinUrl ? [{ icon: LinkedInIcon, href: socialLinks.linkedinUrl, label: 'LinkedIn' }] : []),
+    ...(socialLinks.instagramUrl ? [{ icon: InstagramIcon, href: socialLinks.instagramUrl, label: 'Instagram' }] : []),
+    ...(socialLinks.whatsappNumber ? [{ icon: WhatsAppIcon, href: `https://wa.me/${socialLinks.whatsappNumber.replace(/\D/g, '')}`, label: 'WhatsApp' }] : []),
+    ...(socialLinks.wechatId ? [{ icon: WeChatIcon, href: `https://u.wechat.com/${socialLinks.wechatId}`, label: 'WeChat' }] : []),
+  ]
+
   const serviceLinks = [
     { label: tl('airFreight'), href: '/services?type=shipping' },
     { label: tl('seaFreight'), href: '/services?type=shipping' },
     { label: tl('customsClearance'), href: '/services?type=customs' },
     { label: tl('warehousing'), href: '/services?type=warehousing' },
     { label: tl('sourcingServices'), href: '/services?type=sourcing' },
-    { label: tl('doorToDoor'), href: '/services?type=shipping' },
   ]
 
   const companyLinks = [
@@ -161,7 +138,6 @@ export default function Footer() {
     { label: tl('careers'), href: '/careers' },
     { label: tl('partners'), href: '/contact' },
     { label: tl('newsUpdates'), href: '/blog' },
-    { label: tl('sustainability'), href: '/about' },
   ]
 
   const supportLinks = [
@@ -169,288 +145,201 @@ export default function Footer() {
     { label: tl('getQuote'), href: '/quotes' },
     { label: tl('faq'), href: '/faq' },
     { label: tl('supportCenter'), href: '/contact' },
-    { label: tl('contactUs'), href: '/contact' },
     { label: tl('termsConditions'), href: '/terms' },
   ]
 
-  
-  // Create dynamic social links based on database settings
-  const dynamicSocialLinks = [
-    ...(socialLinks.facebookUrl ? [{
-      icon: FacebookIcon,
-      href: socialLinks.facebookUrl,
-      label: 'Facebook'
-    }] : []),
-    ...(socialLinks.twitterUrl ? [{
-      icon: XIcon,
-      href: socialLinks.twitterUrl,
-      label: 'X (Twitter)'
-    }] : []),
-    ...(socialLinks.linkedinUrl ? [{
-      icon: LinkedInIcon,
-      href: socialLinks.linkedinUrl,
-      label: 'LinkedIn'
-    }] : []),
-    ...(socialLinks.instagramUrl ? [{
-      icon: InstagramIcon,
-      href: socialLinks.instagramUrl,
-      label: 'Instagram'
-    }] : []),
-    ...(socialLinks.whatsappNumber ? [{
-      icon: WhatsAppIcon,
-      href: `https://wa.me/${socialLinks.whatsappNumber.replace(/\D/g, '')}`,
-      label: 'WhatsApp'
-    }] : []),
-    ...(socialLinks.wechatId ? [{
-      icon: WeChatIcon,
-      href: `https://u.wechat.com/${socialLinks.wechatId}`,
-      label: 'WeChat'
-    }] : []),
-  ]
-
-  // Custom markers for Global Trade global network
-  const globalNetworkMarkers: { id: string; location: [number, number]; name: string; users: number }[] = [
-    { id: "china", location: [35.86, 104.19], name: "CHINA", users: 2500 },
-    { id: "russia", location: [55.75, 37.61], name: "RUSSIA", users: 1800 },
-    { id: "turkmenistan", location: [37.96, 58.33], name: "Turkmenistan", users: 1200 },
-    { id: "dubai", location: [25.2, 55.27], name: "DUBAI", users: 1100 },
-    { id: "turkey", location: [39.92, 32.85], name: "Turkey", users: 900 },
-    { id: "belarus", location: [53.90, 27.56], name: "Belarus", users: 800 },
-    { id: "iraq", location: [33.31, 44.36], name: "Iraq", users: 700 },
-    { id: "afghanistan", location: [34.52, 69.17], name: "Afghanistan", users: 650 },
-  ]
-
   return (
-    <footer className="relative bg-[#0a0f1a] text-white overflow-hidden">
-      {/* Premium Gold Top Border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary-500 to-transparent"></div>
-      
-      {/* Subtle Dot Pattern Overlay - Visual Texture */}
-      <div 
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `radial-gradient(circle, #fff 1px, transparent 1px)`,
-          backgroundSize: '32px 32px'
-        }}
-      ></div>
-      
-      {/* Massive Background Globe - Enhanced Visibility & Glow */}
-      <div className="hidden lg:block absolute -right-32 top-1/2 -translate-y-1/2 w-[700px] h-[700px] opacity-35 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-radial from-secondary-500/10 via-transparent to-transparent blur-3xl"></div>
-        <GlobeInteractive 
-          markers={globalNetworkMarkers}
-          speed={0.0015}
-          className="w-full h-full drop-shadow-[0_0_80px_rgba(201,168,76,0.15)]"
-        />
+    <footer className="bg-[#0B1524] text-slate-300 border-t border-slate-800/80">
+      {/* 1. Newsletter & Hotline Strip (5element / oma.by style) */}
+      <div className="border-b border-slate-800 bg-[#070E1A]/80 py-8">
+        <Container maxWidth="2xl">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4 text-center lg:text-left">
+              <div className="w-12 h-12 rounded-2xl bg-[#0055A4]/20 border border-[#0055A4]/40 flex items-center justify-center text-[#0055A4] flex-shrink-0">
+                <Mail className="w-6 h-6 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-white">
+                  {locale === 'zh' ? '订阅最新工厂货源与折扣行情' : locale === 'ru' ? 'Подпишитесь на акции и закрытые распродажи' : 'Subscribe to Factory Deals & Wholesale Pricing'}
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {locale === 'zh' ? '每周直接获取一手工业设备清仓目录' : locale === 'ru' ? 'Получайте оптовые каталоги и скидки первыми' : 'Receive weekly industrial machinery catalogs & alerts'}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubscribe} className="flex items-center gap-2 w-full lg:w-auto">
+              <input
+                type="email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder={locale === 'zh' ? '输入您的电子邮箱...' : locale === 'ru' ? 'Введите ваш email...' : 'Enter your email...'}
+                className="w-full lg:w-72 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#0055A4]"
+                required
+              />
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-[#0055A4] hover:bg-[#004080] text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-colors flex-shrink-0"
+              >
+                <span>{subscribed ? (locale === 'ru' ? 'Готово!' : 'Done!') : (locale === 'ru' ? 'Подписаться' : 'Subscribe')}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </form>
+          </div>
+        </Container>
       </div>
-      
-      {/* Animated Gradient Orbs - Ambient Background */}
-      <div className="absolute top-20 left-20 w-96 h-96 bg-secondary-500/5 rounded-full blur-[120px] animate-pulse"></div>
-      <div className="absolute bottom-20 right-40 w-80 h-80 bg-primary-500/5 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
-      
-      {/* Main Footer Content - 4 Equal Columns */}
-      <Container maxWidth="2xl" className="relative z-10 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          
-          {/* COLUMN 1: Logo + Brand Tagline + About Us */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3.5">
+
+      {/* 2. Main Columns */}
+      <Container maxWidth="2xl" className="py-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Column 1 & 2: Brand Info & Customer Care Hotline */}
+          <div className="lg:col-span-2 space-y-5">
+            <div className="flex items-center gap-3">
               {logoUrl ? (
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-2 shadow-[0_8px_32px_rgba(201,168,76,0.25)] flex-shrink-0">
-                  <img
-                    src={logoUrl}
-                    alt={`${companyName} Logo`}
-                    className="w-full h-full object-contain"
-                  />
+                <div className="w-11 h-11 rounded-xl bg-white/10 p-1.5 flex items-center justify-center">
+                  <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary-400 via-secondary-500 to-secondary-600 flex items-center justify-center shadow-[0_8px_32px_rgba(201,168,76,0.3)] ring-2 ring-secondary-500/20 flex-shrink-0">
-                  <Truck className="w-6 h-6 text-primary-950 drop-shadow-sm font-bold" />
+                <div className="w-11 h-11 rounded-xl bg-[#0055A4] flex items-center justify-center text-white font-black shadow-md">
+                  <Truck className="w-5 h-5" />
                 </div>
               )}
               <div>
-                <h2 className="text-xl font-extrabold text-white tracking-tight drop-shadow-md">{companyName}</h2>
-                <div className="inline-flex items-center gap-1.5 mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary-400 animate-pulse"></span>
-                  <p className="text-secondary-300 text-xs font-semibold tracking-wide">
-                    {siteTagline || t('brandSubtitle')}
-                  </p>
-                </div>
+                <span className="text-xl font-extrabold text-white tracking-tight">{companyName}</span>
+                <span className="block text-xs font-bold text-blue-400">{siteTagline || 'CIS & International Trade'}</span>
               </div>
             </div>
-            
-            <p className="text-gray-300/90 leading-relaxed text-sm">
+
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
               {t('aboutText')}
             </p>
 
-            {/* Core Capabilities Pills */}
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
-                {locale === 'zh' ? '全球物流' : locale === 'ru' ? 'Международная логистика' : 'Global Logistics'}
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
-                {locale === 'zh' ? '源头直采' : locale === 'ru' ? 'Прямые закупки' : 'Direct Sourcing'}
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-gray-300 text-[11px] font-medium">
-                {locale === 'zh' ? '双清报关' : locale === 'ru' ? 'Таможенное оформление' : 'Customs Clearance'}
-              </span>
+            {/* Hotline Box (oma.by / 5element style) */}
+            <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-[11px] uppercase tracking-wider text-slate-400 font-bold block">
+                    {locale === 'ru' ? 'Горячая линия и прием заказов' : 'Direct Customer Support'}
+                  </span>
+                  <a href={`tel:${contactInfo.phone}`} className="text-base font-extrabold text-white hover:text-blue-400 font-mono transition-colors">
+                    {contactInfo.phone}
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-slate-400 pt-1 border-t border-slate-800/80">
+                <Clock className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                <span>{locale === 'ru' ? 'Пн-Вс: 08:00 – 21:00 (Минск / Москва)' : 'Mon-Sun: 08:00 - 21:00 (Daily)'}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <MapPin className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                <span className="truncate">{contactInfo.address}</span>
+              </div>
             </div>
+
+            {/* Social icons */}
+            {dynamicSocialLinks.length > 0 && (
+              <div className="flex items-center gap-2 pt-1">
+                {dynamicSocialLinks.map((social) => {
+                  const Icon = social.icon
+                  return (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 hover:border-[#0055A4] text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+                    >
+                      <Icon className="w-4 h-4" />
+                    </a>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
-          {/* COLUMN 2: Quick Links */}
+          {/* Column 3: Logistics & Services */}
           <div>
-            <h3 className="text-base font-bold mb-6 text-white relative inline-block">
+            <h4 className="text-xs font-black uppercase tracking-wider text-white mb-4 border-l-2 border-[#0055A4] pl-2">
               {t('quickLinks')}
-              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
-            </h3>
-            <ul className="space-y-3">
-              {[
-                ...serviceLinks.slice(0, 3),
-                ...companyLinks.slice(0, 3)
-              ].map((link, idx) => (
-                <li key={`${link.href}-${link.label}-${idx}`}>
-                  <LocaleLink 
-                    href={link.href}
-                    className="text-sm text-gray-300/90 hover:text-secondary-300 transition-all duration-300 inline-flex items-center group hover:translate-x-1"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 group-hover:bg-secondary-400 group-hover:shadow-lg group-hover:shadow-secondary-500/50 transition-all duration-300"></span>
-                    <span className="group-hover:drop-shadow-lg">{link.label}</span>
+            </h4>
+            <ul className="space-y-2.5 text-xs">
+              {serviceLinks.map((link) => (
+                <li key={link.href}>
+                  <LocaleLink href={link.href} className="text-slate-400 hover:text-white transition-colors">
+                    {link.label}
                   </LocaleLink>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* COLUMN 3: Support / Help */}
+          {/* Column 4: Company */}
           <div>
-            <h3 className="text-base font-bold mb-6 text-white relative inline-block">
+            <h4 className="text-xs font-black uppercase tracking-wider text-white mb-4 border-l-2 border-[#0055A4] pl-2">
+              {locale === 'ru' ? 'Компания' : 'Company'}
+            </h4>
+            <ul className="space-y-2.5 text-xs">
+              {companyLinks.map((link) => (
+                <li key={link.href}>
+                  <LocaleLink href={link.href} className="text-slate-400 hover:text-white transition-colors">
+                    {link.label}
+                  </LocaleLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 5: Help & Safe Trade */}
+          <div>
+            <h4 className="text-xs font-black uppercase tracking-wider text-white mb-4 border-l-2 border-[#0055A4] pl-2">
               {t('supportHelp')}
-              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
-            </h3>
-            <ul className="space-y-3">
-              {supportLinks.map((link, idx) => (
-                <li key={`${link.href}-${link.label}-${idx}`}>
-                  <LocaleLink 
-                    href={link.href}
-                    className="text-sm text-gray-300/90 hover:text-secondary-300 transition-all duration-300 inline-flex items-center group hover:translate-x-1"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mr-3 group-hover:bg-secondary-400 group-hover:shadow-lg group-hover:shadow-secondary-500/50 transition-all duration-300"></span>
-                    <span className="group-hover:drop-shadow-lg">{link.label}</span>
+            </h4>
+            <ul className="space-y-2.5 text-xs mb-6">
+              {supportLinks.map((link) => (
+                <li key={link.href}>
+                  <LocaleLink href={link.href} className="text-slate-400 hover:text-white transition-colors">
+                    {link.label}
                   </LocaleLink>
                 </li>
               ))}
             </ul>
-          </div>
 
-          {/* COLUMN 4: Contact Information + Social */}
-          <div>
-            <h3 className="text-base font-bold mb-6 text-white relative inline-block">
-              {t('getInTouch')}
-              <span className="absolute -bottom-2 left-0 w-12 h-1 bg-gradient-to-r from-secondary-500 to-secondary-600 rounded-full shadow-lg shadow-secondary-500/50"></span>
-            </h3>
-            
-            {/* Contact Info - Compact Design */}
-            <div className="space-y-3.5 mb-8">
-              <div className="flex items-start space-x-2.5 group">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-gray-700/50 group-hover:border-secondary-500/50 transition-all duration-300">
-                  <MapPin className="w-4 h-4 text-secondary-400 transition-colors" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5 font-medium">{t('address')}</p>
-                  <span className="text-gray-200 text-xs leading-relaxed">{contactInfo.address}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2.5 group">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-gray-700/50 group-hover:border-secondary-500/50 transition-all duration-300">
-                  <Phone className="w-4 h-4 text-secondary-400 transition-colors" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5 font-medium">{t('phone')}</p>
-                  <span className="text-gray-200 text-xs">{contactInfo.phone}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2.5 group">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-gray-700/50 group-hover:border-secondary-500/50 transition-all duration-300">
-                  <Mail className="w-4 h-4 text-secondary-400 transition-colors" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5 font-medium">{t('email')}</p>
-                  <span className="text-gray-200 text-xs">{contactInfo.email}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
+            {/* Accepted Payments Badge Strip */}
             <div>
-              <h4 className="text-xs font-bold mb-4 text-gray-400 uppercase tracking-widest">{t('connectWithUs')}</h4>
-              <div className="flex space-x-2.5">
-                {dynamicSocialLinks.length > 0 ? (
-                  dynamicSocialLinks.map((social) => {
-                    const Icon = social.icon
-                    return (
-                      <a
-                        key={social.label}
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm border border-gray-700/50 hover:border-secondary-500/80 flex items-center justify-center transition-all duration-300 hover:scale-110 group overflow-hidden"
-                        aria-label={social.label}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-secondary-500/0 to-secondary-600/0 group-hover:from-secondary-500/20 group-hover:to-secondary-600/20 transition-all duration-300"></div>
-                        <Icon className="w-5 h-5 relative z-10 text-gray-400 group-hover:text-secondary-300 transition-colors" />
-                      </a>
-                    )
-                  })
-                ) : (
-                  <p className="text-xs text-gray-500 italic">{t('noSocial')}</p>
-                )}
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-2">
+                {locale === 'ru' ? 'Способы оплаты' : 'Payment Methods'}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">VISA</span>
+                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Mastercard</span>
+                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Белкарт</span>
+                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">МИР</span>
+                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Безнал B2B</span>
               </div>
             </div>
           </div>
         </div>
       </Container>
 
-
-      {/* Bottom Bar - Premium Design with Border Glow & ICP Compliance */}
-      <div className="relative z-10 border-t border-gray-700/40">
-        {/* Top border glow */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-secondary-500/30 to-transparent"></div>
-        
-        <Container maxWidth="2xl" className="py-7">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-gray-400 text-sm text-center md:text-left">
-              © {currentYear} <span className="text-white font-bold drop-shadow-lg">{companyName}</span>. {t('rights')}
+      {/* 3. Bottom Legal Bar */}
+      <div className="border-t border-slate-800/80 bg-[#060B14] py-5">
+        <Container maxWidth="2xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>
+              © {currentYear} <span className="text-slate-300 font-bold">{companyName}</span>. {t('rights')}
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <LocaleLink href="/privacy" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
-                {t('privacy')}
-              </LocaleLink>
-              <LocaleLink href="/terms" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
-                {t('terms')}
-              </LocaleLink>
-              <LocaleLink href="/cookies" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
-                {t('cookies')}
-              </LocaleLink>
-              <LocaleLink href="/sitemap" className="text-gray-400 hover:text-secondary-300 transition-all duration-300 hover:drop-shadow-lg">
-                {t('sitemap')}
-              </LocaleLink>
+            <div className="flex items-center gap-6">
+              <LocaleLink href="/privacy" className="hover:text-slate-300 transition-colors">{t('privacy')}</LocaleLink>
+              <LocaleLink href="/terms" className="hover:text-slate-300 transition-colors">{t('terms')}</LocaleLink>
+              <LocaleLink href="/cookies" className="hover:text-slate-300 transition-colors">{t('cookies')}</LocaleLink>
+              <LocaleLink href="/sitemap" className="hover:text-slate-300 transition-colors">{t('sitemap')}</LocaleLink>
             </div>
-          </div>
-
-          {/* Chinese MIIT ICP Compliance Bar */}
-          <div className="mt-4 pt-4 border-t border-gray-800/80 flex items-center justify-center text-xs text-gray-400">
-            <a
-              href="https://beian.miit.gov.cn/#/Integrated/index"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-gray-400 hover:text-secondary-300 transition-colors underline-offset-4 hover:underline"
-              title="工业和信息化部网站备案系统"
-            >
-              <Shield className="w-3.5 h-3.5 text-secondary-400" />
-              <span>{t('icpLicense')}</span>
-            </a>
           </div>
         </Container>
       </div>

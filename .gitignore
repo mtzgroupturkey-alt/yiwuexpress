@@ -99,3 +99,6 @@ yarn.lock
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

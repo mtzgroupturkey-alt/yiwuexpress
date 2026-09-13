@@ -8,6 +8,7 @@ import {
   Calendar, DollarSign, Package, User
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 import ClientOnly from '@/components/ClientOnly'
 
 interface Quote {
@@ -56,86 +57,62 @@ const statusColors = {
 
 export default function AdminQuotesPage() {
   const { isAdmin, loading: authLoading } = useAdminAuth()
+  const { dict } = useAdminLocale()
   const [mounted, setMounted] = useState(false)
   const [quotes, setQuotes] = useState<Quote[]>([])
-  const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
-  const [showEditModal, setShowEditModal] = useState(false)
-
-  const [editFormData, setEditFormData] = useState({
-    status: '',
-    price: '',
-    validUntil: '',
-    description: '',
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 1
   })
+  const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null)
+  const [editPrice, setEditPrice] = useState('')
+  const [editStatus, setEditStatus] = useState('')
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    return () => {
-      setShowEditModal(false)
-      setSelectedQuote(null)
-      setMounted(false)
-    }
   }, [])
 
-  // Close modals on route change
-  const pathname = usePathname()
   useEffect(() => {
-    setShowEditModal(false)
-    setSelectedQuote(null)
-  }, [pathname])
-
-  useEffect(() => {
-    if (!authLoading && isAdmin) {
+    if (mounted && isAdmin) {
       fetchQuotes()
     }
-  }, [pagination.page, searchTerm, statusFilter, authLoading, isAdmin])
+  }, [mounted, isAdmin, pagination.page, statusFilter])
 
   const fetchQuotes = async () => {
-    
     try {
       setLoading(true)
       const params = new URLSearchParams({
         page: pagination.page.toString(),
         limit: pagination.limit.toString(),
+        ...(statusFilter && { status: statusFilter }),
+        ...(searchTerm && { search: searchTerm })
       })
-      
-      if (searchTerm) params.append('search', searchTerm)
-      if (statusFilter) params.append('status', statusFilter)
 
       const response = await fetch(`/api/admin/quotes?${params}`, {
-        credentials: 'include',
+        credentials: 'include'
       })
 
-      const data = await response.json()
-      
-      if (response.ok) {
-        setQuotes(data.quotes)
-        setPagination(data.pagination)
-        setError('')
-      } else {
-        setError(data.error || 'Failed to fetch quotes')
+      if (!response.ok) {
+        throw new Error('Failed to fetch quotes')
       }
+
+      const data = await response.json()
+      setQuotes(data.quotes || [])
+      setPagination(data.pagination || pagination)
+      setError(null)
     } catch (err) {
-      setError('Network error')
+      setError('Failed to load quotes')
+      console.error(err)
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleEdit = (quote: Quote) => {
-    setSelectedQuote(quote)
-    setEditFormData({
-      status: quote.status,
-      price: quote.price?.toString() || '',
-      validUntil: quote.validUntil ? quote.validUntil.split('T')[0] : '',
-      description: quote.description || '',
-    })
-    setShowEditModal(true)
   }
 
   const handleUpdateQuote = async (e: React.FormEvent) => {
@@ -143,51 +120,34 @@ export default function AdminQuotesPage() {
     if (!selectedQuote) return
 
     try {
+      setUpdating(true)
       const response = await fetch(`/api/admin/quotes/${selectedQuote.id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         credentials: 'include',
         body: JSON.stringify({
-          ...editFormData,
-          price: editFormData.price ? parseFloat(editFormData.price) : null,
-        }),
+          price: editPrice ? parseFloat(editPrice) : null,
+          status: editStatus
+        })
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        fetchQuotes()
-        setShowEditModal(false)
-        setSelectedQuote(null)
-      } else {
-        alert(data.error || 'Update failed')
-      }
+      // Refresh quotes
+      await fetchQuotes()
+      setSelectedQuote(null)
     } catch (err) {
-      alert('Network error')
+      alert('Failed to update quote')
+      console.error(err)
+    } finally {
+      setUpdating(false)
     }
   }
 
-  const handleDelete = async (quote: Quote) => {
-    if (!confirm(`Are you sure you want to delete quote from ${quote.user.name}?`)) return
-
-    try {
-      const response = await fetch(`/api/admin/quotes/${quote.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        fetchQuotes()
-      } else {
-        alert(data.error || 'Delete failed')
-      }
-    } catch (err) {
-      alert('Network error')
-    }
+  const handleEdit = (quote: Quote) => {
+    setSelectedQuote(quote)
+    setEditPrice(quote.price?.toString() || '')
+    setEditStatus(quote.status || 'PENDING')
   }
 
   const formatDate = (dateString: string) => {
@@ -198,13 +158,38 @@ export default function AdminQuotesPage() {
     })
   }
 
+  const handleDelete = async (quote: Quote) => {
+    await handleDeleteQuote(quote.id)
+  }
+
+  const handleDeleteQuote = async (id: string) => {
+    if (!confirm(dict.common.confirmDelete)) return
+
+    try {
+      const response = await fetch(`/api/admin/quotes/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete quote')
+      }
+
+      // Refresh quotes
+      await fetchQuotes()
+    } catch (err) {
+      alert('Failed to delete quote')
+      console.error(err)
+    }
+  }
+
   // Show loading state while auth is loading
   if (authLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Authenticating...</p>
+          <p className="text-sm text-gray-500">{dict.common.loading}</p>
         </div>
       </div>
     )
@@ -220,12 +205,12 @@ export default function AdminQuotesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Quotes Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Review and manage customer quotes</p>
+          <h1 className="text-2xl font-bold text-gray-900">{dict.quotes.title}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{dict.quotes.subtitle}</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}>
           <FileText size={16} />
-          <span>{pagination.total} Total Quotes</span>
+          <span>{pagination.total} {dict.quotes.title}</span>
         </div>
       </div>
 
@@ -236,23 +221,23 @@ export default function AdminQuotesPage() {
             <Search size={20} className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
-              placeholder="Search quotes..."
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder={dict.common.search}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <select
-            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xs"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="">All Statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="REVIEWED">Reviewed</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
-            <option value="EXPIRED">Expired</option>
+            <option value="">{dict.common.all} {dict.common.status}</option>
+            <option value="PENDING">{dict.status.PENDING}</option>
+            <option value="REVIEWED">{dict.status.PROCESSING}</option>
+            <option value="APPROVED">{dict.status.APPROVED}</option>
+            <option value="REJECTED">{dict.status.REJECTED}</option>
+            <option value="EXPIRED">{dict.status.CANCELLED}</option>
           </select>
         </div>
       </div>
@@ -263,7 +248,7 @@ export default function AdminQuotesPage() {
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-              <p className="text-sm text-gray-500">Loading quotes...</p>
+              <p className="text-sm text-gray-500">{dict.common.loading}</p>
             </div>
           </div>
         ) : error ? (
@@ -279,13 +264,13 @@ export default function AdminQuotesPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Customer</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Service</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Route</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Price</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Status</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Created</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.orders.customer}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.services.title}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.quotes.origin} → {dict.quotes.destination}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.price}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.status}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.date}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -360,8 +345,8 @@ export default function AdminQuotesPage() {
             {pagination.pages > 1 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
                 <p className="text-sm text-gray-500">
-                  Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-                  {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} quotes
+                  {dict.common.showing} {((pagination.page - 1) * pagination.limit) + 1} {dict.common.to}{' '}
+                  {Math.min(pagination.page * pagination.limit, pagination.total)} {dict.common.of} {pagination.total} {dict.quotes.title.toLowerCase()}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
@@ -369,17 +354,17 @@ export default function AdminQuotesPage() {
                     disabled={pagination.page === 1}
                     className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                   >
-                    Previous
+                    {dict.common.previous}
                   </button>
                   <span className="px-3 py-1.5 text-sm">
-                    Page {pagination.page} of {pagination.pages}
+                    {pagination.page} {dict.common.of} {pagination.pages}
                   </span>
                   <button
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                     disabled={pagination.page === pagination.pages}
                     className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                   >
-                    Next
+                    {dict.common.next}
                   </button>
                 </div>
               </div>
@@ -390,44 +375,44 @@ export default function AdminQuotesPage() {
 
       {/* Edit Quote Modal */}
       <ClientOnly>
-        {mounted && showEditModal && selectedQuote && (
+        {mounted && selectedQuote && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false) }}
+            onClick={(e) => { if (e.target === e.currentTarget) setSelectedQuote(null) }}
           >
             <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Quote</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">{dict.common.edit} {dict.quotes.quoteId}</h2>
 
               <form onSubmit={handleUpdateQuote} className="space-y-4">
                 {/* Quote Details Display */}
                 <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <h3 className="font-medium text-gray-900">Quote Details</h3>
+                  <h3 className="font-medium text-gray-900">{dict.common.details}</h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Customer:</span>
+                      <span className="text-gray-500">{dict.orders.customer}:</span>
                       <p className="font-medium">{selectedQuote.user.name}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Service:</span>
+                      <span className="text-gray-500">{dict.services.title}:</span>
                       <p className="font-medium">{selectedQuote.service.name}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">From:</span>
+                      <span className="text-gray-500">{dict.quotes.origin}:</span>
                       <p className="font-medium">{selectedQuote.origin}</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">To:</span>
+                      <span className="text-gray-500">{dict.quotes.destination}:</span>
                       <p className="font-medium">{selectedQuote.destination}</p>
                     </div>
                     {selectedQuote.weight && (
                       <div>
-                        <span className="text-gray-500">Weight:</span>
+                        <span className="text-gray-500">{dict.quotes.weight}:</span>
                         <p className="font-medium">{selectedQuote.weight} kg</p>
                       </div>
                     )}
                     {selectedQuote.dimensions && (
                       <div>
-                        <span className="text-gray-500">Dimensions:</span>
+                        <span className="text-gray-500">{dict.quotes.volume}:</span>
                         <p className="font-medium">{selectedQuote.dimensions}</p>
                       </div>
                     )}
@@ -437,66 +422,47 @@ export default function AdminQuotesPage() {
                 {/* Editable Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.common.status}</label>
                     <select
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={editFormData.status}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, status: e.target.value }))}
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value)}
                     >
-                      <option value="PENDING">Pending</option>
-                      <option value="REVIEWED">Reviewed</option>
-                      <option value="APPROVED">Approved</option>
-                      <option value="REJECTED">Rejected</option>
-                      <option value="EXPIRED">Expired</option>
+                      <option value="PENDING">{dict.status.PENDING}</option>
+                      <option value="REVIEWED">{dict.status.PROCESSING}</option>
+                      <option value="APPROVED">{dict.status.APPROVED}</option>
+                      <option value="REJECTED">{dict.status.REJECTED}</option>
+                      <option value="EXPIRED">{dict.status.CANCELLED}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.quotes.proposedPrice} ($)</label>
                     <input
                       type="number"
                       step="0.01"
                       className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      value={editFormData.price}
-                      onChange={(e) => setEditFormData(prev => ({ ...prev, price: e.target.value }))}
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Valid Until</label>
-                  <input
-                    type="date"
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={editFormData.validUntil}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, validUntil: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <textarea
-                    rows={3}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={editFormData.description}
-                    onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
-                  />
                 </div>
 
                 <div className="flex justify-end gap-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => setShowEditModal(false)}
+                    onClick={() => setSelectedQuote(null)}
                     className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    Cancel
+                    {dict.common.cancel}
                   </button>
                   <button
                     type="submit"
+                    disabled={updating}
                     className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
                     style={{ background: 'linear-gradient(135deg, #c9a84c, #a0843e)' }}
                   >
-                    Update Quote
+                    {updating ? dict.common.loading : dict.common.update}
                   </button>
                 </div>
               </form>

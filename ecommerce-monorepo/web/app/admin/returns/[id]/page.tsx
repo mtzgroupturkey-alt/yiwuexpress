@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 const statusColors: Record<string, string> = {
   REQUESTED: 'bg-yellow-100 text-yellow-800',
@@ -24,6 +25,7 @@ export default function AdminReturnDetailPage() {
   const router = useRouter()
   const params = useParams()
   const returnId = params.id as string
+  const { dict, locale, t } = useAdminLocale()
 
   const [returnData, setReturnData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -78,21 +80,21 @@ export default function AdminReturnDetailPage() {
 
       if (response.ok) {
         fetchReturn()
-        alert('Return updated successfully!')
+        alert(dict.returns.returnUpdatedSuccess)
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to update return')
+        alert(data.error || dict.common.errorOccurred)
       }
     } catch (error) {
       console.error('Failed to update return:', error)
-      alert('An error occurred')
+      alert(dict.common.errorOccurred)
     } finally {
       setIsUpdating(false)
     }
   }
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date).toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'ru' ? 'ru-RU' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -123,9 +125,9 @@ export default function AdminReturnDetailPage() {
       <div className="p-6">
         <Card>
           <CardContent className="py-20 text-center">
-            <p className="text-gray-600">Return not found</p>
+            <p className="text-gray-600">{dict.returns.returnNotFound}</p>
             <Button onClick={() => router.push('/admin/returns')} className="mt-4">
-              Back to Returns
+              {dict.returns.backToReturns}
             </Button>
           </CardContent>
         </Card>
@@ -139,13 +141,13 @@ export default function AdminReturnDetailPage() {
       <div className="flex items-center justify-between">
         <div>
           <Button variant="outline" onClick={() => router.push('/admin/returns')}>
-            ← Back to Returns
+            ← {dict.returns.backToReturns}
           </Button>
           <h1 className="text-3xl font-bold mt-4">{returnData.returnNumber}</h1>
-          <p className="text-gray-600 mt-1">Return Request Details</p>
+          <p className="text-gray-600 mt-1">{dict.returns.returnDetails}</p>
         </div>
         <Badge className={`${statusColors[returnData.status]} text-lg px-4 py-2`}>
-          {returnData.status.replace(/_/g, ' ')}
+          {t(returnData.status, returnData.status.replace(/_/g, ' '))}
         </Badge>
       </div>
 
@@ -155,20 +157,20 @@ export default function AdminReturnDetailPage() {
           {/* Customer Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
+              <CardTitle>{dict.returns.customerInfo}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600">Name</div>
+                <div className="text-sm text-gray-600">{dict.users.fullName}</div>
                 <div className="font-medium">{returnData.user.name}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Email</div>
+                <div className="text-sm text-gray-600">{dict.users.email}</div>
                 <div className="font-medium">{returnData.user.email}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Phone</div>
-                <div className="font-medium">{returnData.user.phone || 'N/A'}</div>
+                <div className="text-sm text-gray-600">{dict.users.phone}</div>
+                <div className="font-medium">{returnData.user.phone || dict.common.noData}</div>
               </div>
             </CardContent>
           </Card>
@@ -176,15 +178,15 @@ export default function AdminReturnDetailPage() {
           {/* Order Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Original Order</CardTitle>
+              <CardTitle>{dict.returns.originalOrder}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600">Order Number</div>
+                <div className="text-sm text-gray-600">{dict.orders.orderNumber}</div>
                 <div className="font-medium">{returnData.order.orderNumber}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Order Total</div>
+                <div className="text-sm text-gray-600">{dict.returns.orderTotal}</div>
                 <div className="font-medium">{formatCurrency(returnData.order.total)}</div>
               </div>
               <Button
@@ -192,7 +194,7 @@ export default function AdminReturnDetailPage() {
                 size="sm"
                 onClick={() => router.push(`/admin/orders/${returnData.orderId}`)}
               >
-                View Full Order →
+                {dict.returns.viewFullOrder}
               </Button>
             </CardContent>
           </Card>
@@ -200,24 +202,24 @@ export default function AdminReturnDetailPage() {
           {/* Return Details */}
           <Card>
             <CardHeader>
-              <CardTitle>Return Details</CardTitle>
+              <CardTitle>{dict.returns.returnDetails}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600">Reason</div>
+                <div className="text-sm text-gray-600">{dict.returns.reason}</div>
                 <div className="font-medium">{returnData.reason.replace(/_/g, ' ')}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Description</div>
-                <div className="text-sm">{returnData.description || 'No description provided'}</div>
+                <div className="text-sm text-gray-600">{dict.settings.slideDescription}</div>
+                <div className="text-sm">{returnData.description || dict.common.noData}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Requested On</div>
+                <div className="text-sm text-gray-600">{dict.returns.requestedOn}</div>
                 <div className="font-medium">{formatDate(returnData.createdAt)}</div>
               </div>
               {returnData.images && returnData.images.length > 0 && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-2">Images</div>
+                  <div className="text-sm text-gray-600 mb-2">{dict.returns.images}</div>
                   <div className="flex gap-2">
                     {returnData.images.map((img: string, idx: number) => (
                       <img
@@ -236,7 +238,7 @@ export default function AdminReturnDetailPage() {
           {/* Items to Return */}
           <Card>
             <CardHeader>
-              <CardTitle>Items to Return</CardTitle>
+              <CardTitle>{dict.returns.itemsToReturn}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -244,9 +246,9 @@ export default function AdminReturnDetailPage() {
                   <div key={idx} className="flex justify-between items-start p-3 bg-gray-50 rounded">
                     <div>
                       <div className="font-medium">{item.productName}</div>
-                      <div className="text-sm text-gray-600">Quantity: {item.quantity}</div>
+                      <div className="text-sm text-gray-600">{dict.wholesale.quantity}: {item.quantity}</div>
                       {item.reason && (
-                        <div className="text-sm text-gray-600">Reason: {item.reason}</div>
+                        <div className="text-sm text-gray-600">{dict.returns.reason}: {item.reason}</div>
                       )}
                     </div>
                   </div>
@@ -261,23 +263,23 @@ export default function AdminReturnDetailPage() {
           {/* Admin Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Admin Actions</CardTitle>
+              <CardTitle>{dict.returns.adminActions}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="adminNotes">Admin Notes</Label>
+                <Label htmlFor="adminNotes">{dict.returns.adminNotes}</Label>
                 <textarea
                   id="adminNotes"
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   rows={3}
                   className="w-full mt-1 px-3 py-2 border rounded-md"
-                  placeholder="Add notes about this return..."
+                  placeholder={dict.returns.adminNotes}
                 />
               </div>
 
               <div>
-                <Label htmlFor="refundAmount">Refund Amount ($)</Label>
+                <Label htmlFor="refundAmount">{dict.returns.refundAmount} ($)</Label>
                 <Input
                   id="refundAmount"
                   type="number"
@@ -289,16 +291,16 @@ export default function AdminReturnDetailPage() {
               </div>
 
               <div>
-                <Label htmlFor="refundMethod">Refund Method</Label>
+                <Label htmlFor="refundMethod">{dict.returns.refundMethod}</Label>
                 <select
                   id="refundMethod"
                   value={refundMethod}
                   onChange={(e) => setRefundMethod(e.target.value)}
                   className="w-full mt-1 px-3 py-2 border rounded-md"
                 >
-                  <option value="original_payment">Original Payment Method</option>
-                  <option value="store_credit">Store Credit</option>
-                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="original_payment">{dict.returns.originalPaymentMethod}</option>
+                  <option value="store_credit">{dict.returns.storeCredit}</option>
+                  <option value="bank_transfer">{dict.returns.bankTransfer}</option>
                 </select>
               </div>
             </CardContent>
@@ -307,7 +309,7 @@ export default function AdminReturnDetailPage() {
           {/* Status Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Update Status</CardTitle>
+              <CardTitle>{dict.wholesale.updateStatus}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {returnData.status === 'REQUESTED' && (
@@ -317,7 +319,7 @@ export default function AdminReturnDetailPage() {
                     disabled={isUpdating}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
-                    ✓ Approve Return
+                    ✓ {dict.common.approve}
                   </Button>
                   <Button
                     onClick={() => updateReturn('REJECTED')}
@@ -325,7 +327,7 @@ export default function AdminReturnDetailPage() {
                     variant="destructive"
                     className="w-full"
                   >
-                    ✗ Reject Return
+                    ✗ {dict.returns.rejectReturn}
                   </Button>
                 </>
               )}
@@ -336,7 +338,7 @@ export default function AdminReturnDetailPage() {
                   disabled={isUpdating}
                   className="w-full"
                 >
-                  Mark as Return Shipped
+                  {dict.returns.markShipped}
                 </Button>
               )}
 
@@ -346,7 +348,7 @@ export default function AdminReturnDetailPage() {
                   disabled={isUpdating}
                   className="w-full"
                 >
-                  Mark as Received
+                  {dict.returns.markReceived}
                 </Button>
               )}
 
@@ -356,7 +358,7 @@ export default function AdminReturnDetailPage() {
                   disabled={isUpdating}
                   className="w-full"
                 >
-                  Start Inspection
+                  {dict.returns.startInspection}
                 </Button>
               )}
 
@@ -367,7 +369,7 @@ export default function AdminReturnDetailPage() {
                     disabled={isUpdating || !refundAmount}
                     className="w-full bg-green-600 hover:bg-green-700"
                   >
-                    Process Refund
+                    {dict.returns.approveRefund}
                   </Button>
                   <Button
                     onClick={() => updateReturn('REFUND_REJECTED')}
@@ -375,7 +377,7 @@ export default function AdminReturnDetailPage() {
                     variant="destructive"
                     className="w-full"
                   >
-                    Reject Refund
+                    {dict.returns.rejectReturn}
                   </Button>
                 </>
               )}
@@ -386,13 +388,13 @@ export default function AdminReturnDetailPage() {
                   disabled={isUpdating}
                   className="w-full"
                 >
-                  Close Return
+                  {dict.returns.closeReturn}
                 </Button>
               )}
 
               <div className="pt-4 border-t">
                 <p className="text-xs text-gray-600">
-                  Current workflow: REQUESTED → APPROVED → RETURN_SHIPPED → RECEIVED → INSPECTING → REFUND_PROCESSED → CLOSED
+                  Workflow: REQUESTED → APPROVED → RETURN_SHIPPED → RECEIVED → INSPECTING → REFUND_PROCESSED → CLOSED
                 </p>
               </div>
             </CardContent>
@@ -402,35 +404,35 @@ export default function AdminReturnDetailPage() {
           {(returnData.reviewedAt || returnData.returnShippedAt || returnData.returnReceivedAt || returnData.refundedAt) && (
             <Card>
               <CardHeader>
-                <CardTitle>Timeline</CardTitle>
+                <CardTitle>{dict.returns.timeline}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <div className="font-medium">Created</div>
+                    <div className="font-medium">{dict.common.createdAt}</div>
                     <div className="text-gray-600">{formatDate(returnData.createdAt)}</div>
                   </div>
                   {returnData.reviewedAt && (
                     <div>
-                      <div className="font-medium">Reviewed</div>
+                      <div className="font-medium">{dict.status.APPROVED}</div>
                       <div className="text-gray-600">{formatDate(returnData.reviewedAt)}</div>
                     </div>
                   )}
                   {returnData.returnShippedAt && (
                     <div>
-                      <div className="font-medium">Return Shipped</div>
+                      <div className="font-medium">{dict.returns.returnShipped}</div>
                       <div className="text-gray-600">{formatDate(returnData.returnShippedAt)}</div>
                     </div>
                   )}
                   {returnData.returnReceivedAt && (
                     <div>
-                      <div className="font-medium">Received</div>
+                      <div className="font-medium">{dict.returns.returnReceived}</div>
                       <div className="text-gray-600">{formatDate(returnData.returnReceivedAt)}</div>
                     </div>
                   )}
                   {returnData.refundedAt && (
                     <div>
-                      <div className="font-medium">Refunded</div>
+                      <div className="font-medium">{dict.returns.refunded}</div>
                       <div className="text-gray-600">{formatDate(returnData.refundedAt)}</div>
                     </div>
                   )}

@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const { id } = params
-    const { containerId } = await req.json()
+    const { containerId, isDirectSale } = await req.json()
 
     if (!containerId) {
       return NextResponse.json({ error: 'Container ID required' }, { status: 400 })
@@ -22,23 +22,36 @@ export async function POST(
       return NextResponse.json({ error: 'Container not found' }, { status: 404 })
     }
 
-    const order = await prisma.order.update({
-      where: { id },
-      data: {
-        containerId,
-        containerNumber: container.containerNumber,
-        status: 'PROCESSING',
-      },
-      include: {
-        user: { select: { id: true, name: true, email: true, phone: true } },
-        shippingCountry: { select: { id: true, code: true, name: true } },
-        items: {
-          include: {
-            product: { select: { id: true, name: true, thumbnail: true, sku: true } },
+    // Update order and container
+    const [order] = await prisma.$transaction([
+      prisma.order.update({
+        where: { id },
+        data: {
+          containerId,
+          containerNumber: container.containerNumber,
+          status: 'PROCESSING',
+          salesType: isDirectSale ? 'DIRECT_CONTAINER' : undefined,
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true, phone: true } },
+          shippingCountry: { select: { id: true, code: true, name: true } },
+          items: {
+            include: {
+              product: { select: { id: true, name: true, thumbnail: true, sku: true } },
+            },
           },
         },
-      },
-    })
+      }),
+      ...(isDirectSale ? [
+        prisma.container.update({
+          where: { id: containerId },
+          data: {
+            shipToCustomerDirectly: true,
+            directOrderId: id,
+          },
+        }),
+      ] : []),
+    ])
 
     return NextResponse.json({ success: true, data: order })
   } catch (error) {

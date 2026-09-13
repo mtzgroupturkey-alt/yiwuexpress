@@ -7,6 +7,8 @@ import {
   Filter, MoreVertical, Check, X, AlertTriangle 
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { localizeService } from '@/lib/utils/localize'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 
 interface ServiceTranslationRow {
@@ -53,6 +55,7 @@ interface Pagination {
 
 export default function AdminServicesPage() {
   const { isAdmin, loading: authLoading } = useAdminAuth()
+  const { dict, locale } = useAdminLocale()
   const [services, setServices] = useState<Service[]>([])
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 0 })
   const [loading, setLoading] = useState(true)
@@ -254,8 +257,8 @@ export default function AdminServicesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Services Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Manage shipping, customs, warehousing, and sourcing services</p>
+          <h1 className="text-2xl font-bold text-gray-900">{dict.services.title}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{dict.services.subtitle}</p>
         </div>
         <button
           onClick={() => {
@@ -278,7 +281,7 @@ export default function AdminServicesPage() {
           style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
         >
           <Plus size={18} />
-          Add Service
+          {dict.services.addService}
         </button>
       </div>
 
@@ -289,7 +292,7 @@ export default function AdminServicesPage() {
             <Search size={20} className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
-              placeholder="Search services..."
+              placeholder={dict.common.search}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -300,7 +303,7 @@ export default function AdminServicesPage() {
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
           >
-            <option value="">All Types</option>
+            <option value="">{dict.products.filterByStatus}</option>
             <option value="shipping">Shipping</option>
             <option value="customs">Customs</option>
             <option value="warehousing">Warehousing</option>
@@ -315,7 +318,7 @@ export default function AdminServicesPage() {
           <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-              <p className="text-sm text-gray-500">Loading services...</p>
+              <p className="text-sm text-gray-500">{dict.common.loading}</p>
             </div>
           </div>
         ) : error ? (
@@ -331,43 +334,45 @@ export default function AdminServicesPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-100">
                   <tr>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Service</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Type</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Price</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Duration</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Status</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-700">Actions</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.services.serviceName}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.quotes.cargoType}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.services.price}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.services.deliveryTime}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.status}</th>
+                    <th className="text-left py-4 px-6 font-semibold text-gray-700">{dict.common.actions}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {services.map((service) => (
-                    <tr key={service.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-4 px-6">
-                        <div>
-                          <h4 className="font-medium text-gray-900">{service.name}</h4>
-                          <p className="text-xs text-gray-400 mt-0.5">{service.slug}</p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="text-sm font-medium capitalize px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
-                          {service.type}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 font-mono text-sm">${service.price}</td>
-                      <td className="py-4 px-6 text-sm text-gray-600">{service.duration || 'N/A'}</td>
-                      <td className="py-4 px-6">
-                        {service.isActive ? (
-                          <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
-                            <Check size={12} />
-                            Active
+                  {services.map((service) => {
+                    const loc = localizeService(service as any, locale)
+                    return (
+                      <tr key={service.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-6">
+                          <div>
+                            <h4 className="font-medium text-gray-900">{loc.name || service.name}</h4>
+                            <p className="text-xs text-gray-400 mt-0.5">{service.slug}</p>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="text-sm font-medium capitalize px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
+                            {service.type}
                           </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
-                            <X size={12} />
-                            Inactive
-                          </span>
-                        )}
-                      </td>
+                        </td>
+                        <td className="py-4 px-6 font-mono text-sm">${service.price}</td>
+                        <td className="py-4 px-6 text-sm text-gray-600">{loc.duration || service.duration || 'N/A'}</td>
+                        <td className="py-4 px-6">
+                          {service.isActive ? (
+                            <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                              <Check size={12} />
+                              {dict.common.active}
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 text-xs font-semibold text-gray-500">
+                              <X size={12} />
+                              {dict.common.inactive}
+                            </span>
+                          )}
+                        </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2">
                           <button
@@ -387,7 +392,7 @@ export default function AdminServicesPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>
@@ -429,13 +434,13 @@ export default function AdminServicesPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-gray-900 mb-6">
-              {editingService ? 'Edit Service' : 'Add New Service'}
+              {editingService ? dict.services.editService : dict.services.addService}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.services.serviceName}</label>
                   <input
                     type="text"
                     required
@@ -445,7 +450,7 @@ export default function AdminServicesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Slug</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.products.slug}</label>
                   <input
                     type="text"
                     required
@@ -457,7 +462,7 @@ export default function AdminServicesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{dict.common.description}</label>
                 <textarea
                   rows={3}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -468,7 +473,7 @@ export default function AdminServicesPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price ($)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.products.priceWithSymbol}</label>
                   <input
                     type="number"
                     step="0.01"
@@ -479,7 +484,7 @@ export default function AdminServicesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.services.duration}</label>
                   <input
                     type="text"
                     placeholder="e.g., 3-5 days"
@@ -489,23 +494,23 @@ export default function AdminServicesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.services.serviceType}</label>
                   <select
                     required
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     value={formData.type}
                     onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
                   >
-                    <option value="shipping">Shipping</option>
-                    <option value="customs">Customs</option>
-                    <option value="warehousing">Warehousing</option>
-                    <option value="sourcing">Sourcing</option>
+                    <option value="shipping">{dict.services.shipping}</option>
+                    <option value="customs">{dict.services.customs}</option>
+                    <option value="warehousing">{dict.services.warehousing}</option>
+                    <option value="sourcing">{dict.services.sourcing}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Coverage</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{dict.services.coverage}</label>
                 <input
                   type="text"
                   placeholder="e.g., Global, Asia-Pacific"
@@ -516,7 +521,7 @@ export default function AdminServicesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{dict.common.image} URL</label>
                 <input
                   type="url"
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -528,20 +533,45 @@ export default function AdminServicesPage() {
               {/* Translations */}
               <div className="border-t border-gray-100 pt-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-900">Translations</h3>
+                  <h3 className="text-sm font-semibold text-gray-900">{dict.products.translations}</h3>
                   <div className="flex items-center gap-2">
                     <AutoTranslateButton
-                      enFields={{
-                        name: formData.name,
-                        description: formData.description,
-                        duration: formData.duration,
-                        coverage: formData.coverage,
+                      allFields={{
+                        en: {
+                          name: formData.name,
+                          description: formData.description,
+                          duration: formData.duration,
+                          coverage: formData.coverage,
+                        },
+                        ru: {
+                          name: translations.ru?.name || '',
+                          description: translations.ru?.description || '',
+                          duration: translations.ru?.duration || '',
+                          coverage: translations.ru?.coverage || '',
+                        },
+                        zh: {
+                          name: translations.zh?.name || '',
+                          description: translations.zh?.description || '',
+                          duration: translations.zh?.duration || '',
+                          coverage: translations.zh?.coverage || '',
+                        },
                       }}
                       onTranslated={(result) => {
+                        if (result.en) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            name: result.en.name || prev.name,
+                            description: result.en.description || prev.description,
+                            duration: result.en.duration || prev.duration,
+                            coverage: result.en.coverage || prev.coverage,
+                          }))
+                        }
                         setTranslations((prev) => {
                           const next = { ...prev }
                           for (const locale of Object.keys(result)) {
-                            next[locale] = { ...emptyServiceTranslation(), ...next[locale], ...result[locale] }
+                            if (locale === 'ru' || locale === 'zh') {
+                              next[locale] = { ...emptyServiceTranslation(), ...next[locale], ...result[locale] }
+                            }
                           }
                           return next
                         })
@@ -577,7 +607,7 @@ export default function AdminServicesPage() {
                   return (
                     <div key={locale} className={isActive ? 'space-y-4' : 'hidden'}>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Name ({locale})</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{dict.common.name} ({locale})</label>
                         <input
                           type="text"
                           className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -587,7 +617,7 @@ export default function AdminServicesPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Description ({locale})</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{dict.common.description} ({locale})</label>
                         <textarea
                           rows={3}
                           className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -598,7 +628,7 @@ export default function AdminServicesPage() {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Duration ({locale})</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{dict.services.duration} ({locale})</label>
                           <input
                             type="text"
                             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -608,7 +638,7 @@ export default function AdminServicesPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Coverage ({locale})</label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">{dict.services.coverage} ({locale})</label>
                           <input
                             type="text"
                             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -629,14 +659,14 @@ export default function AdminServicesPage() {
                   onClick={resetForm}
                   className="px-6 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  {dict.common.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-2.5 rounded-xl text-white font-medium hover:opacity-90 transition-opacity"
                   style={{ background: 'linear-gradient(135deg, #1a3a5c, #2563eb)' }}
                 >
-                  {editingService ? 'Update Service' : 'Create Service'}
+                  {editingService ? dict.services.updateService : dict.services.createService}
                 </button>
               </div>
             </form>

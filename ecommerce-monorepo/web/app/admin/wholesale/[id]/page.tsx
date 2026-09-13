@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, MessageSquare, DollarSign, Package, CheckCircle } from 'lucide-react'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface WholesaleInquiry {
   id: string
@@ -43,6 +44,7 @@ interface WholesaleInquiry {
 
 export default function AdminWholesaleDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { dict, locale, t } = useAdminLocale()
   const [inquiry, setInquiry] = useState<WholesaleInquiry | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -76,12 +78,12 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
           quantity: data.data.quantity?.toString() || (Array.isArray(data.data.products) ? data.data.products.reduce((s: number, p: any) => s + (p?.quantity || 0), 0).toString() : '')
         }))
       } else {
-        alert('Wholesale inquiry not found')
+        alert(dict.wholesale.inquiryNotFound)
         router.push('/admin/wholesale')
       }
     } catch (error) {
       console.error('Error fetching inquiry:', error)
-      alert('Failed to load inquiry')
+      alert(dict.common.errorOccurred)
     } finally {
       setLoading(false)
     }
@@ -89,7 +91,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
 
   const handleStatusUpdate = async () => {
     if (!newStatus) {
-      alert('Please select a status')
+      alert(dict.wholesale.newStatus)
       return
     }
 
@@ -104,14 +106,14 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
       const result = await response.json()
 
       if (result.success) {
-        alert('Status updated successfully!')
+        alert(dict.wholesale.statusUpdatedSuccess)
         fetchInquiry()
       } else {
-        alert(result.error || 'Failed to update status')
+        alert(result.error || dict.common.errorOccurred)
       }
     } catch (error) {
       console.error('Error updating status:', error)
-      alert('Failed to update status')
+      alert(dict.common.errorOccurred)
     } finally {
       setUpdating(false)
     }
@@ -119,7 +121,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
 
   const handleCreateQuote = async () => {
     if (!quoteData.unitPrice || !quoteData.quantity) {
-      alert('Unit price and quantity are required')
+      alert(dict.currencies.fillRequired)
       return
     }
 
@@ -144,7 +146,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
       const result = await response.json()
 
       if (result.success) {
-        alert('Quote created successfully!')
+        alert(dict.wholesale.quoteCreatedSuccess)
         setShowQuoteForm(false)
         setQuoteData({
           unitPrice: '',
@@ -154,18 +156,18 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
         })
         fetchInquiry()
       } else {
-        alert(result.error || 'Failed to create quote')
+        alert(result.error || dict.common.errorOccurred)
       }
     } catch (error) {
       console.error('Error creating quote:', error)
-      alert('Failed to create quote')
+      alert(dict.common.errorOccurred)
     } finally {
       setUpdating(false)
     }
   }
 
   const handleConvertToOrder = async () => {
-    if (!confirm('Convert this wholesale inquiry to an order? This requires an accepted quote.')) {
+    if (!confirm(`${dict.wholesale.convertToOrder}?`)) {
       return
     }
 
@@ -184,14 +186,14 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
       const result = await response.json()
 
       if (result.success) {
-        alert('Successfully converted to order!')
+        alert(dict.wholesale.convertedOrderSuccess)
         router.push(`/admin/orders/${result.data.id}`)
       } else {
-        alert(result.error || 'Failed to convert to order')
+        alert(result.error || dict.common.errorOccurred)
       }
     } catch (error) {
       console.error('Error converting to order:', error)
-      alert('Failed to convert to order')
+      alert(dict.common.errorOccurred)
     } finally {
       setUpdating(false)
     }
@@ -216,7 +218,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading inquiry...</p>
+          <p className="mt-4 text-gray-600">{dict.wholesale.loadingInquiry}</p>
         </div>
       </div>
     )
@@ -226,7 +228,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-600">Inquiry not found</p>
+          <p className="text-gray-600">{dict.wholesale.inquiryNotFound}</p>
         </div>
       </div>
     )
@@ -245,17 +247,17 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
             onClick={() => router.push('/admin/wholesale')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Inquiries
+            {dict.wholesale.backToInquiries}
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{inquiry.companyName}</h1>
             <p className="text-gray-600">
-              Submitted on {new Date(inquiry.createdAt).toLocaleString()}
+              {dict.wholesale.submittedOn} {new Date(inquiry.createdAt).toLocaleString(locale === 'zh' ? 'zh-CN' : locale === 'ru' ? 'ru-RU' : 'en-US')}
             </p>
           </div>
         </div>
         <Badge className={getStatusColor(inquiry.status)}>
-          {inquiry.status.toUpperCase()}
+          {t(inquiry.status.toUpperCase(), inquiry.status.toUpperCase())}
         </Badge>
       </div>
 
@@ -267,39 +269,39 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="w-5 h-5" />
-                Inquiry Details
+                {dict.wholesale.inquiryDetails}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-600">Quantity Requested</p>
+                  <p className="text-sm text-gray-600">{dict.wholesale.quantityRequested}</p>
                   <p className="text-lg font-semibold">
                     {typeof inquiry.quantity === 'number'
-                      ? `${inquiry.quantity.toLocaleString()} units`
+                      ? `${inquiry.quantity.toLocaleString()} ${dict.purchaseOrders.itemsCount}`
                       : Array.isArray(inquiry.products) && inquiry.products.length > 0
-                      ? `${inquiry.products.reduce((s: number, p: any) => s + (p?.quantity || 0), 0).toLocaleString()} units`
-                      : 'N/A'}
+                      ? `${inquiry.products.reduce((s: number, p: any) => s + (p?.quantity || 0), 0).toLocaleString()} ${dict.purchaseOrders.itemsCount}`
+                      : dict.common.noData}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Target Price</p>
+                  <p className="text-sm text-gray-600">{dict.wholesale.targetPrice}</p>
                   <p className="text-lg font-semibold">
-                    {inquiry.targetPrice ? `$${inquiry.targetPrice.toFixed(2)}/unit` : 'Not specified'}
+                    {inquiry.targetPrice ? `$${inquiry.targetPrice.toFixed(2)}` : dict.common.noData}
                   </p>
                 </div>
               </div>
 
               <div>
-                <p className="text-sm text-gray-600 mb-2">Message</p>
+                <p className="text-sm text-gray-600 mb-2">{dict.wholesale.message}</p>
                 <div className="p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm whitespace-pre-wrap">{inquiry.message}</p>
+                  <p className="text-sm whitespace-pre-wrap">{inquiry.message || dict.common.noData}</p>
                 </div>
               </div>
 
               {inquiry.deliveryAddress && (
                 <div>
-                  <p className="text-sm text-gray-600 mb-2">Delivery Address</p>
+                  <p className="text-sm text-gray-600 mb-2">{dict.wholesale.deliveryAddress}</p>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <pre className="text-sm whitespace-pre-wrap">
                       {JSON.stringify(inquiry.deliveryAddress, null, 2)}
@@ -316,23 +318,23 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <DollarSign className="w-5 h-5" />
-                  Quotes ({inquiry.quotes?.length || 0})
+                  {dict.wholesale.quotesCount.replace('{count}', (inquiry.quotes?.length || 0).toString())}
                 </CardTitle>
                 <Button
                   size="sm"
                   onClick={() => setShowQuoteForm(!showQuoteForm)}
                 >
-                  {showQuoteForm ? 'Cancel' : 'Create Quote'}
+                  {showQuoteForm ? dict.common.cancel : dict.wholesale.createQuote}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               {showQuoteForm && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-4">
-                  <h3 className="font-semibold">New Quote</h3>
+                  <h3 className="font-semibold">{dict.wholesale.newQuote}</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="unitPrice">Unit Price ($) *</Label>
+                      <Label htmlFor="unitPrice">{dict.wholesale.unitPrice} ($) *</Label>
                       <Input
                         id="unitPrice"
                         type="number"
@@ -342,7 +344,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                       />
                     </div>
                     <div>
-                      <Label htmlFor="quantity">Quantity *</Label>
+                      <Label htmlFor="quantity">{dict.wholesale.quantity} *</Label>
                       <Input
                         id="quantity"
                         type="number"
@@ -354,12 +356,12 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                   {quoteData.unitPrice && quoteData.quantity && (
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                       <p className="text-sm font-semibold">
-                        Total Price: ${(parseFloat(quoteData.unitPrice) * parseInt(quoteData.quantity)).toFixed(2)}
+                        {dict.orders.totalAmount}: ${(parseFloat(quoteData.unitPrice) * parseInt(quoteData.quantity)).toFixed(2)}
                       </p>
                     </div>
                   )}
                   <div>
-                    <Label htmlFor="validUntil">Valid Until</Label>
+                    <Label htmlFor="validUntil">{dict.wholesale.validUntil}</Label>
                     <Input
                       id="validUntil"
                       type="date"
@@ -368,7 +370,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                     />
                   </div>
                   <div>
-                    <Label htmlFor="quoteNotes">Notes</Label>
+                    <Label htmlFor="quoteNotes">{dict.wholesale.notes}</Label>
                     <textarea
                       id="quoteNotes"
                       value={quoteData.notes}
@@ -378,7 +380,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                     />
                   </div>
                   <Button onClick={handleCreateQuote} disabled={updating}>
-                    {updating ? 'Creating...' : 'Create Quote'}
+                    {updating ? dict.wholesale.creating : dict.wholesale.createQuote}
                   </Button>
                 </div>
               )}
@@ -389,36 +391,36 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                     <div key={quote.id} className="p-4 border rounded-lg">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <p className="text-sm text-gray-600">Unit Price</p>
+                          <p className="text-sm text-gray-600">{dict.wholesale.unitPrice}</p>
                           <p className="text-xl font-bold">${quote.unitPrice.toFixed(2)}</p>
                         </div>
                         <Badge className={getStatusColor(quote.status)}>
-                          {quote.status.toUpperCase()}
+                          {t(quote.status.toUpperCase(), quote.status.toUpperCase())}
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-gray-600">Quantity</p>
+                          <p className="text-gray-600">{dict.wholesale.quantity}</p>
                           <p className="font-semibold">
                             {typeof quote.quantity === 'number'
-                              ? `${quote.quantity.toLocaleString()} units`
-                              : 'N/A'}
+                              ? `${quote.quantity.toLocaleString()} ${dict.purchaseOrders.itemsCount}`
+                              : dict.common.noData}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Total Price</p>
+                          <p className="text-gray-600">{dict.orders.totalAmount}</p>
                           <p className="font-semibold">${quote.totalPrice.toFixed(2)}</p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Valid Until</p>
+                          <p className="text-gray-600">{dict.wholesale.validUntil}</p>
                           <p className="font-semibold">
-                            {new Date(quote.validUntil).toLocaleDateString()}
+                            {new Date(quote.validUntil).toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'ru' ? 'ru-RU' : 'en-US')}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Created</p>
+                          <p className="text-gray-600">{dict.common.createdAt}</p>
                           <p className="font-semibold">
-                            {new Date(quote.createdAt).toLocaleDateString()}
+                            {new Date(quote.createdAt).toLocaleDateString(locale === 'zh' ? 'zh-CN' : locale === 'ru' ? 'ru-RU' : 'en-US')}
                           </p>
                         </div>
                       </div>
@@ -431,7 +433,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">No quotes yet</p>
+                <p className="text-gray-500 text-center py-4">{dict.wholesale.noQuotesYet}</p>
               )}
             </CardContent>
           </Card>
@@ -439,26 +441,26 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
           {/* Contact Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>{dict.wholesale.contactInfo}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Contact Name</p>
+                <p className="text-sm text-gray-600">{dict.wholesale.contactName}</p>
                 <p className="font-medium">{inquiry.contactName}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Email</p>
+                <p className="text-sm text-gray-600">{dict.users.email}</p>
                 <p className="font-medium">{inquiry.email}</p>
               </div>
               {inquiry.phone && (
                 <div>
-                  <p className="text-sm text-gray-600">Phone</p>
+                  <p className="text-sm text-gray-600">{dict.users.phone}</p>
                   <p className="font-medium">{inquiry.phone}</p>
                 </div>
               )}
               {inquiry.user && (
                 <div className="pt-3 border-t">
-                  <p className="text-sm text-gray-600 mb-2">Customer Account</p>
+                  <p className="text-sm text-gray-600 mb-2">{dict.wholesale.customerAccount}</p>
                   <p className="font-medium">
                     {inquiry.user.firstName} {inquiry.user.lastName}
                   </p>
@@ -474,23 +476,23 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
           {/* Status Management */}
           <Card>
             <CardHeader>
-              <CardTitle>Update Status</CardTitle>
+              <CardTitle>{dict.wholesale.updateStatus}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="status">New Status</Label>
+                <Label htmlFor="status">{dict.wholesale.newStatus}</Label>
                 <Select
                   value={newStatus}
                   onValueChange={(value) => setNewStatus(value)}
                 >
-                  <option value="new">New</option>
-                  <option value="reviewing">Reviewing</option>
-                  <option value="quoted">Quoted</option>
-                  <option value="negotiating">Negotiating</option>
-                  <option value="accepted">Accepted</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="converted">Converted</option>
-                  <option value="expired">Expired</option>
+                  <option value="new">{dict.status.NEW}</option>
+                  <option value="reviewing">{dict.status.PENDING}</option>
+                  <option value="quoted">{dict.status.APPROVED}</option>
+                  <option value="negotiating">{dict.status.PROCESSING}</option>
+                  <option value="accepted">{dict.status.COMPLETED}</option>
+                  <option value="rejected">{dict.status.REJECTED}</option>
+                  <option value="converted">{dict.status.RESOLVED}</option>
+                  <option value="expired">{dict.status.CANCELLED}</option>
                 </Select>
               </div>
 
@@ -499,7 +501,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                 disabled={updating || newStatus === inquiry.status}
                 className="w-full"
               >
-                {updating ? 'Updating...' : 'Update Status'}
+                {updating ? dict.wholesale.updating : dict.wholesale.updateStatus}
               </Button>
             </CardContent>
           </Card>
@@ -507,7 +509,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle>{dict.wholesale.quickActions}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button
@@ -516,7 +518,7 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                 onClick={() => setShowQuoteForm(true)}
               >
                 <DollarSign className="w-4 h-4 mr-2" />
-                Create Quote
+                {dict.wholesale.createQuote}
               </Button>
               <Button
                 variant="outline"
@@ -525,24 +527,24 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                 disabled={!hasAcceptedQuote || inquiry.status === 'converted'}
               >
                 <Package className="w-4 h-4 mr-2" />
-                Convert to Order
+                {dict.wholesale.convertToOrder}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Timeline Placeholder */}
+          {/* Timeline */}
           <Card>
             <CardHeader>
-              <CardTitle>Activity Timeline</CardTitle>
+              <CardTitle>{dict.wholesale.activityTimeline}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-600 rounded-full"></div>
                   <div>
-                    <p className="text-sm font-medium">Inquiry Submitted</p>
+                    <p className="text-sm font-medium">{dict.wholesale.inquirySubmitted}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(inquiry.createdAt).toLocaleString()}
+                      {new Date(inquiry.createdAt).toLocaleString(locale === 'zh' ? 'zh-CN' : locale === 'ru' ? 'ru-RU' : 'en-US')}
                     </p>
                   </div>
                 </div>
@@ -550,9 +552,9 @@ export default function AdminWholesaleDetailPage({ params }: { params: { id: str
                   <div key={quote.id} className="flex gap-3">
                     <div className="flex-shrink-0 w-2 h-2 mt-2 bg-purple-600 rounded-full"></div>
                     <div>
-                      <p className="text-sm font-medium">Quote Created</p>
+                      <p className="text-sm font-medium">{dict.wholesale.quoteCreated}</p>
                       <p className="text-xs text-gray-500">
-                        {new Date(quote.createdAt).toLocaleString()}
+                        {new Date(quote.createdAt).toLocaleString(locale === 'zh' ? 'zh-CN' : locale === 'ru' ? 'ru-RU' : 'en-US')}
                       </p>
                     </div>
                   </div>
