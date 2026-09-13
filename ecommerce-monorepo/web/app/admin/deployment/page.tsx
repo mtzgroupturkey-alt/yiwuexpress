@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { RefreshCw, CheckCircle, XCircle, Clock, Download, RotateCcw, Terminal, Activity, Database, Server } from 'lucide-react';
+import { RefreshCw, CheckCircle, XCircle, Clock, Download, RotateCcw, Terminal, Activity, Database, Server, GitBranch } from 'lucide-react';
 
 interface DeploymentLog {
   timestamp: string;
@@ -27,6 +27,7 @@ interface DatabaseBackup {
 }
 
 export default function DeploymentPage() {
+  const [selectedBranch, setSelectedBranch] = useState<'main' | 'production'>('production');
   const [isDeploying, setIsDeploying] = useState(false);
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
   const [deploymentLogs, setDeploymentLogs] = useState<DeploymentLog[]>([]);
@@ -105,7 +106,8 @@ export default function DeploymentPage() {
 
   // Handle deployment
   const handleDeploy = async () => {
-    if (!confirm('Are you sure you want to deploy to production?')) {
+    const branchName = selectedBranch === 'production' ? 'Production (live online server)' : 'Main';
+    if (!confirm(`Are you sure you want to deploy branch "${selectedBranch}" to ${branchName}?`)) {
       return;
     }
 
@@ -113,10 +115,15 @@ export default function DeploymentPage() {
     try {
       const response = await fetch('/api/admin/deployment/deploy', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ branch: selectedBranch }),
       });
 
       if (response.ok) {
-        alert('Deployment started successfully!');
+        const result = await response.json();
+        alert(result.message || `Deployment for branch ${selectedBranch} started successfully!`);
         // Poll for deployment completion
         const pollInterval = setInterval(async () => {
           await fetchServerStatus();
@@ -131,7 +138,7 @@ export default function DeploymentPage() {
         }, 300000);
       } else {
         const error = await response.json();
-        alert(`Deployment failed: ${error.message}`);
+        alert(`Deployment failed: ${error.message || 'Unknown error'}`);
         setIsDeploying(false);
       }
     } catch (error) {
@@ -265,33 +272,130 @@ export default function DeploymentPage() {
         )}
       </div>
 
+      {/* GitHub Branch Selection Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <GitBranch className="w-5 h-5 text-indigo-600" />
+              Target GitHub Branch
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+              Select branch to deploy. Selecting <span className="font-semibold text-gray-800">production</span> triggers GitHub to update the live online host server (<span className="text-blue-600 font-mono">dromkok.com</span>).
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono text-slate-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Active: <span className="font-bold text-slate-900">{selectedBranch}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Production branch option */}
+          <div
+            onClick={() => setSelectedBranch('production')}
+            className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              selectedBranch === 'production'
+                ? 'border-indigo-600 bg-indigo-50/50 shadow-sm'
+                : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selectedBranch === 'production'
+                      ? 'border-indigo-600 bg-indigo-600'
+                      : 'border-gray-400'
+                  }`}
+                >
+                  {selectedBranch === 'production' && (
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 font-mono text-base">production</span>
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Live Server Trigger
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    Pushes to GitHub <span className="font-mono font-semibold text-slate-800">production</span> branch. Triggers automatic GitHub Actions build & deploys directly to live server (<span className="font-mono text-blue-600">39.175.57.2</span>).
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main branch option */}
+          <div
+            onClick={() => setSelectedBranch('main')}
+            className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              selectedBranch === 'main'
+                ? 'border-indigo-600 bg-indigo-50/50 shadow-sm'
+                : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    selectedBranch === 'main'
+                      ? 'border-indigo-600 bg-indigo-600'
+                      : 'border-gray-400'
+                  }`}
+                >
+                  {selectedBranch === 'main' && (
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 font-mono text-base">main</span>
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+                      Primary Branch
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    Pushes current code to GitHub <span className="font-mono font-semibold text-slate-800">main</span> branch for version control and development sync.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Action Buttons */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-4 mb-6">
         <button
           onClick={handleDeploy}
           disabled={isDeploying}
-          className={`flex items-center px-6 py-3 rounded-lg font-medium ${
+          className={`flex items-center px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm ${
             isDeploying
-              ? 'bg-gray-300 cursor-not-allowed'
+              ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+              : selectedBranch === 'production'
+              ? 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-indigo-200 shadow-md'
               : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
           {isDeploying ? (
             <>
               <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-              Deploying...
+              Deploying {selectedBranch}...
             </>
           ) : (
             <>
               <RefreshCw className="w-5 h-5 mr-2" />
-              Deploy to Production
+              Deploy & Push to {selectedBranch.toUpperCase()}
             </>
           )}
         </button>
 
         <button
           onClick={handleManualBackup}
-          className="flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium"
+          className="flex items-center px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-colors shadow-sm"
         >
           <Database className="w-5 h-5 mr-2" />
           Create Backup
