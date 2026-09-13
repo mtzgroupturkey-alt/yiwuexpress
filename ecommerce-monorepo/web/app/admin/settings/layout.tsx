@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Settings, Building2, Globe, Shield, Bell, Users2,
-  Key, Database, Mail, Palette, FileText, Cog, Image
+  Key, Database, Mail, Palette, FileText, Cog, Image, Server
 } from 'lucide-react'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
@@ -66,6 +66,12 @@ export default function SettingsLayout({
       icon: Database,
       description: dict.settings.backup,
     },
+    {
+      name: dict.settings.deployment || dict.nav.deployment || 'Deployment',
+      href: '/admin/deployment',
+      icon: Server,
+      description: dict.settings.deployment || 'Server status, build runner, and deployment controls',
+    },
   ]
   
   // Pages that should not show the sidebar navigation (shown as submenu in main sidebar)
@@ -85,6 +91,7 @@ export default function SettingsLayout({
     '/admin/settings/api',
     '/admin/settings/shipping-methods',
     '/admin/settings/warehouses',
+    '/admin/deployment',
   ]
   const showSidebar = !directPages.includes(pathname)
 

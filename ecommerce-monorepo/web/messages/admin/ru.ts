@@ -69,6 +69,7 @@ export const adminRu: AdminDictionary = {
     apiKeys: 'Ключи API',
     activityLogs: 'Журнал действий',
     deployLocal: 'Локальный деплой',
+    deployment: 'Деплоймент и сервер',
     // 10 Simple Operational Groups & Items
     buying: 'Закупки',
     warehouses: 'Склады',
@@ -826,6 +827,7 @@ export const adminRu: AdminDictionary = {
     shippingMethods: 'Способы доставки',
     notifications: 'Уведомления',
     backup: 'Резервное копирование',
+    deployment: 'Деплоймент и сервер',
     featuredProducts: 'Рекомендуемые товары',
     flashSales: 'Горящие скидки',
     breadcrumb: 'Хлебные крошки (баннеры страниц)',

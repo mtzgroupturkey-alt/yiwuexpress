@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { RefreshCw, CheckCircle, XCircle, Clock, Download, RotateCcw, Terminal, Activity, Database } from 'lucide-react';
+import Link from 'next/link';
+import { RefreshCw, CheckCircle, XCircle, Clock, Download, RotateCcw, Terminal, Activity, Database, Server } from 'lucide-react';
 
 interface DeploymentLog {
   timestamp: string;
@@ -185,10 +186,27 @@ export default function DeploymentPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Deployment Management</h1>
-        <p className="text-gray-600">Manage production deployments, monitor server status, and handle rollbacks</p>
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            <Link href="/admin/settings" className="hover:text-blue-600 transition-colors">
+              Settings Hub
+            </Link>
+            <span>/</span>
+            <span className="text-gray-900 font-bold">Deployment Management</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-stone-700 to-slate-800 text-white shadow-md">
+              <Server className="w-6 h-6" />
+            </div>
+            Deployment Management
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            Manage production & local deployments, monitor server status, and handle database rollbacks
+          </p>
+        </div>
       </div>
 
       {/* Server Status Card */}

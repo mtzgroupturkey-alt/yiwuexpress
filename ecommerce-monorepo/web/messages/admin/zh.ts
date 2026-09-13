@@ -69,6 +69,7 @@ export const adminZh: AdminDictionary = {
     apiKeys: 'API 密钥',
     activityLogs: '操作审计日志',
     deployLocal: '本地部署',
+    deployment: '系统部署与服务器',
     // 10 Simple Operational Groups & Items
     buying: '采购供应链',
     warehouses: '海外与前置仓',
@@ -826,6 +827,7 @@ export const adminZh: AdminDictionary = {
     shippingMethods: '物流渠道',
     notifications: '消息通知',
     backup: '数据备份',
+    deployment: '系统部署与服务器',
     featuredProducts: '首页精选推荐商品',
     flashSales: '限时秒杀抢购',
     breadcrumb: '面包屑背景横幅',

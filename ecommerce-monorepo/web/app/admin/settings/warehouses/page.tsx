@@ -56,6 +56,11 @@ import {
 import { toast } from 'react-hot-toast'
 import { Warehouse3DViewer, Warehouse3DItem } from '@/components/admin/warehouse/Warehouse3DViewer'
 
+const WAREHOUSE_COUNTRIES = [
+  { value: 'China', label: 'China' },
+  { value: 'Belarus', label: 'Belarus' },
+] as const
+
 type TabType = 'register' | 'layout' | '3d-twin'
 
 export default function AdminSettingsWarehousesPage() {
@@ -2988,13 +2993,30 @@ export default function AdminSettingsWarehousesPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Country *</Label>
-                <Input
+                <select
                   required
-                  placeholder="China, Belarus, Russia..."
                   value={whForm.country}
-                  onChange={(e) => setWhForm({ ...whForm, country: e.target.value })}
-                  className="h-8 text-xs"
-                />
+                  onChange={(e) => {
+                    const nextCountry = e.target.value
+                    setWhForm((prev) => ({
+                      ...prev,
+                      country: nextCountry,
+                      city:
+                        nextCountry === 'Belarus' && (!prev.city || prev.city === 'Yiwu')
+                          ? 'Minsk'
+                          : nextCountry === 'China' && (!prev.city || prev.city === 'Minsk')
+                          ? 'Yiwu'
+                          : prev.city,
+                    }))
+                  }}
+                  className="w-full h-8 px-2 rounded-md border border-input text-xs bg-background focus:outline-none focus:ring-1 focus:ring-ring font-medium"
+                >
+                  {WAREHOUSE_COUNTRIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">City *</Label>

@@ -145,9 +145,9 @@ export default function AdminSettingsHubPage() {
           color: 'from-blue-700 to-indigo-900',
         },
         {
-          href: '/admin/deploy/local',
-          title: dict.nav.deployLocal,
-          desc: 'Local test deployment orchestrator, PM2 monitoring, and build runner',
+          href: '/admin/deployment',
+          title: dict.nav.deployment || 'Deployment',
+          desc: 'Production & local deployment orchestrator, server status monitoring, logs, and rollback controls',
           icon: Server,
           color: 'from-stone-700 to-slate-800',
         },

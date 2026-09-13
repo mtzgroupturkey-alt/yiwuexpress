@@ -67,6 +67,7 @@ export const adminEn = {
     apiKeys: 'API Keys',
     activityLogs: 'Activity Audit Log',
     deployLocal: 'Local Deployment',
+    deployment: 'Deployment',
     // 10 Simple Operational Groups & Items
     buying: 'Buying',
     warehouses: 'Warehouses',
@@ -824,6 +825,7 @@ export const adminEn = {
     shippingMethods: 'Shipping Methods',
     notifications: 'Notifications',
     backup: 'Backup & Export',
+    deployment: 'Deployment',
     featuredProducts: 'Featured Products',
     flashSales: 'Flash Sales',
     breadcrumb: 'Breadcrumbs',
