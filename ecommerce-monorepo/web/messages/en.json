@@ -128,7 +128,10 @@
     "removeError": "Failed to remove item",
     "emptyCartAlert": "Your cart is empty",
     "reviewItems": "{n} items in your cart",
-    "failedLoadCart": "Failed to load cart"
+    "failedLoadCart": "Failed to load cart",
+    "errors": {
+      "failedAdd": "Failed to add item to cart"
+    }
   },
   "Common": {
     "getQuote": "Get Free Quote",

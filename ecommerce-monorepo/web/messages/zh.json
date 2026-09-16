@@ -145,7 +145,10 @@
     "removeError": "移除商品失败",
     "emptyCartAlert": "您的购物车是空的",
     "reviewItems": "购物车中有 {n} 件商品",
-    "failedLoadCart": "加载购物车失败"
+    "failedLoadCart": "加载购物车失败",
+    "errors": {
+      "failedAdd": "无法将商品添加到购物车"
+    }
   },
   "Common": {
     "getQuote": "免费获取报价",
