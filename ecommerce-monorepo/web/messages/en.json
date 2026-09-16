@@ -974,7 +974,13 @@
     "helpfulCount": "Helpful ({n})",
     "officialStaff": "Official Staff",
     "loadingDesc": "Please wait while we load the product details",
-    "backToProducts": "Back to Products"
+    "backToProducts": "Back to Products",
+    "errors": {
+      "pleaseLoginCart": "Please login to add items to cart"
+    },
+    "messages": {
+      "linkCopied": "Link copied to clipboard!"
+    }
   },
   "TrustBadges": {
     "secureCheckout": "Secure Checkout",
@@ -1317,7 +1323,10 @@
     "errCountry": "Country is required",
     "errPayment": "Payment method is required",
     "subtotal": "Subtotal",
-    "total": "Total"
+    "total": "Total",
+    "errors": {
+      "failedLoadCart": "Failed to load cart"
+    }
   },
   "NotFound": {
     "title": "Page Not Found",

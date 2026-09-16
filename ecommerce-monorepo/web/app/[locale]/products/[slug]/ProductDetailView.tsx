@@ -171,7 +171,7 @@ export default function ProductDetailView({
 
       if (!response.ok) {
         if (response.status === 401) {
-          alert('Please login to add items to cart')
+          alert(t('errors.pleaseLoginCart'))
           navigate('/login')
           return
         }
@@ -250,7 +250,7 @@ export default function ProductDetailView({
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href)
-    alert('Link copied to clipboard!')
+    alert(t('messages.linkCopied'))
     setShareMenuOpen(false)
   }
 
@@ -1016,7 +1016,7 @@ export default function ProductDetailView({
 
                       if (!response.ok) {
                         if (response.status === 401) {
-                          alert('Please login to add items to cart')
+                          alert(t('errors.pleaseLoginCart'))
                           navigate('/login')
                           return
                         }

@@ -98,7 +98,7 @@ export default function CheckoutPage() {
       }
     } catch (error) {
       console.error('Error fetching cart:', error)
-      alert('Failed to load cart')
+      alert(t('errors.failedLoadCart'))
     } finally {
       setLoading(false)
     }

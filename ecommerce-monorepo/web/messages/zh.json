@@ -991,7 +991,13 @@
     "helpfulCount": "有帮助 ({n})",
     "officialStaff": "官方人员",
     "loadingDesc": "正在加载商品详情，请稍候",
-    "backToProducts": "返回商品"
+    "backToProducts": "返回商品",
+    "errors": {
+      "pleaseLoginCart": "请登录后再添加商品到购物车"
+    },
+    "messages": {
+      "linkCopied": "链接已复制到剪贴板！"
+    }
   },
   "TrustBadges": {
     "secureCheckout": "安全结账",
@@ -1334,7 +1340,10 @@
     "errCountry": "请选择国家",
     "errPayment": "请选择支付方式",
     "subtotal": "小计",
-    "total": "合计"
+    "total": "合计",
+    "errors": {
+      "failedLoadCart": "无法加载购物车"
+    }
   },
   "NotFound": {
     "title": "页面未找到",
