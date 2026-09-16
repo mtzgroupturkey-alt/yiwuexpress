@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocale } from 'next-intl';
+import { MOTION_TOKENS } from '@/lib/motion';
 import { 
   Zap, 
   ShieldCheck, 
@@ -20,17 +23,23 @@ interface HeroBannerProps {
 }
 
 interface Slide {
-  id: number;
-  tag: string;
-  subtag: string;
+  id: string | number;
+  tag: string | null;
+  subtag: string | null;
   headline: string;
-  description: string;
+  description: string | null;
   image: string;
   overlayGradient: string;
   btnText: string;
+  badgeColor?: string;
+  textColor?: string;
+  secondaryBtnText?: string | null;
+  secondaryBtnLink?: string | null;
+  btnLink?: string;
+  duration?: number;
 }
 
-const SLIDES: Slide[] = [
+const FALLBACK_SLIDES: Slide[] = [
   {
     id: 1,
     tag: 'MODERN FURNITURE',
@@ -79,17 +88,34 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onExploreBakery,
   onExploreTech,
 }) => {
+  const currentLocale = useLocale();
+  const [slides, setSlides] = useState<Slide[]>(FALLBACK_SLIDES);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  // Auto rotate slides every 7 seconds
+  // Fetch dynamic hero slides from API
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlideIndex((prev) => (prev + 1) % SLIDES.length);
-    }, 7000);
-    return () => clearInterval(timer);
-  }, []);
+    fetch(`/api/hero-slides?locale=${encodeURIComponent(currentLocale || 'en')}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+          setSlides(data.data);
+        }
+      })
+      .catch((err) => {
+        console.error('[HeroBanner] Failed to load slides, using fallback:', err);
+      });
+  }, [currentLocale]);
 
-  const currentSlide = SLIDES[currentSlideIndex];
+  // Auto rotate slides (duration from DB or default 7s)
+  useEffect(() => {
+    const duration = (slides[currentSlideIndex]?.duration || 7) * 1000;
+    const timer = setInterval(() => {
+      setCurrentSlideIndex((prev) => (prev + 1) % slides.length);
+    }, duration);
+    return () => clearInterval(timer);
+  }, [slides, currentSlideIndex]);
+
+  const currentSlide = slides[currentSlideIndex] || FALLBACK_SLIDES[0];
 
   return (
     <section className="max-w-[1440px] mx-auto px-4 lg:px-6 pt-5 pb-6">
@@ -99,7 +125,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           className="lg:col-span-8 rounded-2xl p-6 sm:p-8 md:p-10 relative overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[420px] shadow-lg group"
         >
           {/* Background Photography Layers with Crossfade */}
-          {SLIDES.map((slide, idx) => (
+          {slides.map((slide, idx) => (
             <div
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
@@ -126,29 +152,50 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 
           {/* Top Badges */}
           <div className="flex flex-wrap items-center gap-2.5 z-10">
-            <span className="inline-flex items-center gap-1.5 bg-[#F5A602] text-slate-950 px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase shadow-md">
-              <Zap className="w-3.5 h-3.5 fill-slate-950" />
-              {currentSlide.tag}
-            </span>
+            {currentSlide.tag && (
+              <span
+                className="inline-flex items-center gap-1.5 text-slate-950 px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase shadow-md"
+                style={{ backgroundColor: currentSlide.badgeColor || '#F5A602' }}
+              >
+                <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                {currentSlide.tag}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               Official Distributor Guaranteed
             </span>
           </div>
 
-          {/* Center Copy */}
-          <div className="my-6 z-10 max-w-[560px]">
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-bold tracking-wider mb-2 uppercase drop-shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block"></span>
-              <span>{currentSlide.subtag}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-extrabold text-white leading-[1.15] tracking-tight mb-3 font-['Inter'] drop-shadow-md">
-              {currentSlide.headline}
-            </h1>
-            <p className="text-slate-100/90 text-sm sm:text-base leading-relaxed drop-shadow-sm max-w-[520px]">
-              {currentSlide.description}
-            </p>
-          </div>
+          {/* Center Copy with Staggered Kinetic Motion */}
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={currentSlide.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.45, ease: MOTION_TOKENS.easeOutCubic }}
+              className="my-6 z-10 max-w-[560px]"
+            >
+              {currentSlide.subtag && (
+                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold tracking-wider mb-2 uppercase drop-shadow-sm">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block"></span>
+                  <span>{currentSlide.subtag}</span>
+                </div>
+              )}
+              <h1
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-[40px] font-extrabold leading-[1.15] tracking-tight mb-3 font-['Inter'] drop-shadow-md"
+                style={{ color: currentSlide.textColor || '#ffffff' }}
+              >
+                {currentSlide.headline}
+              </h1>
+              {currentSlide.description && (
+                <p className="text-slate-100/90 text-sm sm:text-base leading-relaxed drop-shadow-sm max-w-[520px]">
+                  {currentSlide.description}
+                </p>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Action Buttons & Slide Pagination */}
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 z-10">
@@ -176,14 +223,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div className="flex items-center gap-3 text-white/90 text-xs font-medium">
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setCurrentSlideIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length)}
+                  onClick={() => setCurrentSlideIndex((prev) => (prev - 1 + slides.length) % slides.length)}
                   className="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Previous slide"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % SLIDES.length)}
+                  onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % slides.length)}
                   className="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Next slide"
                 >
@@ -192,7 +239,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </div>
 
               <div className="flex items-center gap-1.5 ml-1">
-                {SLIDES.map((slide, idx) => (
+                {slides.map((slide, idx) => (
                   <button
                     key={slide.id}
                     onClick={() => setCurrentSlideIndex(idx)}
@@ -207,7 +254,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </div>
 
               <span className="hidden sm:inline-block">
-                Slide <strong className="text-white font-bold">{currentSlideIndex + 1}</strong> / {SLIDES.length}
+                Slide <strong className="text-white font-bold">{currentSlideIndex + 1}</strong> / {slides.length}
               </span>
             </div>
           </div>

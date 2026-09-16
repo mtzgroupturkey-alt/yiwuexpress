@@ -19,6 +19,8 @@ interface FlashDealsProps {
   onToggleFavorite: (product: Product) => void;
   onSelectProduct: (product: Product) => void;
   onViewAllDeals?: () => void;
+  selectedCategory?: string | null;
+  enableMotion?: boolean;
 }
 
 export const FlashDeals: React.FC<FlashDealsProps> = ({

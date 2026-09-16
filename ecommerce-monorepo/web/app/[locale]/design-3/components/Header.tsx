@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useSettings } from '@/components/SettingsProvider';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   MapPin, 
@@ -37,6 +37,7 @@ interface HeaderProps {
   deliveryAddress: string;
   currentView?: 'home' | 'shop' | 'product' | 'checkout';
   onNavigateView?: (view: 'home' | 'shop' | 'product' | 'checkout') => void;
+  enableMotion?: boolean;
 }
 
 const DEPARTMENTS = [
@@ -74,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
   const companyName = useCompanyName();
   const { settings } = useSettings();
   const currentLocale = useLocale();
+  const tHeader = useTranslations('Home.header');
   const pathname = usePathname();
   const router = useRouter();
   const [showLangDropdown, setShowLangDropdown] = useState(false);
@@ -123,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Live Store Hours with Operational Pulse Dot */}
             <div className="hidden md:flex items-center gap-1.5 text-slate-600 bg-emerald-50/80 border border-emerald-200/60 px-2 py-0.5 rounded-md text-[11px]">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-emerald-800">Open now:</span>
+              <span className="font-semibold text-emerald-800">{tHeader('openNow')}</span>
               <span>08:00 – 23:00</span>
             </div>
 
@@ -150,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="hover:text-[#00407a] transition-colors cursor-pointer font-medium text-slate-700 hidden sm:flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100"
             >
               <PackageCheck className="w-3.5 h-3.5 text-slate-500" />
-              <span>Track Orders</span>
+              <span>{tHeader('trackOrders')}</span>
             </button>
 
             {/* Corporate B2B Wholesale */}
@@ -292,7 +294,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search quality furniture, kitchenware, decor & appliances..."
+                placeholder={tHeader('searchPlaceholder')}
                 className="w-full px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none bg-transparent"
               />
               {searchQuery && (

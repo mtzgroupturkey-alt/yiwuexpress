@@ -2,11 +2,13 @@ import React from 'react';
 import { ShieldCheck, Smartphone, CreditCard, Banknote, CheckCircle2 } from 'lucide-react';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useSettings } from '@/components/SettingsProvider';
+import { useTranslations } from 'next-intl';
 
 interface FooterProps {
   onOpenCatalog: () => void;
   onOpenOrders: () => void;
   onOpenMemberModal: () => void;
+  enableMotion?: boolean;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -16,6 +18,7 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const companyName = useCompanyName();
   const { settings } = useSettings();
+  const tFooter = useTranslations('Home.footer');
   return (
     <footer className="w-full bg-[#07172B] border-t border-slate-800 text-slate-400 pt-12 pb-9 relative overflow-hidden">
       {/* Subtle background ambient gradients */}
@@ -28,7 +31,7 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Col 1: Catalog & Goods */}
           <div>
             <h4 className="font-bold text-white text-sm mb-4 tracking-tight flex items-center gap-1.5">
-              <span>Home Living Collections</span>
+              <span>{tFooter('title')}</span>
             </h4>
             <ul className="space-y-2.5">
               <li>
@@ -170,16 +173,16 @@ export const Footer: React.FC<FooterProps> = ({
               <div className="bg-slate-900/90 border border-slate-700/80 text-white rounded-xl p-2.5 flex items-center gap-2.5 hover:bg-slate-800 hover:border-slate-600 transition-all cursor-pointer shadow-xs">
                 <Smartphone className="w-5 h-5 text-emerald-400" />
                 <div className="leading-tight">
-                  <div className="text-[9px] uppercase tracking-wider text-slate-400">GET IT ON</div>
-                  <div className="text-xs font-bold">Google Play</div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400">{tFooter('getItOn')}</div>
+                  <div className="text-xs font-bold">{tFooter('googlePlay')}</div>
                 </div>
               </div>
 
               <div className="bg-slate-900/90 border border-slate-700/80 text-white rounded-xl p-2.5 flex items-center gap-2.5 hover:bg-slate-800 hover:border-slate-600 transition-all cursor-pointer shadow-xs">
                 <Smartphone className="w-5 h-5 text-blue-400" />
                 <div className="leading-tight">
-                  <div className="text-[9px] uppercase tracking-wider text-slate-400">Download on the</div>
-                  <div className="text-xs font-bold">App Store</div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400">{tFooter('downloadOn')}</div>
+                  <div className="text-xs font-bold">{tFooter('appStore')}</div>
                 </div>
               </div>
             </div>
@@ -192,7 +195,7 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-1.5 text-emerald-400 bg-emerald-950/50 border border-emerald-800/60 px-2.5 py-1 rounded-lg font-bold text-[11px] shadow-2xs">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Secure Home Store Checkout</span>
+              <span>{tFooter('secureCheckout')}</span>
             </div>
 
             {/* Payment Method Badges */}
@@ -200,7 +203,7 @@ export const Footer: React.FC<FooterProps> = ({
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 shadow-2xs text-[11px] font-bold text-slate-900 tracking-tight">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#EB001B] inline-block -mr-1 opacity-90"></span>
                 <span className="w-2.5 h-2.5 rounded-full bg-[#F79E1B] inline-block opacity-90"></span>
-                <span className="ml-1 font-extrabold text-[#0a1b2a]">Mastercard</span>
+                <span className="ml-1 font-extrabold text-[#0a1b2a]">{tFooter('mastercard')}</span>
               </span>
 
               <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-slate-200 shadow-2xs text-[11px] font-black tracking-tight text-[#1A1F71]">
