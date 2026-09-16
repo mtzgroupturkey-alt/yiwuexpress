@@ -265,6 +265,32 @@
       "subtitle": "加入数千家成功企业，直接从中国采购优质产品。立即开始。",
       "browse": "浏览产品",
       "contact": "联系我们的团队"
+    },
+    "header": {
+      "openNow": "营业中:",
+      "story3d": "3D 故事",
+      "trackOrders": "追踪订单",
+      "favorites": "收藏",
+      "orders": "订单",
+      "cartTotal": "购物车总计",
+      "signIn": "登录",
+      "allProducts": "所有商品",
+      "banner1": "现代家具系列",
+      "banner2": "专业厨具",
+      "searchPlaceholder": "搜索家居家具和厨具..."
+    },
+    "footer": {
+      "title": "家居生活系列",
+      "saleTag": "特惠",
+      "journey3d": "3D 交互之旅",
+      "getItOn": "下载应用",
+      "googlePlay": "Google Play",
+      "downloadOn": "在 App Store 下载",
+      "appStore": "App Store",
+      "secureCheckout": "安全结账",
+      "mastercard": "Mastercard",
+      "visa": "Visa",
+      "mir": "MIR"
     }
   },
   "About": {

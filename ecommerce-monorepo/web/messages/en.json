@@ -248,6 +248,32 @@
       "subtitle": "Join thousands of successful businesses sourcing premium products directly from China. Get started today.",
       "browse": "Browse Products",
       "contact": "Contact Our Team"
+    },
+    "header": {
+      "openNow": "Open now:",
+      "story3d": "3D Story",
+      "trackOrders": "Track Orders",
+      "favorites": "Favorites",
+      "orders": "Orders",
+      "cartTotal": "Cart total",
+      "signIn": "Sign In",
+      "allProducts": "All Products",
+      "banner1": "Modern Furniture Collection",
+      "banner2": "Professional Kitchenware",
+      "searchPlaceholder": "Search home furniture & kitchenware..."
+    },
+    "footer": {
+      "title": "Home Living Collections",
+      "saleTag": "SALE",
+      "journey3d": "Interactive 3D Journey",
+      "getItOn": "GET IT ON",
+      "googlePlay": "Google Play",
+      "downloadOn": "Download on the",
+      "appStore": "App Store",
+      "secureCheckout": "Secure Home Store Checkout",
+      "mastercard": "Mastercard",
+      "visa": "Visa",
+      "mir": "MIR"
     }
   },
   "About": {
