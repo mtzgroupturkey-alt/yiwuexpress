@@ -5,9 +5,43 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+async function getGitInfo() {
+  try {
+    const { stdout: branchOut } = await execAsync('git rev-parse --abbrev-ref HEAD');
+    const { stdout: commitShort } = await execAsync('git rev-parse --short HEAD');
+    const { stdout: commitFull } = await execAsync('git rev-parse HEAD');
+    const { stdout: message } = await execAsync('git log -1 --pretty=format:%s');
+    const { stdout: author } = await execAsync('git log -1 --pretty=format:%an');
+    const { stdout: date } = await execAsync('git log -1 --pretty=format:%cd --date=relative');
+    const { stdout: statusOut } = await execAsync('git status --porcelain');
+
+    const lines = statusOut.split('\n').filter(l => l.trim());
+    const modifiedCount = lines.filter(l => l.startsWith(' M') || l.startsWith('M ')).length;
+    const untrackedCount = lines.filter(l => l.startsWith('??')).length;
+    const stagedCount = lines.filter(l => l.startsWith('A ') || l.startsWith('M ') || l.startsWith('D ')).length;
+
+    return {
+      branch: branchOut.trim(),
+      commit: commitShort.trim(),
+      commitFull: commitFull.trim(),
+      message: message.trim(),
+      author: author.trim(),
+      date: date.trim(),
+      isClean: lines.length === 0,
+      uncommittedCount: lines.length,
+      modifiedCount,
+      untrackedCount,
+      stagedCount,
+    };
+  } catch (err) {
+    console.error('Failed to get git status:', err);
+    return null;
+  }
+}
+
 export async function GET() {
   try {
-    // Check if running in production (server has PM2)
+    const gitInfo = await getGitInfo();
     const isProduction = process.env.NODE_ENV === 'production';
 
     if (!isProduction) {
@@ -18,6 +52,7 @@ export async function GET() {
         memory: 'N/A',
         cpu: 'N/A',
         restarts: 0,
+        git: gitInfo,
       });
     }
 
@@ -34,6 +69,7 @@ export async function GET() {
         memory: '0 MB',
         cpu: '0%',
         restarts: 0,
+        git: gitInfo,
       });
     }
 
@@ -48,6 +84,7 @@ export async function GET() {
       memory: `${memory} MB`,
       cpu: `${cpu}%`,
       restarts: dromkokProcess.pm2_env.restart_time || 0,
+      git: gitInfo,
     });
   } catch (error) {
     console.error('Failed to get server status:', error);
