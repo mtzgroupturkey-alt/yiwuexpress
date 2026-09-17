@@ -87,6 +87,7 @@ ios/build/
 *.db
 *.sqlite
 *.sql
+backups/
 
 # Package lock files (keep package.json but ignore lock files for cross-platform compatibility)
 package-lock.json

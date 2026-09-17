@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
+import path from 'path';
+import { getBackupDirectory } from '@/lib/deploy/db-backup';
 
 export async function GET(request: Request) {
   try {
@@ -16,23 +18,9 @@ export async function GET(request: Request) {
     }
 
     // Validate filename to prevent path traversal
-    if (file.includes('..') || file.includes('/')) {
-      return NextResponse.json(
-        { message: 'Invalid filename' },
-        { status: 400 }
-      );
-    }
-
-    const isProduction = process.env.NODE_ENV === 'production';
-
-    if (!isProduction) {
-      return NextResponse.json(
-        { message: 'Backup download is only available in production' },
-        { status: 400 }
-      );
-    }
-
-    const backupPath = `/home/djdn/backups/${file}`;
+    const sanitizedFilename = path.basename(file);
+    const backupDir = getBackupDirectory();
+    const backupPath = path.join(backupDir, sanitizedFilename);
 
     if (!existsSync(backupPath)) {
       return NextResponse.json(
@@ -46,7 +34,7 @@ export async function GET(request: Request) {
     return new NextResponse(fileContent, {
       headers: {
         'Content-Type': 'application/gzip',
-        'Content-Disposition': `attachment; filename="${file}"`,
+        'Content-Disposition': `attachment; filename="${sanitizedFilename}"`,
       },
     });
   } catch (error: any) {
