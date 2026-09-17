@@ -80,6 +80,7 @@ export default function DeploymentPage() {
   const [commitMessage, setCommitMessage] = useState('');
   const [autoCommit, setAutoCommit] = useState(true);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
   const [gitInfo, setGitInfo] = useState<GitInfo | null>(null);
   const [deploymentLogs, setDeploymentLogs] = useState<DeploymentLog[]>([]);
@@ -354,20 +355,24 @@ export default function DeploymentPage() {
 
   // Handle manual backup
   const handleManualBackup = async () => {
+    setIsBackingUp(true);
     try {
       const response = await fetch('/api/admin/deployment/backup', {
         method: 'POST',
       });
 
+      const data = await response.json();
       if (response.ok) {
-        alert('Database backup created successfully!');
-        fetchBackups();
+        alert(data.message || 'Database backup created successfully!');
+        await fetchBackups();
+        setSelectedTab('backups');
       } else {
-        const error = await response.json();
-        alert(`Backup failed: ${error.message}`);
+        alert(`Backup failed: ${data.message || 'Unknown error'}`);
       }
-    } catch (error) {
-      alert('Backup request failed');
+    } catch (error: any) {
+      alert(`Backup request failed: ${error?.message || error}`);
+    } finally {
+      setIsBackingUp(false);
     }
   };
 
@@ -704,10 +709,24 @@ export default function DeploymentPage() {
 
           <button
             onClick={handleManualBackup}
-            className="flex items-center px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl font-bold text-sm transition-colors"
+            disabled={isBackingUp}
+            className={`flex items-center px-6 py-4 rounded-2xl font-bold text-sm transition-colors ${
+              isBackingUp
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+            }`}
           >
-            <Database className="w-4 h-4 mr-2 text-slate-600" />
-            Create Database Backup
+            {isBackingUp ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin text-slate-500" />
+                Creating Backup...
+              </>
+            ) : (
+              <>
+                <Database className="w-4 h-4 mr-2 text-slate-600" />
+                Create Database Backup
+              </>
+            )}
           </button>
         </div>
       </div>
