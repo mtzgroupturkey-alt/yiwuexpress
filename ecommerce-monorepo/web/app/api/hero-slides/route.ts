@@ -7,15 +7,29 @@ export async function GET(req: NextRequest) {
   try {
     const locale = req.nextUrl.searchParams.get('locale') || 'en'
 
-    const slides = await prisma.heroSlide.findMany({
+    const allSlides = await prisma.heroSlide.findMany({
       where: { isActive: true },
       orderBy: { displayOrder: 'asc' },
-      include: { translations: true }
+      include: { translations: true },
     })
 
-    const data = slides.map((s) => localizeHeroSlide(s, locale))
+    // Separate main rotating slides from side feature banners
+    const mainSlides = allSlides.filter(
+      (s) => s.motionType !== 'side_top' && s.motionType !== 'side_bottom'
+    )
+    const sideTopSlide = allSlides.find((s) => s.motionType === 'side_top')
+    const sideBottomSlide = allSlides.find((s) => s.motionType === 'side_bottom')
 
-    return NextResponse.json({ data })
+    const data = mainSlides.map((s) => localizeHeroSlide(s, locale))
+    const sideBanners = {
+      top: sideTopSlide ? localizeHeroSlide(sideTopSlide, locale) : null,
+      bottom: sideBottomSlide ? localizeHeroSlide(sideBottomSlide, locale) : null,
+    }
+
+    return NextResponse.json({
+      data,
+      sideBanners,
+    })
   } catch (error) {
     console.error('Failed to fetch hero slides:', error)
     return NextResponse.json({ error: 'Failed to fetch slides' }, { status: 500 })

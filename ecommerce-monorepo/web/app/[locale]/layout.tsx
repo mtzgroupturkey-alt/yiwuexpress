@@ -10,6 +10,8 @@ import { PreloaderWrapper } from '@/components/PreloaderWrapper'
 import { getCompanyName, getSiteTagline, getCompanyDescription, getSystemSettings } from '@/lib/company'
 import { getServerSettings } from '@/lib/settings/server-settings'
 import { routing } from '@/i18n/routing'
+import { CurrencyProvider } from '@/contexts/CurrencyContext'
+import { BackToTop } from '@/components/ui/BackToTop'
 
 export const dynamic = 'force-dynamic'
 
@@ -144,7 +146,10 @@ export default async function LocaleLayout({
             <WholesaleInquiryProvider>
               <Providers>
                 <SettingsProvider initialSettings={serverSettings}>
-                  {children}
+                  <CurrencyProvider>
+                    {children}
+                    <BackToTop />
+                  </CurrencyProvider>
                 </SettingsProvider>
               </Providers>
             </WholesaleInquiryProvider>

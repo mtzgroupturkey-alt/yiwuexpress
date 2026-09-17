@@ -64,6 +64,9 @@ export async function GET(request: Request) {
           instagramUrl: '',
           wechatId: '',
           whatsappNumber: '',
+          storeHours: '08:00 – 23:00',
+          freeShippingThreshold: 35.00,
+          announcementTicker: '',
           translations: [],
         }
       })
@@ -105,6 +108,9 @@ export async function GET(request: Request) {
       instagramUrl: settings.instagramUrl,
       wechatId: settings.wechatId,
       whatsappNumber: settings.whatsappNumber,
+      storeHours: settings.storeHours,
+      freeShippingThreshold: settings.freeShippingThreshold,
+      announcementTicker: settings.announcementTicker,
       translations,
     }
 
@@ -161,7 +167,10 @@ export async function PUT(request: Request) {
           linkedinUrl: body.linkedinUrl,
           instagramUrl: body.instagramUrl,
           wechatId: body.wechatId,
-          whatsappNumber: body.whatsappNumber
+          whatsappNumber: body.whatsappNumber,
+          storeHours: body.storeHours !== undefined ? body.storeHours : undefined,
+          freeShippingThreshold: body.freeShippingThreshold !== undefined ? parseFloat(body.freeShippingThreshold) || 0 : undefined,
+          announcementTicker: body.announcementTicker !== undefined ? body.announcementTicker : undefined,
         }
       })
 
@@ -219,6 +228,9 @@ export async function PUT(request: Request) {
           instagramUrl: body.instagramUrl,
           wechatId: body.wechatId,
           whatsappNumber: body.whatsappNumber,
+          storeHours: body.storeHours || '08:00 – 23:00',
+          freeShippingThreshold: body.freeShippingThreshold !== undefined ? parseFloat(body.freeShippingThreshold) || 35.0 : 35.0,
+          announcementTicker: body.announcementTicker || null,
           translations: (body.translations || []).filter(
             (t: any) => t && t.locale && t.key && (t.value ?? '').toString().trim().length > 0
           ).map((t: any) => ({

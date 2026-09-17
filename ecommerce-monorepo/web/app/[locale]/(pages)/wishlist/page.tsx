@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -9,9 +9,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ShoppingCart, Trash2, ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
+import { useCurrency } from '@/hooks/useCurrency'
 
 export default function WishlistPage() {
   const { wishlist, isLoading, removeFromWishlist } = useWishlist()
+  const { tBadge, tPdp } = useStorefrontTranslation()
+  const { formatPrice } = useCurrency()
+  const t = useTranslations('Product')
   const [removingId, setRemovingId] = useState<string | null>(null)
 
   const handleRemove = async (productId: string) => {
@@ -94,13 +100,13 @@ export default function WishlistPage() {
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {product.isNewArrival && (
-                    <Badge className="absolute top-3 left-3 bg-[#c9a84c] text-[#1a1a2e] text-xs font-semibold">
-                      NEW
+                    <Badge className="absolute top-3 left-3 bg-[#c9a84c] text-[#1a1a2e] text-xs font-semibold uppercase">
+                      {tBadge('NEW')}
                     </Badge>
                   )}
                   {product.stock === 0 && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">SOLD OUT</span>
+                      <span className="text-white font-bold text-sm uppercase">{t('soldOut')}</span>
                     </div>
                   )}
 
@@ -141,11 +147,11 @@ export default function WishlistPage() {
                   {/* Price */}
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-[#1a3a5c]">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </span>
                     {product.compareAtPrice && product.compareAtPrice > product.price && (
                       <span className="text-xs text-gray-400 line-through">
-                        ${product.compareAtPrice.toFixed(2)}
+                        {formatPrice(product.compareAtPrice)}
                       </span>
                     )}
                   </div>
@@ -156,7 +162,7 @@ export default function WishlistPage() {
                     className="w-full bg-[#1a3a5c] hover:bg-[#2a5a8c] text-sm h-9"
                   >
                     <ShoppingCart className="w-4 h-4 mr-2" />
-                    {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                    {product.stock > 0 ? tPdp('addToCart') : t('outOfStock')}
                   </Button>
                 </div>
               </div>

@@ -1,9 +1,10 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
+import { requireAuth, getAuthUser, createAuthErrorResponse, hashPassword, generateToken, setAuthCookie } from '@/lib/auth'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { logger } from '@/lib/logger'
+import crypto from 'crypto'
 
 // GET /api/orders - Get user's orders
 export async function GET(request: Request) {
@@ -66,8 +67,9 @@ export async function GET(request: Request) {
 // POST /api/orders - Create a new order
 export async function POST(request: Request) {
   try {
-    const user = await requireAuth(request)
-    
+    let authUser = await getAuthUser(request)
+    let newGuestAuthToken: string | null = null
+
     const body = await request.json()
 
     const requiredFields = [
@@ -77,7 +79,6 @@ export async function POST(request: Request) {
       'shippingAddress',
       'shippingCity',
       'shippingPostalCode',
-      'shippingCountryId',
       'paymentMethod',
       'items'
     ]
@@ -98,17 +99,75 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify country exists
-    const country = await prisma.country.findUnique({
-      where: { id: body.shippingCountryId }
+    // Determine target user (authenticated user or guest auto-user)
+    let effectiveUserId: string
+    if (authUser) {
+      effectiveUserId = authUser.id
+    } else {
+      const email = body.customerEmail.toLowerCase().trim()
+      let existingUser = await prisma.user.findUnique({
+        where: { email }
+      })
+
+      if (existingUser) {
+        effectiveUserId = existingUser.id
+      } else {
+        const randomPassword = crypto.randomBytes(16).toString('hex')
+        const hashedPassword = await hashPassword(randomPassword)
+        const newUser = await prisma.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            name: body.customerName,
+            phone: body.customerPhone,
+            companyName: body.companyName || null,
+            role: 'USER',
+            isActive: true,
+            isVerified: false
+          }
+        })
+        effectiveUserId = newUser.id
+      }
+
+      newGuestAuthToken = generateToken({
+        userId: effectiveUserId,
+        email: body.customerEmail,
+        role: 'USER'
+      })
+    }
+
+    // Verify or resolve shipping country
+    let country: any = null
+    const rawCountry = body.shippingCountryId || body.country || body.shippingCountryCode || 'CN'
+
+    // Try finding by id first
+    country = await prisma.country.findFirst({
+      where: {
+        OR: [
+          { id: rawCountry },
+          { code: { equals: rawCountry, mode: 'insensitive' } },
+          { name: { equals: rawCountry, mode: 'insensitive' } }
+        ],
+        isActive: true
+      }
     })
 
-    if (!country || !country.isActive) {
+    if (!country) {
+      // Fallback to default active country (e.g. CN or first active)
+      country = await prisma.country.findFirst({
+        where: { isActive: true },
+        orderBy: { code: 'asc' }
+      })
+    }
+
+    if (!country) {
       return NextResponse.json(
-        { success: false, error: 'Invalid shipping country' },
+        { success: false, error: 'No active shipping country configured' },
         { status: 400 }
       )
     }
+
+    const shippingCountryId = country.id
 
     // Pre-validate products and build order items BEFORE transaction
     let subtotal = 0
@@ -184,7 +243,7 @@ export async function POST(request: Request) {
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
-          userId: user.id,
+          userId: effectiveUserId,
           customerName: body.customerName,
           customerEmail: body.customerEmail,
           customerPhone: body.customerPhone,
@@ -193,7 +252,7 @@ export async function POST(request: Request) {
           shippingCity: body.shippingCity,
           shippingState: body.shippingState,
           shippingPostalCode: body.shippingPostalCode,
-          shippingCountryId: body.shippingCountryId,
+          shippingCountryId: shippingCountryId,
           billingAddress: body.billingAddress,
           billingCity: body.billingCity,
           billingState: body.billingState,
@@ -279,7 +338,7 @@ export async function POST(request: Request) {
     // ── END TRANSACTION ─────────────────────────────────────────────────────
 
     // Clear user's cart if exists
-    const cart = await prisma.cart.findUnique({ where: { userId: user.id } })
+    const cart = await prisma.cart.findUnique({ where: { userId: effectiveUserId } })
     if (cart) {
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
     }
@@ -295,7 +354,7 @@ export async function POST(request: Request) {
 
     prisma.notification.create({
       data: {
-        userId: user.id,
+        userId: effectiveUserId,
         type: 'ORDER_CREATED',
         title: 'Order Created',
         message: `Your order #${order.orderNumber} has been created successfully.`,
@@ -306,7 +365,7 @@ export async function POST(request: Request) {
     prisma.emailLog.create({
       data: {
         orderId: order.id,
-        userId: user.id,
+        userId: effectiveUserId,
         recipient: order.customerEmail,
         subject: `Order Confirmation #${order.orderNumber} - Global Trade`,
         template: 'orderConfirmation',
@@ -316,11 +375,18 @@ export async function POST(request: Request) {
       },
     }).catch((err) => logger.error('Failed to log email', err))
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: order,
       message: 'Order created successfully'
     }, { status: 201 })
+
+    // If new guest user was created, set auth cookie so they are seamlessly logged in
+    if (newGuestAuthToken) {
+      setAuthCookie(response, newGuestAuthToken)
+    }
+
+    return response
   } catch (error) {
     if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
       return createAuthErrorResponse(error)

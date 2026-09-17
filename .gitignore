@@ -43,7 +43,8 @@ Thumbs.db
 
 # Logs
 *.log
-logs/
+/logs/
+!**/app/**/logs/
 
 # Runtime data
 pids
@@ -58,6 +59,7 @@ coverage/
 .expo/
 dist/
 web-build/
+*.tsbuildinfo
 
 # Temporary folders
 tmp/
@@ -84,6 +86,7 @@ ios/build/
 # Database
 *.db
 *.sqlite
+*.sql
 
 # Package lock files (keep package.json but ignore lock files for cross-platform compatibility)
 package-lock.json

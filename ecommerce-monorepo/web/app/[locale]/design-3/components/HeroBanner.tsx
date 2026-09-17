@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { MOTION_TOKENS } from '@/lib/motion';
 import { 
   Zap, 
@@ -35,9 +37,59 @@ interface Slide {
   textColor?: string;
   secondaryBtnText?: string | null;
   secondaryBtnLink?: string | null;
+  secondaryCtaText?: string | null;
+  secondaryCtaLink?: string | null;
   btnLink?: string;
+  ctaLink?: string;
   duration?: number;
+  title?: string;
+  subtitle?: string | null;
+  badgeText?: string | null;
+  ctaText?: string;
+  imageUrl?: string;
 }
+
+interface SideBannerItem {
+  id?: string | number;
+  tag?: string | null;
+  subtag?: string | null;
+  headline?: string;
+  description?: string | null;
+  btnText?: string;
+  btnLink?: string;
+  badgeColor?: string;
+  textColor?: string;
+  overlayColor?: string | null;
+  title?: string;
+  subtitle?: string | null;
+  badgeText?: string | null;
+  ctaText?: string;
+  ctaLink?: string;
+  secondaryCtaText?: string | null;
+  imageUrl?: string;
+}
+
+const DEFAULT_SIDE_TOP: SideBannerItem = {
+  id: 'default-side-top',
+  tag: 'HOME SETS & KITCHEN',
+  headline: 'Kitchenware, Cookware & Table Sets',
+  description: 'Non-stick granite frying pans, premium stainless steel cutlery, and porcelain tableware.',
+  subtag: 'From $24.50',
+  btnText: 'Explore Kitchenware',
+  btnLink: '/store?department=Kitchenware & Dining',
+  overlayColor: 'emerald',
+};
+
+const DEFAULT_SIDE_BOTTOM: SideBannerItem = {
+  id: 'default-side-bottom',
+  tag: 'SMART LIVING HUB',
+  headline: 'Robotic Vacuums & Air Purifiers',
+  description: 'Official 2-year warranty with zero hassle replacement guarantee.',
+  subtag: 'Up to -35%',
+  btnText: 'Discover Appliances',
+  btnLink: '/store?department=Furniture & Living',
+  overlayColor: 'blue',
+};
 
 const FALLBACK_SLIDES: Slide[] = [
   {
@@ -82,6 +134,48 @@ const FALLBACK_SLIDES: Slide[] = [
   }
 ];
 
+export const HeroBannerSkeleton: React.FC = () => {
+  return (
+    <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 pt-5 pb-6">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 animate-pulse">
+        {/* Main Banner Skeleton */}
+        <div className="lg:col-span-8 min-w-0 w-full rounded-2xl p-6 sm:p-8 md:p-10 relative overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[420px] bg-slate-900 shadow-lg border border-slate-800">
+          <div className="space-y-4 max-w-lg z-10">
+            <div className="h-5 w-32 bg-slate-800 rounded-sm"></div>
+            <div className="h-9 sm:h-12 w-3/4 bg-slate-800 rounded-md"></div>
+            <div className="h-4 w-full bg-slate-800/70 rounded"></div>
+            <div className="h-4 w-2/3 bg-slate-800/70 rounded"></div>
+          </div>
+          <div className="flex items-center gap-3 z-10 pt-6">
+            <div className="h-11 w-40 bg-amber-500/50 rounded-xl"></div>
+            <div className="h-11 w-32 bg-slate-800/80 rounded-xl"></div>
+          </div>
+        </div>
+
+        {/* Right Stacked Feature Banners Skeleton */}
+        <div className="lg:col-span-4 min-w-0 w-full flex flex-col gap-4">
+          <div className="flex-1 rounded-2xl p-5 sm:p-6 bg-slate-900 border border-slate-800 flex flex-col justify-between min-h-[180px] sm:min-h-[200px]">
+            <div className="space-y-2">
+              <div className="h-4 w-28 bg-slate-800 rounded-sm"></div>
+              <div className="h-6 w-48 bg-slate-800 rounded"></div>
+              <div className="h-3 w-40 bg-slate-800/70 rounded"></div>
+            </div>
+            <div className="h-8 w-28 bg-slate-800 rounded-lg"></div>
+          </div>
+          <div className="flex-1 rounded-2xl p-5 sm:p-6 bg-slate-900 border border-slate-800 flex flex-col justify-between min-h-[180px] sm:min-h-[200px]">
+            <div className="space-y-2">
+              <div className="h-4 w-28 bg-slate-800 rounded-sm"></div>
+              <div className="h-6 w-48 bg-slate-800 rounded"></div>
+              <div className="h-3 w-40 bg-slate-800/70 rounded"></div>
+            </div>
+            <div className="h-8 w-28 bg-slate-800 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   onShopDeals,
   onViewFlashDrops,
@@ -89,40 +183,102 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onExploreTech,
 }) => {
   const currentLocale = useLocale();
-  const [slides, setSlides] = useState<Slide[]>(FALLBACK_SLIDES);
+  const router = useRouter();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  // Fetch dynamic hero slides from API
-  useEffect(() => {
-    fetch(`/api/hero-slides?locale=${encodeURIComponent(currentLocale || 'en')}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
-          setSlides(data.data);
-        }
-      })
-      .catch((err) => {
-        console.error('[HeroBanner] Failed to load slides, using fallback:', err);
-      });
-  }, [currentLocale]);
+  // Fetch dynamic hero slides & side banners from live DB
+  const { data: heroData, isLoading } = useQuery({
+    queryKey: ['hero-slides', currentLocale],
+    queryFn: async () => {
+      const res = await fetch(`/api/hero-slides?locale=${encodeURIComponent(currentLocale || 'en')}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
-  // Auto rotate slides (duration from DB or default 7s)
+  const slides: Slide[] = useMemo(() => {
+    if (heroData?.data && Array.isArray(heroData.data) && heroData.data.length > 0) {
+      return heroData.data;
+    }
+    return FALLBACK_SLIDES;
+  }, [heroData]);
+
+  const sideBanners: { top: SideBannerItem; bottom: SideBannerItem } = useMemo(() => {
+    return {
+      top: heroData?.sideBanners?.top || DEFAULT_SIDE_TOP,
+      bottom: heroData?.sideBanners?.bottom || DEFAULT_SIDE_BOTTOM,
+    };
+  }, [heroData]);
+
+  // Auto rotate slides (duration from DB or default 6s)
   useEffect(() => {
-    const duration = (slides[currentSlideIndex]?.duration || 7) * 1000;
+    if (slides.length <= 1) return;
+    const duration = (slides[currentSlideIndex]?.duration || 6) * 1000;
     const timer = setInterval(() => {
       setCurrentSlideIndex((prev) => (prev + 1) % slides.length);
     }, duration);
     return () => clearInterval(timer);
   }, [slides, currentSlideIndex]);
 
-  const currentSlide = slides[currentSlideIndex] || FALLBACK_SLIDES[0];
+  if (isLoading && !heroData) {
+    return <HeroBannerSkeleton />;
+  }
+
+  const currentSlide = slides[currentSlideIndex] || slides[0] || FALLBACK_SLIDES[0];
+
+  const handlePrimaryClick = () => {
+    const link = currentSlide.btnLink || currentSlide.ctaLink;
+    if (link && link !== '#') {
+      if (link.startsWith('#')) {
+        const el = document.getElementById(link.slice(1));
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        router.push(link.startsWith('/') ? `/${currentLocale}${link}` : link);
+      }
+    } else {
+      onShopDeals();
+    }
+  };
+
+  const handleSecondaryClick = () => {
+    const link = currentSlide.secondaryBtnLink;
+    if (link && link !== '#') {
+      if (link.startsWith('#')) {
+        const el = document.getElementById(link.slice(1));
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        router.push(link.startsWith('/') ? `/${currentLocale}${link}` : link);
+      }
+    } else {
+      onViewFlashDrops();
+    }
+  };
+
+  const handleTopSideClick = () => {
+    const link = sideBanners.top?.btnLink || sideBanners.top?.ctaLink;
+    if (link && link !== '#') {
+      router.push(link.startsWith('/') ? `/${currentLocale}${link}` : link);
+    } else {
+      onExploreBakery();
+    }
+  };
+
+  const handleBottomSideClick = () => {
+    const link = sideBanners.bottom?.btnLink || sideBanners.bottom?.ctaLink;
+    if (link && link !== '#') {
+      router.push(link.startsWith('/') ? `/${currentLocale}${link}` : link);
+    } else {
+      onExploreTech();
+    }
+  };
 
   return (
-    <section className="max-w-[1440px] mx-auto px-4 lg:px-6 pt-5 pb-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 pt-5 pb-6">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Left Hero Main Banner (8 cols) */}
         <div 
-          className="lg:col-span-8 rounded-2xl p-6 sm:p-8 md:p-10 relative overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[420px] shadow-lg group"
+          className="lg:col-span-8 min-w-0 w-full rounded-2xl p-6 sm:p-8 md:p-10 relative overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[420px] shadow-lg group"
         >
           {/* Background Photography Layers with Crossfade */}
           {slides.map((slide, idx) => (
@@ -175,7 +331,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.45, ease: MOTION_TOKENS.easeOutCubic }}
-              className="my-6 z-10 max-w-[560px]"
+              className="my-6 z-10 w-full max-w-[560px]"
             >
               {currentSlide.subtag && (
                 <div className="flex items-center gap-2 text-amber-400 text-xs font-bold tracking-wider mb-2 uppercase drop-shadow-sm">
@@ -200,42 +356,48 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           {/* Action Buttons & Slide Pagination */}
           <div className="flex flex-wrap items-center justify-between gap-4 pt-2 z-10">
             <div className="flex items-center gap-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 id="hero-shop-deals-btn"
-                onClick={onShopDeals}
+                onClick={handlePrimaryClick}
                 className="bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-black px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95"
               >
-                <span>{currentSlide.btnText || 'Shop Deals Now'}</span>
+                <span>{currentSlide.btnText || currentSlide.ctaText || 'Shop Deals Now'}</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 id="hero-view-drops-btn"
-                onClick={onViewFlashDrops}
+                onClick={handleSecondaryClick}
                 className="bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold px-4 py-2.5 rounded-lg text-sm flex items-center gap-2 transition-colors cursor-pointer backdrop-blur-md shadow-xs"
               >
                 <Clock className="w-4 h-4 text-amber-300" />
-                <span>View Flash Drops</span>
-              </button>
+                <span>{currentSlide.secondaryBtnText || currentSlide.secondaryCtaText || 'View Flash Drops'}</span>
+              </motion.button>
             </div>
 
             {/* Pagination Controls with Prev/Next Arrows */}
             <div className="flex items-center gap-3 text-white/90 text-xs font-medium">
               <div className="flex items-center gap-1.5">
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.85 }}
                   onClick={() => setCurrentSlideIndex((prev) => (prev - 1 + slides.length) % slides.length)}
                   className="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Previous slide"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.85 }}
                   onClick={() => setCurrentSlideIndex((prev) => (prev + 1) % slides.length)}
                   className="w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
                   aria-label="Next slide"
                 >
                   <ChevronRight className="w-4 h-4" />
-                </button>
+                </motion.button>
               </div>
 
               <div className="flex items-center gap-1.5 ml-1">
@@ -261,16 +423,18 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
         </div>
 
         {/* Right Column: 2 Stacked Feature Cards (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
+        <div className="lg:col-span-4 min-w-0 w-full flex flex-col gap-4">
           {/* Top Card: Kitchenware & Tableware */}
-          <div 
-            onClick={onExploreBakery}
+          <motion.div 
+            whileHover={{ y: -3, scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+            onClick={handleTopSideClick}
             className="flex-1 bg-[#F0FDF4] border border-emerald-200/80 rounded-2xl p-5 sm:p-6 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer group"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="inline-flex items-center gap-1 bg-[#DCFCE7] text-emerald-800 font-extrabold text-[11px] px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  HOME SETS & KITCHEN
+                  {sideBanners.top?.badgeText || sideBanners.top?.tag || 'HOME SETS & KITCHEN'}
                 </span>
                 <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Store className="w-5 h-5" />
@@ -278,32 +442,36 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </div>
 
               <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-800 transition-colors">
-                Kitchenware, Cookware & Table Sets
+                {sideBanners.top?.headline || sideBanners.top?.title || 'Kitchenware, Cookware & Table Sets'}
               </h3>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Non-stick granite frying pans, premium stainless steel cutlery, and porcelain tableware.
-              </p>
+              {(sideBanners.top?.description || sideBanners.top?.subtitle) && (
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                  {sideBanners.top?.description || sideBanners.top?.subtitle}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-4 mt-3 border-t border-emerald-200/60 text-xs">
               <span className="font-extrabold text-slate-900 text-sm">
-                From 24.50 BYN
+                {sideBanners.top?.subtag || 'From $24.50'}
               </span>
               <span className="text-emerald-700 font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-                Explore Kitchenware <ChevronRight className="w-4 h-4" />
+                {sideBanners.top?.btnText || sideBanners.top?.ctaText || 'Explore Kitchenware'} <ChevronRight className="w-4 h-4" />
               </span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Bottom Card: Home Comfort / Smart Living */}
-          <div 
-            onClick={onExploreTech}
+          <motion.div 
+            whileHover={{ y: -3, scale: 1.01 }}
+            transition={{ duration: 0.2 }}
+            onClick={handleBottomSideClick}
             className="flex-1 bg-[#EFF6FF] border border-blue-200/80 rounded-2xl p-5 sm:p-6 flex flex-col justify-between hover:shadow-md transition-all cursor-pointer group"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
                 <span className="inline-flex items-center gap-1 bg-[#FEF3C7] text-amber-800 font-extrabold text-[11px] px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  SMART LIVING HUB
+                  {sideBanners.bottom?.badgeText || sideBanners.bottom?.tag || 'SMART LIVING HUB'}
                 </span>
                 <div className="w-9 h-9 rounded-full bg-blue-100 text-[#00407a] flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Headphones className="w-5 h-5" />
@@ -311,22 +479,24 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               </div>
 
               <h3 className="text-lg font-bold text-slate-900 group-hover:text-[#00407a] transition-colors">
-                Robotic Vacuums & Air Purifiers
+                {sideBanners.bottom?.headline || sideBanners.bottom?.title || 'Robotic Vacuums & Air Purifiers'}
               </h3>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Official 2-year warranty with zero hassle replacement guarantee.
-              </p>
+              {(sideBanners.bottom?.description || sideBanners.bottom?.subtitle) && (
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                  {sideBanners.bottom?.description || sideBanners.bottom?.subtitle}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-4 mt-3 border-t border-blue-200/60 text-xs">
               <span className="font-extrabold text-amber-700 text-sm">
-                Up to -35%
+                {sideBanners.bottom?.subtag || 'Up to -35%'}
               </span>
               <span className="text-[#00407a] font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-                Discover Appliances <ChevronRight className="w-4 h-4" />
+                {sideBanners.bottom?.btnText || sideBanners.bottom?.ctaText || 'Discover Appliances'} <ChevronRight className="w-4 h-4" />
               </span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

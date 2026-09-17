@@ -3,6 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export interface ApiKeys {
+  openaiApiKey?: string | null;
+  openaiBaseUrl?: string | null;
+  openaiModel?: string | null;
+  primaryAiProvider?: string | null;
   openrouterApiKey?: string | null;
   geminiApiKey?: string | null;
   deepseekApiKey?: string | null;
@@ -20,6 +24,10 @@ export async function getApiKeys(): Promise<ApiKeys> {
     // Try to get from database first
     const settings = await prisma.systemSettings.findFirst({
       select: {
+        openaiApiKey: true,
+        openaiBaseUrl: true,
+        openaiModel: true,
+        primaryAiProvider: true,
         openrouterApiKey: true,
         geminiApiKey: true,
         deepseekApiKey: true,
@@ -32,6 +40,10 @@ export async function getApiKeys(): Promise<ApiKeys> {
     if (settings) {
       // Return database values, fallback to env if database value is null/empty
       return {
+        openaiApiKey: settings.openaiApiKey || process.env.OPENAI_API_KEY,
+        openaiBaseUrl: settings.openaiBaseUrl || process.env.OPENAI_BASE_URL || 'https://llm.gcat.ir/v1',
+        openaiModel: settings.openaiModel || process.env.OPENAI_MODEL || 'auto/best-chat',
+        primaryAiProvider: settings.primaryAiProvider || 'openai',
         openrouterApiKey: settings.openrouterApiKey || process.env.OPENROUTER_API_KEY,
         geminiApiKey: settings.geminiApiKey || process.env.GEMINI_API_KEY,
         deepseekApiKey: settings.deepseekApiKey || process.env.DEEPSEEK_API_KEY,
@@ -46,6 +58,10 @@ export async function getApiKeys(): Promise<ApiKeys> {
 
   // Fallback to environment variables only
   return {
+    openaiApiKey: process.env.OPENAI_API_KEY,
+    openaiBaseUrl: process.env.OPENAI_BASE_URL || 'https://llm.gcat.ir/v1',
+    openaiModel: process.env.OPENAI_MODEL || 'auto/best-chat',
+    primaryAiProvider: 'openai',
     openrouterApiKey: process.env.OPENROUTER_API_KEY,
     geminiApiKey: process.env.GEMINI_API_KEY,
     deepseekApiKey: process.env.DEEPSEEK_API_KEY,

@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { CartItem } from '../types';
 import { useCompanyName } from '@/hooks/useCompanyName';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -29,13 +31,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   deliveryAddress,
   onOrderSuccess,
 }) => {
+  const { tModals, tCartDrawer } = useStorefrontTranslation();
+  const { formatPrice } = useCurrency();
   const [step, setStep] = useState<'details' | 'success'>('details');
   const [selectedSlot, setSelectedSlot] = useState<'express' | 'scheduled' | 'locker'>('express');
-  const [paymentMethod, setPaymentMethod] = useState<'card_online' | 'cash_pos' | 'installment'>('card_online');
-  const [recipientName, setRecipientName] = useState('Anna Kovalchuk');
-  const [recipientPhone, setRecipientPhone] = useState('+375 (29) 648-99-12');
+  const [paymentMethod, setPaymentMethod] = useState<'card_online' | 'cash_pos' | 'bank_transfer' | 'trade_assurance'>('card_online');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [useBonusPoints, setUseBonusPoints] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState('');
   const companyName = useCompanyName();
 
   if (!isOpen) return null;
@@ -45,12 +52,59 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const bonusDiscount = useBonusPoints ? Math.min(15.00, subtotal) : 0;
   const grandTotal = Math.max(0, subtotal + deliveryFee - bonusDiscount);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newOrderId = `DK-${Math.floor(10000 + Math.random() * 90000)}`;
-    setOrderNumber(newOrderId);
-    setStep('success');
-    onOrderSuccess(newOrderId, grandTotal);
+    if (items.length === 0) return;
+
+    setIsSubmitting(true);
+    setOrderError('');
+
+    try {
+      const mappedMethod = 
+        paymentMethod === 'card_online' ? 'CREDIT_CARD' :
+        paymentMethod === 'cash_pos' ? 'CASH_ON_DELIVERY' :
+        paymentMethod === 'bank_transfer' ? 'BANK_TRANSFER' : 'TRADE_ASSURANCE';
+
+      const orderPayload = {
+        customerName: recipientName.trim() || 'Valued Customer',
+        customerEmail: recipientEmail.trim() || 'customer@example.com',
+        customerPhone: recipientPhone.trim() || '+1 555 0199',
+        shippingAddress: deliveryAddress || '1 Global Trade Way',
+        shippingCity: 'International Hub',
+        shippingPostalCode: '100001',
+        shippingCountryId: 'CN',
+        paymentMethod: mappedMethod,
+        shippingFee: deliveryFee,
+        discount: bonusDiscount,
+        items: items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
+        customerNotes: `Fulfillment slot: ${selectedSlot}. Fast checkout submission.`
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(orderPayload)
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to place order');
+      }
+
+      const createdOrder = data.data;
+      setOrderNumber(createdOrder.orderNumber);
+      setStep('success');
+      onOrderSuccess(createdOrder.orderNumber, grandTotal);
+    } catch (err: any) {
+      console.error('Checkout error:', err);
+      setOrderError(err.message || 'Error processing order');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,7 +122,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           <div className="flex items-center gap-2">
             <PackageCheck className="w-5 h-5 text-[#00407a]" />
             <h3 className="text-base font-bold text-slate-900">
-              {step === 'details' ? 'Hypermarket Express Checkout' : 'Order Confirmed!'}
+              {step === 'details' ? tModals('fastCheckout') : tModals('orderSuccessTitle')}
             </h3>
           </div>
           <button
@@ -84,7 +138,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* 1. Fulfillment Method */}
             <div>
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">
-                1. Select Delivery Method
+                1. {tModals('deliveryMethod')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {/* Express 60 min */}
@@ -99,11 +153,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 >
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#00407a] mb-1">
                     <Truck className="w-4 h-4" />
-                    <span>Express 60 Min</span>
+                    <span>{tModals('expressCourier')}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500">Darkstore direct courier dispatch</p>
                   <span className="text-[10px] font-bold text-emerald-600 block mt-1">
-                    {deliveryFee === 0 ? 'FREE' : '4.50 BYN'}
+                    {deliveryFee === 0 ? tCartDrawer('free') : formatPrice(4.50)}
                   </span>
                 </button>
 
@@ -119,10 +172,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 >
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
                     <Clock className="w-4 h-4 text-slate-600" />
-                    <span>Today Scheduled</span>
+                    <span>{tModals('scheduledDelivery')}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500">Choose 18:00 - 20:00 or 20:00 - 22:00</p>
-                  <span className="text-[10px] font-bold text-emerald-600 block mt-1">FREE</span>
+                  <span className="text-[10px] font-bold text-emerald-600 block mt-1">{tCartDrawer('free')}</span>
                 </button>
 
                 {/* 24/7 Locker */}
@@ -137,10 +189,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 >
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-1">
                     <MapPin className="w-4 h-4 text-slate-600" />
-                    <span>120+ Lockers</span>
+                    <span>{tModals('parcelLocker')}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500">Collect anytime 24/7 with PIN code</p>
-                  <span className="text-[10px] font-bold text-emerald-600 block mt-1">FREE</span>
+                  <span className="text-[10px] font-bold text-emerald-600 block mt-1">{tCartDrawer('free')}</span>
                 </button>
               </div>
             </div>
@@ -148,13 +199,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* 2. Destination Address */}
             <div>
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">
-                2. Delivery Destination
+                2. {tModals('deliveryDetails')}
               </label>
               <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
                 <MapPin className="w-5 h-5 text-[#00407a] shrink-0" />
                 <div className="flex-1">
                   <div className="font-bold text-slate-900">{deliveryAddress}</div>
-                  <div className="text-slate-500 text-[11px]">Minsk Darkstore Hub #1 (4.2 km distance)</div>
                 </div>
               </div>
             </div>
@@ -163,7 +213,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Recipient Name
+                  {tModals('recipientName')}
                 </label>
                 <input
                   type="text"
@@ -175,7 +225,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Phone (for courier SMS)
+                  {tModals('recipientPhone')}
                 </label>
                 <input
                   type="text"
@@ -187,10 +237,25 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               </div>
             </div>
 
+            {/* Recipient Email */}
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Email (for order confirmation)
+              </label>
+              <input
+                type="email"
+                required
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full text-xs px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-[#00407a]"
+              />
+            </div>
+
             {/* 4. Payment Method */}
             <div>
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">
-                3. Payment Method
+                4. {tModals('paymentMethod')}
               </label>
               <div className="space-y-2 text-xs">
                 <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
@@ -203,9 +268,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       className="text-[#00407a] focus:ring-blue-500"
                     />
                     <CreditCard className="w-4 h-4 text-slate-700" />
-                    <span className="font-bold text-slate-800">Bank Card Online</span>
+                    <span className="font-bold text-slate-800">{tModals('cardOnline')}</span>
                   </div>
-                  <span className="text-[11px] text-slate-500">Mastercard / VISA / Belkart</span>
+                  <span className="text-[11px] text-slate-500">Mastercard / VISA / MIR</span>
                 </label>
 
                 <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
@@ -218,9 +283,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       className="text-[#00407a] focus:ring-blue-500"
                     />
                     <Wallet className="w-4 h-4 text-slate-700" />
-                    <span className="font-bold text-slate-800">Cash or POS terminal upon arrival</span>
+                    <span className="font-bold text-slate-800">{tModals('cashPos')}</span>
                   </div>
-                  <span className="text-[11px] text-slate-500">Pay to courier</span>
                 </label>
 
                 <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
@@ -228,14 +292,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <input
                       type="radio"
                       name="payment"
-                      checked={paymentMethod === 'installment'}
-                      onChange={() => setPaymentMethod('installment')}
+                      checked={paymentMethod === 'bank_transfer'}
+                      onChange={() => setPaymentMethod('bank_transfer')}
+                      className="text-[#00407a] focus:ring-blue-500"
+                    />
+                    <ShieldCheck className="w-4 h-4 text-slate-700" />
+                    <span className="font-bold text-slate-800">{tModals('bankTransfer')}</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <div className="flex items-center gap-2.5">
+                    <input
+                      type="radio"
+                      name="payment"
+                      checked={paymentMethod === 'trade_assurance'}
+                      onChange={() => setPaymentMethod('trade_assurance')}
                       className="text-[#00407a] focus:ring-blue-500"
                     />
                     <Clock className="w-4 h-4 text-amber-600" />
-                    <span className="font-bold text-slate-800">0% Installment (Up to 12 mo)</span>
+                    <span className="font-bold text-slate-800">{tModals('tradeAssurance')}</span>
                   </div>
-                  <span className="text-[11px] font-bold text-amber-700">0-0-12 Plan</span>
                 </label>
               </div>
             </div>
@@ -244,7 +321,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div className="p-3 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
               <div>
                 <span className="font-bold text-slate-900 block">Use 15 {companyName} Club Points</span>
-                <span className="text-slate-600 text-[11px]">Balance: 1,280 points (Save 15.00 BYN)</span>
+                <span className="text-slate-600 text-[11px]">Balance: 1,280 points (Save {formatPrice(15.00)})</span>
               </div>
               <input
                 type="checkbox"
@@ -257,31 +334,50 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             {/* Price Summary & Submit */}
             <div className="pt-3 border-t border-slate-200 space-y-1.5 text-xs text-slate-600">
               <div className="flex justify-between">
-                <span>Items ({items.reduce((a, b) => a + b.quantity, 0)})</span>
-                <span className="font-bold text-slate-900">{subtotal.toFixed(2)} BYN</span>
+                <span>{tModals('orderSummary')} ({items.reduce((a, b) => a + b.quantity, 0)})</span>
+                <span className="font-bold text-slate-900">{formatPrice(subtotal)}</span>
               </div>
               {bonusDiscount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-bold">
-                  <span>Loyalty Points Discount</span>
-                  <span>-{bonusDiscount.toFixed(2)} BYN</span>
+                  <span>{tCartDrawer('discount')}</span>
+                  <span>-{formatPrice(bonusDiscount)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Delivery</span>
-                <span>{deliveryFee === 0 ? <strong className="text-emerald-600">FREE</strong> : `${deliveryFee.toFixed(2)} BYN`}</span>
+                <span>{tCartDrawer('deliveryFee')}</span>
+                <span>{deliveryFee === 0 ? <strong className="text-emerald-600">{tCartDrawer('free')}</strong> : formatPrice(deliveryFee)}</span>
               </div>
               <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-200">
-                <span>Grand Total:</span>
-                <span className="text-[#00407a] text-lg">{grandTotal.toFixed(2)} BYN</span>
+                <span>{tCartDrawer('total')}:</span>
+                <span className="text-[#00407a] text-lg">{formatPrice(grandTotal)}</span>
               </div>
+
+              {orderError && (
+                <p className="text-red-600 text-xs font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  ⚠ {orderError}
+                </p>
+              )}
 
               <button
                 type="submit"
                 id="place-order-submit-btn"
-                className="w-full mt-3 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.99] text-slate-950 font-black py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+                disabled={isSubmitting}
+                className="w-full mt-3 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.99] text-slate-950 font-black py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <span>Confirm & Place Order</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    Processing…
+                  </span>
+                ) : (
+                  <>
+                    <span>{tModals('placeOrder')}</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -293,29 +389,29 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
 
             <h3 className="text-xl font-black text-slate-900 mb-1">
-              Order #{orderNumber} Confirmed!
+              {tModals('orderSuccessTitle')}
             </h3>
             <p className="text-xs text-slate-500 mb-6">
-              Courier dispatching from Minsk Central Darkstore. Estimated delivery in <strong className="text-slate-800">45 minutes</strong>.
+              {tModals('orderSuccessDesc')}
             </p>
 
             {/* Delivery card tracker */}
             <div className="bg-[#EFF6FF] border border-blue-200 rounded-xl p-4 text-left text-xs mb-6 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Destination:</span>
+                <span className="text-slate-500">{tModals('orderNumber')}</span>
+                <span className="font-bold text-slate-800">#{orderNumber}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">{tModals('deliveryDetails')}:</span>
                 <span className="font-bold text-slate-800">{deliveryAddress}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Recipient:</span>
+                <span className="text-slate-500">{tModals('recipientName')}:</span>
                 <span className="font-bold text-slate-800">{recipientName}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Amount Paid:</span>
-                <span className="font-black text-[#00407a]">{grandTotal.toFixed(2)} BYN</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">Cashback Earned:</span>
-                <span className="font-bold text-emerald-700">+{((grandTotal * 0.03)).toFixed(2)} points</span>
+                <span className="text-slate-500">{tCartDrawer('total')}:</span>
+                <span className="font-black text-[#00407a]">{formatPrice(grandTotal)}</span>
               </div>
             </div>
 
@@ -323,7 +419,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               onClick={onClose}
               className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-2.5 rounded-lg text-xs cursor-pointer shadow-xs"
             >
-              Done & Return to Store
+              {tModals('continueShopping')}
             </button>
           </div>
         )}

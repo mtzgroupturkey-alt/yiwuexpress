@@ -12,24 +12,30 @@ import {
   Minus 
 } from 'lucide-react';
 import { Product } from '../types';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface ProductModalProps {
   product: Product | null;
+  isOpen?: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, quantity?: number) => void;
-  isFavorite: boolean;
-  onToggleFavorite: (product: Product) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (product: Product) => void;
   onViewFullPDP?: (product: Product) => void;
 }
 
 export const ProductModal: React.FC<ProductModalProps> = ({
   product,
+  isOpen = true,
   onClose,
   onAddToCart,
-  isFavorite,
+  isFavorite = false,
   onToggleFavorite,
   onViewFullPDP,
 }) => {
+  const { tModals, tPdp, tBadge } = useStorefrontTranslation();
+  const { formatPrice } = useCurrency();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
@@ -70,11 +76,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               )}
               {product.tagBadge && (
                 <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wide">
-                  {product.tagBadge.text}
+                  {tBadge(product.tagBadge.text, product.tagBadge.type)}
                 </span>
               )}
               <button
-                onClick={() => onToggleFavorite(product)}
+                onClick={() => onToggleFavorite && onToggleFavorite(product)}
                 className="ml-auto p-1.5 rounded-full hover:bg-white text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
               >
                 <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
@@ -91,10 +97,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
             <div className="w-full flex items-center justify-center gap-4 text-xs text-slate-500 pt-2 border-t border-slate-200/60">
               <span className="flex items-center gap-1 font-semibold text-emerald-600">
-                <ShieldCheck className="w-3.5 h-3.5" /> 100% Genuine
+                <ShieldCheck className="w-3.5 h-3.5" /> {tModals('verifiedQuality')}
               </span>
               <span className="flex items-center gap-1">
-                <RotateCcw className="w-3.5 h-3.5" /> 14-Day Return
+                <RotateCcw className="w-3.5 h-3.5" /> {tModals('exchangeGuarantee')}
               </span>
             </div>
           </div>
@@ -127,18 +133,18 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   ))}
                 </div>
                 <span className="font-bold text-slate-800">{product.rating}</span>
-                <span>({product.reviewsCount} verified reviews)</span>
+                <span>({product.reviewsCount} {tModals('reviews')})</span>
               </div>
 
               {/* Price */}
               <div className="p-3 bg-[#EFF6FF]/60 rounded-xl border border-blue-100 mb-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black text-slate-900">
-                    {product.price.toFixed(2)} BYN
+                    {formatPrice(product.price)}
                   </span>
                   {product.oldPrice && (
                     <span className="text-sm text-slate-400 line-through font-medium">
-                      {product.oldPrice.toFixed(2)} BYN
+                      {formatPrice(product.oldPrice)}
                     </span>
                   )}
                 </div>
@@ -163,7 +169,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {product.specs && (
                 <div className="mb-4">
-                  <span className="text-xs font-bold text-slate-700 block mb-1.5">Specifications:</span>
+                  <span className="text-xs font-bold text-slate-700 block mb-1.5">{tPdp('specs')}:</span>
                   <div className="flex flex-wrap gap-1.5">
                     {product.specs.map((spec, idx) => (
                       <span
@@ -181,7 +187,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <div className="flex items-center gap-2 text-xs text-slate-600 mb-5 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                 <Truck className="w-4 h-4 text-[#00407a] shrink-0" />
                 <span>
-                  <strong>Express 60 Min Courier</strong> available for Minsk today.
+                  <strong>{tModals('expressCourier')}</strong>
                 </span>
               </div>
             </div>
@@ -213,12 +219,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 {added ? (
                   <>
                     <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Added to Cart!</span>
+                    <span>{tModals('addedToCart')}</span>
                   </>
                 ) : (
                   <>
                     <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
-                    <span>Add ${(product.price * quantity).toFixed(2)}</span>
+                    <span>{tPdp('addToCart')} ({formatPrice(product.price * quantity)})</span>
                   </>
                 )}
               </button>
@@ -232,7 +238,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 }}
                 className="w-full mt-2.5 py-2 px-3 rounded-lg border border-[#00407a] text-[#00407a] hover:bg-blue-50 text-xs font-bold transition-colors cursor-pointer text-center"
               >
-                Open Full Product Page & Specifications (PDP) &rarr;
+                {tModals('viewFullPdp')} &rarr;
               </button>
             )}
           </div>

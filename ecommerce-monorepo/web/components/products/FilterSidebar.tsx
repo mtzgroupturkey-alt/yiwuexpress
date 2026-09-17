@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, X, Filter, RotateCcw } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useCurrency } from '@/hooks/useCurrency'
 
 interface FilterSection {
   id: string
@@ -33,6 +34,7 @@ export function FilterSidebar({
   isMobile,
 }: FilterSidebarProps) {
   const t = useTranslations('Products')
+  const { formatPrice } = useCurrency()
   const [expandedSections, setExpandedSections] = useState<string[]>(filters.map(f => f.id))
   const [selectedFilters, setSelectedFilters] = useState<Record<string, any>>(externalFilters || {})
 
@@ -71,10 +73,10 @@ export function FilterSidebar({
     
     if (section.type === 'range') {
       if (Array.isArray(value)) {
-        return `$${value[0]} - $${value[1]}`
+        return `${formatPrice(value[0])} - ${formatPrice(value[1])}`
       }
       if (typeof value === 'object' && value !== null) {
-        return `$${value.min ?? 0} - $${value.max}`
+        return `${formatPrice(value.min ?? 0)} - ${formatPrice(value.max)}`
       }
     }
     
@@ -222,15 +224,15 @@ export function FilterSidebar({
                       className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-[#0055A4]"
                     />
                     <div className="flex justify-between mt-2 text-xs font-mono font-bold text-slate-500">
-                      <span>${section.min || 0}</span>
+                      <span>{formatPrice(section.min || 0)}</span>
                       <span className="text-[#0055A4]">
-                        ${
+                        {formatPrice(
                           typeof selectedFilters[section.id] === 'object' && selectedFilters[section.id] !== null && !Array.isArray(selectedFilters[section.id])
                             ? selectedFilters[section.id].max ?? section.max ?? 1000
                             : Array.isArray(selectedFilters[section.id])
                             ? selectedFilters[section.id][1]
                             : section.max ?? 1000
-                        }
+                        )}
                       </span>
                     </div>
                   </div>

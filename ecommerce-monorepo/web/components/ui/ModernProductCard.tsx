@@ -19,6 +19,8 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
+import { useCurrency } from '@/hooks/useCurrency'
 
 export interface ModernProductData {
   id: string
@@ -33,7 +35,7 @@ export interface ModernProductData {
   stock?: number
   rating?: number
   reviewCount?: number
-  tags?: Array<'new' | 'bestseller' | 'sale' | 'wholesale' | 'limited' | 'featured'>
+  tags?: Array<'new' | 'bestseller' | 'sale' | 'wholesale' | 'limited' | 'featured' | 'express'>
   brand?: string
   supplier?: string
   isFavorite?: boolean
@@ -62,6 +64,8 @@ export function ModernProductCard({
   onToggleFavorite,
   locale = 'en'
 }: ModernProductCardProps) {
+  const { tBadge } = useStorefrontTranslation()
+  const { formatPrice } = useCurrency()
   const [isHovered, setIsHovered] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -148,30 +152,44 @@ export function ModernProductCard({
   const getTagBadge = () => {
     if (product.tags?.includes('featured') || variant === 'featured') {
       return {
-        label: t.featured,
+        label: tBadge('featured') || t.featured,
         icon: <Sparkles className="w-3 h-3" />,
         className: 'bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] text-navy-950 font-bold'
       }
     }
+    if (product.tags?.includes('express')) {
+      return {
+        label: tBadge('express'),
+        icon: <Truck className="w-3 h-3" />,
+        className: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold'
+      }
+    }
     if (product.isFlashSale || product.tags?.includes('sale')) {
       return {
-        label: t.sale,
+        label: tBadge('sale') || t.sale,
         icon: <Zap className="w-3 h-3 fill-current" />,
         className: 'bg-gradient-to-r from-red-600 to-amber-600 text-white font-bold'
       }
     }
     if (product.tags?.includes('bestseller')) {
       return {
-        label: t.bestseller,
+        label: tBadge('bestseller') || t.bestseller,
         icon: <TrendingUp className="w-3 h-3" />,
         className: 'bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-bold'
       }
     }
     if (product.tags?.includes('new')) {
       return {
-        label: t.new,
+        label: tBadge('new') || t.new,
         icon: <Sparkles className="w-3 h-3" />,
         className: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold'
+      }
+    }
+    if (product.tags?.includes('limited')) {
+      return {
+        label: tBadge('limited') || t.limited,
+        icon: <Sparkles className="w-3 h-3" />,
+        className: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold'
       }
     }
     return null
@@ -396,18 +414,18 @@ export function ModernProductCard({
           <div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-lg font-black text-gray-900 dark:text-[#e5c158]">
-                ${product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {formatPrice(product.price)}
               </span>
-              {isOnSale && (
+              {isOnSale && product.compareAtPrice && (
                 <span className="text-xs text-gray-400 line-through">
-                  ${product.compareAtPrice?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {formatPrice(product.compareAtPrice)}
                 </span>
               )}
             </div>
 
             {product.wholesalePrice && (
               <div className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold mt-0.5">
-                {t.wholesale}: ${product.wholesalePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {t.wholesale}: {formatPrice(product.wholesalePrice)}
               </div>
             )}
           </div>

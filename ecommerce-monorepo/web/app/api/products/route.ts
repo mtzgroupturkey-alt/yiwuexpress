@@ -469,6 +469,17 @@ export async function GET(request: Request) {
             id: true,
             name: true,
             slug: true,
+            parent: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                translations: {
+                  where: { locale: { in: [locale, 'en'] } },
+                  select: { locale: true, name: true }
+                }
+              }
+            },
             translations: {
               where: { locale: { in: [locale, 'en'] } },
               select: { locale: true, name: true }
@@ -502,7 +513,18 @@ export async function GET(request: Request) {
               locale,
               'name',
               product.category.name
-            )
+            ),
+            parent: product.category.parent
+              ? {
+                  ...product.category.parent,
+                  name: getLocalField(
+                    product.category.parent.translations,
+                    locale,
+                    'name',
+                    product.category.parent.name
+                  )
+                }
+              : null
           }
         : product.category
       return {

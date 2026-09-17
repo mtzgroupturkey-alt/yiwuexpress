@@ -19,7 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { ImageUpload } from '@/components/admin/ImageUpload'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { toast } from '@/components/ui/use-toast'
-import { GripVertical, Pencil, Trash2, Plus, Eye, EyeOff, Save, Image as ImageIcon, Link2, Copy, Loader2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+import { GripVertical, Pencil, Trash2, Plus, Eye, EyeOff, Save, Image as ImageIcon, Link2, Copy, Loader2, AlignLeft, AlignCenter, AlignRight, LayoutGrid, Layers, ExternalLink, Sparkles } from 'lucide-react'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 interface HeroSlide {
@@ -155,26 +155,39 @@ function SortableSlideItem({ slide, onEdit, onDelete, onDuplicate, onToggleActiv
 
         {/* Slide Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`font-medium ${slide.isActive ? 'text-gray-900' : 'text-gray-400 line-through'}`}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`font-semibold ${slide.isActive ? 'text-gray-900' : 'text-gray-400 line-through'}`}>
               {slide.title}
             </span>
             {!slide.isActive && <Badge variant="secondary" className="text-xs">Inactive</Badge>}
+            {slide.motionType === 'side_top' ? (
+              <Badge className="text-xs bg-emerald-600 text-white font-medium hover:bg-emerald-700">
+                Right Side: Top Card
+              </Badge>
+            ) : slide.motionType === 'side_bottom' ? (
+              <Badge className="text-xs bg-blue-600 text-white font-medium hover:bg-blue-700">
+                Right Side: Bottom Card
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-xs text-slate-600 border-slate-300">
+                Main Slider
+              </Badge>
+            )}
             {slide.badgeText && (
-              <Badge className="text-xs" style={{ backgroundColor: slide.badgeColor || '#c9a84c' }}>
+              <Badge className="text-xs font-bold text-slate-950" style={{ backgroundColor: slide.badgeColor || '#F5A602' }}>
                 {slide.badgeText}
               </Badge>
             )}
           </div>
-          <div className="text-sm text-gray-500 truncate max-w-md">
+          <div className="text-sm text-gray-500 truncate max-w-md mt-0.5">
             {slide.subtitle || slide.description || 'No description'}
           </div>
-          <div className="flex items-center gap-4 mt-1 text-xs text-gray-400">
+          <div className="flex items-center gap-4 mt-1 text-xs text-gray-400 flex-wrap">
             <span>Order: {slide.displayOrder + 1}</span>
             <span>Duration: {slide.slideDuration}s</span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 text-slate-600 font-medium">
               <Link2 className="w-3 h-3" />
-              {slide.ctaText}
+              {slide.ctaText} &rarr; <span className="font-mono text-[11px] text-blue-600">{slide.ctaLink}</span>
             </span>
             <span className="flex items-center gap-1">
               {slide.alignment === 'left' && <AlignLeft className="w-3 h-3" />}
@@ -233,6 +246,8 @@ export default function HeroSliderSettingsPage() {
   const queryClient = useQueryClient()
   const [slides, setSlides] = useState<HeroSlide[]>([])
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null)
+  const [defaultPlacement, setDefaultPlacement] = useState<string>('slide')
+  const [filterType, setFilterType] = useState<'all' | 'main' | 'side'>('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
@@ -242,7 +257,7 @@ export default function HeroSliderSettingsPage() {
     useSensor(KeyboardSensor)
   )
 
-  // Fetch slides
+  // Fetch slides with credentials
   const { data: slidesData, isLoading } = useQuery({
     queryKey: ['hero-slides'],
     queryFn: async () => {
@@ -251,6 +266,7 @@ export default function HeroSliderSettingsPage() {
         headers: token ? {
           'Authorization': `Bearer ${token}`,
         } : {},
+        credentials: 'include',
       })
       if (!response.ok) throw new Error('Failed to fetch')
       return response.json()
@@ -273,6 +289,7 @@ export default function HeroSliderSettingsPage() {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       })
       if (!response.ok) throw new Error('Failed to update')
@@ -294,6 +311,7 @@ export default function HeroSliderSettingsPage() {
         headers: token ? {
           'Authorization': `Bearer ${token}`,
         } : {},
+        credentials: 'include',
       })
       if (!response.ok) throw new Error('Failed to delete')
       return response.json()
@@ -313,6 +331,7 @@ export default function HeroSliderSettingsPage() {
         headers: token ? {
           'Authorization': `Bearer ${token}`,
         } : {},
+        credentials: 'include',
       })
       if (!response.ok) throw new Error('Failed to duplicate')
       return response.json()
@@ -383,6 +402,7 @@ export default function HeroSliderSettingsPage() {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
+        credentials: 'include',
         body: JSON.stringify({ ...slide, isActive: active }),
       })
 
@@ -400,11 +420,13 @@ export default function HeroSliderSettingsPage() {
 
   const handleEdit = (slide: HeroSlide) => {
     setEditingSlide(slide)
+    setDefaultPlacement(slide.motionType || 'slide')
     setIsDialogOpen(true)
   }
 
-  const handleAdd = () => {
+  const handleAdd = (placement: string = 'slide') => {
     setEditingSlide(null)
+    setDefaultPlacement(placement)
     setIsDialogOpen(true)
   }
 
@@ -418,31 +440,155 @@ export default function HeroSliderSettingsPage() {
     }
   }
 
+  // Filtered slides
+  const displayedSlides = slides.filter((slide) => {
+    if (filterType === 'main') return slide.motionType !== 'side_top' && slide.motionType !== 'side_bottom'
+    if (filterType === 'side') return slide.motionType === 'side_top' || slide.motionType === 'side_bottom'
+    return true
+  })
+
+  // Summary counts
+  const mainSlides = slides.filter((s) => s.motionType !== 'side_top' && s.motionType !== 'side_bottom')
+  const sideTopSlide = slides.find((s) => s.motionType === 'side_top')
+  const sideBottomSlide = slides.find((s) => s.motionType === 'side_bottom')
+
   return (
     <Container maxWidth="2xl" className="py-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-[#1a3a5c]">{dict.settings.heroSlider}</h1>
-          <p className="text-gray-500">{dict.settings.subtitle}</p>
+          <p className="text-gray-500">Manage rotating hero slider and right-side promotional cards</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleAdd} className="bg-[#1a3a5c] hover:bg-[#2a5a8c]">
-            <Plus className="w-4 h-4 mr-2" />
-            {dict.common.add}
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={() => handleAdd('slide')} className="bg-[#1a3a5c] hover:bg-[#2a5a8c]">
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add Slide
+          </Button>
+          <Button onClick={() => handleAdd('side_top')} variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
+            <Plus className="w-4 h-4 mr-1.5" />
+            Top Card
+          </Button>
+          <Button onClick={() => handleAdd('side_bottom')} variant="outline" className="border-blue-600 text-blue-700 hover:bg-blue-50">
+            <Plus className="w-4 h-4 mr-1.5" />
+            Bottom Card
           </Button>
           <Button onClick={handleSaveOrder} disabled={isSaving} className="bg-green-600 hover:bg-green-700">
-            <Save className="w-4 h-4 mr-2" />
+            <Save className="w-4 h-4 mr-1.5" />
             {isSaving ? dict.common.loading : dict.common.save}
           </Button>
         </div>
       </div>
 
+      {/* Storefront Hero Layout Visual Architecture */}
+      <div className="mb-6 p-4 rounded-xl bg-slate-900 text-white border border-slate-800 shadow-sm">
+        <div className="flex items-center justify-between mb-3 text-xs text-slate-400">
+          <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-300">
+            <LayoutGrid className="w-4 h-4 text-amber-400" />
+            Storefront Hero Banner Layout Structure
+          </span>
+          <span className="text-[11px] text-slate-400">Synchronized with Design-3 Storefront</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+          {/* Main Hero Slider preview box */}
+          <div className="md:col-span-8 p-3.5 rounded-lg bg-slate-800/80 border border-slate-700 flex flex-col justify-between min-h-[100px]">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">
+                Main Hero Slider (8 Columns)
+              </span>
+              <Badge variant="outline" className="text-slate-300 border-slate-600 text-[10px]">
+                {mainSlides.filter(s => s.isActive).length} active / {mainSlides.length} total
+              </Badge>
+            </div>
+            <p className="text-xs text-slate-300 line-clamp-1 mt-1 font-medium">
+              {mainSlides[0]?.title || 'Rise Ceramic Nonstick Bakeware'}
+            </p>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-700/60 text-[11px] text-slate-400">
+              <span>Auto-rotates with crossfade animation</span>
+              <button
+                type="button"
+                onClick={() => handleAdd('slide')}
+                className="text-amber-400 hover:underline font-semibold"
+              >
+                + Add Slide
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column preview boxes */}
+          <div className="md:col-span-4 flex flex-col gap-2.5">
+            {/* Top Card */}
+            <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-800/60 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-emerald-400 uppercase">Top Feature Card</span>
+                <span className="text-[10px] text-emerald-300">
+                  {sideTopSlide?.isActive ? 'Active' : 'Offline'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-200 line-clamp-1 mt-0.5 font-medium">
+                {sideTopSlide?.title || 'Kitchenware & Table Sets'}
+              </p>
+            </div>
+
+            {/* Bottom Card */}
+            <div className="p-2.5 rounded-lg bg-blue-950/60 border border-blue-800/60 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-blue-400 uppercase">Bottom Feature Card</span>
+                <span className="text-[10px] text-blue-300">
+                  {sideBottomSlide?.isActive ? 'Active' : 'Offline'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-200 line-clamp-1 mt-0.5 font-medium">
+                {sideBottomSlide?.title || 'Robotic Vacuums & Air Purifiers'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => setFilterType('all')}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            filterType === 'all'
+              ? 'bg-[#1a3a5c] text-white shadow-xs'
+              : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+          }`}
+        >
+          All Elements ({slides.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilterType('main')}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            filterType === 'main'
+              ? 'bg-[#1a3a5c] text-white shadow-xs'
+              : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+          }`}
+        >
+          Main Slider ({mainSlides.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => setFilterType('side')}
+          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            filterType === 'side'
+              ? 'bg-[#1a3a5c] text-white shadow-xs'
+              : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+          }`}
+        >
+          Right Side Cards ({slides.length - mainSlides.length})
+        </button>
+      </div>
+
       {/* Slides List */}
       <Card>
         <CardHeader>
-          <CardTitle>Slides</CardTitle>
-          <CardDescription>Drag and drop to reorder slides. Use the eye icon to show/hide slides.</CardDescription>
+          <CardTitle>Configured Elements</CardTitle>
+          <CardDescription>Drag and drop to reorder elements. Use the eye icon to show/hide elements on storefront.</CardDescription>
         </CardHeader>
         <CardContent>
           <DndContext
@@ -451,24 +597,24 @@ export default function HeroSliderSettingsPage() {
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={slides.map(s => s.id)}
+              items={displayedSlides.map(s => s.id)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-2">
                 {isLoading ? (
                   <div className="text-center py-8 text-gray-500">Loading slides...</div>
-                ) : slides.length === 0 ? (
+                ) : displayedSlides.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">No slides yet</p>
-                    <p className="text-sm">Add your first slide to start the hero slider</p>
-                    <Button onClick={handleAdd} variant="outline" className="mt-4">
+                    <p className="text-lg font-medium">No elements found</p>
+                    <p className="text-sm">Add your first slide or banner</p>
+                    <Button onClick={() => handleAdd('slide')} variant="outline" className="mt-4">
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Slide
+                      Add Element
                     </Button>
                   </div>
                 ) : (
-                  slides.map((slide, index) => (
+                  displayedSlides.map((slide, index) => (
                     <SortableSlideItem
                       key={slide.id}
                       slide={slide}
@@ -477,7 +623,7 @@ export default function HeroSliderSettingsPage() {
                       onDuplicate={handleDuplicate}
                       onToggleActive={handleToggleActive}
                       isFirst={index === 0}
-                      isLast={index === slides.length - 1}
+                      isLast={index === displayedSlides.length - 1}
                       isDuplicating={duplicatingId === slide.id}
                     />
                   ))
@@ -489,7 +635,7 @@ export default function HeroSliderSettingsPage() {
           {slides.length > 0 && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="text-sm text-gray-500">
-                Total slides: {slides.length} • Active: {slides.filter(s => s.isActive).length}
+                Total elements: {slides.length} • Active: {slides.filter(s => s.isActive).length} • Main Slider: {mainSlides.length} • Side Cards: {slides.length - mainSlides.length}
               </div>
             </div>
           )}
@@ -500,6 +646,7 @@ export default function HeroSliderSettingsPage() {
       <SlideFormDialog
         open={isDialogOpen}
         initialData={editingSlide}
+        defaultMotionType={defaultPlacement}
         onClose={() => {
           setIsDialogOpen(false)
           setEditingSlide(null)
@@ -518,11 +665,12 @@ export default function HeroSliderSettingsPage() {
 interface SlideFormDialogProps {
   open: boolean
   initialData: HeroSlide | null
+  defaultMotionType?: string
   onClose: () => void
   onSuccess: () => void
 }
 
-function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDialogProps) {
+function SlideFormDialog({ open, initialData, defaultMotionType = 'slide', onClose, onSuccess }: SlideFormDialogProps) {
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [description, setDescription] = useState('')
@@ -530,12 +678,12 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
   const [mobileImageUrl, setMobileImageUrl] = useState('')
   const [productImageUrl, setProductImageUrl] = useState('')
   const [badgeText, setBadgeText] = useState('')
-  const [badgeColor, setBadgeColor] = useState('#c9a84c')
+  const [badgeColor, setBadgeColor] = useState('#F5A602')
   const [ctaText, setCtaText] = useState('SHOP NOW')
-  const [ctaLink, setCtaLink] = useState('/products')
+  const [ctaLink, setCtaLink] = useState('/store')
   const [secondaryCtaText, setSecondaryCtaText] = useState('')
   const [secondaryCtaLink, setSecondaryCtaLink] = useState('')
-  const [overlayColor, setOverlayColor] = useState('rgba(26,58,92,0.6)')
+  const [overlayColor, setOverlayColor] = useState('linear-gradient(90deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.75) 45%, rgba(15, 23, 42, 0.25) 100%)')
   const [textColor, setTextColor] = useState('#ffffff')
   const [alignment, setAlignment] = useState('left')
   const [slideDuration, setSlideDuration] = useState(5)
@@ -552,12 +700,12 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       setMobileImageUrl(initialData.mobileImageUrl || '')
       setProductImageUrl(initialData.productImageUrl || '')
       setBadgeText(initialData.badgeText || '')
-      setBadgeColor(initialData.badgeColor || '#c9a84c')
+      setBadgeColor(initialData.badgeColor || '#F5A602')
       setCtaText(initialData.ctaText)
       setCtaLink(initialData.ctaLink)
       setSecondaryCtaText(initialData.secondaryCtaText || '')
       setSecondaryCtaLink(initialData.secondaryCtaLink || '')
-      setOverlayColor(initialData.overlayColor || 'rgba(26,58,92,0.6)')
+      setOverlayColor(initialData.overlayColor || 'linear-gradient(90deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.75) 45%, rgba(15, 23, 42, 0.25) 100%)')
       setTextColor(initialData.textColor || '#ffffff')
       setAlignment(initialData.alignment || 'left')
       setSlideDuration(initialData.slideDuration)
@@ -584,20 +732,20 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
       setMobileImageUrl('')
       setProductImageUrl('')
       setBadgeText('')
-      setBadgeColor('#c9a84c')
+      setBadgeColor('#F5A602')
       setCtaText('SHOP NOW')
-      setCtaLink('/products')
+      setCtaLink('/store')
       setSecondaryCtaText('')
       setSecondaryCtaLink('')
-      setOverlayColor('rgba(26,58,92,0.6)')
+      setOverlayColor('linear-gradient(90deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.75) 45%, rgba(15, 23, 42, 0.25) 100%)')
       setTextColor('#ffffff')
       setAlignment('left')
       setSlideDuration(5)
-      setMotionType('slide')
+      setMotionType(defaultMotionType || 'slide')
       setIsActive(true)
       setTranslations({})
     }
-  }, [initialData, open])
+  }, [initialData, open, defaultMotionType])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -653,6 +801,7 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       })
 
@@ -689,6 +838,63 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
 
             {/* CONTENT TAB */}
             <TabsContent value="content" className="space-y-4">
+              {/* Banner Placement Selector */}
+              <div>
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-700">Banner Placement Slot *</Label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Select where this banner appears in the storefront Hero section:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setMotionType('slide')}
+                    className={`p-3 border rounded-xl text-left transition-all ${
+                      motionType !== 'side_top' && motionType !== 'side_bottom'
+                        ? 'border-[#1a3a5c] bg-[#1a3a5c]/5 ring-2 ring-[#1a3a5c]/20'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                      Main Hero Slider
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">Left rotating slider (8 cols, primary)</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMotionType('side_top')}
+                    className={`p-3 border rounded-xl text-left transition-all ${
+                      motionType === 'side_top'
+                        ? 'border-emerald-600 bg-emerald-50 ring-2 ring-emerald-600/20'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-800 text-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                      Right Side: Top Card
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">Upper promo card (Kitchen / Home)</p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMotionType('side_bottom')}
+                    className={`p-3 border rounded-xl text-left transition-all ${
+                      motionType === 'side_bottom'
+                        ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-600/20'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 font-bold text-blue-800 text-xs">
+                      <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                      Right Side: Bottom Card
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">Lower promo card (Smart Living)</p>
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <Label>{dict.settings.slideTitle} *</Label>
                 <Input
@@ -736,9 +942,31 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                     type="text"
                     value={badgeColor}
                     onChange={(e) => setBadgeColor(e.target.value)}
-                    placeholder="#c9a84c"
+                    placeholder="#F5A602"
                     className="flex-1"
                   />
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span className="text-[11px] text-gray-400 mr-1">Presets:</span>
+                  {[
+                    { label: 'Amber', color: '#F5A602' },
+                    { label: 'Gold', color: '#c9a84c' },
+                    { label: 'Emerald', color: '#059669' },
+                    { label: 'Blue', color: '#2563eb' },
+                    { label: 'Red', color: '#dc2626' },
+                    { label: 'Purple', color: '#7c3aed' },
+                    { label: 'Dark Slate', color: '#0f172a' },
+                  ].map((p) => (
+                    <button
+                      key={p.color}
+                      type="button"
+                      onClick={() => setBadgeColor(p.color)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full border border-gray-200 hover:border-gray-400 bg-white"
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                      <span className="text-[11px] text-gray-700">{p.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </TabsContent>
@@ -752,6 +980,42 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Recommended: 1920x800px, max 2MB</p>
               </div>
+
+              <div>
+                <Label>Studio Contrast Overlay Gradient</Label>
+                <p className="text-xs text-gray-500 mb-1.5">
+                  Protects readability of headlines over bright photos:
+                </p>
+                <Input
+                  value={overlayColor}
+                  onChange={(e) => setOverlayColor(e.target.value)}
+                  placeholder="linear-gradient(...) or rgba(...)"
+                />
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {[
+                    { label: 'Studio Navy (Recommended)', value: 'linear-gradient(90deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.75) 45%, rgba(15, 23, 42, 0.25) 100%)' },
+                    { label: 'Charcoal Luxury', value: 'linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.70) 50%, rgba(15, 23, 42, 0.20) 100%)' },
+                    { label: 'Espresso Dark', value: 'linear-gradient(90deg, rgba(24, 18, 12, 0.94) 0%, rgba(45, 30, 20, 0.75) 48%, rgba(20, 15, 10, 0.25) 100%)' },
+                    { label: 'Emerald Glow', value: 'linear-gradient(90deg, rgba(2, 44, 34, 0.94) 0%, rgba(6, 78, 59, 0.75) 48%, rgba(4, 47, 46, 0.20) 100%)' },
+                    { label: 'Royal Indigo', value: 'linear-gradient(90deg, rgba(15, 23, 80, 0.94) 0%, rgba(30, 27, 75, 0.75) 48%, rgba(30, 27, 75, 0.20) 100%)' },
+                    { label: 'Classic Tint', value: 'rgba(26,58,92,0.6)' },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setOverlayColor(preset.value)}
+                      className={`px-2 py-1 text-[11px] rounded border transition-colors ${
+                        overlayColor === preset.value
+                          ? 'border-[#1a3a5c] bg-[#1a3a5c] text-white font-semibold'
+                          : 'border-gray-200 hover:bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <Label>{dict.settings.productImage}</Label>
                 <div className="mt-2">
@@ -887,14 +1151,33 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
               </div>
               <div>
                 <Label>{dict.settings.primaryCtaLink}</Label>
-                <Input value={ctaLink} onChange={(e) => setCtaLink(e.target.value)} placeholder="/products" />
+                <Input value={ctaLink} onChange={(e) => setCtaLink(e.target.value)} placeholder="/store" />
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  <span className="text-[11px] text-gray-400 self-center">Shortcuts:</span>
+                  {[
+                    { label: 'Store Catalog', url: '/store' },
+                    { label: 'Flash Deals', url: '/#flash-deals-section' },
+                    { label: 'Kitchenware', url: '/store?department=kitchen' },
+                    { label: 'Electronics', url: '/store?department=electronics' },
+                    { label: 'All Products', url: '/products' },
+                  ].map((s) => (
+                    <button
+                      key={s.url}
+                      type="button"
+                      onClick={() => setCtaLink(s.url)}
+                      className="px-2 py-0.5 text-[11px] rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-mono transition-colors"
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <Label>{dict.settings.secondaryCtaText} ({dict.common.viewDetails})</Label>
                 <Input
                   value={secondaryCtaText}
                   onChange={(e) => setSecondaryCtaText(e.target.value)}
-                  placeholder="e.g., Learn More"
+                  placeholder="e.g., View Flash Drops"
                 />
               </div>
               <div>
@@ -902,8 +1185,25 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                 <Input
                   value={secondaryCtaLink}
                   onChange={(e) => setSecondaryCtaLink(e.target.value)}
-                  placeholder="/about"
+                  placeholder="/#flash-deals-section"
                 />
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  <span className="text-[11px] text-gray-400 self-center">Shortcuts:</span>
+                  {[
+                    { label: 'Flash Drops', url: '/#flash-deals-section' },
+                    { label: 'Store Catalog', url: '/store' },
+                    { label: 'About Us', url: '/about' },
+                  ].map((s) => (
+                    <button
+                      key={s.url}
+                      type="button"
+                      onClick={() => setSecondaryCtaLink(s.url)}
+                      className="px-2 py-0.5 text-[11px] rounded bg-gray-100 hover:bg-gray-200 text-gray-700 font-mono transition-colors"
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <Label>{dict.settings.slideDuration}</Label>
@@ -914,23 +1214,23 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                   min={2}
                   max={15}
                 />
-                <p className="text-xs text-gray-500 mt-1">How long this slide should display before auto-advancing</p>
+                <p className="text-xs text-gray-500 mt-1">How long this slide should display before auto-advancing (seconds)</p>
               </div>
               <div>
-                <Label>{dict.settings.motionType}</Label>
+                <Label>Placement / Transition Mode</Label>
                 <select
                   value={motionType}
                   onChange={(e) => setMotionType(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                 >
-                  <option value="slide">Slide (Horizontal)</option>
-                  <option value="fade">Fade</option>
-                  <option value="zoom">Zoom In/Out</option>
-                  <option value="flip">Flip (3D)</option>
-                  <option value="rotate">Rotate</option>
-                  <option value="scale">Scale</option>
+                  <option value="slide">Main Slider - Horizontal Slide</option>
+                  <option value="fade">Main Slider - Fade</option>
+                  <option value="zoom">Main Slider - Zoom</option>
+                  <option value="flip">Main Slider - Flip (3D)</option>
+                  <option value="side_top">Right Column - Top Promotional Card</option>
+                  <option value="side_bottom">Right Column - Bottom Promotional Card</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">Choose the animation style for this slide transition</p>
+                <p className="text-xs text-gray-500 mt-1">Choose slot and animation style</p>
               </div>
               <div className="flex items-center justify-between">
                 <Label>{dict.common.active}</Label>
@@ -1024,8 +1324,8 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
                         <Textarea
                           value={row.description}
                           onChange={(e) => update({ description: e.target.value })}
-                          rows={3}
                           placeholder={description || 'Translation for description'}
+                          rows={2}
                         />
                       </div>
                       <div>
@@ -1058,6 +1358,66 @@ function SlideFormDialog({ open, initialData, onClose, onSuccess }: SlideFormDia
               })}
             </TabsContent>
           </Tabs>
+
+          {/* Live Preview Box */}
+          <div className="p-4 bg-slate-950 rounded-xl text-white relative overflow-hidden border border-slate-800 shadow-md">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-2 font-medium">
+              <span className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-300">
+                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                Live Storefront Preview
+              </span>
+              <Badge className="text-[10px] uppercase font-bold" variant="outline">
+                {motionType === 'side_top' ? 'Right Side Top Card' : motionType === 'side_bottom' ? 'Right Side Bottom Card' : 'Main Hero Slide'}
+              </Badge>
+            </div>
+
+            <div 
+              className="relative rounded-lg overflow-hidden min-h-[140px] p-4 flex flex-col justify-between"
+              style={{
+                background: overlayColor && overlayColor.includes('gradient')
+                  ? overlayColor
+                  : (overlayColor || 'linear-gradient(90deg, rgba(2, 6, 23, 0.94) 0%, rgba(15, 23, 42, 0.75) 45%, rgba(15, 23, 42, 0.25) 100%)')
+              }}
+            >
+              {imageUrl && (
+                <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover -z-10 opacity-40" />
+              )}
+              <div>
+                {badgeText && (
+                  <span
+                    className="inline-block text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full text-slate-950 mb-2 shadow-sm"
+                    style={{ backgroundColor: badgeColor || '#F5A602' }}
+                  >
+                    {badgeText}
+                  </span>
+                )}
+                <h4 className="text-base sm:text-lg font-black leading-tight text-white drop-shadow">
+                  {title || 'Headline / Title'}
+                </h4>
+                {subtitle && (
+                  <div className="text-xs text-amber-300 font-bold mt-0.5 drop-shadow">
+                    {subtitle}
+                  </div>
+                )}
+                {description && (
+                  <p className="text-xs text-slate-200 line-clamp-2 mt-1 drop-shadow-sm">
+                    {description}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 mt-3">
+                <span className="px-3 py-1 bg-[#F5A602] text-slate-950 font-black text-xs rounded shadow">
+                  {ctaText || 'SHOP NOW'}
+                </span>
+                {secondaryCtaText && (
+                  <span className="px-3 py-1 bg-white/20 text-white font-semibold text-xs rounded border border-white/30 backdrop-blur-sm">
+                    {secondaryCtaText}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>

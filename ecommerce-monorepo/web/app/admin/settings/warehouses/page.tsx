@@ -7,6 +7,7 @@ import {
   Warehouse as WarehouseIcon,
   Layers,
   Box,
+  Truck,
   MapPin,
   Plus,
   ArrowRight,
@@ -55,6 +56,7 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
 import { Warehouse3DViewer, Warehouse3DItem } from '@/components/admin/warehouse/Warehouse3DViewer'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 const WAREHOUSE_COUNTRIES = [
   { value: 'China', label: 'China' },
@@ -65,15 +67,89 @@ type TabType = 'register' | 'layout' | '3d-twin'
 
 export default function AdminSettingsWarehousesPage() {
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState<TabType>('register')
+  const { dict, locale } = useAdminLocale()
+  // Lazy-initialize activeTab from URL search params or localStorage
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search)
+        const urlTab = params.get('tab') as TabType | null
+        if (urlTab === 'register' || urlTab === 'layout' || urlTab === '3d-twin') {
+          return urlTab
+        }
+        const localTab = localStorage.getItem('admin_warehouse_active_tab') as TabType | null
+        if (localTab === 'register' || localTab === 'layout' || localTab === '3d-twin') {
+          return localTab
+        }
+      } catch (e) {
+        // Fallback to register
+      }
+    }
+    return 'register'
+  })
 
-  // Selected warehouse for 2D Layout & 3D Twin
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null)
+  // Lazy-initialize selectedWarehouseId from URL search params or localStorage
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search)
+        const urlWh = params.get('warehouse')
+        if (urlWh) return urlWh
+        const localWh = localStorage.getItem('admin_warehouse_selected_id')
+        if (localWh) return localWh
+      } catch (e) {
+        // Fallback
+      }
+    }
+    return null
+  })
+
+  // 1. Restore activeTab & selectedWarehouseId from URL search params or localStorage on mount/refresh
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const urlTab = params.get('tab') as TabType | null
+    const localTab = localStorage.getItem('admin_warehouse_active_tab') as TabType | null
+    const targetTab = urlTab || localTab
+    if (targetTab && (targetTab === 'register' || targetTab === 'layout' || targetTab === '3d-twin')) {
+      setActiveTab(targetTab)
+    }
+
+    const urlWh = params.get('warehouse')
+    const localWh = localStorage.getItem('admin_warehouse_selected_id')
+    const targetWh = urlWh || localWh
+    if (targetWh) {
+      setSelectedWarehouseId(targetWh)
+    }
+  }, [])
+
+  // 2. Keep URL search params and localStorage in sync whenever activeTab or selectedWarehouseId changes
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    localStorage.setItem('admin_warehouse_active_tab', activeTab)
+    if (selectedWarehouseId) {
+      localStorage.setItem('admin_warehouse_selected_id', selectedWarehouseId)
+    }
+
+    const params = new URLSearchParams(window.location.search)
+    let urlChanged = false
+    if (params.get('tab') !== activeTab) {
+      params.set('tab', activeTab)
+      urlChanged = true
+    }
+    if (selectedWarehouseId && params.get('warehouse') !== selectedWarehouseId) {
+      params.set('warehouse', selectedWarehouseId)
+      urlChanged = true
+    }
+    if (urlChanged) {
+      const newUrl = `${window.location.pathname}?${params.toString()}`
+      window.history.replaceState(null, '', newUrl)
+    }
+  }, [activeTab, selectedWarehouseId])
 
   // Modals state
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editingWarehouse, setEditingWarehouse] = useState<any | null>(null)
-  const [addZoneModalOpen, setAddZoneModalOpen] = useState(false)
   const [addBayModalOpen, setAddBayModalOpen] = useState(false)
   const [selectedZoneForBay, setSelectedZoneForBay] = useState<string | null>(null)
   const [batchRacksModalOpen, setBatchRacksModalOpen] = useState(false)
@@ -331,7 +407,7 @@ export default function AdminSettingsWarehousesPage() {
     if (draggingPartId || resizingPartId) {
       if (selectedWarehouseId) {
         localStorage.setItem(`warehouse_2d_layout_${selectedWarehouseId}`, JSON.stringify(layoutPositions))
-        toast.success(resizingPartId ? 'Shape resized & saved' : '2D Layout position updated')
+        toast.success(resizingPartId ? dict.warehouses.shapeResizedSaved : dict.warehouses.layoutPositionUpdated)
       }
       setDraggingPartId(null)
       setResizingPartId(null)
@@ -343,7 +419,7 @@ export default function AdminSettingsWarehousesPage() {
     localStorage.removeItem(`warehouse_2d_layout_${selectedWarehouseId}`)
     setLayoutPositions({})
     setSelectedShapeId(null)
-    toast.success('2D Layout reset to default schematic')
+    toast.success(dict.warehouses.layoutResetSuccess)
   }
 
   // Warehouse Form State
@@ -439,9 +515,19 @@ export default function AdminSettingsWarehousesPage() {
 
   const warehouses = whData?.data || []
 
-  // Auto-select first warehouse if none selected
+  // Auto-select preferred (from URL / localStorage) or first warehouse if none selected
   React.useEffect(() => {
-    if (!selectedWarehouseId && warehouses.length > 0) {
+    if (warehouses.length === 0) return
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    const urlWh = params?.get('warehouse')
+    const localWh = typeof window !== 'undefined' ? localStorage.getItem('admin_warehouse_selected_id') : null
+    const preferredId = urlWh || localWh
+
+    if (preferredId && warehouses.some((w: any) => w.id === preferredId)) {
+      if (selectedWarehouseId !== preferredId) {
+        setSelectedWarehouseId(preferredId)
+      }
+    } else if (!selectedWarehouseId) {
       setSelectedWarehouseId(warehouses[0].id)
     }
   }, [warehouses, selectedWarehouseId])
@@ -498,7 +584,7 @@ export default function AdminSettingsWarehousesPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-warehouses-list'] })
       queryClient.invalidateQueries({ queryKey: ['admin-warehouse-detail'] })
-      toast.success(editingWarehouse ? 'Warehouse updated' : 'Warehouse registered successfully')
+      toast.success(editingWarehouse ? dict.warehouses.warehouseUpdated : dict.warehouses.warehouseCreated)
       setCreateModalOpen(false)
       setEditingWarehouse(null)
     },
@@ -521,30 +607,17 @@ export default function AdminSettingsWarehousesPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-warehouse-detail', selectedWarehouseId] })
       queryClient.invalidateQueries({ queryKey: ['admin-warehouses-list'] })
       if (vars.action === 'ADD_ZONE') {
-        toast.success('Zone registered with layout addresses')
-        setAddZoneModalOpen(false)
-        setZoneForm({
-          code: '',
-          name: '',
-          type: 'STORAGE',
-          tempControlled: false,
-          hasShelving: true,
-          rackPrefix: 'R',
-          rackNumber: (currentWarehouse?.zones?.filter((z: any) => z.type === 'STORAGE').length || 0) + 1,
-          baysCount: 2,
-          tiersCount: 3,
-          slotsPerTier: 2,
-        })
+        toast.success(dict.warehouses.zoneRegistered)
       } else if (vars.action === 'ADD_BAY') {
-        toast.success('Bay with Tiers & Slots configured')
+        toast.success(dict.warehouses.bayConfigured)
         setAddBayModalOpen(false)
         setBayForm({ code: '', name: '', aisle: 'A1', rack: 'R1', tiers: 3, slotsPerTier: 2 })
       } else if (vars.action === 'BATCH_GENERATE_RACKS') {
-        toast.success(res.message || 'Racks generated')
+        toast.success(res.message || dict.warehouses.batchRacks)
         setBatchRacksModalOpen(false)
         setQuickRackModalOpen(false)
       } else if (vars.action === 'ASSIGN_PRODUCT_SLOT') {
-        toast.success('Product address code mapped')
+        toast.success(dict.warehouses.productMapped)
         setAssignProductModalOpen(false)
         setSelectedSlotForAssign(null)
         setAssignProductId('')
@@ -565,11 +638,11 @@ export default function AdminSettingsWarehousesPage() {
         toast.success(`Layout for ${baseCode} regenerated successfully!`, { icon: '✅' })
         setSelectedInspectorItem(null)
       } else if (vars.action === 'DELETE_ZONE') {
-        toast.success('Zone deleted')
+        toast.success(dict.warehouses.zoneDeleted)
       } else if (vars.action === 'DELETE_BAY') {
-        toast.success('Bay deleted')
+        toast.success(dict.warehouses.bayDeleted)
       } else if (vars.action === 'DELETE_RACK') {
-        toast.success(`Rack ${vars.payload?.rackName || ''} deleted`)
+        toast.success(dict.warehouses.rackDeleted)
       }
     },
     onError: (err: any) => toast.error(err.message),
@@ -820,6 +893,51 @@ export default function AdminSettingsWarehousesPage() {
       0
     ) || 0
 
+  // 1-Click item creation helpers for the 3 storage parts (RACK, FLOOR, LANE)
+  const handleAddRack = () => {
+    let highestRack = 0
+    currentWarehouse?.zones?.forEach((z: any) => {
+      (z.bays || []).forEach((b: any) => {
+        const m = (b.rack || b.code || '').match(/R(\d+)/i)
+        if (m && Number(m[1]) > highestRack) highestRack = Number(m[1])
+      })
+    })
+    const nextRack = highestRack + 1
+    layoutMutation.mutate({
+      action: 'ADD_ITEM',
+      payload: { itemType: 'RACK', counter: nextRack },
+    })
+  }
+
+  const handleAddFloor = () => {
+    let highestFloor = 0
+    currentWarehouse?.zones?.forEach((z: any) => {
+      (z.bays || []).forEach((b: any) => {
+        const m = (b.code || '').match(/FL-(\d+)/i)
+        if (m && Number(m[1]) > highestFloor) highestFloor = Number(m[1])
+      })
+    })
+    const nextFloor = highestFloor + 1
+    layoutMutation.mutate({
+      action: 'ADD_ITEM',
+      payload: { itemType: 'FLOOR', counter: nextFloor },
+    })
+  }
+
+  const handleAddLane = () => {
+    let highestLane = 0
+    currentWarehouse?.zones?.forEach((z: any) => {
+      (z.bays || []).forEach((b: any) => {
+        const m = (b.code || '').match(/BL-(\d+)/i)
+        if (m && Number(m[1]) > highestLane) highestLane = Number(m[1])
+      })
+    })
+    const nextLane = highestLane + 1
+    layoutMutation.mutate({
+      action: 'ADD_ITEM',
+      payload: { itemType: 'LANE', counter: nextLane },
+    })
+  }
 
   // ========================================================
   // VIEW 1: RENDER SHAPES AREA (FROM CANONICAL MODEL)
@@ -828,7 +946,7 @@ export default function AdminSettingsWarehousesPage() {
     if (!model.zones || model.zones.length === 0) {
       return (
         <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2">
-          <p className="text-xs">No zones registered yet. Click &quot;Add Zone&quot; or &quot;Add Rack&quot; above.</p>
+          <p className="text-xs">{dict.warehouses.noZonesYet}</p>
         </div>
       )
     }
@@ -895,7 +1013,7 @@ export default function AdminSettingsWarehousesPage() {
               {isEdit2DMode && isSelected && (
                 <button
                   type="button"
-                  title="Rotate / Swap Dimensions"
+                  title={dict.warehouses.rotateDimensions}
                   onClick={(e) => {
                     e.stopPropagation()
                     toggleShapeOrientation(rackKey, w, h)
@@ -908,7 +1026,7 @@ export default function AdminSettingsWarehousesPage() {
               <span className="text-[9px] text-blue-300 font-bold">{item.bays.length}B</span>
               <button
                 type="button"
-                title="Configure Rack Details"
+                title={dict.warehouses.layoutDetails}
                 onClick={(e) => {
                   e.stopPropagation()
                   setSelectedInspectorItem({
@@ -961,11 +1079,11 @@ export default function AdminSettingsWarehousesPage() {
           </div>
 
           <div className="relative bg-slate-900/90 text-[8px] font-mono text-center py-0.5 text-slate-400 border-t border-slate-800 rounded-b-sm truncate">
-            RACK {item.rackName}
+            {dict.warehouses.legendRacks.toUpperCase()} {item.rackName}
             {isEdit2DMode && (
               <div
                 onPointerDown={(e) => handleResizePointerDown(rackKey, w, h, e)}
-                title="Drag to Resize Rack"
+                title={dict.warehouses.rotateDimensions}
                 className="absolute right-0 bottom-0 w-3.5 h-3.5 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 border border-slate-900 cursor-se-resize flex items-center justify-center rounded-tl-sm rounded-br-sm shadow-xs z-50 transition-transform hover:scale-110"
               >
                 <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="text-slate-950">
@@ -1047,7 +1165,7 @@ export default function AdminSettingsWarehousesPage() {
               {isEdit2DMode && isSelected && (
                 <button
                   type="button"
-                  title="Rotate / Swap Dimensions"
+                  title={dict.warehouses.rotateDimensions}
                   onClick={(e) => {
                     e.stopPropagation()
                     toggleShapeOrientation(bayKey, w, h)
@@ -1062,7 +1180,7 @@ export default function AdminSettingsWarehousesPage() {
               </span>
               <button
                 type="button"
-                title="Configure Floor Bay Details"
+                title={dict.warehouses.layoutDetails}
                 onClick={(e) => {
                   e.stopPropagation()
                   setSelectedInspectorItem({
@@ -1093,11 +1211,11 @@ export default function AdminSettingsWarehousesPage() {
           </div>
 
           <div className="relative bg-slate-900/90 text-[8px] font-mono text-center py-0.5 text-slate-400 border-t border-slate-800 rounded-b-sm truncate">
-            INBOUND PAD
+            {dict.warehouses.inboundPad}
             {isEdit2DMode && (
               <div
                 onPointerDown={(e) => handleResizePointerDown(bayKey, w, h, e)}
-                title="Drag to Resize Floor Bay"
+                title={dict.warehouses.rotateDimensions}
                 className="absolute right-0 bottom-0 w-3.5 h-3.5 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 border border-slate-900 cursor-se-resize flex items-center justify-center rounded-tl-sm rounded-br-sm shadow-xs z-50 transition-transform hover:scale-110"
               >
                 <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="text-slate-950">
@@ -1179,7 +1297,7 @@ export default function AdminSettingsWarehousesPage() {
               {isEdit2DMode && isSelected && (
                 <button
                   type="button"
-                  title="Rotate / Swap Dimensions"
+                  title={dict.warehouses.rotateDimensions}
                   onClick={(e) => {
                     e.stopPropagation()
                     toggleShapeOrientation(bayKey, w, h)
@@ -1194,7 +1312,7 @@ export default function AdminSettingsWarehousesPage() {
               </span>
               <button
                 type="button"
-                title="Configure Bulk Lane Details"
+                title={dict.warehouses.layoutDetails}
                 onClick={(e) => {
                   e.stopPropagation()
                   setSelectedInspectorItem({
@@ -1225,11 +1343,11 @@ export default function AdminSettingsWarehousesPage() {
           </div>
 
           <div className="relative bg-slate-900/90 text-[8px] font-mono text-center py-0.5 text-slate-400 border-t border-slate-800 rounded-b-sm truncate">
-            OUTBOUND STAGING
+            {dict.warehouses.outboundStaging}
             {isEdit2DMode && (
               <div
                 onPointerDown={(e) => handleResizePointerDown(bayKey, w, h, e)}
-                title="Drag to Resize Bulk Lane"
+                title={dict.warehouses.rotateDimensions}
                 className="absolute right-0 bottom-0 w-3.5 h-3.5 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 border border-slate-900 cursor-se-resize flex items-center justify-center rounded-tl-sm rounded-br-sm shadow-xs z-50 transition-transform hover:scale-110"
               >
                 <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="text-slate-950">
@@ -1323,7 +1441,7 @@ export default function AdminSettingsWarehousesPage() {
                 {isEdit2DMode && isSelected && (
                   <button
                     type="button"
-                    title="Rotate / Swap Dimensions"
+                    title={dict.warehouses.rotateDimensions}
                     onClick={(e) => {
                       e.stopPropagation()
                       toggleShapeOrientation(zoneKey, w, h)
@@ -1343,19 +1461,19 @@ export default function AdminSettingsWarehousesPage() {
               {zone.name}
             </h4>
             <p className="text-[10px] text-slate-400 mt-0.5 leading-tight">
-              {zone.tempControlled ? '❄️ Climate-controlled zone' : 'Active functional operation area'}
+              {zone.tempControlled ? dict.warehouses.climateControlledZone : dict.warehouses.activeOperationArea}
             </p>
           </div>
 
           <div className="bg-slate-900/80 rounded-lg p-2 border border-slate-800 space-y-1">
             <div className="flex items-center justify-between text-[9px]">
-              <span className="text-slate-400 font-semibold">Configured Bays / Stations:</span>
+              <span className="text-slate-400 font-semibold">{dict.warehouses.configuredBaysStations}</span>
               <span className="font-mono font-bold text-slate-200">
                 {zone.bays?.length || 0}
               </span>
             </div>
             <div className="flex items-center justify-between text-[9px]">
-              <span className="text-slate-400 font-semibold">Addressable Slots:</span>
+              <span className="text-slate-400 font-semibold">{dict.warehouses.addressableSlots}:</span>
               <span className="text-emerald-400 font-mono font-bold">
                 {zone.bays?.reduce((acc: number, b: any) => acc + (b.slots?.length || 0), 0) || 0}
               </span>
@@ -1367,13 +1485,13 @@ export default function AdminSettingsWarehousesPage() {
               {zone.bays?.length ? `${zone.bays[0].code}` : 'Ready'}
             </span>
             <span className="text-blue-400 font-bold hover:underline cursor-pointer">
-              {isZoneFiltered ? 'Filtered ✓' : 'Filter →'}
+              {isZoneFiltered ? 'Filtered ✓' : `${dict.common.filter} →`}
             </span>
 
             {isEdit2DMode && (
               <div
                 onPointerDown={(e) => handleResizePointerDown(zoneKey, w, h, e)}
-                title="Drag to Resize Zone"
+                title={dict.warehouses.rotateDimensions}
                 className="absolute right-0 bottom-0 w-3.5 h-3.5 bg-amber-400 hover:bg-amber-300 active:bg-amber-500 border border-slate-900 cursor-se-resize flex items-center justify-center rounded-tl-sm rounded-br-sm shadow-xs z-50 transition-transform hover:scale-110"
               >
                 <svg width="6" height="6" viewBox="0 0 6 6" fill="currentColor" className="text-slate-950">
@@ -1395,23 +1513,55 @@ export default function AdminSettingsWarehousesPage() {
   // VIEW 2: RENDER DETAILS PANEL (FROM SAME CANONICAL MODEL)
   // ========================================================
   const renderDetailsPanel = (model: WarehouseModel) => {
-    if (!model.zones || model.zones.length === 0) {
+    const totalRacksCount = model.racks.length
+    const totalFloorsCount = model.floors.length
+    const totalLanesCount = model.lanes.length
+    const totalRackBays = model.racks.reduce((acc, r) => acc + r.bays.length, 0)
+    const totalRackSlots = model.racks.reduce((acc, r) => acc + r.totalSlots, 0)
+    const totalFloorSlots = model.floors.reduce((acc, f) => acc + f.slotsCount, 0)
+    const totalLaneSlots = model.lanes.reduce((acc, l) => acc + l.sectionsCount, 0)
+
+    const otherBaysCount = model.otherZones.reduce((acc, oz) => acc + (oz.remainingBays?.length || 0), 0)
+
+    if (totalRacksCount === 0 && totalFloorsCount === 0 && totalLanesCount === 0 && otherBaysCount === 0) {
       return (
-        <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3 shadow-inner">
             <Layers size={28} />
           </div>
-          <h3 className="font-bold text-slate-800 text-sm mb-1">No warehouse layout defined yet</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
-            Start by adding functional zones (e.g. Storage, Receiving, Picking, Shipping), then add racks with vertical tiers and slots.
+          <h3 className="font-extrabold text-slate-800 text-sm mb-1">{dict.warehouses.noLayoutDefined}</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mb-6">
+            {dict.warehouses.noLayoutDefinedDesc}
           </p>
-          <Button
-            size="sm"
-            onClick={() => setAddZoneModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
-          >
-            <Plus size={14} className="mr-1" /> Add First Zone
-          </Button>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <Button
+              size="sm"
+              onClick={handleAddRack}
+              disabled={layoutMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold gap-1.5 shadow-sm h-8.5 rounded-xl"
+            >
+              <Plus size={14} />
+              {dict.warehouses.addRack}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleAddFloor}
+              disabled={layoutMutation.isPending}
+              className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold gap-1.5 shadow-sm h-8.5 rounded-xl"
+            >
+              <Plus size={14} />
+              {dict.warehouses.addFloorBay}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleAddLane}
+              disabled={layoutMutation.isPending}
+              className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5 shadow-sm h-8.5 rounded-xl"
+            >
+              <Plus size={14} />
+              {dict.warehouses.addLane}
+            </Button>
+          </div>
         </div>
       )
     }
@@ -1420,527 +1570,572 @@ export default function AdminSettingsWarehousesPage() {
       <div
         className="space-y-6"
         data-testid="details-panel"
-        data-racks-count={model.racks.length}
-        data-floors-count={model.floors.length}
-        data-lanes-count={model.lanes.length}
+        data-racks-count={totalRacksCount}
+        data-floors-count={totalFloorsCount}
+        data-lanes-count={totalLanesCount}
         data-racks-ids={model.racks.map((r) => r.code).join(',')}
       >
-        {model.zones.map((zone: any) => {
-          const isZoneFiltered = activeZoneFilter === zone.id
-          // Get items belonging to this zone from the canonical model
-          const zoneRacks = model.racks.filter((r) => r.zoneId === zone.id)
-          const zoneFloors = model.floors.filter((f) => f.zoneId === zone.id)
-          const zoneLanes = model.lanes.filter((l) => l.zoneId === zone.id)
-          const zoneOther = model.otherZones.find((oz) => oz.zoneId === zone.id)
+        {/* ======================================================== */}
+        {/* PART 1: PALLET RACKS & SHELVING (RACK)                   */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-2xl border border-slate-200 transition-all shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 bg-blue-50/60 border-b border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Badge className="font-mono font-black text-xs bg-blue-600 text-white">
+                RACK
+              </Badge>
+              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                <Grid3X3 size={16} className="text-blue-600" />
+                {dict.warehouses.legendRacks}
+              </h3>
+              <span className="text-xs font-semibold text-slate-500">
+                • {totalRacksCount} {totalRacksCount === 1 ? 'Rack' : 'Racks'} ({totalRackBays} {dict.warehouses.baysCount} • {totalRackSlots} {dict.warehouses.addressableSlots})
+              </span>
+            </div>
 
-          const hasItems = zoneRacks.length > 0 || zoneFloors.length > 0 || zoneLanes.length > 0 || (zoneOther && zoneOther.remainingBays.length > 0)
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleAddRack}
+                disabled={layoutMutation.isPending}
+                className="h-7.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white gap-1 rounded-lg shadow-2xs"
+              >
+                <Plus size={13} />
+                {dict.warehouses.addRack}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const storageZone = currentWarehouse?.zones?.find((z: any) => z.type === 'STORAGE')
+                  setSelectedZoneForBay(storageZone?.id || currentWarehouse?.zones?.[0]?.id || null)
+                  setBatchRacksModalOpen(true)
+                }}
+                className="h-7.5 text-xs font-bold border-slate-300 text-slate-700 hover:bg-slate-100 gap-1 rounded-lg"
+              >
+                <Sparkles size={13} className="text-amber-500" />
+                {dict.warehouses.batchRacks}
+              </Button>
+            </div>
+          </div>
 
-          // Accurate item count computed directly from the exact items drawn in the SHAPES area
-          let countLabel = '• 0 Items'
-          if (zoneRacks.length > 0) {
-            countLabel = `• ${zoneRacks.length} ${zoneRacks.length === 1 ? 'Rack' : 'Racks'}`
-          } else if (zoneFloors.length > 0) {
-            countLabel = `• ${zoneFloors.length} ${zoneFloors.length === 1 ? 'Floor Bay' : 'Floor Bays'}`
-          } else if (zoneLanes.length > 0) {
-            countLabel = `• ${zoneLanes.length} ${zoneLanes.length === 1 ? 'Bulk Lane' : 'Bulk Lanes'}`
-          } else if (zoneOther && zoneOther.remainingBays.length > 0) {
-            countLabel = `• ${zoneOther.remainingBays.length} Bays`
-          }
-
-          return (
-            <div
-              key={zone.id}
-              className={`bg-white rounded-2xl border transition-all shadow-sm overflow-hidden ${
-                isZoneFiltered ? 'border-blue-500 ring-2 ring-blue-400/30' : 'border-slate-200'
-              }`}
-            >
-              {/* Zone Header */}
-              <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <Badge className="font-mono font-black text-xs bg-slate-900 text-white">
-                    {zone.code}
-                  </Badge>
-                  <h3 className="font-extrabold text-slate-900 text-sm">{zone.name}</h3>
-                  <Badge variant="outline" className="text-[10px] uppercase font-bold text-slate-600">
-                    {zone.type}
-                  </Badge>
-                  {zone.tempControlled && (
-                    <Badge className="bg-sky-500 text-white text-[10px]">Temp Controlled</Badge>
-                  )}
-                  <span className="text-xs font-semibold text-slate-500">
-                    {countLabel}
-                  </span>
-                  {isZoneFiltered && (
-                    <Badge className="bg-blue-600 text-white text-[10px] font-bold cursor-pointer" onClick={() => setActiveZoneFilter(null)}>
-                      Filtered Selection (Click to clear)
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setSelectedZoneForBay(zone.id)
-                      setBayForm({
-                        code: `${zone.code}-B0${(zone.bays?.length || 0) + 1}`,
-                        name: `Bay ${(zone.bays?.length || 0) + 1}`,
-                        aisle: 'A1',
-                        rack: 'R1',
-                        tiers: 3,
-                        slotsPerTier: 2,
-                      })
-                      setAddBayModalOpen(true)
-                    }}
-                    className="h-7 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                  >
-                    <Plus size={13} className="mr-1" /> Add Bay/Rack
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      if (confirm(`Delete zone ${zone.name}? All contained bays and slots will be removed.`)) {
-                        layoutMutation.mutate({ action: 'DELETE_ZONE', payload: { zoneId: zone.id } })
-                      }
-                    }}
-                    className="h-7 text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5"
-                    title="Delete Zone"
-                  >
-                    <Trash2 size={13} />
-                  </Button>
-                </div>
+          <div className="p-5">
+            {totalRacksCount === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                No pallet racks configured yet. Click &ldquo;+ {dict.warehouses.addRack}&rdquo; to add R1.
               </div>
-
-              {/* Items Grid */}
-              <div className="p-5">
-                {!hasItems ? (
-                  <div className="py-6 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
-                    No bays or racks in this zone. Click &ldquo;Add Bay/Rack&rdquo; above.
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* 1. RACKS (One card per Rack, exactly matching SHAPES area racks) */}
-                    {zoneRacks.map((rack) => (
-                      <div
-                        key={rack.id}
-                        data-testid={`detail-rack-${rack.code}`}
-                        className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-black text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
-                                {rack.code}
-                              </span>
-                              <span className="text-xs font-bold text-slate-800">
-                                {rack.title}
-                              </span>
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
-                                {rack.bays.length} {rack.bays.length === 1 ? 'Bay' : 'Bays'}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (confirm(`Delete rack ${rack.code} and all its bays/slots?`)) {
-                                  layoutMutation.mutate({
-                                    action: 'DELETE_RACK',
-                                    payload: { rackName: rack.code, zoneId: rack.zoneId },
-                                  })
-                                }
-                              }}
-                              className="text-slate-300 hover:text-rose-500 p-1"
-                              title="Delete Rack"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-
-                          <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
-                            <span>
-                              Bays: <strong className="text-slate-700">{rack.bays.length}</strong> • Tiers (Levels): <strong className="text-slate-700">{rack.levels}</strong>
-                            </span>
-                            <span>
-                              Slots: <strong className="text-slate-700">{rack.totalSlots}</strong>
-                            </span>
-                          </div>
-
-                          {/* Shelves & Slots Addressing */}
-                          <div className="space-y-1">
-                            <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                              Shelves & Slots Addressing:
-                            </div>
-                            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                              {rack.allSlots.map((slot: any) => {
-                                const hasStock = slot.stocks && slot.stocks.length > 0
-                                return (
-                                  <div
-                                    key={slot.id}
-                                    onClick={() => {
-                                      setSelectedSlotForAssign(slot)
-                                      setAssignProductModalOpen(true)
-                                    }}
-                                    className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
-                                      hasStock
-                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
-                                        : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
-                                    }`}
-                                    title={`Click to map product: ${slot.code}`}
-                                  >
-                                    <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
-                                    <span>{slot.code}</span>
-                                    {hasStock && (
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    )}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => {
-                                if (rack.allSlots.length > 0) {
-                                  setTargetSlotCode(rack.allSlots[0].code)
-                                } else {
-                                  setTargetSlotCode(rack.code)
-                                }
-                                setActiveTab('3d-twin')
-                              }}
-                              className="font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
-                            >
-                              <Compass size={12} />
-                              Locate in 3D
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedInspectorItem({
-                                  itemType: 'RACK',
-                                  baseCode: rack.code,
-                                  title: rack.title,
-                                  zoneId: rack.zoneId,
-                                  layout: {
-                                    bays: rack.bays.length || 1,
-                                    levels: rack.levels,
-                                    subParts: 1,
-                                    sections: 1,
-                                  },
-                                })
-                              }}
-                              className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                            >
-                              <Settings2 size={12} />
-                              Layout Details
-                            </button>
-                          </div>
-                          <span className="text-slate-400 font-mono text-[10px]">
-                            {rack.aisle ? `Aisle ${rack.aisle}` : ''}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {model.racks.map((rack) => (
+                  <div
+                    key={rack.id}
+                    data-testid={`detail-rack-${rack.code}`}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                            {rack.code}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            {rack.title}
+                          </span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                            {rack.bays.length} {rack.bays.length === 1 ? 'Bay' : 'Bays'}
                           </span>
                         </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete rack ${rack.code} and all its bays/slots?`)) {
+                              layoutMutation.mutate({
+                                action: 'DELETE_RACK',
+                                payload: { rackName: rack.code, zoneId: rack.zoneId },
+                              })
+                            }
+                          }}
+                          className="text-slate-300 hover:text-rose-500 p-1"
+                          title="Delete Rack"
+                        >
+                          <Trash2 size={13} />
+                        </button>
                       </div>
-                    ))}
 
-                    {/* 2. FLOOR BAYS (One card per Floor Bay, exactly matching SHAPES area) */}
-                    {zoneFloors.map((floor) => (
-                      <div
-                        key={floor.id}
-                        data-testid={`detail-floor-${floor.code}`}
-                        className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-black text-xs text-sky-700 bg-sky-50 px-2 py-0.5 rounded">
-                                {floor.code}
-                              </span>
-                              <span className="text-xs font-bold text-slate-800">
-                                {floor.title}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (confirm(`Delete floor bay ${floor.code} and its slots?`)) {
-                                  layoutMutation.mutate({ action: 'DELETE_BAY', payload: { bayId: floor.bay.id } })
-                                }
-                              }}
-                              className="text-slate-300 hover:text-rose-500 p-1"
-                              title="Delete Floor Bay"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-
-                          <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
-                            <span>
-                              Sub-Parts / Divs: <strong className="text-slate-700">{floor.slotsCount}</strong>
-                            </span>
-                            <span>
-                              Slots: <strong className="text-slate-700">{floor.slotsCount}</strong>
-                            </span>
-                          </div>
-
-                          {/* Shelves & Slots Addressing */}
-                          <div className="space-y-1">
-                            <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                              Shelves & Slots Addressing:
-                            </div>
-                            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                              {floor.allSlots.map((slot: any) => {
-                                const hasStock = slot.stocks && slot.stocks.length > 0
-                                return (
-                                  <div
-                                    key={slot.id}
-                                    onClick={() => {
-                                      setSelectedSlotForAssign(slot)
-                                      setAssignProductModalOpen(true)
-                                    }}
-                                    className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
-                                      hasStock
-                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
-                                        : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
-                                    }`}
-                                    title={`Click to map product: ${slot.code}`}
-                                  >
-                                    <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
-                                    <span>{slot.code}</span>
-                                    {hasStock && (
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    )}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => {
-                                if (floor.allSlots.length > 0) {
-                                  setTargetSlotCode(floor.allSlots[0].code)
-                                } else {
-                                  setTargetSlotCode(floor.code)
-                                }
-                                setActiveTab('3d-twin')
-                              }}
-                              className="font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
-                            >
-                              <Compass size={12} />
-                              Locate in 3D
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedInspectorItem({
-                                  itemType: 'FLOOR',
-                                  baseCode: floor.code,
-                                  title: floor.title,
-                                  zoneId: floor.zoneId,
-                                  layout: {
-                                    bays: 1,
-                                    levels: 1,
-                                    subParts: floor.slotsCount,
-                                    sections: 1,
-                                  },
-                                })
-                              }}
-                              className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                            >
-                              <Settings2 size={12} />
-                              Layout Details
-                            </button>
-                          </div>
-                          <span className="text-slate-400 font-mono text-[10px]">
-                            {floor.aisle ? `Aisle ${floor.aisle}` : ''}
-                          </span>
-                        </div>
+                      <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
+                        <span>
+                          {dict.warehouses.baysCount}: <strong className="text-slate-700">{rack.bays.length}</strong> • {dict.warehouses.levelsTiers}: <strong className="text-slate-700">{rack.levels}</strong>
+                        </span>
+                        <span>
+                          {dict.warehouses.addressableSlots}: <strong className="text-slate-700">{rack.totalSlots}</strong>
+                        </span>
                       </div>
-                    ))}
 
-                    {/* 3. BULK LANES (One card per Bulk Lane, exactly matching SHAPES area) */}
-                    {zoneLanes.map((lane) => (
-                      <div
-                        key={lane.id}
-                        data-testid={`detail-lane-${lane.code}`}
-                        className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono font-black text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                                {lane.code}
-                              </span>
-                              <span className="text-xs font-bold text-slate-800">
-                                {lane.title}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (confirm(`Delete bulk lane ${lane.code} and its slots?`)) {
-                                  layoutMutation.mutate({ action: 'DELETE_BAY', payload: { bayId: lane.bay.id } })
-                                }
-                              }}
-                              className="text-slate-300 hover:text-rose-500 p-1"
-                              title="Delete Bulk Lane"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-
-                          <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
-                            <span>
-                              Sections: <strong className="text-slate-700">{lane.sectionsCount}</strong>
-                            </span>
-                            <span>
-                              Slots: <strong className="text-slate-700">{lane.sectionsCount}</strong>
-                            </span>
-                          </div>
-
-                          {/* Shelves & Slots Addressing */}
-                          <div className="space-y-1">
-                            <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                              Shelves & Slots Addressing:
-                            </div>
-                            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                              {lane.allSlots.map((slot: any) => {
-                                const hasStock = slot.stocks && slot.stocks.length > 0
-                                return (
-                                  <div
-                                    key={slot.id}
-                                    onClick={() => {
-                                      setSelectedSlotForAssign(slot)
-                                      setAssignProductModalOpen(true)
-                                    }}
-                                    className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
-                                      hasStock
-                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
-                                        : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
-                                    }`}
-                                    title={`Click to map product: ${slot.code}`}
-                                  >
-                                    <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
-                                    <span>{slot.code}</span>
-                                    {hasStock && (
-                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    )}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          </div>
+                      {/* Shelves & Slots Addressing */}
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          {dict.warehouses.shelvesAndSlots}
                         </div>
-
-                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => {
-                                if (lane.allSlots.length > 0) {
-                                  setTargetSlotCode(lane.allSlots[0].code)
-                                } else {
-                                  setTargetSlotCode(lane.code)
-                                }
-                                setActiveTab('3d-twin')
-                              }}
-                              className="font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
-                            >
-                              <Compass size={12} />
-                              Locate in 3D
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedInspectorItem({
-                                  itemType: 'LANE',
-                                  baseCode: lane.code,
-                                  title: lane.title,
-                                  zoneId: lane.zoneId,
-                                  layout: {
-                                    bays: 1,
-                                    levels: 1,
-                                    subParts: 1,
-                                    sections: lane.sectionsCount,
-                                  },
-                                })
-                              }}
-                              className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                            >
-                              <Settings2 size={12} />
-                              Layout Details
-                            </button>
-                          </div>
-                          <span className="text-slate-400 font-mono text-[10px]">
-                            {lane.aisle ? `Aisle ${lane.aisle}` : ''}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* 4. OTHER FUNCTIONAL STATIONS / BAYS (if any) */}
-                    {zoneOther && zoneOther.remainingBays.map((bay: any) => (
-                      <div
-                        key={bay.id}
-                        className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                            <div>
-                              <span className="font-mono font-black text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                                {bay.code}
-                              </span>
-                              <span className="text-xs font-bold text-slate-800 ml-2">
-                                {bay.name}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => {
-                                if (confirm(`Delete bay ${bay.code} and its slots?`)) {
-                                  layoutMutation.mutate({ action: 'DELETE_BAY', payload: { bayId: bay.id } })
-                                }
-                              }}
-                              className="text-slate-300 hover:text-rose-500 p-1"
-                              title="Delete Bay"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-
-                          <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
-                            <span>Tiers: <strong className="text-slate-700">{bay.level || 1}</strong></span>
-                            <span>Slots: <strong className="text-slate-700">{bay.slots?.length || 0}</strong></span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                            {(bay.slots || []).map((slot: any) => (
+                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                          {rack.allSlots.map((slot: any) => {
+                            const hasStock = slot.stocks && slot.stocks.length > 0
+                            return (
                               <div
                                 key={slot.id}
                                 onClick={() => {
                                   setSelectedSlotForAssign(slot)
                                   setAssignProductModalOpen(true)
                                 }}
-                                className="px-2 py-1 rounded text-[10px] font-mono border border-slate-200 bg-white cursor-pointer hover:bg-blue-50"
+                                className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
+                                  hasStock
+                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
+                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
+                                }`}
+                                title={`Click to map product: ${slot.code}`}
                               >
-                                {slot.code}
+                                <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
+                                <span>{slot.code}</span>
+                                {hasStock && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                )}
                               </div>
-                            ))}
-                          </div>
+                            )
+                          })}
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            if (rack.allSlots.length > 0) {
+                              setTargetSlotCode(rack.allSlots[0].code)
+                            } else {
+                              setTargetSlotCode(rack.code)
+                            }
+                            setActiveTab('3d-twin')
+                          }}
+                          className="font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
+                        >
+                          <Compass size={12} />
+                          {dict.warehouses.locateIn3D}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedInspectorItem({
+                              itemType: 'RACK',
+                              baseCode: rack.code,
+                              title: rack.title,
+                              zoneId: rack.zoneId,
+                              layout: {
+                                bays: rack.bays.length || 1,
+                                levels: rack.levels,
+                                subParts: 1,
+                                sections: 1,
+                              },
+                            })
+                          }}
+                          className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        >
+                          <Settings2 size={12} />
+                          {dict.warehouses.layoutDetails}
+                        </button>
+                      </div>
+                      <span className="text-slate-400 font-mono text-[10px]">
+                        {rack.aisle ? `${dict.warehouses.aisle} ${rack.aisle}` : ''}
+                      </span>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* PART 2: FLOOR BAYS & GROUND STAGING (FLOOR)             */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-2xl border border-slate-200 transition-all shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 bg-sky-50/60 border-b border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Badge className="font-mono font-black text-xs bg-sky-600 text-white">
+                FLOOR
+              </Badge>
+              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                <Box size={16} className="text-sky-600" />
+                {dict.warehouses.floorBayType}
+              </h3>
+              <span className="text-xs font-semibold text-slate-500">
+                • {totalFloorsCount} {totalFloorsCount === 1 ? 'Floor Bay' : 'Floor Bays'} ({totalFloorSlots} {dict.warehouses.addressableSlots})
+              </span>
             </div>
-          )
-        })}
+
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleAddFloor}
+                disabled={layoutMutation.isPending}
+                className="h-7.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white gap-1 rounded-lg shadow-2xs"
+              >
+                <Plus size={13} />
+                {dict.warehouses.addFloorBay}
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-5">
+            {totalFloorsCount === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                No floor bays configured yet. Click &ldquo;+ {dict.warehouses.addFloorBay}&rdquo; to add FL-01.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {model.floors.map((floor) => (
+                  <div
+                    key={floor.id}
+                    data-testid={`detail-floor-${floor.code}`}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black text-xs text-sky-700 bg-sky-50 px-2 py-0.5 rounded">
+                            {floor.code}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            {floor.title}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete floor bay ${floor.code} and its slots?`)) {
+                              layoutMutation.mutate({ action: 'DELETE_BAY', payload: { bayId: floor.bay.id } })
+                            }
+                          }}
+                          className="text-slate-300 hover:text-rose-500 p-1"
+                          title="Delete Floor Bay"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
+                        <span>
+                          {dict.warehouses.floorSubParts}: <strong className="text-slate-700">{floor.slotsCount}</strong>
+                        </span>
+                        <span>
+                          {dict.warehouses.addressableSlots}: <strong className="text-slate-700">{floor.slotsCount}</strong>
+                        </span>
+                      </div>
+
+                      {/* Shelves & Slots Addressing */}
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          {dict.warehouses.shelvesAndSlots}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                          {floor.allSlots.map((slot: any) => {
+                            const hasStock = slot.stocks && slot.stocks.length > 0
+                            return (
+                              <div
+                                key={slot.id}
+                                onClick={() => {
+                                  setSelectedSlotForAssign(slot)
+                                  setAssignProductModalOpen(true)
+                                }}
+                                className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
+                                  hasStock
+                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
+                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
+                                }`}
+                                title={`Click to map product: ${slot.code}`}
+                              >
+                                <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
+                                <span>{slot.code}</span>
+                                {hasStock && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            if (floor.allSlots.length > 0) {
+                              setTargetSlotCode(floor.allSlots[0].code)
+                            } else {
+                              setTargetSlotCode(floor.code)
+                            }
+                            setActiveTab('3d-twin')
+                          }}
+                          className="font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
+                        >
+                          <Compass size={12} />
+                          {dict.warehouses.locateIn3D}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedInspectorItem({
+                              itemType: 'FLOOR',
+                              baseCode: floor.code,
+                              title: floor.title,
+                              zoneId: floor.zoneId,
+                              layout: {
+                                bays: 1,
+                                levels: 1,
+                                subParts: floor.slotsCount,
+                                sections: 1,
+                              },
+                            })
+                          }}
+                          className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        >
+                          <Settings2 size={12} />
+                          {dict.warehouses.layoutDetails}
+                        </button>
+                      </div>
+                      <span className="text-slate-400 font-mono text-[10px]">
+                        {floor.aisle ? `${dict.warehouses.aisle} ${floor.aisle}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ======================================================== */}
+        {/* PART 3: BULK SHIPPING LANES (LANE)                       */}
+        {/* ======================================================== */}
+        <div className="bg-white rounded-2xl border border-slate-200 transition-all shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 bg-amber-50/60 border-b border-amber-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Badge className="font-mono font-black text-xs bg-amber-600 text-white">
+                LANE
+              </Badge>
+              <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                <Truck size={16} className="text-amber-600" />
+                {dict.warehouses.bulkLaneType}
+              </h3>
+              <span className="text-xs font-semibold text-slate-500">
+                • {totalLanesCount} {totalLanesCount === 1 ? 'Bulk Lane' : 'Bulk Lanes'} ({totalLaneSlots} {dict.warehouses.laneSections})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleAddLane}
+                disabled={layoutMutation.isPending}
+                className="h-7.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1 rounded-lg shadow-2xs"
+              >
+                <Plus size={13} />
+                {dict.warehouses.addLane}
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-5">
+            {totalLanesCount === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+                No bulk shipping lanes configured yet. Click &ldquo;+ {dict.warehouses.addLane}&rdquo; to add BL-01.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {model.lanes.map((lane) => (
+                  <div
+                    key={lane.id}
+                    data-testid={`detail-lane-${lane.code}`}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                            {lane.code}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800">
+                            {lane.title}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete bulk lane ${lane.code} and its slots?`)) {
+                              layoutMutation.mutate({ action: 'DELETE_BAY', payload: { bayId: lane.bay.id } })
+                            }
+                          }}
+                          className="text-slate-300 hover:text-rose-500 p-1"
+                          title="Delete Bulk Lane"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
+                        <span>
+                          {dict.warehouses.laneSections}: <strong className="text-slate-700">{lane.sectionsCount}</strong>
+                        </span>
+                        <span>
+                          {dict.warehouses.addressableSlots}: <strong className="text-slate-700">{lane.sectionsCount}</strong>
+                        </span>
+                      </div>
+
+                      {/* Shelves & Slots Addressing */}
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          {dict.warehouses.shelvesAndSlots}
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                          {lane.allSlots.map((slot: any) => {
+                            const hasStock = slot.stocks && slot.stocks.length > 0
+                            return (
+                              <div
+                                key={slot.id}
+                                onClick={() => {
+                                  setSelectedSlotForAssign(slot)
+                                  setAssignProductModalOpen(true)
+                                }}
+                                className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
+                                  hasStock
+                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
+                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
+                                }`}
+                                title={`Click to map product: ${slot.code}`}
+                              >
+                                <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
+                                <span>{slot.code}</span>
+                                {hasStock && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => {
+                            if (lane.allSlots.length > 0) {
+                              setTargetSlotCode(lane.allSlots[0].code)
+                            } else {
+                              setTargetSlotCode(lane.code)
+                            }
+                            setActiveTab('3d-twin')
+                          }}
+                          className="font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
+                        >
+                          <Compass size={12} />
+                          {dict.warehouses.locateIn3D}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedInspectorItem({
+                              itemType: 'LANE',
+                              baseCode: lane.code,
+                              title: lane.title,
+                              zoneId: lane.zoneId,
+                              layout: {
+                                bays: 1,
+                                levels: 1,
+                                subParts: 1,
+                                sections: lane.sectionsCount,
+                              },
+                            })
+                          }}
+                          className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                        >
+                          <Settings2 size={12} />
+                          {dict.warehouses.layoutDetails}
+                        </button>
+                      </div>
+                      <span className="text-slate-400 font-mono text-[10px]">
+                        {lane.aisle ? `${dict.warehouses.aisle} ${lane.aisle}` : ''}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Auxiliary Section: Legacy / Other Custom Stations (if any) */}
+        {model.otherZones.some((oz) => oz.remainingBays.length > 0) && (
+          <div className="bg-white rounded-2xl border border-slate-200 transition-all shadow-sm overflow-hidden">
+            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="font-extrabold text-slate-700 text-sm">
+                Other Storage & Custom Stations
+              </h3>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {model.otherZones.flatMap((oz) => oz.remainingBays).map((bay: any) => (
+                <div
+                  key={bay.id}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/40 hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all flex flex-col justify-between space-y-3"
+                >
+                  <div>
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
+                      <div>
+                        <span className="font-mono font-black text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                          {bay.code}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 ml-2">
+                          {bay.name}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete bay ${bay.code} and its slots?`)) {
+                            layoutMutation.mutate({ action: 'DELETE_BAY', payload: { bayId: bay.id } })
+                          }
+                        }}
+                        className="text-slate-300 hover:text-rose-500 p-1"
+                        title="Delete Bay"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+
+                    <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
+                      <span>{dict.warehouses.tiersPerBay}: <strong className="text-slate-700">{bay.level || 1}</strong></span>
+                      <span>{dict.warehouses.addressableSlots}: <strong className="text-slate-700">{bay.slots?.length || 0}</strong></span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                      {(bay.slots || []).map((slot: any) => (
+                        <div
+                          key={slot.id}
+                          onClick={() => {
+                            setSelectedSlotForAssign(slot)
+                            setAssignProductModalOpen(true)
+                          }}
+                          className="px-2 py-1 rounded text-[10px] font-mono border border-slate-200 bg-white cursor-pointer hover:bg-blue-50"
+                        >
+                          {slot.code}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -1954,19 +2149,19 @@ export default function AdminSettingsWarehousesPage() {
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
               <Link href="/admin/settings" className="hover:text-blue-600 transition-colors">
-                Settings Hub
+                {dict.warehouses.settingsHub}
               </Link>
               <ChevronRight size={13} />
-              <span className="text-foreground font-bold">Warehouse Logistics & 3D Twin</span>
+              <span className="text-foreground font-bold">{dict.warehouses.pageBreadcrumb}</span>
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
                 <Building2 size={20} />
               </div>
-              Warehouse Management & 3D Spatial Twin
+              {dict.warehouses.pageTitle}
             </h1>
             <p className="text-xs text-muted-foreground mt-1">
-              Register international fulfillment hubs, define 2D layout hierarchies (Sections → Racks → Tiers → Slots), and pinpoint products in 3D.
+              {dict.warehouses.pageSubtitle}
             </p>
           </div>
 
@@ -1993,7 +2188,7 @@ export default function AdminSettingsWarehousesPage() {
               className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-xs font-bold h-9 px-4 rounded-xl shadow-sm gap-1.5"
             >
               <Plus size={15} />
-              Register Warehouse
+              {dict.warehouses.registerWarehouse}
             </Button>
             <Button
               variant="outline"
@@ -2005,7 +2200,7 @@ export default function AdminSettingsWarehousesPage() {
               className="h-9 text-xs gap-1.5 border-slate-200 hover:bg-slate-100"
             >
               <RefreshCw size={13} className={isLoadingList || isLoadingDetail ? 'animate-spin' : ''} />
-              Refresh
+              {dict.warehouses.refresh}
             </Button>
           </div>
         </div>
@@ -2022,7 +2217,7 @@ export default function AdminSettingsWarehousesPage() {
               }`}
             >
               <Building2 size={14} className={activeTab === 'register' ? 'text-orange-600' : ''} />
-              Warehouses ({warehouses.length})
+              {dict.warehouses.tabWarehouses} ({warehouses.length})
             </button>
             <button
               onClick={() => setActiveTab('layout')}
@@ -2033,7 +2228,7 @@ export default function AdminSettingsWarehousesPage() {
               }`}
             >
               <Grid3X3 size={14} className={activeTab === 'layout' ? 'text-blue-600' : ''} />
-              2D Layout Architecture
+              {dict.warehouses.tabLayout}
             </button>
             <button
               onClick={() => setActiveTab('3d-twin')}
@@ -2044,7 +2239,7 @@ export default function AdminSettingsWarehousesPage() {
               }`}
             >
               <Compass size={14} className={activeTab === '3d-twin' ? 'text-emerald-600' : ''} />
-              3D View
+              {dict.warehouses.tab3d}
               <span className="ml-1 px-1.5 py-0.2 bg-emerald-100 text-emerald-800 text-[10px] font-black rounded-full">
                 3D
               </span>
@@ -2054,7 +2249,7 @@ export default function AdminSettingsWarehousesPage() {
           {/* Active Warehouse Dropdown Filter */}
           {warehouses.length > 0 && (
             <div className="flex items-center gap-2 text-xs">
-              <span className="font-bold text-slate-500">Active Hub:</span>
+              <span className="font-bold text-slate-500">{dict.warehouses.activeHub}</span>
               <select
                 value={selectedWarehouseId || ''}
                 onChange={(e) => setSelectedWarehouseId(e.target.value)}
@@ -2085,9 +2280,9 @@ export default function AdminSettingsWarehousesPage() {
                   <Building2 size={24} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-semibold">Registered Hubs</div>
+                  <div className="text-xs text-slate-500 font-semibold">{dict.warehouses.registeredHubs}</div>
                   <div className="text-2xl font-black text-slate-900">{warehouses.length}</div>
-                  <div className="text-[11px] text-slate-400">Global freight nodes</div>
+                  <div className="text-[11px] text-slate-400">{dict.warehouses.globalFreightNodes}</div>
                 </div>
               </div>
 
@@ -2096,9 +2291,9 @@ export default function AdminSettingsWarehousesPage() {
                   <Layers size={24} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-semibold">Current Hub Zones</div>
+                  <div className="text-xs text-slate-500 font-semibold">{dict.warehouses.currentHubZones}</div>
                   <div className="text-2xl font-black text-slate-900">{totalZones}</div>
-                  <div className="text-[11px] text-slate-400">Sections & work areas</div>
+                  <div className="text-[11px] text-slate-400">{dict.warehouses.sectionsAndWorkAreas}</div>
                 </div>
               </div>
 
@@ -2107,9 +2302,9 @@ export default function AdminSettingsWarehousesPage() {
                   <Grid3X3 size={24} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-semibold">Racks & Bays</div>
+                  <div className="text-xs text-slate-500 font-semibold">{dict.warehouses.racksAndBays}</div>
                   <div className="text-2xl font-black text-slate-900">{totalBays}</div>
-                  <div className="text-[11px] text-slate-400">In active hub</div>
+                  <div className="text-[11px] text-slate-400">{dict.warehouses.inActiveHub}</div>
                 </div>
               </div>
 
@@ -2118,9 +2313,9 @@ export default function AdminSettingsWarehousesPage() {
                   <Box size={24} />
                 </div>
                 <div>
-                  <div className="text-xs text-slate-500 font-semibold">Addressable Slots</div>
+                  <div className="text-xs text-slate-500 font-semibold">{dict.warehouses.addressableSlots}</div>
                   <div className="text-2xl font-black text-slate-900">{totalSlots}</div>
-                  <div className="text-[11px] text-emerald-600 font-semibold">3D Pinpoint ready</div>
+                  <div className="text-[11px] text-emerald-600 font-semibold">{dict.warehouses.pinpointReady}</div>
                 </div>
               </div>
             </div>
@@ -2153,12 +2348,12 @@ export default function AdminSettingsWarehousesPage() {
                             </Badge>
                             {wh.isDefaultProcurement && (
                               <Badge className="bg-amber-500 text-white text-[10px] font-bold">
-                                Default Procurement
+                                {dict.warehouses.defaultProcurement}
                               </Badge>
                             )}
                             {wh.isDefaultSales && (
                               <Badge className="bg-blue-600 text-white text-[10px] font-bold">
-                                Default Sales DC
+                                {dict.warehouses.defaultSales}
                               </Badge>
                             )}
                           </div>
@@ -2202,7 +2397,7 @@ export default function AdminSettingsWarehousesPage() {
                         </p>
                         {wh.contactPerson && (
                           <p className="text-slate-500 pl-5">
-                            Contact: <span className="text-slate-800 font-semibold">{wh.contactPerson}</span>
+                            {dict.warehouses.contact} <span className="text-slate-800 font-semibold">{wh.contactPerson}</span>
                             {wh.contactPhone && ` • ${wh.contactPhone}`}
                           </p>
                         )}
@@ -2211,19 +2406,19 @@ export default function AdminSettingsWarehousesPage() {
                       {/* Internal stats bar */}
                       <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 text-center text-xs">
                         <div>
-                          <div className="text-slate-400 text-[10px] uppercase font-bold">Zones</div>
+                          <div className="text-slate-400 text-[10px] uppercase font-bold">{dict.warehouses.zonesCount}</div>
                           <div className="font-bold text-slate-800 text-sm">
                             {wh.zones?.length || 0}
                           </div>
                         </div>
                         <div>
-                          <div className="text-slate-400 text-[10px] uppercase font-bold">Stock Units</div>
+                          <div className="text-slate-400 text-[10px] uppercase font-bold">{dict.warehouses.stockUnits}</div>
                           <div className="font-bold text-slate-800 text-sm">
                             {wh.totalStockUnits || 0}
                           </div>
                         </div>
                         <div>
-                          <div className="text-slate-400 text-[10px] uppercase font-bold">Active Orders</div>
+                          <div className="text-slate-400 text-[10px] uppercase font-bold">{dict.warehouses.activeOrders}</div>
                           <div className="font-bold text-slate-800 text-sm">
                             {wh._count?.orders || 0}
                           </div>
@@ -2240,7 +2435,7 @@ export default function AdminSettingsWarehousesPage() {
                         className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
                       >
                         <Grid3X3 size={13} />
-                        Configure 2D Layout
+                        {dict.warehouses.configure2DLayout}
                       </button>
 
                       <button
@@ -2251,7 +2446,7 @@ export default function AdminSettingsWarehousesPage() {
                         className="text-xs font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1"
                       >
                         <Compass size={13} />
-                        Open 3D Spatial Twin →
+                        {dict.warehouses.open3dSpatialTwin}
                       </button>
                     </div>
                   </div>
@@ -2271,10 +2466,10 @@ export default function AdminSettingsWarehousesPage() {
               <div>
                 <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                   <Grid3X3 size={18} className="text-blue-600" />
-                  2D Warehouse Addressing Topology: {currentWarehouse?.name} ({currentWarehouse?.code})
+                  {dict.warehouses.addressingTopology} {currentWarehouse?.name} ({currentWarehouse?.code})
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Structure Sections (Zones) → Racks/Bays → Tiers (Levels) → Slots with barcode codes.
+                  {dict.warehouses.addressingTopologyDesc}
                 </p>
               </div>
 
@@ -2282,74 +2477,32 @@ export default function AdminSettingsWarehousesPage() {
                 {/* 1-Click Storage Item Buttons: RACK, FLOOR BAY, BULK LANE */}
                 <Button
                   size="sm"
-                  onClick={() => {
-                    // Auto-increment Rack counter: R{N}
-                    let highestRack = 0
-                    currentWarehouse?.zones?.forEach((z: any) => {
-                      (z.bays || []).forEach((b: any) => {
-                        const m = (b.rack || b.code || '').match(/R(\d+)/i)
-                        if (m && Number(m[1]) > highestRack) highestRack = Number(m[1])
-                      })
-                    })
-                    const nextRack = highestRack + 1
-                    layoutMutation.mutate({
-                      action: 'ADD_ITEM',
-                      payload: { itemType: 'RACK', counter: nextRack },
-                    })
-                  }}
+                  onClick={handleAddRack}
                   disabled={layoutMutation.isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-8.5 rounded-xl gap-1.5 shadow-sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8.5 rounded-xl gap-1.5 shadow-sm"
                 >
                   <Plus size={14} />
-                  Add Rack (R1, R2...)
+                  {dict.warehouses.addRack}
                 </Button>
 
                 <Button
                   size="sm"
-                  onClick={() => {
-                    // Auto-increment Floor Bay counter: FL-{NN}
-                    let highestFloor = 0
-                    currentWarehouse?.zones?.forEach((z: any) => {
-                      (z.bays || []).forEach((b: any) => {
-                        const m = (b.code || '').match(/FL-(\d+)/i)
-                        if (m && Number(m[1]) > highestFloor) highestFloor = Number(m[1])
-                      })
-                    })
-                    const nextFloor = highestFloor + 1
-                    layoutMutation.mutate({
-                      action: 'ADD_ITEM',
-                      payload: { itemType: 'FLOOR', counter: nextFloor },
-                    })
-                  }}
+                  onClick={handleAddFloor}
                   disabled={layoutMutation.isPending}
                   className="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold h-8.5 rounded-xl gap-1.5 shadow-sm"
                 >
                   <Plus size={14} />
-                  Add Floor Bay (FL-01...)
+                  {dict.warehouses.addFloorBay}
                 </Button>
 
                 <Button
                   size="sm"
-                  onClick={() => {
-                    // Auto-increment Bulk Lane counter: BL-{NN}
-                    let highestLane = 0
-                    currentWarehouse?.zones?.forEach((z: any) => {
-                      (z.bays || []).forEach((b: any) => {
-                        const m = (b.code || '').match(/BL-(\d+)/i)
-                        if (m && Number(m[1]) > highestLane) highestLane = Number(m[1])
-                      })
-                    })
-                    const nextLane = highestLane + 1
-                    layoutMutation.mutate({
-                      action: 'ADD_ITEM',
-                      payload: { itemType: 'LANE', counter: nextLane },
-                    })
-                  }}
+                  onClick={handleAddLane}
                   disabled={layoutMutation.isPending}
                   className="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold h-8.5 rounded-xl gap-1.5 shadow-sm"
                 >
                   <Plus size={14} />
-                  Add Lane (BL-01...)
+                  {dict.warehouses.addLane}
                 </Button>
 
                 <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
@@ -2358,40 +2511,15 @@ export default function AdminSettingsWarehousesPage() {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setZoneForm({
-                      code: `${currentWarehouse?.code || 'WH'}-Z0${(currentWarehouse?.zones?.length || 0) + 1}`,
-                      name: `Zone ${(currentWarehouse?.zones?.length || 0) + 1}`,
-                      type: 'STORAGE',
-                      tempControlled: false,
-                      hasShelving: true,
-                      rackPrefix: 'R',
-                      rackNumber: (currentWarehouse?.zones?.filter((z: any) => z.type === 'STORAGE').length || 0) + 1,
-                      baysCount: 2,
-                      tiersCount: 3,
-                      slotsPerTier: 2,
-                    })
-                    setAddZoneModalOpen(true)
+                    const storageZone = currentWarehouse?.zones?.find((z: any) => z.type === 'STORAGE')
+                    setSelectedZoneForBay(storageZone?.id || currentWarehouse?.zones?.[0]?.id || null)
+                    setBatchRacksModalOpen(true)
                   }}
                   className="border-slate-300 text-slate-700 text-xs font-bold h-8.5 rounded-xl gap-1.5 hover:bg-slate-100"
                 >
-                  <Plus size={14} />
-                  Add Custom Zone
+                  <Sparkles size={14} className="text-amber-500" />
+                  {dict.warehouses.batchRacks}
                 </Button>
-
-                {currentWarehouse?.zones?.length > 0 && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedZoneForBay(currentWarehouse.zones[0]?.id || null)
-                      setBatchRacksModalOpen(true)
-                    }}
-                    className="border-slate-300 text-slate-700 text-xs font-bold h-8.5 rounded-xl gap-1.5 hover:bg-slate-100"
-                  >
-                    <Sparkles size={14} className="text-amber-500" />
-                    Batch Racks
-                  </Button>
-                )}
               </div>
             </div>
 
@@ -2403,19 +2531,19 @@ export default function AdminSettingsWarehousesPage() {
                     <div className="flex items-center gap-2">
                       <span className="text-lg">📐</span>
                       <h3 className="font-extrabold text-sm text-slate-100 tracking-tight">
-                        2D Floor Plan Schematic Blueprint: {currentWarehouse.name}
+                        {dict.warehouses.blueprintTitle} {currentWarehouse.name}
                       </h3>
                       <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[10px] font-mono">
                         {currentWarehouse.code}
                       </Badge>
                       {isEdit2DMode && (
                         <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/40 text-[10px] animate-pulse">
-                          Drag & Position Enabled
+                          {dict.warehouses.dragPositionEnabled}
                         </Badge>
                       )}
                     </div>
                     <p className="text-[11px] text-slate-400 mt-0.5">
-                      Top-down architectural blueprint. Parallel vertical racks on left, staging bays below, and functional staging & processing blocks on right.
+                      {dict.warehouses.blueprintDesc}
                     </p>
                   </div>
 
@@ -2430,7 +2558,7 @@ export default function AdminSettingsWarehousesPage() {
                         }`}
                       >
                         <LayoutTemplate size={12} />
-                        Architect View
+                        {dict.warehouses.architectView}
                       </button>
                       <button
                         type="button"
@@ -2440,7 +2568,7 @@ export default function AdminSettingsWarehousesPage() {
                         }`}
                       >
                         <Move size={12} />
-                        Drag & Position
+                        {dict.warehouses.dragPosition}
                       </button>
                     </div>
 
@@ -2450,25 +2578,21 @@ export default function AdminSettingsWarehousesPage() {
                         onClick={reset2DLayout}
                         className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold border border-slate-700"
                       >
-                        Reset Layout
+                        {dict.warehouses.resetLayout}
                       </button>
                     )}
 
                     <div className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-blue-500 border border-blue-400"></span>
-                      <span>Racks</span>
+                      <span>{dict.warehouses.legendRacks}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 border border-emerald-400"></span>
-                      <span>Receiving</span>
+                      <span className="w-2.5 h-2.5 rounded-sm bg-sky-500 border border-sky-400"></span>
+                      <span>{dict.warehouses.floorBayType}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-sm bg-amber-500 border border-amber-400"></span>
-                      <span>Packing/Shipping</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 rounded-sm bg-rose-500 border border-rose-400"></span>
-                      <span>Damaged/Returns</span>
+                      <span>{dict.warehouses.bulkLaneType}</span>
                     </div>
 
                     {activeZoneFilter && (
@@ -2476,7 +2600,7 @@ export default function AdminSettingsWarehousesPage() {
                         onClick={() => setActiveZoneFilter(null)}
                         className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold border border-slate-700 ml-1"
                       >
-                        Clear Filter ✕
+                        {dict.warehouses.clearFilter}
                       </button>
                     )}
                   </div>
@@ -2488,14 +2612,14 @@ export default function AdminSettingsWarehousesPage() {
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
                       <span className="text-slate-300 font-bold">
-                        Selected: <strong className="font-mono text-amber-300">{selectedShapeId}</strong>
+                        {dict.warehouses.selectedShape} <strong className="font-mono text-amber-300">{selectedShapeId}</strong>
                       </span>
                       {(() => {
                         const cur = layoutPositions[selectedShapeId]
                         const isH = cur?.orientation === 'horizontal'
                         return (
                           <Badge className="bg-slate-800 text-amber-200 border-slate-700 text-[10px] uppercase font-bold">
-                            {isH ? 'Horizontal' : 'Vertical'} ({cur?.w || 80}×{cur?.h || 120}px)
+                            {isH ? dict.warehouses.rotateSetHorizontal : dict.warehouses.rotateSetVertical} ({cur?.w || 80}×{cur?.h || 120}px)
                           </Badge>
                         )
                       })()}
@@ -2514,10 +2638,10 @@ export default function AdminSettingsWarehousesPage() {
                             type="button"
                             onClick={() => toggleShapeOrientation(selectedShapeId, curW, curH)}
                             className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 font-bold text-[11px] transition-all"
-                            title="Rotate shape 90° (Swaps width & height)"
+                            title={dict.warehouses.rotateDimensions}
                           >
                             <RotateCw size={12} />
-                            <span>Rotate: {isH ? 'Set Vertical' : 'Set Horizontal'}</span>
+                            <span>{isH ? dict.warehouses.rotateSetVertical : dict.warehouses.rotateSetHorizontal}</span>
                           </button>
                         )
                       })()}
@@ -2527,7 +2651,7 @@ export default function AdminSettingsWarehousesPage() {
                         <button
                           type="button"
                           onClick={() => moveSelectedShape(-5, 0)}
-                          title="Nudge Left (Left Arrow)"
+                          title={dict.warehouses.nudgeLeft}
                           className="p-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white"
                         >
                           <ArrowLeft size={13} />
@@ -2535,7 +2659,7 @@ export default function AdminSettingsWarehousesPage() {
                         <button
                           type="button"
                           onClick={() => moveSelectedShape(0, -5)}
-                          title="Nudge Up (Up Arrow)"
+                          title={dict.warehouses.nudgeUp}
                           className="p-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white"
                         >
                           <ArrowUp size={13} />
@@ -2543,7 +2667,7 @@ export default function AdminSettingsWarehousesPage() {
                         <button
                           type="button"
                           onClick={() => moveSelectedShape(0, 5)}
-                          title="Nudge Down (Down Arrow)"
+                          title={dict.warehouses.nudgeDown}
                           className="p-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white"
                         >
                           <ArrowDown size={13} />
@@ -2551,7 +2675,7 @@ export default function AdminSettingsWarehousesPage() {
                         <button
                           type="button"
                           onClick={() => moveSelectedShape(5, 0)}
-                          title="Nudge Right (Right Arrow)"
+                          title={dict.warehouses.nudgeRight}
                           className="p-1 rounded hover:bg-slate-800 text-slate-300 hover:text-white"
                         >
                           <ArrowRight size={13} />
@@ -2559,7 +2683,7 @@ export default function AdminSettingsWarehousesPage() {
                       </div>
 
                       <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
-                        ⌨ Arrow keys / Shift+Arrow
+                        {dict.warehouses.arrowKeysHint}
                       </span>
 
                       <button
@@ -2588,19 +2712,19 @@ export default function AdminSettingsWarehousesPage() {
                 >
                   {/* Warehouse Wall Labels */}
                   <div className="absolute top-2 left-4 text-[10px] font-mono font-bold text-slate-500 tracking-wider">
-                    ◄ NORTH WALL / INBOUND DOCKS
+                    {dict.warehouses.northWall}
                   </div>
                   <div className="absolute bottom-2 left-4 text-[10px] font-mono font-bold text-slate-500 tracking-wider">
-                    ◄ SOUTH WALL / OUTBOUND LOGISTICS
+                    {dict.warehouses.southWall}
                   </div>
                   <div className="absolute top-2 right-4 text-[10px] font-mono font-bold text-slate-500 tracking-wider">
-                    EAST PERIMETER GATE ►
+                    {dict.warehouses.eastGate}
                   </div>
 
                   {/* Center forklift runway indicator */}
                   <div className="absolute left-[45%] top-0 bottom-0 w-[2px] border-r border-dashed border-slate-700/60 pointer-events-none flex flex-col justify-center items-center">
                     <span className="bg-[#070a13] px-1 py-3 text-[9px] text-slate-500 font-mono tracking-widest rotate-90 whitespace-nowrap">
-                      MAIN TRANSIT AISLE
+                      {dict.warehouses.mainAisle}
                     </span>
                   </div>
 
@@ -2623,264 +2747,268 @@ export default function AdminSettingsWarehousesPage() {
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
                     {isEdit2DMode
-                      ? '💡 Drag or click to select • ⌨ Arrow keys (Shift+Arrow = 20px) • Rotate button for Horizontal/Vertical • Drag corner to resize'
-                      : '💡 Click any block or bay to filter and highlight • Switch to Drag & Position to customize'}
+                      ? dict.warehouses.dragTipEdit
+                      : dict.warehouses.dragTipView}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* ITEM DETAILS & INNER LAYOUT INSPECTOR PANEL */}
-            {selectedInspectorItem && (
-              <div className="bg-white rounded-2xl border-2 border-blue-500/80 shadow-lg p-5 transition-all">
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                      <Settings2 size={22} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-black text-sm px-2.5 py-0.5 rounded-lg bg-slate-900 text-white">
-                          {selectedInspectorItem.baseCode}
-                        </span>
-                        <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border-blue-200">
-                          {selectedInspectorItem.itemType === 'RACK'
-                            ? 'Pallet Rack (Vertical Multi-Bay)'
-                            : selectedInspectorItem.itemType === 'FLOOR'
-                            ? 'Floor Bay (Ground Staging)'
-                            : 'Bulk Shipping Lane'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Configure inner layout parameters below. Clicking <strong>Apply Changes</strong> will instantly regenerate only this item&apos;s addressing sub-codes.
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedInspectorItem(null)}
-                    className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  {/* Left Column: Numeric Configuration Inputs */}
-                  <div className="lg:col-span-6 space-y-4">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3.5">
-                      <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                        Layout Dimension Parameters
-                      </div>
-
-                      {selectedInspectorItem.itemType === 'RACK' && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs font-bold text-slate-700">Number of Bays (1 - 20)</Label>
-                            <Input
-                              type="number"
-                              min={1}
-                              max={20}
-                              value={selectedInspectorItem.layout.bays}
-                              onChange={(e) =>
-                                setSelectedInspectorItem({
-                                  ...selectedInspectorItem,
-                                  layout: {
-                                    ...selectedInspectorItem.layout,
-                                    bays: Math.max(1, Math.min(20, Number(e.target.value) || 1)),
-                                  },
-                                })
-                              }
-                              className="h-9 text-xs font-semibold bg-white"
-                            />
-                            <span className="text-[10px] text-slate-400">Horizontal rack segments</span>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label className="text-xs font-bold text-slate-700">Levels / Tiers (1 - 10)</Label>
-                            <Input
-                              type="number"
-                              min={1}
-                              max={10}
-                              value={selectedInspectorItem.layout.levels}
-                              onChange={(e) =>
-                                setSelectedInspectorItem({
-                                  ...selectedInspectorItem,
-                                  layout: {
-                                    ...selectedInspectorItem.layout,
-                                    levels: Math.max(1, Math.min(10, Number(e.target.value) || 1)),
-                                  },
-                                })
-                              }
-                              className="h-9 text-xs font-semibold bg-white"
-                            />
-                            <span className="text-[10px] text-slate-400">Vertical shelf height tiers</span>
-                          </div>
+            {/* ITEM DETAILS & INNER LAYOUT CONFIGURATION MODAL */}
+            <Dialog
+              open={Boolean(selectedInspectorItem)}
+              onOpenChange={(open) => {
+                if (!open) setSelectedInspectorItem(null)
+              }}
+            >
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+                {selectedInspectorItem && (
+                  <div>
+                    <DialogHeader className="pb-4 mb-4 border-b border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
+                          <Settings2 size={22} />
                         </div>
-                      )}
-
-                      {selectedInspectorItem.itemType === 'FLOOR' && (
-                        <div className="space-y-1">
-                          <Label className="text-xs font-bold text-slate-700">Floor Sub-Parts / Sub-Divisions (1 - 26)</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={26}
-                            value={selectedInspectorItem.layout.subParts}
-                            onChange={(e) =>
-                              setSelectedInspectorItem({
-                                ...selectedInspectorItem,
-                                layout: {
-                                  ...selectedInspectorItem.layout,
-                                  subParts: Math.max(1, Math.min(26, Number(e.target.value) || 1)),
-                                },
-                              })
-                            }
-                            className="h-9 text-xs font-semibold bg-white"
-                          />
-                          <span className="text-[10px] text-slate-400">
-                            1 gives base code ({selectedInspectorItem.baseCode}). Greater than 1 generates lettered divisions ({selectedInspectorItem.baseCode}-A, {selectedInspectorItem.baseCode}-B, ...).
-                          </span>
-                        </div>
-                      )}
-
-                      {selectedInspectorItem.itemType === 'LANE' && (
-                        <div className="space-y-1">
-                          <Label className="text-xs font-bold text-slate-700">Lane Sections (1 - 20)</Label>
-                          <Input
-                            type="number"
-                            min={1}
-                            max={20}
-                            value={selectedInspectorItem.layout.sections}
-                            onChange={(e) =>
-                              setSelectedInspectorItem({
-                                ...selectedInspectorItem,
-                                layout: {
-                                  ...selectedInspectorItem.layout,
-                                  sections: Math.max(1, Math.min(20, Number(e.target.value) || 1)),
-                                },
-                              })
-                            }
-                            className="h-9 text-xs font-semibold bg-white"
-                          />
-                          <span className="text-[10px] text-slate-400">
-                            1 gives base code ({selectedInspectorItem.baseCode}). Greater than 1 generates numbered sections ({selectedInspectorItem.baseCode}-01, {selectedInspectorItem.baseCode}-02, ...).
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="pt-2 flex items-center gap-2">
-                        <Button
-                          onClick={() => {
-                            layoutMutation.mutate({
-                              action: 'UPDATE_ITEM_LAYOUT',
-                              payload: {
-                                itemType: selectedInspectorItem.itemType,
-                                baseCode: selectedInspectorItem.baseCode,
-                                layout: selectedInspectorItem.layout,
-                              },
-                            })
-                          }}
-                          disabled={layoutMutation.isPending}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-9 rounded-xl px-4 gap-1.5 shadow-sm"
-                        >
-                          {layoutMutation.isPending ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <CheckCircle2 size={14} />
-                          )}
-                          Apply Changes & Regenerate
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setSelectedInspectorItem(null)}
-                          className="h-9 text-xs font-bold text-slate-600 hover:bg-slate-200/60 rounded-xl"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Live Sub-Codes Preview */}
-                  <div className="lg:col-span-6 bg-slate-900 rounded-xl p-4 text-slate-100 border border-slate-800 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                        <div className="text-xs font-bold text-slate-300">Live Sub-Codes Addressing Preview</div>
-                        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[10px] font-mono">
-                          {(() => {
-                            if (selectedInspectorItem.itemType === 'RACK') {
-                              return `${selectedInspectorItem.layout.bays * selectedInspectorItem.layout.levels} Slots`
-                            } else if (selectedInspectorItem.itemType === 'FLOOR') {
-                              return `${selectedInspectorItem.layout.subParts} Addresses`
-                            } else {
-                              return `${selectedInspectorItem.layout.sections} Sections`
-                            }
-                          })()}
-                        </Badge>
-                      </div>
-
-                      <p className="text-[11px] text-slate-400 mb-3">
-                        These unique identifiers will be generated in the database and addressable in both 2D blueprint and 3D digital twin:
-                      </p>
-
-                      <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-                        {(() => {
-                          const previewCodes: string[] = []
-                          if (selectedInspectorItem.itemType === 'RACK') {
-                            const { bays, levels } = selectedInspectorItem.layout
-                            for (let b = 1; b <= bays; b++) {
-                              const bPad = b < 10 ? `0${b}` : `${b}`
-                              for (let l = 1; l <= levels; l++) {
-                                const lPad = l < 10 ? `0${l}` : `${l}`
-                                previewCodes.push(`${selectedInspectorItem.baseCode}-${bPad}-${lPad}`)
-                              }
-                            }
-                          } else if (selectedInspectorItem.itemType === 'FLOOR') {
-                            const { subParts } = selectedInspectorItem.layout
-                            if (subParts === 1) {
-                              previewCodes.push(selectedInspectorItem.baseCode)
-                            } else {
-                              for (let i = 0; i < subParts; i++) {
-                                const letter = String.fromCharCode(65 + i)
-                                previewCodes.push(`${selectedInspectorItem.baseCode}-${letter}`)
-                              }
-                            }
-                          } else if (selectedInspectorItem.itemType === 'LANE') {
-                            const { sections } = selectedInspectorItem.layout
-                            if (sections === 1) {
-                              previewCodes.push(selectedInspectorItem.baseCode)
-                            } else {
-                              for (let s = 1; s <= sections; s++) {
-                                const sPad = s < 10 ? `0${s}` : `${s}`
-                                previewCodes.push(`${selectedInspectorItem.baseCode}-${sPad}`)
-                              }
-                            }
-                          }
-
-                          return previewCodes.map((code) => (
-                            <span
-                              key={code}
-                              className="font-mono text-[11px] px-2.5 py-1 rounded bg-slate-800 text-sky-300 border border-slate-700 font-bold"
-                            >
-                              {code}
+                        <div>
+                          <DialogTitle className="flex items-center gap-2">
+                            <span className="font-mono font-black text-sm px-2.5 py-0.5 rounded-lg bg-slate-900 text-white">
+                              {selectedInspectorItem.baseCode}
                             </span>
-                          ))
-                        })()}
+                            <span className="text-base font-bold text-slate-900">
+                              {selectedInspectorItem.title}
+                            </span>
+                            <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border-blue-200 ml-1">
+                              {selectedInspectorItem.itemType === 'RACK'
+                                ? dict.warehouses.palletRackType
+                                : selectedInspectorItem.itemType === 'FLOOR'
+                                ? dict.warehouses.floorBayType
+                                : dict.warehouses.bulkLaneType}
+                            </Badge>
+                          </DialogTitle>
+                          <DialogDescription className="text-xs text-slate-500 mt-1">
+                            {dict.warehouses.inspectorDesc}
+                          </DialogDescription>
+                        </div>
+                      </div>
+                    </DialogHeader>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+                      {/* Left Column: Numeric Configuration Inputs */}
+                      <div className="md:col-span-6 space-y-4">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3.5">
+                          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {dict.warehouses.dimensionParams}
+                          </div>
+
+                          {selectedInspectorItem.itemType === 'RACK' && (
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <Label className="text-xs font-bold text-slate-700">{dict.warehouses.numberOfBays}</Label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={20}
+                                  value={selectedInspectorItem.layout.bays}
+                                  onChange={(e) =>
+                                    setSelectedInspectorItem({
+                                      ...selectedInspectorItem,
+                                      layout: {
+                                        ...selectedInspectorItem.layout,
+                                        bays: Math.max(1, Math.min(20, Number(e.target.value) || 1)),
+                                      },
+                                    })
+                                  }
+                                  className="h-9 text-xs font-semibold bg-white"
+                                />
+                                <span className="text-[10px] text-slate-400">{dict.warehouses.horizontalRackSegments}</span>
+                              </div>
+
+                              <div className="space-y-1">
+                                <Label className="text-xs font-bold text-slate-700">{dict.warehouses.levelsTiers}</Label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={10}
+                                  value={selectedInspectorItem.layout.levels}
+                                  onChange={(e) =>
+                                    setSelectedInspectorItem({
+                                      ...selectedInspectorItem,
+                                      layout: {
+                                        ...selectedInspectorItem.layout,
+                                        levels: Math.max(1, Math.min(10, Number(e.target.value) || 1)),
+                                      },
+                                    })
+                                  }
+                                  className="h-9 text-xs font-semibold bg-white"
+                                />
+                                <span className="text-[10px] text-slate-400">{dict.warehouses.verticalShelfTiers}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {selectedInspectorItem.itemType === 'FLOOR' && (
+                            <div className="space-y-1">
+                              <Label className="text-xs font-bold text-slate-700">{dict.warehouses.floorSubParts}</Label>
+                              <Input
+                                type="number"
+                                min={1}
+                                max={26}
+                                value={selectedInspectorItem.layout.subParts}
+                                onChange={(e) =>
+                                  setSelectedInspectorItem({
+                                    ...selectedInspectorItem,
+                                    layout: {
+                                      ...selectedInspectorItem.layout,
+                                      subParts: Math.max(1, Math.min(26, Number(e.target.value) || 1)),
+                                    },
+                                  })
+                                }
+                                className="h-9 text-xs font-semibold bg-white"
+                              />
+                              <span className="text-[10px] text-slate-400">
+                                {dict.warehouses.floorSubPartsHint.replace('{code}', selectedInspectorItem.baseCode)}
+                              </span>
+                            </div>
+                          )}
+
+                          {selectedInspectorItem.itemType === 'LANE' && (
+                            <div className="space-y-1">
+                              <Label className="text-xs font-bold text-slate-700">{dict.warehouses.laneSections}</Label>
+                              <Input
+                                type="number"
+                                min={1}
+                                max={20}
+                                value={selectedInspectorItem.layout.sections}
+                                onChange={(e) =>
+                                  setSelectedInspectorItem({
+                                    ...selectedInspectorItem,
+                                    layout: {
+                                      ...selectedInspectorItem.layout,
+                                      sections: Math.max(1, Math.min(20, Number(e.target.value) || 1)),
+                                    },
+                                  })
+                                }
+                                className="h-9 text-xs font-semibold bg-white"
+                              />
+                              <span className="text-[10px] text-slate-400">
+                                {dict.warehouses.laneSectionsHint.replace('{code}', selectedInspectorItem.baseCode)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right Column: Live Sub-Codes Preview */}
+                      <div className="md:col-span-6 bg-slate-900 rounded-xl p-4 text-slate-100 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
+                            <div className="text-xs font-bold text-slate-300">{dict.warehouses.subCodesPreview}</div>
+                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[10px] font-mono">
+                              {(() => {
+                                if (selectedInspectorItem.itemType === 'RACK') {
+                                  return `${selectedInspectorItem.layout.bays * selectedInspectorItem.layout.levels} Slots`
+                                } else if (selectedInspectorItem.itemType === 'FLOOR') {
+                                  return `${selectedInspectorItem.layout.subParts} Addresses`
+                                } else {
+                                  return `${selectedInspectorItem.layout.sections} Sections`
+                                }
+                              })()}
+                            </Badge>
+                          </div>
+
+                          <p className="text-[11px] text-slate-400 mb-3">
+                            {dict.warehouses.subCodesPreviewDesc}
+                          </p>
+
+                          <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
+                            {(() => {
+                              const previewCodes: string[] = []
+                              if (selectedInspectorItem.itemType === 'RACK') {
+                                const { bays, levels } = selectedInspectorItem.layout
+                                for (let b = 1; b <= bays; b++) {
+                                  const bPad = b < 10 ? `0${b}` : `${b}`
+                                  for (let l = 1; l <= levels; l++) {
+                                    const lPad = l < 10 ? `0${l}` : `${l}`
+                                    previewCodes.push(`${selectedInspectorItem.baseCode}-${bPad}-${lPad}`)
+                                  }
+                                }
+                              } else if (selectedInspectorItem.itemType === 'FLOOR') {
+                                const { subParts } = selectedInspectorItem.layout
+                                if (subParts === 1) {
+                                  previewCodes.push(selectedInspectorItem.baseCode)
+                                } else {
+                                  for (let i = 0; i < subParts; i++) {
+                                    const letter = String.fromCharCode(65 + i)
+                                    previewCodes.push(`${selectedInspectorItem.baseCode}-${letter}`)
+                                  }
+                                }
+                              } else if (selectedInspectorItem.itemType === 'LANE') {
+                                const { sections } = selectedInspectorItem.layout
+                                if (sections === 1) {
+                                  previewCodes.push(selectedInspectorItem.baseCode)
+                                } else {
+                                  for (let s = 1; s <= sections; s++) {
+                                    const sPad = s < 10 ? `0${s}` : `${s}`
+                                    previewCodes.push(`${selectedInspectorItem.baseCode}-${sPad}`)
+                                  }
+                                }
+                              }
+
+                              return previewCodes.map((code) => (
+                                <span
+                                  key={code}
+                                  className="font-mono text-[11px] px-2.5 py-1 rounded bg-slate-800 text-sky-300 border border-slate-700 font-bold"
+                                >
+                                  {code}
+                                </span>
+                              ))
+                            })()}
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between mt-3">
+                          <span>{dict.warehouses.instantUpdate}</span>
+                          <span className="text-emerald-400 font-bold">{dict.warehouses.zeroDisturbance}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
-                      <span>Instant localized database update</span>
-                      <span className="text-emerald-400 font-bold">● Zero disturbance to other racks</span>
-                    </div>
+                    <DialogFooter className="pt-4 mt-5 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedInspectorItem(null)}
+                        className="h-8.5 text-xs font-bold"
+                      >
+                        {dict.common.cancel}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          layoutMutation.mutate({
+                            action: 'UPDATE_ITEM_LAYOUT',
+                            payload: {
+                              itemType: selectedInspectorItem.itemType,
+                              baseCode: selectedInspectorItem.baseCode,
+                              layout: selectedInspectorItem.layout,
+                            },
+                          })
+                        }}
+                        disabled={layoutMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8.5 px-4 gap-1.5 shadow-sm"
+                      >
+                        {layoutMutation.isPending ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <CheckCircle2 size={14} />
+                        )}
+                        {dict.warehouses.applyChangesRegenerate}
+                      </Button>
+                    </DialogFooter>
                   </div>
-                </div>
-              </div>
-            )}
+                )}
+              </DialogContent>
+            </Dialog>
 
             {/* DETAILS PANEL: FAITHFUL REAL-TIME MIRROR OF SHAPES AREA */}
             {renderDetailsPanel(warehouseModel)}
@@ -2900,20 +3028,20 @@ export default function AdminSettingsWarehousesPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-extrabold text-slate-900">
-                    Digital Twin Viewport: {currentWarehouse?.name} ({currentWarehouse?.code})
+                    {dict.warehouses.digitalTwinViewport} {currentWarehouse?.name} ({currentWarehouse?.code})
                   </h2>
                   <p className="text-[11px] text-muted-foreground">
-                    Interactive Three.js environment. Search product address code, toggle Heatmap, and visualize laser aisle routes.
+                    {dict.warehouses.digitalTwinDesc}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
                 <Badge className="bg-slate-900 text-white font-mono text-xs">
-                  {twin3DItems.length} Products Plotted
+                  {twin3DItems.length} {dict.warehouses.productsPlotted}
                 </Badge>
                 <Badge variant="outline" className="font-bold text-xs text-emerald-700 bg-emerald-50 border-emerald-200">
-                  Laser Wayfinding Active
+                  {dict.warehouses.laserWayfindingActive}
                 </Badge>
               </div>
             </div>
@@ -2939,10 +3067,10 @@ export default function AdminSettingsWarehousesPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingWarehouse ? 'Edit Warehouse Hub' : 'Register New Warehouse Hub'}
+              {editingWarehouse ? dict.warehouses.modalEditWarehouseTitle : dict.warehouses.modalRegisterWarehouseTitle}
             </DialogTitle>
             <DialogDescription>
-              Provide warehouse code, location details, and fulfillment assignments.
+              {dict.warehouses.modalWarehouseDesc}
             </DialogDescription>
           </DialogHeader>
           <form
@@ -2954,7 +3082,7 @@ export default function AdminSettingsWarehousesPage() {
           >
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Warehouse Code *</Label>
+                <Label className="text-xs">{dict.warehouses.warehouseCode}</Label>
                 <Input
                   required
                   disabled={Boolean(editingWarehouse)}
@@ -2965,22 +3093,22 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Hub Type *</Label>
+                <Label className="text-xs">{dict.warehouses.hubType}</Label>
                 <select
                   value={whForm.type}
                   onChange={(e) => setWhForm({ ...whForm, type: e.target.value })}
                   className="w-full h-8 px-2 rounded-md border border-input text-xs bg-background"
                 >
-                  <option value="PROCUREMENT">PROCUREMENT (Source DC)</option>
-                  <option value="DISTRIBUTION">DISTRIBUTION (Fulfillment Hub)</option>
-                  <option value="TRANSIT">TRANSIT (Cross-docking)</option>
-                  <option value="RETURN">RETURN (Inspection / Warranty)</option>
+                  <option value="PROCUREMENT">{dict.warehouses.typeProcurement}</option>
+                  <option value="DISTRIBUTION">{dict.warehouses.typeDistribution}</option>
+                  <option value="TRANSIT">{dict.warehouses.typeTransit}</option>
+                  <option value="RETURN">{dict.warehouses.typeReturn}</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Warehouse Name *</Label>
+              <Label className="text-xs">{dict.warehouses.warehouseName}</Label>
               <Input
                 required
                 placeholder="e.g. China Yiwu International Procurement DC"
@@ -2992,7 +3120,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Country *</Label>
+                <Label className="text-xs">{dict.warehouses.country}</Label>
                 <select
                   required
                   value={whForm.country}
@@ -3019,7 +3147,7 @@ export default function AdminSettingsWarehousesPage() {
                 </select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">City *</Label>
+                <Label className="text-xs">{dict.warehouses.city}</Label>
                 <Input
                   required
                   placeholder="Yiwu, Minsk, Moscow..."
@@ -3031,7 +3159,7 @@ export default function AdminSettingsWarehousesPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Physical Address *</Label>
+              <Label className="text-xs">{dict.warehouses.physicalAddress}</Label>
               <Input
                 required
                 placeholder="Building number, industrial zone, street address"
@@ -3043,7 +3171,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Contact Manager</Label>
+                <Label className="text-xs">{dict.warehouses.contactManager}</Label>
                 <Input
                   placeholder="Manager Name"
                   value={whForm.contactPerson}
@@ -3052,7 +3180,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Contact Phone</Label>
+                <Label className="text-xs">{dict.warehouses.contactPhone}</Label>
                 <Input
                   placeholder="+86 ..."
                   value={whForm.contactPhone}
@@ -3074,7 +3202,7 @@ export default function AdminSettingsWarehousesPage() {
                   className="rounded text-orange-600 focus:ring-orange-500"
                 />
                 <label htmlFor="isDefaultProcurement" className="text-xs font-semibold text-slate-700">
-                  Default China Hub for Supplier POs
+                  {dict.warehouses.defaultProcurementCheckbox}
                 </label>
               </div>
               <div className="flex items-center gap-2">
@@ -3088,7 +3216,7 @@ export default function AdminSettingsWarehousesPage() {
                   className="rounded text-blue-600 focus:ring-blue-500"
                 />
                 <label htmlFor="isDefaultSales" className="text-xs font-semibold text-slate-700">
-                  Default Overseas Destination Hub for Customer Orders
+                  {dict.warehouses.defaultSalesCheckbox}
                 </label>
               </div>
             </div>
@@ -3101,7 +3229,7 @@ export default function AdminSettingsWarehousesPage() {
                 onClick={() => setCreateModalOpen(false)}
                 className="h-8 text-xs"
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -3109,163 +3237,7 @@ export default function AdminSettingsWarehousesPage() {
                 disabled={createOrUpdateWhMutation.isPending}
                 className="h-8 text-xs bg-orange-600 hover:bg-orange-700 text-white font-bold"
               >
-                {createOrUpdateWhMutation.isPending ? 'Saving...' : 'Save Warehouse'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* 2. Add Zone Modal */}
-      <Dialog open={addZoneModalOpen} onOpenChange={setAddZoneModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Warehouse Zone</DialogTitle>
-            <DialogDescription>Define functional area in {currentWarehouse?.name}</DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              layoutMutation.mutate({ action: 'ADD_ZONE', payload: zoneForm })
-            }}
-            className="space-y-3 pt-2 text-xs"
-          >
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-xs">Zone Code *</Label>
-                <Input
-                  required
-                  placeholder="e.g. CN-STOR-02, Z-PICK"
-                  value={zoneForm.code}
-                  onChange={(e) => setZoneForm({ ...zoneForm, code: e.target.value.toUpperCase() })}
-                  className="h-8 text-xs font-mono uppercase"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Zone Name *</Label>
-                <Input
-                  required
-                  placeholder="e.g. Bulk Pallet Storage"
-                  value={zoneForm.name}
-                  onChange={(e) => setZoneForm({ ...zoneForm, name: e.target.value })}
-                  className="h-8 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-xs">Function Type *</Label>
-              <select
-                value={zoneForm.type}
-                onChange={(e) => {
-                  const newType = e.target.value
-                  setZoneForm({
-                    ...zoneForm,
-                    type: newType,
-                    hasShelving: newType === 'STORAGE',
-                  })
-                }}
-                className="w-full h-8 px-2 rounded-md border border-input text-xs bg-background font-medium"
-              >
-                <option value="STORAGE">STORAGE (Shelving & Pallet Racks)</option>
-                <option value="RECEIVING">RECEIVING (Staging & Inbound QA - Auto Stations)</option>
-                <option value="PICKING">PICKING (Fast-moving Bins)</option>
-                <option value="PACKING">PACKING (Consolidation - Auto Stations)</option>
-                <option value="SHIPPING">SHIPPING (Container Staging - Auto Stations)</option>
-                <option value="DAMAGED">DAMAGED (Quarantine & Return - Auto Stations)</option>
-              </select>
-            </div>
-
-            {/* If Shelving / Storage is selected: Allow user to configure bays, tiers, and slots */}
-            {zoneForm.type === 'STORAGE' ? (
-              <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200/80 space-y-2.5">
-                <div className="text-[11px] font-bold text-blue-900 flex items-center gap-1.5">
-                  <Grid3X3 size={13} className="text-blue-600" />
-                  Shelving Rack Specification (Customizable)
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-[11px]">Rack Identifier</Label>
-                    <Input
-                      value={`${zoneForm.rackPrefix}${zoneForm.rackNumber}`}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        const match = val.match(/^([a-zA-Z]+)(\d+)$/)
-                        if (match) {
-                          setZoneForm({ ...zoneForm, rackPrefix: match[1], rackNumber: parseInt(match[2]) || 1 })
-                        }
-                      }}
-                      placeholder="e.g. R1"
-                      className="h-7 text-xs font-mono font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[11px]">Bays Count</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={12}
-                      value={zoneForm.baysCount}
-                      onChange={(e) => setZoneForm({ ...zoneForm, baysCount: parseInt(e.target.value) || 1 })}
-                      className="h-7 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-[11px]">Tiers (Levels) / Bay</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={8}
-                      value={zoneForm.tiersCount}
-                      onChange={(e) => setZoneForm({ ...zoneForm, tiersCount: parseInt(e.target.value) || 1 })}
-                      className="h-7 text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[11px]">Slots / Tier</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={6}
-                      value={zoneForm.slotsPerTier}
-                      onChange={(e) => setZoneForm({ ...zoneForm, slotsPerTier: parseInt(e.target.value) || 1 })}
-                      className="h-7 text-xs font-bold"
-                    />
-                  </div>
-                </div>
-                <div className="text-[10px] text-blue-700 italic">
-                  Will generate {zoneForm.baysCount} bays × {zoneForm.tiersCount} levels × {zoneForm.slotsPerTier} slots ={' '}
-                  {zoneForm.baysCount * zoneForm.tiersCount * zoneForm.slotsPerTier} addressable 3D locations.
-                </div>
-              </div>
-            ) : (
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-start gap-2">
-                <CheckCircle2 size={15} className="text-emerald-500 mt-0.5 shrink-0" />
-                <div>
-                  <span className="font-bold text-slate-800">Automated Station Addressing:</span> System will automatically generate staging pads and tracking address codes for this zone without manual bay/slot setup.
-                </div>
-              </div>
-            )}
-
-            <DialogFooter className="pt-2 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setAddZoneModalOpen(false)}
-                className="h-8 text-xs"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={layoutMutation.isPending}
-                className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
-              >
-                {layoutMutation.isPending ? 'Adding...' : 'Add Zone'}
+                {createOrUpdateWhMutation.isPending ? dict.common.saving : dict.warehouses.saveWarehouse}
               </Button>
             </DialogFooter>
           </form>
@@ -3278,7 +3250,7 @@ export default function AdminSettingsWarehousesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="w-5 h-5 text-emerald-600" />
-              1-Click Add Rack ({quickRackForm.rackPrefix}{quickRackForm.rackNumber})
+              {dict.warehouses.modalQuickRackTitle} ({quickRackForm.rackPrefix}{quickRackForm.rackNumber})
             </DialogTitle>
             <DialogDescription>
               Quickly add an addressable pallet rack to {currentWarehouse?.name}.
@@ -3331,7 +3303,7 @@ export default function AdminSettingsWarehousesPage() {
           >
             {currentWarehouse?.zones?.length > 0 && (
               <div className="space-y-1">
-                <Label className="text-xs">Destination Zone</Label>
+                <Label className="text-xs">{dict.warehouses.destinationZone}</Label>
                 <select
                   value={quickRackForm.zoneId || currentWarehouse?.zones?.[0]?.id || ''}
                   onChange={(e) => setQuickRackForm({ ...quickRackForm, zoneId: e.target.value })}
@@ -3348,7 +3320,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Rack Prefix</Label>
+                <Label className="text-xs">{dict.warehouses.rackPrefix}</Label>
                 <Input
                   value={quickRackForm.rackPrefix}
                   onChange={(e) => setQuickRackForm({ ...quickRackForm, rackPrefix: e.target.value.toUpperCase() })}
@@ -3356,7 +3328,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Rack Number</Label>
+                <Label className="text-xs">{dict.warehouses.rackNumber}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -3369,7 +3341,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-3 gap-2 p-3 bg-emerald-50/60 rounded-xl border border-emerald-200/80">
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-emerald-900">Bays</Label>
+                <Label className="text-[11px] font-semibold text-emerald-900">{dict.warehouses.baysCount}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -3380,7 +3352,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-emerald-900">Tiers (Levels)</Label>
+                <Label className="text-[11px] font-semibold text-emerald-900">{dict.warehouses.levelsTiers}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -3391,7 +3363,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[11px] font-semibold text-emerald-900">Slots / Tier</Label>
+                <Label className="text-[11px] font-semibold text-emerald-900">{dict.warehouses.slotsPerTier}</Label>
                 <Input
                   type="number"
                   min={1}
@@ -3416,7 +3388,7 @@ export default function AdminSettingsWarehousesPage() {
                 onClick={() => setQuickRackModalOpen(false)}
                 className="h-8 text-xs"
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -3424,7 +3396,7 @@ export default function AdminSettingsWarehousesPage() {
                 disabled={layoutMutation.isPending}
                 className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               >
-                {layoutMutation.isPending ? 'Generating...' : `Create Rack ${quickRackForm.rackPrefix}${quickRackForm.rackNumber}`}
+                {layoutMutation.isPending ? dict.common.saving : `Create Rack ${quickRackForm.rackPrefix}${quickRackForm.rackNumber}`}
               </Button>
             </DialogFooter>
           </form>
@@ -3435,8 +3407,8 @@ export default function AdminSettingsWarehousesPage() {
       <Dialog open={addBayModalOpen} onOpenChange={setAddBayModalOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Add Rack / Bay with Shelves</DialogTitle>
-            <DialogDescription>Define vertical tiers and slots per tier</DialogDescription>
+            <DialogTitle>{dict.warehouses.modalAddBayTitle}</DialogTitle>
+            <DialogDescription>{dict.warehouses.modalAddBayDesc}</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -3450,7 +3422,7 @@ export default function AdminSettingsWarehousesPage() {
           >
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Bay Code *</Label>
+                <Label className="text-xs">{dict.warehouses.bayCode}</Label>
                 <Input
                   required
                   placeholder="e.g. R2-B01"
@@ -3460,7 +3432,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Bay Label</Label>
+                <Label className="text-xs">{dict.warehouses.bayLabel}</Label>
                 <Input
                   placeholder="e.g. Rack 2 Bay 1"
                   value={bayForm.name}
@@ -3472,7 +3444,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Aisle Identifier</Label>
+                <Label className="text-xs">{dict.warehouses.aisleIdentifier}</Label>
                 <Input
                   placeholder="e.g. A1, A2"
                   value={bayForm.aisle}
@@ -3481,7 +3453,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Rack Row</Label>
+                <Label className="text-xs">{dict.warehouses.rackRow}</Label>
                 <Input
                   placeholder="e.g. R1, R2"
                   value={bayForm.rack}
@@ -3493,7 +3465,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-2 gap-2 p-2 bg-slate-50 rounded-lg border">
               <div className="space-y-1">
-                <Label className="text-xs">Tiers (Levels) *</Label>
+                <Label className="text-xs">{dict.warehouses.levelsTiers} *</Label>
                 <Input
                   type="number"
                   min={1}
@@ -3504,7 +3476,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Slots / Tier *</Label>
+                <Label className="text-xs">{dict.warehouses.slotsPerTier} *</Label>
                 <Input
                   type="number"
                   min={1}
@@ -3526,7 +3498,7 @@ export default function AdminSettingsWarehousesPage() {
                 onClick={() => setAddBayModalOpen(false)}
                 className="h-8 text-xs"
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -3534,7 +3506,7 @@ export default function AdminSettingsWarehousesPage() {
                 disabled={layoutMutation.isPending}
                 className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
               >
-                {layoutMutation.isPending ? 'Configuring...' : 'Generate Bay & Slots'}
+                {layoutMutation.isPending ? dict.common.saving : dict.warehouses.generateBaySlots}
               </Button>
             </DialogFooter>
           </form>
@@ -3547,10 +3519,10 @@ export default function AdminSettingsWarehousesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-500" />
-              Batch Generate Warehouse Racks ({batchForm.rackPrefix}{batchForm.startRack} - {batchForm.rackPrefix}{batchForm.endRack})
+              {dict.warehouses.modalBatchRacksTitle} ({batchForm.rackPrefix}{batchForm.startRack} - {batchForm.rackPrefix}{batchForm.endRack})
             </DialogTitle>
             <DialogDescription>
-              Scaffold any custom range of racks, bays, vertical tiers, and slots for {currentWarehouse?.name}.
+              {dict.warehouses.modalBatchRacksDesc} {currentWarehouse?.name}.
             </DialogDescription>
           </DialogHeader>
 
@@ -3565,7 +3537,7 @@ export default function AdminSettingsWarehousesPage() {
             className="space-y-3 pt-2 text-xs"
           >
             <div className="space-y-1">
-              <Label className="text-xs">Target Zone *</Label>
+              <Label className="text-xs">{dict.warehouses.destinationZone} *</Label>
               <select
                 value={selectedZoneForBay || ''}
                 onChange={(e) => setSelectedZoneForBay(e.target.value)}
@@ -3581,7 +3553,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Prefix</Label>
+                <Label className="text-xs">{dict.warehouses.rackPrefix}</Label>
                 <Input
                   value={batchForm.rackPrefix}
                   onChange={(e) => setBatchForm({ ...batchForm, rackPrefix: e.target.value })}
@@ -3589,7 +3561,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Start Rack #</Label>
+                <Label className="text-xs">{dict.warehouses.startRackNum}</Label>
                 <Input
                   type="number"
                   value={batchForm.startRack}
@@ -3600,7 +3572,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">End Rack #</Label>
+                <Label className="text-xs">{dict.warehouses.endRackNum}</Label>
                 <Input
                   type="number"
                   value={batchForm.endRack}
@@ -3614,7 +3586,7 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="grid grid-cols-3 gap-2 p-3 bg-amber-50/50 rounded-xl border border-amber-200">
               <div className="space-y-1">
-                <Label className="text-xs">Bays / Rack</Label>
+                <Label className="text-xs">{dict.warehouses.baysPerRack}</Label>
                 <Input
                   type="number"
                   value={batchForm.baysPerRack}
@@ -3625,7 +3597,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Tiers / Bay</Label>
+                <Label className="text-xs">{dict.warehouses.tiersPerBay}</Label>
                 <Input
                   type="number"
                   value={batchForm.tiersPerBay}
@@ -3636,7 +3608,7 @@ export default function AdminSettingsWarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Slots / Tier</Label>
+                <Label className="text-xs">{dict.warehouses.slotsPerTier}</Label>
                 <Input
                   type="number"
                   value={batchForm.slotsPerTier}
@@ -3665,7 +3637,7 @@ export default function AdminSettingsWarehousesPage() {
                 onClick={() => setBatchRacksModalOpen(false)}
                 className="h-8 text-xs"
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -3673,7 +3645,7 @@ export default function AdminSettingsWarehousesPage() {
                 disabled={layoutMutation.isPending}
                 className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold"
               >
-                {layoutMutation.isPending ? 'Generating...' : 'Execute Batch Generator'}
+                {layoutMutation.isPending ? dict.common.saving : dict.warehouses.executeBatchGenerator}
               </Button>
             </DialogFooter>
           </form>
@@ -3686,10 +3658,10 @@ export default function AdminSettingsWarehousesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Tag className="w-5 h-5 text-emerald-600" />
-              Map Product to Warehouse Address Slot
+              {dict.warehouses.modalAssignProductTitle}
             </DialogTitle>
             <DialogDescription>
-              Assign catalog item to slot{' '}
+              {dict.warehouses.modalAssignProductDesc}{' '}
               <strong className="font-mono text-slate-900">{selectedSlotForAssign?.code}</strong>
             </DialogDescription>
           </DialogHeader>
@@ -3709,13 +3681,13 @@ export default function AdminSettingsWarehousesPage() {
             className="space-y-3 pt-2 text-xs"
           >
             <div className="space-y-1">
-              <Label className="text-xs">Select Product from Catalog *</Label>
+              <Label className="text-xs">{dict.warehouses.selectProductCatalog}</Label>
               <select
                 value={assignProductId}
                 onChange={(e) => setAssignProductId(e.target.value)}
                 className="w-full h-9 px-2 rounded-md border border-input text-xs bg-background font-bold"
               >
-                <option value="">-- Choose Product --</option>
+                <option value="">{dict.warehouses.chooseProduct}</option>
                 {availableProducts.map((prod: any) => (
                   <option key={prod.id} value={prod.id}>
                     {prod.sku} • {prod.name}
@@ -3726,13 +3698,13 @@ export default function AdminSettingsWarehousesPage() {
 
             <div className="p-3 bg-slate-50 rounded-xl space-y-1 border text-[11px] text-slate-600">
               <div>
-                Target Slot Code: <span className="font-mono font-bold text-slate-900">{selectedSlotForAssign?.code}</span>
+                {dict.warehouses.targetSlotCode} <span className="font-mono font-bold text-slate-900">{selectedSlotForAssign?.code}</span>
               </div>
               <div>
-                Shelf Level: <span className="font-bold text-slate-900">{selectedSlotForAssign?.name}</span>
+                {dict.warehouses.shelfLevel} <span className="font-bold text-slate-900">{selectedSlotForAssign?.name}</span>
               </div>
               <div>
-                Barcode: <span className="font-mono text-slate-600">{selectedSlotForAssign?.barcode || 'N/A'}</span>
+                {dict.warehouses.barcode} <span className="font-mono text-slate-600">{selectedSlotForAssign?.barcode || 'N/A'}</span>
               </div>
             </div>
 
@@ -3744,7 +3716,7 @@ export default function AdminSettingsWarehousesPage() {
                 onClick={() => setAssignProductModalOpen(false)}
                 className="h-8 text-xs"
               >
-                Cancel
+                {dict.common.cancel}
               </Button>
               <Button
                 type="submit"
@@ -3752,7 +3724,7 @@ export default function AdminSettingsWarehousesPage() {
                 disabled={!assignProductId || layoutMutation.isPending}
                 className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               >
-                {layoutMutation.isPending ? 'Mapping...' : 'Confirm Slot Assignment'}
+                {layoutMutation.isPending ? dict.common.saving : dict.warehouses.confirmSlotAssignment}
               </Button>
             </DialogFooter>
           </form>

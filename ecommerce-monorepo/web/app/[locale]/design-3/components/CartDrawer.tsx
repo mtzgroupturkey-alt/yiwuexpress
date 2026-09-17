@@ -10,7 +10,14 @@ import {
   ArrowRight,
   CheckCircle2
 } from 'lucide-react';
-import { CartItem } from '../types';
+import { Product } from '../types';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
+
+interface CartItem {
+  product: Product;
+  quantity: number;
+}
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -31,6 +38,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onRemoveItem,
   onProceedToCheckout,
 }) => {
+  const { tCartDrawer } = useStorefrontTranslation();
+  const { formatPrice } = useCurrency();
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
 
@@ -49,7 +58,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     if (promoCode.trim().toUpperCase() === 'HYPER10' || promoCode.trim().toUpperCase() === 'GOLD') {
       setAppliedPromo(promoCode.trim().toUpperCase());
     } else {
-      alert('Valid promo codes: HYPER10 (10 BYN off) or GOLD (5% off)');
+      alert(`Valid promo codes: HYPER10 (${formatPrice(10)} off) or GOLD (5% off)`);
     }
   };
 
@@ -68,7 +77,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#00407a]" />
             <h3 className="text-base font-bold text-slate-900">
-              Your Hypermarket Cart
+              {tCartDrawer('title')}
             </h3>
             <span className="bg-blue-100 text-[#00407a] text-xs font-bold px-2 py-0.5 rounded-full">
               {items.reduce((acc, item) => acc + item.quantity, 0)}
@@ -89,13 +98,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <span className="flex items-center gap-1.5 font-bold text-slate-800">
               <Truck className="w-4 h-4 text-[#00407a]" />
               {isFreeShipping ? (
-                <span className="text-emerald-700">Free Express Delivery Unlocked!</span>
+                <span className="text-emerald-700">{tCartDrawer('freeUnlocked')}</span>
               ) : (
-                <span>Add {remainingForFreeShipping.toFixed(2)} BYN for Free Shipping</span>
+                <span>{tCartDrawer('addMore', { amount: formatPrice(remainingForFreeShipping) })}</span>
               )}
             </span>
             <span className="text-[11px] font-bold text-slate-500">
-              Goal: {FREE_SHIPPING_THRESHOLD.toFixed(2)} BYN
+              {formatPrice(FREE_SHIPPING_THRESHOLD)}
             </span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
@@ -115,15 +124,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 mb-3">
                 <ShoppingBag className="w-8 h-8" />
               </div>
-              <h4 className="font-bold text-slate-800 text-sm mb-1">Your cart is empty</h4>
+              <h4 className="font-bold text-slate-800 text-sm mb-1">{tCartDrawer('emptyTitle')}</h4>
               <p className="text-xs text-slate-500 max-w-xs mx-auto mb-4">
-                Explore our fresh farm groceries, bakery, and brand appliances to fill your cart.
+                {tCartDrawer('emptyDesc')}
               </p>
               <button
                 onClick={onClose}
                 className="bg-[#00407a] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-800 cursor-pointer"
               >
-                Continue Shopping
+                {tCartDrawer('exploreCatalog')}
               </button>
             </div>
           ) : (
@@ -143,7 +152,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     {product.name}
                   </h4>
                   <div className="text-[11px] text-slate-500 mt-0.5">
-                    {product.price.toFixed(2)} BYN each
+                    {formatPrice(product.price)}
                   </div>
 
                   <div className="flex items-center justify-between mt-2">
@@ -168,7 +177,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                     <div className="text-right">
                       <div className="text-xs font-extrabold text-slate-900">
-                        {(product.price * quantity).toFixed(2)} BYN
+                        {formatPrice(product.price * quantity)}
                       </div>
                     </div>
                   </div>
@@ -177,7 +186,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <button
                   onClick={() => onRemoveItem(product.id)}
                   className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition-colors"
-                  title="Remove"
+                  title={tCartDrawer('removeItem')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -196,7 +205,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   type="text"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  placeholder="Promo code (e.g. HYPER10)"
+                  placeholder={tCartDrawer('promoPlaceholder')}
                   className="w-full bg-white border border-slate-300 rounded-md px-3 py-1.5 text-xs uppercase font-semibold text-slate-800 placeholder:normal-case placeholder:font-normal focus:outline-none focus:border-[#00407a]"
                 />
                 {appliedPromo && (
@@ -207,35 +216,35 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 type="submit"
                 className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-md transition-colors cursor-pointer"
               >
-                Apply
+                {tCartDrawer('apply')}
               </button>
             </form>
 
             {/* Calculations */}
             <div className="space-y-1.5 text-xs text-slate-600 mb-4">
               <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span className="font-semibold text-slate-900">{subtotal.toFixed(2)} BYN</span>
+                <span>{tCartDrawer('subtotal')}</span>
+                <span className="font-semibold text-slate-900">{formatPrice(subtotal)}</span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-semibold">
-                  <span>Promo Discount ({appliedPromo})</span>
-                  <span>-{discountAmount.toFixed(2)} BYN</span>
+                  <span>{tCartDrawer('discount')} ({appliedPromo})</span>
+                  <span>-{formatPrice(discountAmount)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Delivery (Express 60 min)</span>
+                <span>{tCartDrawer('deliveryFee')}</span>
                 <span>
                   {deliveryFee === 0 ? (
-                    <strong className="text-emerald-600 font-bold">FREE</strong>
+                    <strong className="text-emerald-600 font-bold">{tCartDrawer('free')}</strong>
                   ) : (
-                    `${deliveryFee.toFixed(2)} BYN`
+                    formatPrice(deliveryFee)
                   )}
                 </span>
               </div>
               <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-black text-slate-900">
-                <span>Total to Pay</span>
-                <span className="text-[#00407a] text-base">{total.toFixed(2)} BYN</span>
+                <span>{tCartDrawer('total')}</span>
+                <span className="text-[#00407a] text-base">{formatPrice(total)}</span>
               </div>
             </div>
 
@@ -245,7 +254,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               onClick={onProceedToCheckout}
               className="w-full bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.99] text-slate-950 font-bold py-3 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
             >
-              <span>Proceed to Checkout</span>
+              <span>{tCartDrawer('checkout')}</span>
               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>

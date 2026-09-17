@@ -3,7 +3,8 @@
 import React from 'react';
 import { Tag, Sparkles, ChevronRight, Percent } from 'lucide-react';
 import { Product } from '../types';
-import { UnifiedProductCard } from './UnifiedProductCard';
+import { UnifiedProductCard, ProductCardSkeleton } from './UnifiedProductCard';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
 interface WeeklyBargainsSectionProps {
   products: Product[];
@@ -14,6 +15,7 @@ interface WeeklyBargainsSectionProps {
   onToggleFavorite: (product: Product) => void;
   onSelectProduct: (product: Product) => void;
   onViewAllDeals?: () => void;
+  isLoading?: boolean;
 }
 
 export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
@@ -25,14 +27,17 @@ export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
   onToggleFavorite,
   onSelectProduct,
   onViewAllDeals,
+  isLoading = false,
 }) => {
+  const { tWeekly } = useStorefrontTranslation();
+
   // Filter products that have discount badges or oldPrice
   const discountedProducts = products
     .filter((p) => p.discountBadge || p.oldPrice)
     .slice(0, 12); // Two full rows of 6 items (12 products total)
 
   return (
-    <section className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
+    <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
       {/* Banner / Header Bar */}
       <div 
         className="rounded-2xl p-5 sm:p-6 mb-6 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden border border-red-900/40"
@@ -54,14 +59,14 @@ export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
                 UP TO -40%
               </span>
               <span className="text-red-200 text-xs font-semibold">
-                • Seasonal Home Clearance
+                • {tWeekly('badge')}
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-xs">
-              Seasonal Home Discounts & Clearance Deals
+              {tWeekly('title')}
             </h2>
             <p className="text-xs sm:text-sm text-red-100/90 mt-0.5 max-w-[650px] leading-relaxed">
-              Limited-quantity stock reductions on furniture, cookware sets, lighting, and decor.
+              {tWeekly('subtitle')}
             </p>
           </div>
         </div>
@@ -71,7 +76,7 @@ export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
             onClick={onViewAllDeals}
             className="self-start md:self-auto bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap relative z-10 active:scale-95"
           >
-            <span>Browse All Home Deals</span>
+            <span>{tWeekly('viewAll')}</span>
             <ChevronRight className="w-4 h-4 stroke-[2.5]" />
           </button>
         )}
@@ -79,19 +84,25 @@ export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
 
       {/* 2-Row Responsive Grid (up to 12 items) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        {discountedProducts.map((product) => (
-          <UnifiedProductCard
-            key={product.id}
-            product={product}
-            onAddToCart={onAddToCart}
-            onUpdateQuantity={onUpdateQuantity}
-            cartQuantities={cartQuantities}
-            favoriteIds={favoriteIds}
-            onToggleFavorite={onToggleFavorite}
-            onSelectProduct={onSelectProduct}
-            variant="compact"
-          />
-        ))}
+        {isLoading || discountedProducts.length === 0 ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <ProductCardSkeleton key={i} />
+          ))
+        ) : (
+          discountedProducts.map((product) => (
+            <UnifiedProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={onAddToCart}
+              onUpdateQuantity={onUpdateQuantity}
+              cartQuantities={cartQuantities}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={onToggleFavorite}
+              onSelectProduct={onSelectProduct}
+              variant="compact"
+            />
+          ))
+        )}
       </div>
     </section>
   );

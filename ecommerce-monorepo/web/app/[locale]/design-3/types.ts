@@ -16,11 +16,16 @@ export interface ProductSpecGroup {
 
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
   category: string;
   department?: string;
+  categoryId?: string;
+  categorySlug?: string;
+  departmentId?: string;
+  departmentSlug?: string;
   brand: string;
-  originOrType: string;
+  originOrType?: string;
   rating: number;
   reviewsCount: number;
   price: number;
@@ -68,7 +73,13 @@ export interface Category {
   name: string;
   itemCount: number;
   icon: string;
+  image?: string | null;
   slug: string;
+  parentId?: string | null;
+  level?: number;
+  isFeatured?: boolean;
+  subcategories?: string[];
+  children?: Category[];
 }
 
 export interface CartItem {

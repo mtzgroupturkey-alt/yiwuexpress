@@ -35,6 +35,9 @@ export async function GET(request: NextRequest) {
         instagramUrl: true,
         whatsappNumber: true,
         wechatId: true,
+        storeHours: true,
+        freeShippingThreshold: true,
+        announcementTicker: true,
         translations: {
           where: { locale: { in: [locale, 'en'] } },
           select: { locale: true, key: true, value: true }
@@ -66,6 +69,9 @@ export async function GET(request: NextRequest) {
       instagramUrl: null,
       whatsappNumber: null,
       wechatId: null,
+      storeHours: '08:00 – 23:00',
+      freeShippingThreshold: 35.00,
+      announcementTicker: null,
       translations: []
     }
 
@@ -102,6 +108,9 @@ export async function GET(request: NextRequest) {
       timezone: 'Asia/Shanghai',
       language: 'en',
       storeMode: 'WHOLESALE',
+      storeHours: '08:00 – 23:00',
+      freeShippingThreshold: 35.00,
+      announcementTicker: null,
     }
 
     return NextResponse.json({ settings: defaultSettings })

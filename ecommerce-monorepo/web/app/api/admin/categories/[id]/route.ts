@@ -139,6 +139,15 @@ export async function PUT(
       }
     }
 
+    let newLevel = 1
+    if (body.parentId) {
+      const parentCat = await prisma.category.findUnique({
+        where: { id: body.parentId },
+        select: { level: true }
+      })
+      newLevel = (parentCat?.level || 1) + 1
+    }
+
     // Prepare update data
     const updateData = {
       name: body.name,
@@ -147,6 +156,7 @@ export async function PUT(
       image: body.image,
       icon: body.icon,
       parentId: body.parentId || null,
+      level: newLevel,
       isActive: body.isActive !== undefined ? body.isActive : existing.isActive,
       showInMenu: body.showInMenu !== undefined ? body.showInMenu : existing.showInMenu,
       isFeatured: body.isFeatured !== undefined ? body.isFeatured : existing.isFeatured,
@@ -159,6 +169,25 @@ export async function PUT(
       where: { id },
       data: updateData
     })
+
+    // Cascade level changes to descendant categories if level changed
+    if (existing.level !== newLevel) {
+      const updateChildrenLevels = async (parentCatId: string, parentLevel: number) => {
+        const children = await prisma.category.findMany({
+          where: { parentId: parentCatId },
+          select: { id: true }
+        })
+        for (const child of children) {
+          const childLevel = parentLevel + 1
+          await prisma.category.update({
+            where: { id: child.id },
+            data: { level: childLevel }
+          })
+          await updateChildrenLevels(child.id, childLevel)
+        }
+      }
+      await updateChildrenLevels(id, newLevel)
+    }
 
     // Expand-and-Contract dual-write: keep translation rows in sync with the
     // nested `translations` payload (en/ru/zh) and legacy name/description.

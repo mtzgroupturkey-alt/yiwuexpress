@@ -1,7 +1,9 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
+import { useCurrency } from '@/hooks/useCurrency'
 import { LocaleLink } from '@/components/LocaleLink'
 import ProductCard from './ProductCard'
 import Image from 'next/image'
@@ -56,6 +58,8 @@ export default function ProductGrid({
   const { refreshCartCount } = useCart()
   const { isRetail } = useStoreMode()
   const t = useTranslations('Product')
+  const { tBadge } = useStorefrontTranslation()
+  const { formatPrice } = useCurrency()
   const [wishlist, setWishlist] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
@@ -202,8 +206,8 @@ export default function ProductGrid({
                 </div>
               )}
               {product.isNew && (
-                <span className="absolute top-1 left-1 bg-secondary-500 text-white text-xs px-1.5 py-0.5 rounded">
-                  {t('newBadge')}
+                <span className="absolute top-1 left-1 bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider">
+                  {tBadge('NEW')}
                 </span>
               )}
               {isSoldOut && (
@@ -238,11 +242,11 @@ export default function ProductGrid({
                   </div>
                 )}
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-base sm:text-lg text-secondary-500 font-bold">${product.price.toFixed(2)}</span>
+                  <span className="text-base sm:text-lg text-secondary-500 font-bold">{formatPrice(product.price)}</span>
                   {hasDiscount && (
                     <>
                       <span className="text-xs sm:text-sm text-gray-400 line-through">
-                         ${compareAt.toFixed(2)}
+                         {formatPrice(compareAt)}
                       </span>
                       <span className="text-xs bg-accent-500 text-white px-1.5 py-0.5 rounded">
                         -{discount}%
@@ -346,6 +350,10 @@ export default function ProductGrid({
                 category: product.category?.name,
                 stock: product.stock,
                 wholesalePrice: product.wholesalePrice || undefined,
+                isNew: product.isNew,
+                isFeatured: product.isFeatured,
+                rating: product.rating,
+                reviewCount: product.reviewCount,
               }
 
               return (

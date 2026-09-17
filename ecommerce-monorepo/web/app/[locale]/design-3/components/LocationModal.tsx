@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, MapPin, Check, Plus } from 'lucide-react';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
 interface LocationModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
   currentAddress,
   onSelectAddress,
 }) => {
+  const { tModals } = useStorefrontTranslation();
   const [customAddress, setCustomAddress] = useState('');
 
   if (!isOpen) return null;
@@ -46,7 +48,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           <div className="flex items-center gap-2">
             <MapPin className="w-5 h-5 text-[#00407a]" />
             <h3 className="text-base font-bold text-slate-900">
-              Select Delivery Address
+              {tModals('selectAddress')}
             </h3>
           </div>
           <button
@@ -58,8 +60,8 @@ export const LocationModal: React.FC<LocationModalProps> = ({
         </div>
 
         <div className="p-5 space-y-4">
-          <p className="text-xs text-slate-500">
-            Choose your address in Minsk for rapid 60-minute express courier dispatch from our hypermarket hubs.
+          <p className="text-xs text-slate-500 font-medium">
+            {tModals('savedLocations')}
           </p>
 
           {/* Saved Addresses */}
@@ -92,21 +94,21 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           {/* Enter New Address */}
           <form onSubmit={handleCustomSubmit} className="pt-3 border-t border-slate-200">
             <label className="text-xs font-bold text-slate-700 block mb-1.5">
-              Or enter another street & building:
+              {tModals('enterCustomAddress')}:
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={customAddress}
                 onChange={(e) => setCustomAddress(e.target.value)}
-                placeholder="e.g. Minsk, Nemiga St 5"
+                placeholder={tModals('addressPlaceholder')}
                 className="flex-1 text-xs border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-[#00407a]"
               />
               <button
                 type="submit"
                 className="bg-[#00407a] hover:bg-[#003366] text-white text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer transition-colors"
               >
-                Set
+                {tModals('saveAddress')}
               </button>
             </div>
           </form>

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { Preloader } from '@/components/ui/Preloader'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface PreloaderWrapperProps {
   children: React.ReactNode
@@ -22,16 +23,24 @@ export function PreloaderWrapper({
 
   return (
     <>
-      {showPreloader && (
-        <Preloader 
-          onComplete={handleComplete} 
-          initialLogo={initialLogo}
-          initialCompanyName={initialCompanyName}
-        />
-      )}
-      <div style={{ opacity: showPreloader ? 0 : 1, transition: 'opacity 0.3s ease' }}>
+      <AnimatePresence mode="wait">
+        {showPreloader && (
+          <Preloader 
+            key="app-preloader"
+            onComplete={handleComplete} 
+            initialLogo={initialLogo}
+            initialCompanyName={initialCompanyName}
+          />
+        )}
+      </AnimatePresence>
+      <motion.div 
+        initial={false}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full min-h-screen"
+      >
         {children}
-      </div>
+      </motion.div>
     </>
   )
 }

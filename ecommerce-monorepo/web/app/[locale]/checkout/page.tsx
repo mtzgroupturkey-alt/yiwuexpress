@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -511,29 +511,71 @@ export default function CheckoutPage() {
                       <CardTitle>{t('paymentMethod')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer">
+                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="radio"
+                          value="CREDIT_CARD"
+                          {...register('paymentMethod')}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold">{t('creditCard')}</p>
+                          <p className="text-sm text-gray-600">{t('payViaCard')}</p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
                         <input
                           type="radio"
                           value="BANK_TRANSFER"
                           {...register('paymentMethod')}
                           className="w-4 h-4"
                         />
-                        <div>
+                        <div className="flex-1">
                           <p className="font-semibold">{t('bankTransfer')}</p>
                           <p className="text-sm text-gray-600">{t('payViaBank')}</p>
                         </div>
                       </label>
 
-                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer">
+                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="radio"
+                          value="TRADE_ASSURANCE"
+                          {...register('paymentMethod')}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{t('tradeAssurance')}</p>
+                            <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded">100% Escrow</span>
+                          </div>
+                          <p className="text-sm text-gray-600">{t('payTradeAssurance')}</p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
                         <input
                           type="radio"
                           value="PAYPAL"
                           {...register('paymentMethod')}
                           className="w-4 h-4"
                         />
-                        <div>
+                        <div className="flex-1">
                           <p className="font-semibold">{t('paypal')}</p>
                           <p className="text-sm text-gray-600">{t('paySecurelyPaypal')}</p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input
+                          type="radio"
+                          value="CASH_ON_DELIVERY"
+                          {...register('paymentMethod')}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold">{t('cashDelivery')}</p>
+                          <p className="text-sm text-gray-600">{t('payCashDelivery')}</p>
                         </div>
                       </label>
 

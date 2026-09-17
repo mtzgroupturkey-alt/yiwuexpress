@@ -17,17 +17,6 @@ const currencies = [
     exchangeRateUpdatedAt: new Date(),
   },
   {
-    code: 'CNY',
-    name: 'Chinese Yuan',
-    symbol: '¥',
-    symbolPosition: 'before',
-    decimalPlaces: 2,
-    isBase: false,
-    isActive: true,
-    exchangeRate: 7.2, // 1 USD = 7.2 CNY
-    exchangeRateUpdatedAt: new Date(),
-  },
-  {
     code: 'EUR',
     name: 'Euro',
     symbol: '€',
@@ -35,7 +24,18 @@ const currencies = [
     decimalPlaces: 2,
     isBase: false,
     isActive: true,
-    exchangeRate: 0.92, // 1 USD = 0.92 EUR
+    exchangeRate: 0.92,
+    exchangeRateUpdatedAt: new Date(),
+  },
+  {
+    code: 'CNY',
+    name: 'Chinese Yuan',
+    symbol: '¥',
+    symbolPosition: 'before',
+    decimalPlaces: 2,
+    isBase: false,
+    isActive: true,
+    exchangeRate: 7.23,
     exchangeRateUpdatedAt: new Date(),
   },
   {
@@ -46,7 +46,18 @@ const currencies = [
     decimalPlaces: 2,
     isBase: false,
     isActive: true,
-    exchangeRate: 92.50, // 1 USD = 92.50 RUB
+    exchangeRate: 92.50,
+    exchangeRateUpdatedAt: new Date(),
+  },
+  {
+    code: 'BYN',
+    name: 'Belarusian Ruble',
+    symbol: 'BYN',
+    symbolPosition: 'after',
+    decimalPlaces: 2,
+    isBase: false,
+    isActive: true,
+    exchangeRate: 3.27,
     exchangeRateUpdatedAt: new Date(),
   },
   {
@@ -57,7 +68,29 @@ const currencies = [
     decimalPlaces: 2,
     isBase: false,
     isActive: true,
-    exchangeRate: 0.79, // 1 USD = 0.79 GBP
+    exchangeRate: 0.79,
+    exchangeRateUpdatedAt: new Date(),
+  },
+  {
+    code: 'AED',
+    name: 'UAE Dirham',
+    symbol: 'AED',
+    symbolPosition: 'before',
+    decimalPlaces: 2,
+    isBase: false,
+    isActive: true,
+    exchangeRate: 3.67,
+    exchangeRateUpdatedAt: new Date(),
+  },
+  {
+    code: 'TRY',
+    name: 'Turkish Lira',
+    symbol: '₺',
+    symbolPosition: 'before',
+    decimalPlaces: 2,
+    isBase: false,
+    isActive: true,
+    exchangeRate: 32.50,
     exchangeRateUpdatedAt: new Date(),
   },
   {
@@ -68,7 +101,29 @@ const currencies = [
     decimalPlaces: 0,
     isBase: false,
     isActive: true,
-    exchangeRate: 149.50, // 1 USD = 149.50 JPY
+    exchangeRate: 150.0,
+    exchangeRateUpdatedAt: new Date(),
+  },
+  {
+    code: 'SAR',
+    name: 'Saudi Riyal',
+    symbol: 'SAR',
+    symbolPosition: 'before',
+    decimalPlaces: 2,
+    isBase: false,
+    isActive: true,
+    exchangeRate: 3.75,
+    exchangeRateUpdatedAt: new Date(),
+  },
+  {
+    code: 'KZT',
+    name: 'Kazakhstani Tenge',
+    symbol: '₸',
+    symbolPosition: 'after',
+    decimalPlaces: 2,
+    isBase: false,
+    isActive: true,
+    exchangeRate: 450.0,
     exchangeRateUpdatedAt: new Date(),
   },
 ]
@@ -102,6 +157,16 @@ async function main() {
       },
     })
     console.log(`  📈 ${currency.code}/USD: ${currency.exchangeRate}`)
+  }
+
+  // Attempt live exchange rates sync from open.er-api.com
+  try {
+    const { exchangeRateService } = await import('../lib/exchange-rate-service')
+    console.log('\n🌐 Syncing live exchange rates from open.er-api.com...')
+    const syncRes = await exchangeRateService.updateAllRates()
+    console.log('  📡 Live sync result:', syncRes)
+  } catch (err) {
+    console.log('  ⚠️ Live sync skipped/failed:', err)
   }
 
   console.log('\n✅ Currency seeding complete!')

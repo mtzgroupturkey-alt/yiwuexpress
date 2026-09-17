@@ -7,6 +7,8 @@ import Image from 'next/image'
 import { ShoppingCart, Eye, FileText, Check, Star } from 'lucide-react'
 import { WishlistButton } from './WishlistButton'
 import { useTranslations } from 'next-intl'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
+import { useCurrency } from '@/hooks/useCurrency'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
@@ -46,6 +48,8 @@ export default function ProductCard({
   onAddToCart
 }: ProductCardProps) {
   const t = useTranslations('Product')
+  const { tBadge } = useStorefrontTranslation()
+  const { formatPrice } = useCurrency()
   const router = useRouter()
   const { isWholesale, isRetail } = useStoreMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
@@ -151,17 +155,17 @@ export default function ProductCard({
           )}
           {product.isNew && (
             <span className="bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
-              {t('newBadge') || 'NEW'}
+              {tBadge('NEW')}
             </span>
           )}
           {isFlashSaleActive && (
             <span className="bg-amber-500 text-navy-950 text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider animate-pulse">
-              {t('flashSale')}
+              {tBadge('FLASH SALE')}
             </span>
           )}
           {hasWholesale && (
             <span className="bg-[#0055A4] text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
-              MOQ: {product.minOrder || product.minOrderQty || 1}
+              {tBadge('moq')}: {product.minOrder || product.minOrderQty || 1}
             </span>
           )}
         </div>
@@ -235,7 +239,7 @@ export default function ProductCard({
             {product.stock !== undefined && product.stock > 0 ? (
               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {t('inStock' as any) || 'В наличии / In Stock'}
+                {t('inStock')}
               </span>
             ) : (
               <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
@@ -254,18 +258,18 @@ export default function ProductCard({
                   </span>
                 )}
                 <span className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${isFlashSaleActive ? 'text-[#DC2626]' : 'text-gray-950 dark:text-white'}`}>
-                  ${displayPrice?.toFixed(2)}
+                  {formatPrice(displayPrice || 0)}
                 </span>
                 {(isFlashSaleActive || hasWholesale || hasDiscount) && (product.compareAtPrice || product.price) && (
                   <span className="text-xs text-gray-400 line-through font-mono">
-                    ${(product.compareAtPrice || product.price).toFixed(2)}
+                    {formatPrice(product.compareAtPrice || product.price)}
                   </span>
                 )}
               </div>
 
               {hasWholesale && (
                 <div className="text-[10px] text-[#0055A4] font-bold mt-0.5 font-mono">
-                  {t('wholesalePrice')}: ${product.wholesalePrice?.toFixed(2)}
+                  {t('wholesalePrice')}: {formatPrice(product.wholesalePrice || 0)}
                 </div>
               )}
             </div>

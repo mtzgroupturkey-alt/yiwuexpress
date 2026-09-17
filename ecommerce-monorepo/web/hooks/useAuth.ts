@@ -14,6 +14,8 @@ export interface User {
   country?: string
   isActive?: boolean
   createdAt?: string
+  profilePhoto?: string
+  avatar?: string
   supplierProfile?: {
     id: string
     companyName: string

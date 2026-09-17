@@ -251,6 +251,7 @@ function ProductsPageContent() {
   const handlePageChange = (page: number) => {
     const params = buildSearchParams({ page: String(page) })
     router.replace(`${pathname}?${params.toString()}`)
+    window.scrollTo({ top: 120, behavior: 'smooth' })
   }
 
   const handleFilterToggle = () => {

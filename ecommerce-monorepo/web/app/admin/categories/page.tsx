@@ -14,6 +14,7 @@ import {
   X, Sparkles, FolderPlus
 } from 'lucide-react'
 import { ImageUpload } from '@/components/admin/ImageUpload'
+import { CategoryIconPicker, DynamicCategoryIcon } from '@/components/admin/CategoryIconPicker'
 import { localizeCategory } from '@/lib/utils/localize'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
 import {
@@ -48,6 +49,7 @@ interface Category {
   isFeatured: boolean
   showInMenu: boolean
   parentId?: string
+  level?: number
   parent?: { name: string }
   children?: Category[]
   translations?: { locale: string; name: string; description: string | null }[]
@@ -57,19 +59,41 @@ interface Category {
   }
 }
 
-function CategoryAvatar({ src, name, size = 'md' }: { src?: string | null; name: string; size?: 'sm' | 'md' | 'lg' }) {
+function CategoryAvatar({
+  src,
+  icon,
+  name,
+  size = 'md'
+}: {
+  src?: string | null
+  icon?: string | null
+  name: string
+  size?: 'sm' | 'md' | 'lg'
+}) {
   const [hasError, setHasError] = useState(false)
   const dim = size === 'lg' ? 'w-12 h-12' : size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'
+  const iconSize = size === 'lg' ? 'w-6 h-6' : size === 'sm' ? 'w-4 h-4' : 'w-5 h-5'
 
   return (
-    <div className={`${dim} rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center shadow-2xs`}>
+    <div className={`${dim} rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center shadow-2xs relative`}>
       {!hasError && src ? (
-        <img
-          src={src}
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={() => setHasError(true)}
-        />
+        <>
+          <img
+            src={src}
+            alt={name}
+            className="w-full h-full object-cover"
+            onError={() => setHasError(true)}
+          />
+          {icon && (
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#1a3a5c] text-white flex items-center justify-center shadow-xs border border-white">
+              <DynamicCategoryIcon name={icon} className="w-2.5 h-2.5" />
+            </div>
+          )}
+        </>
+      ) : icon ? (
+        <div className="w-full h-full bg-gradient-to-br from-[#1a3a5c]/15 to-[#2563eb]/10 flex items-center justify-center text-[#1a3a5c]">
+          <DynamicCategoryIcon name={icon} className={iconSize} fallback={Folder} />
+        </div>
       ) : (
         <Folder size={size === 'lg' ? 22 : 18} className="text-[#1a3a5c]/70" />
       )}
@@ -415,13 +439,24 @@ export default function AdminCategoriesPage() {
             </div>
           )}
           
-          <CategoryAvatar src={category.image} name={category.translations ? localizeCategory(category, locale).name : category.name} size="md" />
+          <CategoryAvatar 
+            src={category.image} 
+            icon={category.icon}
+            name={category.translations ? localizeCategory(category, locale).name : category.name} 
+            size="md" 
+          />
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-bold text-gray-900 text-sm truncate">
                 {category.translations ? localizeCategory(category, locale).name : category.name}
               </h3>
+              {category.icon && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-blue-50 text-blue-800 border border-blue-200 shadow-2xs">
+                  <DynamicCategoryIcon name={category.icon} className="w-3 h-3 text-[#1a3a5c]" />
+                  <span>{category.icon}</span>
+                </span>
+              )}
               {category.isFeatured && (
                 <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                   <Star size={10} className="fill-amber-500 text-amber-500" />
@@ -433,6 +468,15 @@ export default function AdminCategoriesPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${
+              level === 0 
+                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                : level === 1
+                ? 'bg-sky-50 text-sky-700 border-sky-200'
+                : 'bg-slate-100 text-slate-600 border-slate-200'
+            }`}>
+              {level === 0 ? dict.categories.parentBadge : dict.categories.childBadge.replace('{level}', String(level + 1))}
+            </span>
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700">
               {category._count?.products || 0} {dict.products.title.toLowerCase()}
             </span>
@@ -720,14 +764,51 @@ export default function AdminCategoriesPage() {
               </div>
 
               <div>
-                <Label htmlFor="icon" className="text-xs font-semibold text-gray-700">{dict.categories.iconLabel}</Label>
-                <Input 
-                  id="icon" 
-                  {...register('icon')}
-                  placeholder={dict.categories.iconPlaceholder}
-                  className="mt-1 h-9 text-xs rounded-xl"
+                <CategoryIconPicker
+                  value={watch('icon')}
+                  onChange={(iconName) => {
+                    setValue('icon', iconName, { shouldValidate: true, shouldDirty: true })
+                  }}
+                  label={dict.categories.iconLabel}
+                  helperText={dict.categories.iconPlaceholder}
                 />
               </div>
+
+              {/* Live Preview Card */}
+              {(categoryImage || watch('icon')) && (
+                <div className="p-3 bg-gradient-to-br from-slate-50 to-blue-50/50 border border-blue-100/80 rounded-2xl shadow-2xs">
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Live Category Badge Preview</p>
+                  <div className="flex items-center gap-3">
+                    <CategoryAvatar 
+                      src={categoryImage} 
+                      icon={watch('icon')} 
+                      name={translations.en?.name || 'Preview'} 
+                      size="lg" 
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-gray-900 truncate">
+                        {translations.en?.name || translations.ru?.name || translations.zh?.name || 'Category Name'}
+                      </p>
+                      <p className="text-[11px] text-gray-500 font-mono truncate">
+                        {watch('slug') ? `/${watch('slug')}` : '/category-slug'}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        {categoryImage && (
+                          <span className="inline-flex items-center text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-semibold">
+                            Photo Set
+                          </span>
+                        )}
+                        {watch('icon') && (
+                          <span className="inline-flex items-center gap-1 text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md font-semibold">
+                            <DynamicCategoryIcon name={watch('icon')!} className="w-3 h-3 text-[#1a3a5c]" />
+                            {watch('icon')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="pt-3 border-t border-gray-100 space-y-3">
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">

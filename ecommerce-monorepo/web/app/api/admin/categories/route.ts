@@ -111,6 +111,15 @@ export async function POST(request: Request) {
       )
     }
 
+    let level = 1
+    if (body.parentId) {
+      const parentCat = await prisma.category.findUnique({
+        where: { id: body.parentId },
+        select: { level: true }
+      })
+      level = (parentCat?.level || 1) + 1
+    }
+
     // Create category
     const category = await prisma.category.create({
       data: {
@@ -123,7 +132,7 @@ export async function POST(request: Request) {
         isActive: body.isActive !== false,
         showInMenu: body.showInMenu !== false,
         isFeatured: body.isFeatured || false,
-        level: body.parentId ? 2 : 1, // Calculate level
+        level,
         menuOrder: body.menuOrder || 0,
       }
     })

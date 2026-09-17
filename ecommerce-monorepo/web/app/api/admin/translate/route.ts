@@ -83,7 +83,10 @@ interface ProviderContext {
   targetLocales: TargetLocale[]
   fieldKeys: string[]
   trimmedFields: Record<string, string>
-  apiKey?: string | null
+  openaiApiKey?: string | null
+  openaiBaseUrl?: string | null
+  openaiModel?: string | null
+  apiKey?: string | null // OpenRouter
   geminiApiKey?: string | null
   deepseekApiKey?: string | null
   qwenApiKey?: string | null
@@ -94,7 +97,75 @@ interface ProviderContext {
 const DEFAULT_TIMEOUT_MS = 25_000
 
 // ---------------------------------------------------------------------------
-// TIER 1 — OpenRouter (Primary)
+// TIER 0 / PRIMARY — Custom OpenAI-Compatible Gateway / OpenAI
+// ---------------------------------------------------------------------------
+async function callOpenAICompatible(
+  ctx: ProviderContext,
+): Promise<ProviderResult> {
+  const apiKey = ctx.openaiApiKey
+  if (!apiKey) {
+    return { ok: false, error: 'OPENAI_API_KEY missing', retryable: true }
+  }
+
+  const rawBaseUrl = (ctx.openaiBaseUrl || 'https://llm.gcat.ir/v1').trim().replace(/\/+$/, '')
+  const endpoint = rawBaseUrl.endsWith('/chat/completions')
+    ? rawBaseUrl
+    : `${rawBaseUrl}/chat/completions`
+
+  const model = (ctx.openaiModel || 'auto/best-chat').trim()
+
+  const userPrompt =
+    `Target Locales: [${ctx.targetLocales.join(', ')}]\n` +
+    `Data to translate: ${JSON.stringify(ctx.trimmedFields)}`
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey.trim()}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          {
+            role: 'user',
+            content:
+              'Target Locales: [ru, zh]\n' +
+              'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
+          },
+          { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.2,
+      }),
+      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+    })
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '')
+      return {
+        ok: false,
+        retryable: res.status === 429 || res.status >= 500,
+        error: `OpenAI Gateway error (${res.status}) on ${model}: ${errText.slice(0, 300)}`,
+      }
+    }
+
+    const json = await res.json().catch(() => null)
+    const rawText: string = json?.choices?.[0]?.message?.content ?? ''
+    return finalizeFromRaw(rawText, ctx, `OpenAI Gateway (${model})`)
+  } catch (err) {
+    return {
+      ok: false,
+      retryable: true,
+      error: `OpenAI Gateway network error: ${err instanceof Error ? err.message : 'unknown'}`,
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// TIER 1 — OpenRouter (Secondary)
 // ---------------------------------------------------------------------------
 async function callOpenRouter(
   ctx: ProviderContext,
@@ -612,13 +683,21 @@ export async function POST(request: NextRequest) {
 
   // Get API keys from database (with .env fallback)
   const apiKeys = await getApiKeys()
-  const apiKey = apiKeys.openrouterApiKey
+  const hasAnyKey = Boolean(
+    apiKeys.openaiApiKey ||
+    apiKeys.openrouterApiKey ||
+    apiKeys.geminiApiKey ||
+    apiKeys.deepseekApiKey ||
+    apiKeys.qwenApiKey ||
+    apiKeys.kimiApiKey ||
+    apiKeys.cerebrasApiKey
+  )
   
-  if (!apiKey) {
+  if (!hasAnyKey) {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Translation service is not configured. Please add your OpenRouter API key in System Settings (Admin > Settings > System).' 
+        error: 'Translation service is not configured. Please add your API Key in System Settings (Admin > Settings > System).' 
       },
       { status: 200 }
     )
@@ -654,7 +733,10 @@ export async function POST(request: NextRequest) {
     targetLocales, 
     fieldKeys, 
     trimmedFields,
-    apiKey,  // OpenRouter
+    openaiApiKey: apiKeys.openaiApiKey,
+    openaiBaseUrl: apiKeys.openaiBaseUrl,
+    openaiModel: apiKeys.openaiModel,
+    apiKey: apiKeys.openrouterApiKey,
     geminiApiKey: apiKeys.geminiApiKey,
     deepseekApiKey: apiKeys.deepseekApiKey,
     qwenApiKey: apiKeys.qwenApiKey,
@@ -663,13 +745,21 @@ export async function POST(request: NextRequest) {
   }
 
   /**
-   * Run the 5-tier cascading failover for ONE provider call. `ctx.targetLocales`
+   * Run the cascading failover for ONE provider call. `ctx.targetLocales`
    * may carry one or more locales. Returns the parsed translations map.
    */
   async function runCascade(
     ctx: ProviderContext,
   ): Promise<{ ok: boolean; translations?: Record<string, Record<string, string>>; error?: string }> {
     const errors: string[] = []
+
+    // Tier 0: Custom OpenAI-compatible Gateway / OpenAI (if configured)
+    if (ctx.openaiApiKey) {
+      const tier0 = await callOpenAICompatible(ctx)
+      if (tier0.ok && tier0.translations) return { ok: true, translations: tier0.translations }
+      errors.push(`OpenAI Gateway: ${tier0.error}`)
+      console.warn('[Translate] OpenAI Gateway failed.', tier0.error)
+    }
 
     const tier1 = await callOpenRouter(ctx)
     if (tier1.ok && tier1.translations) return { ok: true, translations: tier1.translations }
@@ -703,7 +793,7 @@ export async function POST(request: NextRequest) {
 
     return {
       ok: false,
-      error: 'AI free bundle is finished. Please recharge and buy AI credits in System Settings.',
+      error: errors.length > 0 ? errors.join('; ') : 'All AI translation providers failed.',
     }
   }
 

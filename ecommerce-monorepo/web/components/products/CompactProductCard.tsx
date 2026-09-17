@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Star, Shield } from 'lucide-react'
 import { ModernProductData } from '@/components/ui/ModernProductCard'
+import { useCurrency } from '@/hooks/useCurrency'
 
 interface CompactProductCardProps {
   product: ModernProductData
@@ -10,6 +11,7 @@ interface CompactProductCardProps {
 }
 
 export function CompactProductCard({ product, locale = 'en' }: CompactProductCardProps) {
+  const { formatPrice } = useCurrency()
   const primaryImage = product.images?.[0] || product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=300&q=80'
 
   return (
@@ -36,11 +38,11 @@ export function CompactProductCard({ product, locale = 'en' }: CompactProductCar
         </div>
         <div className="flex items-baseline gap-1.5 mt-1">
           <span className="text-sm font-black text-[#1a3a5c] dark:text-[#e5c158]">
-            ${product.price.toFixed(2)}
+            {formatPrice(product.price)}
           </span>
           {product.compareAtPrice && product.compareAtPrice > product.price && (
             <span className="text-[10px] text-gray-400 line-through">
-              ${product.compareAtPrice.toFixed(2)}
+              {formatPrice(product.compareAtPrice)}
             </span>
           )}
         </div>

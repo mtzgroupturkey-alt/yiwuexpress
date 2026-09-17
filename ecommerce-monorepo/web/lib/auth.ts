@@ -104,14 +104,23 @@ export function clearAuthCookie(response: NextResponse): void {
  * Get token from request (cookie first, then Authorization header)
  */
 export function getTokenFromRequest(req: NextRequest | Request): string | null {
-  // Try cookie first
-  if ('cookies' in req) {
-    const cookieToken = req.cookies.get(COOKIE_NAME)?.value
+  // Try cookie first (NextRequest / Request with cookies helper)
+  if ('cookies' in req && typeof (req as any).cookies?.get === 'function') {
+    const cookieToken = (req as any).cookies.get(COOKIE_NAME)?.value
     if (cookieToken) return cookieToken
   }
 
+  // Next.js standard Request header fallback for Cookie
+  const rawCookieHeader = req.headers?.get('cookie')
+  if (rawCookieHeader) {
+    const match = rawCookieHeader.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]*)`))
+    if (match && match[1]) {
+      return decodeURIComponent(match[1])
+    }
+  }
+
   // Fallback to Authorization header
-  const authHeader = req.headers.get('authorization')
+  const authHeader = req.headers?.get('authorization')
   if (authHeader?.startsWith('Bearer ')) {
     return authHeader.slice(7)
   }

@@ -1,9 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { getAuthUser, requireAuth, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/orders/[id] - Get single order (customer view)
 export async function GET(
@@ -11,10 +9,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // IDOR Protection: Verify user owns this order or is admin
-    const user = await requireAuth(request)
-    
+    const user = await getAuthUser(request)
     const { id } = params
+    const { searchParams } = new URL(request.url)
+    const orderNumberParam = searchParams.get('orderNumber')
+    const emailParam = searchParams.get('email')
 
     const order = await prisma.order.findUnique({
       where: { id },
@@ -48,8 +47,20 @@ export async function GET(
       )
     }
 
-    // IDOR Protection: User can only view their own orders (admins can view all)
-    if (order.userId !== user.id && user.role !== 'ADMIN') {
+    // IDOR Protection: User can view if:
+    // 1. Authenticated as the order owner or ADMIN
+    // 2. Or provided matching orderNumber / customerEmail (guest verification)
+    const isOwnerOrAdmin = user && (order.userId === user.id || user.role === 'ADMIN')
+    const isGuestVerified = (orderNumberParam && orderNumberParam.trim() === order.orderNumber.trim()) ||
+      (emailParam && emailParam.toLowerCase().trim() === order.customerEmail.toLowerCase().trim())
+
+    if (!isOwnerOrAdmin && !isGuestVerified) {
+      if (!user) {
+        return NextResponse.json(
+          { success: false, error: 'Authentication required to view this order' },
+          { status: 401 }
+        )
+      }
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }

@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Star, ShoppingCart, Check, Heart, Eye } from 'lucide-react'
 import { ProductItem } from '@/data/products'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
+import { useCurrency } from '@/hooks/useCurrency'
 
 interface ElectronicsProductCardProps {
   product: ProductItem
@@ -16,6 +18,8 @@ export function ElectronicsProductCard({
   onQuickView,
   onAddToCart
 }: ElectronicsProductCardProps) {
+  const { tShop, tBadge, tFlash, tPdp } = useStorefrontTranslation()
+  const { formatPrice } = useCurrency()
   const [isAdded, setIsAdded] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [imageError, setImageError] = useState(false)
@@ -46,12 +50,12 @@ export function ElectronicsProductCard({
             )}
             {product.badge === 'HIT' && (
               <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs uppercase tracking-wider">
-                ХИТ
+                {tBadge('BESTSELLER')}
               </span>
             )}
             {product.badge === 'NEW' && (
               <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs uppercase tracking-wider">
-                NEW
+                {tBadge('NEW')}
               </span>
             )}
           </div>
@@ -65,7 +69,7 @@ export function ElectronicsProductCard({
               setIsFavorite(!isFavorite)
             }}
             className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-white/90 backdrop-blur-xs border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-400 hover:text-red-500 hover:scale-110 transition-all cursor-pointer"
-            aria-label="В избранное"
+            aria-label="Wishlist"
           >
             <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
           </button>
@@ -93,7 +97,7 @@ export function ElectronicsProductCard({
               className="absolute inset-x-3 bottom-3 py-2 bg-white/95 backdrop-blur-xs text-slate-900 hover:bg-[#FF4D00] hover:text-white font-bold text-xs rounded-xl shadow-md opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Быстрый просмотр</span>
+              <span>{tShop('viewMode') || 'Quick View'}</span>
             </button>
           )}
         </div>
@@ -138,11 +142,11 @@ export function ElectronicsProductCard({
       <div className="pt-2.5 border-t border-slate-100">
         <div className="flex items-baseline gap-2 mb-2.5">
           <span className="text-lg sm:text-xl font-black font-mono text-slate-950 tracking-tight">
-            {product.price.toLocaleString('ru-RU')} ₽
+            {formatPrice(product.price)}
           </span>
           {product.oldPrice && (
             <span className="text-xs text-slate-400 line-through font-mono">
-              {product.oldPrice.toLocaleString('ru-RU')} ₽
+              {formatPrice(product.oldPrice)}
             </span>
           )}
         </div>
@@ -160,12 +164,12 @@ export function ElectronicsProductCard({
           {isAdded ? (
             <>
               <Check className="w-4 h-4" />
-              <span>В корзине</span>
+              <span>{tPdp('added')}</span>
             </>
           ) : (
             <>
               <ShoppingCart className="w-4 h-4" />
-              <span>В корзину</span>
+              <span>{tFlash('addToCart')}</span>
             </>
           )}
         </button>
@@ -173,3 +177,4 @@ export function ElectronicsProductCard({
     </div>
   )
 }
+

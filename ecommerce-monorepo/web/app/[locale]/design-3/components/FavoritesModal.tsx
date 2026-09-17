@@ -1,6 +1,8 @@
 import React from 'react';
 import { X, Heart, ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
 import { Product } from '../types';
+import { useSettings } from '@/components/SettingsProvider';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
 interface FavoritesModalProps {
   isOpen: boolean;
@@ -17,6 +19,8 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
   onAddToCart,
   onRemoveFavorite,
 }) => {
+  const { settings } = useSettings();
+  const { tModals, tPdp } = useStorefrontTranslation();
   if (!isOpen) return null;
 
   return (
@@ -31,7 +35,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
           <div className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-red-500 fill-red-500" />
             <h3 className="text-base font-bold text-slate-900">
-              Saved Favorites ({favorites.length})
+              {tModals('savedFavorites', { count: favorites.length })}
             </h3>
           </div>
           <button
@@ -46,8 +50,8 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
           {favorites.length === 0 ? (
             <div className="text-center py-12">
               <Heart className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <h4 className="text-sm font-bold text-slate-700">No favorites yet</h4>
-              <p className="text-xs text-slate-400">Click the heart icon on any product to save it here.</p>
+              <h4 className="text-sm font-bold text-slate-700">{tModals('noFavoritesTitle')}</h4>
+              <p className="text-xs text-slate-400">{tModals('noFavoritesDesc')}</p>
             </div>
           ) : (
             favorites.map((product) => (
@@ -66,7 +70,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
                     {product.name}
                   </h4>
                   <div className="text-xs font-black text-slate-900 mt-1">
-                    {product.price.toFixed(2)} BYN
+                    {product.price.toFixed(2)} {settings?.currency || 'USD'}
                   </div>
                 </div>
 
@@ -76,7 +80,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
                     className="bg-[#F5A602] hover:bg-[#E09500] text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Add</span>
+                    <span className="hidden sm:inline">{tPdp('addToCart')}</span>
                   </button>
                   <button
                     onClick={() => onRemoveFavorite(product)}

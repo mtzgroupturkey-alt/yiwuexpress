@@ -27,6 +27,8 @@ import {
 import { Product } from '../types';
 import { PHILIPS_PDP_PRODUCT, SIMILAR_COFFEE_MACHINES } from '../data/pdpData';
 import { useCompanyName } from '@/hooks/useCompanyName';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface ProductDetailPageProps {
   product?: Product;
@@ -50,12 +52,15 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onProceedToCheckout,
 }) => {
   const companyName = useCompanyName();
+  const { tPdp, tShop, tModals, tBadge } = useStorefrontTranslation();
+  const { formatPrice } = useCurrency();
   const currentProduct = product || PHILIPS_PDP_PRODUCT;
 
   // Gallery state
   const images = currentProduct.images && currentProduct.images.length > 0 
     ? currentProduct.images 
     : [currentProduct.image];
+
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Variant state
@@ -85,6 +90,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
     return () => clearInterval(timer);
   }, []);
 
+  // Sync state when product prop changes
+  useEffect(() => {
+    setSelectedImageIndex(0);
+    setQuantity(1);
+  }, [product?.id]);
+
   const handleAddToCart = () => {
     onAddToCart(currentProduct, quantity);
     setIsAddedAnim(true);
@@ -94,20 +105,22 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   };
 
   const handleAddBundle = () => {
-    setIsBundleAdded(true);
-    // Add Arabica blend simulation
+    // Add current product + accessory bundle
+    onAddToCart(currentProduct, 1);
     onAddToCart({
-      id: 'bundle-coffee-beans',
-      name: 'Arabica Espresso Whole Bean Blend 1kg',
-      category: 'beverages',
-      brand: 'Lavazza',
-      originOrType: 'Italy',
+      id: 'bundle-cleaner-1',
+      name: 'AquaClean Anti-Scale Filter Pack (2x)',
+      category: 'Accessories',
+      department: currentProduct.department || 'Appliances',
+      brand: currentProduct.brand || 'Official',
+      originOrType: 'Official Care',
       rating: 4.9,
       reviewsCount: 190,
       price: 19.90,
       image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAIUKqsMtOejhQXCClKBJ5ANf7hvHncqM0MhhZrT2WXzBc-bKwzrycuo-rvg0KuE5AVEQUsneRYaJgYGkQ3COPfwsyJseZoW8rgWb7z9KbZsa3ow4zONzKeHMUZVRBypUnxTuT-HDkR9uN3MFEaIHB8x4mtLXNzMi-ePF5_OQbMZ250BU2qmzresn4qxtOwIbuMcM4lDPU_MnBODJvAX1Sc6Gd4otqHbKLBij_zeKEGAyjuOC3aJC9p',
       inStock: true,
     }, 1);
+    setIsBundleAdded(true);
     setTimeout(() => setIsBundleAdded(false), 2000);
   };
 
@@ -155,7 +168,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           className="mb-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#00407a] hover:underline cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to All Hypermarket Goods</span>
+          <span>{tPdp('backToShop')}</span>
         </button>
 
         {/* 2. Top 3-Column Layout: Gallery | Specs Highlights | Sticky Buy Box */}
@@ -192,16 +205,30 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <div className="flex-1 relative aspect-square bg-slate-50/70 rounded-xl overflow-hidden flex items-center justify-center group cursor-crosshair border border-slate-100">
                 {/* Floating Badge Tags */}
                 <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start">
-                  <span className="bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs flex items-center gap-1">
-                    <Zap className="w-3 h-3 fill-current" />
-                    Best Seller
-                  </span>
-                  <span className="bg-[#00407a] text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs">
-                    Official Distributor
-                  </span>
-                  {currentProduct.oldPrice && (
-                    <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider">
-                      Save ${(currentProduct.oldPrice - currentProduct.price).toFixed(2)}
+                  {currentProduct.discountBadge ? (
+                    <span className="bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs flex items-center gap-1">
+                      {currentProduct.discountBadge}
+                    </span>
+                  ) : currentProduct.oldPrice && currentProduct.oldPrice > currentProduct.price ? (
+                    <span className="bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs flex items-center gap-1">
+                      -{Math.round(((currentProduct.oldPrice - currentProduct.price) / currentProduct.oldPrice) * 100)}%
+                    </span>
+                  ) : null}
+
+                  {currentProduct.isExpressDelivery && (
+                    <span className="bg-amber-100 text-amber-950 text-[10px] font-black px-2.5 py-1 rounded-md flex items-center gap-1 shadow-xs uppercase tracking-wider">
+                      <Zap className="w-3 h-3 fill-amber-500 text-amber-600" />
+                      {tBadge('EXPRESS')}
+                    </span>
+                  )}
+
+                  {currentProduct.tagBadge ? (
+                    <span className="bg-[#00407a] text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs">
+                      {tBadge(currentProduct.tagBadge.text, currentProduct.tagBadge.type)}
+                    </span>
+                  ) : (
+                    <span className="bg-[#00407a] text-white text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs">
+                      {tBadge('BESTSELLER')}
                     </span>
                   )}
                 </div>
@@ -233,19 +260,35 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   </button>
                 </div>
 
-                {/* Main High-Res Image */}
                 <img
                   src={images[selectedImageIndex] || currentProduct.image}
                   alt={currentProduct.name}
                   className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-300 mix-blend-multiply"
                 />
-
-                {/* Magnify Zoom Chip */}
-                <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs text-[11px] font-semibold text-slate-600 flex items-center gap-1.5 pointer-events-none">
-                  <Search className="w-3 h-3 text-[#00407a]" />
-                  <span>Interactive High-Res View</span>
-                </div>
               </div>
+
+              {/* Thumbnails Row */}
+              {images.length > 1 && (
+                <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImageIndex(idx)}
+                      className={`w-16 h-16 rounded-lg bg-slate-50 border-2 p-1 shrink-0 transition-all cursor-pointer ${
+                        selectedImageIndex === idx
+                          ? 'border-[#00407a] ring-2 ring-[#00407a]/20'
+                          : 'border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`Thumb ${idx + 1}`}
+                        className="w-full h-full object-contain mix-blend-multiply"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Trust Badges Under Gallery */}
@@ -253,24 +296,24 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs flex items-center gap-2.5">
                 <ShieldCheck className="w-6 h-6 text-[#00407a] shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-slate-900 leading-tight">2 Years</span>
-                  <span className="text-[11px] text-slate-500">Official Warranty</span>
+                  <span className="text-xs font-bold text-slate-900 leading-tight">{tPdp('warranty2Years')}</span>
+                  <span className="text-[11px] text-slate-500">{tModals('verifiedQuality')}</span>
                 </div>
               </div>
 
               <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs flex items-center gap-2.5">
                 <Truck className="w-6 h-6 text-emerald-600 shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-slate-900 leading-tight">Free Express</span>
-                  <span className="text-[11px] text-slate-500">Courier Delivery</span>
+                  <span className="text-xs font-bold text-slate-900 leading-tight">{tPdp('freeExpressCourier')}</span>
+                  <span className="text-[11px] text-slate-500">{tShop('express60min')}</span>
                 </div>
               </div>
 
               <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-xs flex items-center gap-2.5">
                 <RotateCcw className="w-6 h-6 text-amber-600 shrink-0" />
                 <div className="flex flex-col">
-                  <span className="text-xs font-bold text-slate-900 leading-tight">14-Day Free</span>
-                  <span className="text-[11px] text-slate-500">Hassle Return</span>
+                  <span className="text-xs font-bold text-slate-900 leading-tight">{tPdp('hassleFreeReturn')}</span>
+                  <span className="text-[11px] text-slate-500">{tModals('exchangeGuarantee')}</span>
                 </div>
               </div>
             </div>
@@ -287,7 +330,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <span className="text-slate-300">•</span>
                 <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  In Stock: Minsk Central Hub (28 pcs)
+                  {tPdp('inStockHub', { count: currentProduct.stockLeft || 28 })}
                 </span>
               </div>
 
@@ -311,14 +354,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 onClick={() => setActiveTab('reviews')} 
                 className="text-xs font-semibold text-[#00407a] hover:underline cursor-pointer"
               >
-                {currentProduct.reviewsCount} Customer Reviews
+                {tShop('customerReviews', { count: currentProduct.reviewsCount })}
               </button>
               <span className="text-slate-300">|</span>
               <button 
                 onClick={() => setActiveTab('qa')} 
                 className="text-xs font-semibold text-slate-500 hover:text-slate-800 cursor-pointer"
               >
-                52 Q&As
+                {tPdp('qAndACount', { count: 52 })}
               </button>
             </div>
 
@@ -326,9 +369,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div className="space-y-2 bg-white border border-slate-200 p-3.5 rounded-xl">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500">
-                  Finish Variant: <strong className="text-slate-900 font-bold">{selectedVariant}</strong>
+                  {tPdp('finishVariant')} <strong className="text-slate-900 font-bold">{selectedVariant}</strong>
                 </span>
-                <span className="text-slate-400 font-medium">3 finishes available</span>
+                <span className="text-slate-400 font-medium">{tPdp('finishesAvailable', { count: finishVariants.length })}</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -359,7 +402,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <SlidersHorizontal className="w-4 h-4 text-[#00407a]" />
-                <span>Key Specifications</span>
+                <span>{tPdp('keySpecs')}</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -405,10 +448,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
                   <ShoppingBag className="w-4 h-4 text-amber-600" />
-                  <span>Frequently Bought Together</span>
+                  <span>{tPdp('boughtTogether')}</span>
                 </div>
                 <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-md">
-                  Save 15% Bundle
+                  {tPdp('saveBundle')}
                 </span>
               </div>
 
@@ -432,8 +475,8 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <div className="flex-1 min-w-0 pl-1">
                   <div className="text-xs font-semibold text-slate-900 truncate">1kg Arabica Blend + AquaClean Cartridge</div>
                   <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="text-xs font-black text-slate-900">$34.90</span>
-                    <span className="text-[11px] text-slate-400 line-through">$44.00</span>
+                    <span className="text-xs font-black text-slate-900">{formatPrice(34.90)}</span>
+                    <span className="text-[11px] text-slate-400 line-through">{formatPrice(44.00)}</span>
                   </div>
                 </div>
 
@@ -441,7 +484,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   onClick={handleAddBundle}
                   className="bg-[#00407a] hover:bg-[#003366] text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0"
                 >
-                  {isBundleAdded ? 'Added!' : 'Add Both'}
+                  {isBundleAdded ? tPdp('added') : tPdp('addBoth')}
                 </button>
               </div>
             </div>
@@ -456,11 +499,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-baseline gap-2">
                     <span className="text-3xl font-black text-slate-900 tracking-tight">
-                      ${currentProduct.price.toFixed(2)}
+                      {formatPrice(currentProduct.price)}
                     </span>
                     {currentProduct.oldPrice && (
                       <span className="text-sm font-medium text-slate-400 line-through">
-                        ${currentProduct.oldPrice.toFixed(2)}
+                        {formatPrice(currentProduct.oldPrice)}
                       </span>
                     )}
                   </div>
@@ -473,7 +516,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
                 <div className="flex items-center gap-1.5 mt-2 text-amber-700 text-xs font-medium">
                   <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-current" />
-                  <span>Earn <strong>+{`15 ${companyName} bonus points`}</strong></span>
+                  <span>{tPdp('earnBonus', { company: companyName })}</span>
                 </div>
               </div>
 
@@ -484,13 +527,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">0% Installment Plan</span>
+                    <span className="text-xs font-bold text-slate-900">{tPdp('installmentPlan')}</span>
                     <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 rounded">0-0-12</span>
                   </div>
                   <span className="text-sm font-black text-[#00407a] mt-0.5">
-                    {currentProduct.installmentPrice || '$40.75 / month'}
+                    {currentProduct.installmentPrice || `${formatPrice(currentProduct.price / 12)} / mo`}
                   </span>
-                  <span className="text-[11px] text-slate-500">12 months with no down payment</span>
+                  <span className="text-[11px] text-slate-500">{tPdp('installmentPlanSub')}</span>
                 </div>
               </div>
 
@@ -514,7 +557,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-medium">Max. 3 units per buyer</span>
+                  <span className="text-[11px] text-slate-400 font-medium">{tPdp('maxUnitsPerBuyer')}</span>
                 </div>
 
                 {/* Add To Cart Primary Button */}
@@ -529,12 +572,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   {isAddedAnim ? (
                     <>
                       <Check className="w-5 h-5 stroke-[2.5]" />
-                      <span>Added to Cart ({quantity})!</span>
+                      <span>{tPdp('addedToCart', { count: quantity })}</span>
                     </>
                   ) : (
                     <>
                       <ShoppingCart className="w-5 h-5" />
-                      <span>Add to Cart • ${(currentProduct.price * quantity).toFixed(2)}</span>
+                      <span>{tPdp('addToCart')} • {formatPrice(currentProduct.price * quantity)}</span>
                     </>
                   )}
                 </button>
@@ -548,7 +591,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#00407a] font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Zap className="w-4 h-4 text-amber-500 fill-current" />
-                  <span>1-Click Express Checkout</span>
+                  <span>{tPdp('oneClickCheckout')}</span>
                 </button>
               </div>
 
@@ -558,11 +601,11 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   <Truck className="w-4 h-4 text-[#00407a] shrink-0 mt-0.5" />
                   <div>
                     <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>Courier to Minsk: Free</span>
+                      <span>{tPdp('courierDeliveryFree')}</span>
                       <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-bold">Fast</span>
                     </div>
                     <p className="text-slate-500 text-[11px] mt-0.5">
-                      Order within <strong className="text-slate-800">{countdown}</strong> for delivery tomorrow 10:00 - 14:00.
+                      {tPdp('orderCountdownPrompt', { countdown })}
                     </p>
                   </div>
                 </div>
@@ -570,9 +613,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 <div className="flex items-start gap-2.5">
                   <Store className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-bold text-slate-900">Hypermarket Pickup: Free</div>
+                    <div className="font-bold text-slate-900">{tPdp('hypermarketPickupFree')}</div>
                     <p className="text-slate-500 text-[11px] mt-0.5">
-                      Ready today in 1 hour at Pobediteley Ave 12 (Daily 08:00 - 23:00).
+                      {tPdp('readyInHour')}
                     </p>
                   </div>
                 </div>
@@ -582,10 +625,10 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
               <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs text-slate-600">
                   <Headphones className="w-4 h-4 text-[#00407a]" />
-                  <span>Need help ordering?</span>
+                  <span>{tPdp('needHelpOrdering')}</span>
                 </div>
                 <a href="tel:7711" className="text-xs font-bold text-[#00407a] hover:underline">
-                  7711 (Free)
+                  7711 ({tPdp('freeCall')})
                 </a>
               </div>
             </div>
@@ -602,7 +645,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 activeTab === 'specs' ? 'text-[#00407a]' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <span>Full Specifications</span>
+              <span>{tPdp('fullSpecs')}</span>
               {activeTab === 'specs' && (
                 <span className="absolute bottom-[-13px] left-0 right-0 h-0.5 bg-[#00407a] rounded-full" />
               )}
@@ -614,7 +657,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 activeTab === 'reviews' ? 'text-[#00407a]' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <span>Customer Reviews</span>
+              <span>{tPdp('customerReviews')}</span>
               <span className="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">
                 {currentProduct.reviewsCount}
               </span>
@@ -629,7 +672,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 activeTab === 'delivery' ? 'text-[#00407a]' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <span>Delivery & Payment</span>
+              <span>{tPdp('deliveryAndPayment')}</span>
               {activeTab === 'delivery' && (
                 <span className="absolute bottom-[-13px] left-0 right-0 h-0.5 bg-[#00407a] rounded-full" />
               )}
@@ -641,7 +684,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                 activeTab === 'qa' ? 'text-[#00407a]' : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              <span>Questions & Answers</span>
+              <span>{tPdp('qAndA')}</span>
               <span className="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">52</span>
               {activeTab === 'qa' && (
                 <span className="absolute bottom-[-13px] left-0 right-0 h-0.5 bg-[#00407a] rounded-full" />
@@ -652,7 +695,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {/* TAB 1: Specifications */}
           {activeTab === 'specs' && (
             <div className="space-y-6">
-              <h3 className="text-base font-bold text-slate-900">Complete Technical Characteristics</h3>
+              <h3 className="text-base font-bold text-slate-900">{tPdp('completeTechSpecs')}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
                 {(currentProduct.detailedSpecs || PHILIPS_PDP_PRODUCT.detailedSpecs || []).map((group, idx) => (
@@ -692,7 +735,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                         <Star key={i} className="w-4 h-4 fill-current" />
                       ))}
                     </div>
-                    <span className="text-xs text-slate-500">Based on {currentProduct.reviewsCount} reviews</span>
+                    <span className="text-xs text-slate-500">{tPdp('basedOnReviews', { count: currentProduct.reviewsCount })}</span>
                   </div>
 
                   {/* Star Distribution Progress */}
@@ -732,7 +775,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   onClick={() => alert('Review form submitted! Thank you for rating.')}
                   className="bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
-                  Write a Review
+                  {tPdp('writeReview')}
                 </button>
               </div>
 
@@ -751,7 +794,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                             {rev.verified && (
                               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded flex items-center gap-0.5">
                                 <Check className="w-3 h-3 text-emerald-600" />
-                                Verified Buyer
+                                {tModals('verifiedQuality')}
                               </span>
                             )}
                           </div>
@@ -791,25 +834,25 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {/* TAB 3: Delivery Terms */}
           {activeTab === 'delivery' && (
             <div className="space-y-4">
-              <h3 className="text-base font-bold text-slate-900">Hypermarket Fulfillment & Pickup Details</h3>
+              <h3 className="text-base font-bold text-slate-900">{tPdp('deliveryAndPayment')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
                   <div className="text-xs font-bold text-[#00407a] flex items-center gap-2">
                     <Truck className="w-4 h-4" />
-                    <span>Courier to Door</span>
+                    <span>{tPdp('delivery')}</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Free delivery for orders above $50.00 across Minsk and major metropolitan centers. Delivered right into your kitchen with package inspection before signing.
+                    {tPdp('freeExpressCourier')}. Delivered securely from warehouse with package inspection before signing.
                   </p>
                 </div>
 
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
                   <div className="text-xs font-bold text-[#00407a] flex items-center gap-2">
                     <Store className="w-4 h-4" />
-                    <span>Express Pickup Points (PVD)</span>
+                    <span>{tPdp('hypermarketPickupFree')}</span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    Pickup points open 7 days a week from 08:00 to 23:00. Equipped with electronic test outlets so you can test appliances on-site before checkout.
+                    {tPdp('readyInHour')}
                   </p>
                 </div>
               </div>
@@ -820,12 +863,12 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           {activeTab === 'qa' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-900">Community Questions & Answers</h3>
+                <h3 className="text-base font-bold text-slate-900">{tPdp('qAndA')}</h3>
                 <button 
                   onClick={() => alert('Question posted! Customer support replies within 2 hours.')}
                   className="bg-slate-100 hover:bg-slate-200 text-[#00407a] text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer"
                 >
-                  Ask a Question
+                  {tPdp('qAndA')}
                 </button>
               </div>
 
@@ -848,9 +891,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
         <div className="mt-12 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-900">
-              Similar Coffee Machines You Might Like
+              {tPdp('similar')}
             </h3>
-            <span className="text-xs text-slate-400 font-medium">All with factory guarantee</span>
+            <span className="text-xs text-slate-400 font-medium">{tPdp('warranty')}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -891,9 +934,9 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     </h4>
 
                     <div className="flex items-baseline gap-2 pt-1">
-                      <span className="text-sm font-black text-slate-900">${item.price.toFixed(2)}</span>
+                      <span className="text-sm font-black text-slate-900">{formatPrice(item.price)}</span>
                       {item.oldPrice && (
-                        <span className="text-xs text-slate-400 line-through">${item.oldPrice.toFixed(2)}</span>
+                        <span className="text-xs text-slate-400 line-through">{formatPrice(item.oldPrice)}</span>
                       )}
                     </div>
                   </div>
@@ -904,7 +947,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                   className="mt-3 w-full py-2 bg-slate-100 hover:bg-[#F5A602] hover:text-slate-950 text-[#00407a] text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <ShoppingCart className="w-3.5 h-3.5" />
-                  <span>Add</span>
+                  <span>{tPdp('addToCart')}</span>
                 </button>
               </div>
             ))}

@@ -1,4 +1,4 @@
-﻿import { cache } from 'react'
+import { cache } from 'react'
 import { getSystemSettings } from '../company'
 import { CompanySettings, DEFAULT_SETTINGS } from '../../stores/settingsStore'
 
@@ -31,6 +31,13 @@ export const getServerSettings = cache(async (locale = 'en'): Promise<CompanySet
       timezone: raw.timezone || DEFAULT_SETTINGS.timezone,
       language: raw.language || locale,
       storeMode: (raw.storeMode as any) || DEFAULT_SETTINGS.storeMode,
+      storeHours: raw.storeHours || DEFAULT_SETTINGS.storeHours,
+      facebookUrl: raw.facebookUrl || undefined,
+      twitterUrl: raw.twitterUrl || undefined,
+      linkedinUrl: raw.linkedinUrl || undefined,
+      instagramUrl: raw.instagramUrl || undefined,
+      whatsappNumber: raw.whatsappNumber || undefined,
+      wechatId: raw.wechatId || undefined,
     }
   } catch (error) {
     console.error('[getServerSettings] Failed to fetch settings, using fallback defaults:', error)

@@ -19,6 +19,8 @@ import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
 import { useTranslations } from 'next-intl'
+import { useCurrency } from '@/hooks/useCurrency'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 
 // A serializable subset of the product API payload (mirrors the page-level
 // projection). Extra fields are tolerated via index signature.
@@ -90,6 +92,8 @@ export default function ProductDetailView({
   const router = useRouter()
   const navigate = useLocaleNav()
   const { refreshCartCount } = useCart()
+  const { formatPrice } = useCurrency()
+  const { tBadge } = useStorefrontTranslation()
   const t = useTranslations('Product')
   const tCart = useTranslations('Cart')
   const tProducts = useTranslations('Products') as unknown as (key: string, values?: any) => string
@@ -593,7 +597,7 @@ export default function ProductDetailView({
                   <>
                     <div className="flex items-baseline gap-2 mb-1">
                       <span className="text-3xl font-bold text-gradient-gold">
-                        ${displayPrice.toFixed(2)}
+                        {formatPrice(displayPrice)}
                       </span>
                       {priceType === 'wholesale' && (
                         <Badge className="bg-blue-100 text-blue-700 border-blue-200">
@@ -603,7 +607,7 @@ export default function ProductDetailView({
                       {product.compareAtPrice && (
                         <>
                           <span className="text-lg text-gray-400 line-through">
-                            ${product.compareAtPrice.toFixed(2)}
+                            {formatPrice(product.compareAtPrice)}
                           </span>
                           <Badge variant="destructive" className="text-xs px-2 py-0.5">
                             {t('savePct', { pct: discount })}
@@ -626,12 +630,12 @@ export default function ProductDetailView({
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-600">{t('retail')}</span>
-                            <span className="text-sm font-bold text-gray-900">${product.price.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-gray-900">{formatPrice(product.price)}</span>
                           </div>
                           {product.wholesalePrice && (
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-gray-600">{t('wholesaleMdq', { n: product.minOrderQty })}</span>
-                              <span className="text-sm font-bold text-blue-700">${product.wholesalePrice.toFixed(2)}</span>
+                              <span className="text-sm font-bold text-blue-700">{formatPrice(product.wholesalePrice)}</span>
                             </div>
                           )}
                         </div>
@@ -654,7 +658,7 @@ export default function ProductDetailView({
                   </p>
                 </div>
                 <p className="text-2xl font-bold text-blue-700 mb-1">
-                  ${product.wholesalePrice.toFixed(2)}
+                  {formatPrice(product.wholesalePrice)}
                 </p>
                 <p className="text-xs text-blue-600 font-medium">
                   {t('minOrderUnits', { n: product.minOrderQty, pct: Math.round((1 - product.wholesalePrice / product.price) * 100) })}
@@ -757,7 +761,7 @@ export default function ProductDetailView({
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 font-medium text-sm">{t('subtotal')}</span>
                         <span className="text-xl font-bold text-primary-600">
-                          ${(product.price * quantity).toFixed(2)}
+                          {formatPrice(product.price * quantity)}
                         </span>
                       </div>
                     </div>

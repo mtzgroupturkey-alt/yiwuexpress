@@ -172,13 +172,24 @@ model SystemSettings {
   wechatId              String?
   whatsappNumber        String?
 
-  // AI Translation API Keys
-  openrouterApiKey String?
-  geminiApiKey     String?
-  deepseekApiKey   String?
-  qwenApiKey       String?
-  kimiApiKey       String?
-  cerebrasApiKey   String?
+  // Store Front & Header Customizations
+  storeHours            String? @default("08:00 – 23:00")
+  freeShippingThreshold Float?  @default(35.00)
+  announcementTicker    String?
+
+  // AI Translation & Gateway Settings (OpenAI-compatible)
+  openaiApiKey      String?
+  openaiBaseUrl     String? @default("https://llm.gcat.ir/v1")
+  openaiModel       String? @default("gpt-4o")
+  primaryAiProvider String? @default("openai")
+
+  // Secondary Fallback API Keys
+  openrouterApiKey  String?
+  geminiApiKey      String?
+  deepseekApiKey    String?
+  qwenApiKey        String?
+  kimiApiKey        String?
+  cerebrasApiKey    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,9 +1,8 @@
 'use client'
 
-import { TwoRowNavbar } from './TwoRowNavbar'
-import { HeroSlider } from '@/components/home/HeroSlider'
+import { Design3LayoutHeader } from './Design3LayoutHeader'
+import { Design3LayoutFooter } from './Design3LayoutFooter'
 import { PageHero } from './PageHero'
-import Footer from '@/components/footer'
 import { BackToTop } from '@/components/ui/BackToTop'
 
 interface BreadcrumbItem {
@@ -35,12 +34,9 @@ export function SharedLayout({
   overlayColor
 }: SharedLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden">
-      {/* Main Header and Category Menu */}
-      <TwoRowNavbar />
-      
-      {/* Hero Section - Only on homepage */}
-      {showHero && <HeroSlider />}
+    <div className="min-h-screen bg-slate-50 flex flex-col relative w-full overflow-x-hidden">
+      {/* Design-3 Modern Header & Interactive Modals */}
+      <Design3LayoutHeader />
       
       {/* Page Hero with Breadcrumbs - Only on other pages */}
       {!showHero && pageTitle && (
@@ -60,8 +56,8 @@ export function SharedLayout({
         {children}
       </main>
 
-      {/* Footer - Always visible */}
-      <Footer />
+      {/* Design-3 Modern Footer */}
+      <Design3LayoutFooter />
 
       {/* Floating Back to Top Button */}
       <BackToTop />

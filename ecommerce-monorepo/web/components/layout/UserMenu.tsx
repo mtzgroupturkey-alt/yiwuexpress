@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -271,7 +271,7 @@ export function UserMenu() {
                 <span className="relative z-10 flex-1 font-medium">{item.label}</span>
                 
                 {/* Count badge */}
-                {'count' in item && item.count > 0 && (
+                {'count' in item && typeof item.count === 'number' && item.count > 0 && (
                   <span className="relative z-10 flex items-center justify-center min-w-[22px] h-[22px] bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full px-1.5 text-[10px] font-bold shadow-md">
                     {item.count}
                   </span>

@@ -219,18 +219,18 @@ export default function PaymentPage() {
       return (
         <div className="space-y-4">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
-            <p className="font-semibold text-yellow-800 mb-2">Bank Transfer Instructions</p>
+            <p className="font-semibold text-yellow-800 mb-2">Bank Wire Transfer (T/T) Instructions</p>
             <div className="space-y-1 text-yellow-700">
-              <p><strong>Bank:</strong> Bank of China, China Branch</p>
+              <p><strong>Beneficiary Bank:</strong> Bank of China, China Branch</p>
               <p><strong>Account Name:</strong> <CompanyName uppercase /> TRADING CO., LTD</p>
               <p><strong>Account Number:</strong> 1234 5678 9012 3456</p>
-              <p><strong>SWIFT/BIC:</strong> BKCHCNBJ</p>
-              <p className="mt-2"><strong>Amount:</strong> ${order.total.toFixed(2)} USD</p>
-              <p><strong>Reference:</strong> {order.orderNumber}</p>
+              <p><strong>SWIFT / BIC:</strong> BKCHCNBJ</p>
+              <p className="mt-2"><strong>Amount Due:</strong> ${order.total.toFixed(2)} USD</p>
+              <p><strong>Payment Reference:</strong> {order.orderNumber}</p>
             </div>
           </div>
           <div className="bg-gray-50 border rounded-lg p-4 text-sm text-gray-600">
-            <p>Please include your order number <strong>#{order.orderNumber}</strong> as the payment reference. Your order will be processed once the payment is confirmed.</p>
+            <p>Please provide your bank with the payment reference <strong>#{order.orderNumber}</strong> so our finance team can instantly match your remittance. An official commercial invoice will also be dispatched to {order.customerEmail}.</p>
           </div>
           <Button
             onClick={handleBankTransfer}
@@ -238,7 +238,49 @@ export default function PaymentPage() {
             size="lg"
             variant="outline"
           >
-            <Building2 className="w-5 h-5 mr-2" /> I Will Pay via Bank Transfer
+            <Building2 className="w-5 h-5 mr-2" /> I Have Transferred / Will Wire via Bank
+          </Button>
+        </div>
+      )
+    }
+
+    if (method === 'TRADE_ASSURANCE' || method === 'trade_assurance') {
+      return (
+        <div className="space-y-4">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 text-sm text-emerald-900">
+            <p className="font-semibold mb-1">Trade Assurance Escrow Protection</p>
+            <p>Your payment of <strong>${order.total.toFixed(2)}</strong> is held in an encrypted escrow trust account until your goods are produced, inspected, and dispatched according to contractual terms.</p>
+          </div>
+          <Button
+            onClick={() => {
+              setStage('success')
+              setStageMessage('Trade Assurance Escrow initiated! Your buyer protection contract is active.')
+            }}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+            size="lg"
+          >
+            <CheckCircle className="w-5 h-5 mr-2" /> Confirm Escrow Coverage
+          </Button>
+        </div>
+      )
+    }
+
+    if (method === 'CASH_ON_DELIVERY' || method === 'cash_delivery' || method === 'cash_pos' || method === 'receipt') {
+      return (
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-900">
+            <p className="font-semibold mb-1">Payment upon Delivery / Pickup</p>
+            <p>Total amount due: <strong>${order.total.toFixed(2)}</strong>. You can pay our delivery agent or warehouse reception via Cash or POS Card Terminal upon inspecting your shipment.</p>
+          </div>
+          <Button
+            onClick={() => {
+              setStage('success')
+              setStageMessage('Order confirmed! Please have payment ready upon parcel arrival.')
+            }}
+            className="w-full"
+            size="lg"
+          >
+            <CheckCircle className="w-5 h-5 mr-2" /> Confirm Doorstep / POS Payment
           </Button>
         </div>
       )
@@ -246,7 +288,7 @@ export default function PaymentPage() {
 
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">Unknown payment method: {method}</p>
+        <p className="text-gray-500">Selected payment method: {method.replace('_', ' ')}</p>
         <Button onClick={() => navigate(`/orders/${orderId}`)} className="mt-4">
           Back to Order
         </Button>

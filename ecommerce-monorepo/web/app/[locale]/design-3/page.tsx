@@ -40,8 +40,11 @@ import { PHILIPS_PDP_PRODUCT } from './data/pdpData';
 import { GROCERY_CATALOG_PRODUCTS } from './data/groceryCatalogData';
 import { Product, CartItem } from './types';
 import { Search, X, CheckCircle2 } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
+import { MotionReveal } from '@/components/motion/MotionReveal';
 
 export default function App() {
+  const { formatPrice } = useCurrency();
   // 1. Core State
   const [currentView, setCurrentView] = useState<'home' | 'shop' | 'product' | 'checkout'>('home');
   const [selectedProductForPDP, setSelectedProductForPDP] = useState<Product>(PHILIPS_PDP_PRODUCT);
@@ -215,9 +218,11 @@ export default function App() {
   // Handle department and category selection
   const handleSelectDepartment = (dept: string) => {
     setSelectedDepartment(dept);
-    if (dept === 'All Departments') {
+    if (dept === 'All Departments' || dept === 'all') {
       setSelectedCategory(null);
       setShopInitialDepartment('all');
+      setShopInitialCategory('all');
+      handleNavigateView('shop', { department: 'All Departments', category: 'all' });
     } else {
       setShopInitialDepartment(dept);
       handleNavigateView('shop', { department: dept });
@@ -297,7 +302,7 @@ export default function App() {
             onBackToShopping={() => handleNavigateView('shop')}
             onOrderSuccess={(orderId, total) => {
               setCartItems([]);
-              showToast(`Order #${orderId} placed successfully! Total: ${total.toFixed(2)} BYN`);
+              showToast(`Order #${orderId} placed successfully! Total: ${formatPrice(total)}`);
             }}
             onAddToCart={handleAddToCart}
             initialDeliveryAddress={deliveryAddress}
@@ -387,7 +392,7 @@ export default function App() {
                               {product.name}
                             </h4>
                             <div className="text-xs font-black text-slate-900 mt-1">
-                              {product.price.toFixed(2)} BYN
+                              {formatPrice(product.price)}
                             </div>
                           </div>
                           <button
@@ -420,21 +425,104 @@ export default function App() {
             />
 
             {/* 3. Shop by Category Icons Grid */}
-            <CategoryGrid
-              categories={CATEGORIES}
-              selectedCategory={selectedCategory}
-              onSelectCategory={handleSelectCategory}
-              onViewAllDepartments={() => handleNavigateView('shop')}
-            />
+            <MotionReveal direction="up" delay={0.05}>
+              <CategoryGrid
+                categories={CATEGORIES}
+                selectedCategory={selectedCategory}
+                onSelectCategory={handleSelectCategory}
+                onViewAllDepartments={() => handleNavigateView('shop')}
+              />
+            </MotionReveal>
 
             {/* 4. Flash Deals of the Day */}
-            <div id="flash-deals-section">
-              <FlashDeals
-                deals={
-                  selectedCategory
-                    ? FLASH_DEALS.filter((d) => d.category === selectedCategory)
-                    : FLASH_DEALS
-                }
+            <MotionReveal direction="up">
+              <div id="flash-deals-section">
+                <FlashDeals
+                  deals={
+                    selectedCategory
+                      ? FLASH_DEALS.filter((d) => d.category === selectedCategory)
+                      : FLASH_DEALS
+                  }
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  cartQuantities={cartQuantities}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={handleToggleFavorite}
+                  onSelectProduct={(product) => {
+                    setSelectedProductForPDP(product);
+                    handleNavigateView('product', { product });
+                  }}
+                  onViewAllDeals={() => handleNavigateView('shop')}
+                />
+              </div>
+            </MotionReveal>
+
+            {/* 5. Four Trust / Value Proposition Cards */}
+            <MotionReveal direction="up">
+              <TrustFeatures />
+            </MotionReveal>
+
+            {/* 6. Kitchenware, Cookware & Dining Essentials Grid */}
+            <MotionReveal direction="up">
+              <FreshSupermarketSection
+                products={GROCERY_CATALOG_PRODUCTS}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+                cartQuantities={cartQuantities}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
+                onSelectProduct={(product) => {
+                  setSelectedProductForPDP(product);
+                  handleNavigateView('product', { product });
+                }}
+                onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchenware & Dining' })}
+              />
+            </MotionReveal>
+
+            {/* 7. Popular in Electronics & Appliances */}
+            <MotionReveal direction="up">
+              <PopularElectronics
+                products={POPULAR_ELECTRONICS}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+                cartQuantities={cartQuantities}
+                onSelectProduct={(product) => {
+                  setSelectedProductForPDP(product);
+                  handleNavigateView('product', { product });
+                }}
+                onViewAllElectronics={() => handleNavigateView('shop', { department: 'Electronics & Phones' })}
+              />
+            </MotionReveal>
+
+            {/* 8. Top Rated Best Sellers Across Departments */}
+            <MotionReveal direction="up">
+              <BestSellersSection
+                products={ALL_PRODUCTS}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+                cartQuantities={cartQuantities}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
+                onSelectProduct={(product) => {
+                  setSelectedProductForPDP(product);
+                  handleNavigateView('product', { product });
+                }}
+                onViewAllBestSellers={() => handleNavigateView('shop')}
+              />
+            </MotionReveal>
+
+            {/* 9. Official Brand Zones */}
+            <MotionReveal direction="up">
+              <BrandZones
+                onSelectBrand={handleSelectBrand}
+                onViewAllBrands={() => handleNavigateView('shop')}
+              />
+            </MotionReveal>
+
+            {/* 10. Weekly Hypermarket Clearance & Super Deals */}
+            <MotionReveal direction="up">
+              <WeeklyBargainsSection
+                products={allCatalogProducts}
                 onAddToCart={handleAddToCart}
                 onUpdateQuantity={handleUpdateQuantity}
                 cartQuantities={cartQuantities}
@@ -446,83 +534,20 @@ export default function App() {
                 }}
                 onViewAllDeals={() => handleNavigateView('shop')}
               />
-            </div>
-
-            {/* 5. Four Trust / Value Proposition Cards */}
-            <TrustFeatures />
-
-            {/* 6. Kitchenware, Cookware & Dining Essentials Grid */}
-            <FreshSupermarketSection
-              products={GROCERY_CATALOG_PRODUCTS}
-              onAddToCart={handleAddToCart}
-              onUpdateQuantity={handleUpdateQuantity}
-              cartQuantities={cartQuantities}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={handleToggleFavorite}
-              onSelectProduct={(product) => {
-                setSelectedProductForPDP(product);
-                handleNavigateView('product', { product });
-              }}
-              onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchenware & Dining' })}
-            />
-
-            {/* 7. Popular in Electronics & Appliances */}
-            <PopularElectronics
-              products={POPULAR_ELECTRONICS}
-              onAddToCart={handleAddToCart}
-              onUpdateQuantity={handleUpdateQuantity}
-              cartQuantities={cartQuantities}
-              onSelectProduct={(product) => {
-                setSelectedProductForPDP(product);
-                handleNavigateView('product', { product });
-              }}
-              onViewAllElectronics={() => handleNavigateView('shop', { department: 'Electronics & Phones' })}
-            />
-
-            {/* 8. Top Rated Best Sellers Across Departments */}
-            <BestSellersSection
-              products={ALL_PRODUCTS}
-              onAddToCart={handleAddToCart}
-              onUpdateQuantity={handleUpdateQuantity}
-              cartQuantities={cartQuantities}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={handleToggleFavorite}
-              onSelectProduct={(product) => {
-                setSelectedProductForPDP(product);
-                handleNavigateView('product', { product });
-              }}
-              onViewAllBestSellers={() => handleNavigateView('shop')}
-            />
-
-            {/* 9. Official Brand Zones */}
-            <BrandZones
-              onSelectBrand={handleSelectBrand}
-              onViewAllBrands={() => handleNavigateView('shop')}
-            />
-
-            {/* 10. Weekly Hypermarket Clearance & Super Deals */}
-            <WeeklyBargainsSection
-              products={allCatalogProducts}
-              onAddToCart={handleAddToCart}
-              onUpdateQuantity={handleUpdateQuantity}
-              cartQuantities={cartQuantities}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={handleToggleFavorite}
-              onSelectProduct={(product) => {
-                setSelectedProductForPDP(product);
-                handleNavigateView('product', { product });
-              }}
-              onViewAllDeals={() => handleNavigateView('shop')}
-            />
+            </MotionReveal>
 
             {/* 11. Exclusive Member Club Banner */}
-            <MemberClubBanner
-              onActivateMembership={() => setIsMemberModalOpen(true)}
-              onHowPointsWork={() => setIsMemberModalOpen(true)}
-            />
+            <MotionReveal direction="up">
+              <MemberClubBanner
+                onActivateMembership={() => setIsMemberModalOpen(true)}
+                onHowPointsWork={() => setIsMemberModalOpen(true)}
+              />
+            </MotionReveal>
 
             {/* 12. Newsletter Subscription Section */}
-            <NewsletterBar />
+            <MotionReveal direction="up">
+              <NewsletterBar />
+            </MotionReveal>
           </>
         )}
       </main>

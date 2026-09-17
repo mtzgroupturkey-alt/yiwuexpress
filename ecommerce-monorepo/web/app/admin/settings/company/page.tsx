@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import {
   Building2, Mail, Phone, Globe, FileText, Save,
-  MapPin, Hash, Palette, AlertCircle, CheckCircle, Upload, RefreshCw
+  MapPin, Hash, Palette, AlertCircle, CheckCircle, Upload, RefreshCw,
+  Clock, DollarSign, Megaphone
 } from 'lucide-react'
 import { useAdminAuth } from '../../contexts/AdminAuthContext'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
@@ -34,6 +35,9 @@ interface CompanySettings {
   instagramUrl: string
   wechatId: string
   whatsappNumber: string
+  storeHours: string
+  freeShippingThreshold: number
+  announcementTicker: string
 }
 
 export default function CompanyInfoPage() {
@@ -70,6 +74,9 @@ export default function CompanyInfoPage() {
     instagramUrl: '',
     wechatId: '',
     whatsappNumber: '',
+    storeHours: '08:00 – 23:00',
+    freeShippingThreshold: 35.0,
+    announcementTicker: '',
   })
 
   // Helper function to safely convert null to empty string
@@ -136,6 +143,9 @@ export default function CompanyInfoPage() {
             instagramUrl: safeString(data.settings.instagramUrl),
             wechatId: safeString(data.settings.wechatId),
             whatsappNumber: safeString(data.settings.whatsappNumber),
+            storeHours: safeString(data.settings.storeHours) || '08:00 – 23:00',
+            freeShippingThreshold: typeof data.settings.freeShippingThreshold === 'number' ? data.settings.freeShippingThreshold : (parseFloat(data.settings.freeShippingThreshold) || 35.0),
+            announcementTicker: safeString(data.settings.announcementTicker),
           })
         }
         setError('')
@@ -590,6 +600,65 @@ export default function CompanyInfoPage() {
                   placeholder="+86 123 4567 8901"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Storefront & Header Configuration */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <Clock size={18} className="text-gray-600" />
+            Storefront Header & Top Bar Customization
+          </h3>
+          <p className="text-sm text-gray-500 mb-5">
+            Configure live operating hours, delivery banner, and ticker text displayed across the website header.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                <Clock size={15} className="text-emerald-600" />
+                Store Operating Hours (Top Micro-Bar)
+              </label>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={settings.storeHours}
+                onChange={(e) => handleInputChange('storeHours', e.target.value)}
+                placeholder="e.g. 08:00 – 23:00"
+              />
+              <p className="text-xs text-gray-400 mt-1">Displayed in the green operational pulse badge on the header.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                <DollarSign size={15} className="text-amber-600" />
+                Free Shipping Threshold Amount ({settings.currency})
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={settings.freeShippingThreshold}
+                onChange={(e) => handleInputChange('freeShippingThreshold', parseFloat(e.target.value) || 0)}
+                placeholder="35.00"
+              />
+              <p className="text-xs text-gray-400 mt-1">Displayed in header ticker banner (e.g. Free delivery starts at 35.00 {settings.currency}).</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
+                <Megaphone size={15} className="text-blue-600" />
+                Announcement Ticker Custom Text (Optional)
+              </label>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={settings.announcementTicker}
+                onChange={(e) => handleInputChange('announcementTicker', e.target.value)}
+                placeholder="e.g. Spring Mega Sale: Up to 50% Off Selected Living & Electronics | Express 60-min delivery"
+              />
+              <p className="text-xs text-gray-400 mt-1">Leave empty to use automatic store features (Express Delivery, Quality Products, etc.).</p>
             </div>
           </div>
         </div>

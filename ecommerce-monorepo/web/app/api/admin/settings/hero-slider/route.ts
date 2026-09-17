@@ -118,7 +118,9 @@ export async function POST(req: NextRequest) {
       secondaryCtaLink,
       overlayColor,
       textColor,
+      alignment,
       slideDuration,
+      motionType,
       isActive,
       translations,
     } = body
@@ -148,7 +150,9 @@ export async function POST(req: NextRequest) {
         secondaryCtaLink: secondaryCtaLink || null,
         overlayColor: overlayColor || null,
         textColor: textColor || null,
+        alignment: alignment || 'left',
         slideDuration: slideDuration || 5,
+        motionType: motionType || 'slide',
         isActive: isActive !== false,
         displayOrder: (maxOrder._max.displayOrder || -1) + 1,
         translations: {

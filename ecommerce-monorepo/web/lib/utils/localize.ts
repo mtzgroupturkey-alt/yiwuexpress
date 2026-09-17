@@ -167,11 +167,21 @@ export interface RawHeroSlideFromDb {
   subtitle?: string | null
   description?: string | null
   badgeText?: string | null
+  badgeColor?: string | null
   ctaText: string
+  ctaLink?: string | null
   secondaryCtaText?: string | null
+  secondaryCtaLink?: string | null
   imageUrl?: string | null
   mobileImageUrl?: string | null
   productImageUrl?: string | null
+  overlayColor?: string | null
+  textColor?: string | null
+  alignment?: string | null
+  slideDuration?: number | null
+  motionType?: string | null
+  displayOrder?: number | null
+  isActive?: boolean | null
   translations?: Array<{
     locale: string
     title: string
@@ -192,11 +202,28 @@ export interface LocalizedHeroSlide {
   subtitle: string
   description: string
   badgeText: string | null
+  badgeColor: string | null
   ctaText: string
+  ctaLink: string
   secondaryCtaText: string | null
+  secondaryCtaLink: string | null
   imageUrl: string
   mobileImageUrl: string | null
   productImageUrl: string | null
+  overlayColor: string | null
+  textColor: string | null
+  alignment: string
+  slideDuration: number
+  motionType: string
+  // Storefront Design-3 aliases
+  tag: string | null
+  subtag: string | null
+  headline: string
+  image: string
+  btnText: string
+  btnLink: string
+  overlayGradient: string
+  duration: number
 }
 
 export function localizeHeroSlide(
@@ -212,32 +239,49 @@ export function localizeHeroSlide(
     (t) => t.locale === FALLBACK_LOCALE && t.title && t.title.trim().length > 0
   )
 
-  if (resolution) {
-    return {
-      id: slide.id,
-      title: resolution.title,
-      subtitle: resolution.subtitle ?? slide.subtitle ?? '',
-      description: resolution.description ?? slide.description ?? '',
-      badgeText: resolution.badgeText ?? slide.badgeText ?? null,
-      ctaText: resolution.ctaText,
-      secondaryCtaText: resolution.secondaryCtaText ?? slide.secondaryCtaText ?? null,
-      imageUrl: resolution.imageUrl ?? slide.imageUrl ?? '',
-      mobileImageUrl: resolution.mobileImageUrl ?? slide.mobileImageUrl ?? null,
-      productImageUrl: resolution.productImageUrl ?? slide.productImageUrl ?? null,
-    }
-  }
+  const rawImage = resolution?.imageUrl ?? slide.imageUrl ?? ''
+  const resolvedBadge = resolution?.badgeText ?? slide.badgeText ?? null
+  const resolvedTitle = resolution?.title ?? slide.title
+  const resolvedSub = resolution?.subtitle ?? slide.subtitle ?? ''
+  const resolvedDesc = resolution?.description ?? slide.description ?? ''
+  const resolvedCta = resolution?.ctaText ?? slide.ctaText
+  const resolvedSecCta = resolution?.secondaryCtaText ?? slide.secondaryCtaText ?? null
+  const ctaLink = slide.ctaLink || '/store'
+  const duration = slide.slideDuration || 6
+  const overlayGradient = slide.overlayColor && (slide.overlayColor.includes('gradient') || slide.overlayColor.startsWith('rgba') || slide.overlayColor.startsWith('#'))
+    ? (slide.overlayColor.includes('gradient') 
+        ? slide.overlayColor 
+        : `linear-gradient(90deg, ${slide.overlayColor} 0%, rgba(7,26,48,0.85) 50%, rgba(7,26,48,0.30) 100%)`)
+    : 'linear-gradient(90deg, rgba(7,26,48,0.94) 0%, rgba(7,26,48,0.85) 45%, rgba(7,26,48,0.40) 80%, rgba(7,26,48,0.20) 100%)'
 
   return {
     id: slide.id,
-    title: slide.title,
-    subtitle: slide.subtitle ?? '',
-    description: slide.description ?? '',
-    badgeText: slide.badgeText ?? null,
-    ctaText: slide.ctaText,
-    secondaryCtaText: slide.secondaryCtaText ?? null,
-    imageUrl: slide.imageUrl ?? '',
-    mobileImageUrl: slide.mobileImageUrl ?? null,
-    productImageUrl: slide.productImageUrl ?? null,
+    title: resolvedTitle,
+    subtitle: resolvedSub,
+    description: resolvedDesc,
+    badgeText: resolvedBadge,
+    badgeColor: slide.badgeColor || '#F5A602',
+    ctaText: resolvedCta,
+    ctaLink: ctaLink,
+    secondaryCtaText: resolvedSecCta,
+    secondaryCtaLink: slide.secondaryCtaLink ?? null,
+    imageUrl: rawImage,
+    mobileImageUrl: resolution?.mobileImageUrl ?? slide.mobileImageUrl ?? null,
+    productImageUrl: resolution?.productImageUrl ?? slide.productImageUrl ?? null,
+    overlayColor: slide.overlayColor ?? null,
+    textColor: slide.textColor ?? '#ffffff',
+    alignment: slide.alignment ?? 'left',
+    slideDuration: duration,
+    motionType: slide.motionType ?? 'slide',
+    // Design-3 aliases
+    tag: resolvedBadge || (resolvedSub ? resolvedSub.toUpperCase() : null),
+    subtag: resolvedSub || null,
+    headline: resolvedTitle,
+    image: rawImage,
+    btnText: resolvedCta,
+    btnLink: ctaLink,
+    overlayGradient: overlayGradient,
+    duration: duration,
   }
 }
 

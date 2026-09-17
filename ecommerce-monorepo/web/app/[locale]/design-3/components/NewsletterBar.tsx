@@ -1,7 +1,11 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Mail, CheckCircle2 } from 'lucide-react';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
 export const NewsletterBar: React.FC = () => {
+  const { tNewsletter } = useStorefrontTranslation();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
 
@@ -16,7 +20,7 @@ export const NewsletterBar: React.FC = () => {
   };
 
   return (
-    <section className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
+    <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
       <div className="bg-[#EFF6FF] border border-blue-200/80 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Left: Icon & Text */}
         <div className="flex items-center gap-3.5">
@@ -25,10 +29,10 @@ export const NewsletterBar: React.FC = () => {
           </div>
           <div>
             <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
-              Stay updated on Home Living sales & new arrivals
+              {tNewsletter('title')}
             </h4>
             <p className="text-xs text-slate-500 mt-0.5">
-              Receive exclusive weekly home decor discounts, furniture drops, and kitchenware vouchers
+              {tNewsletter('subtitle')}
             </p>
           </div>
         </div>
@@ -38,7 +42,7 @@ export const NewsletterBar: React.FC = () => {
           {subscribed ? (
             <div className="flex items-center gap-2 bg-emerald-100 text-emerald-800 text-xs font-bold px-4 py-2.5 rounded-lg w-full">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Subscribed! Check your inbox for your 10 BYN coupon.</span>
+              <span>{tNewsletter('success')}</span>
             </div>
           ) : (
             <>
@@ -48,7 +52,7 @@ export const NewsletterBar: React.FC = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
+                placeholder={tNewsletter('placeholder')}
                 className="bg-white border border-slate-300 focus:border-[#00407a] focus:ring-1 focus:ring-[#00407a] text-xs sm:text-sm text-slate-800 px-3.5 py-2 rounded-lg flex-1 md:w-72 outline-none shadow-xs"
               />
               <button
@@ -56,7 +60,7 @@ export const NewsletterBar: React.FC = () => {
                 type="submit"
                 className="bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm px-5 py-2 rounded-lg transition-colors cursor-pointer shrink-0 shadow-xs"
               >
-                Subscribe
+                {tNewsletter('subscribe')}
               </button>
             </>
           )}

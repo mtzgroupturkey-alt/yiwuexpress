@@ -15,7 +15,7 @@ import enMessages from '@/messages/en.json'
 import ruMessages from '@/messages/ru.json'
 import zhMessages from '@/messages/zh.json'
 
-const MESSAGES: Record<string, typeof enMessages> = {
+const MESSAGES: Record<string, any> = {
   en: enMessages,
   ru: ruMessages,
   zh: zhMessages,

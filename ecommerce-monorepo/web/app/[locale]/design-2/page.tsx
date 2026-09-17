@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useCompanyName } from '@/hooks/useCompanyName'
 import { useSettings } from '@/components/SettingsProvider'
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 
 // Product Item Type
 export interface Product {
@@ -214,6 +215,7 @@ function FigmaProductCard({
   product: Product
   onAddToCart: (p: Product) => void
 }) {
+  const { tBadge } = useStorefrontTranslation()
   const [isLiked, setIsLiked] = useState(false)
   const discountPercent = product.oldPrice
     ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)
@@ -224,7 +226,7 @@ function FigmaProductCard({
       <div className="relative bg-slate-50 aspect-square overflow-hidden">
         {product.badge && (
           <span
-            className="absolute top-2 left-2 z-10 text-[10px] font-bold px-2 py-0.5 rounded text-white"
+            className="absolute top-2 left-2 z-10 text-[10px] font-bold px-2 py-0.5 rounded text-white uppercase tracking-wider"
             style={{
               background:
                 product.badge === 'NEW'
@@ -234,7 +236,7 @@ function FigmaProductCard({
                   : '#e63946'
             }}
           >
-            {product.badge}
+            {tBadge(product.badge)}
           </span>
         )}
 

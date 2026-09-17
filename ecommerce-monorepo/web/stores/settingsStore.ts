@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand'
+import { create } from 'zustand'
 
 export interface CompanySettings {
   id?: string
@@ -20,6 +20,15 @@ export interface CompanySettings {
   timezone: string
   language: string
   storeMode?: 'WHOLESALE' | 'RETAIL' | 'BOTH'
+  storeHours?: string
+  freeShippingThreshold?: number
+  announcementTicker?: string
+  facebookUrl?: string
+  twitterUrl?: string
+  linkedinUrl?: string
+  instagramUrl?: string
+  whatsappNumber?: string
+  wechatId?: string
 }
 
 export interface SettingsState {
@@ -38,6 +47,8 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   timezone: 'Asia/Shanghai',
   language: 'en',
   storeMode: 'WHOLESALE',
+  storeHours: '08:00 – 23:00',
+  freeShippingThreshold: 35.0,
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
