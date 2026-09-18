@@ -1,3 +1,7 @@
+/**
+ * MOCK / ARCHIVED — DO NOT ROUTE TO THIS COMPONENT.
+ * Live Product Detail Page is routed via app/[locale]/products/[slug]/ProductDetailView.tsx
+ */
 import React, { useState, useEffect } from 'react';
 import { 
   Home, 
