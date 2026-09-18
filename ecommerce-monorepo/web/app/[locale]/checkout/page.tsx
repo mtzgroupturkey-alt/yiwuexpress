@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Check, CreditCard, MapPin, Package, Truck } from 'lucide-react'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { useStoreMode } from '@/contexts/StoreModeContext'
+import { useSettings } from '@/components/SettingsProvider'
+import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useLocale, useTranslations } from 'next-intl'
 
@@ -36,7 +38,17 @@ type CheckoutForm = z.infer<ReturnType<typeof buildCheckoutSchema>>
 export default function CheckoutPage() {
   const router = useRouter()
   const navigate = useLocaleNav()
-  const { storeMode, isWholesale, isRetail } = useStoreMode()
+  const { storeMode: ctxStoreMode, isRetail } = useStoreMode()
+  const { settings, storeMode: systemStoreMode } = useSettings()
+  const { sessionMode, isWholesaleSession } = useSessionMode()
+
+  const storeMode = ctxStoreMode || systemStoreMode || 'WHOLESALE'
+  const isWholesaleActive =
+    storeMode === 'WHOLESALE' ||
+    (storeMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
+  const isWholesale = isWholesaleActive
+  const isPureWholesale = (storeMode as string) === 'WHOLESALE'
+
   const locale = useLocale()
   const t = useTranslations('Checkout') as unknown as (key: string, values?: any) => string
   const [step, setStep] = useState(1)
@@ -61,9 +73,13 @@ export default function CheckoutPage() {
   const selectedCountryId = watch('shippingCountryId')
 
   useEffect(() => {
+    if (isWholesaleActive) {
+      navigate('/quote-cart')
+      return
+    }
     fetchCart()
     fetchCountries()
-  }, [])
+  }, [isWholesaleActive])
 
   useEffect(() => {
     if (selectedCountryId && cart) {
@@ -199,6 +215,28 @@ export default function CheckoutPage() {
     }
   }
 
+  if (isWholesaleActive) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center space-y-4">
+          <div className="w-14 h-14 bg-blue-50 text-blue-700 rounded-2xl mx-auto flex items-center justify-center">
+            <Package className="w-7 h-7" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-900">Wholesale Quotes</h1>
+          <p className="text-sm text-slate-600">
+            Wholesale and B2B orders use the Quote Request workflow. Redirecting you to your Quote Cart...
+          </p>
+          <Button
+            onClick={() => navigate('/quote-cart')}
+            className="w-full bg-[#00407a] hover:bg-[#003366] text-white"
+          >
+            Go to Quote Cart
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -290,14 +328,14 @@ export default function CheckoutPage() {
                         {isWholesale && (
                           <div>
                             <Label htmlFor="companyName">
-                              {t('companyName')} {storeMode === 'WHOLESALE' ? '*' : ''}
+                              {t('companyName')} {isPureWholesale ? '*' : ''}
                             </Label>
                             <Input 
                               id="companyName" 
                               {...register('companyName')} 
                               placeholder={isWholesale ? t('enterCompany') : t('optional')} 
                             />
-                            {storeMode === 'WHOLESALE' && (
+                            {isPureWholesale && (
                               <p className="text-xs text-gray-600 mt-1">{t('requiredWholesale')}</p>
                             )}
                           </div>
@@ -387,7 +425,7 @@ export default function CheckoutPage() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <Package className="w-5 h-5 text-blue-600" />
                           {t('businessInfo')}
-                          {storeMode === 'WHOLESALE' && (
+                          {isPureWholesale && (
                             <span className="text-xs font-normal text-gray-600">({t('requiredWholesale')})</span>
                           )}
                         </h3>
@@ -413,7 +451,7 @@ export default function CheckoutPage() {
                             <p className="text-xs text-gray-600 mt-1">{t('requiredForTaxExempt')}</p>
                           </div>
 
-                          {storeMode === 'WHOLESALE' && (
+                          {isPureWholesale && (
                             <div className="pt-3 border-t border-blue-200">
                               <label className="flex items-start gap-3 cursor-pointer">
                                 <input 
