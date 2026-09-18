@@ -13,6 +13,7 @@ import { useWishlist } from '@/hooks/useWishlist'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
+import { useQuoteCart } from '@/components/QuoteCartContext'
 import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { WholesaleInquirySlideover } from '@/components/wholesale/WholesaleInquirySlideover'
@@ -43,6 +44,7 @@ export function MainHeader() {
   const { storeMode, isBoth } = useStoreMode()
   const { isWholesaleSession, toggleSessionMode } = useSessionMode()
   const { count: inquiryCount } = useWholesaleInquiry()
+  const { quoteCount } = useQuoteCart()
 
   // Effective cart display mode. When the store is purely wholesale or retail
   // the icon reflects the admin-configured store mode. In hybrid (BOTH) mode
@@ -230,22 +232,19 @@ export function MainHeader() {
                   are mutually exclusive via the active session mode. */}
               <div className="relative" data-testid="smart-cart-button-container">
                 {showWholesaleIcon ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsInquiryOpen(true)}
+                  <LocaleLink
+                    href="/quote-cart"
                     className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
-                    aria-label="Wholesale inquiry basket"
-                    role="button"
-                    name="inquiry"
+                    aria-label="Wholesale RFQ Quote Cart"
                     data-testid="wholesale-inquiry-trigger"
                   >
                     <ClipboardList className="w-5 h-5" />
-                    {inquiryCount > 0 && (
+                    {(quoteCount > 0 || inquiryCount > 0) && (
                       <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg">
-                        {inquiryCount}
+                        {quoteCount || inquiryCount}
                       </span>
                     )}
-                  </button>
+                  </LocaleLink>
                 ) : (
                   <LocaleLink
                     href="/cart"

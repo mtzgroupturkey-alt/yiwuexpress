@@ -12,6 +12,7 @@ import { useCurrency } from '@/hooks/useCurrency'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useQuoteCart } from '@/components/QuoteCartContext'
 
 interface Product {
   id: string
@@ -54,6 +55,7 @@ export default function ProductCard({
   const { isWholesale, isRetail } = useStoreMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { enableWholesaleSession } = useSessionMode()
+  const { addToQuote } = useQuoteCart()
   const [imageError, setImageError] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -112,6 +114,14 @@ export default function ProductCard({
       image: product.image,
       wholesalePrice: product.wholesalePrice as number,
       retailPrice: product.price,
+      quantity: moq,
+      minOrderQty: moq,
+    })
+    addToQuote({
+      productId: product.id,
+      productName: product.name,
+      productSku: (product as any).sku || product.slug || product.id,
+      productImage: product.image,
       quantity: moq,
       minOrderQty: moq,
     })

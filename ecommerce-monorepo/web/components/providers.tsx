@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { MotionConfig } from 'framer-motion'
 import { CartProvider } from './CartContext'
+import { QuoteCartProvider } from './QuoteCartContext'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -20,8 +21,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <MotionConfig reducedMotion="user">
         <CartProvider>
-          <Toaster position="top-right" />
-          {children}
+          <QuoteCartProvider>
+            <Toaster position="top-right" />
+            {children}
+          </QuoteCartProvider>
         </CartProvider>
       </MotionConfig>
     </QueryClientProvider>
