@@ -633,7 +633,7 @@ export default function CompanyInfoPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
                 <DollarSign size={15} className="text-amber-600" />
-                Free Shipping Threshold Amount ({settings.currency})
+                Free Shipping Threshold Amount (Retail Mode) ({settings.currency})
               </label>
               <input
                 type="number"
@@ -644,7 +644,7 @@ export default function CompanyInfoPage() {
                 placeholder="35.00"
               />
               <p className="text-xs text-gray-400 mt-1">
-                Displayed in header ticker banner (e.g. Free delivery starts at {settings.freeShippingThreshold ? Number(settings.freeShippingThreshold).toFixed(2) : '35.00'} {settings.currency}). Automatically converted to customer&apos;s active currency via live exchange rates.
+                Sales limit to qualify for free delivery in retail mode (e.g. {settings.freeShippingThreshold ? Number(settings.freeShippingThreshold).toFixed(2) : '35.00'} {settings.currency}). In wholesale mode or when retail cart total is below this limit, delivery fees are counted and calculated upon dispatch.
               </p>
             </div>
 

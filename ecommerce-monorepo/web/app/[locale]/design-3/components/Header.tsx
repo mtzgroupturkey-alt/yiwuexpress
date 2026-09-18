@@ -24,7 +24,8 @@ import {
   PackageCheck,
   User as UserIcon,
   Coins,
-  Menu
+  Menu,
+  Truck
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -99,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showScopeDropdown, setShowScopeDropdown] = useState(false);
 
   const companyName = useCompanyName();
-  const { settings } = useSettings();
+  const { settings, storeMode, isWholesaleOnly } = useSettings();
   const { currency, currencies, setCurrency, formatPrice, currentCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
   const currentLocale = useLocale();
@@ -715,10 +716,19 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
           <div className="text-slate-700 font-medium shrink-0">
-            {tHeader('freeDeliveryStarts')}{' '}
-            <strong className="text-slate-900 font-bold" suppressHydrationWarning>
-              {formatPrice(typeof settings?.freeShippingThreshold === 'number' ? settings.freeShippingThreshold : (parseFloat(String(settings?.freeShippingThreshold)) || 35))}
-            </strong>
+            {isWholesaleOnly || storeMode === 'WHOLESALE' ? (
+              <span className="flex items-center gap-1.5 text-slate-800 font-semibold" suppressHydrationWarning>
+                <Truck className="w-3.5 h-3.5 text-[#00407a]" />
+                {tHeader('wholesaleLogisticsNotice')}
+              </span>
+            ) : (
+              <span suppressHydrationWarning>
+                {tHeader('freeDeliveryStarts')}{' '}
+                <strong className="text-slate-900 font-bold">
+                  {formatPrice(typeof settings?.freeShippingThreshold === 'number' ? settings.freeShippingThreshold : (parseFloat(String(settings?.freeShippingThreshold)) || 35))}
+                </strong>
+              </span>
+            )}
           </div>
         </div>
       </div>

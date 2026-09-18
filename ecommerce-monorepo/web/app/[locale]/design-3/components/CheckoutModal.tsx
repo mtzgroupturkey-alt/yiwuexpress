@@ -352,10 +352,26 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   <span>-{formatPrice(bonusDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>{tCartDrawer('deliveryFee')}</span>
-                <span>{deliveryFee === 0 ? <strong className="text-emerald-600">{tCartDrawer('free')}</strong> : formatPrice(deliveryFee)}</span>
+                <span>
+                  {isFreeShipping ? (
+                    <strong className="text-emerald-600 font-bold">{tCartDrawer('free')}</strong>
+                  ) : (
+                    <span 
+                      className="text-amber-800 font-semibold text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200"
+                      title={tCartDrawer('willCountLater')}
+                    >
+                      {tCartDrawer('countedLater')}
+                    </span>
+                  )}
+                </span>
               </div>
+              {!isFreeShipping && (
+                <div className="text-[10px] text-slate-500 italic text-right -mt-1">
+                  {tCartDrawer('willCountLater')}
+                </div>
+              )}
               <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-200">
                 <span>{tCartDrawer('total')}:</span>
                 <span className="text-[#00407a] text-lg">{formatPrice(grandTotal)}</span>

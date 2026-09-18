@@ -42,6 +42,7 @@ model User {
 
   company            CompanyInfo?
   quotes             Quote[]
+  productQuotes      ProductQuote[]         @relation("UserProductQuotes")
   permissionRole     PermissionRole?        @relation(fields: [roleId], references: [id])
   customPermissions  UserPermission[]
   activityLogs       ActivityLog[]
@@ -176,6 +177,29 @@ model SystemSettings {
   storeHours            String? @default("08:00 – 23:00")
   freeShippingThreshold Float?  @default(35.00)
   announcementTicker    String?
+
+  // Multi-Warehouse Routing & Channels
+  defaultSalesWarehouseId       String?  @default("cmu149zqd0007w4gois6udmjc")
+  defaultProcurementWarehouseId String?  @default("cmu12i65n0000w43wy8bb90uz")
+
+  // Retail (B2C) Channel Settings
+  retailEnabled                 Boolean  @default(true)
+  showBackorderOption           Boolean  @default(true)
+  backorderLeadTimeDays         Int      @default(28)
+
+  // Wholesale (B2B) Channel & RFQ Settings
+  wholesaleEnabled              Boolean  @default(true)
+  wholesaleApprovalRequired     Boolean  @default(false)
+  wholesaleDefaultMoq           Int      @default(10)
+  wholesaleDiscountPercent      Float?   @default(15.0)
+  rfqEnabled                    Boolean  @default(true)
+  rfqModel                      String   @default("RFQ") // "RFQ" (Request for Quote) or "INSTANT" (Direct Checkout)
+  rfqDefaultExpiryDays          Int      @default(7)
+  rfqAllowGuestSubmissions      Boolean  @default(true)
+  rfqAutoSuggestCatalogPrice    Boolean  @default(true)
+
+  // Inventory Reservation Engine
+  reservationExpiryHours        Int      @default(24)
 
   // AI Translation & Gateway Settings (OpenAI-compatible)
   openaiApiKey      String?
@@ -444,6 +468,7 @@ model Product {
   lowStockAlerts        LowStockAlert[]
   stockTransferItems    StockTransferItem[]
   returnSupplierItems   ReturnToSupplierItem[]
+  productQuoteItems     ProductQuoteItem[]
 
   @@map("products")
 }
@@ -547,6 +572,8 @@ model Order {
   customerPayments CustomerPayment[]
   linkedPurchaseOrder PurchaseOrder? @relation("POLinkedOrder")
   singleContainer Container[] @relation("ContainerSingleOrder")
+  quoteId          String?           @unique
+  productQuote     ProductQuote?     @relation("ProductQuoteOrder", fields: [quoteId], references: [id], onDelete: SetNull)
 
   @@index([containerId])
   @@map("orders")
@@ -2089,3 +2116,160 @@ model AdminActivityLog {
   @@index([createdAt])
   @@map("admin_activity_logs")
 }
+
+// ============================================================================
+// B2B PRODUCT REQUEST FOR QUOTE (RFQ) SUBSYSTEM
+// ============================================================================
+
+enum ProductQuoteStatus {
+  PENDING         // Submitted by customer, awaiting admin review
+  UNDER_REVIEW    // Admin is actively working on pricing or revisions
+  PRICED          // Admin finished pricing; draft ready
+  SENT            // Sent to customer with formal pricing & validUntil date
+  ACCEPTED        // Accepted by customer; converted into Order
+  REJECTED        // Rejected by customer or declined by admin
+  EXPIRED         // Passed validUntil timestamp without customer acceptance
+  CANCELLED       // Cancelled by customer before admin sent pricing
+}
+
+model ProductQuote {
+  id                    String                    @id @default(cuid())
+  quoteNumber           String                    @unique // e.g. QUO-2026-0001
+  
+  // Customer Attribution (Registered or Guest B2B)
+  userId                String?
+  user                  User?                     @relation("UserProductQuotes", fields: [userId], references: [id], onDelete: SetNull)
+  
+  guestEmail            String?
+  guestName             String?
+  guestCompany          String?
+  guestPhone            String?
+  guestTaxId            String?                   // Tax ID / VAT / UNP number
+  
+  // Destination & Logistics Context
+  shippingCountry       String?                   @default("Belarus")
+  shippingCity          String?
+  shippingAddress       String?
+  targetDeliveryDate    DateTime?
+  preferredShippingMode String?                   // e.g., "STANDARD", "EXPRESS", "CONTAINER_RAIL"
+  
+  // Status & Security
+  status                ProductQuoteStatus        @default(PENDING)
+  secureToken           String                    @unique @default(cuid()) // Signed secret for passwordless view
+  
+  // Financial Snapshot
+  currency              String                    @default("USD")
+  subtotal              Float?                    // Sum of all items lineTotal
+  shippingCost          Float?                    // Quoted freight charge
+  discountAmount        Float?                    @default(0.0)
+  totalAmount           Float?                    // subtotal + shippingCost - discountAmount
+  
+  // Commercial Terms
+  paymentTerms          String?                   @default("PREPAYMENT")
+  validUntil            DateTime?
+  
+  // Communication Notes
+  customerNotes         String?
+  adminNotes            String?
+  internalNotes         String?
+  rejectionReason       String?
+  
+  // Lifecycle Timestamps
+  submittedAt           DateTime                  @default(now())
+  sentAt                DateTime?
+  viewedAt              DateTime?
+  acceptedAt            DateTime?
+  rejectedAt            DateTime?
+  
+  // Order Fulfillment Link
+  order                 Order?                    @relation("ProductQuoteOrder")
+  
+  // Related Collections
+  items                 ProductQuoteItem[]
+  statusHistory         ProductQuoteStatusHistory[]
+  messages              ProductQuoteMessage[]
+  
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([quoteNumber])
+  @@index([secureToken])
+  @@index([createdAt])
+  @@map("product_quotes")
+}
+
+model ProductQuoteItem {
+  id                    String                    @id @default(cuid())
+  quoteId               String
+  quote                 ProductQuote              @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  
+  productId             String
+  product               Product                   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  
+  productName           String
+  productSku            String
+  productImage          String?
+  
+  quantity              Int                       @default(1)
+  
+  unitPriceRequested    Float?                    // Target price submitted by customer
+  unitPriceQuoted       Float?                    // Unit price set by sales admin
+  lineDiscountPercent   Float?                    @default(0.0)
+  lineTotal             Float?                    // quantity * unitPriceQuoted * (1 - discount/100)
+  
+  sourceWarehouseId     String?
+  isBackorder           Boolean                   @default(false)
+  leadTimeDays          Int?                      @default(0)
+  
+  customerNotes         String?
+  adminNotes            String?
+  sortOrder             Int                       @default(0)
+  
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  @@index([quoteId])
+  @@index([productId])
+  @@map("product_quote_items")
+}
+
+model ProductQuoteStatusHistory {
+  id                    String                    @id @default(cuid())
+  quoteId               String
+  quote                 ProductQuote              @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  
+  fromStatus            ProductQuoteStatus?
+  toStatus              ProductQuoteStatus
+  
+  changedByUserId       String?
+  changedByRole         String                    // "CUSTOMER", "ADMIN", "SYSTEM"
+  reason                String?
+  
+  createdAt             DateTime                  @default(now())
+
+  @@index([quoteId])
+  @@index([createdAt])
+  @@map("product_quote_status_history")
+}
+
+model ProductQuoteMessage {
+  id                    String                    @id @default(cuid())
+  quoteId               String
+  quote                 ProductQuote              @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  
+  senderType            String                    // "CUSTOMER" or "ADMIN"
+  senderId              String?
+  senderName            String
+  
+  message               String
+  attachments           String?                   // JSON array of file URLs
+  
+  createdAt             DateTime                  @default(now())
+
+  @@index([quoteId])
+  @@index([createdAt])
+  @@map("product_quote_messages")
+}
+
