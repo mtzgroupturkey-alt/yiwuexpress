@@ -243,6 +243,7 @@ export function MainHeader() {
                     aria-label="Wholesale inquiry basket"
                     role="button"
                     name="inquiry"
+                    title={`Quote Request (${quoteCount || inquiryCount} items)`}
                     data-testid="wholesale-inquiry-trigger"
                   >
                     <ClipboardList className="w-5 h-5" />

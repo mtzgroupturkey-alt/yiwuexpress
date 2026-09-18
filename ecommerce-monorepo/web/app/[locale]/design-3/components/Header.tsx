@@ -25,9 +25,13 @@ import {
   User as UserIcon,
   Coins,
   Menu,
-  Truck
+  Truck,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useStoreMode } from '@/contexts/StoreModeContext';
+import { useSessionMode } from '@/contexts/SessionModeContext';
+import { useQuoteCart } from '@/components/QuoteCartContext';
 
 export interface NavChildCategory {
   id: string;
@@ -101,6 +105,17 @@ export const Header: React.FC<HeaderProps> = ({
 
   const companyName = useCompanyName();
   const { settings, storeMode, isWholesaleOnly } = useSettings();
+  const { storeMode: ctxStoreMode } = useStoreMode();
+  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { quoteCount } = useQuoteCart();
+
+  const effectiveStoreMode = ctxStoreMode || storeMode || 'WHOLESALE';
+  const isWholesaleActive =
+    effectiveStoreMode === 'WHOLESALE' ||
+    (effectiveStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+  const rfqModel = settings?.rfqModel || 'RFQ';
+  const isInstantWholesale = rfqModel === 'INSTANT';
+
   const { currency, currencies, setCurrency, formatPrice, currentCurrency } = useCurrency();
   const { user, isAuthenticated } = useAuth();
   const currentLocale = useLocale();
@@ -528,27 +543,74 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-[11px] font-medium mt-0.5 text-slate-600">{tHeader('orders')}</span>
           </button>
 
-          {/* Cart Button */}
-          <button
-            id="header-cart-btn"
-            onClick={onOpenCart}
-            className="flex items-center gap-2.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-slate-200"
-          >
-            <div className="relative">
-              <ShoppingCart className="w-5 h-5 text-[#00407a]" />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2.5 bg-[#F5A602] text-slate-900 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </div>
-            <div className="text-left leading-tight hidden sm:block">
-              <div className="text-[10px] uppercase font-bold text-slate-400">{tHeader('cartTotal')}</div>
-              <div className="text-xs font-black text-slate-900">
-                {formatPrice(cartTotal)}
+          {/* Smart Morphing Cart Button */}
+          {isWholesaleActive && !isInstantWholesale ? (
+            <Link
+              id="header-cart-btn"
+              href={`/${currentLocale}/quote-cart`}
+              title={`Quote Request (${quoteCount} items)`}
+              className="flex items-center gap-2.5 bg-blue-50 hover:bg-blue-100/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-blue-200 text-blue-950"
+            >
+              <div className="relative">
+                <FileText className="w-5 h-5 text-blue-700" />
+                {quoteCount > 0 && (
+                  <span className="absolute -top-2 -right-2.5 bg-blue-600 text-white text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+                    {quoteCount}
+                  </span>
+                )}
               </div>
-            </div>
-          </button>
+              <div className="text-left leading-tight hidden sm:block">
+                <div className="text-[10px] uppercase font-bold text-blue-600">Quote Request</div>
+                <div className="text-xs font-black text-blue-950">
+                  {quoteCount} {quoteCount === 1 ? 'item' : 'items'}
+                </div>
+              </div>
+            </Link>
+          ) : isWholesaleActive && isInstantWholesale ? (
+            <button
+              id="header-cart-btn"
+              onClick={onOpenCart}
+              title={`Wholesale Cart (${cartCount} items)`}
+              className="flex items-center gap-2.5 bg-amber-50 hover:bg-amber-100/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-amber-200"
+            >
+              <div className="relative">
+                <ShoppingCart className="w-5 h-5 text-amber-700" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <div className="text-left leading-tight hidden sm:block">
+                <div className="text-[10px] uppercase font-bold text-amber-700">Wholesale Cart</div>
+                <div className="text-xs font-black text-slate-900">
+                  {formatPrice(cartTotal)}
+                </div>
+              </div>
+            </button>
+          ) : (
+            <button
+              id="header-cart-btn"
+              onClick={onOpenCart}
+              title={`Shopping Cart (${cartCount} items)`}
+              className="flex items-center gap-2.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-slate-200"
+            >
+              <div className="relative">
+                <ShoppingCart className="w-5 h-5 text-[#00407a]" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2.5 bg-[#F5A602] text-slate-900 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <div className="text-left leading-tight hidden sm:block">
+                <div className="text-[10px] uppercase font-bold text-slate-400">{tHeader('cartTotal')}</div>
+                <div className="text-xs font-black text-slate-900">
+                  {formatPrice(cartTotal)}
+                </div>
+              </div>
+            </button>
+          )}
 
           {/* User Profile */}
           <button
