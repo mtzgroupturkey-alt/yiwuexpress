@@ -1,8 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 // GET /api/admin/categories - List all categories
 export async function GET(request: Request) {
@@ -24,6 +22,17 @@ export async function GET(request: Request) {
     const categories = await prisma.category.findMany({
       where,
       include: {
+        parent: {
+          select: { id: true, name: true }
+        },
+        children: {
+          select: { id: true, name: true },
+          orderBy: [
+            { menuOrder: 'asc' },
+            { displayOrder: 'asc' },
+            { name: 'asc' }
+          ]
+        },
         products: {
           select: { id: true }
         },
@@ -41,37 +50,21 @@ export async function GET(request: Request) {
           }
         })
       },
-      orderBy: { name: 'asc' }
+      orderBy: [
+        { menuOrder: 'asc' },
+        { displayOrder: 'asc' },
+        { name: 'asc' }
+      ]
     })
 
-    // Manually add parent and children relationships
-    const categoriesWithRelations = await Promise.all(
-      categories.map(async (cat) => {
-        const parent = cat.parentId
-          ? await prisma.category.findUnique({
-              where: { id: cat.parentId },
-              select: { id: true, name: true }
-            })
-          : null
-
-        const children = await prisma.category.findMany({
-          where: { parentId: cat.id },
-          select: { id: true, name: true },
-          orderBy: { name: 'asc' }
-        })
-
-        return {
-          ...cat,
-          parent,
-          children,
-          _count: {
-            products: cat.products.length,
-            children: children.length,
-            ...(includeAttributes && { attributes: cat.attributes?.length || 0 })
-          }
-        }
-      })
-    )
+    const categoriesWithRelations = categories.map((cat) => ({
+      ...cat,
+      _count: {
+        products: cat.products?.length || 0,
+        children: cat.children?.length || 0,
+        ...(includeAttributes && { attributes: (cat as any).attributes?.length || 0 })
+      }
+    }))
 
     return NextResponse.json({
       success: true,

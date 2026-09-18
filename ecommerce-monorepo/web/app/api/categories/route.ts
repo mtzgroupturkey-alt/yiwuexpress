@@ -58,12 +58,27 @@ export async function GET(request: Request) {
         },
         children: includeChildren ? {
           where: { isActive: true },
+          orderBy: [
+            { menuOrder: 'asc' },
+            { displayOrder: 'asc' },
+            { name: 'asc' }
+          ],
           include: {
             children: {
               where: { isActive: true },
+              orderBy: [
+                { menuOrder: 'asc' },
+                { displayOrder: 'asc' },
+                { name: 'asc' }
+              ],
               include: {
                 children: {
                   where: { isActive: true },
+                  orderBy: [
+                    { menuOrder: 'asc' },
+                    { displayOrder: 'asc' },
+                    { name: 'asc' }
+                  ],
                   include: {
                     translations: {
                       where: { locale: { in: [locale, 'en'] } },
@@ -89,6 +104,7 @@ export async function GET(request: Request) {
         }
       },
       orderBy: [
+        { menuOrder: 'asc' },
         { displayOrder: 'asc' },
         { name: 'asc' }
       ],

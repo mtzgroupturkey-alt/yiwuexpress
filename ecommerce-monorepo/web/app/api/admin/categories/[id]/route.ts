@@ -1,8 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 // GET /api/admin/categories/[id] - Get single category
 export async function GET(
@@ -160,6 +158,8 @@ export async function PUT(
       isActive: body.isActive !== undefined ? body.isActive : existing.isActive,
       showInMenu: body.showInMenu !== undefined ? body.showInMenu : existing.showInMenu,
       isFeatured: body.isFeatured !== undefined ? body.isFeatured : existing.isFeatured,
+      menuOrder: body.menuOrder !== undefined ? Number(body.menuOrder) : existing.menuOrder,
+      displayOrder: body.displayOrder !== undefined ? Number(body.displayOrder) : existing.displayOrder,
     }
 
     console.log('[API] Update data being sent to database:', JSON.stringify(updateData, null, 2))
@@ -308,6 +308,56 @@ export async function DELETE(
     console.error('Error deleting category:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to delete category' },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH /api/admin/categories/[id] - Partial update (instant toggle showInMenu, isFeatured, order, etc.)
+export async function PATCH(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+    const body = await request.json()
+
+    const existing = await prisma.category.findUnique({
+      where: { id }
+    })
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Category not found' },
+        { status: 404 }
+      )
+    }
+
+    const updateData: any = {}
+    if (body.showInMenu !== undefined) updateData.showInMenu = Boolean(body.showInMenu)
+    if (body.isFeatured !== undefined) updateData.isFeatured = Boolean(body.isFeatured)
+    if (body.isActive !== undefined) updateData.isActive = Boolean(body.isActive)
+    if (body.menuOrder !== undefined) updateData.menuOrder = Number(body.menuOrder)
+    if (body.displayOrder !== undefined) updateData.displayOrder = Number(body.displayOrder)
+    if (body.name !== undefined) updateData.name = body.name
+    if (body.slug !== undefined) updateData.slug = body.slug
+    if (body.icon !== undefined) updateData.icon = body.icon
+    if (body.image !== undefined) updateData.image = body.image
+
+    const updated = await prisma.category.update({
+      where: { id },
+      data: updateData
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: updated,
+      message: 'Category updated successfully'
+    })
+  } catch (error) {
+    console.error('Error patching category:', error)
+    return NextResponse.json(
+      { success: false, error: 'Failed to update category' },
       { status: 500 }
     )
   }

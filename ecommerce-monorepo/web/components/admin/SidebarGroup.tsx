@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { NavGroup } from './navigationConfig'
+import { NavGroup, isItemActive } from './navigationConfig'
 import { SidebarItem } from './SidebarItem'
 import { cn } from '@/lib/utils'
 
@@ -11,6 +11,7 @@ interface SidebarGroupProps {
   isExpanded: boolean
   onToggle: () => void
   currentPathname: string
+  searchParams?: { get: (name: string) => string | null } | null
   dict: any
   badgeCounts: Record<string, number>
   isCollapsed?: boolean
@@ -22,16 +23,15 @@ export function SidebarGroup({
   isExpanded,
   onToggle,
   currentPathname,
+  searchParams,
   dict,
   badgeCounts,
   isCollapsed = false,
   onItemClick,
 }: SidebarGroupProps) {
   const GroupIcon = group.icon
-  const hasActiveChild = group.items.some(
-    (item) =>
-      currentPathname === item.href ||
-      (item.href !== '/admin' && currentPathname.startsWith(item.href))
+  const hasActiveChild = group.items.some((item) =>
+    isItemActive(item.href, currentPathname, searchParams)
   )
 
   const groupLabel = dict?.nav?.[group.translationKey] || group.label
@@ -77,9 +77,7 @@ export function SidebarGroup({
           </div>
           <div className="space-y-0.5">
             {group.items.map((item) => {
-              const isActive =
-                currentPathname === item.href ||
-                (item.href !== '/admin' && currentPathname.startsWith(item.href))
+              const isActive = isItemActive(item.href, currentPathname, searchParams)
               const badgeCount = item.badgeKey ? badgeCounts[item.badgeKey] : undefined
 
               return (
@@ -133,9 +131,7 @@ export function SidebarGroup({
       {isExpanded && (
         <div className="mt-1 pl-2.5 border-l-2 border-slate-100 ml-3.5 space-y-0.5 animate-in fade-in-50 duration-200">
           {group.items.map((item) => {
-            const isActive =
-              currentPathname === item.href ||
-              (item.href !== '/admin' && currentPathname.startsWith(item.href))
+            const isActive = isItemActive(item.href, currentPathname, searchParams)
             const badgeCount = item.badgeKey ? badgeCounts[item.badgeKey] : undefined
 
             return (

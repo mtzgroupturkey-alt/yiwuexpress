@@ -18,6 +18,7 @@ import {
 import { ArrowLeft, Package, DollarSign, Loader2, Plus, Trash2, Warehouse, FileText, UserCheck } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
+import { CountryCityPicker } from '@/components/admin/containers/CountryCityPicker'
 
 interface InitialCost {
   title: string
@@ -38,7 +39,7 @@ export default function NewContainerPage() {
     carrierId: '',
     agentId: '',
     routeType: 'SEA',
-    origin: 'China',
+    origin: 'Yiwu, China',
     destination: '',
     departureDate: '',
     arrivalDate: '',
@@ -302,26 +303,35 @@ export default function NewContainerPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="origin">Origin *</Label>
-                <Input
-                  id="origin"
+            {/* Route Corridors Section: Origin & Destination */}
+            <div className="space-y-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="p-4 rounded-xl border border-blue-100 dark:border-blue-950/60 bg-blue-50/30 dark:bg-blue-950/20">
+                <CountryCityPicker
+                  label="1. Origin / Departure Point (Country & Port)"
                   value={formData.origin}
-                  onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-                  placeholder="e.g. Ningbo / Yiwu, China"
+                  onChange={(val) => setFormData({ ...formData, origin: val })}
+                  defaultCountry="China"
+                  defaultCity="Yiwu"
                   required
+                  countryPlaceholder="Search & select departure country..."
+                  cityPlaceholder="Select departure port or trade hub (e.g. Yiwu, Ningbo, Shanghai)..."
+                  helperText="Maritime port, dry port, or warehouse location where cargo originates or loads."
+                  idPrefix="origin"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="destination">Destination *</Label>
-                <Input
-                  id="destination"
+              <div className="p-4 rounded-xl border border-emerald-100 dark:border-emerald-950/60 bg-emerald-50/30 dark:bg-emerald-950/20">
+                <CountryCityPicker
+                  label="2. Destination / Arrival Point (Country & Port)"
                   value={formData.destination}
-                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-                  placeholder="e.g. Hamburg, Germany"
+                  onChange={(val) => setFormData({ ...formData, destination: val })}
+                  defaultCountry="Belarus"
+                  defaultCity="Minsk"
                   required
+                  countryPlaceholder="Search & select destination country..."
+                  cityPlaceholder="Select discharge port or destination city (e.g. Minsk, Moscow, Istanbul)..."
+                  helperText="Discharge port, customs clearance terminal, or distribution center."
+                  idPrefix="destination"
                 />
               </div>
             </div>

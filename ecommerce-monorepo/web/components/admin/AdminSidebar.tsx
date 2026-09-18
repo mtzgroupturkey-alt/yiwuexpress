@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import {
   Search,
@@ -13,7 +13,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
-import { navigationConfig, ADMIN_NAV_ITEMS } from './navigationConfig'
+import { navigationConfig, ADMIN_NAV_ITEMS, isItemActive } from './navigationConfig'
 import { SidebarGroup } from './SidebarGroup'
 import { SidebarItem } from './SidebarItem'
 import { cn } from '@/lib/utils'
@@ -32,7 +32,7 @@ export interface AdminSidebarProps {
   onLogout: () => void
 }
 
-export function AdminSidebar({
+function AdminSidebarContent({
   sidebarOpen,
   setSidebarOpen,
   mobileMenuOpen,
@@ -44,6 +44,7 @@ export function AdminSidebar({
   onLogout,
 }: AdminSidebarProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { dict } = useAdminLocale()
 
   // Track expanded groups (all collapsed by default except current active group)
@@ -94,21 +95,19 @@ export function AdminSidebar({
         }
       })
       .catch((err) => console.error('Error fetching sidebar badges:', err))
-  }, [pathname])
+  }, [pathname, searchParams])
 
   // Automatically expand the group containing the active page
   useEffect(() => {
     navigationConfig.forEach((group) => {
-      const isInside = group.items.some(
-        (item) =>
-          pathname === item.href ||
-          (item.href !== '/admin' && pathname.startsWith(item.href))
+      const isInside = group.items.some((item) =>
+        isItemActive(item.href, pathname, searchParams)
       )
       if (isInside) {
         setExpandedGroups((prev) => (prev.includes(group.id) ? prev : [...prev, group.id]))
       }
     })
-  }, [pathname])
+  }, [pathname, searchParams])
 
   const toggleGroup = (groupId: string) => {
     setExpandedGroups((prev) =>
@@ -233,6 +232,7 @@ export function AdminSidebar({
                   toggleGroup(group.id)
                 }}
                 currentPathname={pathname}
+                searchParams={searchParams}
                 dict={dict}
                 badgeCounts={badgeCounts}
                 isCollapsed={isCollapsed}
@@ -327,3 +327,12 @@ export function AdminSidebar({
     </>
   )
 }
+
+export function AdminSidebar(props: AdminSidebarProps) {
+  return (
+    <Suspense fallback={null}>
+      <AdminSidebarContent {...props} />
+    </Suspense>
+  )
+}
+

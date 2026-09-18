@@ -69,7 +69,8 @@ export default function Home() {
       if (!res.ok) return null;
       return res.json();
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   const dbProducts: Product[] = useMemo(() => {
@@ -86,9 +87,22 @@ export default function Home() {
 
   const activeCategories = useMemo(() => {
     if (dbCategories.length === 0) return [];
-    // Prioritize root departments, then prominent featured subcategories
-    const rootCats = dbCategories.filter((c) => !c.parentId);
-    const subCats = dbCategories.filter((c) => c.parentId);
+    // Prioritize categories explicitly featured by admin for homepage grid (after hero slider)
+    const featuredCats = dbCategories
+      .filter((c) => c.isFeatured)
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+
+    if (featuredCats.length > 0) {
+      return featuredCats;
+    }
+
+    // Fallback: Prioritize root departments, then subcategories
+    const rootCats = dbCategories
+      .filter((c) => !c.parentId)
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    const subCats = dbCategories
+      .filter((c) => c.parentId)
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
     const combined = rootCats.length >= 10 ? rootCats.slice(0, 10) : [...rootCats, ...subCats].slice(0, 10);
     return combined;
   }, [dbCategories]);
@@ -123,20 +137,31 @@ export default function Home() {
   }, [dbProducts]);
 
   const headerNavCategories = useMemo(() => {
-    // Only display top-level parent categories (level 1 / no parentId) in the header ribbon
-    const parentCats = dbCategories.filter((c) => !c.parentId);
-    const targetCats = parentCats.length > 0 ? parentCats : dbCategories;
+    // Only display categories where showInMenu is true in the header ribbon, sorted by menuOrder
+    const parentCats = dbCategories
+      .filter((c) => !c.parentId && c.showInMenu !== false)
+      .sort((a, b) => (a.menuOrder ?? 0) - (b.menuOrder ?? 0));
+
+    const targetCats = parentCats.length > 0 
+      ? parentCats 
+      : dbCategories.filter((c) => !c.parentId);
 
     return targetCats.map((c) => {
-      // Find direct children categories (level 2) belonging to this parent
-      const directChildren = dbCategories.filter((child) => child.parentId === c.id);
+      // Find direct children categories (level 2) belonging to this parent, respecting menu visibility and order
+      const directChildren = dbCategories
+        .filter((child) => child.parentId === c.id && child.showInMenu !== false)
+        .sort((a, b) => (a.menuOrder ?? 0) - (b.menuOrder ?? 0));
+
       const effectiveChildren = directChildren.length > 0
         ? directChildren
         : (c.children || []);
 
       const childrenList = effectiveChildren.map((child) => {
         // Find level 3 children belonging to this child
-        const level3Children = dbCategories.filter((sub) => sub.parentId === child.id);
+        const level3Children = dbCategories
+          .filter((sub) => sub.parentId === child.id && sub.showInMenu !== false)
+          .sort((a, b) => (a.menuOrder ?? 0) - (b.menuOrder ?? 0));
+
         const effectiveLevel3 = level3Children.length > 0
           ? level3Children
           : (child.children || []);

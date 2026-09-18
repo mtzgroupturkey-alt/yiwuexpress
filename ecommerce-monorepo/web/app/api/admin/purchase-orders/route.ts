@@ -7,20 +7,105 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const destination = searchParams.get('purchaseDestination')
+    const status = searchParams.get('status')
+    const isPaid = searchParams.get('isPaid')
+    const search = searchParams.get('search')
+    const warehouseParam = searchParams.get('warehouseId') || searchParams.get('warehouse')
 
     const where: any = {}
     if (destination && destination !== 'ALL') {
       where.purchaseDestination = destination
     }
+    if (status && status !== 'ALL') {
+      // Support comma-separated statuses e.g. "CONFIRMED,SHIPPED,PARTIALLY_RECEIVED"
+      if (status.includes(',')) {
+        where.status = { in: status.split(',').map((s) => s.trim()) }
+      } else {
+        where.status = status
+      }
+    }
+    if (isPaid !== null && isPaid !== undefined && isPaid !== '') {
+      where.isPaid = isPaid === 'true'
+    }
+
+    if (warehouseParam && warehouseParam !== 'all') {
+      const p = warehouseParam.toLowerCase();
+      if (p === 'by') {
+        const byWhs = await prisma.warehouse.findMany({
+          where: {
+            OR: [
+              { code: { contains: 'BY', mode: 'insensitive' } },
+              { country: { contains: 'Belarus', mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        });
+        where.destinationWarehouseId = { in: byWhs.map((w) => w.id) };
+      } else if (p === 'cn') {
+        const cnWhs = await prisma.warehouse.findMany({
+          where: {
+            OR: [
+              { isDefaultProcurement: true },
+              { code: { contains: 'CN', mode: 'insensitive' } },
+              { country: { contains: 'China', mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        });
+        where.OR = [
+          { destinationWarehouseId: { in: cnWhs.map((w) => w.id) } },
+          { destinationWarehouseId: null },
+        ];
+      } else {
+        const targetWh = await prisma.warehouse.findFirst({
+          where: {
+            OR: [
+              { id: warehouseParam },
+              { code: { equals: warehouseParam, mode: 'insensitive' } },
+            ],
+          },
+        });
+        if (targetWh) {
+          if (targetWh.isDefaultProcurement) {
+            where.OR = [
+              { destinationWarehouseId: targetWh.id },
+              { destinationWarehouseId: null },
+            ];
+          } else {
+            where.destinationWarehouseId = targetWh.id;
+          }
+        }
+      }
+    }
+
+    if (search) {
+      where.OR = [
+        { poNumber: { contains: search, mode: 'insensitive' } },
+        { supplier: { name: { contains: search, mode: 'insensitive' } } },
+        { supplier: { companyName: { contains: search, mode: 'insensitive' } } },
+        { items: { some: { productName: { contains: search, mode: 'insensitive' } } } },
+        { items: { some: { productSku: { contains: search, mode: 'insensitive' } } } },
+      ]
+    }
 
     const purchaseOrders = await prisma.purchaseOrder.findMany({
       where,
       include: {
+        destinationWarehouse: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            country: true,
+          },
+        },
         supplier: {
           select: {
             id: true,
             name: true,
             companyName: true,
+            phone: true,
+            email: true,
           },
         },
         targetCustomer: {
@@ -47,6 +132,48 @@ export async function GET(request: NextRequest) {
             status: true,
           },
         },
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                thumbnail: true,
+                stock: true,
+                warehouseStocks: {
+                  select: {
+                    id: true,
+                    warehouseId: true,
+                    quantity: true,
+                    locationCode: true,
+                    locationPath: true,
+                    warehouse: {
+                      select: {
+                        name: true,
+                        code: true,
+                      },
+                    },
+                    slot: {
+                      select: {
+                        id: true,
+                        code: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            variant: {
+              select: {
+                id: true,
+                sku: true,
+                stock: true,
+                attributes: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             items: true,
@@ -58,7 +185,11 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ purchaseOrders })
+    return NextResponse.json({
+      success: true,
+      purchaseOrders,
+      data: purchaseOrders,
+    })
   } catch (error) {
     console.error('Error fetching purchase orders:', error)
     return NextResponse.json({ error: 'Failed to fetch purchase orders' }, { status: 500 })

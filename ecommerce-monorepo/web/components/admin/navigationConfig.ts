@@ -165,3 +165,44 @@ export const ADMIN_NAV_ITEMS: FlatAdminNavItem[] = navigationConfig.flatMap(grou
     icon: item.icon || group.icon
   }))
 )
+
+export function isItemActive(
+  itemHref: string,
+  pathname: string,
+  searchParams?: { get: (name: string) => string | null } | null
+): boolean {
+  const [itemPath, itemQuery] = itemHref.split('?')
+
+  if (itemQuery) {
+    if (pathname !== itemPath) return false
+    if (!searchParams) return false
+    const expectedParams = new URLSearchParams(itemQuery)
+    for (const [key, val] of expectedParams.entries()) {
+      const currentVal = searchParams.get(key)
+      if (!currentVal || currentVal.toLowerCase() !== val.toLowerCase()) {
+        return false
+      }
+    }
+    return true
+  }
+
+  // If item has NO query parameters
+  if (pathname === itemPath) {
+    if (searchParams) {
+      if (itemPath === '/admin/inventory' && (searchParams.get('warehouse') || searchParams.get('warehouseId'))) {
+        return false
+      }
+      if (itemPath === '/admin/customers' && searchParams.get('type')) {
+        return false
+      }
+    }
+    return true
+  }
+
+  if (itemPath !== '/admin' && pathname.startsWith(itemPath)) {
+    return true
+  }
+
+  return false
+}
+

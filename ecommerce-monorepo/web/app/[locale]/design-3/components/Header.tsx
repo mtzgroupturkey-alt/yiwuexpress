@@ -23,7 +23,8 @@ import {
   Building2,
   PackageCheck,
   User as UserIcon,
-  Coins
+  Coins,
+  Menu
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -386,8 +387,18 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* 2. Main Brand & Search Bar */}
       <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-3.5 flex items-center justify-between gap-4 lg:gap-8">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Brand Logo & Mobile Menu Button */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Mobile Hamburger to Open Catalog */}
+          <button
+            type="button"
+            onClick={onOpenCatalog}
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer active:scale-95"
+            title="Open Category Menu"
+          >
+            <Menu className="w-6 h-6 text-[#00407a]" />
+          </button>
+
           <Link 
             href={`/${currentLocale}`}
             className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none"

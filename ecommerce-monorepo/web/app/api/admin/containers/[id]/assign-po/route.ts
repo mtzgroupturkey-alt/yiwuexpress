@@ -26,27 +26,75 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const existingPo = await prisma.purchaseOrder.findUnique({
       where: { id: purchaseOrderId },
-      select: { id: true, poNumber: true, purchaseDestination: true },
+      include: {
+        supplier: true,
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        targetCustomer: true,
+        linkedOrder: true,
+      },
     });
 
     if (!existingPo) {
       return NextResponse.json({ error: 'Purchase order not found' }, { status: 404 });
     }
 
-    if (existingPo.purchaseDestination === 'CHINA_WAREHOUSE') {
-      return NextResponse.json(
-        { error: `PO ${existingPo.poNumber} is destined for China warehouse and cannot be loaded directly into a container.` },
-        { status: 400 }
-      );
-    }
-
-    const po = await prisma.purchaseOrder.update({
-      where: { id: purchaseOrderId },
-      data: { containerId: params.id },
-      include: { supplier: true, items: true, targetCustomer: true, linkedOrder: true },
+    const container = await prisma.container.findUnique({
+      where: { id: params.id },
+      select: { id: true, sourceWarehouseId: true },
     });
 
-    return NextResponse.json({ success: true, data: po });
+    const result = await prisma.$transaction(async (tx) => {
+      const po = await tx.purchaseOrder.update({
+        where: { id: purchaseOrderId },
+        data: { containerId: params.id },
+        include: { supplier: true, items: true, targetCustomer: true, linkedOrder: true },
+      });
+
+      // Synchronize PO items into container_items so landed costs & cargo items are tracked
+      for (const item of existingPo.items) {
+        if (!item.productId) continue;
+        const qty = item.quantity || 1;
+        const unitCost = item.unitPrice || item.product?.costPrice || 0;
+        const totalCost = (item as any).totalPrice || (item as any).totalAmount || (unitCost * qty);
+        const weight = (item.product?.weightKg || 1) * qty;
+        const cbm = ((item.product as any)?.cbm || 0.01) * qty;
+
+        const existingItem = await tx.containerItem.findFirst({
+          where: {
+            containerId: params.id,
+            sourcePoId: existingPo.id,
+            productId: item.productId,
+          },
+        });
+
+        if (!existingItem) {
+          await tx.containerItem.create({
+            data: {
+              containerId: params.id,
+              productId: item.productId,
+              quantity: qty,
+              unitCost,
+              totalCost,
+              weight,
+              cbm,
+              source: 'PO',
+              sourcePoId: existingPo.id,
+              sourceWarehouseId: container?.sourceWarehouseId || null,
+              allocatedCost: 0,
+              landedCostPerUnit: unitCost,
+            },
+          });
+        }
+      }
+
+      return po;
+    });
+
+    return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Error assigning PO' }, { status: 500 });
   }

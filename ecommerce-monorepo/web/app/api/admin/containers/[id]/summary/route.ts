@@ -75,6 +75,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           },
         },
         routes: { orderBy: { legOrder: 'asc' } },
+        sourceWarehouse: { select: { id: true, name: true, code: true, country: true, city: true } },
+        destinationWarehouse: { select: { id: true, name: true, code: true, country: true, city: true } },
       },
     });
 

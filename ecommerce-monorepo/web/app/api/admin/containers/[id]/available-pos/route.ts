@@ -31,10 +31,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Container not found' }, { status: 404 });
     }
 
-    // Fetch all unassigned purchase orders
+    // Fetch all unassigned purchase orders (exclude already received into warehouse)
     const purchaseOrders = await prisma.purchaseOrder.findMany({
       where: {
         containerId: null,
+        status: { notIn: ['RECEIVED', 'CANCELLED'] },
       },
       include: {
         supplier: {
@@ -46,27 +47,29 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         linkedOrder: {
           select: { id: true, orderNumber: true, status: true, total: true },
         },
+        items: {
+          include: {
+            product: { select: { id: true, name: true, sku: true, costPrice: true, price: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Annotate compatibility based on container loadingType and PO purchaseDestination
-    const annotated = purchaseOrders.map((po: any) => {
-      let isCompatible = true;
-      let reason = '';
-
+    const annotated = purchaseOrders.map((po) => {
+      // All unassigned purchase orders are eligible to be loaded into container
+      let sourceType = 'Direct Factory PO';
       if (po.purchaseDestination === 'CHINA_WAREHOUSE') {
-        isCompatible = false;
-        reason = 'Destined for China warehouse storage. Cannot be loaded directly into container.';
-      } else if (container.loadingType === 'DIRECT_TO_CUSTOMER' && po.purchaseDestination !== 'DIRECT_TO_CUSTOMER') {
-        isCompatible = false;
-        reason = 'Container is set for Direct Customer delivery. Requires Direct-to-Customer PO.';
+        sourceType = 'Warehouse Stock / Consolidate';
+      } else if (po.purchaseDestination === 'DIRECT_TO_CUSTOMER') {
+        sourceType = 'Direct to Customer';
       }
 
       return {
         ...po,
-        isCompatible,
-        compatibilityReason: reason,
+        isCompatible: true,
+        sourceType,
+        compatibilityReason: '',
       };
     });
 

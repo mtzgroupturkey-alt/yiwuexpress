@@ -98,6 +98,25 @@ export async function POST(
         throw new Error('Destination warehouse (Belarus DC) could not be determined');
       }
 
+      // Pre-validation: ensure at least one item is ready to be unloaded with shelf addressing
+      if (Array.isArray(itemReceipts) && itemReceipts.length > 0) {
+        for (const receipt of itemReceipts) {
+          const matchingItem = container.items.find((it) => it.id === receipt.itemId);
+          const receivedQty = Math.max(0, Number(receipt.receivedQty) || 0);
+          if (matchingItem && receivedQty > 0) {
+            const hasLocation = !!(receipt.locationCode?.trim() || receipt.slotId || receipt.locationPath?.trim());
+            if (!hasLocation) {
+              throw new Error(
+                `Physical shelf location (RACK, FLOOR, or LANE) is required to unload "${matchingItem.product.name}". Please assign a shelf coordinate.`
+              );
+            }
+          }
+        }
+      }
+
+      let processedCount = 0;
+      let totalReceivedUnitsInBatch = 0;
+
       for (const item of container.items) {
         const landedCost = item.landedCostPerUnit || item.unitCost;
 
@@ -106,24 +125,46 @@ export async function POST(
           ? itemReceipts.find((r: any) => r.itemId === item.id)
           : null;
 
-        const receivedQty = qcData && typeof qcData.receivedQty === 'number'
-          ? qcData.receivedQty
-          : item.quantity;
-        const damagedQty = qcData?.damagedQty || 0;
-        const rejectedQty = qcData?.rejectedQty || 0;
-        const qualityNotes = qcData?.qualityNotes || null;
-        const slotId = qcData?.slotId || null;
-        const locationCode = qcData?.locationCode || null;
-        const locationPath = qcData?.locationPath || null;
+        // If no QC data submitted for this item, or 0 received & damaged & rejected, skip unloading this item
+        if (!qcData) {
+          continue;
+        }
 
-        // Update container item with QC fields
+        const receivedQty = Math.max(0, Number(qcData.receivedQty) || 0);
+        const damagedQty = Math.max(0, Number(qcData.damagedQty) || 0);
+        const rejectedQty = Math.max(0, Number(qcData.rejectedQty) || 0);
+        const qualityNotes = qcData.qualityNotes || null;
+        const slotId = qcData.slotId || null;
+        const locationCode = qcData.locationCode?.trim() || null;
+        const locationPath = qcData.locationPath?.trim() || (locationCode ? `Slot ${locationCode}` : null);
+
+        // If no units are being unloaded in this batch, skip
+        if (receivedQty === 0 && damagedQty === 0 && rejectedQty === 0) {
+          continue;
+        }
+
+        // Strict shelf requirement: received sound units MUST have physical shelf addressing
+        if (receivedQty > 0 && !locationCode && !slotId && !locationPath) {
+          throw new Error(
+            `Physical shelf coordinate is required for product "${item.product.name}". Please select a shelf from RACK, FLOOR, or LANE.`
+          );
+        }
+
+        processedCount++;
+        totalReceivedUnitsInBatch += receivedQty;
+
+        const newCumulativeReceived = (item.receivedQty || 0) + receivedQty;
+        const newCumulativeDamaged = (item.damagedQty || 0) + damagedQty;
+        const newCumulativeRejected = (item.rejectedQty || 0) + rejectedQty;
+
+        // Update container item with cumulative QC fields
         await tx.containerItem.update({
           where: { id: item.id },
           data: {
-            receivedQty,
-            damagedQty,
-            rejectedQty,
-            qualityNotes,
+            receivedQty: newCumulativeReceived,
+            damagedQty: newCumulativeDamaged,
+            rejectedQty: newCumulativeRejected,
+            qualityNotes: qualityNotes || item.qualityNotes,
           },
         });
 
@@ -224,22 +265,62 @@ export async function POST(
         }
       }
 
-      // Update container status to WAREHOUSE_RECEIVED and customs to CLEARED
-      const updatedContainer = await tx.container.update({
-        where: { id: container.id },
-        data: {
-          status: 'WAREHOUSE_RECEIVED',
-          customsStatus: 'CLEARED',
-          arrivalDate: new Date(),
-        },
+      if (processedCount === 0) {
+        throw new Error('No products were configured for unloading. Please assign shelf addressing and received quantity to at least one product.');
+      }
+
+      // Check if all items in container are now fully unloaded
+      const allContainerItems = await tx.containerItem.findMany({
+        where: { containerId: container.id },
       });
 
-      return {
-        flow: 'FLOW_1_2_WAREHOUSE_RECEIPT',
-        status: 'WAREHOUSE_RECEIVED',
-        message: `Container received into Belarus warehouse stock with QC & location assignments completed.`,
-        container: updatedContainer,
-      };
+      const isFullyUnloaded = allContainerItems.every((it) => {
+        const totalHandled = (it.receivedQty || 0) + (it.damagedQty || 0) + (it.rejectedQty || 0);
+        return totalHandled >= it.quantity;
+      });
+
+      let updatedContainer;
+      if (isFullyUnloaded) {
+        // Complete unload: update container status to WAREHOUSE_RECEIVED and customs to CLEARED
+        updatedContainer = await tx.container.update({
+          where: { id: container.id },
+          data: {
+            status: 'WAREHOUSE_RECEIVED',
+            customsStatus: 'CLEARED',
+            arrivalDate: new Date(),
+          },
+        });
+
+        return {
+          flow: 'FLOW_1_2_WAREHOUSE_RECEIPT',
+          status: 'WAREHOUSE_RECEIVED',
+          isFullyUnloaded: true,
+          message: `Container ${container.containerNumber} fully unloaded! All cargo lines stocked into warehouse shelves.`,
+          container: updatedContainer,
+        };
+      } else {
+        // Partial unload: Container REMAINS in ARRIVED status so user can unload remaining products!
+        updatedContainer = await tx.container.update({
+          where: { id: container.id },
+          data: {
+            status: 'ARRIVED',
+            customsStatus: 'CLEARED',
+          },
+        });
+
+        const pendingItemsCount = allContainerItems.filter((it) => {
+          const totalHandled = (it.receivedQty || 0) + (it.damagedQty || 0) + (it.rejectedQty || 0);
+          return totalHandled < it.quantity;
+        }).length;
+
+        return {
+          flow: 'FLOW_1_2_WAREHOUSE_RECEIPT',
+          status: 'ARRIVED',
+          isFullyUnloaded: false,
+          message: `Partially unloaded ${processedCount} product(s) (${totalReceivedUnitsInBatch} pcs) into warehouse shelves. Container remains active in Inbound queue for remaining ${pendingItemsCount} product(s).`,
+          container: updatedContainer,
+        };
+      }
     });
 
     return NextResponse.json({ success: true, data: result });

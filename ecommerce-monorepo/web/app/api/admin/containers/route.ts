@@ -27,9 +27,15 @@ export async function GET(req: NextRequest) {
     const carrierId = searchParams.get('carrierId');
     const agentId = searchParams.get('agentId');
     const search = searchParams.get('search');
+    const warehouseParam = searchParams.get('warehouse') || searchParams.get('warehouseId');
+    const notReceivedOnly = searchParams.get('notReceivedOnly') === 'true';
 
     const where: any = {};
-    if (status && status !== 'ALL') where.status = status;
+    if (status && status !== 'ALL') {
+      where.status = status;
+    } else if (notReceivedOnly) {
+      where.status = { notIn: ['WAREHOUSE_RECEIVED', 'DELIVERED', 'CANCELLED'] };
+    }
     if (routeType && routeType !== 'ALL') where.routeType = routeType;
     if (carrierId && carrierId !== 'ALL') where.carrierId = carrierId;
 
@@ -56,6 +62,67 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    if (warehouseParam && warehouseParam !== 'all') {
+      const p = warehouseParam.toLowerCase();
+      if (p === 'by') {
+        const byWhs = await prisma.warehouse.findMany({
+          where: {
+            OR: [
+              { code: { contains: 'BY', mode: 'insensitive' } },
+              { country: { contains: 'Belarus', mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        });
+        const byWhIds = byWhs.map((w) => w.id);
+        conditions.push({
+          OR: [
+            { destinationWarehouseId: { in: byWhIds } },
+            { destinationWarehouse: { country: { contains: 'Belarus', mode: 'insensitive' } } },
+            { destination: { contains: 'Belarus', mode: 'insensitive' } },
+            { destination: { contains: 'Minsk', mode: 'insensitive' } },
+          ],
+        });
+      } else if (p === 'cn') {
+        const cnWhs = await prisma.warehouse.findMany({
+          where: {
+            OR: [
+              { code: { contains: 'CN', mode: 'insensitive' } },
+              { country: { contains: 'China', mode: 'insensitive' } },
+            ],
+          },
+          select: { id: true },
+        });
+        const cnWhIds = cnWhs.map((w) => w.id);
+        conditions.push({
+          OR: [
+            { destinationWarehouseId: { in: cnWhIds } },
+            { destinationWarehouse: { country: { contains: 'China', mode: 'insensitive' } } },
+            { destination: { contains: 'China', mode: 'insensitive' } },
+            { destination: { contains: 'Yiwu', mode: 'insensitive' } },
+          ],
+        });
+      } else {
+        const targetWh = await prisma.warehouse.findFirst({
+          where: {
+            OR: [
+              { id: warehouseParam },
+              { code: { equals: warehouseParam, mode: 'insensitive' } },
+            ],
+          },
+        });
+        if (targetWh) {
+          conditions.push({
+            OR: [
+              { destinationWarehouseId: targetWh.id },
+              { destination: { contains: targetWh.name, mode: 'insensitive' } },
+              { destination: { contains: targetWh.code, mode: 'insensitive' } },
+            ],
+          });
+        }
+      }
+    }
+
     if (conditions.length > 0) {
       where.AND = conditions;
     }
@@ -63,6 +130,8 @@ export async function GET(req: NextRequest) {
     const containers = await prisma.container.findMany({
       where,
       include: {
+        destinationWarehouse: { select: { id: true, name: true, code: true, country: true, city: true } },
+        sourceWarehouse: { select: { id: true, name: true, code: true, country: true, city: true } },
         carrier: { select: { id: true, name: true, code: true } },
         agent: { select: { id: true, name: true, phone: true, email: true, company: true } },
         costItems: {
@@ -78,8 +147,52 @@ export async function GET(req: NextRequest) {
           },
         },
         agentPayments: { select: { id: true, amount: true, currency: true, paymentDate: true } },
+        items: {
+          select: {
+            id: true,
+            quantity: true,
+            unitCost: true,
+            totalCost: true,
+            allocatedCost: true,
+            landedCostPerUnit: true,
+            weight: true,
+            cbm: true,
+            source: true,
+            receivedQty: true,
+            damagedQty: true,
+            rejectedQty: true,
+            qualityNotes: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                thumbnail: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        purchaseOrders: {
+          select: {
+            id: true,
+            poNumber: true,
+            supplier: { select: { name: true } },
+            total: true,
+            status: true,
+          },
+        },
+        orders: {
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            total: true,
+          },
+        },
         _count: {
           select: {
+            items: true,
             purchaseOrders: true,
             orders: true,
             routes: true,

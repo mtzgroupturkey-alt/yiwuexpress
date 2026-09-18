@@ -48,7 +48,8 @@ export function Design3LayoutHeader() {
       if (!res.ok) return null;
       return res.json();
     },
-    staleTime: 60 * 1000,
+    staleTime: 5 * 1000,
+    refetchOnWindowFocus: true,
   });
 
   const headerCategories = useMemo(() => {

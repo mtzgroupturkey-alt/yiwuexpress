@@ -78,6 +78,9 @@ export interface Category {
   parentId?: string | null;
   level?: number;
   isFeatured?: boolean;
+  showInMenu?: boolean;
+  menuOrder?: number;
+  displayOrder?: number;
   subcategories?: string[];
   children?: Category[];
 }

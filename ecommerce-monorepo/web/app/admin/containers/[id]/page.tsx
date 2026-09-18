@@ -28,6 +28,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -61,6 +62,10 @@ import {
   Navigation,
   Warehouse,
   Info,
+  Settings,
+  Search,
+  Calculator,
+  RefreshCw,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
@@ -137,6 +142,19 @@ export default function ContainerDetailPage() {
   const [editingCostItem, setEditingCostItem] = useState<any>(null)
   const [addPoModalOpen, setAddPoModalOpen] = useState(false)
   const [addOrderModalOpen, setAddOrderModalOpen] = useState(false)
+  const [configModalOpen, setConfigModalOpen] = useState(false)
+  const [configForm, setConfigForm] = useState({
+    loadingType: 'MIXED',
+    sourceWarehouseId: '',
+    destinationWarehouseId: '',
+  })
+
+  // Fetch all warehouses for selection & stock routing
+  const { data: warehousesData } = useQuery<{ success: boolean; data: any[] }>({
+    queryKey: ['admin-warehouses'],
+    queryFn: () => fetch('/api/admin/warehouses').then((r) => r.json()),
+  })
+  const availableWarehouses = warehousesData?.data || []
 
   // Container Items query
   const { data: containerItemsData, refetch: refetchItems } = useQuery<{ success: boolean; data: any[] }>({
@@ -147,11 +165,24 @@ export default function ContainerDetailPage() {
 
   // Add Item Modal state
   const [addItemModalOpen, setAddItemModalOpen] = useState(false)
+  const [productSearchTerm, setProductSearchTerm] = useState('')
+  const [showAllWarehouses, setShowAllWarehouses] = useState(false)
   const [itemForm, setItemForm] = useState({
     productId: '',
     quantity: '1',
     unitCost: '',
     source: 'WAREHOUSE',
+    sourceWarehouseId: '',
+    sourcePoId: '',
+  })
+  // Fetch Container Summary (all costs + payments + orders)
+  const { data: summaryData, isLoading, refetch } = useQuery<{ success: boolean; data: any }>({
+    queryKey: ['container-summary', containerId],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/containers/${containerId}/summary`)
+      if (!res.ok) throw new Error('Failed to fetch container summary')
+      return res.json()
+    },
   })
 
   // All products query for selection
@@ -160,6 +191,84 @@ export default function ContainerDetailPage() {
     queryFn: () => fetch('/api/admin/products/bulk').then((r) => r.json()).catch(() => ({ products: [] })),
   })
   const availableProducts = productsData?.products || []
+
+  // Check if a warehouse matches the container's origin
+  const isWarehouseMatchingOrigin = (wh: any, originStr?: string | null): boolean => {
+    if (!originStr || !originStr.trim()) return true
+    const origin = originStr.toLowerCase().trim()
+    const country = (wh.country || '').toLowerCase().trim()
+    const city = (wh.city || '').toLowerCase().trim()
+    const name = (wh.name || '').toLowerCase().trim()
+    const code = (wh.code || '').toLowerCase().trim()
+
+    if (country && (origin.includes(country) || country.includes(origin))) return true
+    if (city && (origin.includes(city) || city.includes(origin))) return true
+    if (name && origin.includes(name)) return true
+    if (code && origin.includes(code)) return true
+
+    // Common synonyms / country codes
+    const isChinaOrigin = origin.includes('china') || origin.includes('yiwu') || origin.includes('ningbo') || origin.includes('shanghai') || origin.includes('guangzhou') || origin.includes('shenzhen') || origin === 'cn'
+    const isChinaWh = country.includes('china') || code.startsWith('cn') || city.includes('yiwu') || name.includes('china') || name.includes('yiwu')
+    if (isChinaOrigin && isChinaWh) return true
+
+    const isBelarusOrigin = origin.includes('belarus') || origin.includes('minsk') || origin === 'by'
+    const isBelarusWh = country.includes('belarus') || code.startsWith('by') || city.includes('minsk')
+    if (isBelarusOrigin && isBelarusWh) return true
+
+    const isRussiaOrigin = origin.includes('russia') || origin.includes('moscow') || origin.includes('petersburg') || origin === 'ru'
+    const isRussiaWh = country.includes('russia') || code.startsWith('ru')
+    if (isRussiaOrigin && isRussiaWh) return true
+
+    const isKazakhOrigin = origin.includes('kazakhstan') || origin.includes('almaty') || origin.includes('astana') || origin === 'kz'
+    const isKazakhWh = country.includes('kazakhstan') || code.startsWith('kz')
+    if (isKazakhOrigin && isKazakhWh) return true
+
+    return false
+  }
+
+  const containerOrigin = summaryData?.data?.container?.origin || ''
+
+  // Filter warehouses according to container origin
+  const originWarehouses = availableWarehouses.filter((wh: any) =>
+    wh.id === summaryData?.data?.container?.sourceWarehouseId || isWarehouseMatchingOrigin(wh, containerOrigin)
+  )
+
+  const selectableWarehouses = (!showAllWarehouses && originWarehouses.length > 0) ? originWarehouses : availableWarehouses
+
+  // Warehouse inventory query for live available stock display (defaults to container origin warehouse)
+  const activeWhId =
+    itemForm.sourceWarehouseId ||
+    summaryData?.data?.container?.sourceWarehouseId ||
+    (originWarehouses[0]?.id as string) ||
+    (availableWarehouses[0]?.id as string) ||
+    ''
+  const { data: warehouseInventoryData, refetch: refetchInventory } = useQuery<{ success: boolean; data: any[] }>({
+    queryKey: ['warehouse-inventory', activeWhId],
+    queryFn: () => fetch(`/api/admin/inventory?warehouseId=${activeWhId}`).then((r) => r.json()),
+    enabled: Boolean(activeWhId),
+  })
+  const warehouseStockItems = warehouseInventoryData?.data || []
+
+  // Update container configuration (loading scenario, warehouses)
+  const updateContainerConfigMutation = useMutation({
+    mutationFn: async (payload: { loadingType?: string; sourceWarehouseId?: string; destinationWarehouseId?: string }) => {
+      const res = await fetch(`/api/admin/containers/${containerId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to update container configuration')
+      return res.json()
+    },
+    onSuccess: () => {
+      refetch()
+      queryClient.invalidateQueries({ queryKey: ['containers'] })
+      queryClient.invalidateQueries({ queryKey: ['container-summary', containerId] })
+      toast.success('Container configuration updated')
+      setConfigModalOpen(false)
+    },
+    onError: (err: any) => toast.error(err.message),
+  })
 
   // Add item mutation
   const addItemMutation = useMutation({
@@ -175,9 +284,20 @@ export default function ContainerDetailPage() {
     onSuccess: () => {
       refetchItems()
       refetch()
+      refetchInventory()
       toast.success('Item loaded into container')
       setAddItemModalOpen(false)
-      setItemForm({ productId: '', quantity: '1', unitCost: '', source: 'WAREHOUSE' })
+      setProductSearchTerm('')
+      setItemForm({
+        productId: '',
+        quantity: '1',
+        unitCost: '',
+        source: 'WAREHOUSE',
+        sourceWarehouseId: '',
+        sourcePoId: '',
+      })
+      // Automatically recalculate landed cost allocation across loaded items
+      allocateMutation.mutate(container?.allocationMethod || 'VALUE')
     },
     onError: (err: any) => toast.error(err.message),
   })
@@ -192,7 +312,10 @@ export default function ContainerDetailPage() {
     onSuccess: () => {
       refetchItems()
       refetch()
+      refetchInventory()
       toast.success('Item removed and stock restored')
+      // Automatically re-allocate remaining container items
+      allocateMutation.mutate(container?.allocationMethod || 'VALUE')
     },
     onError: (err: any) => toast.error(err.message),
   })
@@ -255,20 +378,18 @@ export default function ContainerDetailPage() {
   // Active Tab state (default depends on container loadingType)
   const [activeTab, setActiveTab] = useState<string>('items')
 
-  // Fetch Container Summary (all costs + payments + orders)
-  const { data: summaryData, isLoading, refetch } = useQuery<{ success: boolean; data: any }>({
-    queryKey: ['container-summary', containerId],
-    queryFn: async () => {
-      const res = await fetch(`/api/admin/containers/${containerId}/summary`)
-      if (!res.ok) throw new Error('Failed to fetch container summary')
-      return res.json()
-    },
-  })
-
   const summary = summaryData?.data
   const container = summary?.container
   const costs = summary?.costs || { items: [], total: 0, paid: 0, unpaid: 0 }
   const agentPayments = summary?.agentPayments || { items: [], totalPaid: 0, totalOwed: 0, outstanding: 0 }
+
+  // Cargo & Landed Cost Summary Metrics
+  const totalContainerExpenses = costs.totalUSD !== undefined ? Number(costs.totalUSD) : (Number(costs.total) || 0)
+  const totalCargoUnits = containerItems.reduce((acc: number, it: any) => acc + (Number(it.quantity) || 0), 0)
+  const totalCargoPurchaseValue = containerItems.reduce((acc: number, it: any) => acc + (Number(it.totalCost) || ((Number(it.unitCost) || 0) * (Number(it.quantity) || 0))), 0)
+  const totalCargoAllocatedCost = containerItems.reduce((acc: number, it: any) => acc + (Number(it.allocatedCost) || 0), 0)
+  const effectiveTotalAllocated = totalCargoAllocatedCost > 0 ? totalCargoAllocatedCost : totalContainerExpenses
+  const totalCargoLandedValue = totalCargoPurchaseValue + effectiveTotalAllocated
 
   // Set default tab when container data arrives
   useEffect(() => {
@@ -284,14 +405,14 @@ export default function ContainerDetailPage() {
   }, [container?.loadingType])
 
   // Fetch unassigned/available POs with compatibility check
-  const { data: availablePosData } = useQuery<{ success: boolean; purchaseOrders: any[] }>({
+  const { data: availablePosData, refetch: refetchAvailablePos } = useQuery<{ success: boolean; purchaseOrders: any[] }>({
     queryKey: ['available-pos', containerId],
     queryFn: async () => {
       const res = await fetch(`/api/admin/containers/${containerId}/available-pos`)
       if (!res.ok) return { success: false, purchaseOrders: [] }
       return res.json()
     },
-    enabled: addPoModalOpen,
+    enabled: addPoModalOpen || addItemModalOpen,
   })
 
   // Fetch unassigned Orders
@@ -319,17 +440,16 @@ export default function ContainerDetailPage() {
       }
       return res.json()
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       refetch()
       queryClient.invalidateQueries({ queryKey: ['containers'] })
-      toast.success('Container status updated')
+      queryClient.invalidateQueries({ queryKey: ['container-summary', containerId] })
+      toast.success(data.message || 'Status updated')
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Status update failed')
-    },
+    onError: (err: any) => toast.error(err.message),
   })
 
-  // 2. Add / Edit Cost Item mutation
+  // 2. Cost item mutations
   const costMutation = useMutation({
     mutationFn: async (payload: any) => {
       if (editingCostItem) {
@@ -338,7 +458,7 @@ export default function ContainerDetailPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
-        if (!res.ok) throw new Error((await res.json()).error || 'Failed to update cost item')
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to update cost')
         return res.json()
       } else {
         const res = await fetch(`/api/admin/containers/${containerId}/costs`, {
@@ -346,46 +466,51 @@ export default function ContainerDetailPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
-        if (!res.ok) throw new Error((await res.json()).error || 'Failed to add cost item')
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to add cost')
         return res.json()
       }
     },
     onSuccess: () => {
       refetch()
-      queryClient.invalidateQueries({ queryKey: ['containers'] })
-      toast.success(editingCostItem ? (dict.containers?.costItemUpdated || 'Cost item updated') : (dict.containers?.costItemAdded || 'Cost item added'))
       setAddCostModalOpen(false)
       setEditingCostItem(null)
+      toast.success(editingCostItem ? 'Cost updated' : 'Cost added')
+      if (containerItems.length > 0) {
+        allocateMutation.mutate(container?.allocationMethod || 'VALUE')
+      }
     },
     onError: (err: any) => toast.error(err.message),
   })
 
-  // Delete cost item mutation
   const deleteCostMutation = useMutation({
     mutationFn: async (costId: string) => {
       const res = await fetch(`/api/admin/containers/${containerId}/costs/${costId}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete cost item')
+      if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete cost')
       return res.json()
     },
     onSuccess: () => {
       refetch()
-      queryClient.invalidateQueries({ queryKey: ['containers'] })
-      toast.success(dict.containers?.costItemDeleted || 'Cost item deleted')
+      toast.success('Cost item removed')
+      if (containerItems.length > 0) {
+        allocateMutation.mutate(container?.allocationMethod || 'VALUE')
+      }
     },
     onError: (err: any) => toast.error(err.message),
   })
 
-  // Mark cost as paid mutation
   const markCostPaidMutation = useMutation({
-    mutationFn: async (costId: string) => {
-      const res = await fetch(`/api/admin/containers/${containerId}/costs/${costId}/paid`, { method: 'POST' })
+    mutationFn: async ({ costId, payload }: { costId: string; payload?: any }) => {
+      const res = await fetch(`/api/admin/containers/${containerId}/costs/${costId}/paid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload || {}),
+      })
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to mark cost as paid')
       return res.json()
     },
     onSuccess: () => {
       refetch()
-      queryClient.invalidateQueries({ queryKey: ['containers'] })
-      toast.success('Cost marked as paid')
+      toast.success('Cost marked as paid & agent payment recorded')
     },
     onError: (err: any) => toast.error(err.message),
   })
@@ -403,9 +528,13 @@ export default function ContainerDetailPage() {
     },
     onSuccess: () => {
       refetch()
+      refetchItems()
+      refetchInventory()
+      refetchAvailablePos()
       queryClient.invalidateQueries({ queryKey: ['containers'] })
+      queryClient.invalidateQueries({ queryKey: ['available-pos', containerId] })
       setAddPoModalOpen(false)
-      toast.success('Purchase order loaded into container')
+      toast.success('Purchase order loaded into container and items synced')
     },
     onError: (err: any) => toast.error(err.message),
   })
@@ -422,7 +551,11 @@ export default function ContainerDetailPage() {
     },
     onSuccess: () => {
       refetch()
+      refetchItems()
+      refetchInventory()
+      refetchAvailablePos()
       queryClient.invalidateQueries({ queryKey: ['containers'] })
+      queryClient.invalidateQueries({ queryKey: ['available-pos', containerId] })
       toast.success('PO removed from container')
     },
     onError: (err: any) => toast.error(err.message),
@@ -544,14 +677,36 @@ export default function ContainerDetailPage() {
   const unassignedPos = availablePosData?.purchaseOrders || []
   const unassignedOrders = (unassignedOrdersData?.orders || []).filter((o) => !o.containerId)
 
+  // Filtered in-stock products for searchable selector in modal
+  const filteredWarehouseStocks = warehouseStockItems.filter((stk: any) => {
+    if (!productSearchTerm.trim()) return true
+    const term = productSearchTerm.toLowerCase()
+    const name = (stk.product?.name || '').toLowerCase()
+    const sku = (stk.product?.sku || '').toLowerCase()
+    const loc = (stk.locationCode || stk.slot?.code || '').toLowerCase()
+    return name.includes(term) || sku.includes(term) || loc.includes(term)
+  })
+
+  const filteredProductsFallback = availableProducts.filter((p: any) => {
+    if (!productSearchTerm.trim()) return true
+    const term = productSearchTerm.toLowerCase()
+    const name = (p.name || '').toLowerCase()
+    const sku = (p.sku || '').toLowerCase()
+    return name.includes(term) || sku.includes(term)
+  })
+
+  const selectedWarehouseStock = warehouseStockItems.find((s: any) => s.productId === itemForm.productId)
+  const selectedPoItem = ((availablePosData?.purchaseOrders || []).find((p: any) => p.id === itemForm.sourcePoId)?.items || []).find((i: any) => i.productId === itemForm.productId)
+  const selectedProduct = selectedWarehouseStock?.product || selectedPoItem?.product || availableProducts.find((p: any) => p.id === itemForm.productId)
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Header & Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
         <div className="flex items-center gap-3">
           <Link href="/admin/containers">
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-              <ArrowLeft className="w-4 h-4" />
+            <Button variant="outline" size="sm" className="gap-1.5 h-9 text-xs font-semibold">
+              <ArrowLeft className="w-4 h-4" /> Back to Containers
             </Button>
           </Link>
           <div>
@@ -574,8 +729,8 @@ export default function ContainerDetailPage() {
           </div>
         </div>
 
-        {/* Warehouse Receipt Action Button */}
-        {container.status !== 'WAREHOUSE_RECEIVED' && container.status !== 'DELIVERED' && (
+        {/* Warehouse Receipt Action Button (hidden for now as requested) */}
+        {false && container.status !== 'WAREHOUSE_RECEIVED' && container.status !== 'DELIVERED' && (
           <Button
             size="sm"
             onClick={() => {
@@ -848,52 +1003,6 @@ export default function ContainerDetailPage() {
         </Card>
       </div>
 
-      {/* SCENARIO CONTEXTUAL BANNER */}
-      <div className={`p-4 rounded-xl border flex items-start gap-3.5 ${
-        container.loadingType === 'DIRECT_TO_CUSTOMER'
-          ? 'bg-purple-50/70 border-purple-200 text-purple-950'
-          : container.loadingType === 'DIRECT_FROM_PO'
-          ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
-          : 'bg-blue-50/70 border-blue-200 text-blue-950'
-      }`}>
-        <div className={`p-2 rounded-lg shrink-0 ${
-          container.loadingType === 'DIRECT_TO_CUSTOMER'
-            ? 'bg-purple-600 text-white'
-            : container.loadingType === 'DIRECT_FROM_PO'
-            ? 'bg-emerald-600 text-white'
-            : 'bg-blue-600 text-white'
-        }`}>
-          {container.loadingType === 'DIRECT_TO_CUSTOMER' ? (
-            <UserCheck className="w-5 h-5" />
-          ) : container.loadingType === 'DIRECT_FROM_PO' ? (
-            <FileText className="w-5 h-5" />
-          ) : (
-            <Warehouse className="w-5 h-5" />
-          )}
-        </div>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-xs uppercase tracking-wider">
-              {dict.containers?.currentScenarioBadge || 'Active Loading Scenario'}:
-            </span>
-            <span className="font-bold text-sm">
-              {container.loadingType === 'DIRECT_TO_CUSTOMER'
-                ? (dict.containers?.directToCustomer || 'Direct Container Sale to Customer')
-                : container.loadingType === 'DIRECT_FROM_PO'
-                ? (dict.containers?.directFromPO || 'Direct from Factory Purchase Order')
-                : (dict.containers?.fromWarehouse || 'From China Warehouse Stock')}
-            </span>
-          </div>
-          <p className="text-xs opacity-90 leading-relaxed">
-            {container.loadingType === 'DIRECT_TO_CUSTOMER'
-              ? (dict.containers?.infoDirectToCustomer || 'Direct Container Sale to Customer: This section is for B2B wholesale orders shipped directly to customer. Goods bypass Belarus warehouse.')
-              : container.loadingType === 'DIRECT_FROM_PO'
-              ? (dict.containers?.infoDirectFromPO || 'Loading Directly from Purchase Order: Entire POs loaded into container. Goods bypass China warehouse storage.')
-              : (dict.containers?.infoFromWarehouse || 'Loading from China Warehouse Stock: Load individual products from China warehouse inventory to replenish Belarus DC.')}
-          </p>
-        </div>
-      </div>
-
       {/* CONTAINER TABS NAVIGATION */}
       <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-lg w-full sm:w-auto flex flex-wrap gap-1">
@@ -939,7 +1048,7 @@ export default function ContainerDetailPage() {
           )}
 
           <Card className="border-indigo-200 shadow-sm">
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 gap-2">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 gap-3 border-b border-slate-100">
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
                   <Package className="w-5 h-5 text-indigo-600" />
@@ -950,91 +1059,220 @@ export default function ContainerDetailPage() {
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                {/* Allocation method triggers */}
-                <Select defaultValue="VALUE" onValueChange={(val) => allocateMutation.mutate(val)}>
-                  <SelectTrigger className="w-[160px] h-8 text-xs font-medium">
-                    <SelectValue placeholder="Allocate by..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="VALUE">Allocate by Value ($)</SelectItem>
-                    <SelectItem value="WEIGHT">Allocate by Weight (kg)</SelectItem>
-                    <SelectItem value="CBM">Allocate by Volume (CBM)</SelectItem>
-                    <SelectItem value="UNITS">Allocate by Units</SelectItem>
-                  </SelectContent>
-                </Select>
+                {/* Allocation basis selector & recalculate button */}
+                <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-md p-0.5">
+                  <Select
+                    value={container?.allocationMethod || 'VALUE'}
+                    onValueChange={(val) => allocateMutation.mutate(val)}
+                    disabled={allocateMutation.isPending || containerItems.length === 0}
+                  >
+                    <SelectTrigger className="w-[170px] h-8 text-xs font-medium border-0 bg-transparent shadow-none">
+                      <Calculator className="w-3.5 h-3.5 text-muted-foreground mr-1 shrink-0" />
+                      <SelectValue placeholder="Allocate by..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="VALUE">Allocate by Value ($)</SelectItem>
+                      <SelectItem value="WEIGHT">Allocate by Weight (kg)</SelectItem>
+                      <SelectItem value="CBM">Allocate by Volume (CBM)</SelectItem>
+                      <SelectItem value="UNITS">Allocate by Units</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={allocateMutation.isPending || containerItems.length === 0}
+                    onClick={() => allocateMutation.mutate(container?.allocationMethod || 'VALUE')}
+                    className="h-7 px-2 text-xs text-indigo-700 hover:bg-indigo-50"
+                    title="Recalculate & Save Landed Costs to DB"
+                  >
+                    {allocateMutation.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
+                </div>
 
                 <Button
                   size="sm"
                   onClick={() => setAddItemModalOpen(true)}
-                  className="h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+                  className="h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Load Product
                 </Button>
               </div>
             </CardHeader>
+
             <CardContent className="p-0">
+              {/* Summary KPIs: Freight/Duties, Goods Value, Total Landed Value */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-slate-50/70 border-b border-slate-200">
+                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-xs space-y-1">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                    <span>Container Freight & Duties</span>
+                    <DollarSign className="w-3.5 h-3.5 text-amber-600" />
+                  </div>
+                  <div className="text-lg font-extrabold font-mono text-amber-700">
+                    ${totalContainerExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    Ledger expenses ({costs.items.length} records) to allocate
+                  </div>
+                </div>
+
+                <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-xs space-y-1">
+                  <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                    <span>Cargo Goods Value (FOB)</span>
+                    <Package className="w-3.5 h-3.5 text-blue-600" />
+                  </div>
+                  <div className="text-lg font-extrabold font-mono text-slate-800">
+                    ${totalCargoPurchaseValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {totalCargoUnits.toLocaleString()} units loaded across {containerItems.length} SKUs
+                  </div>
+                </div>
+
+                <div className="p-3 bg-white rounded-lg border border-emerald-200 bg-emerald-50/30 shadow-xs space-y-1">
+                  <div className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider flex items-center justify-between">
+                    <span>Total Landed Value</span>
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                  </div>
+                  <div className="text-lg font-extrabold font-mono text-emerald-700">
+                    ${totalCargoLandedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="text-[10px] text-emerald-800/80">
+                    Goods Value + Total Allocated Logistics
+                  </div>
+                </div>
+              </div>
+
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Product / SKU</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Purchase Unit Cost</TableHead>
-                    <TableHead className="text-right">Allocated Freight/Duties</TableHead>
-                    <TableHead className="text-right">Final Landed Cost/Unit</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                  <TableRow className="bg-slate-50/60">
+                    <TableHead className="font-semibold text-xs text-foreground">Product / SKU</TableHead>
+                    <TableHead className="font-semibold text-xs text-foreground">Source</TableHead>
+                    <TableHead className="text-right font-semibold text-xs text-foreground">Quantity</TableHead>
+                    <TableHead className="text-right font-semibold text-xs text-foreground">Purchase Cost (FOB)</TableHead>
+                    <TableHead className="text-right font-semibold text-xs text-foreground">Allocated Freight/Duties</TableHead>
+                    <TableHead className="text-right font-semibold text-xs text-foreground">Final Landed Cost/Unit</TableHead>
+                    <TableHead className="text-right font-semibold text-xs text-foreground">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {containerItems.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-10 text-xs text-muted-foreground">
                         No individual products loaded directly yet. Click &ldquo;Load Product&rdquo; to load goods from China stock or PO.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    containerItems.map((item: any) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="text-xs font-medium">
-                          <div className="font-bold text-foreground">{item.product?.name || 'Product'}</div>
-                          <div className="text-[11px] font-mono text-muted-foreground">{item.product?.sku}</div>
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          <Badge variant="outline" className="text-[10px] font-mono">
-                            {item.source}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-bold font-mono">
-                          {item.quantity}
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-mono text-muted-foreground">
-                          ${(item.unitCost || 0).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-mono text-amber-700 font-semibold">
-                          +${(item.allocatedCost || 0).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right text-xs font-mono font-extrabold text-emerald-700">
-                          ${(item.landedCostPerUnit || item.unitCost || 0).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-red-600 hover:bg-red-50"
-                            onClick={() => {
-                              if (confirm('Remove item from container? Stock will be restored to China DC if loaded from warehouse.')) {
-                                removeItemMutation.mutate(item.id)
-                              }
-                            }}
-                          >
-                            Unload
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    containerItems.map((item: any) => {
+                      const currentMethod = container?.allocationMethod || 'VALUE'
+                      const qty = Number(item.quantity) || 1
+                      const unitCost = Number(item.unitCost) || 0
+                      const itemTotalPurchaseCost = Number(item.totalCost) || (unitCost * qty)
+
+                      // Calculate allocated freight/duty share
+                      let rowAllocatedCost = Number(item.allocatedCost) || 0
+                      if (rowAllocatedCost === 0 && totalContainerExpenses > 0 && containerItems.length > 0) {
+                        if (currentMethod === 'VALUE' && totalCargoPurchaseValue > 0) {
+                          rowAllocatedCost = (itemTotalPurchaseCost / totalCargoPurchaseValue) * totalContainerExpenses
+                        } else if (currentMethod === 'UNITS' && totalCargoUnits > 0) {
+                          rowAllocatedCost = (qty / totalCargoUnits) * totalContainerExpenses
+                        } else {
+                          rowAllocatedCost = totalCargoUnits > 0 ? (qty / totalCargoUnits) * totalContainerExpenses : totalContainerExpenses / containerItems.length
+                        }
+                      }
+
+                      const allocatedPerUnit = qty > 0 ? (rowAllocatedCost / qty) : 0
+                      const landedCostPerUnit = item.landedCostPerUnit && Number(item.landedCostPerUnit) > unitCost
+                        ? Number(item.landedCostPerUnit)
+                        : (unitCost + allocatedPerUnit)
+                      const itemTotalLandedCost = landedCostPerUnit * qty
+                      const freightPercent = totalContainerExpenses > 0 ? ((rowAllocatedCost / totalContainerExpenses) * 100) : 0
+
+                      return (
+                        <TableRow key={item.id} className="hover:bg-slate-50/60">
+                          <TableCell className="text-xs">
+                            <div className="font-bold text-foreground text-xs">{item.product?.name || 'Product'}</div>
+                            <div className="text-[11px] font-mono text-muted-foreground">{item.product?.sku}</div>
+                          </TableCell>
+                          <TableCell className="text-xs">
+                            <Badge variant="outline" className="text-[10px] font-mono uppercase bg-slate-50">
+                              {item.source}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right text-xs font-bold font-mono">
+                            {qty.toLocaleString()}
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            <div className="font-mono font-medium text-slate-800">
+                              ${unitCost.toFixed(2)} <span className="text-[10px] text-muted-foreground">/ unit</span>
+                            </div>
+                            <div className="text-[10px] font-mono text-muted-foreground">
+                              ${itemTotalPurchaseCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            <div className="font-mono font-bold text-amber-700">
+                              +${allocatedPerUnit.toFixed(2)} <span className="text-[10px] font-normal text-amber-600">/ unit</span>
+                            </div>
+                            <div className="text-[10px] font-mono text-amber-800/80 flex items-center justify-end gap-1">
+                              <span>(+${rowAllocatedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total)</span>
+                              {totalContainerExpenses > 0 && (
+                                <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-sans">
+                                  {freightPercent.toFixed(1)}%
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right text-xs">
+                            <div className="font-mono font-extrabold text-emerald-700 text-xs">
+                              ${landedCostPerUnit.toFixed(2)} <span className="text-[10px] font-normal text-emerald-600">/ unit</span>
+                            </div>
+                            <div className="text-[10px] font-mono text-slate-500">
+                              ${itemTotalLandedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} landed
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+                              onClick={() => {
+                                if (confirm('Remove item from container? Stock will be restored to China DC if loaded from warehouse.')) {
+                                  removeItemMutation.mutate(item.id)
+                                }
+                              }}
+                            >
+                              Unload
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
                   )}
                 </TableBody>
+                {containerItems.length > 0 && (
+                  <TableFooter className="bg-slate-100/80 font-semibold text-xs border-t-2 border-slate-200">
+                    <TableRow>
+                      <TableCell className="text-slate-800 font-bold">Total ({containerItems.length} SKUs)</TableCell>
+                      <TableCell>—</TableCell>
+                      <TableCell className="text-right font-mono font-bold text-slate-900">{totalCargoUnits.toLocaleString()} units</TableCell>
+                      <TableCell className="text-right font-mono font-bold text-slate-800">
+                        ${totalCargoPurchaseValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-bold text-amber-700">
+                        +${effectiveTotalAllocated.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-extrabold text-emerald-700 text-sm">
+                        ${totalCargoLandedValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell>—</TableCell>
+                    </TableRow>
+                  </TableFooter>
+                )}
               </Table>
             </CardContent>
           </Card>
@@ -1373,18 +1611,145 @@ export default function ContainerDetailPage() {
         </TabsContent>
       </Tabs>
 
-      {/* MODAL: LOAD PRODUCT INTO CONTAINER */}
-      <Dialog open={addItemModalOpen} onOpenChange={setAddItemModalOpen}>
-        <DialogContent className="sm:max-w-[420px]">
+      {/* MODAL: CONFIGURE CONTAINER LOGISTICS & LOADING SETUP */}
+      <Dialog open={configModalOpen} onOpenChange={setConfigModalOpen}>
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle className="text-base font-bold flex items-center gap-2">
-              <Package className="w-4 h-4 text-indigo-600" />
+              <Settings className="w-4 h-4 text-indigo-600" />
+              Configure Container Logistics & Loading Setup
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Configure how this container is loaded (Warehouse stock, Supplier POs, or Mixed) and origin/destination warehouses.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              updateContainerConfigMutation.mutate({
+                loadingType: configForm.loadingType,
+                sourceWarehouseId: configForm.sourceWarehouseId || undefined,
+                destinationWarehouseId: configForm.destinationWarehouseId || undefined,
+              })
+            }}
+            className="space-y-3.5 pt-2"
+          >
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Loading Scenario</Label>
+              <Select
+                value={configForm.loadingType}
+                onValueChange={(val) => setConfigForm({ ...configForm, loadingType: val })}
+              >
+                <SelectTrigger className="text-xs">
+                  <SelectValue placeholder="Select loading type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MIXED">
+                    📦 Consolidated Loading (Warehouse Stock & Supplier Invoices)
+                  </SelectItem>
+                  <SelectItem value="FROM_WAREHOUSE">
+                    🏭 From China Warehouse Stock (Consolidation & Replenishment)
+                  </SelectItem>
+                  <SelectItem value="DIRECT_FROM_PO">
+                    📄 Direct from Factory Purchase Order (Cross-Docking)
+                  </SelectItem>
+                  <SelectItem value="DIRECT_TO_CUSTOMER">
+                    🚚 Direct Container Sale to Customer (B2B Wholesale)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Origin Warehouse (Source)</Label>
+                <Select
+                  value={configForm.sourceWarehouseId}
+                  onValueChange={(val) => setConfigForm({ ...configForm, sourceWarehouseId: val })}
+                >
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="Select origin warehouse..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableWarehouses.map((wh: any) => (
+                      <SelectItem key={wh.id} value={wh.id}>
+                        {wh.name} ({wh.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Destination Warehouse (Target)</Label>
+                <Select
+                  value={configForm.destinationWarehouseId}
+                  onValueChange={(val) => setConfigForm({ ...configForm, destinationWarehouseId: val })}
+                >
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="Select target warehouse..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableWarehouses.map((wh: any) => (
+                      <SelectItem key={wh.id} value={wh.id}>
+                        {wh.name} ({wh.code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="p-3 bg-muted/40 rounded-lg text-[11px] text-muted-foreground space-y-1 border">
+              <div className="font-semibold text-foreground flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                <span>Logistics Routing Info</span>
+              </div>
+              <p>
+                Setting <strong>Consolidated Loading</strong> allows both inventory stock deductions from the origin warehouse and direct supplier purchase orders to be loaded together with automated landed cost allocation.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" size="sm" onClick={() => setConfigModalOpen(false)} className="h-8 text-xs">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={updateContainerConfigMutation.isPending}
+                className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
+                {updateContainerConfigMutation.isPending ? 'Saving...' : 'Save Configuration'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL: LOAD PRODUCT INTO CONTAINER */}
+      <Dialog
+        open={addItemModalOpen}
+        onOpenChange={(open) => {
+          setAddItemModalOpen(open)
+          if (!open) {
+            setProductSearchTerm('')
+            setShowAllWarehouses(false)
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[540px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Package className="w-5 h-5 text-indigo-600" />
               Load Product into Container
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Deducts stock from China Warehouse and records dispatch ledger.
+              Load products from warehouse inventory stock or directly from an unreceived supplier purchase invoice.
             </DialogDescription>
           </DialogHeader>
+
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -1392,75 +1757,462 @@ export default function ContainerDetailPage() {
                 toast.error('Please select a product')
                 return
               }
+              const qty = Number(itemForm.quantity) || 1
+              if (itemForm.source === 'WAREHOUSE') {
+                const stockItem = warehouseStockItems.find((s: any) => s.productId === itemForm.productId)
+                if (stockItem && stockItem.availableQty < qty) {
+                  toast.error(`Requested quantity (${qty}) exceeds available warehouse stock (${stockItem.availableQty})`)
+                  return
+                }
+              }
               addItemMutation.mutate({
                 productId: itemForm.productId,
-                quantity: Number(itemForm.quantity) || 1,
+                quantity: qty,
                 unitCost: itemForm.unitCost ? Number(itemForm.unitCost) : undefined,
                 source: itemForm.source,
+                sourceWarehouseId: itemForm.source === 'WAREHOUSE' ? activeWhId : undefined,
+                sourcePoId: itemForm.source === 'PO' ? (itemForm.sourcePoId || undefined) : undefined,
               })
             }}
-            className="space-y-3 pt-2"
+            className="space-y-3.5 pt-2"
           >
-            <div className="space-y-1">
-              <Label className="text-xs">Select Product *</Label>
-              <Select value={itemForm.productId} onValueChange={(val) => setItemForm({ ...itemForm, productId: val })}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Choose product..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-56">
-                  {availableProducts.map((p: any) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name} ({p.sku})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Source Selection Segment Buttons */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Loading Source *</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItemForm({
+                      ...itemForm,
+                      source: 'WAREHOUSE',
+                      productId: '',
+                      unitCost: '',
+                      quantity: '1',
+                      sourcePoId: '',
+                    })
+                    setProductSearchTerm('')
+                  }}
+                  className={`flex items-center gap-2.5 p-2.5 rounded-lg border text-xs text-left transition-all ${
+                    itemForm.source === 'WAREHOUSE'
+                      ? 'bg-indigo-50 border-indigo-400 text-indigo-950 font-semibold ring-1 ring-indigo-400'
+                      : 'bg-background border-border text-muted-foreground hover:border-slate-300'
+                  }`}
+                >
+                  <Warehouse className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <div>
+                    <div className="font-semibold text-foreground">Warehouse Stock</div>
+                    <div className="text-[10px] text-muted-foreground">China DC Inventory</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItemForm({
+                      ...itemForm,
+                      source: 'PO',
+                      productId: '',
+                      unitCost: '',
+                      quantity: '1',
+                      sourcePoId: '',
+                    })
+                    setProductSearchTerm('')
+                  }}
+                  className={`flex items-center gap-2.5 p-2.5 rounded-lg border text-xs text-left transition-all ${
+                    itemForm.source === 'PO'
+                      ? 'bg-indigo-50 border-indigo-400 text-indigo-950 font-semibold ring-1 ring-indigo-400'
+                      : 'bg-background border-border text-muted-foreground hover:border-slate-300'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <div>
+                    <div className="font-semibold text-foreground">Purchase Invoice</div>
+                    <div className="text-[10px] text-muted-foreground">Direct Supplier PO</div>
+                  </div>
+                </button>
+              </div>
             </div>
 
+            {/* WAREHOUSE MODE */}
+            {itemForm.source === 'WAREHOUSE' && (
+              <>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <Warehouse className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>Source Warehouse</span>
+                    </Label>
+                    {containerOrigin && (
+                      <Badge variant="outline" className="text-[10px] font-mono text-indigo-700 bg-indigo-50 border-indigo-200">
+                        Origin: {containerOrigin}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <Select
+                    value={activeWhId}
+                    onValueChange={(val) => {
+                      setItemForm({ ...itemForm, sourceWarehouseId: val, productId: '', unitCost: '', quantity: '1' })
+                      setProductSearchTerm('')
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs font-medium">
+                      <SelectValue placeholder="Select origin warehouse..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectableWarehouses.map((wh: any) => (
+                        <SelectItem key={wh.id} value={wh.id}>
+                          {wh.name} ({wh.code}) {wh.country ? `• ${wh.country}` : ''} {wh.city ? `(${wh.city})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-0.5">
+                    <span>
+                      {originWarehouses.length > 0 && !showAllWarehouses
+                        ? `Showing warehouse(s) for origin: ${containerOrigin}`
+                        : `Showing all warehouses (${availableWarehouses.length})`}
+                    </span>
+                    {availableWarehouses.length > originWarehouses.length && originWarehouses.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllWarehouses(!showAllWarehouses)}
+                        className="text-indigo-600 hover:underline font-medium"
+                      >
+                        {showAllWarehouses ? `Filter by origin only (${originWarehouses.length})` : `Show all warehouses (${availableWarehouses.length})`}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold">Select Product in Stock *</Label>
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {filteredWarehouseStocks.length} matching products
+                    </span>
+                  </div>
+
+                  {/* Live Search Input */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Input
+                      type="text"
+                      placeholder="Search in-stock products by name or SKU..."
+                      value={productSearchTerm}
+                      onChange={(e) => setProductSearchTerm(e.target.value)}
+                      className="h-8 pl-8 pr-7 text-xs bg-muted/20"
+                    />
+                    {productSearchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => setProductSearchTerm('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Scrollable list of in-stock items */}
+                  <div className="max-h-48 overflow-y-auto border rounded-md divide-y bg-background text-xs">
+                    {filteredWarehouseStocks.length > 0 ? (
+                      filteredWarehouseStocks.map((stk: any) => {
+                        const isSelected = itemForm.productId === stk.productId
+                        const cost = Number(stk.avgCost || stk.product?.costPrice || 0)
+                        const avail = stk.availableQty ?? 0
+                        return (
+                          <div
+                            key={stk.id}
+                            onClick={() => {
+                              setItemForm({
+                                ...itemForm,
+                                productId: stk.productId,
+                                quantity: String(avail > 0 ? avail : 1),
+                                unitCost: cost > 0 ? String(cost) : itemForm.unitCost,
+                              })
+                            }}
+                            className={`p-2.5 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                              isSelected
+                                ? 'bg-indigo-50/90 text-indigo-950 font-medium'
+                                : 'hover:bg-slate-50 text-foreground'
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1 space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-xs truncate">
+                                  {stk.product?.name || 'Unknown Product'}
+                                </span>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-mono">
+                                <span>SKU: {stk.product?.sku || 'N/A'}</span>
+                                {(stk.locationCode || stk.slot?.code) && (
+                                  <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[10px]">
+                                    Loc: {stk.locationCode || stk.slot?.code}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="text-right shrink-0 space-y-0.5">
+                              <Badge
+                                variant="outline"
+                                className={`text-[11px] font-mono ${
+                                  avail > 0
+                                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                                    : 'text-amber-700 bg-amber-50 border-amber-200'
+                                }`}
+                              >
+                                {avail} in stock
+                              </Badge>
+                              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                                Cost: ${cost.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    ) : warehouseStockItems.length === 0 && availableProducts.length > 0 ? (
+                      filteredProductsFallback.map((prod: any) => {
+                        const isSelected = itemForm.productId === prod.id
+                        const cost = Number(prod.costPrice || 0)
+                        return (
+                          <div
+                            key={prod.id}
+                            onClick={() => {
+                              setItemForm({
+                                ...itemForm,
+                                productId: prod.id,
+                                quantity: '1',
+                                unitCost: cost > 0 ? String(cost) : itemForm.unitCost,
+                              })
+                            }}
+                            className={`p-2.5 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                              isSelected
+                                ? 'bg-indigo-50/90 text-indigo-950 font-medium'
+                                : 'hover:bg-slate-50 text-foreground'
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1 space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-xs truncate">{prod.name}</span>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground font-mono">
+                                SKU: {prod.sku}
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0 space-y-0.5">
+                              <Badge variant="outline" className="text-[11px] text-slate-600">
+                                {prod.stock ?? 0} total
+                              </Badge>
+                              <div className="text-[11px] font-semibold text-slate-700 font-mono">
+                                Cost: ${cost.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    ) : (
+                      <div className="p-4 text-center text-xs text-muted-foreground">
+                        No matching products found in stock.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* SUPPLIER PO MODE */}
+            {itemForm.source === 'PO' && (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">Select Supplier Purchase Order / Invoice *</Label>
+                  <Select
+                    value={itemForm.sourcePoId}
+                    onValueChange={(val) => {
+                      const selectedPo = (availablePosData?.purchaseOrders || []).find((p: any) => p.id === val)
+                      const firstItem = selectedPo?.items?.[0]
+                      setItemForm({
+                        ...itemForm,
+                        sourcePoId: val,
+                        productId: firstItem?.productId || '',
+                        quantity: firstItem?.quantity ? String(firstItem.quantity) : itemForm.quantity,
+                        unitCost: firstItem?.unitPrice ? String(firstItem.unitPrice) : (firstItem?.product?.costPrice ? String(firstItem.product.costPrice) : itemForm.unitCost),
+                      })
+                    }}
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Choose purchase order / invoice..." />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-56">
+                      {(availablePosData?.purchaseOrders || []).length > 0 ? (
+                        (availablePosData?.purchaseOrders || []).map((po: any) => (
+                          <SelectItem key={po.id} value={po.id}>
+                            {po.poNumber} • {po.supplier?.name || 'Supplier'} (${((po.total ?? po.totalAmount) || 0).toLocaleString()})
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-xs text-muted-foreground text-center">
+                          No pending purchase orders available (received invoices are in warehouse stock)
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground">
+                    * Invoices already received into the warehouse are excluded to prevent duplicate loading.
+                  </p>
+                </div>
+
+                {itemForm.sourcePoId && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold">Select Product from this Invoice *</Label>
+                    <div className="max-h-40 overflow-y-auto border rounded-md divide-y bg-background text-xs">
+                      {((availablePosData?.purchaseOrders || []).find((p: any) => p.id === itemForm.sourcePoId)?.items || []).map((item: any) => {
+                        const isSelected = itemForm.productId === item.productId
+                        const cost = Number(item.unitPrice || item.product?.costPrice || 0)
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => {
+                              setItemForm({
+                                ...itemForm,
+                                productId: item.productId,
+                                quantity: String(item.quantity || 1),
+                                unitCost: String(cost),
+                              })
+                            }}
+                            className={`p-2.5 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
+                              isSelected
+                                ? 'bg-indigo-50/90 text-indigo-950 font-medium'
+                                : 'hover:bg-slate-50 text-foreground'
+                            }`}
+                          >
+                            <div className="min-w-0 flex-1 space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-xs truncate">
+                                  {item.product?.name || 'Product'}
+                                </span>
+                                {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
+                              </div>
+                              <div className="text-[11px] text-muted-foreground font-mono">
+                                SKU: {item.product?.sku || 'N/A'}
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0 space-y-0.5">
+                              <Badge variant="outline" className="text-[11px] font-mono text-indigo-700 bg-indigo-50 border-indigo-200">
+                                {item.quantity} units
+                              </Badge>
+                              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 font-mono">
+                                Cost: ${cost.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Selected Product Summary Banner */}
+            {selectedProduct && (
+              <div className="p-2.5 rounded-lg border bg-indigo-50/50 border-indigo-200 text-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-indigo-950 flex items-center gap-1.5 truncate">
+                    <Package className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    {selectedProduct.name}
+                  </span>
+                  <span className="font-mono text-[10px] text-indigo-700 bg-white px-1.5 py-0.5 rounded border border-indigo-200 shrink-0">
+                    {selectedProduct.sku}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-600">
+                  <span>
+                    {itemForm.source === 'WAREHOUSE'
+                      ? `Warehouse Stock: ${selectedWarehouseStock?.availableQty ?? 0} units`
+                      : `Invoice Quantity: ${selectedPoItem?.quantity ?? 0} units`}
+                  </span>
+                  <span className="font-semibold text-slate-900 font-mono">
+                    Purchase Price: ${Number(itemForm.unitCost || 0).toFixed(2)} / unit
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Quantity and Cost inputs */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Quantity *</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold">Quantity to Load *</Label>
+                  {itemForm.source === 'WAREHOUSE' && selectedWarehouseStock && selectedWarehouseStock.availableQty > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setItemForm({ ...itemForm, quantity: String(selectedWarehouseStock.availableQty) })}
+                      className="text-[10px] text-indigo-600 hover:underline font-medium"
+                    >
+                      Fill Max ({selectedWarehouseStock.availableQty})
+                    </button>
+                  )}
+                  {itemForm.source === 'PO' && selectedPoItem && selectedPoItem.quantity > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setItemForm({ ...itemForm, quantity: String(selectedPoItem.quantity) })}
+                      className="text-[10px] text-indigo-600 hover:underline font-medium"
+                    >
+                      Fill All ({selectedPoItem.quantity})
+                    </button>
+                  )}
+                </div>
                 <Input
                   type="number"
                   min="1"
+                  max={itemForm.source === 'WAREHOUSE' && selectedWarehouseStock ? selectedWarehouseStock.availableQty : undefined}
                   required
                   value={itemForm.quantity}
                   onChange={(e) => setItemForm({ ...itemForm, quantity: e.target.value })}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs font-mono"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Unit Cost (USD)</Label>
+                <Label className="text-xs font-semibold">Purchase Price / Cost (USD)</Label>
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="Auto from product"
+                  min="0"
+                  placeholder="0.00"
                   value={itemForm.unitCost}
                   onChange={(e) => setItemForm({ ...itemForm, unitCost: e.target.value })}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs font-mono"
                 />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">Source</Label>
-              <Select value={itemForm.source} onValueChange={(val) => setItemForm({ ...itemForm, source: val })}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="WAREHOUSE">China Warehouse Stock (CN-YW)</SelectItem>
-                  <SelectItem value="PO">Direct Factory PO (No China Storage)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Total cargo value indicator */}
+            {Number(itemForm.quantity) > 0 && Number(itemForm.unitCost) > 0 && (
+              <div className="flex items-center justify-between px-3 py-2 bg-emerald-50/80 border border-emerald-200 rounded-lg text-xs text-emerald-900">
+                <span className="font-medium">Total Cargo Value:</span>
+                <span className="font-mono font-bold text-sm text-emerald-700">
+                  ${(Number(itemForm.quantity) * Number(itemForm.unitCost)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                </span>
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <Button type="button" variant="outline" size="sm" onClick={() => setAddItemModalOpen(false)} className="h-8 text-xs">
                 Cancel
               </Button>
-              <Button type="submit" size="sm" disabled={addItemMutation.isPending} className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
-                {addItemMutation.isPending ? 'Loading...' : 'Load into Container'}
+              <Button
+                type="submit"
+                size="sm"
+                disabled={addItemMutation.isPending || !itemForm.productId}
+                className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              >
+                {addItemMutation.isPending ? 'Loading into Container...' : 'Load into Container'}
               </Button>
             </div>
           </form>

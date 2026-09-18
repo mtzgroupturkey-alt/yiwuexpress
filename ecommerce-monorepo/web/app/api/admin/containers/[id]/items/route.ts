@@ -101,15 +101,60 @@ export async function POST(
 
       if (source === 'WAREHOUSE') {
         if (!sourceWhId) {
-          // Default to China Yiwu DC
-          const cnWh = await tx.warehouse.findFirst({
-            where: { isDefaultProcurement: true },
-          });
-          sourceWhId = cnWh?.id;
+          // Check container origin to find a matching warehouse
+          const originStr = (container.origin || '').toLowerCase().trim();
+          let originWh = null;
+
+          if (originStr) {
+            originWh = await tx.warehouse.findFirst({
+              where: {
+                OR: [
+                  { country: { contains: originStr, mode: 'insensitive' } },
+                  { city: { contains: originStr, mode: 'insensitive' } },
+                  { name: { contains: originStr, mode: 'insensitive' } },
+                  { code: { contains: originStr, mode: 'insensitive' } },
+                ],
+              },
+              orderBy: [{ isDefaultProcurement: 'desc' }, { createdAt: 'asc' }],
+            });
+
+            // Handle common abbreviations and region keywords
+            if (!originWh && (originStr.includes('china') || originStr.includes('yiwu') || originStr.includes('ningbo') || originStr.includes('shanghai') || originStr.includes('guangzhou') || originStr === 'cn')) {
+              originWh = await tx.warehouse.findFirst({
+                where: {
+                  OR: [
+                    { isDefaultProcurement: true },
+                    { code: 'CN-YW' },
+                    { country: 'China' },
+                  ],
+                },
+                orderBy: [{ isDefaultProcurement: 'desc' }, { createdAt: 'asc' }],
+              });
+            }
+          }
+
+          if (originWh) {
+            sourceWhId = originWh.id;
+          } else {
+            // Default to default procurement warehouse
+            const fallbackWh = await tx.warehouse.findFirst({
+              where: { isDefaultProcurement: true },
+              orderBy: { createdAt: 'asc' },
+            });
+            sourceWhId = fallbackWh?.id || (await tx.warehouse.findFirst({ orderBy: { createdAt: 'asc' } }))?.id;
+          }
         }
 
         if (!sourceWhId) {
           throw new Error('Source warehouse is required when loading from warehouse stock');
+        }
+
+        // Auto-assign container source warehouse if unset
+        if (!container.sourceWarehouseId && sourceWhId) {
+          await tx.container.update({
+            where: { id: container.id },
+            data: { sourceWarehouseId: sourceWhId },
+          });
         }
 
         const stock = await tx.warehouseStock.findFirst({

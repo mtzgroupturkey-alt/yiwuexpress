@@ -9,12 +9,58 @@ export async function GET(request: NextRequest) {
     await requireRole(request, ['ADMIN']);
 
     const searchParams = request.nextUrl.searchParams;
-    const warehouseId = searchParams.get('warehouseId');
+    const warehouseParam = searchParams.get('warehouseId') || searchParams.get('warehouse');
     const search = searchParams.get('search');
     const lowStockOnly = searchParams.get('lowStockOnly') === 'true';
 
+    // Fetch all active warehouses for navigation/filters
+    const warehouses = await prisma.warehouse.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        country: true,
+        city: true,
+        isDefaultProcurement: true,
+        isDefaultSales: true,
+      },
+      orderBy: [{ isDefaultProcurement: 'desc' }, { code: 'asc' }],
+    });
+
     const where: any = {};
-    if (warehouseId) where.warehouseId = warehouseId;
+
+    if (warehouseParam && warehouseParam !== 'all') {
+      const p = warehouseParam.toLowerCase();
+      if (p === 'cn') {
+        const cnWhs = warehouses.filter(
+          (w) => w.code.toLowerCase().includes('cn') || w.country.toLowerCase().includes('china')
+        );
+        if (cnWhs.length > 0) {
+          where.warehouseId = { in: cnWhs.map((w) => w.id) };
+        }
+      } else if (p === 'by') {
+        const byWhs = warehouses.filter(
+          (w) => w.code.toLowerCase().includes('by') || w.country.toLowerCase().includes('belarus')
+        );
+        if (byWhs.length > 0) {
+          where.warehouseId = { in: byWhs.map((w) => w.id) };
+        }
+      } else {
+        const targetWh = warehouses.find(
+          (w) =>
+            w.id === warehouseParam ||
+            w.code.toLowerCase() === p ||
+            w.country.toLowerCase().includes(p)
+        );
+        if (targetWh) {
+          where.warehouseId = targetWh.id;
+        } else {
+          where.warehouseId = warehouseParam;
+        }
+      }
+    }
+
     if (search) {
       where.product = {
         OR: [
@@ -67,7 +113,11 @@ export async function GET(request: NextRequest) {
       results = results.filter((r) => r.isLowStock);
     }
 
-    return NextResponse.json({ success: true, data: results });
+    return NextResponse.json({
+      success: true,
+      data: results,
+      warehouses,
+    });
   } catch (error: any) {
     return createAuthErrorResponse(error);
   }

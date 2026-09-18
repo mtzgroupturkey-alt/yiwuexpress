@@ -39,10 +39,18 @@ export async function GET(req: NextRequest) {
             },
           } : false,
         },
-        orderBy: { menuOrder: 'asc' },
+        orderBy: [
+          { menuOrder: 'asc' },
+          { displayOrder: 'asc' },
+          { name: 'asc' }
+        ],
       } : false,
     },
-    orderBy: { menuOrder: 'asc' },
+    orderBy: [
+      { menuOrder: 'asc' },
+      { displayOrder: 'asc' },
+      { name: 'asc' }
+    ],
   })
 
   // Expand-and-Contract read-path localization: resolve each node's name to the

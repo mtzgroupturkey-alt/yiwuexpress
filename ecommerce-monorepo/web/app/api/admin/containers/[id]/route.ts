@@ -27,6 +27,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         carrier: true,
         agent: true,
         costItems: { orderBy: { createdAt: 'desc' } },
+        items: {
+          include: { product: true },
+          orderBy: { createdAt: 'asc' },
+        },
         agentPayments: {
           include: { agent: { select: { id: true, name: true, email: true, phone: true } } },
           orderBy: { paymentDate: 'desc' },
@@ -43,6 +47,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
                         user: { select: { name: true, email: true } },
           },
         },
+        sourceWarehouse: { select: { id: true, name: true, code: true, country: true, city: true } },
+        destinationWarehouse: { select: { id: true, name: true, code: true, country: true, city: true } },
         routes: { orderBy: { legOrder: 'asc' } },
       },
     });
@@ -73,6 +79,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       arrivalDate,
       status,
       notes,
+      loadingType,
+      sourceWarehouseId,
+      destinationWarehouseId,
+      allocationMethod,
+      shipToCustomerDirectly,
     } = body;
 
     const data: any = {};
@@ -86,6 +97,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (arrivalDate !== undefined) data.arrivalDate = arrivalDate ? new Date(arrivalDate) : null;
     if (status !== undefined) data.status = status;
     if (notes !== undefined) data.notes = notes;
+    if (loadingType !== undefined) data.loadingType = loadingType;
+    if (sourceWarehouseId !== undefined) data.sourceWarehouseId = sourceWarehouseId || null;
+    if (destinationWarehouseId !== undefined) data.destinationWarehouseId = destinationWarehouseId || null;
+    if (allocationMethod !== undefined) data.allocationMethod = allocationMethod;
+    if (shipToCustomerDirectly !== undefined) data.shipToCustomerDirectly = Boolean(shipToCustomerDirectly);
 
     const updated = await prisma.container.update({
       where: { id: params.id },
@@ -93,6 +109,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       include: {
         carrier: true,
         agent: true,
+        sourceWarehouse: true,
+        destinationWarehouse: true,
         costItems: true,
         agentPayments: true,
       },

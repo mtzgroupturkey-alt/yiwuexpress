@@ -15,8 +15,11 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Get the correct database URL based on environment
-const databaseUrl = getDatabaseUrl();
+// Get the correct database URL based on environment and ensure reasonable connection pool limit
+const rawDatabaseUrl = getDatabaseUrl();
+const databaseUrl = rawDatabaseUrl.includes('connection_limit')
+  ? rawDatabaseUrl
+  : `${rawDatabaseUrl}${rawDatabaseUrl.includes('?') ? '&' : '?'}connection_limit=15`;
 const environment = detectEnvironment();
 
 // Create Prisma client with automatic environment detection

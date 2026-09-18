@@ -9,7 +9,22 @@ export async function POST(request: NextRequest) {
     await requireRole(request, ['ADMIN'])
 
     const body = await request.json()
-    const { productId, variantId, quantity, type = 'ADJUSTMENT', reason, reference } = body
+    const {
+      productId,
+      variantId,
+      warehouseId,
+      slotId,
+      quantity,
+      unitCost,
+      type = 'ADJUSTMENT',
+      reason,
+      reference,
+      rack,
+      lane,
+      floor,
+      locationCode,
+      locationPath,
+    } = body
 
     if (!productId && !variantId) {
       return NextResponse.json(
@@ -61,18 +76,103 @@ export async function POST(request: NextRequest) {
 
         await tx.product.update({
           where: { id: targetProductId },
-          data: { stock: { increment: quantity } }
+          data: {
+            stock: { increment: quantity },
+            ...(unitCost && unitCost > 0 ? { costPrice: unitCost } : {}),
+          }
         })
       }
 
+      // Resolve warehouse ID
+      let targetWarehouseId = warehouseId || null
+      if (!targetWarehouseId) {
+        const defaultWh = await tx.warehouse.findFirst({
+          where: { isDefaultProcurement: true },
+        })
+        targetWarehouseId = defaultWh?.id || null
+      }
+
+      // Determine location coordinates
+      const effLane = (lane || '').toString().trim()
+      const effRack = (rack || '').toString().trim()
+      const effFloor = (floor || '').toString().trim()
+
+      let effLocationCode = (locationCode || '').toString().trim() || null
+      let effLocationPath = (locationPath || '').toString().trim() || null
+
+      if (!effLocationCode && (effLane || effRack || effFloor)) {
+        const parts: string[] = []
+        if (effLane) parts.push(`L-${effLane}`)
+        if (effRack) parts.push(`R-${effRack}`)
+        if (effFloor) parts.push(`F-${effFloor}`)
+        effLocationCode = parts.join('/')
+      }
+
+      if (!effLocationPath && (effLane || effRack || effFloor)) {
+        const parts: string[] = []
+        if (effLane) parts.push(`Lane ${effLane}`)
+        if (effRack) parts.push(`Rack ${effRack}`)
+        if (effFloor) parts.push(`Floor ${effFloor}`)
+        effLocationPath = parts.join(' > ')
+      }
+
+      // Update WarehouseStock if warehouseId is present
+      if (targetWarehouseId && targetProductId) {
+        const existingStock = await tx.warehouseStock.findFirst({
+          where: { warehouseId: targetWarehouseId, productId: targetProductId },
+        })
+
+        if (existingStock) {
+          const cost = typeof unitCost === 'number' && unitCost > 0 ? unitCost : existingStock.avgCost
+          const currentTotalVal = existingStock.quantity * existingStock.avgCost
+          const incomingVal = quantity > 0 ? quantity * cost : 0
+          const newTotalQty = existingStock.quantity + quantity
+          if (newTotalQty < 0) {
+            throw new Error(`Insufficient warehouse stock. Current: ${existingStock.quantity}, adjustment: ${quantity}`)
+          }
+          const newAvgCost = newTotalQty > 0 && quantity > 0 ? (currentTotalVal + incomingVal) / newTotalQty : existingStock.avgCost
+
+          await tx.warehouseStock.update({
+            where: { id: existingStock.id },
+            data: {
+              quantity: { increment: quantity },
+              avgCost: Math.round(newAvgCost * 100) / 100,
+              ...(slotId ? { slotId } : {}),
+              ...(effLocationCode ? { locationCode: effLocationCode } : {}),
+              ...(effLocationPath ? { locationPath: effLocationPath } : {}),
+            },
+          })
+        } else {
+          if (quantity < 0) {
+            throw new Error(`Cannot deduct from non-existent warehouse stock`)
+          }
+          await tx.warehouseStock.create({
+            data: {
+              warehouseId: targetWarehouseId,
+              productId: targetProductId,
+              quantity,
+              reservedQty: 0,
+              avgCost: typeof unitCost === 'number' && unitCost > 0 ? Math.round(unitCost * 100) / 100 : 0,
+              slotId: slotId || null,
+              locationCode: effLocationCode,
+              locationPath: effLocationPath,
+            },
+          })
+        }
+      }
+
+      const locDesc = effLocationPath || effLocationCode ? ` [Location: ${effLocationPath || effLocationCode}]` : ''
       const movement = await tx.stockMovement.create({
         data: {
           productId: targetProductId,
           variantId: variantId || null,
+          warehouseId: targetWarehouseId,
           type,
           quantity,
+          unitCost: typeof unitCost === 'number' ? unitCost : null,
+          totalCost: typeof unitCost === 'number' ? Math.abs(unitCost * quantity) : null,
           reference: reference || `ADJ-${Date.now()}`,
-          notes: reason || 'Manual stock adjustment by admin',
+          notes: `${reason || (type === 'PURCHASE_RECEIPT' ? 'Direct warehouse receipt' : 'Manual stock adjustment by admin')}${locDesc}`,
         },
         include: {
           product: {
@@ -80,6 +180,9 @@ export async function POST(request: NextRequest) {
           },
           variant: {
             select: { id: true, sku: true, stock: true }
+          },
+          warehouse: {
+            select: { id: true, name: true, code: true }
           }
         }
       })

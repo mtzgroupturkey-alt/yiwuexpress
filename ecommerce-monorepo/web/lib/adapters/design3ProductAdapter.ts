@@ -106,6 +106,9 @@ export function mapDbCategoryToDesign3(dbCat: any): Category {
     parentId: dbCat.parentId || null,
     level: typeof dbCat.level === 'number' ? dbCat.level : (dbCat.parentId ? 2 : 1),
     isFeatured: Boolean(dbCat.isFeatured),
+    showInMenu: dbCat.showInMenu !== false,
+    menuOrder: typeof dbCat.menuOrder === 'number' ? dbCat.menuOrder : 0,
+    displayOrder: typeof dbCat.displayOrder === 'number' ? dbCat.displayOrder : 0,
     children,
   };
 }

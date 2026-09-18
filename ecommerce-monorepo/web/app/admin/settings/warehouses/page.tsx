@@ -56,6 +56,7 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
 import { Warehouse3DViewer, Warehouse3DItem } from '@/components/admin/warehouse/Warehouse3DViewer'
+import { WarehouseItemLayoutModal, InspectorItem } from '@/components/admin/warehouse/WarehouseItemLayoutModal'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 const WAREHOUSE_COUNTRIES = [
@@ -487,18 +488,7 @@ export default function AdminSettingsWarehousesPage() {
   const [assignProductId, setAssignProductId] = useState('')
 
   // Storage Items (Rack, Floor Bay, Bulk Lane) Inspector & Configuration State
-  const [selectedInspectorItem, setSelectedInspectorItem] = useState<{
-    itemType: 'RACK' | 'FLOOR' | 'LANE'
-    baseCode: string
-    title: string
-    zoneId?: string
-    layout: {
-      bays: number
-      levels: number
-      subParts: number
-      sections: number
-    }
-  } | null>(null)
+  const [selectedInspectorItem, setSelectedInspectorItem] = useState<InspectorItem | null>(null)
 
   // 1. Fetch all warehouses list
   const { data: whData, isLoading: isLoadingList, refetch: refetchList } = useQuery<{
@@ -680,6 +670,177 @@ export default function AdminSettingsWarehousesPage() {
     return list
   }, [currentWarehouse])
 
+  // Helpers to infer 2D matrix rows/cols for Floor bays and Lane tracks/stops
+  function inferFloorDimensions(slots: any[]) {
+    if (!slots || slots.length === 0) return { rows: 1, cols: 1 }
+    const rowLetters = new Set<string>()
+    const colNumbers = new Set<string>()
+    let has2DFormat = false
+
+    for (const s of slots) {
+      const code = s.code || ''
+      const m2D = code.match(/-([A-Z])(\d+)$/i)
+      if (m2D) {
+        has2DFormat = true
+        rowLetters.add(m2D[1].toUpperCase())
+        colNumbers.add(m2D[2])
+        continue
+      }
+      const mLetter = code.match(/-([A-Z])$/i)
+      if (mLetter) {
+        rowLetters.add(mLetter[1].toUpperCase())
+      }
+    }
+
+    if (has2DFormat && rowLetters.size > 0 && colNumbers.size > 0) {
+      return { rows: rowLetters.size, cols: colNumbers.size }
+    }
+    if (rowLetters.size > 0) {
+      return { rows: 1, cols: rowLetters.size }
+    }
+    const count = slots.length
+    if (count === 1) return { rows: 1, cols: 1 }
+    if (count === 2) return { rows: 1, cols: 2 }
+    if (count === 4) return { rows: 2, cols: 2 }
+    if (count === 6) return { rows: 2, cols: 3 }
+    if (count === 8) return { rows: 4, cols: 2 }
+    if (count === 9) return { rows: 3, cols: 3 }
+    return { rows: 1, cols: count }
+  }
+
+  function inferLaneDimensions(slots: any[]) {
+    if (!slots || slots.length === 0) return { laneRows: 1, laneCols: 1 }
+    const tracks = new Set<string>()
+    const stops = new Set<string>()
+    let hasTrackFormat = false
+
+    for (const s of slots) {
+      const code = s.code || ''
+      const mTrack = code.match(/-T(\d+)-(\d+)$/i)
+      if (mTrack) {
+        hasTrackFormat = true
+        tracks.add(mTrack[1])
+        stops.add(mTrack[2])
+        continue
+      }
+      const mOnlyTrack = code.match(/-T(\d+)$/i)
+      if (mOnlyTrack) {
+        hasTrackFormat = true
+        tracks.add(mOnlyTrack[1])
+        continue
+      }
+      const mStop = code.match(/-S?(\d+)$/i)
+      if (mStop) {
+        stops.add(mStop[1])
+      }
+    }
+
+    if (hasTrackFormat && tracks.size > 0 && stops.size > 0) {
+      return { laneRows: stops.size, laneCols: tracks.size }
+    }
+    if (hasTrackFormat && tracks.size > 0) {
+      return { laneRows: 1, laneCols: tracks.size }
+    }
+    if (stops.size > 0) {
+      return { laneRows: stops.size, laneCols: 1 }
+    }
+    const count = slots.length
+    if (count === 4) return { laneRows: 2, laneCols: 2 }
+    if (count === 8) return { laneRows: 4, laneCols: 2 }
+    if (count === 6) return { laneRows: 3, laneCols: 2 }
+    return { laneRows: count || 1, laneCols: 1 }
+  }
+
+  function getOrganizedLaneGrid(slots: any[], laneRows: number, laneCols: number, baseCode: string) {
+    if (!slots || slots.length === 0) return []
+
+    const slotMap = new Map<string, any>()
+    for (const s of slots) {
+      if (s.code) slotMap.set(s.code, s)
+    }
+
+    const rows: { stopNum: number; stopLabel: string; trackSlots: (any | null)[] }[] = []
+
+    for (let r = 1; r <= laneRows; r++) {
+      const sPad = r < 10 ? `0${r}` : `${r}`
+      const trackSlots: any[] = []
+
+      for (let c = 1; c <= laneCols; c++) {
+        let targetCode = ''
+        if (laneCols === 1 && laneRows === 1) {
+          targetCode = baseCode
+        } else if (laneCols === 1 && laneRows > 1) {
+          targetCode = `${baseCode}-${sPad}`
+        } else if (laneCols > 1 && laneRows === 1) {
+          targetCode = `${baseCode}-T${c}`
+        } else {
+          targetCode = `${baseCode}-T${c}-${sPad}`
+        }
+
+        const found =
+          slotMap.get(targetCode) ||
+          slots.find((sl: any) => sl.code?.endsWith(`T${c}-${sPad}`) || sl.code?.endsWith(`T${c}-${r}`)) ||
+          slots[(c - 1) * laneRows + (r - 1)] ||
+          null
+
+        trackSlots.push(found)
+      }
+
+      rows.push({
+        stopNum: r,
+        stopLabel: `Stop ${sPad}`,
+        trackSlots,
+      })
+    }
+
+    return rows
+  }
+
+  function getOrganizedFloorGrid(slots: any[], rowsCount: number, colsCount: number, baseCode: string) {
+    if (!slots || slots.length === 0) return []
+
+    const slotMap = new Map<string, any>()
+    for (const s of slots) {
+      if (s.code) slotMap.set(s.code, s)
+    }
+
+    const rows: { rowNum: number; rowLetter: string; colSlots: (any | null)[] }[] = []
+
+    for (let r = 1; r <= rowsCount; r++) {
+      const rowLetter = String.fromCharCode(64 + r)
+      const colSlots: any[] = []
+
+      for (let c = 1; c <= colsCount; c++) {
+        let targetCode = ''
+        if (rowsCount === 1 && colsCount === 1) {
+          targetCode = baseCode
+        } else if (rowsCount === 1 && colsCount > 1) {
+          targetCode = `${baseCode}-${String.fromCharCode(64 + c)}`
+        } else if (rowsCount > 1 && colsCount === 1) {
+          targetCode = `${baseCode}-${rowLetter}`
+        } else {
+          targetCode = `${baseCode}-${rowLetter}${c}`
+        }
+
+        const found =
+          slotMap.get(targetCode) ||
+          slots.find((sl: any) => sl.code?.endsWith(`${rowLetter}${c}`)) ||
+          slots[(r - 1) * colsCount + (c - 1)] ||
+          null
+
+        colSlots.push(found)
+      }
+
+      rows.push({
+        rowNum: r,
+        rowLetter,
+        colSlots,
+      })
+    }
+
+    return rows
+  }
+
   // ========================================================
   // CANONICAL WAREHOUSE 2D/3D ITEM MODEL (SINGLE SOURCE OF TRUTH)
   // ========================================================
@@ -710,6 +871,8 @@ export default function AdminSettingsWarehousesPage() {
     zoneName: string
     zoneType: string
     bay: any
+    rows: number
+    cols: number
     slotsCount: number
     allSlots: any[]
     aisle: string
@@ -725,6 +888,8 @@ export default function AdminSettingsWarehousesPage() {
     zoneName: string
     zoneType: string
     bay: any
+    laneRows: number
+    laneCols: number
     sectionsCount: number
     allSlots: any[]
     aisle: string
@@ -825,6 +990,7 @@ export default function AdminSettingsWarehousesPage() {
         const remainingBays: any[] = []
         ;(zone.bays || []).forEach((b: any) => {
           if (b.code?.startsWith('FL-') || (zone.type === 'RECEIVING' && !b.code?.startsWith('BL-'))) {
+            const { rows, cols } = inferFloorDimensions(b.slots || [])
             floors.push({
               id: `bay_${b.id}`,
               itemType: 'FLOOR',
@@ -835,11 +1001,14 @@ export default function AdminSettingsWarehousesPage() {
               zoneName: zone.name,
               zoneType: zone.type,
               bay: b,
+              rows,
+              cols,
               slotsCount: b.slots?.length || 1,
               allSlots: b.slots || [],
               aisle: b.aisle || '',
             })
           } else if (b.code?.startsWith('BL-') || (zone.type === 'SHIPPING' && !b.code?.startsWith('FL-'))) {
+            const { laneRows, laneCols } = inferLaneDimensions(b.slots || [])
             lanes.push({
               id: `bay_${b.id}`,
               itemType: 'LANE',
@@ -850,6 +1019,8 @@ export default function AdminSettingsWarehousesPage() {
               zoneName: zone.name,
               zoneType: zone.type,
               bay: b,
+              laneRows,
+              laneCols,
               sectionsCount: b.slots?.length || 1,
               allSlots: b.slots || [],
               aisle: b.aisle || '',
@@ -1049,7 +1220,10 @@ export default function AdminSettingsWarehousesPage() {
             </div>
           </div>
 
-          <div className="flex-1 p-1 flex flex-col justify-start gap-1 overflow-y-auto">
+          <div
+            className="flex-1 p-1 grid gap-1 overflow-y-auto"
+            style={{ gridTemplateColumns: `repeat(${Math.max(1, item.bays.length)}, minmax(0, 1fr))` }}
+          >
             {item.bays.length === 0 ? (
               <div className="text-[8px] text-slate-400 text-center py-4">No Bays</div>
             ) : (
@@ -1100,8 +1274,8 @@ export default function AdminSettingsWarehousesPage() {
 
     // 2. Render FLOOR BAYS
     const floorCols = Math.min(3, Math.max(1, Math.ceil(totalFloors / 2)))
-    const floorWidth = totalFloors > 6 ? 90 : 105
-    const floorHeight = totalFloors > 6 ? 62 : 70
+    const floorWidth = Math.max(80, Math.min(120, Math.floor(360 / Math.max(1, floorCols))))
+    const floorHeight = 180
     const floorGapX = 8
     const floorGapY = 8
 
@@ -1133,10 +1307,10 @@ export default function AdminSettingsWarehousesPage() {
             width: `${w}px`,
             height: `${h}px`,
           }}
-          className={`absolute rounded-xl border-2 flex flex-col justify-between p-1.5 transition-all duration-150 ${
+          className={`absolute rounded-xl border-2 flex flex-col justify-between transition-all duration-150 ${
             isEdit2DMode
               ? 'cursor-grab active:cursor-grabbing hover:border-amber-400 ring-1 ring-amber-500/20'
-              : 'cursor-pointer hover:border-sky-400 hover:scale-[1.02]'
+              : 'cursor-pointer hover:border-sky-400'
           } ${
             isSelected
               ? 'z-50 border-amber-300 ring-4 ring-amber-400/60 shadow-2xl bg-amber-950/40'
@@ -1151,16 +1325,10 @@ export default function AdminSettingsWarehousesPage() {
               return
             }
             setActiveZoneFilter(isZoneFiltered ? null : fItem.zoneId)
-            if (fItem.bay.slots && fItem.bay.slots.length > 0) {
-              setTargetSlotCode(fItem.bay.slots[0].code)
-              toast.success(`Selected Floor Bay ${fItem.bay.code}`)
-            }
           }}
         >
-          <div className="flex items-center justify-between gap-1">
-            <span className="font-mono font-black text-[11px] text-sky-200 bg-sky-900/80 px-1.5 py-0.5 rounded border border-sky-700/60 truncate">
-              {fItem.bay.code}
-            </span>
+          <div className="bg-sky-900/90 text-sky-100 px-1 py-1 rounded-t-sm text-center border-b border-sky-700/80 flex items-center justify-between">
+            <span className="font-mono font-black text-[11px] truncate">{fItem.bay.code}</span>
             <div className="flex items-center gap-1">
               {isEdit2DMode && isSelected && (
                 <button
@@ -1175,8 +1343,8 @@ export default function AdminSettingsWarehousesPage() {
                   <RotateCw size={10} />
                 </button>
               )}
-              <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-sky-800/60 text-sky-300">
-                {slotsCount > 1 ? `${slotsCount}P` : 'FLOOR'}
+              <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-sky-800/80 text-sky-200">
+                {fItem.rows}×{fItem.cols}
               </span>
               <button
                 type="button"
@@ -1189,29 +1357,68 @@ export default function AdminSettingsWarehousesPage() {
                     title: `Floor Bay ${fItem.bay.code}`,
                     zoneId: fItem.zoneId,
                     layout: {
+                      rows: fItem.rows,
+                      cols: fItem.cols,
+                      subParts: slotsCount,
                       bays: 1,
                       levels: 1,
-                      subParts: slotsCount,
                       sections: 1,
                     },
                   })
                 }}
-                className="p-0.5 rounded hover:bg-sky-800 text-sky-300 hover:text-white transition-colors"
+                className="p-0.5 rounded hover:bg-sky-800 text-sky-200 hover:text-white transition-colors"
               >
                 <Settings2 size={11} />
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[8px] text-slate-300 px-0.5">
-            <span className="truncate max-w-[55px]">{fItem.bay.name || 'Floor Bay'}</span>
-            <span className="font-mono text-sky-400 font-bold">
-              {slotsCount === 1 ? 'Single' : `${slotsCount} Sub-parts`}
-            </span>
+          {/* Inner Slots list / schematic */}
+          <div className="flex-1 p-1 flex flex-col justify-start gap-1 overflow-y-auto">
+            {fItem.allSlots.length === 0 ? (
+              <div className="text-[8px] text-slate-400 text-center py-4">No Slots</div>
+            ) : (
+              <div className="space-y-1">
+                {getOrganizedFloorGrid(fItem.allSlots, fItem.rows, fItem.cols, fItem.bay.code).map((row) => (
+                  <div
+                    key={row.rowNum}
+                    className="grid gap-1"
+                    style={{ gridTemplateColumns: `repeat(${fItem.cols}, minmax(0, 1fr))` }}
+                  >
+                    {row.colSlots.map((slot: any, colIdx: number) => {
+                      if (!slot) return <div key={colIdx} className="h-5 rounded border border-dashed border-sky-900/40" />
+                      const hasStock = slot.stocks && slot.stocks.length > 0
+                      return (
+                        <div
+                          key={slot.id}
+                          onClick={(e) => {
+                            if (isEdit2DMode) return
+                            e.stopPropagation()
+                            setTargetSlotCode(slot.code)
+                            toast.success(`Selected Slot ${slot.code}`)
+                          }}
+                          className={`border rounded px-1 py-0.5 text-center transition-colors ${
+                            hasStock
+                              ? 'border-emerald-500/60 bg-emerald-950/60 text-emerald-200 hover:bg-emerald-900/60'
+                              : 'border-sky-500/40 bg-slate-900/90 text-slate-200 hover:bg-sky-900/40'
+                          }`}
+                          title={`Slot: ${slot.code} (Row ${row.rowLetter} • Col ${colIdx + 1}) ${hasStock ? '(In Stock)' : '(Empty)'}`}
+                        >
+                          <div className="font-mono text-[9px] font-bold truncate flex items-center justify-center gap-1">
+                            {hasStock && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>}
+                            <span className="truncate">{slot.code}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative bg-slate-900/90 text-[8px] font-mono text-center py-0.5 text-slate-400 border-t border-slate-800 rounded-b-sm truncate">
-            {dict.warehouses.inboundPad}
+            {dict.warehouses.inboundPad.toUpperCase()} {fItem.bay.code}
             {isEdit2DMode && (
               <div
                 onPointerDown={(e) => handleResizePointerDown(bayKey, w, h, e)}
@@ -1232,8 +1439,8 @@ export default function AdminSettingsWarehousesPage() {
 
     // 3. Render BULK LANES
     const laneCols = Math.min(3, Math.max(1, Math.ceil(totalLanes / 2)))
-    const laneWidth = totalLanes > 6 ? 105 : 120
-    const laneHeight = totalLanes > 6 ? 48 : 54
+    const laneWidth = Math.max(90, Math.min(130, Math.floor(360 / Math.max(1, laneCols))))
+    const laneHeight = 180
     const laneGapX = 8
     const laneGapY = 8
 
@@ -1243,7 +1450,7 @@ export default function AdminSettingsWarehousesPage() {
       const col = idx % Math.max(1, laneCols)
       const row = Math.floor(idx / Math.max(1, laneCols))
       const defaultX = 20 + col * (laneWidth + laneGapX)
-      const defaultY = (totalFloors > 0 ? 365 : 280) + row * (laneHeight + laneGapY)
+      const defaultY = (totalFloors > 0 ? 480 : 280) + row * (laneHeight + laneGapY)
       const customPos = layoutPositions[bayKey]
       const x = customPos ? customPos.x : defaultX
       const y = customPos ? customPos.y : defaultY
@@ -1265,10 +1472,10 @@ export default function AdminSettingsWarehousesPage() {
             width: `${w}px`,
             height: `${h}px`,
           }}
-          className={`absolute rounded-xl border-2 flex flex-col justify-between p-1.5 transition-all duration-150 ${
+          className={`absolute rounded-xl border-2 flex flex-col justify-between transition-all duration-150 ${
             isEdit2DMode
               ? 'cursor-grab active:cursor-grabbing hover:border-amber-400 ring-1 ring-amber-500/20'
-              : 'cursor-pointer hover:border-amber-400 hover:scale-[1.02]'
+              : 'cursor-pointer hover:border-amber-400'
           } ${
             isSelected
               ? 'z-50 border-amber-300 ring-4 ring-amber-400/60 shadow-2xl bg-amber-950/40'
@@ -1283,16 +1490,10 @@ export default function AdminSettingsWarehousesPage() {
               return
             }
             setActiveZoneFilter(isZoneFiltered ? null : lItem.zoneId)
-            if (lItem.bay.slots && lItem.bay.slots.length > 0) {
-              setTargetSlotCode(lItem.bay.slots[0].code)
-              toast.success(`Selected Bulk Lane ${lItem.bay.code}`)
-            }
           }}
         >
-          <div className="flex items-center justify-between gap-1">
-            <span className="font-mono font-black text-[11px] text-amber-200 bg-amber-900/80 px-1.5 py-0.5 rounded border border-amber-700/60 truncate">
-              {lItem.bay.code}
-            </span>
+          <div className="bg-amber-900/90 text-amber-100 px-1 py-1 rounded-t-sm text-center border-b border-amber-700/80 flex items-center justify-between">
+            <span className="font-mono font-black text-[11px] truncate">{lItem.bay.code}</span>
             <div className="flex items-center gap-1">
               {isEdit2DMode && isSelected && (
                 <button
@@ -1307,8 +1508,8 @@ export default function AdminSettingsWarehousesPage() {
                   <RotateCw size={10} />
                 </button>
               )}
-              <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-amber-800/60 text-amber-300">
-                {sectionsCount > 1 ? `${sectionsCount} SEC` : 'LANE'}
+              <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-amber-800/80 text-amber-200" title={`${lItem.laneCols} Tracks × ${lItem.laneRows} Stops (${lItem.laneRows} Rows × ${lItem.laneCols} Cols)`}>
+                {lItem.laneCols}T×{lItem.laneRows}S
               </span>
               <button
                 type="button"
@@ -1321,29 +1522,72 @@ export default function AdminSettingsWarehousesPage() {
                     title: `Bulk Lane ${lItem.bay.code}`,
                     zoneId: lItem.zoneId,
                     layout: {
+                      rows: lItem.laneRows,
+                      cols: lItem.laneCols,
+                      laneRows: lItem.laneRows,
+                      laneCols: lItem.laneCols,
+                      sections: sectionsCount,
                       bays: 1,
                       levels: 1,
                       subParts: 1,
-                      sections: sectionsCount,
                     },
                   })
                 }}
-                className="p-0.5 rounded hover:bg-amber-800 text-amber-300 hover:text-white transition-colors"
+                className="p-0.5 rounded hover:bg-amber-800 text-amber-200 hover:text-white transition-colors"
               >
                 <Settings2 size={11} />
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[8px] text-slate-300 px-0.5">
-            <span className="truncate max-w-[65px]">{lItem.bay.name || 'Bulk Lane'}</span>
-            <span className="font-mono text-amber-400 font-bold">
-              {sectionsCount === 1 ? 'Single' : `${sectionsCount} Secs`}
-            </span>
+          {/* Inner Slots list / schematic */}
+          <div className="flex-1 p-1 flex flex-col justify-start gap-1 overflow-y-auto">
+            {lItem.allSlots.length === 0 ? (
+              <div className="text-[8px] text-slate-400 text-center py-4">No Slots</div>
+            ) : (
+              <div className="space-y-1">
+                {getOrganizedLaneGrid(lItem.allSlots, lItem.laneRows, lItem.laneCols, lItem.bay.code).map((row) => (
+                  <div
+                    key={row.stopNum}
+                    className="grid gap-1"
+                    style={{ gridTemplateColumns: `repeat(${lItem.laneCols}, minmax(0, 1fr))` }}
+                  >
+                    {row.trackSlots.map((slot: any, colIdx: number) => {
+                      if (!slot) {
+                        return <div key={colIdx} className="h-5 rounded border border-dashed border-amber-900/40" />
+                      }
+                      const hasStock = slot.stocks && slot.stocks.length > 0
+                      return (
+                        <div
+                          key={slot.id}
+                          onClick={(e) => {
+                            if (isEdit2DMode) return
+                            e.stopPropagation()
+                            setTargetSlotCode(slot.code)
+                            toast.success(`Selected Lane Slot ${slot.code}`)
+                          }}
+                          className={`border rounded px-1 py-0.5 text-center transition-colors ${
+                            hasStock
+                              ? 'border-emerald-500/60 bg-emerald-950/60 text-emerald-200 hover:bg-emerald-900/60'
+                              : 'border-amber-500/40 bg-slate-900/90 text-slate-200 hover:bg-amber-900/40'
+                          }`}
+                          title={`Slot: ${slot.code} (Track ${colIdx + 1} • Stop ${row.stopNum}) ${hasStock ? '(In Stock)' : '(Empty)'}`}
+                        >
+                          <div className="font-mono text-[9px] font-bold truncate flex items-center justify-center gap-1">
+                            {hasStock && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>}
+                            <span className="truncate">{slot.code}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative bg-slate-900/90 text-[8px] font-mono text-center py-0.5 text-slate-400 border-t border-slate-800 rounded-b-sm truncate">
-            {dict.warehouses.outboundStaging}
+            {dict.warehouses.outboundStaging.toUpperCase()} {lItem.bay.code}
             {isEdit2DMode && (
               <div
                 onPointerDown={(e) => handleResizePointerDown(bayKey, w, h, e)}
@@ -1670,37 +1914,108 @@ export default function AdminSettingsWarehousesPage() {
                         </span>
                       </div>
 
-                      {/* Shelves & Slots Addressing */}
-                      <div className="space-y-1">
-                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                          {dict.warehouses.shelvesAndSlots}
+                      {/* Shelves & Slots Addressing — Bay (horizontal columns) × Level (vertical rows) grid */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          <span>{dict.warehouses.shelvesAndSlots}</span>
+                          <span className="font-mono text-[9px] text-blue-600 font-semibold lowercase">
+                            {rack.bays.length} {rack.bays.length === 1 ? 'bay' : 'bays'} × {rack.levels} {rack.levels === 1 ? 'level' : 'levels'}
+                          </span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                          {rack.allSlots.map((slot: any) => {
-                            const hasStock = slot.stocks && slot.stocks.length > 0
-                            return (
-                              <div
-                                key={slot.id}
-                                onClick={() => {
-                                  setSelectedSlotForAssign(slot)
-                                  setAssignProductModalOpen(true)
-                                }}
-                                className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
-                                  hasStock
-                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
-                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
-                                }`}
-                                title={`Click to map product: ${slot.code}`}
-                              >
-                                <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
-                                <span>{slot.code}</span>
-                                {hasStock && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                )}
+                        {(() => {
+                          // Build bay→level map from slot codes (e.g. R1-01-01 → bay=1, level=1)
+                          const bayMap = new Map<number, Map<number, any>>()
+                          rack.allSlots.forEach((slot: any) => {
+                            const parts = slot.code.split('-')
+                            const bay = parseInt(parts[parts.length - 2], 10) || 0
+                            const level = parseInt(parts[parts.length - 1], 10) || 0
+                            if (!bayMap.has(bay)) bayMap.set(bay, new Map())
+                            bayMap.get(bay)!.set(level, slot)
+                          })
+                          const bayNumbers = Array.from(bayMap.keys()).sort((a, b) => a - b)
+                          const levelNumbers = Array.from(
+                            new Set(rack.allSlots.map((s: any) => {
+                              const p = s.code.split('-')
+                              return parseInt(p[p.length - 1], 10) || 0
+                            }))
+                          ).sort((a: number, b: number) => b - a) as number[]
+
+                          if (bayNumbers.length === 0) return null
+
+                          return (
+                            <div className="p-2 rounded-xl bg-slate-900/5 border border-slate-200/80 overflow-x-auto no-scrollbar">
+                              <div className="min-w-fit space-y-1.5">
+                                {/* Level rows going down (Levels vertical: L3, L2, L1 from top to bottom, so from bottom up it starts L1, L2, L3 like real racks) */}
+                                <div className="space-y-1">
+                                  {levelNumbers.map((lv) => (
+                                    <div
+                                      key={lv}
+                                      className="grid items-center gap-1.5"
+                                      style={{ gridTemplateColumns: `36px repeat(${bayNumbers.length}, minmax(84px, 1fr))` }}
+                                    >
+                                      {/* Level vertical label */}
+                                      <div className="text-[10px] font-mono font-bold text-slate-500 text-center py-1 bg-slate-100 rounded border border-slate-200">
+                                        L{lv}
+                                      </div>
+                                      {/* Bay cells side-by-side */}
+                                      {bayNumbers.map((bay) => {
+                                        const slot = bayMap.get(bay)?.get(lv)
+                                        if (!slot) {
+                                          return (
+                                            <div
+                                              key={bay}
+                                              className="h-8 rounded border border-dashed border-slate-200 bg-slate-50/50"
+                                            />
+                                          )
+                                        }
+                                        const hasStock = slot.stocks && slot.stocks.length > 0
+                                        return (
+                                          <div
+                                            key={bay}
+                                            onClick={() => {
+                                              setSelectedSlotForAssign(slot)
+                                              setAssignProductModalOpen(true)
+                                            }}
+                                            className={`px-1.5 py-1 rounded text-[9px] font-mono border cursor-pointer transition-all flex items-center justify-between gap-1 min-h-[30px] shadow-2xs ${
+                                              hasStock
+                                                ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                                                : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
+                                            }`}
+                                            title={`Click to map product: ${slot.code} (Bay ${bay} • Level ${lv})`}
+                                          >
+                                            <div className="flex items-center gap-1 truncate">
+                                              <Tag size={9} className={hasStock ? 'text-emerald-500' : 'text-slate-400'} />
+                                              <span className="truncate font-semibold">{slot.code}</span>
+                                            </div>
+                                            {hasStock && (
+                                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                            )}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Bay header row across columns shown at the bottom of the shelf */}
+                                <div
+                                  className="grid text-[9px] font-bold uppercase tracking-wider gap-1.5 pt-1 border-t border-slate-200/80"
+                                  style={{ gridTemplateColumns: `36px repeat(${bayNumbers.length}, minmax(84px, 1fr))` }}
+                                >
+                                  <div className="text-center font-mono text-[9px] text-slate-400 py-0.5 flex items-center justify-center">Tier</div>
+                                  {bayNumbers.map((bay) => (
+                                    <div
+                                      key={bay}
+                                      className="text-center bg-blue-100/80 text-blue-800 border border-blue-200 py-0.5 rounded font-mono font-bold shadow-2xs"
+                                    >
+                                      B{bay}
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            )
-                          })}
-                        </div>
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
 
@@ -1807,6 +2122,9 @@ export default function AdminSettingsWarehousesPage() {
                           <span className="text-xs font-bold text-slate-800">
                             {floor.title}
                           </span>
+                          <Badge variant="outline" className="text-[10px] font-semibold text-sky-700 bg-sky-50">
+                            {floor.rows} Rows × {floor.cols} Cols
+                          </Badge>
                         </div>
                         <button
                           onClick={() => {
@@ -1823,7 +2141,7 @@ export default function AdminSettingsWarehousesPage() {
 
                       <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
                         <span>
-                          {dict.warehouses.floorSubParts}: <strong className="text-slate-700">{floor.slotsCount}</strong>
+                          Rows (Depth): <strong className="text-slate-700">{floor.rows}</strong> • Columns (Width): <strong className="text-slate-700">{floor.cols}</strong>
                         </span>
                         <span>
                           {dict.warehouses.addressableSlots}: <strong className="text-slate-700">{floor.slotsCount}</strong>
@@ -1831,35 +2149,60 @@ export default function AdminSettingsWarehousesPage() {
                       </div>
 
                       {/* Shelves & Slots Addressing */}
-                      <div className="space-y-1">
-                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                          {dict.warehouses.shelvesAndSlots}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          <span>{dict.warehouses.shelvesAndSlots}</span>
+                          <span className="font-mono text-[9px] text-sky-600 font-semibold lowercase">
+                            {floor.rows} {floor.rows === 1 ? 'row' : 'rows'} × {floor.cols} {floor.cols === 1 ? 'col' : 'cols'}
+                          </span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                          {floor.allSlots.map((slot: any) => {
-                            const hasStock = slot.stocks && slot.stocks.length > 0
-                            return (
-                              <div
-                                key={slot.id}
-                                onClick={() => {
-                                  setSelectedSlotForAssign(slot)
-                                  setAssignProductModalOpen(true)
-                                }}
-                                className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
-                                  hasStock
-                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
-                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
-                                }`}
-                                title={`Click to map product: ${slot.code}`}
-                              >
-                                <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
-                                <span>{slot.code}</span>
-                                {hasStock && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                )}
-                              </div>
-                            )
-                          })}
+
+                        {/* Staging Matrix Grid Layout (mirrors 2D Layout Details) */}
+                        <div className="p-2 rounded-xl bg-slate-900/5 border border-slate-200/80 space-y-1 max-h-48 overflow-y-auto pr-0.5">
+                          {getOrganizedFloorGrid(floor.allSlots, floor.rows, floor.cols, floor.code).map((row) => (
+                            <div
+                              key={row.rowNum}
+                              className="grid gap-1.5"
+                              style={{ gridTemplateColumns: `repeat(${floor.cols}, minmax(0, 1fr))` }}
+                            >
+                              {row.colSlots.map((slot: any, colIdx: number) => {
+                                if (!slot) {
+                                  return (
+                                    <div
+                                      key={colIdx}
+                                      className="h-7 rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-[9px] font-mono text-slate-300"
+                                    >
+                                      Empty
+                                    </div>
+                                  )
+                                }
+                                const hasStock = slot.stocks && slot.stocks.length > 0
+                                return (
+                                  <div
+                                    key={slot.id}
+                                    onClick={() => {
+                                      setSelectedSlotForAssign(slot)
+                                      setAssignProductModalOpen(true)
+                                    }}
+                                    className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center justify-between gap-1 shadow-2xs ${
+                                      hasStock
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                                        : 'bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:bg-sky-50/50'
+                                    }`}
+                                    title={`Click to map product: ${slot.code} (Row ${row.rowLetter} • Col ${colIdx + 1})`}
+                                  >
+                                    <div className="flex items-center gap-1 truncate">
+                                      <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
+                                      <span className="truncate font-semibold">{slot.code}</span>
+                                    </div>
+                                    {hasStock && (
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                    )}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -1890,14 +2233,16 @@ export default function AdminSettingsWarehousesPage() {
                               title: floor.title,
                               zoneId: floor.zoneId,
                               layout: {
+                                rows: floor.rows,
+                                cols: floor.cols,
+                                subParts: floor.slotsCount,
                                 bays: 1,
                                 levels: 1,
-                                subParts: floor.slotsCount,
                                 sections: 1,
                               },
                             })
                           }}
-                          className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          className="font-bold text-sky-600 hover:text-sky-800 flex items-center gap-1"
                         >
                           <Settings2 size={12} />
                           {dict.warehouses.layoutDetails}
@@ -1928,7 +2273,7 @@ export default function AdminSettingsWarehousesPage() {
                 {dict.warehouses.bulkLaneType}
               </h3>
               <span className="text-xs font-semibold text-slate-500">
-                • {totalLanesCount} {totalLanesCount === 1 ? 'Bulk Lane' : 'Bulk Lanes'} ({totalLaneSlots} {dict.warehouses.laneSections})
+                • {totalLanesCount} {totalLanesCount === 1 ? 'Bulk Lane' : 'Bulk Lanes'} ({totalLaneSlots} Lane Sections (1 - 20))
               </span>
             </div>
 
@@ -1960,13 +2305,23 @@ export default function AdminSettingsWarehousesPage() {
                   >
                     <div>
                       <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-black text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                            {lane.code}
-                          </span>
-                          <span className="text-xs font-bold text-slate-800">
-                            {lane.title}
-                          </span>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-black text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+                              {lane.code}
+                            </span>
+                            <span className="text-xs font-bold text-slate-800">
+                              {lane.title}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Badge variant="outline" className="text-[10px] font-semibold text-amber-700 bg-amber-50">
+                              {lane.laneCols} Tracks × {lane.laneRows} Stops
+                            </Badge>
+                            <Badge variant="secondary" className="text-[10px] font-mono text-amber-800 bg-amber-100/70 border border-amber-200">
+                              {lane.laneRows} Rows × {lane.laneCols} Cols
+                            </Badge>
+                          </div>
                         </div>
                         <button
                           onClick={() => {
@@ -1983,7 +2338,7 @@ export default function AdminSettingsWarehousesPage() {
 
                       <div className="text-[11px] text-slate-500 flex items-center justify-between mb-2">
                         <span>
-                          {dict.warehouses.laneSections}: <strong className="text-slate-700">{lane.sectionsCount}</strong>
+                          Parallel Tracks: <strong className="text-slate-700">{lane.laneCols}</strong> • Depth Stops: <strong className="text-slate-700">{lane.laneRows}</strong>
                         </span>
                         <span>
                           {dict.warehouses.addressableSlots}: <strong className="text-slate-700">{lane.sectionsCount}</strong>
@@ -1991,35 +2346,81 @@ export default function AdminSettingsWarehousesPage() {
                       </div>
 
                       {/* Shelves & Slots Addressing */}
-                      <div className="space-y-1">
-                        <div className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
-                          {dict.warehouses.shelvesAndSlots}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+                          <span>{dict.warehouses.shelvesAndSlots}</span>
+                          <span className="font-mono text-[9px] text-amber-600 font-semibold lowercase">
+                            {lane.laneCols} {lane.laneCols === 1 ? 'track' : 'tracks'} × {lane.laneRows} {lane.laneRows === 1 ? 'stop' : 'stops'}
+                          </span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                          {lane.allSlots.map((slot: any) => {
-                            const hasStock = slot.stocks && slot.stocks.length > 0
-                            return (
+
+                        {/* Staging Matrix Flow Layout (mirrors 2D Layout Details) */}
+                        <div className="p-2 rounded-xl bg-slate-900/5 border border-slate-200/80 space-y-1.5">
+                          {/* Track Column Header Labels */}
+                          {lane.laneCols > 1 && (
+                            <div
+                              className="grid gap-1.5"
+                              style={{ gridTemplateColumns: `repeat(${lane.laneCols}, minmax(0, 1fr))` }}
+                            >
+                              {Array.from({ length: lane.laneCols }).map((_, cIdx) => (
+                                <div
+                                  key={cIdx}
+                                  className="text-center font-mono text-[9px] font-bold text-amber-900 bg-amber-100/70 border border-amber-200 py-0.5 rounded flex items-center justify-center gap-1"
+                                >
+                                  <Truck size={10} className="text-amber-600" />
+                                  <span>Track {cIdx + 1}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Rows of Depth Stops */}
+                          <div className="space-y-1 max-h-48 overflow-y-auto pr-0.5">
+                            {getOrganizedLaneGrid(lane.allSlots, lane.laneRows, lane.laneCols, lane.code).map((row) => (
                               <div
-                                key={slot.id}
-                                onClick={() => {
-                                  setSelectedSlotForAssign(slot)
-                                  setAssignProductModalOpen(true)
-                                }}
-                                className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center gap-1 ${
-                                  hasStock
-                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold shadow-xs'
-                                    : 'bg-white border-slate-200 text-slate-700 hover:border-blue-400 hover:bg-blue-50/50'
-                                }`}
-                                title={`Click to map product: ${slot.code}`}
+                                key={row.stopNum}
+                                className="grid gap-1.5"
+                                style={{ gridTemplateColumns: `repeat(${lane.laneCols}, minmax(0, 1fr))` }}
                               >
-                                <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
-                                <span>{slot.code}</span>
-                                {hasStock && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                )}
+                                {row.trackSlots.map((slot: any, colIdx: number) => {
+                                  if (!slot) {
+                                    return (
+                                      <div
+                                        key={colIdx}
+                                        className="h-7 rounded border border-dashed border-slate-200 bg-slate-50 flex items-center justify-center text-[9px] font-mono text-slate-300"
+                                      >
+                                        Empty
+                                      </div>
+                                    )
+                                  }
+                                  const hasStock = slot.stocks && slot.stocks.length > 0
+                                  return (
+                                    <div
+                                      key={slot.id}
+                                      onClick={() => {
+                                        setSelectedSlotForAssign(slot)
+                                        setAssignProductModalOpen(true)
+                                      }}
+                                      className={`px-2 py-1 rounded text-[10px] font-mono border cursor-pointer transition-all flex items-center justify-between gap-1 shadow-2xs ${
+                                        hasStock
+                                          ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                                          : 'bg-white border-slate-200 text-slate-700 hover:border-amber-400 hover:bg-amber-50/50'
+                                      }`}
+                                      title={`Click to map product: ${slot.code} (Track ${colIdx + 1} • Stop ${row.stopNum})`}
+                                    >
+                                      <div className="flex items-center gap-1 truncate">
+                                        <Tag size={10} className={hasStock ? 'text-emerald-600' : 'text-slate-400'} />
+                                        <span className="truncate font-semibold">{slot.code}</span>
+                                      </div>
+                                      {hasStock && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                      )}
+                                    </div>
+                                  )
+                                })}
                               </div>
-                            )
-                          })}
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2050,14 +2451,18 @@ export default function AdminSettingsWarehousesPage() {
                               title: lane.title,
                               zoneId: lane.zoneId,
                               layout: {
+                                rows: lane.laneRows,
+                                cols: lane.laneCols,
+                                laneRows: lane.laneRows,
+                                laneCols: lane.laneCols,
+                                sections: lane.sectionsCount,
                                 bays: 1,
                                 levels: 1,
                                 subParts: 1,
-                                sections: lane.sectionsCount,
                               },
                             })
                           }}
-                          className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          className="font-bold text-amber-600 hover:text-amber-800 flex items-center gap-1"
                         >
                           <Settings2 size={12} />
                           {dict.warehouses.layoutDetails}
@@ -2755,260 +3160,18 @@ export default function AdminSettingsWarehousesPage() {
             )}
 
             {/* ITEM DETAILS & INNER LAYOUT CONFIGURATION MODAL */}
-            <Dialog
-              open={Boolean(selectedInspectorItem)}
-              onOpenChange={(open) => {
-                if (!open) setSelectedInspectorItem(null)
+            <WarehouseItemLayoutModal
+              item={selectedInspectorItem}
+              onClose={() => setSelectedInspectorItem(null)}
+              onSave={(payload) => {
+                layoutMutation.mutate({
+                  action: 'UPDATE_ITEM_LAYOUT',
+                  payload,
+                })
               }}
-            >
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-                {selectedInspectorItem && (
-                  <div>
-                    <DialogHeader className="pb-4 mb-4 border-b border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
-                          <Settings2 size={22} />
-                        </div>
-                        <div>
-                          <DialogTitle className="flex items-center gap-2">
-                            <span className="font-mono font-black text-sm px-2.5 py-0.5 rounded-lg bg-slate-900 text-white">
-                              {selectedInspectorItem.baseCode}
-                            </span>
-                            <span className="text-base font-bold text-slate-900">
-                              {selectedInspectorItem.title}
-                            </span>
-                            <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 border-blue-200 ml-1">
-                              {selectedInspectorItem.itemType === 'RACK'
-                                ? dict.warehouses.palletRackType
-                                : selectedInspectorItem.itemType === 'FLOOR'
-                                ? dict.warehouses.floorBayType
-                                : dict.warehouses.bulkLaneType}
-                            </Badge>
-                          </DialogTitle>
-                          <DialogDescription className="text-xs text-slate-500 mt-1">
-                            {dict.warehouses.inspectorDesc}
-                          </DialogDescription>
-                        </div>
-                      </div>
-                    </DialogHeader>
-
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                      {/* Left Column: Numeric Configuration Inputs */}
-                      <div className="md:col-span-6 space-y-4">
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3.5">
-                          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                            {dict.warehouses.dimensionParams}
-                          </div>
-
-                          {selectedInspectorItem.itemType === 'RACK' && (
-                            <div className="grid grid-cols-2 gap-3">
-                              <div className="space-y-1">
-                                <Label className="text-xs font-bold text-slate-700">{dict.warehouses.numberOfBays}</Label>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  max={20}
-                                  value={selectedInspectorItem.layout.bays}
-                                  onChange={(e) =>
-                                    setSelectedInspectorItem({
-                                      ...selectedInspectorItem,
-                                      layout: {
-                                        ...selectedInspectorItem.layout,
-                                        bays: Math.max(1, Math.min(20, Number(e.target.value) || 1)),
-                                      },
-                                    })
-                                  }
-                                  className="h-9 text-xs font-semibold bg-white"
-                                />
-                                <span className="text-[10px] text-slate-400">{dict.warehouses.horizontalRackSegments}</span>
-                              </div>
-
-                              <div className="space-y-1">
-                                <Label className="text-xs font-bold text-slate-700">{dict.warehouses.levelsTiers}</Label>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  max={10}
-                                  value={selectedInspectorItem.layout.levels}
-                                  onChange={(e) =>
-                                    setSelectedInspectorItem({
-                                      ...selectedInspectorItem,
-                                      layout: {
-                                        ...selectedInspectorItem.layout,
-                                        levels: Math.max(1, Math.min(10, Number(e.target.value) || 1)),
-                                      },
-                                    })
-                                  }
-                                  className="h-9 text-xs font-semibold bg-white"
-                                />
-                                <span className="text-[10px] text-slate-400">{dict.warehouses.verticalShelfTiers}</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {selectedInspectorItem.itemType === 'FLOOR' && (
-                            <div className="space-y-1">
-                              <Label className="text-xs font-bold text-slate-700">{dict.warehouses.floorSubParts}</Label>
-                              <Input
-                                type="number"
-                                min={1}
-                                max={26}
-                                value={selectedInspectorItem.layout.subParts}
-                                onChange={(e) =>
-                                  setSelectedInspectorItem({
-                                    ...selectedInspectorItem,
-                                    layout: {
-                                      ...selectedInspectorItem.layout,
-                                      subParts: Math.max(1, Math.min(26, Number(e.target.value) || 1)),
-                                    },
-                                  })
-                                }
-                                className="h-9 text-xs font-semibold bg-white"
-                              />
-                              <span className="text-[10px] text-slate-400">
-                                {dict.warehouses.floorSubPartsHint.replace('{code}', selectedInspectorItem.baseCode)}
-                              </span>
-                            </div>
-                          )}
-
-                          {selectedInspectorItem.itemType === 'LANE' && (
-                            <div className="space-y-1">
-                              <Label className="text-xs font-bold text-slate-700">{dict.warehouses.laneSections}</Label>
-                              <Input
-                                type="number"
-                                min={1}
-                                max={20}
-                                value={selectedInspectorItem.layout.sections}
-                                onChange={(e) =>
-                                  setSelectedInspectorItem({
-                                    ...selectedInspectorItem,
-                                    layout: {
-                                      ...selectedInspectorItem.layout,
-                                      sections: Math.max(1, Math.min(20, Number(e.target.value) || 1)),
-                                    },
-                                  })
-                                }
-                                className="h-9 text-xs font-semibold bg-white"
-                              />
-                              <span className="text-[10px] text-slate-400">
-                                {dict.warehouses.laneSectionsHint.replace('{code}', selectedInspectorItem.baseCode)}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Right Column: Live Sub-Codes Preview */}
-                      <div className="md:col-span-6 bg-slate-900 rounded-xl p-4 text-slate-100 border border-slate-800 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-                            <div className="text-xs font-bold text-slate-300">{dict.warehouses.subCodesPreview}</div>
-                            <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 text-[10px] font-mono">
-                              {(() => {
-                                if (selectedInspectorItem.itemType === 'RACK') {
-                                  return `${selectedInspectorItem.layout.bays * selectedInspectorItem.layout.levels} Slots`
-                                } else if (selectedInspectorItem.itemType === 'FLOOR') {
-                                  return `${selectedInspectorItem.layout.subParts} Addresses`
-                                } else {
-                                  return `${selectedInspectorItem.layout.sections} Sections`
-                                }
-                              })()}
-                            </Badge>
-                          </div>
-
-                          <p className="text-[11px] text-slate-400 mb-3">
-                            {dict.warehouses.subCodesPreviewDesc}
-                          </p>
-
-                          <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-                            {(() => {
-                              const previewCodes: string[] = []
-                              if (selectedInspectorItem.itemType === 'RACK') {
-                                const { bays, levels } = selectedInspectorItem.layout
-                                for (let b = 1; b <= bays; b++) {
-                                  const bPad = b < 10 ? `0${b}` : `${b}`
-                                  for (let l = 1; l <= levels; l++) {
-                                    const lPad = l < 10 ? `0${l}` : `${l}`
-                                    previewCodes.push(`${selectedInspectorItem.baseCode}-${bPad}-${lPad}`)
-                                  }
-                                }
-                              } else if (selectedInspectorItem.itemType === 'FLOOR') {
-                                const { subParts } = selectedInspectorItem.layout
-                                if (subParts === 1) {
-                                  previewCodes.push(selectedInspectorItem.baseCode)
-                                } else {
-                                  for (let i = 0; i < subParts; i++) {
-                                    const letter = String.fromCharCode(65 + i)
-                                    previewCodes.push(`${selectedInspectorItem.baseCode}-${letter}`)
-                                  }
-                                }
-                              } else if (selectedInspectorItem.itemType === 'LANE') {
-                                const { sections } = selectedInspectorItem.layout
-                                if (sections === 1) {
-                                  previewCodes.push(selectedInspectorItem.baseCode)
-                                } else {
-                                  for (let s = 1; s <= sections; s++) {
-                                    const sPad = s < 10 ? `0${s}` : `${s}`
-                                    previewCodes.push(`${selectedInspectorItem.baseCode}-${sPad}`)
-                                  }
-                                }
-                              }
-
-                              return previewCodes.map((code) => (
-                                <span
-                                  key={code}
-                                  className="font-mono text-[11px] px-2.5 py-1 rounded bg-slate-800 text-sky-300 border border-slate-700 font-bold"
-                                >
-                                  {code}
-                                </span>
-                              ))
-                            })()}
-                          </div>
-                        </div>
-
-                        <div className="pt-3 border-t border-slate-800 text-[10px] text-slate-400 flex items-center justify-between mt-3">
-                          <span>{dict.warehouses.instantUpdate}</span>
-                          <span className="text-emerald-400 font-bold">{dict.warehouses.zeroDisturbance}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <DialogFooter className="pt-4 mt-5 border-t border-slate-100 flex items-center justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedInspectorItem(null)}
-                        className="h-8.5 text-xs font-bold"
-                      >
-                        {dict.common.cancel}
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          layoutMutation.mutate({
-                            action: 'UPDATE_ITEM_LAYOUT',
-                            payload: {
-                              itemType: selectedInspectorItem.itemType,
-                              baseCode: selectedInspectorItem.baseCode,
-                              layout: selectedInspectorItem.layout,
-                            },
-                          })
-                        }}
-                        disabled={layoutMutation.isPending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8.5 px-4 gap-1.5 shadow-sm"
-                      >
-                        {layoutMutation.isPending ? (
-                          <Loader2 size={14} className="animate-spin" />
-                        ) : (
-                          <CheckCircle2 size={14} />
-                        )}
-                        {dict.warehouses.applyChangesRegenerate}
-                      </Button>
-                    </DialogFooter>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
+              isSaving={layoutMutation.isPending}
+              dict={dict}
+            />
 
             {/* DETAILS PANEL: FAITHFUL REAL-TIME MIRROR OF SHAPES AREA */}
             {renderDetailsPanel(warehouseModel)}

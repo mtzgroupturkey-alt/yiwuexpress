@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
+    const warehouseParam = searchParams.get('warehouseId') || searchParams.get('warehouse')
     const type = searchParams.get('type')
     const productId = searchParams.get('productId')
     const search = searchParams.get('search')
@@ -18,6 +19,46 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     const where: any = {}
+
+    if (warehouseParam && warehouseParam !== 'all') {
+      const p = warehouseParam.toLowerCase();
+      if (p === 'cn' || p === 'by') {
+        const matchingWhs = await prisma.warehouse.findMany({
+          where: {
+            OR: [
+              ...(p === 'cn'
+                ? [
+                    { code: { contains: 'CN', mode: 'insensitive' as const } },
+                    { country: { contains: 'China', mode: 'insensitive' as const } },
+                  ]
+                : [
+                    { code: { contains: 'BY', mode: 'insensitive' as const } },
+                    { country: { contains: 'Belarus', mode: 'insensitive' as const } },
+                  ]),
+            ],
+          },
+          select: { id: true },
+        });
+        if (matchingWhs.length > 0) {
+          where.warehouseId = { in: matchingWhs.map((w) => w.id) };
+        }
+      } else {
+        const targetWh = await prisma.warehouse.findFirst({
+          where: {
+            OR: [
+              { id: warehouseParam },
+              { code: { equals: warehouseParam, mode: 'insensitive' } },
+            ],
+          },
+        });
+        if (targetWh) {
+          where.warehouseId = targetWh.id;
+        } else {
+          where.warehouseId = warehouseParam;
+        }
+      }
+    }
+
     if (type) {
       where.type = type
     }
@@ -40,6 +81,14 @@ export async function GET(request: NextRequest) {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
+          warehouse: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              country: true,
+            },
+          },
           product: {
             select: {
               id: true,

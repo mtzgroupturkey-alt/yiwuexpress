@@ -24,12 +24,24 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const { purchaseOrderId } = await req.json();
     if (!purchaseOrderId) return NextResponse.json({ error: 'purchaseOrderId required' }, { status: 400 });
 
-    const po = await prisma.purchaseOrder.update({
-      where: { id: purchaseOrderId },
-      data: { containerId: null },
+    const result = await prisma.$transaction(async (tx) => {
+      const po = await tx.purchaseOrder.update({
+        where: { id: purchaseOrderId },
+        data: { containerId: null },
+      });
+
+      // Remove items that were automatically populated from this PO
+      await tx.containerItem.deleteMany({
+        where: {
+          containerId: params.id,
+          sourcePoId: purchaseOrderId,
+        },
+      });
+
+      return po;
     });
 
-    return NextResponse.json({ success: true, data: po });
+    return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Error removing PO' }, { status: 500 });
   }
