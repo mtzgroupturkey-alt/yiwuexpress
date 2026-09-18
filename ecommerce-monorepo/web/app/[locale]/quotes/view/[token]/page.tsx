@@ -5,13 +5,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   FileText, CheckCircle2, XCircle, Clock, Send, Printer, ArrowRight,
-  Building2, User, MapPin, AlertCircle, ShieldCheck, RefreshCw, Calendar, DollarSign
+  Building2, User, MapPin, AlertCircle, AlertTriangle, ShieldCheck, RefreshCw, Calendar, DollarSign
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 
 interface QuoteItem {
   id: string
+  productId: string
   productName: string
   productSku: string
   productImage: string | null
@@ -93,8 +94,16 @@ export default function PublicQuoteViewPage({ params }: { params: Promise<{ toke
     }
   }
 
-  const handleAccept = async () => {
-    if (!confirm('Accept this quotation and generate an official purchase order? Warehouse stock will be reserved.')) {
+  // Stock Shortage State
+  const [stockShortages, setStockShortages] = useState<Array<{
+    productId: string
+    productName: string
+    requested: number
+    available: number
+  }> | null>(null)
+
+  const handleAccept = async (adjustments?: Array<{ itemId: string; quantity?: number; isBackorder?: boolean }>) => {
+    if (!adjustments && !confirm('Accept this quotation and generate an official purchase order? Warehouse stock will be reserved.')) {
       return
     }
 
@@ -103,13 +112,20 @@ export default function PublicQuoteViewPage({ params }: { params: Promise<{ toke
       const res = await fetch(`/api/b2b/quotes/view/${resolvedParams.token}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'ACCEPT' }),
+        body: JSON.stringify({ action: 'ACCEPT', itemAdjustments: adjustments }),
       })
       const data = await res.json()
+
+      if (res.status === 409 && data.error === 'INSUFFICIENT_STOCK') {
+        toast.error('Insufficient warehouse stock to fulfill requested quantities immediately.')
+        setStockShortages(data.items || [])
+        return
+      }
 
       if (res.ok && data.success) {
         toast.success(data.message || 'Quotation accepted!')
         setCreatedOrder({ id: data.orderId, orderNumber: data.orderNumber })
+        setStockShortages(null)
         fetchQuote()
       } else {
         toast.error(data.error || 'Failed to accept quote.')
@@ -119,6 +135,46 @@ export default function PublicQuoteViewPage({ params }: { params: Promise<{ toke
     } finally {
       setActing(false)
     }
+  }
+
+  const handleReduceQuantities = async () => {
+    if (!stockShortages || !quote) return
+    const adjustments = stockShortages
+      .map((s) => {
+        const item = quote.items.find((i) => i.productId === s.productId)
+        return {
+          itemId: item?.id || '',
+          quantity: Math.max(1, s.available),
+        }
+      })
+      .filter((a) => a.itemId)
+
+    await handleAccept(adjustments)
+  }
+
+  const handleConvertBackorders = async () => {
+    if (!stockShortages || !quote) return
+    const adjustments = stockShortages
+      .map((s) => {
+        const item = quote.items.find((i) => i.productId === s.productId)
+        return {
+          itemId: item?.id || '',
+          isBackorder: true,
+        }
+      })
+      .filter((a) => a.itemId)
+
+    await handleAccept(adjustments)
+  }
+
+  const handleRequestRevisionFromShortage = () => {
+    if (!stockShortages) return
+    const shortageList = stockShortages
+      .map((s) => `• ${s.productName}: requested ${s.requested} pcs, only ${s.available} available in local warehouse`)
+      .join('\n')
+    setRevisionNotes(`Warehouse Stock Adjustment Request:\n${shortageList}\n\nPlease revise quotation or advise replenishment schedule.`)
+    setStockShortages(null)
+    setRevisionModalOpen(true)
   }
 
   const handleRevisionSubmit = async (e: React.FormEvent) => {
@@ -430,7 +486,7 @@ export default function PublicQuoteViewPage({ params }: { params: Promise<{ toke
 
               <button
                 type="button"
-                onClick={handleAccept}
+                onClick={() => handleAccept()}
                 disabled={acting}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md transition disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}
@@ -438,6 +494,74 @@ export default function PublicQuoteViewPage({ params }: { params: Promise<{ toke
                 <CheckCircle2 size={16} />
                 {acting ? 'Processing Order...' : 'Accept & Place Order'}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Stock Shortage Modal */}
+        {stockShortages && stockShortages.length > 0 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+              <div className="flex items-center gap-2 border-b border-amber-100 pb-3">
+                <AlertTriangle size={20} className="text-amber-500" />
+                <h3 className="text-sm font-bold text-gray-900">Warehouse Stock Shortage Detected</h3>
+              </div>
+              <p className="text-xs text-gray-600">
+                The local fulfillment warehouse currently has insufficient physical stock to immediately allocate your full requested quantities. Please select how you would like to proceed:
+              </p>
+              <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
+                <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-2">Affected Items:</div>
+                <div className="space-y-1.5">
+                  {stockShortages.map((item) => (
+                    <div key={item.productId} className="flex items-center justify-between text-xs bg-white p-2 rounded-lg border border-amber-100">
+                      <span className="font-semibold text-gray-800">{item.productName}</span>
+                      <div className="text-right text-[11px]">
+                        <span className="text-rose-600 font-medium">Requested: {item.requested}</span>
+                        <span className="mx-1.5 text-gray-300">|</span>
+                        <span className="text-emerald-700 font-bold">Available: {item.available}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  disabled={acting}
+                  onClick={handleReduceQuantities}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow flex items-center justify-center gap-2"
+                >
+                  <span>1. Reduce Quantities to Available Stock & Accept</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={acting}
+                  onClick={handleConvertBackorders}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow flex items-center justify-center gap-2"
+                >
+                  <span>2. Convert Shortages to China Backorder (Lead time 14-21 days)</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={acting}
+                  onClick={handleRequestRevisionFromShortage}
+                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <RefreshCw size={14} />
+                  <span>3. Request Sales Desk Revision (Negotiate Alternatives)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStockShortages(null)}
+                  className="w-full py-2 px-4 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-700 text-center"
+                >
+                  Close & Review Quote
+                </button>
+              </div>
             </div>
           </div>
         )}

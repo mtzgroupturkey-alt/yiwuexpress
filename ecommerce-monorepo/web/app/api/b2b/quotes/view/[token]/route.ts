@@ -77,7 +77,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   try {
     const { token } = await params;
     const body = await req.json();
-    const { action, reason, revisionNotes } = body;
+    const { action, reason, revisionNotes, itemAdjustments } = body;
 
     const quote = await prisma.productQuote.findUnique({
       where: { secureToken: token },
