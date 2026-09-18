@@ -99,6 +99,32 @@ export default function DeploymentPage() {
     logs: [],
   });
 
+  // ── Data Strategy (Options A / B / C) ─────────────────────────────────────
+  type DataMode = 'A' | 'B' | 'C';
+  const [dataMode, setDataMode] = useState<DataMode>('A');
+  const [confirmPhrase, setConfirmPhrase] = useState('');
+  const [selectedScripts, setSelectedScripts] = useState<string[]>([
+    '002_backfill_product_translations',
+    '003_backfill_category_translations',
+    '004_sync_category_levels',
+    '005_ensure_system_settings',
+  ]);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [cCountdown, setCCountdown] = useState<number | null>(null);
+
+  const CONFIRM_PHRASES: Record<DataMode, string | null> = {
+    A: null,
+    B: 'MIGRATE-PRODUCTION',
+    C: 'REPLACE-PRODUCTION',
+  };
+
+  const isConfirmValid =
+    dataMode === 'A' ||
+    (CONFIRM_PHRASES[dataMode] !== null &&
+      confirmPhrase.trim() === CONFIRM_PHRASES[dataMode]);
+
   const liveLogsEndRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll live deployment log terminal
@@ -208,6 +234,33 @@ export default function DeploymentPage() {
     }
   };
 
+  // Fetch deployment preview (dry run)
+  const fetchPreview = async () => {
+    setPreviewLoading(true);
+    setShowPreviewModal(true);
+    setPreviewData(null);
+    try {
+      const params = new URLSearchParams({
+        mode: dataMode,
+        branch: selectedBranch,
+        scripts: selectedScripts.join(','),
+      });
+      const res = await fetch(`/api/admin/deployment/preview?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setPreviewData(data);
+        // Start 10s countdown for Option C after preview loads
+        if (dataMode === 'C' && isConfirmValid) {
+          setCCountdown(10);
+        }
+      }
+    } catch {
+      setPreviewData({ error: 'Failed to load preview' });
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   // Handle deployment execution
   const handleDeploy = async () => {
     const branchName = selectedBranch === 'production' ? 'Production (live online server)' : 'Main';
@@ -267,6 +320,9 @@ export default function DeploymentPage() {
           branch: selectedBranch,
           commitMessage: commitMessage.trim(),
           autoCommit,
+          dataMode,
+          confirmPhrase,
+          selectedScripts,
         }),
       });
 
@@ -616,7 +672,161 @@ export default function DeploymentPage() {
           </div>
         </div>
 
-        {/* 2. Commit Message Input */}
+        {/* ── 2. DATA STRATEGY SELECTOR ─────────────────────────────────── */}
+        <div>
+          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2.5">
+            2. Database Strategy
+          </label>
+          <div className="space-y-3">
+            {/* Option A */}
+            {(['A', 'B', 'C'] as const).map((mode) => {
+              const configs = {
+                A: {
+                  label: 'Option A — Code + Schema Only',
+                  badge: 'RECOMMENDED',
+                  badgeCls: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                  borderCls: 'border-emerald-500 bg-emerald-50/30 ring-2 ring-emerald-500/10',
+                  dotCls: 'border-emerald-500 bg-emerald-500',
+                  desc: [
+                    '✅ Push code to server',
+                    '✅ Apply pending Prisma migrations (prisma migrate deploy)',
+                    '✅ Production data — UNCHANGED',
+                  ],
+                  time: '~35s',
+                },
+                B: {
+                  label: 'Option B — Code + Schema + Data Migration',
+                  badge: 'SAFE TRANSFORM',
+                  badgeCls: 'bg-amber-100 text-amber-800 border-amber-200',
+                  borderCls: 'border-amber-500 bg-amber-50/30 ring-2 ring-amber-500/10',
+                  dotCls: 'border-amber-500 bg-amber-500',
+                  desc: [
+                    '✅ Push code + apply migrations',
+                    '✅ Run selected backfill scripts',
+                    '✅ Backup created automatically before changes',
+                    '✅ All existing rows PRESERVED',
+                  ],
+                  time: '~2 min',
+                },
+                C: {
+                  label: 'Option C — Replace Data',
+                  badge: '⚠️ DESTRUCTIVE',
+                  badgeCls: 'bg-rose-100 text-rose-800 border-rose-200',
+                  borderCls: 'border-rose-500 bg-rose-50/30 ring-2 ring-rose-500/10',
+                  dotCls: 'border-rose-500 bg-rose-500',
+                  desc: [
+                    '✅ Backup created BEFORE wipe',
+                    '🔴 DROP all tables + recreate schema',
+                    '🔴 Run seed script (fresh data)',
+                    '🔴 ALL current production data LOST',
+                  ],
+                  time: '~2.5 min',
+                },
+              };
+              const cfg = configs[mode];
+              const isSelected = dataMode === mode;
+              return (
+                <div
+                  key={mode}
+                  onClick={() => {
+                    setDataMode(mode);
+                    setConfirmPhrase('');
+                    setCCountdown(null);
+                  }}
+                  className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    isSelected ? cfg.borderCls : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-5 h-5 mt-0.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        isSelected ? cfg.dotCls : 'border-gray-300'
+                      }`}
+                    >
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-sm text-gray-900">{cfg.label}</span>
+                        <span className={`px-2 py-0.5 text-[10px] font-black uppercase rounded-md border ${cfg.badgeCls}`}>
+                          {cfg.badge}
+                        </span>
+                        <span className="text-[10px] text-gray-400 font-mono ml-auto">{cfg.time}</span>
+                      </div>
+                      <ul className="mt-1.5 space-y-0.5">
+                        {cfg.desc.map((d, i) => (
+                          <li key={i} className="text-xs text-gray-600">{d}</li>
+                        ))}
+                      </ul>
+
+                      {/* Option B: script checklist */}
+                      {mode === 'B' && isSelected && (
+                        <div className="mt-3 space-y-1.5 border-t border-amber-200/50 pt-3">
+                          <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Select backfill scripts to run:</p>
+                          {[
+                            { id: '002_backfill_product_translations', label: 'Backfill Product Translations (idempotent)' },
+                            { id: '003_backfill_category_translations', label: 'Backfill Category Translations (idempotent)' },
+                            { id: '004_sync_category_levels', label: 'Sync Category Levels (idempotent)' },
+                            { id: '005_ensure_system_settings', label: 'Ensure System Settings Row (idempotent)' },
+                          ].map((script) => (
+                            <label key={script.id} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={selectedScripts.includes(script.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedScripts((prev) =>
+                                    e.target.checked
+                                      ? [...prev, script.id]
+                                      : prev.filter((s) => s !== script.id)
+                                  );
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-400"
+                              />
+                              <span className="text-xs text-gray-700">{script.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Confirmation phrase input (B and C) */}
+          {dataMode !== 'A' && (
+            <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+              <p className="text-xs font-bold text-gray-700">
+                Type{' '}
+                <code className={`px-1.5 py-0.5 rounded font-mono text-xs ${
+                  dataMode === 'C' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {CONFIRM_PHRASES[dataMode]}
+                </code>{' '}
+                to confirm:
+              </p>
+              <input
+                type="text"
+                value={confirmPhrase}
+                onChange={(e) => setConfirmPhrase(e.target.value)}
+                placeholder={CONFIRM_PHRASES[dataMode] ?? ''}
+                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono font-bold outline-none transition-all ${
+                  isConfirmValid
+                    ? 'border-emerald-400 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-100'
+                    : 'border-slate-300 bg-white text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-50'
+                }`}
+              />
+              {isConfirmValid && (
+                <p className="text-xs text-emerald-600 font-semibold">✓ Confirmation accepted</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── 3. Commit Message Input ──────────────────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -681,14 +891,27 @@ export default function DeploymentPage() {
           </div>
         </div>
 
-        {/* 3. Action Trigger Buttons */}
+        {/* 4. Action Trigger Buttons */}
         <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-100">
           <button
+            onClick={fetchPreview}
+            disabled={isDeploying || (dataMode !== 'A' && !isConfirmValid)}
+            className="flex items-center justify-center px-6 py-4 rounded-2xl font-bold text-sm transition-all border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <FileCode className="w-4 h-4 mr-2" />
+            Preview Deployment
+          </button>
+
+          <button
             onClick={handleDeploy}
-            disabled={isDeploying}
+            disabled={isDeploying || (dataMode !== 'A' && !isConfirmValid)}
             className={`flex items-center justify-center px-8 py-4 rounded-2xl font-black text-sm transition-all shadow-md ${
-              isDeploying
+              isDeploying || (dataMode !== 'A' && !isConfirmValid)
                 ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                : dataMode === 'C'
+                ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white shadow-rose-200'
+                : dataMode === 'B'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-amber-200'
                 : selectedBranch === 'production'
                 ? 'bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-700 hover:to-blue-800 text-white shadow-indigo-200 hover:shadow-indigo-300 active:scale-[0.99]'
                 : 'bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-700 hover:to-sky-700 text-white shadow-blue-200 hover:shadow-blue-300 active:scale-[0.99]'
@@ -697,12 +920,12 @@ export default function DeploymentPage() {
             {isDeploying ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2.5 animate-spin" />
-                Deploying to {selectedBranch.toUpperCase()}...
+                Deploying...
               </>
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2.5" />
-                Deploy & Push to {selectedBranch.toUpperCase()}
+                {dataMode === 'C' ? '⚠️ Execute Replace' : dataMode === 'B' ? 'Execute Migration' : `Deploy to ${selectedBranch.toUpperCase()}`}
               </>
             )}
           </button>
@@ -1054,6 +1277,164 @@ export default function DeploymentPage() {
           )}
         </div>
       </div>
+      {/* ── PREVIEW MODAL ──────────────────────────────────────────────── */}
+      {showPreviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-black text-gray-900">Deployment Preview</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Dry-run summary — no changes have been made yet</p>
+              </div>
+              <button
+                onClick={() => { setShowPreviewModal(false); setCCountdown(null); }}
+                className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {previewLoading && (
+                <div className="flex items-center gap-3 text-gray-500">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm">Loading preview...</span>
+                </div>
+              )}
+
+              {previewData?.error && (
+                <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-sm text-rose-700">
+                  {previewData.error}
+                </div>
+              )}
+
+              {previewData && !previewData.error && (
+                <>
+                  {/* Mode + branch header */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${
+                      dataMode === 'A' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
+                      dataMode === 'B' ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                                        'bg-rose-100 text-rose-800 border-rose-200'
+                    }`}>
+                      Option {dataMode}
+                    </span>
+                    <span className="text-xs text-gray-500">Target: <strong>{selectedBranch}</strong></span>
+                    <span className="text-xs text-gray-500 ml-auto">
+                      Est. {Math.floor((previewData.estimatedSeconds ?? 60) / 60)}m {(previewData.estimatedSeconds ?? 60) % 60}s
+                    </span>
+                  </div>
+
+                  {/* Pending migrations */}
+                  {(previewData.pendingMigrations?.length ?? 0) > 0 && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+                      <p className="text-xs font-bold text-blue-800 mb-2">
+                        📋 {previewData.pendingMigrations.length} Pending Migration(s)
+                      </p>
+                      <ul className="space-y-1">
+                        {previewData.pendingMigrations.map((m: string, i: number) => (
+                          <li key={i} className="text-xs font-mono text-blue-700">· {m}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {(previewData.pendingMigrations?.length ?? 0) === 0 && (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-700 font-semibold">
+                      ✓ No pending migrations — schema is up to date.
+                    </div>
+                  )}
+
+                  {/* Steps */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">What will happen:</p>
+                    {previewData.steps?.map((step: any, i: number) => (
+                      <div key={i} className={`p-3 rounded-xl border text-xs ${
+                        step.type === 'danger' ? 'bg-rose-50 border-rose-200' :
+                        step.type === 'warn'   ? 'bg-amber-50 border-amber-200' :
+                                                 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <p className="font-bold text-gray-900">{step.label}</p>
+                        <p className="text-gray-600 mt-0.5 whitespace-pre-wrap">{step.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Rollback plan */}
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <p className="text-xs font-bold text-gray-700 mb-1">🔄 Rollback Plan:</p>
+                    <p className="text-xs text-gray-600 font-mono">{previewData.rollbackPlan}</p>
+                  </div>
+
+                  {/* Option C countdown */}
+                  {dataMode === 'C' && (
+                    <div className="p-4 bg-rose-50 border-2 border-rose-300 rounded-2xl">
+                      <p className="text-sm font-black text-rose-800 mb-2">
+                        ⚠️ DESTRUCTIVE OPERATION — ALL DATA WILL BE WIPED
+                      </p>
+                      {cCountdown === null ? (
+                        <button
+                          onClick={() => {
+                            setCCountdown(10);
+                            const timer = setInterval(() => {
+                              setCCountdown((prev) => {
+                                if (prev === null || prev <= 1) { clearInterval(timer); return 0; }
+                                return prev - 1;
+                              });
+                            }, 1000);
+                          }}
+                          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors"
+                        >
+                          Start 10-second countdown
+                        </button>
+                      ) : cCountdown > 0 ? (
+                        <p className="text-2xl font-black text-rose-700 font-mono">
+                          {cCountdown}s remaining before Execute activates...
+                        </p>
+                      ) : (
+                        <p className="text-sm font-bold text-rose-700">✓ Countdown complete — Execute is now available.</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-100 flex items-center gap-3 flex-wrap">
+              <button
+                onClick={() => { setShowPreviewModal(false); setCCountdown(null); }}
+                className="px-5 py-3 rounded-2xl border border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowPreviewModal(false);
+                  if (dataMode !== 'C' || cCountdown === 0) {
+                    handleDeploy();
+                  }
+                }}
+                disabled={
+                  previewLoading ||
+                  !!previewData?.error ||
+                  (dataMode === 'C' && (cCountdown === null || cCountdown > 0))
+                }
+                className={`flex-1 sm:flex-none px-8 py-3 rounded-2xl font-black text-sm transition-all ${
+                  previewLoading || !!previewData?.error || (dataMode === 'C' && (cCountdown === null || cCountdown > 0))
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : dataMode === 'C'
+                    ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-200 shadow-md'
+                    : dataMode === 'B'
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-200 shadow-md'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200 shadow-md'
+                }`}
+              >
+                {dataMode === 'C' ? '⚠️ Execute Replace' : dataMode === 'B' ? 'Execute Migration' : 'Execute Deploy'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

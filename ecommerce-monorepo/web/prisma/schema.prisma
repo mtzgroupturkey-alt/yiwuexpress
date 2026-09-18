@@ -1622,6 +1622,7 @@ model Deployment {
   environment      String
   status           String    @default("in-progress")
   type             String    @default("deploy") // deploy, rollback
+  dataMode         String?   // "A" | "B" | "C"
   branch           String?
   commitHash       String?
   commitMessage    String?
@@ -1636,6 +1637,23 @@ model Deployment {
   updatedAt        DateTime  @updatedAt
 
   @@map("deployments")
+}
+
+/// Audit log for every data-strategy execution (Options A/B/C).
+model MigrationLog {
+  id           String   @id @default(cuid())
+  scriptName   String
+  executedAt   DateTime @default(now())
+  executedBy   String   // admin user id or "cli"
+  dataMode     String   // "A" | "B" | "C"
+  rowsAffected Int      @default(0)
+  success      Boolean
+  error        String?
+  backupPath   String?
+  durationMs   Int?
+  metadata     Json?    // before/after snapshot for rollback
+
+  @@map("migration_logs")
 }
 
 // Email templates: localized transactional text blocks (checkout confirmation,
