@@ -12,9 +12,13 @@ import {
 import { toast } from 'react-hot-toast'
 import { useQuoteCart } from '@/components/QuoteCartContext'
 import { SharedLayout } from '@/components/layout/SharedLayout'
+import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function QuoteCartPage() {
   const router = useRouter()
+  const navigate = useLocaleNav()
+  const { user } = useAuth()
   const { items, quoteCount, totalUnits, updateQuantity, updateItem, removeFromQuote, clearQuoteCart } = useQuoteCart()
 
   const [submitting, setSubmitting] = useState(false)
@@ -25,6 +29,18 @@ export default function QuoteCartPage() {
     phone: '',
     taxId: '',
   })
+
+  React.useEffect(() => {
+    if (user) {
+      setGuestInfo((prev) => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        email: prev.email || user.email || '',
+        company: prev.company || (user as any).companyName || '',
+        phone: prev.phone || user.phone || '',
+      }))
+    }
+  }, [user])
   const [shipping, setShipping] = useState({
     country: 'Belarus',
     city: 'Minsk',
@@ -78,7 +94,7 @@ export default function QuoteCartPage() {
       if (res.ok && data.success && data.quote) {
         toast.success('Your quote request has been submitted successfully!')
         clearQuoteCart()
-        router.push(`/quotes/view/${data.quote.secureToken}`)
+        navigate(`/quotes/view/${data.quote.secureToken}`)
       } else {
         toast.error(data.error || 'Failed to submit quote request.')
       }
@@ -95,12 +111,12 @@ export default function QuoteCartPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
           <div>
-            <Link
-              href="/store"
+            <button
+              onClick={() => navigate('/store')}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-700 transition mb-2"
             >
               <ArrowLeft size={14} /> Continue Browsing Wholesale Catalog
-            </Link>
+            </button>
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-blue-600 text-white shadow-sm">
                 <FileText size={22} />
@@ -133,13 +149,13 @@ export default function QuoteCartPage() {
             <p className="text-xs text-gray-500 leading-relaxed">
               Browse our wholesale catalog and click <strong className="text-gray-800">&quot;Add to Quote&quot;</strong> on any product to build your commercial inquiry.
             </p>
-            <Link
-              href="/store"
+            <button
+              onClick={() => navigate('/store')}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md transition"
               style={{ background: 'linear-gradient(135deg, #1e40af, #2563eb)' }}
             >
               Browse Wholesale Products
-            </Link>
+            </button>
           </div>
         ) : (
           <form onSubmit={handleSubmitQuote} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
