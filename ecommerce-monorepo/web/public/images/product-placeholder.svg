@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" fill="none">
+  <rect width="800" height="800" fill="#f8fafc" />
+  <rect x="24" y="24" width="752" height="752" rx="16" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="8 8" fill="none" />
+  <g transform="translate(320, 290)">
+    <rect x="0" y="0" width="160" height="160" rx="24" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="3" />
+    <!-- Modern Product Package Icon -->
+    <path d="M80 40 L125 65 L125 115 L80 140 L35 115 L35 65 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="4" stroke-linejoin="round" />
+    <path d="M80 40 L80 140" stroke="#94a3b8" stroke-width="4" stroke-linejoin="round" />
+    <path d="M35 65 L80 90 L125 65" stroke="#94a3b8" stroke-width="4" stroke-linejoin="round" />
+    <path d="M57 52.5 L102 77.5" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+  </g>
+  <text x="400" y="500" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="600" fill="#64748b" letter-spacing="0.05em">Product Image</text>
+  <text x="400" y="535" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#94a3b8" letter-spacing="0.02em">Photo not available</text>
+</svg>

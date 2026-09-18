@@ -9,7 +9,7 @@ const UPLOAD_URL = process.env.NEXT_PUBLIC_UPLOAD_URL || `${BASE_URL}/uploads`
 /**
  * Default placeholder image path for fallback
  */
-export const DEFAULT_PLACEHOLDER = '/images/placeholder.png'
+export const DEFAULT_PLACEHOLDER = '/images/product-placeholder.webp'
 
 /**
  * Resolve a fallback image source. Returns the provided fallback, or the
@@ -77,7 +77,7 @@ export function isLocalImage(url: string): boolean {
  */
 export function getPlaceholderImage(type: 'product' | 'category' | 'avatar' | 'logo' = 'product'): string {
   const placeholders = {
-    product: '/images/placeholder-product.png',
+    product: '/images/product-placeholder.webp',
     category: '/images/placeholder-category.png',
     avatar: '/images/placeholder-avatar.png',
     logo: '/images/placeholder-logo.png',
