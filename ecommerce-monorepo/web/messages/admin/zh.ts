@@ -92,6 +92,7 @@ export const adminZh: AdminDictionary = {
     overview: '财务总览',
     contentPages: '单页内容',
     companyInfo: '企业信息',
+    storeMode: '商城模式与销售设置',
     usersPermissions: '用户与权限',
     logout: '退出登录',
     collapse: '折叠侧边栏',

@@ -92,6 +92,7 @@ export const adminRu: AdminDictionary = {
     overview: 'Финансовый обзор',
     contentPages: 'Страницы контента',
     companyInfo: 'О компании',
+    storeMode: 'Режим магазина и продажи',
     usersPermissions: 'Пользователи и права',
     logout: 'Выйти из системы',
     collapse: 'Свернуть панель',

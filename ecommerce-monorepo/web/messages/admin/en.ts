@@ -90,6 +90,7 @@ export const adminEn = {
     overview: 'Overview',
     contentPages: 'Content Pages',
     companyInfo: 'Company Info',
+    storeMode: 'Store Mode & Sales',
     usersPermissions: 'Users & Permissions',
     logout: 'Sign Out',
     collapse: 'Collapse Sidebar',

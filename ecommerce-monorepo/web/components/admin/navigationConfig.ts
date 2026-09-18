@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  LayoutDashboard, ShoppingCart, Warehouse, Truck, 
+  LayoutDashboard, ShoppingCart, Warehouse, Truck, Store,
   DollarSign, Users, Package, CreditCard, Settings,
   Globe, FileText, Factory, RotateCcw,
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
@@ -137,6 +137,7 @@ export const navigationConfig: NavGroup[] = [
     translationKey: 'settings',
     icon: Settings,
     items: [
+      { label: 'Store Mode & Sales', translationKey: 'storeMode', href: '/admin/settings/general', icon: Store },
       { label: 'Company Info', translationKey: 'companyInfo', href: '/admin/settings/company', icon: Building },
       { label: 'Warehouses', translationKey: 'warehouses', href: '/admin/settings/warehouses', icon: Warehouse },
       { label: 'Countries', translationKey: 'countries', href: '/admin/countries', icon: Globe2 },
