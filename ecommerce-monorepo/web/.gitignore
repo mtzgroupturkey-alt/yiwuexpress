@@ -54,6 +54,7 @@ node_modules/.cache/
 *.sqlite
 *.sqlite3
 *.sql
+!prisma/migrations/**/*.sql
 
 # Build output
 tsconfig.tsbuildinfo
