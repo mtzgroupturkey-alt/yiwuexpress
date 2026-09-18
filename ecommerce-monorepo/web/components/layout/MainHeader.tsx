@@ -29,7 +29,12 @@ const NAV_ITEMS = [
 ]
 
 const TOP_BAR_LINKS = [
-  'About Us', 'Blog', 'Contact Us', 'Wholesale', 'Hospitality', 'Where to buy',
+  { name: 'About Us', href: '/about' },
+  { name: 'Blog', href: '/blog' },
+  { name: 'Contact Us', href: '/contact' },
+  { name: 'Wholesale', href: '/wholesale' },
+  { name: 'Services', href: '/services' },
+  { name: 'Where to buy', href: '/store' },
 ]
 
 export function MainHeader() {
@@ -64,7 +69,7 @@ export function MainHeader() {
     <header className="sticky top-0 z-50 w-full">
 
       {/* ================================================================
-          TOP INFO BAR â€” slides up and hides on scroll
+          TOP INFO BAR — slides up and hides on scroll
           ================================================================ */}
       <motion.div
         initial={false}
@@ -75,12 +80,12 @@ export function MainHeader() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-[#c9a84c] text-sm drop-shadow-lg">âœ¦</span>
+              <span className="text-[#c9a84c] text-sm drop-shadow-lg">✦</span>
               <SimpleTypingText
                 texts={[
-                  `WELCOME TO ${(settings?.companyName || 'Global Trade').toUpperCase()} â€” PREMIUM SOURCING`,
-                  "GLOBAL TRADE SOLUTIONS â€” QUALITY YOU CAN TRUST",
-                  "WHOLESALE & RETAIL â€” BEST PRICES GUARANTEED"
+                  `WELCOME TO ${(settings?.companyName || 'Global Trade').toUpperCase()} — PREMIUM SOURCING`,
+                  "GLOBAL TRADE SOLUTIONS — QUALITY YOU CAN TRUST",
+                  "WHOLESALE & RETAIL — BEST PRICES GUARANTEED"
                 ]}
                 typingSpeed={75}
                 deletingSpeed={30}
@@ -89,13 +94,13 @@ export function MainHeader() {
               />
             </div>
             <div className="flex items-center space-x-6">
-              {TOP_BAR_LINKS.map((name) => (
+              {TOP_BAR_LINKS.map((item) => (
                 <LocaleLink
-                  key={name}
-                  href={`/${name.toLowerCase().replace(/ /g, '-')}`}
+                  key={item.name}
+                  href={item.href}
                   className="hover:text-[#c9a84c] transition-colors uppercase tracking-wider text-[10px] font-medium text-white/70"
                 >
-                  {name}
+                  {item.name}
                 </LocaleLink>
               ))}
             </div>

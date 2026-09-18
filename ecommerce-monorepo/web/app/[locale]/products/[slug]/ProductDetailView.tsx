@@ -213,7 +213,7 @@ export default function ProductDetailView({
     if (product.thumbnail && !list.includes(product.thumbnail)) {
       list.push(product.thumbnail)
     }
-    return list.length > 0 ? list : ['/placeholder-product.png']
+    return list.length > 0 ? list : ['/images/product-placeholder.webp']
   }, [selectedVariant, product.images, product.thumbnail])
 
   // Review summaries

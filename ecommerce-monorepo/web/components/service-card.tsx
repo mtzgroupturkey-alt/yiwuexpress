@@ -7,12 +7,17 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
+import { useAuth } from '@/hooks/useAuth'
+import { useLocaleNav } from '@/hooks/useLocaleNav'
+
 interface ServiceCardProps {
   service: Service
 }
 
 export default function ServiceCard({ service }: ServiceCardProps) {
   const t = useTranslations('Services')
+  const { isAuthenticated } = useAuth()
+  const navigate = useLocaleNav()
   const [isRequestingQuote, setIsRequestingQuote] = useState(false)
 
   const getServiceIcon = (type: string) => {
@@ -39,7 +44,7 @@ export default function ServiceCard({ service }: ServiceCardProps) {
       case 'warehousing':
         return 'text-secondary-600 bg-secondary-50'
       case 'sourcing':
-        return 'text-success bg-green-50'
+        return 'text-primary-700 bg-primary-100'
       default:
         return 'text-gray-600 bg-gray-50'
     }
@@ -67,15 +72,11 @@ export default function ServiceCard({ service }: ServiceCardProps) {
   const handleRequestQuote = async () => {
     try {
       setIsRequestingQuote(true)
-      const token = localStorage.getItem('token')
-      
-      if (!token) {
-        window.location.href = '/login?redirect=/quotes/new'
+      if (!isAuthenticated) {
+        navigate('/login?redirect=' + encodeURIComponent(`/quotes/new?service=${service.id}`))
         return
       }
-
-      // Navigate to quote request page
-      window.location.href = `/quotes/new?service=${service.id}`
+      navigate(`/quotes/new?service=${service.id}`)
     } catch (error) {
       console.error('Error requesting quote:', error)
       alert('Failed to request quote. Please try again.')

@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { ProductImage } from '@/components/ui/ProductImage'
 import {
   FileText, ArrowLeft, Trash2, Building2, User, Mail, Phone,
@@ -19,6 +20,7 @@ import { useAuth } from '@/hooks/useAuth'
 export default function QuoteCartPage() {
   const router = useRouter()
   const navigate = useLocaleNav()
+  const t = useTranslations('QuoteCart')
   const { user } = useAuth()
   const { items, quoteCount, totalUnits, updateQuantity, updateItem, removeFromQuote, clearQuoteCart } = useQuoteCart()
 
@@ -31,6 +33,15 @@ export default function QuoteCartPage() {
     taxId: '',
   })
 
+  const [shipping, setShipping] = useState({
+    country: '',
+    city: '',
+    address: '',
+    targetDeliveryDate: '',
+    preferredShippingMode: 'STANDARD',
+  })
+  const [customerNotes, setCustomerNotes] = useState('')
+
   React.useEffect(() => {
     if (user) {
       setGuestInfo((prev) => ({
@@ -40,16 +51,12 @@ export default function QuoteCartPage() {
         company: prev.company || (user as any).companyName || '',
         phone: prev.phone || user.phone || '',
       }))
+      setShipping((prev) => ({
+        ...prev,
+        country: prev.country || user.country || '',
+      }))
     }
   }, [user])
-  const [shipping, setShipping] = useState({
-    country: 'Belarus',
-    city: 'Minsk',
-    address: '',
-    targetDeliveryDate: '',
-    preferredShippingMode: 'STANDARD',
-  })
-  const [customerNotes, setCustomerNotes] = useState('')
 
   const handleQuantityChange = (productId: string, newQty: number, moq: number) => {
     const validQty = Math.max(moq || 1, newQty)
@@ -60,12 +67,12 @@ export default function QuoteCartPage() {
     e.preventDefault()
 
     if (items.length === 0) {
-      toast.error('Your quote cart is empty.')
+      toast.error(t('emptyTitle'))
       return
     }
 
     if (!guestInfo.name.trim() || !guestInfo.email.trim()) {
-      toast.error('Please provide contact name and business email.')
+      toast.error(t('contactInfo'))
       return
     }
 
@@ -93,21 +100,27 @@ export default function QuoteCartPage() {
       const data = await res.json()
 
       if (res.ok && data.success && data.quote) {
-        toast.success('Your quote request has been submitted successfully!')
+        toast.success(t('quoteSubmittedSuccess'))
         clearQuoteCart()
         navigate(`/quotes/view/${data.quote.secureToken}`)
       } else {
-        toast.error(data.error || 'Failed to submit quote request.')
+        toast.error(data.error || t('quoteSubmitError'))
       }
     } catch (err) {
-      toast.error('Network error submitting quote request.')
+      toast.error(t('quoteSubmitError'))
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <SharedLayout>
+    <SharedLayout
+      pageTitle={t('pageTitle')}
+      pageDescription={t('pageDescription')}
+      breadcrumbs={[
+        { name: t('breadcrumb'), href: '/quote-cart' }
+      ]}
+    >
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
@@ -116,16 +129,16 @@ export default function QuoteCartPage() {
               onClick={() => navigate('/store')}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-700 transition mb-2"
             >
-              <ArrowLeft size={14} /> Continue Browsing Wholesale Catalog
+              <ArrowLeft size={14} /> {t('browseCatalog')}
             </button>
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-blue-600 text-white shadow-sm">
                 <FileText size={22} />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-gray-900">B2B Request for Quote (RFQ) Cart</h1>
+                <h1 className="text-2xl font-black text-gray-900">{t('pageTitle')}</h1>
                 <p className="text-xs text-gray-500">
-                  Submit your custom bulk requirements. Our commercial sales desk will price your request with volume discounts and optimal freight.
+                  {t('pageDescription')}
                 </p>
               </div>
             </div>
@@ -136,7 +149,7 @@ export default function QuoteCartPage() {
               onClick={clearQuoteCart}
               className="text-xs font-semibold text-rose-600 hover:text-rose-800 transition"
             >
-              Clear Quote Cart
+              {t('clearCart')}
             </button>
           )}
         </div>
@@ -146,16 +159,16 @@ export default function QuoteCartPage() {
             <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto">
               <FileText size={32} />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Your Quote Cart is Empty</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('emptyTitle')}</h2>
             <p className="text-xs text-gray-500 leading-relaxed">
-              Browse our wholesale catalog and click <strong className="text-gray-800">&quot;Add to Quote&quot;</strong> on any product to build your commercial inquiry.
+              {t('emptySubtitle')}
             </p>
             <button
               onClick={() => navigate('/store')}
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-md transition"
               style={{ background: 'linear-gradient(135deg, #1e40af, #2563eb)' }}
             >
-              Browse Wholesale Products
+              {t('browseCatalog')}
             </button>
           </div>
         ) : (
@@ -165,10 +178,10 @@ export default function QuoteCartPage() {
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    Requested Line Items ({quoteCount} products, {totalUnits} units)
+                    {t('productsInQuote')} ({quoteCount} {t('itemsCount')}, {totalUnits} {t('totalUnits')})
                   </span>
                   <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-                    B2B Commercial Pricing
+                    ✦ B2B Wholesale
                   </span>
                 </div>
 
@@ -193,7 +206,7 @@ export default function QuoteCartPage() {
                             <h3 className="font-bold text-gray-900 text-sm">{item.productName}</h3>
                             <p className="text-[11px] font-mono text-gray-500">SKU: {item.productSku}</p>
                             <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-0.5 inline-block">
-                              MOQ: {item.minOrderQty} units
+                              {t('moq')}: {item.minOrderQty}
                             </span>
                           </div>
 
@@ -212,7 +225,7 @@ export default function QuoteCartPage() {
                           {/* Quantity Stepper */}
                           <div>
                             <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                              Quantity
+                              {t('quantity')}
                             </label>
                             <div className="flex items-center gap-1.5">
                               <button
@@ -242,14 +255,14 @@ export default function QuoteCartPage() {
                           {/* Target Unit Price (Optional) */}
                           <div>
                             <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                              Target Price / Unit (Optional)
+                              {t('targetUnitPrice')}
                             </label>
                             <div className="relative">
                               <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
                               <input
                                 type="number"
                                 step="0.01"
-                                placeholder="Your target"
+                                placeholder="0.00"
                                 value={item.targetPrice ?? ''}
                                 onChange={(e) => updateItem(item.productId, { targetPrice: parseFloat(e.target.value) || null })}
                                 className="w-full pl-6 pr-2 py-1 bg-white border border-gray-300 rounded-lg text-xs font-mono"
@@ -262,7 +275,7 @@ export default function QuoteCartPage() {
                         <div>
                           <input
                             type="text"
-                            placeholder="Special requirements (e.g. customized logo, packaging, delivery deadline)..."
+                            placeholder={t('notesItemPlaceholder')}
                             value={item.customerNotes || ''}
                             onChange={(e) => updateItem(item.productId, { customerNotes: e.target.value })}
                             className="w-full px-3 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-400"
@@ -277,13 +290,13 @@ export default function QuoteCartPage() {
               {/* General Project Notes */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-3">
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
-                  Overall Project Requirements & Commercial Notes
+                  {t('additionalNotes')}
                 </label>
                 <textarea
                   rows={3}
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
-                  placeholder="e.g. Need delivery in Minsk before November 15. Please quote container rail freight and advise if certificates are provided."
+                  placeholder={t('notesPlaceholder')}
                   className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-800 focus:bg-white focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -295,16 +308,16 @@ export default function QuoteCartPage() {
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
                 <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
                   <Building2 size={18} className="text-blue-600" />
-                  <h3 className="text-sm font-bold text-gray-900">Commercial Contact Dossier</h3>
+                  <h3 className="text-sm font-bold text-gray-900">{t('contactInfo')}</h3>
                 </div>
 
                 <div className="space-y-3 text-xs">
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Company / Organization Name</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('companyName')}</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. BelKitchen Trade OOO"
+                      placeholder="Company Name"
                       value={guestInfo.company}
                       onChange={(e) => setGuestInfo(prev => ({ ...prev, company: e.target.value }))}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -312,10 +325,10 @@ export default function QuoteCartPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Tax ID / VAT / UNP Number</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('taxId')}</label>
                     <input
                       type="text"
-                      placeholder="e.g. UNP 192837465"
+                      placeholder="Tax / VAT ID"
                       value={guestInfo.taxId}
                       onChange={(e) => setGuestInfo(prev => ({ ...prev, taxId: e.target.value }))}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -323,11 +336,11 @@ export default function QuoteCartPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Contact Person Name *</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('fullName')} *</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Ivan Petrov"
+                      placeholder="Contact Person"
                       value={guestInfo.name}
                       onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -335,11 +348,11 @@ export default function QuoteCartPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Business Email Address *</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('businessEmail')} *</label>
                     <input
                       type="email"
                       required
-                      placeholder="e.g. ivan@belkitchen.by"
+                      placeholder="email@company.com"
                       value={guestInfo.email}
                       onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -347,10 +360,10 @@ export default function QuoteCartPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Phone Number</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('phone')}</label>
                     <input
                       type="tel"
-                      placeholder="e.g. +375 29 123-4567"
+                      placeholder="+1 (555) 000-0000"
                       value={guestInfo.phone}
                       onChange={(e) => setGuestInfo(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500"
@@ -363,24 +376,26 @@ export default function QuoteCartPage() {
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
                 <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
                   <Truck size={18} className="text-indigo-600" />
-                  <h3 className="text-sm font-bold text-gray-900">Destination & Logistics</h3>
+                  <h3 className="text-sm font-bold text-gray-900">{t('shippingDestination')}</h3>
                 </div>
 
                 <div className="space-y-3 text-xs">
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block font-semibold text-gray-700 mb-1">Country</label>
+                      <label className="block font-semibold text-gray-700 mb-1">{t('country')}</label>
                       <input
                         type="text"
+                        placeholder="Country"
                         value={shipping.country}
                         onChange={(e) => setShipping(prev => ({ ...prev, country: e.target.value }))}
                         className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl"
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-gray-700 mb-1">City</label>
+                      <label className="block font-semibold text-gray-700 mb-1">{t('city')}</label>
                       <input
                         type="text"
+                        placeholder="City"
                         value={shipping.city}
                         onChange={(e) => setShipping(prev => ({ ...prev, city: e.target.value }))}
                         className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl"
@@ -389,10 +404,10 @@ export default function QuoteCartPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Delivery Address / Warehouse</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('deliveryAddress')}</label>
                     <input
                       type="text"
-                      placeholder="Street, warehouse number..."
+                      placeholder="Street, building, suite..."
                       value={shipping.address}
                       onChange={(e) => setShipping(prev => ({ ...prev, address: e.target.value }))}
                       className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl"
@@ -400,7 +415,7 @@ export default function QuoteCartPage() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Target Delivery Date</label>
+                    <label className="block font-semibold text-gray-700 mb-1">{t('targetDeliveryDate')}</label>
                     <input
                       type="date"
                       value={shipping.targetDeliveryDate}
@@ -412,21 +427,21 @@ export default function QuoteCartPage() {
               </div>
 
               {/* Submit Card */}
-              <div className="bg-gradient-to-br from-blue-900 to-indigo-950 text-white rounded-2xl p-5 shadow-lg space-y-4">
+              <div className="bg-gradient-to-br from-[#1a3a5c] to-[#0f243a] text-white rounded-2xl p-5 shadow-lg space-y-4">
                 <div>
                   <h4 className="font-bold text-sm">Commercial SLA Guarantee</h4>
-                  <p className="text-[11px] text-blue-200 mt-1 leading-relaxed">
-                    Our sales desk will evaluate warehouse stock at Minsk DC & China hub to issue formal pricing within 4 business hours.
+                  <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
+                    Our sales desk will evaluate warehouse stock and logistics routes to issue official tiered commercial pricing.
                   </p>
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 px-4 rounded-xl text-xs font-bold text-blue-950 bg-white hover:bg-blue-50 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 px-4 rounded-xl text-xs font-bold text-[#1a3a5c] bg-white hover:bg-white/95 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Send size={15} />
-                  {submitting ? 'Transmitting RFQ...' : 'Submit Official Quote Request'}
+                  {submitting ? t('submittingQuote') : t('submitQuote')}
                 </button>
               </div>
             </div>

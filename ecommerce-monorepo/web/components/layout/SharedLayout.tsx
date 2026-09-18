@@ -1,9 +1,11 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Design3LayoutHeader } from './Design3LayoutHeader'
 import { Design3LayoutFooter } from './Design3LayoutFooter'
 import { PageHero } from './PageHero'
 import { BackToTop } from '@/components/ui/BackToTop'
+import { useSettings } from '@/components/SettingsProvider'
 
 interface BreadcrumbItem {
   name: string
@@ -33,6 +35,14 @@ export function SharedLayout({
   pageSlug,
   overlayColor
 }: SharedLayoutProps) {
+  const { settings } = useSettings()
+
+  useEffect(() => {
+    if (pageTitle && typeof document !== 'undefined') {
+      const company = settings?.companyName || 'Global Trade'
+      document.title = `${pageTitle} | ${company}`
+    }
+  }, [pageTitle, settings?.companyName])
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col relative w-full overflow-x-hidden">
       {/* Design-3 Modern Header & Interactive Modals */}

@@ -24,7 +24,28 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
   const lightboxThumbnailsRef = useRef<HTMLDivElement>(null)
 
   const rawImages = images && images.length > 0 ? images.filter(Boolean) : []
-  const displayImages = rawImages.length > 0 ? rawImages : ['/placeholder-product.png']
+  const displayImages = rawImages.length > 0 ? rawImages : ['/images/product-placeholder.webp']
+
+  const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    setFailedIndices(new Set())
+  }, [images])
+
+  const handleImageError = (index: number) => {
+    setFailedIndices((prev) => {
+      const next = new Set(prev)
+      next.add(index)
+      return next
+    })
+  }
+
+  const getImageSrc = (index: number) => {
+    if (failedIndices.has(index)) {
+      return '/images/product-placeholder.webp'
+    }
+    return displayImages[index] || '/images/product-placeholder.webp'
+  }
 
   // Keep index within bounds if image count changes (e.g. variant switch)
   const safeIndex = currentIndex >= displayImages.length ? 0 : currentIndex
@@ -128,10 +149,11 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
         >
           {/* Main Photo - Standard uncropped object-contain view */}
           <img
-            src={displayImages[safeIndex]}
+            src={getImageSrc(safeIndex)}
             alt={`${productName} - Image ${safeIndex + 1}`}
             className="object-contain w-full h-full p-4 transition-transform duration-300 group-hover:scale-105"
             loading="eager"
+            onError={() => handleImageError(safeIndex)}
           />
 
           {/* Hover Overlay Hint & Zoom Button */}
