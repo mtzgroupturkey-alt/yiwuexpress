@@ -13,6 +13,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
+import { useSettings } from '@/components/SettingsProvider'
 
 interface Product {
   id: string
@@ -24,6 +25,7 @@ interface Product {
   image?: string
   category?: string
   stock?: number
+  moq?: number
   minOrder?: number
   minOrderQty?: number
   wholesalePrice?: number
@@ -53,6 +55,7 @@ export default function ProductCard({
   const { formatPrice } = useCurrency()
   const router = useRouter()
   const { isWholesale, isRetail } = useStoreMode()
+  const { settings } = useSettings()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { enableWholesaleSession } = useSessionMode()
   const { addToQuote } = useQuoteCart()
@@ -60,6 +63,26 @@ export default function ProductCard({
   const [isHovered, setIsHovered] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAddingToQuote, setIsAddingToQuote] = useState(false)
+
+  const rfqModel = settings?.rfqModel || 'RFQ'
+  const isInstantWholesale = rfqModel === 'INSTANT'
+  const moq = product.moq || product.minOrder || product.minOrderQty || settings?.wholesaleDefaultMoq || 1
+
+  const addWholesaleToCart = (p: Product) => {
+    setIsAddingToCart(true)
+    enableWholesaleSession()
+    addInquiryItem({
+      productId: p.id,
+      slug: p.slug,
+      name: p.name,
+      image: p.image,
+      wholesalePrice: (p.wholesalePrice || p.price) as number,
+      retailPrice: p.price,
+      quantity: moq,
+      minOrderQty: moq,
+    })
+    setTimeout(() => setIsAddingToCart(false), 1200)
+  }
 
   const hasWholesale = product.wholesalePrice && product.wholesalePrice < product.price
   const showRetailCart = isRetail
@@ -314,8 +337,8 @@ export default function ProductCard({
             </button>
           )}
 
-          {/* Wholesale Quote List Button (B2B) */}
-          {isWholesale && hasWholesale && (
+          {/* Wholesale B2B Button - RFQ Mode */}
+          {isWholesale && hasWholesale && !isInstantWholesale && (
             <button
               onClick={handleAddToQuoteList}
               disabled={isAddingToQuote || (product.stock !== undefined && product.stock === 0)}
@@ -335,7 +358,45 @@ export default function ProductCard({
               ) : (
                 <>
                   <FileText className="w-3.5 h-3.5" />
-                  <span>{t('addToQuoteList')}</span>
+                  <span>Request Quote (MOQ {moq})</span>
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Wholesale B2B Button - INSTANT Mode */}
+          {isWholesale && hasWholesale && isInstantWholesale && (
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                addWholesaleToCart(product)
+              }}
+              disabled={isAddingToCart || (product.stock !== undefined && product.stock === 0)}
+              className={`relative z-10 w-full mt-2 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex flex-col items-center justify-center gap-0.5 shadow-sm cursor-pointer ${
+                isAddingToCart
+                  ? 'bg-emerald-600 text-white'
+                  : product.stock === 0
+                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:brightness-105 font-bold'
+              }`}
+            >
+              {isAddingToCart ? (
+                <div className="flex items-center gap-1.5 py-1">
+                  <Check className="w-4 h-4" />
+                  <span>{t('added')}</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                    <span>Add to Cart</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-medium opacity-90">
+                    <span className="text-xs">Wholesale: ${product.wholesalePrice || product.price}</span>
+                    <span>•</span>
+                    <span className="text-xs">MOQ: {moq}</span>
+                  </div>
                 </>
               )}
             </button>

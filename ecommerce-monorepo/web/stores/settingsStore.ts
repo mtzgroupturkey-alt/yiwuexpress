@@ -20,6 +20,11 @@ export interface CompanySettings {
   timezone: string
   language: string
   storeMode?: 'WHOLESALE' | 'RETAIL' | 'BOTH'
+  rfqModel?: 'RFQ' | 'INSTANT'
+  wholesaleDefaultMoq?: number
+  rfqEnabled?: boolean
+  wholesaleEnabled?: boolean
+  retailEnabled?: boolean
   storeHours?: string
   freeShippingThreshold?: number
   announcementTicker?: string
@@ -47,6 +52,11 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   timezone: 'Asia/Shanghai',
   language: 'en',
   storeMode: 'WHOLESALE',
+  rfqModel: 'RFQ',
+  wholesaleDefaultMoq: 1,
+  rfqEnabled: true,
+  wholesaleEnabled: true,
+  retailEnabled: true,
   storeHours: '08:00 – 23:00',
   freeShippingThreshold: 35.0,
 }
