@@ -8,7 +8,6 @@ import { SharedLayout } from '@/components/layout/SharedLayout';
 import { ShopProductsPage } from '@/app/[locale]/design-3/components/ShopProductsPage';
 import { ProductModal } from '@/app/[locale]/design-3/components/ProductModal';
 import { Product, CartItem, Category } from '@/app/[locale]/design-3/types';
-import { ALL_PRODUCTS, FLASH_DEALS } from '@/app/[locale]/design-3/data/catalogData';
 import { mapDbProductToDesign3, mapDbCategoryToDesign3 } from '@/lib/adapters/design3ProductAdapter';
 import { useCart } from '@/components/CartContext';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -78,14 +77,9 @@ function StoreCatalogInner() {
     return rawList.map(mapDbProductToDesign3);
   }, [productsData]);
 
-  // Combined catalog
+  // Database catalog
   const catalogProducts = useMemo(() => {
-    const map = new Map<string, Product>();
-    const list = dbProducts.length > 0 ? [...dbProducts, ...ALL_PRODUCTS] : ALL_PRODUCTS;
-    list.forEach((p) => {
-      map.set(p.id, p);
-    });
-    return Array.from(map.values());
+    return dbProducts;
   }, [dbProducts]);
 
   // Cart & Favorites State from Live Hooks & LocalStorage

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Star, 
@@ -9,11 +9,17 @@ import {
   RotateCcw, 
   Check, 
   Plus, 
-  Minus 
+  Minus,
+  FileText
 } from 'lucide-react';
 import { Product } from '../types';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useSettings } from '@/components/SettingsProvider';
+import { useStoreMode } from '@/contexts/StoreModeContext';
+import { useSessionMode } from '@/contexts/SessionModeContext';
+import { useQuoteCart } from '@/components/QuoteCartContext';
+import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 
 interface ProductModalProps {
   product: Product | null;
@@ -36,12 +42,67 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 }) => {
   const { tModals, tPdp, tBadge } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
-  const [quantity, setQuantity] = useState(1);
+  const { settings, storeMode: systemStoreMode } = useSettings();
+  const { storeMode: ctxStoreMode } = useStoreMode();
+  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { addToQuote } = useQuoteCart();
+  const { addItem: addInquiryItem } = useWholesaleInquiry();
+
+  const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE';
+  const isWholesaleActive =
+    currentStoreMode === 'WHOLESALE' ||
+    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+
+  const rfqModel = settings?.rfqModel || 'RFQ';
+  const isInstantWholesale = rfqModel === 'INSTANT';
+  const moq = product?.minOrderQty || (product as any)?.moq || settings?.wholesaleDefaultMoq || 1;
+  const effectiveWholesalePrice = product?.wholesalePrice || product?.price || 0;
+  const displayPrice = isWholesaleActive ? effectiveWholesalePrice : (product?.price || 0);
+
+  const [quantity, setQuantity] = useState(isWholesaleActive ? moq : 1);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (product) {
+      setQuantity(isWholesaleActive ? moq : 1);
+    }
+  }, [product?.id, isWholesaleActive, moq]);
 
   if (!product) return null;
 
   const handleAdd = () => {
+    if (isWholesaleActive && !isInstantWholesale) {
+      addToQuote({
+        productId: product.id,
+        productName: product.name,
+        productSku: product.sku || product.slug || product.id,
+        productImage: product.image,
+        quantity: quantity,
+        minOrderQty: moq,
+        targetPrice: product.wholesalePrice || null,
+      });
+      addInquiryItem({
+        productId: product.id,
+        slug: product.slug || product.id,
+        name: product.name,
+        image: product.image,
+        wholesalePrice: effectiveWholesalePrice,
+        retailPrice: product.price,
+        quantity: quantity,
+        minOrderQty: moq,
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+      return;
+    }
+
+    if (isWholesaleActive && isInstantWholesale) {
+      onAddToCart({ ...product, price: effectiveWholesalePrice }, quantity);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+      return;
+    }
+
     onAddToCart(product, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -140,11 +201,21 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <div className="p-3 bg-[#EFF6FF]/60 rounded-xl border border-blue-100 mb-4">
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black text-slate-900">
-                    {formatPrice(product.price)}
+                    {formatPrice(displayPrice)}
                   </span>
-                  {product.oldPrice && (
+                  {isWholesaleActive && (
+                    <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                      Wholesale (MOQ: {moq})
+                    </span>
+                  )}
+                  {!isWholesaleActive && product.oldPrice && (
                     <span className="text-sm text-slate-400 line-through font-medium">
                       {formatPrice(product.oldPrice)}
+                    </span>
+                  )}
+                  {isWholesaleActive && product.wholesalePrice && product.wholesalePrice < product.price && (
+                    <span className="text-sm text-slate-400 line-through font-medium">
+                      {formatPrice(product.price)}
                     </span>
                   )}
                 </div>
@@ -196,7 +267,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             <div className="flex items-center gap-3 pt-3 border-t border-slate-200">
               <div className="flex items-center bg-slate-100 border border-slate-300 rounded-lg p-1">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(Math.max(isWholesaleActive ? moq : 1, quantity - 1))}
                   className="w-8 h-8 rounded bg-white hover:bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-sm cursor-pointer shadow-xs"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -212,22 +283,58 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 </button>
               </div>
 
-              <button
-                onClick={handleAdd}
-                className="flex-1 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-black py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95"
-              >
-                {added ? (
-                  <>
-                    <Check className="w-4 h-4 stroke-[3]" />
-                    <span>{tModals('addedToCart')}</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
-                    <span>{tPdp('addToCart')} ({formatPrice(product.price * quantity)})</span>
-                  </>
-                )}
-              </button>
+              {isWholesaleActive && !isInstantWholesale ? (
+                <button
+                  onClick={handleAdd}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95"
+                >
+                  {added ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Added to Quote</span>
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4 stroke-[2.5]" />
+                      <span>Request Quote ({quantity} units)</span>
+                    </>
+                  )}
+                </button>
+              ) : isWholesaleActive && isInstantWholesale ? (
+                <button
+                  onClick={handleAdd}
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95"
+                >
+                  {added ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>{tModals('addedToCart')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
+                      <span>Add to Cart ({formatPrice(displayPrice * quantity)})</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleAdd}
+                  className="flex-1 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-black py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95"
+                >
+                  {added ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>{tModals('addedToCart')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
+                      <span>{tPdp('addToCart')} ({formatPrice(product.price * quantity)})</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             {onViewFullPDP && (

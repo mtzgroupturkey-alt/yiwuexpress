@@ -18,14 +18,21 @@ import {
   Sparkles,
   ShoppingBag,
   Folder,
-  Layers
+  Layers,
+  FileText
 } from 'lucide-react';
 import { Product, Category } from '../types';
+import { UnifiedProductCard } from './UnifiedProductCard';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { mapDbCategoryToDesign3 } from '@/lib/adapters/design3ProductAdapter';
+import { useSettings } from '@/components/SettingsProvider';
+import { useStoreMode } from '@/contexts/StoreModeContext';
+import { useSessionMode } from '@/contexts/SessionModeContext';
+import { useQuoteCart } from '@/components/QuoteCartContext';
+import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 
 interface ShopProductsPageProps {
   products: Product[];
@@ -59,6 +66,20 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const locale = useLocale();
   const { tShop, tPdp, tBadge } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
+
+  const { settings, storeMode: systemStoreMode } = useSettings();
+  const { storeMode: ctxStoreMode } = useStoreMode();
+  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { items: quoteItems, addToQuote, updateQuantity: updateQuoteQuantity, removeFromQuote } = useQuoteCart();
+  const { addItem: addInquiryItem } = useWholesaleInquiry();
+
+  const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE';
+  const isWholesaleActive =
+    currentStoreMode === 'WHOLESALE' ||
+    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+
+  const rfqModel = settings?.rfqModel || 'RFQ';
+  const isInstantWholesale = rfqModel === 'INSTANT';
 
   // If categories prop is not passed or empty, fetch via React Query
   const { data: categoriesQueryData } = useQuery({
@@ -1164,153 +1185,18 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
             ) : viewMode === 'grid' ? (
               /* GRID VIEW */
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                {paginatedProducts.map((product) => {
-                  const qty = cartQuantities[product.id] || 0;
-                  const isFav = favoriteIds.has(product.id);
-
-                  return (
-                    <div
-                      key={product.id}
-                      className="bg-white border border-slate-200 hover:border-blue-300 rounded-2xl p-3 sm:p-4 flex flex-col justify-between hover:shadow-lg transition-all duration-200 group relative"
-                    >
-                      {/* Top Badges & Favorite Button */}
-                      <div className="flex items-start justify-between gap-1 mb-2">
-                        <div className="flex flex-col gap-1">
-                          {product.discountBadge && (
-                            <span className="bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-xs w-fit">
-                              {product.discountBadge}
-                            </span>
-                          )}
-                          {product.tagBadge && (
-                            <span className="bg-[#00407a] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded tracking-wide w-fit">
-                              {tBadge(product.tagBadge.text, product.tagBadge.type)}
-                            </span>
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() => onToggleFavorite(product)}
-                          className={`p-1.5 rounded-full transition-colors cursor-pointer shrink-0 ${
-                            isFav
-                              ? 'text-red-500 bg-red-50'
-                              : 'text-slate-300 hover:text-red-400 hover:bg-slate-100'
-                          }`}
-                        >
-                          <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500' : ''}`} />
-                        </button>
-                      </div>
-
-                      {/* Image */}
-                      <div
-                        onClick={() => onSelectProduct(product)}
-                        className="aspect-square w-full rounded-xl bg-slate-50 flex items-center justify-center p-3 mb-3 cursor-pointer overflow-hidden group-hover:scale-[1.02] transition-transform duration-200"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-contain mix-blend-multiply"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Meta & Title */}
-                      <div className="flex-1 flex flex-col">
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-semibold mb-1">
-                          <span className="uppercase tracking-wider text-slate-600 font-bold">{product.brand}</span>
-                          <span>{product.originOrType}</span>
-                        </div>
-
-                        <h3
-                          onClick={() => onSelectProduct(product)}
-                          className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 hover:text-[#00407a] cursor-pointer mb-2 leading-snug"
-                        >
-                          {product.name}
-                        </h3>
-
-                        {/* Rating & reviews */}
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <div className="flex items-center gap-1 bg-amber-50 text-amber-900 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            <span>{product.rating.toFixed(1)}</span>
-                          </div>
-                          <span className="text-[10px] text-slate-400">
-                            ({product.reviewsCount})
-                          </span>
-                          {product.isExpressDelivery && (
-                            <span className="ml-auto text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
-                              <Zap className="w-2.5 h-2.5 fill-emerald-600" /> {tBadge('EXPRESS')}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Pricing */}
-                        <div className="mt-auto pt-2 border-t border-slate-100">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-base sm:text-lg font-black text-slate-900">
-                              {formatPrice(product.price)}
-                            </span>
-                            {product.oldPrice && (
-                              <span className="text-xs text-slate-400 line-through font-semibold">
-                                {formatPrice(product.oldPrice)}
-                              </span>
-                            )}
-                          </div>
-                          {product.unitPrice && (
-                            <div className="text-[10px] text-slate-400 font-medium truncate">
-                              {product.unitPrice}
-                            </div>
-                          )}
-                          {product.installmentPrice && (
-                            <div className="text-[10px] text-[#00407a] font-bold truncate mt-0.5">
-                              {product.installmentPrice}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Add to Cart / Stepper */}
-                      <div className="mt-3">
-                        {qty === 0 ? (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAddToCart(product, Math.max(1, product.minOrderQty || 1));
-                            }}
-                            className="w-full bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold py-2 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-[0.98]"
-                          >
-                            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                            <span>{tShop('addToCart')}</span>
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const moq = Math.max(1, product.minOrderQty || 1);
-                                onUpdateQuantity(product.id, qty <= moq ? 0 : qty - 1);
-                              }}
-                              className="w-7 h-7 bg-white hover:bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer transition-colors"
-                            >
-                              <Minus className="w-3.5 h-3.5" />
-                            </button>
-                            <span className="text-xs font-black text-[#00407a] px-2">
-                              {tShop('inCart', { count: qty })}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onUpdateQuantity(product.id, qty + 1);
-                              }}
-                              className="w-7 h-7 bg-[#00407a] hover:bg-[#003366] text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer transition-colors"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                {paginatedProducts.map((product) => (
+                  <UnifiedProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={onAddToCart}
+                    onUpdateQuantity={onUpdateQuantity}
+                    cartQuantities={cartQuantities}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={onToggleFavorite}
+                    onSelectProduct={onSelectProduct}
+                  />
+                ))}
               </div>
             ) : (
               /* LIST VIEW */
@@ -1318,6 +1204,11 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                 {paginatedProducts.map((product) => {
                   const qty = cartQuantities[product.id] || 0;
                   const isFav = favoriteIds.has(product.id);
+                  const moq = product.minOrderQty || (product as any).moq || settings?.wholesaleDefaultMoq || 1;
+                  const effectiveWholesalePrice = product.wholesalePrice || product.price;
+                  const displayPrice = isWholesaleActive ? effectiveWholesalePrice : product.price;
+                  const quoteItem = quoteItems.find((i) => i.productId === product.id);
+                  const qtyInQuote = quoteItem?.quantity || 0;
 
                   return (
                     <div
@@ -1392,11 +1283,21 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                       <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3 shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                         <div className="text-left sm:text-right">
                           <div className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
-                            {formatPrice(product.price)}
+                            {formatPrice(displayPrice)}
                           </div>
-                          {product.oldPrice && (
+                          {isWholesaleActive && (
+                            <div className="text-[11px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                              Wholesale (MOQ: {moq})
+                            </div>
+                          )}
+                          {!isWholesaleActive && product.oldPrice && (
                             <div className="text-xs text-slate-400 line-through font-semibold">
                               {formatPrice(product.oldPrice)}
+                            </div>
+                          )}
+                          {isWholesaleActive && product.wholesalePrice && product.wholesalePrice < product.price && (
+                            <div className="text-xs text-slate-400 line-through font-semibold">
+                              {formatPrice(product.price)}
                             </div>
                           )}
                           {product.unitPrice && (
@@ -1421,41 +1322,146 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                             <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500' : ''}`} />
                           </button>
 
-                          {qty === 0 ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onAddToCart(product, Math.max(1, product.minOrderQty || 1));
-                              }}
-                              className="bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs"
-                            >
-                              {tShop('addToCart')}
-                            </button>
+                          {isWholesaleActive && !isInstantWholesale ? (
+                            qtyInQuote === 0 ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addToQuote({
+                                    productId: product.id,
+                                    productName: product.name,
+                                    productSku: product.sku || product.slug || product.id,
+                                    productImage: product.image,
+                                    quantity: moq,
+                                    minOrderQty: moq,
+                                    targetPrice: product.wholesalePrice || null,
+                                  });
+                                  addInquiryItem({
+                                    productId: product.id,
+                                    slug: product.slug || product.id,
+                                    name: product.name,
+                                    image: product.image,
+                                    wholesalePrice: effectiveWholesalePrice,
+                                    retailPrice: product.price,
+                                    quantity: moq,
+                                    minOrderQty: moq,
+                                  });
+                                }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs flex items-center gap-1.5"
+                              >
+                                <FileText className="w-3.5 h-3.5" />
+                                <span>Request Quote (MOQ: {moq})</span>
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl p-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (qtyInQuote <= moq) {
+                                      removeFromQuote(product.id);
+                                    } else {
+                                      updateQuoteQuantity(product.id, qtyInQuote - 1);
+                                    }
+                                  }}
+                                  className="w-7 h-7 bg-white text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="text-xs font-black text-[#00407a] px-1">
+                                  {qtyInQuote} in Quote
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateQuoteQuantity(product.id, qtyInQuote + 1);
+                                  }}
+                                  className="w-7 h-7 bg-[#00407a] text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )
+                          ) : isWholesaleActive && isInstantWholesale ? (
+                            qty === 0 ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onAddToCart(
+                                    {
+                                      ...product,
+                                      price: effectiveWholesalePrice,
+                                    },
+                                    moq
+                                  );
+                                }}
+                                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs"
+                              >
+                                Add to Cart (MOQ: {moq})
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 rounded-xl p-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateQuantity(product.id, Math.max(0, qty - 1));
+                                  }}
+                                  className="w-7 h-7 bg-white text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="text-xs font-black text-slate-900 px-1">
+                                  {qty}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateQuantity(product.id, qty + 1);
+                                  }}
+                                  className="w-7 h-7 bg-slate-800 text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )
                           ) : (
-                            <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl p-1">
+                            qty === 0 ? (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const moq = Math.max(1, product.minOrderQty || 1);
-                                  onUpdateQuantity(product.id, qty <= moq ? 0 : qty - 1);
+                                  onAddToCart(product, Math.max(1, product.minOrderQty || 1));
                                 }}
-                                className="w-7 h-7 bg-white text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                className="bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs"
                               >
-                                <Minus className="w-3 h-3" />
+                                {tShop('addToCart')}
                               </button>
-                              <span className="text-xs font-black text-[#00407a] px-1">
-                                {qty}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onUpdateQuantity(product.id, qty + 1);
-                                }}
-                                className="w-7 h-7 bg-[#00407a] text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
-                              >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                            </div>
+                            ) : (
+                              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl p-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const retailMoq = Math.max(1, product.minOrderQty || 1);
+                                    onUpdateQuantity(product.id, qty <= retailMoq ? 0 : qty - 1);
+                                  }}
+                                  className="w-7 h-7 bg-white text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="text-xs font-black text-[#00407a] px-1">
+                                  {qty}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onUpdateQuantity(product.id, qty + 1);
+                                  }}
+                                  className="w-7 h-7 bg-[#00407a] text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )
                           )}
                         </div>
                       </div>
