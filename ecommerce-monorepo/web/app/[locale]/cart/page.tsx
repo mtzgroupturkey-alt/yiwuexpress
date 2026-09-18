@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -6,11 +6,14 @@ import { SharedLayout } from '@/components/layout/SharedLayout'
 import { CartItem } from '@/components/cart/CartItem'
 import { CartSummary } from '@/components/cart/CartSummary'
 import { Button } from '@/components/ui/button'
-import { ShoppingBag, ArrowLeft } from 'lucide-react'
+import { ShoppingBag, ArrowLeft, FileText } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useTranslations } from 'next-intl'
+import { useSettings } from '@/components/SettingsProvider'
+import { useStoreMode } from '@/contexts/StoreModeContext'
+import { useSessionMode } from '@/contexts/SessionModeContext'
 
 interface Cart {
   id: string
@@ -37,6 +40,15 @@ export default function CartPage() {
   const navigate = useLocaleNav()
   const { refreshCartCount } = useCart()
   const t = useTranslations('Cart')
+  const { settings, storeMode: systemStoreMode } = useSettings()
+  const { storeMode: ctxStoreMode } = useStoreMode()
+  const { sessionMode, isWholesaleSession, enableRetailSession } = useSessionMode()
+
+  const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE'
+  const isWholesaleActive =
+    currentStoreMode === 'WHOLESALE' ||
+    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
+
   const [cart, setCart] = useState<Cart | null>(null)
   const [summary, setSummary] = useState({
     itemCount: 0,
@@ -49,8 +61,12 @@ export default function CartPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    if (isWholesaleActive) {
+      navigate('/quote-cart')
+      return
+    }
     fetchCart()
-  }, [])
+  }, [isWholesaleActive])
 
   const fetchCart = async () => {
     setLoading(true)
@@ -149,27 +165,71 @@ export default function CartPage() {
      }
    }
 
-   const handleCheckout = () => {
-     if (!cart || cart.items.length === 0) {
-       alert(t('emptyCartAlert'))
-       return
-     }
-     navigate('/checkout')
-   }
+    const handleCheckout = () => {
+      if (isWholesaleActive) {
+        alert('Wholesale orders must be submitted via the B2B Quote Cart.')
+        navigate('/quote-cart')
+        return
+      }
+      if (!cart || cart.items.length === 0) {
+        alert(t('emptyCartAlert'))
+        return
+      }
+      navigate('/checkout')
+    }
 
-   if (loading) {
-     return (
-       <SharedLayout 
-         pageTitle={t('title')}
-         pageDescription={t('pageDescCart')}
-         breadcrumbs={[{ name: t('title'), href: '/cart' }]}
-       >
-         <div className="min-h-[400px] flex items-center justify-center">
-           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-         </div>
-       </SharedLayout>
-     )
-   }
+    if (isWholesaleActive) {
+      return (
+        <SharedLayout
+          pageTitle="Wholesale Mode Active"
+          pageDescription="Retail cart is not available in wholesale mode"
+          breadcrumbs={[{ name: 'Quote Cart', href: '/quote-cart' }]}
+        >
+          <div className="container mx-auto px-4 py-16">
+            <div className="max-w-lg mx-auto text-center bg-white rounded-2xl p-8 border border-amber-200 shadow-sm space-y-4">
+              <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                <FileText className="w-7 h-7" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Wholesale Mode Active</h2>
+              <p className="text-sm text-gray-600">
+                You are in Wholesale mode. Retail cart and consumer checkout are not available.
+              </p>
+              <div className="pt-3 flex flex-col sm:flex-row gap-3 justify-center">
+                <Button onClick={() => navigate('/quote-cart')} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                  View Quote Cart
+                </Button>
+                {currentStoreMode === 'BOTH' ? (
+                  <Button variant="outline" onClick={() => {
+                    enableRetailSession();
+                    window.location.reload();
+                  }}>
+                    Switch to Retail
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={() => navigate('/store')}>
+                    Browse Wholesale Catalog
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </SharedLayout>
+      )
+    }
+
+    if (loading) {
+      return (
+        <SharedLayout 
+          pageTitle={t('title')}
+          pageDescription={t('pageDescCart')}
+          breadcrumbs={[{ name: t('title'), href: '/cart' }]}
+        >
+          <div className="min-h-[400px] flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </SharedLayout>
+      )
+    }
 
     const isEmpty = !cart || cart.items.length === 0
 
