@@ -99,6 +99,7 @@ export function Design3LayoutHeader() {
     const handleSync = () => {
       syncLocalCart();
       refetchCart();
+      refreshCartCount();
     };
     window.addEventListener('cart-updated', handleSync);
     window.addEventListener('storage', handleSync);
@@ -106,7 +107,7 @@ export function Design3LayoutHeader() {
       window.removeEventListener('cart-updated', handleSync);
       window.removeEventListener('storage', handleSync);
     };
-  }, [syncLocalCart, refetchCart]);
+  }, [syncLocalCart, refetchCart, refreshCartCount]);
 
   const updateLocalCart = (updater: (prev: CartItem[]) => CartItem[]) => {
     setLocalCartItems((prev) => {
@@ -128,7 +129,18 @@ export function Design3LayoutHeader() {
     }));
   }, [cartResponse]);
 
-  const activeCartItems = dbCartItems.length > 0 ? dbCartItems : localCartItems;
+  const activeCartItems = useMemo(() => {
+    if (dbCartItems.length === 0) return localCartItems;
+    if (localCartItems.length === 0) return dbCartItems;
+    const map = new Map<string, CartItem>();
+    dbCartItems.forEach((item) => map.set(item.product.id, item));
+    localCartItems.forEach((item) => {
+      if (!map.has(item.product.id)) {
+        map.set(item.product.id, item);
+      }
+    });
+    return Array.from(map.values());
+  }, [dbCartItems, localCartItems]);
 
   // Modals state
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -139,89 +151,111 @@ export function Design3LayoutHeader() {
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
   // Cart calculations
-  const displayCartCount = realCartCount > 0 ? realCartCount : activeCartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItemQuantity = useMemo(() => {
+    return activeCartItems.reduce((sum, item) => sum + item.quantity, 0);
+  }, [activeCartItems]);
+
+  const displayCartCount = totalItemQuantity > 0 ? totalItemQuantity : realCartCount;
+
   const cartTotal = useMemo(() => {
-    if (cartResponse?.data?.summary?.subtotal !== undefined && dbCartItems.length > 0) {
+    if (cartResponse?.data?.summary?.subtotal !== undefined && dbCartItems.length > 0 && localCartItems.length === 0) {
       return Number(cartResponse.data.summary.subtotal);
     }
-    return activeCartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  }, [cartResponse, dbCartItems, activeCartItems]);
+    return activeCartItems.reduce((sum, item) => sum + (Number(item.product.price) || 0) * item.quantity, 0);
+  }, [cartResponse, dbCartItems, localCartItems, activeCartItems]);
 
   const handleUpdateQuantity = async (productId: string, quantity: number) => {
-    if (cartResponse?.data?.cart && dbCartItems.length > 0) {
+    let updatedOnBackend = false;
+    if (cartResponse?.data?.cart && dbCartItems.some((i) => i.product.id === productId)) {
       try {
         if (quantity <= 0) {
-          await fetch(`/api/cart?productId=${encodeURIComponent(productId)}`, {
+          const res = await fetch(`/api/cart?productId=${encodeURIComponent(productId)}`, {
             method: 'DELETE',
             credentials: 'include',
           });
+          if (res.ok) updatedOnBackend = true;
         } else {
-          await fetch('/api/cart', {
+          const res = await fetch('/api/cart', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({ productId, quantity }),
           });
+          if (res.ok) updatedOnBackend = true;
         }
-        await refetchCart();
-        await refreshCartCount();
+        if (updatedOnBackend) {
+          await refetchCart();
+        }
       } catch (err) {
         console.error('Failed to update cart', err);
       }
-    } else {
-      updateLocalCart((prev) => {
-        if (quantity <= 0) {
-          return prev.filter((item) => item.product.id !== productId);
-        }
-        return prev.map((item) =>
-          item.product.id === productId ? { ...item, quantity } : item
-        );
-      });
     }
+
+    updateLocalCart((prev) => {
+      if (quantity <= 0) {
+        return prev.filter((item) => item.product.id !== productId);
+      }
+      return prev.map((item) =>
+        item.product.id === productId ? { ...item, quantity } : item
+      );
+    });
+
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
   };
 
   const handleRemoveFromCart = async (productId: string) => {
-    if (cartResponse?.data?.cart && dbCartItems.length > 0) {
+    if (cartResponse?.data?.cart && dbCartItems.some((i) => i.product.id === productId)) {
       try {
         await fetch(`/api/cart?productId=${encodeURIComponent(productId)}`, {
           method: 'DELETE',
           credentials: 'include',
         });
         await refetchCart();
-        await refreshCartCount();
       } catch (err) {
         console.error('Failed to remove from cart', err);
       }
-    } else {
-      updateLocalCart((prev) => prev.filter((item) => item.product.id !== productId));
     }
+    updateLocalCart((prev) => prev.filter((item) => item.product.id !== productId));
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
   };
 
   const handleAddToCart = async (product: Product) => {
+    const moq = Math.max(1, product.minOrderQty || 1);
+    let savedToBackend = false;
+
     if (cartResponse?.data?.cart) {
       try {
-        await fetch('/api/cart', {
+        const res = await fetch('/api/cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ productId: product.id, quantity: 1 }),
+          body: JSON.stringify({ productId: product.id, quantity: moq }),
         });
-        await refetchCart();
-        await refreshCartCount();
+        if (res.ok) {
+          savedToBackend = true;
+          await refetchCart();
+        }
       } catch (err) {
         console.error('Failed to add to cart', err);
       }
-    } else {
+    }
+
+    if (!savedToBackend) {
       updateLocalCart((prev) => {
         const existing = prev.find((item) => item.product.id === product.id);
         if (existing) {
           return prev.map((item) =>
-            item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            item.product.id === product.id ? { ...item, quantity: item.quantity + moq } : item
           );
         }
-        return [...prev, { product, quantity: 1 }];
+        return [...prev, { product, quantity: moq }];
       });
     }
+
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
     setIsFavoritesOpen(false);
     setIsCartOpen(true);
   };

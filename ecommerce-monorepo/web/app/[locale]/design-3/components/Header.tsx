@@ -715,7 +715,10 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </div>
           <div className="text-slate-700 font-medium shrink-0">
-            {tHeader('freeDeliveryStarts')} <strong className="text-slate-900 font-bold">{settings?.freeShippingThreshold ? Number(settings.freeShippingThreshold).toFixed(2) : '35.00'} {settings?.currency || 'USD'}</strong>
+            {tHeader('freeDeliveryStarts')}{' '}
+            <strong className="text-slate-900 font-bold" suppressHydrationWarning>
+              {formatPrice(typeof settings?.freeShippingThreshold === 'number' ? settings.freeShippingThreshold : (parseFloat(String(settings?.freeShippingThreshold)) || 35))}
+            </strong>
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ import { CartItem } from '../types';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   deliveryAddress,
   onOrderSuccess,
 }) => {
+  const { settings, storeMode, isWholesaleOnly } = useSettings();
   const { tModals, tCartDrawer } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
   const [step, setStep] = useState<'details' | 'success'>('details');
@@ -47,8 +49,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!isOpen) return null;
 
+  const isWholesale = storeMode === 'WHOLESALE' || isWholesaleOnly;
+  const isRetail = storeMode === 'RETAIL' || (!isWholesaleOnly && storeMode !== 'WHOLESALE');
+  const freeShippingThreshold = typeof settings?.freeShippingThreshold === 'number'
+    ? settings.freeShippingThreshold
+    : (parseFloat(String(settings?.freeShippingThreshold)) || 35);
+
   const subtotal = items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-  const deliveryFee = subtotal >= 35.00 ? 0 : 4.50;
+  const isFreeShipping = isRetail && subtotal >= freeShippingThreshold;
+  const deliveryFee = 0; // If not free, counted later
   const bonusDiscount = useBonusPoints ? Math.min(15.00, subtotal) : 0;
   const grandTotal = Math.max(0, subtotal + deliveryFee - bonusDiscount);
 
@@ -156,7 +165,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <span>{tModals('expressCourier')}</span>
                   </div>
                   <span className="text-[10px] font-bold text-emerald-600 block mt-1">
-                    {deliveryFee === 0 ? tCartDrawer('free') : formatPrice(4.50)}
+                    {isFreeShipping ? tCartDrawer('free') : tCartDrawer('countedLater')}
                   </span>
                 </button>
 

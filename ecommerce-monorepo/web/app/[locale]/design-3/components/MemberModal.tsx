@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Tag, Sparkles, ShieldCheck, Gift, Truck, Check, User as UserIcon, LogOut, LayoutDashboard, Package, MapPin } from 'lucide-react';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useSettings } from '@/components/SettingsProvider';
+import { useCurrency } from '@/hooks/useCurrency';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
 }) => {
   const companyName = useCompanyName();
   const { settings } = useSettings();
+  const { formatPrice } = useCurrency();
   const { user, isAuthenticated, logout } = useAuth();
   const locale = useLocale();
   const router = useRouter();
@@ -181,7 +183,12 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               </div>
               <div className="text-xs">
                 <strong className="text-slate-900 font-bold block">Express Priority Dispatch</strong>
-                <span className="text-slate-500">Direct courier delivery with guaranteed express arrival slots on orders above {settings?.freeShippingThreshold ? Number(settings.freeShippingThreshold).toFixed(2) : '35.00'} {currency}.</span>
+                <span className="text-slate-500">
+                  Direct courier delivery with guaranteed express arrival slots on orders above{' '}
+                  <strong className="font-semibold text-slate-700" suppressHydrationWarning>
+                    {formatPrice(typeof settings?.freeShippingThreshold === 'number' ? settings.freeShippingThreshold : (parseFloat(String(settings?.freeShippingThreshold)) || 35))}
+                  </strong>.
+                </span>
               </div>
             </div>
 

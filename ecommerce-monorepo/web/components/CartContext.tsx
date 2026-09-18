@@ -61,10 +61,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data.cart) {
-          // Badge reflects distinct product lines in the cart
-          setCartCount(data.data.summary.itemCount || 0)
+          const totalQty = data.data.summary.totalQuantity ?? data.data.summary.itemCount ?? 0
+          const guestQty = getGuestCartCount()
+          setCartCount(totalQty + guestQty)
         } else {
-          setCartCount(0)
+          setCartCount(getGuestCartCount())
         }
       } else if (response.status === 401) {
         // Not logged in

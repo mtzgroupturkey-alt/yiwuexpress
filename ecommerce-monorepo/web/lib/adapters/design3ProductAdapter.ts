@@ -56,6 +56,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     description: dbItem.description || '',
     country: dbItem.countryOfOrigin || 'China',
     sku: dbItem.sku || undefined,
+    minOrderQty: dbItem.minOrderQty ? Number(dbItem.minOrderQty) : undefined,
   };
 }
 

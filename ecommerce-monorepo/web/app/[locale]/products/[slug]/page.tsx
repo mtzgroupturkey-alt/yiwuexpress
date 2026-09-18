@@ -64,19 +64,46 @@ export default function ProductPage() {
 
   // 4. Cart operations
   const handleAddToCart = async (product: Product, quantity = 1) => {
+    const moq = Math.max(1, product.minOrderQty || 1);
+    const effectiveQty = Math.max(quantity, moq);
+    let savedToBackend = false;
+
     try {
-      await fetch('/api/cart', {
+      const res = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           productId: product.id,
-          quantity,
+          quantity: effectiveQty,
         }),
       });
-      await refreshCartCount();
+      if (res.ok) {
+        savedToBackend = true;
+      }
     } catch {
       // Ignored for guest/offline
     }
+
+    if (!savedToBackend) {
+      try {
+        const saved = localStorage.getItem('yiwu_guest_cart');
+        const items: any[] = saved ? JSON.parse(saved) : [];
+        const existing = items.find((i: any) => i.product?.id === product.id);
+        let next: any[];
+        if (existing) {
+          next = items.map((i: any) =>
+            i.product?.id === product.id ? { ...i, quantity: i.quantity + effectiveQty } : i
+          );
+        } else {
+          next = [...items, { product, quantity: effectiveQty }];
+        }
+        localStorage.setItem('yiwu_guest_cart', JSON.stringify(next));
+      } catch {}
+    }
+
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
   };
 
   return (

@@ -273,6 +273,7 @@
       "directFactoryPricing": "Прямые цены от производителя",
       "verifiedManufacturers": "Проверенные производители",
       "freeDeliveryStarts": "Бесплатная доставка от",
+      "wholesaleLogisticsNotice": "Оптовая логистика: расчет стоимости доставки при отправке",
       "everywhere": "Везде",
       "deliverTo": "Доставка в",
       "expressDeliveryDaily": "Экспресс-доставка"
@@ -1542,6 +1543,10 @@
       "discount": "Скидка",
       "deliveryFee": "Доставка",
       "free": "Бесплатно",
+      "countedLater": "Рассчитаем позже",
+      "willCountLater": "Стоимость доставки будет рассчитана позже",
+      "wholesaleFreightNotice": "Оптовая логистика и фрахт",
+      "wholesaleFreightDesc": "Стоимость доставки будет рассчитана и подтверждена при отправке",
       "total": "Итого к оплате",
       "checkout": "Оформить заказ",
       "emptyTitle": "Ваша корзина пуста",

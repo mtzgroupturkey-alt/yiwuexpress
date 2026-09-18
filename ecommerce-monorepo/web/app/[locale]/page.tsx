@@ -318,34 +318,46 @@ export default function Home() {
 
   // Cart operations
   const handleAddToCart = async (product: Product, quantity = 1) => {
+    const moq = Math.max(1, product.minOrderQty || 1);
+    const effectiveQty = Math.max(quantity, moq);
+    let savedToBackend = false;
+
     if (cartResponse?.data?.cart) {
       try {
-        await fetch('/api/cart', {
+        const res = await fetch('/api/cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ productId: product.id, quantity }),
+          body: JSON.stringify({ productId: product.id, quantity: effectiveQty }),
         });
-        await refetchCart();
-        queryClient.invalidateQueries({ queryKey: ['cart'] });
-        await refreshCartCount();
+        if (res.ok) {
+          savedToBackend = true;
+          await refetchCart();
+          queryClient.invalidateQueries({ queryKey: ['cart'] });
+        } else {
+          console.warn('[Home] Backend cart rejected item, saving locally');
+        }
       } catch (err) {
         console.error('Failed to add to cart', err);
       }
-    } else {
+    }
+
+    if (!savedToBackend) {
       updateLocalCart((prev) => {
         const existing = prev.find((item) => item.product.id === product.id);
         if (existing) {
           return prev.map((item) =>
             item.product.id === product.id
-              ? { ...item, quantity: item.quantity + quantity }
+              ? { ...item, quantity: item.quantity + effectiveQty }
               : item
           );
         }
-        return [...prev, { product, quantity }];
+        return [...prev, { product, quantity: effectiveQty }];
       });
-      await refreshCartCount();
     }
+
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
     showToast(`Added "${product.name.slice(0, 30)}..." to cart`);
   };
 

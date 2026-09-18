@@ -273,6 +273,7 @@
       "directFactoryPricing": "Direct Factory Pricing",
       "verifiedManufacturers": "Verified Manufacturers",
       "freeDeliveryStarts": "Free delivery starts at",
+      "wholesaleLogisticsNotice": "Wholesale Freight: delivery fees calculated upon dispatch",
       "everywhere": "Everywhere",
       "deliverTo": "Deliver to",
       "expressDeliveryDaily": "Express Delivery"
@@ -1542,6 +1543,10 @@
       "discount": "Discount",
       "deliveryFee": "Delivery fee",
       "free": "Free",
+      "countedLater": "Counted later",
+      "willCountLater": "We will count delivery fees later",
+      "wholesaleFreightNotice": "Wholesale Freight & Logistics",
+      "wholesaleFreightDesc": "Delivery fees will be calculated and confirmed upon dispatch",
       "total": "Total",
       "checkout": "Proceed to Checkout",
       "emptyTitle": "Your cart is empty",

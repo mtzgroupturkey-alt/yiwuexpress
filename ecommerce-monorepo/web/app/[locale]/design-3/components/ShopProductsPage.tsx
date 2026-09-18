@@ -1274,7 +1274,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              onAddToCart(product, 1);
+                              onAddToCart(product, Math.max(1, product.minOrderQty || 1));
                             }}
                             className="w-full bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold py-2 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-[0.98]"
                           >
@@ -1286,7 +1286,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onUpdateQuantity(product.id, qty - 1);
+                                const moq = Math.max(1, product.minOrderQty || 1);
+                                onUpdateQuantity(product.id, qty <= moq ? 0 : qty - 1);
                               }}
                               className="w-7 h-7 bg-white hover:bg-slate-100 text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer transition-colors"
                             >
@@ -1424,7 +1425,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onAddToCart(product, 1);
+                                onAddToCart(product, Math.max(1, product.minOrderQty || 1));
                               }}
                               className="bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs"
                             >
@@ -1435,7 +1436,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onUpdateQuantity(product.id, qty - 1);
+                                  const moq = Math.max(1, product.minOrderQty || 1);
+                                  onUpdateQuantity(product.id, qty <= moq ? 0 : qty - 1);
                                 }}
                                 className="w-7 h-7 bg-white text-slate-900 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
                               >

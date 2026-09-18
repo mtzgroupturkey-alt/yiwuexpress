@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Toaster } from 'react-hot-toast'
+import { MotionConfig } from 'framer-motion'
 import { CartProvider } from './CartContext'
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -17,10 +18,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <Toaster position="top-right" />
-        {children}
-      </CartProvider>
+      <MotionConfig reducedMotion="user">
+        <CartProvider>
+          <Toaster position="top-right" />
+          {children}
+        </CartProvider>
+      </MotionConfig>
     </QueryClientProvider>
   )
 }

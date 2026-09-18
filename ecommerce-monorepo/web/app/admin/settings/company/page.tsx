@@ -643,7 +643,9 @@ export default function CompanyInfoPage() {
                 onChange={(e) => handleInputChange('freeShippingThreshold', parseFloat(e.target.value) || 0)}
                 placeholder="35.00"
               />
-              <p className="text-xs text-gray-400 mt-1">Displayed in header ticker banner (e.g. Free delivery starts at 35.00 {settings.currency}).</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Displayed in header ticker banner (e.g. Free delivery starts at {settings.freeShippingThreshold ? Number(settings.freeShippingThreshold).toFixed(2) : '35.00'} {settings.currency}). Automatically converted to customer&apos;s active currency via live exchange rates.
+              </p>
             </div>
 
             <div className="md:col-span-2">

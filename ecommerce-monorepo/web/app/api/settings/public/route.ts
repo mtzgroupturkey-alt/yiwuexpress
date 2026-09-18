@@ -81,6 +81,7 @@ export async function GET(request: NextRequest) {
 
     const { translations, ...publicSettings } = effectiveSettings
 
+
     return NextResponse.json({
       settings: {
         ...publicSettings,

@@ -32,6 +32,8 @@ export const getServerSettings = cache(async (locale = 'en'): Promise<CompanySet
       language: raw.language || locale,
       storeMode: (raw.storeMode as any) || DEFAULT_SETTINGS.storeMode,
       storeHours: raw.storeHours || DEFAULT_SETTINGS.storeHours,
+      freeShippingThreshold: raw.freeShippingThreshold ?? DEFAULT_SETTINGS.freeShippingThreshold,
+      announcementTicker: raw.announcementTicker || undefined,
       facebookUrl: raw.facebookUrl || undefined,
       twitterUrl: raw.twitterUrl || undefined,
       linkedinUrl: raw.linkedinUrl || undefined,

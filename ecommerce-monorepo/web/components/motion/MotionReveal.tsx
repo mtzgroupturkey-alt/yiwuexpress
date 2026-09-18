@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 interface MotionRevealProps {
@@ -16,10 +16,20 @@ export const MotionReveal: React.FC<MotionRevealProps> = ({
   direction = 'up',
   className = '',
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // During SSR and initial client hydration, or when reduced motion is requested,
+  // render static DOM to prevent hydration mismatch and honor accessibility.
+  if (!isMounted || shouldReduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   const getOffset = () => {
-    if (shouldReduceMotion) return { x: 0, y: 0 };
     switch (direction) {
       case 'up': return { x: 0, y: 20 };
       case 'down': return { x: 0, y: -20 };
@@ -47,3 +57,4 @@ export const MotionReveal: React.FC<MotionRevealProps> = ({
     </motion.div>
   );
 };
+

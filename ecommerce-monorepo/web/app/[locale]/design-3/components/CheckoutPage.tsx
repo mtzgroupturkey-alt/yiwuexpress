@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { CartItem, Product } from '../types';
 import { useCompanyName } from '@/hooks/useCompanyName';
+import { useCurrency } from '@/hooks/useCurrency';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface CheckoutPageProps {
   items: CartItem[];
@@ -49,6 +51,8 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   initialDeliveryAddress = 'International Trade Hub, Port 1',
 }) => {
   const companyName = useCompanyName();
+  const { settings, storeMode, isWholesaleOnly } = useSettings();
+  const { formatPrice } = useCurrency();
   // Fulfillment state
   const [fulfillmentMethod, setFulfillmentMethod] = useState<'courier' | 'pickup'>('courier');
   const [address, setAddress] = useState(initialDeliveryAddress);
@@ -91,7 +95,17 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
   const catalogDiscount = Math.max(0, originalTotal - rawSubtotal);
   const goldMemberVoucher = rawSubtotal > 60 ? 10.00 : 0.00;
-  const deliveryFee = fulfillmentMethod === 'pickup' || rawSubtotal >= 120 ? 0 : 4.50;
+  const isWholesale = storeMode === 'WHOLESALE' || isWholesaleOnly;
+  const isRetail = storeMode === 'RETAIL' || (!isWholesaleOnly && storeMode !== 'WHOLESALE');
+
+  const freeDeliveryThreshold = typeof settings?.freeShippingThreshold === 'number'
+    ? settings.freeShippingThreshold
+    : (parseFloat(String(settings?.freeShippingThreshold)) || 35);
+
+  // Business rule: Free delivery threshold is strictly for retail mode, NOT wholesale mode.
+  const isFreeDeliveryUnlocked = isRetail && rawSubtotal >= freeDeliveryThreshold;
+  const isDeliveryFeeCountedLater = fulfillmentMethod !== 'pickup' && !isFreeDeliveryUnlocked;
+  const deliveryFee = 0; // Immediate payable fee is 0, counted later upon dispatch when below threshold or wholesale
   const bonusDeduction = spendBonusPoints ? 2.50 : 0.00;
 
   const finalTotal = Math.max(
@@ -100,9 +114,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
   );
   const totalSavings = (originalTotal - finalTotal);
 
-  const freeDeliveryThreshold = 120;
   const freeDeliveryDiff = Math.max(0, freeDeliveryThreshold - rawSubtotal);
-  const freeDeliveryPercent = Math.min(100, Math.round((rawSubtotal / freeDeliveryThreshold) * 100));
+  const freeDeliveryPercent = freeDeliveryThreshold > 0
+    ? Math.min(100, Math.round((rawSubtotal / freeDeliveryThreshold) * 100))
+    : 100;
 
   const totalUnits = items.reduce((acc, i) => acc + i.quantity, 0);
 
@@ -278,40 +293,70 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
             {/* LEFT COLUMN: Cart Items, Free Delivery Progress, Delivery Logistics, Payment (8 Cols) */}
             <div className="lg:col-span-8 flex flex-col gap-5">
               
-              {/* Free Delivery Tracker Progress Bar */}
-              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              {/* Shipping & Delivery Tracker */}
+              {isWholesale ? (
+                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#00407a] shrink-0">
                       <Truck className="w-5 h-5" />
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-900">
-                        {freeDeliveryDiff > 0 ? (
-                          <>
-                            Add <span className="text-[#00407a]">${freeDeliveryDiff.toFixed(2)}</span> more for{' '}
-                            <span className="text-emerald-700">FREE Express Delivery</span>
-                          </>
-                        ) : (
-                          <span className="text-emerald-700">You qualify for FREE Express Courier Delivery!</span>
-                        )}
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-bold text-slate-900">
+                          Wholesale Logistics & Freight
+                        </p>
+                        <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
+                          Counted later
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Wholesale commercial orders: delivery and cargo freight fees will be calculated and confirmed upon dispatch. We will count delivery fees later.
                       </p>
-                      <p className="text-xs text-slate-500">Orders over $120 qualify for complimentary door courier</p>
                     </div>
                   </div>
-
-                  <span className="text-xs font-bold text-[#00407a] bg-blue-50 px-2.5 py-1 rounded-lg self-start sm:self-auto">
-                    {freeDeliveryPercent}% reached
-                  </span>
                 </div>
+              ) : (
+                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#00407a] shrink-0">
+                        <Truck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">
+                          {freeDeliveryDiff > 0 ? (
+                            <>
+                              Add <span className="text-[#00407a] font-bold" suppressHydrationWarning>{formatPrice(freeDeliveryDiff)}</span> more for{' '}
+                              <span className="text-emerald-700">FREE Express Delivery</span>
+                            </>
+                          ) : (
+                            <span className="text-emerald-700">You qualify for FREE Express Courier Delivery!</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Orders over <span suppressHydrationWarning>{formatPrice(freeDeliveryThreshold)}</span> qualify for complimentary door courier
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5">
-                  <div 
-                    className="h-full bg-gradient-to-r from-amber-400 via-[#00407a] to-emerald-500 rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${freeDeliveryPercent}%` }}
-                  />
+                    <span className="text-xs font-bold text-[#00407a] bg-blue-50 px-2.5 py-1 rounded-lg self-start sm:self-auto">
+                      {freeDeliveryPercent}% reached
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-400 via-[#00407a] to-emerald-500 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${freeDeliveryPercent}%` }}
+                    />
+                  </div>
+                  {freeDeliveryDiff > 0 && (
+                    <p className="text-[11px] text-slate-500 mt-2 font-medium">
+                      ℹ Below free threshold: We will count delivery fees later upon dispatch.
+                    </p>
+                  )}
                 </div>
-              </div>
+              )}
 
               {/* Cart Items List */}
               <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
@@ -406,10 +451,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
                           {/* Price Block */}
                           <div className="hidden sm:flex flex-col items-end min-w-[80px]">
-                            <span className="text-sm font-black text-slate-900">${rowTotal.toFixed(2)}</span>
-                            <span className="text-[11px] text-slate-400 line-through">${rowOldTotal.toFixed(2)}</span>
-                            <span className="text-[10px] text-amber-700 font-semibold">
-                              ${item.product.price.toFixed(2)}/ea
+                            <span className="text-sm font-black text-slate-900" suppressHydrationWarning>{formatPrice(rowTotal)}</span>
+                            <span className="text-[11px] text-slate-400 line-through" suppressHydrationWarning>{formatPrice(rowOldTotal)}</span>
+                            <span className="text-[10px] text-amber-700 font-semibold" suppressHydrationWarning>
+                              {formatPrice(item.product.price)}/ea
                             </span>
                           </div>
 
@@ -582,7 +627,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                             <div className="text-[11px] text-emerald-700 font-semibold">Standard Morning Slot</div>
                           </div>
                         </div>
-                        <span className="text-xs font-bold text-slate-800">$4.50</span>
+                        {isFreeDeliveryUnlocked ? (
+                          <span className="text-xs font-bold text-emerald-700">FREE</span>
+                        ) : (
+                          <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                            Counted later
+                          </span>
+                        )}
                       </label>
 
                       <label
@@ -606,7 +657,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                             <div className="text-[11px] text-slate-500 font-medium">Evening Prime Slot</div>
                           </div>
                         </div>
-                        <span className="text-xs font-bold text-slate-800">$4.50</span>
+                        {isFreeDeliveryUnlocked ? (
+                          <span className="text-xs font-bold text-emerald-700">FREE</span>
+                        ) : (
+                          <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                            Counted later
+                          </span>
+                        )}
                       </label>
                     </div>
                   </div>
@@ -758,7 +815,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 <div className="space-y-2 text-xs text-slate-600">
                   <div className="flex justify-between">
                     <span>Items Total (Original)</span>
-                    <span className="font-bold text-slate-900">${originalTotal.toFixed(2)}</span>
+                    <span className="font-bold text-slate-900" suppressHydrationWarning>{formatPrice(originalTotal)}</span>
                   </div>
 
                   <div className="flex justify-between text-amber-700">
@@ -766,7 +823,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       <Percent className="w-3.5 h-3.5" />
                       Catalog Discounts
                     </span>
-                    <span className="font-bold">-${catalogDiscount.toFixed(2)}</span>
+                    <span className="font-bold" suppressHydrationWarning>-{formatPrice(catalogDiscount)}</span>
                   </div>
 
                   {goldMemberVoucher > 0 && (
@@ -775,19 +832,32 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         <Gift className="w-3.5 h-3.5" />
                         {companyName} Gold Voucher
                       </span>
-                      <span className="font-bold">-${goldMemberVoucher.toFixed(2)}</span>
+                      <span className="font-bold" suppressHydrationWarning>-{formatPrice(goldMemberVoucher)}</span>
                     </div>
                   )}
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="flex items-center gap-1 text-slate-500">
                       <Truck className="w-3.5 h-3.5" />
                       Courier Delivery Fee
                     </span>
-                    <span className="font-bold text-slate-900">
-                      {deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`}
+                    <span className="font-bold text-slate-900" suppressHydrationWarning>
+                      {fulfillmentMethod === 'pickup' ? (
+                        <span className="text-emerald-700 font-bold">FREE (Pickup)</span>
+                      ) : isFreeDeliveryUnlocked ? (
+                        <span className="text-emerald-700 font-bold">FREE</span>
+                      ) : (
+                        <span className="text-amber-800 font-semibold text-xs bg-amber-50 px-2 py-0.5 rounded border border-amber-200" title="We will count delivery fees later">
+                          Counted later
+                        </span>
+                      )}
                     </span>
                   </div>
+                  {isDeliveryFeeCountedLater && (
+                    <div className="text-[10px] text-slate-500 italic text-right -mt-1">
+                      We will count delivery fees later
+                    </div>
+                  )}
 
                   {/* Bonus points checkbox */}
                   <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between my-2">
@@ -800,7 +870,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                       />
                       <span>Spend 250 Bonus Points</span>
                     </label>
-                    <span className="text-xs font-bold text-amber-700">-$2.50</span>
+                    <span className="text-xs font-bold text-amber-700" suppressHydrationWarning>-{formatPrice(2.50)}</span>
                   </div>
                 </div>
 
@@ -825,7 +895,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                   {isPromoApplied && (
                     <p className="text-emerald-700 text-xs font-semibold mt-1.5 flex items-center gap-1">
                       <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      Promo 'HYPER10' applied: -$10.00 discount!
+                      Promo &apos;HYPER10&apos; applied: -{formatPrice(10.00)} discount!
                     </p>
                   )}
                 </div>
@@ -837,11 +907,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                     <span className="block text-[11px] text-slate-400">VAT & duties included</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-slate-900 block leading-tight">
-                      ${finalTotal.toFixed(2)}
+                    <span className="text-2xl font-black text-slate-900 block leading-tight" suppressHydrationWarning>
+                      {formatPrice(finalTotal)}
                     </span>
-                    <span className="text-xs font-bold text-emerald-700">
-                      Total Savings: ${totalSavings.toFixed(2)}
+                    <span className="text-xs font-bold text-emerald-700" suppressHydrationWarning>
+                      Total Savings: {formatPrice(totalSavings)}
                     </span>
                   </div>
                 </div>

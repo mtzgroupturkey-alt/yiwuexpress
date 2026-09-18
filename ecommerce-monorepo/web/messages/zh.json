@@ -290,6 +290,7 @@
       "directFactoryPricing": "工厂直供价格",
       "verifiedManufacturers": "认证制造商",
       "freeDeliveryStarts": "免费配送起始金额",
+      "wholesaleLogisticsNotice": "大宗批发物流：运费将在发货配货时核算",
       "everywhere": "全部",
       "deliverTo": "配送至",
       "expressDeliveryDaily": "每日快速配送"
@@ -1559,6 +1560,10 @@
       "discount": "优惠减免",
       "deliveryFee": "运费",
       "free": "免费",
+      "countedLater": "稍后核算",
+      "willCountLater": "配送运费稍后核算",
+      "wholesaleFreightNotice": "大宗批发物流",
+      "wholesaleFreightDesc": "运费将在发货配货时核算并确认",
       "total": "应付总额",
       "checkout": "前往结算",
       "emptyTitle": "购物车还是空的",

@@ -128,7 +128,18 @@ function StoreCatalogInner() {
     }));
   }, [cartResponse]);
 
-  const activeCartItems = dbCartItems.length > 0 ? dbCartItems : localCartItems;
+  const activeCartItems = useMemo(() => {
+    if (dbCartItems.length === 0) return localCartItems;
+    if (localCartItems.length === 0) return dbCartItems;
+    const map = new Map<string, CartItem>();
+    dbCartItems.forEach((item) => map.set(item.product.id, item));
+    localCartItems.forEach((item) => {
+      if (!map.has(item.product.id)) {
+        map.set(item.product.id, item);
+      }
+    });
+    return Array.from(map.values());
+  }, [dbCartItems, localCartItems]);
 
   const [selectedProductForModal, setSelectedProductForModal] = useState<Product | null>(null);
 
@@ -146,79 +157,96 @@ function StoreCatalogInner() {
       try {
         localStorage.setItem('yiwu_guest_cart', JSON.stringify(next));
       } catch {}
-      window.dispatchEvent(new CustomEvent('cart-updated', { detail: next }));
       return next;
     });
   };
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
+    const moq = Math.max(1, product.minOrderQty || 1);
+    const effectiveQty = Math.max(quantity, moq);
+    let savedToBackend = false;
+
     if (cartResponse?.data?.cart) {
       try {
-        await fetch('/api/cart', {
+        const res = await fetch('/api/cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             productId: product.id,
-            quantity,
+            quantity: effectiveQty,
           }),
         });
-        await refetchCart();
-        queryClient.invalidateQueries({ queryKey: ['cart'] });
-        await refreshCartCount();
+        if (res.ok) {
+          savedToBackend = true;
+          await refetchCart();
+          queryClient.invalidateQueries({ queryKey: ['cart'] });
+        } else {
+          console.warn('[Store] Backend cart rejected item, saving locally');
+        }
       } catch (err) {
-        console.error('Failed to add to cart', err);
+        console.error('Failed to add to backend cart', err);
       }
-    } else {
+    }
+
+    if (!savedToBackend) {
       updateLocalCart((prev) => {
         const existing = prev.find((item) => item.product.id === product.id);
         if (existing) {
           return prev.map((item) =>
             item.product.id === product.id
-              ? { ...item, quantity: item.quantity + quantity }
+              ? { ...item, quantity: item.quantity + effectiveQty }
               : item
           );
         }
-        return [...prev, { product, quantity }];
+        return [...prev, { product, quantity: effectiveQty }];
       });
-      await refreshCartCount();
     }
+
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
     showToast(`Added "${product.name.slice(0, 30)}..." to cart`);
   };
 
   const handleUpdateQuantity = async (productId: string, quantity: number) => {
-    if (cartResponse?.data?.cart && dbCartItems.length > 0) {
+    let updatedOnBackend = false;
+    if (cartResponse?.data?.cart && dbCartItems.some((i) => i.product.id === productId)) {
       try {
         if (quantity <= 0) {
-          await fetch(`/api/cart?productId=${encodeURIComponent(productId)}`, {
+          const res = await fetch(`/api/cart?productId=${encodeURIComponent(productId)}`, {
             method: 'DELETE',
             credentials: 'include',
           });
+          if (res.ok) updatedOnBackend = true;
         } else {
-          await fetch('/api/cart', {
+          const res = await fetch('/api/cart', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({ productId, quantity }),
           });
+          if (res.ok) updatedOnBackend = true;
         }
-        await refetchCart();
-        queryClient.invalidateQueries({ queryKey: ['cart'] });
-        await refreshCartCount();
+        if (updatedOnBackend) {
+          await refetchCart();
+          queryClient.invalidateQueries({ queryKey: ['cart'] });
+        }
       } catch (err) {
         console.error('Failed to update cart', err);
       }
-    } else {
-      updateLocalCart((prev) => {
-        if (quantity <= 0) {
-          return prev.filter((item) => item.product.id !== productId);
-        }
-        return prev.map((item) =>
-          item.product.id === productId ? { ...item, quantity } : item
-        );
-      });
-      await refreshCartCount();
     }
+
+    updateLocalCart((prev) => {
+      if (quantity <= 0) {
+        return prev.filter((item) => item.product.id !== productId);
+      }
+      return prev.map((item) =>
+        item.product.id === productId ? { ...item, quantity } : item
+      );
+    });
+
+    window.dispatchEvent(new CustomEvent('cart-updated'));
+    await refreshCartCount();
   };
 
   return (

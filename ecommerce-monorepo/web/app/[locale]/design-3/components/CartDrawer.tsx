@@ -13,6 +13,7 @@ import {
 import { Product } from '../types';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface CartItem {
   product: Product;
@@ -28,8 +29,6 @@ interface CartDrawerProps {
   onProceedToCheckout: () => void;
 }
 
-const FREE_SHIPPING_THRESHOLD = 35.00;
-
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
   onClose,
@@ -38,6 +37,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onRemoveItem,
   onProceedToCheckout,
 }) => {
+  const { settings, storeMode, isWholesaleOnly } = useSettings();
   const { tCartDrawer } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
   const [promoCode, setPromoCode] = useState('');
@@ -45,13 +45,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
   if (!isOpen) return null;
 
+  // Wholesale mode check: Free delivery is strictly for retail mode, NOT wholesale mode.
+  const isWholesale = storeMode === 'WHOLESALE' || isWholesaleOnly;
+  const isRetail = storeMode === 'RETAIL' || (!isWholesaleOnly && storeMode !== 'WHOLESALE');
+
+  const freeShippingThreshold = typeof settings?.freeShippingThreshold === 'number'
+    ? settings.freeShippingThreshold
+    : (parseFloat(String(settings?.freeShippingThreshold)) || 35);
+
   const subtotal = items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const discountAmount = appliedPromo === 'HYPER10' ? 10.00 : appliedPromo === 'GOLD' ? subtotal * 0.05 : 0;
-  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const deliveryFee = subtotal === 0 ? 0 : isFreeShipping ? 0 : 4.50;
-  const total = Math.max(0, subtotal - discountAmount + deliveryFee);
-  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const progressPercent = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
+  
+  // Free delivery qualification: ONLY in retail mode when subtotal >= configured threshold in USD
+  const isFreeShipping = isRetail && subtotal >= freeShippingThreshold;
+  // If not free delivery (wholesale mode or retail subtotal < threshold), delivery fee is counted later
+  const isDeliveryFeeCountedLater = !isFreeShipping;
+  const deliveryFee = 0; // Immediate payable fee is 0, counted later upon dispatch
+  const total = Math.max(0, subtotal - discountAmount);
+  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
+  const progressPercent = freeShippingThreshold > 0
+    ? Math.min(100, (subtotal / freeShippingThreshold) * 100)
+    : 100;
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,30 +106,56 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           </button>
         </div>
 
-        {/* Free Shipping Progress Bar */}
-        <div className="bg-[#F8FAFC] p-4 border-b border-slate-200">
-          <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="flex items-center gap-1.5 font-bold text-slate-800">
-              <Truck className="w-4 h-4 text-[#00407a]" />
-              {isFreeShipping ? (
-                <span className="text-emerald-700">{tCartDrawer('freeUnlocked')}</span>
-              ) : (
-                <span>{tCartDrawer('addMore', { amount: formatPrice(remainingForFreeShipping) })}</span>
-              )}
-            </span>
-            <span className="text-[11px] font-bold text-slate-500">
-              {formatPrice(FREE_SHIPPING_THRESHOLD)}
-            </span>
+        {/* Shipping Status Banner */}
+        {isWholesale ? (
+          <div className="bg-[#F8FAFC] p-3.5 border-b border-slate-200">
+            <div className="flex items-start gap-2.5 text-xs">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-[#00407a] shrink-0 mt-0.5">
+                <Truck className="w-4 h-4" />
+              </div>
+              <div className="flex-1">
+                <span className="font-bold text-slate-900 block text-xs">
+                  {tCartDrawer('wholesaleFreightNotice')}
+                </span>
+                <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  {tCartDrawer('wholesaleFreightDesc')}
+                </p>
+                <span className="inline-block mt-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                  {tCartDrawer('willCountLater')}
+                </span>
+              </div>
+            </div>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 ${
-                isFreeShipping ? 'bg-emerald-500' : 'bg-[#F5A602]'
-              }`}
-              style={{ width: `${progressPercent}%` }}
-            />
+        ) : (
+          <div className="bg-[#F8FAFC] p-4 border-b border-slate-200">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="flex items-center gap-1.5 font-bold text-slate-800">
+                <Truck className="w-4 h-4 text-[#00407a]" />
+                {isFreeShipping ? (
+                  <span className="text-emerald-700">{tCartDrawer('freeUnlocked')}</span>
+                ) : (
+                  <span>{tCartDrawer('addMore', { amount: formatPrice(remainingForFreeShipping) })}</span>
+                )}
+              </span>
+              <span className="text-[11px] font-bold text-slate-500" suppressHydrationWarning>
+                {formatPrice(freeShippingThreshold)}
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  isFreeShipping ? 'bg-emerald-500' : 'bg-[#F5A602]'
+                }`}
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            {!isFreeShipping && (
+              <p className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1 font-medium">
+                <span>ℹ {tCartDrawer('willCountLater')}</span>
+              </p>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Items List */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -232,16 +272,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <span>-{formatPrice(discountAmount)}</span>
                 </div>
               )}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>{tCartDrawer('deliveryFee')}</span>
                 <span>
-                  {deliveryFee === 0 ? (
+                  {isFreeShipping ? (
                     <strong className="text-emerald-600 font-bold">{tCartDrawer('free')}</strong>
                   ) : (
-                    formatPrice(deliveryFee)
+                    <span 
+                      className="text-amber-800 font-semibold text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1"
+                      title={tCartDrawer('willCountLater')}
+                    >
+                      {tCartDrawer('countedLater')}
+                    </span>
                   )}
                 </span>
               </div>
+              {!isFreeShipping && (
+                <div className="text-[10px] text-slate-500 italic text-right -mt-1">
+                  {tCartDrawer('willCountLater')}
+                </div>
+              )}
               <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-black text-slate-900">
                 <span>{tCartDrawer('total')}</span>
                 <span className="text-[#00407a] text-base">{formatPrice(total)}</span>

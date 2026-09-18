@@ -141,6 +141,8 @@ export async function PUT(request: Request) {
     const existing = await prisma.systemSettings.findFirst()
 
     if (existing) {
+      const freeShippingThreshold = body.freeShippingThreshold !== undefined ? (parseFloat(body.freeShippingThreshold) || 0) : undefined
+
       // Update existing settings
       const settings = await prisma.systemSettings.update({
         where: { id: existing.id },
@@ -169,7 +171,7 @@ export async function PUT(request: Request) {
           wechatId: body.wechatId,
           whatsappNumber: body.whatsappNumber,
           storeHours: body.storeHours !== undefined ? body.storeHours : undefined,
-          freeShippingThreshold: body.freeShippingThreshold !== undefined ? parseFloat(body.freeShippingThreshold) || 0 : undefined,
+          freeShippingThreshold,
           announcementTicker: body.announcementTicker !== undefined ? body.announcementTicker : undefined,
         }
       })

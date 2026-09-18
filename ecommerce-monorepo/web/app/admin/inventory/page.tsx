@@ -3773,7 +3773,7 @@ function InventoryContent() {
         const pId = it.product?.id || (it as any).productId
         const matchingStock = stocks.find(
           (s) =>
-            (s.productId === pId || s.product?.id === pId) &&
+            (s.product?.id === pId || (s as any).productId === pId) &&
             (!defWhId || s.warehouseId === defWhId)
         )
         const code = matchingStock?.locationPath || matchingStock?.locationCode || matchingStock?.slot?.code
@@ -10977,6 +10977,7 @@ function InventoryContent() {
                       const remainingRaw = Math.max(0, item.quantity - lineReceived - lineDamagedPrev)
                       const currentDamaged = itemDamagedQty[item.id] || 0
                       const remainingGood = Math.max(0, remainingRaw - currentDamaged)
+                      const isFullyResolved = remainingRaw === 0
 
                       const productName = item.product?.name || item.productName || 'Line Item'
                       const productSku = item.product?.sku || item.productSku || 'SKU'
@@ -11046,7 +11047,7 @@ function InventoryContent() {
                       const pId = item.product?.id || (item as any).productId
                       const matchingStock = stocks.find(
                         (s) =>
-                          (s.productId === pId || s.product?.id === pId) &&
+                          (s.product?.id === pId || (s as any).productId === pId) &&
                           (!containerTargetWarehouseId || s.warehouseId === containerTargetWarehouseId)
                       )
                       const stockLoc = matchingStock?.locationPath || matchingStock?.locationCode || matchingStock?.slot?.code
