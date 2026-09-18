@@ -1,134 +1,211 @@
-'use client';
+import { notFound } from 'next/navigation';
+import ProductDetailView from './ProductDetailView';
+import { prisma } from '@/lib/db';
+import { localizeAttribute, localizeCategory } from '@/lib/utils/localize';
 
-import React, { useState, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
-import { SharedLayout } from '@/components/layout/SharedLayout';
-import { ProductDetailPage } from '@/app/[locale]/design-3/components/ProductDetailPage';
-import { Product } from '@/app/[locale]/design-3/types';
-import { PHILIPS_PDP_PRODUCT } from '@/app/[locale]/design-3/data/pdpData';
-import { ALL_PRODUCTS } from '@/app/[locale]/design-3/data/catalogData';
-import { mapDbProductToDesign3 } from '@/lib/adapters/design3ProductAdapter';
-import { useCart } from '@/components/CartContext';
-import { Loader2 } from 'lucide-react';
+interface ProductPageProps {
+  params: {
+    locale: string;
+    slug: string;
+  };
+}
 
-export default function ProductPage() {
-  const params = useParams();
-  const router = useRouter();
-  const locale = useLocale();
-  const { refreshCartCount } = useCart();
-  const slug = (params?.slug as string) || '';
+async function getProductFromDB(slug: string, locale: string) {
+  if (!slug) return null;
 
-  // 1. Fetch live product by slug or ID
-  const { data: responseData, isLoading } = useQuery({
-    queryKey: ['product-detail', slug, locale],
-    queryFn: async () => {
-      if (!slug) return null;
-      const res = await fetch(`/api/products/${encodeURIComponent(slug)}?locale=${encodeURIComponent(locale)}`);
-      if (!res.ok) return null;
-      return res.json();
+  const requestedLocale = locale || 'en';
+  const localesToFetch = Array.from(new Set([requestedLocale, 'en']));
+
+  const product = await prisma.product.findFirst({
+    where: {
+      isActive: true,
+      OR: [{ id: slug }, { slug: slug }],
     },
-    enabled: Boolean(slug),
-    staleTime: 5 * 60 * 1000,
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          translations: {
+            where: { locale: { in: localesToFetch } },
+            select: { locale: true, name: true },
+          },
+          parentId: true,
+          attributes: {
+            where: { isVisible: true },
+            orderBy: { displayOrder: 'asc' },
+            include: {
+              attribute: {
+                include: { translations: true },
+              },
+            },
+          },
+          parent: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              translations: {
+                where: { locale: { in: localesToFetch } },
+                select: { locale: true, name: true },
+              },
+              attributes: {
+                where: { isVisible: true },
+                orderBy: { displayOrder: 'asc' },
+                include: {
+                  attribute: {
+                    include: { translations: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      attributeValues: {
+        include: {
+          attribute: true,
+          translations: true,
+        },
+      },
+      translations: {
+        where: {
+          locale: { in: localesToFetch },
+        },
+      },
+      variants: {
+        where: { isActive: true },
+      },
+      reviews: {
+        where: { isApproved: true },
+        include: {
+          user: {
+            select: { name: true },
+          },
+        },
+      },
+    },
   });
 
-  // 2. Map database product or fallback to sample matching slug / default
-  const mappedProduct: Product = useMemo(() => {
-    const raw = responseData?.data || responseData?.product || responseData;
-    if (raw && raw.id) {
-      return mapDbProductToDesign3(raw);
-    }
-    // Search in sample catalog
-    const sample = ALL_PRODUCTS.find((p) => p.id === slug || p.name.toLowerCase().replace(/\s+/g, '-').includes(slug.toLowerCase()));
-    if (sample) {
-      return sample;
-    }
-    return PHILIPS_PDP_PRODUCT;
-  }, [responseData, slug]);
+  if (!product || !product.isActive) {
+    return null;
+  }
 
-  // 3. Favorites state
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
-
-  const handleToggleFavorite = (productId: string) => {
-    setFavoriteIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(productId)) {
-        next.delete(productId);
-      } else {
-        next.add(productId);
-      }
-      return next;
-    });
-  };
-
-  // 4. Cart operations
-  const handleAddToCart = async (product: Product, quantity = 1) => {
-    const moq = Math.max(1, product.minOrderQty || 1);
-    const effectiveQty = Math.max(quantity, moq);
-    let savedToBackend = false;
-
-    try {
-      const res = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: effectiveQty,
-        }),
-      });
-      if (res.ok) {
-        savedToBackend = true;
-      }
-    } catch {
-      // Ignored for guest/offline
-    }
-
-    if (!savedToBackend) {
+  // Transform attributeValues array into a key-value object.
+  const attributes: Record<string, any> = {};
+  const valueTranslationMap: Record<string, string> = {};
+  if (product.attributeValues && Array.isArray(product.attributeValues)) {
+    product.attributeValues.forEach((av: any) => {
+      let parsed: any;
       try {
-        const saved = localStorage.getItem('yiwu_guest_cart');
-        const items: any[] = saved ? JSON.parse(saved) : [];
-        const existing = items.find((i: any) => i.product?.id === product.id);
-        let next: any[];
-        if (existing) {
-          next = items.map((i: any) =>
-            i.product?.id === product.id ? { ...i, quantity: i.quantity + effectiveQty } : i
-          );
-        } else {
-          next = [...items, { product, quantity: effectiveQty }];
-        }
-        localStorage.setItem('yiwu_guest_cart', JSON.stringify(next));
-      } catch {}
+        parsed = JSON.parse(av.value);
+      } catch {
+        parsed = av.value;
+      }
+      attributes[av.attribute.slug] = parsed;
+
+      if (typeof av.value === 'string' && av.translations) {
+        const tr = (av.translations as any[]).find(
+          (t) => t.locale === requestedLocale && t.value && t.value.trim().length > 0
+        );
+        if (tr) valueTranslationMap[av.value] = tr.value;
+      }
+    });
+  }
+
+  // Localize values in attributes object
+  if (requestedLocale !== 'en') {
+    for (const attrSlug of Object.keys(attributes)) {
+      const val = attributes[attrSlug];
+      if (typeof val === 'string' && valueTranslationMap[val]) {
+        attributes[attrSlug] = valueTranslationMap[val];
+      } else if (Array.isArray(val)) {
+        attributes[attrSlug] = val.map((v) =>
+          typeof v === 'string' && valueTranslationMap[v] ? valueTranslationMap[v] : v
+        );
+      }
     }
+  }
 
-    window.dispatchEvent(new CustomEvent('cart-updated'));
-    await refreshCartCount();
+  const flattenCategoryAttrs = (catAttrs: any[]) =>
+    catAttrs
+      .filter((ca: any) => ca.attribute)
+      .map((ca: any) => ({
+        id: ca.attribute.id,
+        slug: ca.attribute.slug,
+        name: localizeAttribute(ca.attribute, requestedLocale).name,
+        inputType: ca.attribute.type,
+        isRequired: ca.isRequired ?? ca.attribute.isRequired,
+        isFilterable: ca.attribute.isFilterable,
+        isVisible: ca.isVisible,
+        displayOrder: ca.displayOrder ?? ca.attribute.displayOrder,
+        options: ca.attribute.options,
+        colorOptions: ca.attribute.colorOptions,
+      }));
+
+  const parentAttributes = flattenCategoryAttrs(product.category?.parent?.attributes || []);
+  const currentAttributes = flattenCategoryAttrs(product.category?.attributes || []);
+
+  const allAttributes = [...parentAttributes, ...currentAttributes];
+  const uniqueAttributes = allAttributes.reduce((acc: any[], attr: any) => {
+    const existingIndex = acc.findIndex((a) => a.slug === attr.slug);
+    if (existingIndex === -1) {
+      acc.push(attr);
+    } else {
+      acc[existingIndex] = attr;
+    }
+    return acc;
+  }, []);
+
+  const rawCategory = product.category as any;
+  const localizedCategory = rawCategory
+    ? {
+        ...rawCategory,
+        name: localizeCategory(rawCategory, requestedLocale).name,
+        parent: rawCategory.parent
+          ? {
+              ...rawCategory.parent,
+              name: localizeCategory(rawCategory.parent, requestedLocale).name,
+            }
+          : rawCategory.parent,
+      }
+    : rawCategory;
+
+  return {
+    id: product.id,
+    sku: product.sku,
+    name: product.name,
+    slug: product.slug,
+    description: product.description,
+    price: product.price,
+    compareAtPrice: product.compareAtPrice,
+    images: Array.isArray(product.images) ? product.images : [],
+    thumbnail: product.thumbnail || (product.images?.[0] ?? null),
+    stock: product.stock,
+    weightKg: product.weightKg,
+    dimensions: product.dimensions,
+    hsCode: product.hsCode,
+    countryOfOrigin: product.countryOfOrigin,
+    material: product.material,
+    minOrderQty: product.minOrderQty,
+    wholesalePrice: product.wholesalePrice,
+    translations: product.translations,
+    category: localizedCategory,
+    attributes,
+    categoryAttributes: uniqueAttributes,
+    variants: product.variants,
+    reviews: product.reviews,
   };
+}
 
-  return (
-    <SharedLayout>
-      <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
-        {isLoading ? (
-          <div className="min-h-[500px] flex items-center justify-center gap-2 text-slate-500 font-semibold">
-            <Loader2 className="w-8 h-8 animate-spin text-[#00407a]" />
-            <span>Loading product details...</span>
-          </div>
-        ) : (
-          <ProductDetailPage
-            product={mappedProduct}
-            onAddToCart={handleAddToCart}
-            onToggleFavorite={handleToggleFavorite}
-            isFavorite={favoriteIds.has(mappedProduct.id)}
-            onBackToShop={() => router.push(`/${locale}/store`)}
-            onGoHome={() => router.push(`/${locale}`)}
-            onSelectProduct={(p) => {
-              router.push(`/${locale}/products/${p.slug || p.id}`);
-            }}
-            onProceedToCheckout={() => router.push(`/${locale}/checkout`)}
-          />
-        )}
-      </div>
-    </SharedLayout>
-  );
+export default async function ProductPage({ params }: ProductPageProps) {
+  const { slug, locale } = params;
+  const product = await getProductFromDB(slug, locale);
+
+  if (!product) {
+    notFound();
+  }
+
+  return <ProductDetailView product={product} slug={slug} locale={locale} />;
 }
