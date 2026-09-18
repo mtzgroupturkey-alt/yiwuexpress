@@ -18,6 +18,14 @@ export async function PUT(
       },
     })
 
+    // Also sync CategoryAttribute isVisible flag
+    await prisma.categoryAttribute.updateMany({
+      where: { attributeId: params.id },
+      data: {
+        isVisible: isVisible,
+      },
+    })
+
     return NextResponse.json({ data: attribute })
   } catch (error) {
     console.error('Error updating attribute visibility:', error)

@@ -1,7 +1,9 @@
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ProductDetailView from './ProductDetailView';
 import { prisma } from '@/lib/db';
-import { localizeAttribute, localizeCategory } from '@/lib/utils/localize';
+import { getCompanyName } from '@/lib/company';
+import { localizeAttribute, localizeCategory, localizeProduct } from '@/lib/utils/localize';
 
 interface ProductPageProps {
   params: {
@@ -196,6 +198,48 @@ async function getProductFromDB(slug: string, locale: string) {
     categoryAttributes: uniqueAttributes,
     variants: product.variants,
     reviews: product.reviews,
+  };
+}
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { slug, locale } = params;
+  const product = await getProductFromDB(slug, locale);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+    };
+  }
+
+  const companyName = await getCompanyName(locale);
+  const localized = localizeProduct(product, locale);
+  const title = `${localized.name || product.name} — ${companyName}`;
+  const description = localized.description?.slice(0, 160) || product.description?.slice(0, 160) || '';
+  const firstImage = product.thumbnail || product.images?.[0] || '';
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: firstImage ? [firstImage] : [],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: firstImage ? [firstImage] : [],
+    },
+    alternates: {
+      canonical: `/${locale}/products/${product.slug || slug}`,
+      languages: {
+        en: `/en/products/${product.slug || slug}`,
+        ru: `/ru/products/${product.slug || slug}`,
+        zh: `/zh/products/${product.slug || slug}`,
+      },
+    },
   };
 }
 

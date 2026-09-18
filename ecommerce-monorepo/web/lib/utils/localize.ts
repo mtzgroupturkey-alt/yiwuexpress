@@ -10,11 +10,15 @@ export interface RawProductFromDb {
   id: string
   name: string
   description?: string | null
+  metaTitle?: string | null
+  metaDescription?: string | null
   slug?: string | null
   translations?: Array<{
     locale: string
     name: string
     description?: string | null
+    metaTitle?: string | null
+    metaDescription?: string | null
   }> | null
 }
 
@@ -22,6 +26,8 @@ export interface LocalizedProduct {
   id: string
   name: string
   description: string
+  metaTitle?: string
+  metaDescription?: string
   slug?: string | null
 }
 
@@ -110,11 +116,15 @@ export function localizeProduct(
 ): LocalizedProduct {
   const name = getLocalField(product.translations, locale, 'name', product.name)
   const description = getLocalField(product.translations, locale, 'description', product.description)
+  const metaTitle = getLocalField(product.translations, locale, 'metaTitle', product.metaTitle)
+  const metaDescription = getLocalField(product.translations, locale, 'metaDescription', product.metaDescription)
 
   return {
     id: product.id,
     name,
     description,
+    metaTitle,
+    metaDescription,
     slug: product.slug ?? null
   }
 }

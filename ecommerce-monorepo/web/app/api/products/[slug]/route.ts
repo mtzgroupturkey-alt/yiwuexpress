@@ -194,9 +194,16 @@ export async function GET(
         }
       : rawCategory
 
+    // Localize product core copy (name, description, metaTitle, metaDescription)
+    const localized = localizeProduct(product, requestedLocale)
+
     // Format the response to include categoryAttributes in the expected format
     const formattedProduct = {
       ...product,
+      name: localized.name,
+      description: localized.description,
+      metaTitle: localized.metaTitle,
+      metaDescription: localized.metaDescription,
       category: localizedCategory,
       attributes,
       categoryAttributes: uniqueAttributes

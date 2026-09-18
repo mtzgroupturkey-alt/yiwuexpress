@@ -112,21 +112,27 @@ export async function PUT(
       }
     }
 
-    // Extract attributes from body
-    const { attributes, translations, ...productData } = body
+    // Extract attributes and translations from body
+    const { attributes, attributeTranslations, translations, ...productData } = body
 
     // Normalize the incoming translations payload into an array of
-    // { locale, name, description } rows (en/ru/zh). The frontend may send a
-    // nested map (Record<locale, {name, description}>) or an array; both are
-    // supported so no locale is ever silently dropped.
-    const incomingTranslations: Array<{ locale: string; name?: string; description?: string | null }> =
+    // { locale, name, description, metaTitle, metaDescription } rows (en/ru/zh).
+    const incomingTranslations: Array<{
+      locale: string
+      name?: string
+      description?: string | null
+      metaTitle?: string | null
+      metaDescription?: string | null
+    }> =
       Array.isArray(translations)
         ? translations
         : translations && typeof translations === 'object'
           ? Object.entries(translations as Record<string, any>).map(([locale, value]) => ({
               locale,
               name: value?.name,
-              description: value?.description ?? null
+              description: value?.description ?? null,
+              metaTitle: value?.metaTitle ?? null,
+              metaDescription: value?.metaDescription ?? null
             }))
           : []
 
@@ -137,11 +143,11 @@ export async function PUT(
     if (englishEntry) {
       productData.name = englishEntry.name ?? productData.name
       productData.description = englishEntry.description ?? null
+      if (englishEntry.metaTitle) productData.metaTitle = englishEntry.metaTitle
+      if (englishEntry.metaDescription) productData.metaDescription = englishEntry.metaDescription
     }
 
-    // Update product + write all locale rows atomically. If any locale upsert
-    // fails (e.g. a DB constraint), the whole operation rolls back so we never
-    // leave a half-saved product behind.
+    // Update product + write all locale rows atomically.
     const translationUpserts = incomingTranslations
       .filter((t) => t.locale)
       .map((t) => ({
@@ -150,61 +156,88 @@ export async function PUT(
           productId: id,
           locale: t.locale,
           name: t.name ?? '',
-          description: t.description ?? null
+          description: t.description ?? null,
+          metaTitle: t.metaTitle ?? null,
+          metaDescription: t.metaDescription ?? null
         },
         update: {
           name: t.name ?? '',
-          description: t.description ?? null
+          description: t.description ?? null,
+          metaTitle: t.metaTitle ?? null,
+          metaDescription: t.metaDescription ?? null
         }
       }))
 
-    await prisma.$transaction([
-      prisma.product.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.product.update({
         where: { id },
         data: productData,
         include: { category: true }
-      }),
-      ...translationUpserts.map((u) => prisma.productTranslation.upsert(u))
-    ])
-
-    // Handle attribute values update
-    if (attributes && typeof attributes === 'object') {
-      // Delete existing attribute values for this product
-      await prisma.attributeValue.deleteMany({
-        where: { productId: id }
       })
 
-      // Get all attributes by slug
-      const attributeSlugs = Object.keys(attributes)
-      if (attributeSlugs.length > 0) {
-        const attributeRecords = await prisma.attribute.findMany({
-          where: {
-            slug: { in: attributeSlugs }
-          }
+      for (const u of translationUpserts) {
+        await tx.productTranslation.upsert(u)
+      }
+
+      // Handle attribute values update
+      if (attributes && typeof attributes === 'object') {
+        // Delete existing attribute values for this product (cascade deletes AttributeValueTranslation)
+        await tx.attributeValue.deleteMany({
+          where: { productId: id }
         })
 
-        // Create new attribute values
-        const attributeValueData = attributeRecords
-          .map(attr => {
+        // Get all attributes by slug
+        const attributeSlugs = Object.keys(attributes)
+        if (attributeSlugs.length > 0) {
+          const attributeRecords = await tx.attribute.findMany({
+            where: {
+              slug: { in: attributeSlugs }
+            }
+          })
+
+          for (const attr of attributeRecords) {
             const value = attributes[attr.slug]
             if (value !== undefined && value !== null && value !== '') {
-              return {
-                attributeId: attr.id,
-                productId: id,
-                value: typeof value === 'object' ? JSON.stringify(value) : String(value)
+              const rawStr = typeof value === 'object' ? JSON.stringify(value) : String(value)
+              const createdAv = await tx.attributeValue.create({
+                data: {
+                  attributeId: attr.id,
+                  productId: id,
+                  value: rawStr
+                }
+              })
+
+              const directMap = attributeTranslations?.[attr.slug]
+              const ruVal = directMap?.ru ?? attributeTranslations?.ru?.[attr.slug]
+              const zhVal = directMap?.zh ?? attributeTranslations?.zh?.[attr.slug]
+              const enVal = directMap?.en ?? attributeTranslations?.en?.[attr.slug] ?? rawStr
+
+              const locMap: Record<string, string | undefined> = { en: enVal, ru: ruVal, zh: zhVal }
+              for (const [loc, locVal] of Object.entries(locMap)) {
+                if (locVal && typeof locVal === 'string' && locVal.trim().length > 0) {
+                  await tx.attributeValueTranslation.upsert({
+                    where: {
+                      attributeValueId_locale: {
+                        attributeValueId: createdAv.id,
+                        locale: loc
+                      }
+                    },
+                    create: {
+                      attributeValueId: createdAv.id,
+                      locale: loc,
+                      value: locVal.trim()
+                    },
+                    update: {
+                      value: locVal.trim()
+                    }
+                  })
+                }
               }
             }
-            return null
-          })
-          .filter(Boolean)
-
-        if (attributeValueData.length > 0) {
-          await prisma.attributeValue.createMany({
-            data: attributeValueData as any[]
-          })
+          }
         }
       }
-    }
+    })
 
     // Fetch updated product with attribute values and translations
     const productWithAttributes = await prisma.product.findUnique({

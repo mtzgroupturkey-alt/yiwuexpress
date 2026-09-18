@@ -140,6 +140,36 @@ export async function POST(req: NextRequest) {
     })
 
     if (existingAttribute) {
+      if (categoryId) {
+        const existingLink = await prisma.categoryAttribute.findUnique({
+          where: {
+            categoryId_attributeId: {
+              categoryId,
+              attributeId: existingAttribute.id,
+            },
+          },
+        })
+
+        if (existingLink) {
+          return NextResponse.json(
+            { error: 'This attribute is already assigned to this category' },
+            { status: 400 }
+          )
+        }
+
+        // Link existing attribute to this category
+        await prisma.categoryAttribute.create({
+          data: {
+            categoryId,
+            attributeId: existingAttribute.id,
+            isRequired: isRequired || false,
+            isVisible: true,
+          },
+        })
+
+        return NextResponse.json({ data: existingAttribute, linked: true }, { status: 201 })
+      }
+
       return NextResponse.json(
         { error: 'An attribute with this slug already exists' },
         { status: 400 }
