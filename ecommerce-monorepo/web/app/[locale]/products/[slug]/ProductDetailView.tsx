@@ -13,6 +13,7 @@ import ProductCard from '@/components/products/ProductCard'
 import { ReviewSection } from '@/components/products/ReviewSection'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { useCart } from '@/components/CartContext'
+import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useStoreMode, getDisplayPrice, getEffectiveMinOrderQty } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
@@ -102,6 +103,7 @@ export default function ProductDetailView({
   const { storeMode, isWholesale, isRetail, isBoth } = useStoreMode()
   const { enableWholesaleSession } = useSessionMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
+  const { addToQuote } = useQuoteCart()
 
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
   const [quantity, setQuantity] = useState(1)
@@ -229,6 +231,15 @@ export default function ProductDetailView({
               .join('; ')
           : undefined,
     })
+    addToQuote({
+      productId: product.id,
+      productName: product.name,
+      productSku: product.sku || product.slug,
+      productImage: product.thumbnail || product.images?.[0] || null,
+      quantity,
+      minOrderQty: moq,
+      targetPrice: product.wholesalePrice || null,
+    })
     setShowQuoteSuccess(true)
     setTimeout(() => setShowQuoteSuccess(false), 3500)
   }
@@ -296,6 +307,28 @@ export default function ProductDetailView({
       breadcrumbs={breadcrumbs}
       backgroundImage="/images/breadcrumb-bg.jpg"
     >
+      {/* Product JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: localized.name || product.name,
+            sku: product.sku,
+            image: (product.images && product.images.length > 0 ? product.images : [product.thumbnail]).filter(Boolean),
+            description: localized.description || product.description,
+            offers: {
+              '@type': 'Offer',
+              price: product.price,
+              priceCurrency: 'USD',
+              availability: product.stock > 0
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+            },
+          }),
+        }}
+      />
       <div className="bg-gradient-to-b from-gray-50 to-white py-4">
         <Container maxWidth="2xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
