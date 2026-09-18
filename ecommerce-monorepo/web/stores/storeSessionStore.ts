@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand'
+import { create } from 'zustand'
 
 export type StoreMode = 'WHOLESALE' | 'RETAIL' | 'BOTH'
 export type SessionCartMode = 'retail' | 'wholesale'
@@ -38,36 +38,72 @@ export const useStoreSessionStore = create<StoreSessionState>((set) => ({
   isRetailSession: true,
 
   setStoreMode: (storeMode) =>
-    set({
-      storeMode,
-      isWholesale: storeMode === 'WHOLESALE' || storeMode === 'BOTH',
-      isRetail: storeMode === 'RETAIL' || storeMode === 'BOTH',
-      isBoth: storeMode === 'BOTH',
+    set((state) => {
+      let sessionMode = state.sessionMode
+      if (storeMode === 'WHOLESALE') {
+        sessionMode = 'wholesale'
+      } else if (storeMode === 'RETAIL') {
+        sessionMode = 'retail'
+      }
+      return {
+        storeMode,
+        sessionMode,
+        isWholesale: storeMode === 'WHOLESALE' || storeMode === 'BOTH',
+        isRetail: storeMode === 'RETAIL' || storeMode === 'BOTH',
+        isBoth: storeMode === 'BOTH',
+        isWholesaleSession: sessionMode === 'wholesale',
+        isRetailSession: sessionMode === 'retail',
+      }
     }),
 
   setSessionMode: (sessionMode) =>
-    set({
-      sessionMode,
-      isWholesaleSession: sessionMode === 'wholesale',
-      isRetailSession: sessionMode === 'retail',
+    set((state) => {
+      if (state.storeMode === 'WHOLESALE') {
+        return {
+          sessionMode: 'wholesale',
+          isWholesaleSession: true,
+          isRetailSession: false,
+        }
+      }
+      if (state.storeMode === 'RETAIL') {
+        return {
+          sessionMode: 'retail',
+          isWholesaleSession: false,
+          isRetailSession: true,
+        }
+      }
+      return {
+        sessionMode,
+        isWholesaleSession: sessionMode === 'wholesale',
+        isRetailSession: sessionMode === 'retail',
+      }
     }),
 
   enableWholesaleSession: () =>
-    set({
-      sessionMode: 'wholesale',
-      isWholesaleSession: true,
-      isRetailSession: false,
+    set((state) => {
+      if (state.storeMode === 'RETAIL') return state
+      return {
+        sessionMode: 'wholesale',
+        isWholesaleSession: true,
+        isRetailSession: false,
+      }
     }),
 
   enableRetailSession: () =>
-    set({
-      sessionMode: 'retail',
-      isWholesaleSession: false,
-      isRetailSession: true,
+    set((state) => {
+      if (state.storeMode === 'WHOLESALE') return state
+      return {
+        sessionMode: 'retail',
+        isWholesaleSession: false,
+        isRetailSession: true,
+      }
     }),
 
   toggleSessionMode: () =>
     set((state) => {
+      if (state.storeMode === 'WHOLESALE' || state.storeMode === 'RETAIL') {
+        return state
+      }
       const next = state.sessionMode === 'wholesale' ? 'retail' : 'wholesale'
       return {
         sessionMode: next,
@@ -77,11 +113,22 @@ export const useStoreSessionStore = create<StoreSessionState>((set) => ({
     }),
 
   initializeStoreMode: (storeMode) =>
-    set({
-      storeMode,
-      isWholesale: storeMode === 'WHOLESALE' || storeMode === 'BOTH',
-      isRetail: storeMode === 'RETAIL' || storeMode === 'BOTH',
-      isBoth: storeMode === 'BOTH',
-      loading: false,
+    set((state) => {
+      let sessionMode = state.sessionMode
+      if (storeMode === 'WHOLESALE') {
+        sessionMode = 'wholesale'
+      } else if (storeMode === 'RETAIL') {
+        sessionMode = 'retail'
+      }
+      return {
+        storeMode,
+        sessionMode,
+        isWholesale: storeMode === 'WHOLESALE' || storeMode === 'BOTH',
+        isRetail: storeMode === 'RETAIL' || storeMode === 'BOTH',
+        isBoth: storeMode === 'BOTH',
+        isWholesaleSession: sessionMode === 'wholesale',
+        isRetailSession: sessionMode === 'retail',
+        loading: false,
+      }
     }),
 }))

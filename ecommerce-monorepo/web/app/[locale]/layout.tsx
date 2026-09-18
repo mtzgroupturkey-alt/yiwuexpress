@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { Providers } from '@/components/providers'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { StoreSessionProvider } from '@/components/providers/StoreSessionProvider'
+import { SessionModeProvider } from '@/contexts/SessionModeContext'
 import { WholesaleInquiryProvider } from '@/contexts/WholesaleInquiryContext'
 import { PreloaderWrapper } from '@/components/PreloaderWrapper'
 import { getCompanyName, getSiteTagline, getCompanyDescription, getSystemSettings } from '@/lib/company'
@@ -96,6 +98,20 @@ export default async function LocaleLayout({
   const companyFavicon = serverSettings.companyFavicon || '/favicon.svg'
   const messages = await getMessages()
 
+  const cookieStore = cookies()
+  const rawSessionCookie = cookieStore.get('store_session_mode')?.value
+
+  let resolvedSessionMode: 'wholesale' | 'retail' = 'wholesale'
+  if (serverSettings.storeMode === 'WHOLESALE') {
+    resolvedSessionMode = 'wholesale'
+  } else if (serverSettings.storeMode === 'RETAIL') {
+    resolvedSessionMode = 'retail'
+  } else if (rawSessionCookie === 'wholesale' || rawSessionCookie === 'retail') {
+    resolvedSessionMode = rawSessionCookie
+  } else {
+    resolvedSessionMode = 'retail'
+  }
+
   return (
     <>
       <link rel="icon" href={companyFavicon} />
@@ -141,18 +157,21 @@ export default async function LocaleLayout({
         <PreloaderWrapper initialLogo={companyLogo} initialCompanyName={companyName}>
           <StoreSessionProvider
             initialStoreMode={serverSettings.storeMode as any}
+            initialSessionMode={resolvedSessionMode}
             initialSettings={serverSettings}
           >
-            <WholesaleInquiryProvider>
-              <Providers>
-                <SettingsProvider initialSettings={serverSettings}>
-                  <CurrencyProvider>
-                    {children}
-                    <BackToTop />
-                  </CurrencyProvider>
-                </SettingsProvider>
-              </Providers>
-            </WholesaleInquiryProvider>
+            <SessionModeProvider initialMode={resolvedSessionMode}>
+              <WholesaleInquiryProvider>
+                <Providers>
+                  <SettingsProvider initialSettings={serverSettings}>
+                    <CurrencyProvider>
+                      {children}
+                      <BackToTop />
+                    </CurrencyProvider>
+                  </SettingsProvider>
+                </Providers>
+              </WholesaleInquiryProvider>
+            </SessionModeProvider>
           </StoreSessionProvider>
         </PreloaderWrapper>
       </NextIntlClientProvider>
