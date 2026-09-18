@@ -166,10 +166,21 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+const defaultFallback: QuoteCartContextType = {
+  items: [],
+  quoteCount: 0,
+  totalUnits: 0,
+  addToQuote: () => {},
+  updateQuantity: () => {},
+  updateItem: () => {},
+  removeFromQuote: () => {},
+  clearQuoteCart: () => {},
+}
+
 export function useQuoteCart() {
   const context = useContext(QuoteCartContext)
   if (!context) {
-    throw new Error('useQuoteCart must be used within a QuoteCartProvider')
+    return defaultFallback
   }
   return context
 }

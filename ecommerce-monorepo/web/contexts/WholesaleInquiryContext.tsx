@@ -64,7 +64,10 @@ export function WholesaleInquiryProvider({ children }: { children: ReactNode }) 
 
   const clear = useCallback(() => setItems([]), [])
 
-  const count = useMemo(() => items.length, [items])
+  const count = useMemo(
+    () => items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0),
+    [items]
+  )
   const hasItems = items.length > 0
 
   const value: WholesaleInquiryContextType = {

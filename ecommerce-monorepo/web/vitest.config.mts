@@ -5,15 +5,26 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: [path.resolve(__dirname, 'vitest.setup.ts')],
     include: ['**/*.test.{ts,tsx}'],
     css: false,
+    server: {
+      deps: {
+        inline: true,
+      },
+    },
+  },
+  server: {
+    fs: {
+      strict: false,
+    },
   },
   esbuild: {
     jsx: 'automatic',
     jsxImportSource: 'react',
   },
   resolve: {
+    preserveSymlinks: true,
     alias: {
       '@': path.resolve(__dirname, '.'),
       '@monorepo/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),

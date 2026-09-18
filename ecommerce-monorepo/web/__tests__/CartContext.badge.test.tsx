@@ -15,8 +15,8 @@ describe('CartContext badge count', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string) => {
-        if (url.includes('/api/auth/profile')) {
-          return new Response(JSON.stringify({}), { status: 200 })
+        if (url.includes('/api/auth/profile') || url.includes('/api/auth/status')) {
+          return new Response(JSON.stringify({ authenticated: true }), { status: 200 })
         }
         if (url.includes('/api/cart')) {
           return new Response(

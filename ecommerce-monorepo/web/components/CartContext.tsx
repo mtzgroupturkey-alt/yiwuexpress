@@ -61,9 +61,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data.cart) {
-          const totalQty = data.data.summary.totalQuantity ?? data.data.summary.itemCount ?? 0
+          const distinctCount = data.data.summary.itemCount ?? data.data.summary.totalQuantity ?? 0
           const guestQty = getGuestCartCount()
-          setCartCount(totalQty + guestQty)
+          setCartCount(distinctCount + guestQty)
         } else {
           setCartCount(getGuestCartCount())
         }

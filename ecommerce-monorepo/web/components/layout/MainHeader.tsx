@@ -232,10 +232,17 @@ export function MainHeader() {
                   are mutually exclusive via the active session mode. */}
               <div className="relative" data-testid="smart-cart-button-container">
                 {showWholesaleIcon ? (
-                  <LocaleLink
-                    href="/quote-cart"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        window.location.href = '/quote-cart'
+                      }
+                    }}
                     className="relative p-2 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-full transition-colors duration-200 block"
-                    aria-label="Wholesale RFQ Quote Cart"
+                    aria-label="Wholesale inquiry basket"
+                    role="button"
+                    name="inquiry"
                     data-testid="wholesale-inquiry-trigger"
                   >
                     <ClipboardList className="w-5 h-5" />
@@ -244,7 +251,7 @@ export function MainHeader() {
                         {quoteCount || inquiryCount}
                       </span>
                     )}
-                  </LocaleLink>
+                  </button>
                 ) : (
                   <LocaleLink
                     href="/cart"
