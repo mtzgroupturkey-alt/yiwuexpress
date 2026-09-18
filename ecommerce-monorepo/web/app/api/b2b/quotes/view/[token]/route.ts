@@ -162,6 +162,33 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       });
     }
 
+    // 2b. ADJUST_ITEMS ACTION (Allows customer to adjust quantities or backorders)
+    if (action === 'ADJUST_ITEMS') {
+      if (!['SENT', 'UNDER_REVIEW'].includes(quote.status)) {
+        return NextResponse.json(
+          { success: false, error: 'Only active quotes can be adjusted.' },
+          { status: 400 }
+        );
+      }
+
+      if (Array.isArray(itemAdjustments)) {
+        for (const adj of itemAdjustments) {
+          await prisma.productQuoteItem.update({
+            where: { id: adj.itemId },
+            data: {
+              ...(adj.quantity !== undefined ? { quantity: adj.quantity } : {}),
+              ...(adj.isBackorder !== undefined ? { isBackorder: adj.isBackorder } : {}),
+            },
+          });
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Quote line items updated successfully.',
+      });
+    }
+
     // 3. ACCEPT ACTION
     if (action === 'ACCEPT') {
       if (quote.status !== 'SENT') {
@@ -200,6 +227,74 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       }) || await prisma.country.findFirst();
 
       const createdOrder = await prisma.$transaction(async (tx) => {
+        // If customer submitted adjustments (e.g. converted to backorder or reduced quantity)
+        if (Array.isArray(itemAdjustments) && itemAdjustments.length > 0) {
+          for (const adj of itemAdjustments) {
+            await tx.productQuoteItem.update({
+              where: { id: adj.itemId },
+              data: {
+                ...(adj.quantity !== undefined ? { quantity: adj.quantity } : {}),
+                ...(adj.isBackorder !== undefined ? { isBackorder: adj.isBackorder } : {}),
+              },
+            });
+          }
+        }
+
+        // Re-fetch current quote items within transaction
+        const currentItems = await tx.productQuoteItem.findMany({
+          where: { quoteId: quote.id },
+        });
+
+        // Check stock availability for all non-backorder items in the sales warehouse
+        if (salesWarehouseId) {
+          const insufficientItems: Array<{
+            productId: string;
+            productName: string;
+            requested: number;
+            available: number;
+          }> = [];
+
+          for (const item of currentItems) {
+            if (!item.isBackorder) {
+              const stock = await tx.warehouseStock.findUnique({
+                where: {
+                  warehouseId_productId: {
+                    warehouseId: salesWarehouseId,
+                    productId: item.productId,
+                  },
+                },
+              });
+
+              const availableQty = stock ? stock.quantity - stock.reservedQty : 0;
+
+              if (availableQty < item.quantity) {
+                insufficientItems.push({
+                  productId: item.productId,
+                  productName: item.productName,
+                  requested: item.quantity,
+                  available: Math.max(0, availableQty),
+                });
+              }
+            }
+          }
+
+          if (insufficientItems.length > 0) {
+            const err: any = new Error(
+              `INSUFFICIENT_STOCK: ${insufficientItems.map((i) => `${i.productName} (Req: ${i.requested}, Avail: ${i.available})`).join(', ')}`
+            );
+            err.code = 'INSUFFICIENT_STOCK';
+            err.insufficientItems = insufficientItems;
+            throw err;
+          }
+        }
+
+        // Calculate totals based on active line items
+        const subtotal = currentItems.reduce(
+          (sum, item) => sum + (item.quantity * (item.unitPriceQuoted || 0)),
+          0
+        );
+        const total = subtotal + (quote.shippingCost || 0) - (quote.discountAmount || 0);
+
         // Fallback or guest user attachment
         let orderUserId = quote.userId;
         if (!orderUserId) {
@@ -237,10 +332,10 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             salesType: 'WHOLESALE',
             paymentMethod: quote.paymentTerms || 'BANK_TRANSFER',
             paymentStatus: 'UNPAID',
-            subtotal: quote.subtotal || 0,
+            subtotal,
             shippingFee: quote.shippingCost || 0,
             discount: quote.discountAmount || 0,
-            total: quote.totalAmount || (quote.subtotal || 0) + (quote.shippingCost || 0) - (quote.discountAmount || 0),
+            total,
             currency: quote.currency || 'USD',
             warehouseId: salesWarehouseId,
             reservationExpiresAt,
@@ -248,13 +343,13 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             adminNotes: quote.adminNotes ? `[Quoted via ${quote.quoteNumber}]: ${quote.adminNotes}` : null,
             quoteId: quote.id,
             items: {
-              create: quote.items.map((item) => ({
+              create: currentItems.map((item) => ({
                 productId: item.productId,
                 productName: item.productName,
                 productSku: item.productSku,
                 quantity: item.quantity,
                 price: item.unitPriceQuoted || 0,
-                total: item.lineTotal || (item.quantity * (item.unitPriceQuoted || 0)),
+                total: item.quantity * (item.unitPriceQuoted || 0),
               })),
             },
           },
@@ -266,6 +361,8 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
           data: {
             status: 'ACCEPTED',
             acceptedAt: new Date(),
+            subtotal,
+            totalAmount: total,
           },
         });
 
@@ -282,7 +379,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
 
         // Reserve stock in WarehouseStock if warehouse is assigned
         if (salesWarehouseId) {
-          for (const item of quote.items) {
+          for (const item of currentItems) {
             if (!item.isBackorder) {
               await tx.warehouseStock.upsert({
                 where: {
@@ -320,7 +417,18 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
       { success: false, error: 'Invalid action. Must be ACCEPT, REJECT, or REVISE.' },
       { status: 400 }
     );
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'INSUFFICIENT_STOCK' || error?.message?.startsWith('INSUFFICIENT_STOCK')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'INSUFFICIENT_STOCK',
+          items: error.insufficientItems || [],
+          message: error.message,
+        },
+        { status: 409 }
+      );
+    }
     console.error('Error processing quote customer action:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error while processing quotation action.' },
