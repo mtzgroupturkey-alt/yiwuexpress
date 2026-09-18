@@ -68,6 +68,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const { dict } = useAdminLocale()
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
+  const [attributeTranslations, setAttributeTranslations] = useState<Record<string, Record<string, string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [media, setMedia] = useState<MediaItem[]>([])
@@ -167,11 +168,16 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         setMedia(mediaItems)
 
         // Seed translation state (Expand-and-Contract Phase 3): prefer existing
-        // translation rows, fall back to legacy name/description for 'en'.
+        // translation rows, fall back to legacy name/description/meta for 'en'.
         const initialTranslations: TranslationPayload = {
-          en: { name: product.name || '', description: product.description || '' },
-          ru: { name: '', description: '' },
-          zh: { name: '', description: '' }
+          en: {
+            name: product.name || '',
+            description: product.description || '',
+            metaTitle: product.metaTitle || '',
+            metaDescription: product.metaDescription || '',
+          },
+          ru: { name: '', description: '', metaTitle: '', metaDescription: '' },
+          zh: { name: '', description: '', metaTitle: '', metaDescription: '' }
         }
 
         if (product.translations && Array.isArray(product.translations)) {
@@ -181,7 +187,9 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             if (['en', 'ru', 'zh'].includes(currentLocale)) {
               initialTranslations[currentLocale] = {
                 name: t.name || '',
-                description: t.description || ''
+                description: t.description || '',
+                metaTitle: t.metaTitle || '',
+                metaDescription: t.metaDescription || ''
               }
             }
           })
@@ -192,6 +200,9 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         // Set attribute values if they exist
         if (product.attributes) {
           setAttributeValues(product.attributes)
+        }
+        if (product.attributeTranslations) {
+          setAttributeTranslations(product.attributeTranslations)
         }
       } else {
         alert(dict.products.productNotFound)
@@ -243,7 +254,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         flashSaleStart: data.flashSaleStart ? new Date(data.flashSaleStart).toISOString() : null,
         flashSaleEnd: data.flashSaleEnd ? new Date(data.flashSaleEnd).toISOString() : null,
         flashSaleStock: data.flashSaleStock ? parseInt(data.flashSaleStock.toString()) : null,
-        attributes: attributeValues // Include attribute values
+        attributes: attributeValues, // Include attribute values
+        attributeTranslations,
       }
 
       const response = await fetch(`/api/admin/products/${params.id}`, {
@@ -382,7 +394,22 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 {translations && (
                   <ProductTranslationForm
                     initialValues={translations}
-                    onChange={setTranslations}
+                    onChange={(newTrans) => {
+                      setTranslations(newTrans)
+                      if (newTrans.en.metaTitle) setValue('metaTitle', newTrans.en.metaTitle)
+                      if (newTrans.en.metaDescription) setValue('metaDescription', newTrans.en.metaDescription)
+                    }}
+                    extraFieldsToTranslate={Object.entries(attributeValues).reduce((acc, [k, v]) => {
+                      if (typeof v === 'string' && v.trim().length > 0) {
+                        acc[k] = v.trim()
+                      } else if (Array.isArray(v) && v.length > 0) {
+                        acc[k] = v.map(item => typeof item === 'string' ? item : String(item)).join(', ')
+                      }
+                      return acc
+                    }, {} as Record<string, string>)}
+                    onAttributesTranslated={(newAttrs) => {
+                      setAttributeTranslations((prev) => ({ ...prev, ...newAttrs }))
+                    }}
                     disabled={submitting}
                   />
                 )}
@@ -399,7 +426,11 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             <ProductAttributesSection
               categoryId={selectedCategoryId}
               initialValues={attributeValues}
-              onChange={setAttributeValues}
+              attributeTranslations={attributeTranslations}
+              onChange={(values, translations) => {
+                setAttributeValues(values)
+                setAttributeTranslations(translations)
+              }}
             />
 
             {/* Pricing */}

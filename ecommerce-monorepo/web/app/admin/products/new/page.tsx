@@ -66,6 +66,7 @@ export default function NewProductPage() {
   const { dict } = useAdminLocale()
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
+  const [attributeTranslations, setAttributeTranslations] = useState<Record<string, Record<string, string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [media, setMedia] = useState<MediaItem[]>([])
   const [translations, setTranslations] = useState<TranslationPayload>({
@@ -166,7 +167,8 @@ export default function NewProductPage() {
         flashSaleStart: data.flashSaleStart ? new Date(data.flashSaleStart).toISOString() : null,
         flashSaleEnd: data.flashSaleEnd ? new Date(data.flashSaleEnd).toISOString() : null,
         flashSaleStock: data.flashSaleStock ? parseInt(data.flashSaleStock.toString()) : null,
-        attributes: attributeValues // Add attribute values to product data
+        attributes: attributeValues, // Add attribute values to product data
+        attributeTranslations,
       }
 
       const response = await fetch('/api/products', {
@@ -258,7 +260,22 @@ export default function NewProductPage() {
                 <ProductTranslationForm
                   disabled={submitting}
                   initialValues={translations}
-                  onChange={setTranslations}
+                  onChange={(newTrans) => {
+                    setTranslations(newTrans)
+                    if (newTrans.en.metaTitle) setValue('metaTitle', newTrans.en.metaTitle)
+                    if (newTrans.en.metaDescription) setValue('metaDescription', newTrans.en.metaDescription)
+                  }}
+                  extraFieldsToTranslate={Object.entries(attributeValues).reduce((acc, [k, v]) => {
+                    if (typeof v === 'string' && v.trim().length > 0) {
+                      acc[k] = v.trim()
+                    } else if (Array.isArray(v) && v.length > 0) {
+                      acc[k] = v.map(item => typeof item === 'string' ? item : String(item)).join(', ')
+                    }
+                    return acc
+                  }, {} as Record<string, string>)}
+                  onAttributesTranslated={(newAttrs) => {
+                    setAttributeTranslations((prev) => ({ ...prev, ...newAttrs }))
+                  }}
                 />
               </div>
 
@@ -273,7 +290,11 @@ export default function NewProductPage() {
             <ProductAttributesSection
               categoryId={selectedCategoryId}
               initialValues={attributeValues}
-              onChange={setAttributeValues}
+              attributeTranslations={attributeTranslations}
+              onChange={(values, translations) => {
+                setAttributeValues(values)
+                setAttributeTranslations(translations)
+              }}
             />
 
             {/* Pricing */}

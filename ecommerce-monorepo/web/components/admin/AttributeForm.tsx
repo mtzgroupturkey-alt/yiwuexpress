@@ -83,6 +83,24 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
   const addColorOption = () =>
     setColorOptions(prev => [...prev, { label: '', value: '#1a3a5c' }])
 
+  const loadDefaultPalette = () => {
+    const defaults: ColorEntry[] = [
+      { label: 'Black', value: '#000000' },
+      { label: 'White', value: '#FFFFFF' },
+      { label: 'Gray', value: '#6B7280' },
+      { label: 'Red', value: '#EF4444' },
+      { label: 'Blue', value: '#3B82F6' },
+      { label: 'Green', value: '#10B981' },
+      { label: 'Yellow', value: '#EAB308' },
+      { label: 'Orange', value: '#F97316' },
+      { label: 'Purple', value: '#8B5CF6' },
+      { label: 'Navy', value: '#1E3A8A' },
+      { label: 'Brown', value: '#78350F' },
+      { label: 'Beige', value: '#D4B996' },
+    ]
+    setColorOptions(defaults)
+  }
+
   const updateColorOption = (index: number, field: keyof ColorEntry, val: string) =>
     setColorOptions(prev => {
       const next = [...prev]
@@ -305,10 +323,22 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
             )}
           </div>
 
-          <Button type="button" variant="outline" size="sm" onClick={addColorOption}>
-            <Plus className="w-4 h-4 mr-2" />
-            {dict.attributes.addColor}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={addColorOption}>
+              <Plus className="w-4 h-4 mr-2" />
+              {dict.attributes.addColor}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={loadDefaultPalette}
+              className="text-[#1a3a5c] border-[#1a3a5c]/30 hover:bg-[#1a3a5c]/5"
+            >
+              <Palette className="w-4 h-4 mr-2" />
+              Load Standard Palette
+            </Button>
+          </div>
 
           {/* Live preview */}
           {colorOptions.filter(c => c.value && c.label).length > 0 && (

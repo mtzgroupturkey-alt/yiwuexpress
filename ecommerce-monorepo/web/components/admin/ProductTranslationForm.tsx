@@ -11,6 +11,8 @@ export type TranslationLocale = 'en' | 'ru' | 'zh'
 export interface TranslationEntry {
   name: string
   description: string
+  metaTitle?: string
+  metaDescription?: string
 }
 
 export type TranslationPayload = Record<TranslationLocale, TranslationEntry>
@@ -20,6 +22,10 @@ export interface ProductTranslationFormProps {
   initialValues?: Partial<Record<TranslationLocale, Partial<TranslationEntry>>>
   /** Fired on every change with the full translations payload. */
   onChange?: (translations: TranslationPayload) => void
+  /** Extra dynamic attribute fields to translate (slug -> string value). */
+  extraFieldsToTranslate?: Record<string, string>
+  /** Fired when extra attribute fields are translated. */
+  onAttributesTranslated?: (translatedAttrs: Record<string, Record<string, string>>) => void
   /** Disable editing (e.g. while submitting). */
   disabled?: boolean
 }
@@ -35,7 +41,7 @@ const LOCALES: {
   { code: 'zh', label: '中文', flag: '🇨🇳', required: false }
 ]
 
-const emptyEntry: TranslationEntry = { name: '', description: '' }
+const emptyEntry: TranslationEntry = { name: '', description: '', metaTitle: '', metaDescription: '' }
 
 function buildInitial(
   initial?: Partial<Record<TranslationLocale, Partial<TranslationEntry>>>
@@ -43,7 +49,9 @@ function buildInitial(
   return LOCALES.reduce((acc, { code }) => {
     acc[code] = {
       name: initial?.[code]?.name ?? '',
-      description: initial?.[code]?.description ?? ''
+      description: initial?.[code]?.description ?? '',
+      metaTitle: initial?.[code]?.metaTitle ?? '',
+      metaDescription: initial?.[code]?.metaDescription ?? ''
     }
     return acc
   }, {} as TranslationPayload)
@@ -52,6 +60,8 @@ function buildInitial(
 export function ProductTranslationForm({
   initialValues,
   onChange,
+  extraFieldsToTranslate,
+  onAttributesTranslated,
   disabled = false
 }: ProductTranslationFormProps) {
   const { dict } = useAdminLocale()
@@ -87,22 +97,56 @@ export function ProductTranslationForm({
         <AutoTranslateButton
           sourceLocale={activeTab}
           allFields={{
-            en: { name: translations.en.name, description: translations.en.description },
-            ru: { name: translations.ru.name, description: translations.ru.description },
-            zh: { name: translations.zh.name, description: translations.zh.description },
+            en: {
+              name: translations.en.name,
+              description: translations.en.description,
+              metaTitle: translations.en.metaTitle || '',
+              metaDescription: translations.en.metaDescription || '',
+              ...(activeTab === 'en' && extraFieldsToTranslate ? extraFieldsToTranslate : {}),
+            },
+            ru: {
+              name: translations.ru.name,
+              description: translations.ru.description,
+              metaTitle: translations.ru.metaTitle || '',
+              metaDescription: translations.ru.metaDescription || '',
+              ...(activeTab === 'ru' && extraFieldsToTranslate ? extraFieldsToTranslate : {}),
+            },
+            zh: {
+              name: translations.zh.name,
+              description: translations.zh.description,
+              metaTitle: translations.zh.metaTitle || '',
+              metaDescription: translations.zh.metaDescription || '',
+              ...(activeTab === 'zh' && extraFieldsToTranslate ? extraFieldsToTranslate : {}),
+            },
           }}
           onTranslated={(result) => {
             const next = { ...translations }
+            const attrTranslations: Record<string, Record<string, string>> = {}
+
             for (const locale of Object.keys(result)) {
               if (locale === 'en' || locale === 'ru' || locale === 'zh') {
+                const locResult = result[locale] || {}
                 next[locale as TranslationLocale] = {
                   ...next[locale as TranslationLocale],
-                  ...(result[locale] as Partial<TranslationEntry>),
+                  name: locResult.name ?? next[locale as TranslationLocale].name,
+                  description: locResult.description ?? next[locale as TranslationLocale].description,
+                  metaTitle: locResult.metaTitle ?? next[locale as TranslationLocale].metaTitle,
+                  metaDescription: locResult.metaDescription ?? next[locale as TranslationLocale].metaDescription,
+                }
+
+                for (const [k, v] of Object.entries(locResult)) {
+                  if (!['name', 'description', 'metaTitle', 'metaDescription'].includes(k)) {
+                    if (!attrTranslations[k]) attrTranslations[k] = {}
+                    attrTranslations[k][locale] = v
+                  }
                 }
               }
             }
             setTranslations(next)
             onChange?.(next)
+            if (Object.keys(attrTranslations).length > 0) {
+              onAttributesTranslated?.(attrTranslations)
+            }
           }}
         />
       </div>
@@ -223,6 +267,39 @@ export function ProductTranslationForm({
                   onChange={(html) => update(code, 'description', html)}
                   placeholder={dict.products.enterDescPlaceholder.replace('{label}', label)}
                 />
+              </div>
+
+              {/* SEO Meta Fields per Language Tab */}
+              <div className="border-t border-gray-100 pt-4 space-y-4">
+                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">{label} SEO & Meta</h4>
+                <div>
+                  <label htmlFor={`translation-${code}-metaTitle`} className="mb-1 block text-xs font-semibold text-gray-700">
+                    {dict.products.metaTitle} ({label})
+                  </label>
+                  <input
+                    id={`translation-${code}-metaTitle`}
+                    type="text"
+                    value={entry.metaTitle || ''}
+                    disabled={disabled}
+                    onChange={(e) => update(code, 'metaTitle', e.target.value)}
+                    placeholder="SEO Meta Title"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-200"
+                  />
+                </div>
+                <div>
+                  <label htmlFor={`translation-${code}-metaDescription`} className="mb-1 block text-xs font-semibold text-gray-700">
+                    {dict.products.metaDescription} ({label})
+                  </label>
+                  <textarea
+                    id={`translation-${code}-metaDescription`}
+                    value={entry.metaDescription || ''}
+                    disabled={disabled}
+                    onChange={(e) => update(code, 'metaDescription', e.target.value)}
+                    placeholder="SEO Meta Description"
+                    rows={2}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-200"
+                  />
+                </div>
               </div>
             </div>
           )

@@ -4,6 +4,11 @@ import ProductDetailView from './ProductDetailView';
 import { prisma } from '@/lib/db';
 import { getCompanyName } from '@/lib/company';
 import { localizeAttribute, localizeCategory, localizeProduct } from '@/lib/utils/localize';
+import {
+  getLocalizedOptionLabel,
+  getLocalizedColorList,
+  getLocalizedColorName,
+} from '@/lib/utils/attributeOptionTranslations';
 
 interface ProductPageProps {
   params: {
@@ -97,6 +102,7 @@ async function getProductFromDB(slug: string, locale: string) {
   // Transform attributeValues array into a key-value object.
   const attributes: Record<string, any> = {};
   const valueTranslationMap: Record<string, string> = {};
+  const slugTranslationMap: Record<string, string> = {};
   if (product.attributeValues && Array.isArray(product.attributeValues)) {
     product.attributeValues.forEach((av: any) => {
       let parsed: any;
@@ -107,11 +113,16 @@ async function getProductFromDB(slug: string, locale: string) {
       }
       attributes[av.attribute.slug] = parsed;
 
-      if (typeof av.value === 'string' && av.translations) {
-        const tr = (av.translations as any[]).find(
-          (t) => t.locale === requestedLocale && t.value && t.value.trim().length > 0
+      if (av.translations && Array.isArray(av.translations)) {
+        const tr = av.translations.find(
+          (t: any) => t.locale === requestedLocale && t.value && t.value.trim().length > 0
         );
-        if (tr) valueTranslationMap[av.value] = tr.value;
+        if (tr) {
+          slugTranslationMap[av.attribute.slug] = tr.value;
+          if (typeof av.value === 'string') {
+            valueTranslationMap[av.value] = tr.value;
+          }
+        }
       }
     });
   }
@@ -119,13 +130,27 @@ async function getProductFromDB(slug: string, locale: string) {
   // Localize values in attributes object
   if (requestedLocale !== 'en') {
     for (const attrSlug of Object.keys(attributes)) {
-      const val = attributes[attrSlug];
-      if (typeof val === 'string' && valueTranslationMap[val]) {
-        attributes[attrSlug] = valueTranslationMap[val];
-      } else if (Array.isArray(val)) {
-        attributes[attrSlug] = val.map((v) =>
-          typeof v === 'string' && valueTranslationMap[v] ? valueTranslationMap[v] : v
-        );
+      // Color attributes should remain as arrays so ProductDetailView can render swatch badges
+      if (attrSlug === 'color' || attrSlug.endsWith('_color')) {
+        continue;
+      }
+
+      if (slugTranslationMap[attrSlug]) {
+        attributes[attrSlug] = slugTranslationMap[attrSlug];
+      } else {
+        const val = attributes[attrSlug];
+        if (typeof val === 'string' && valueTranslationMap[val]) {
+          attributes[attrSlug] = valueTranslationMap[val];
+        } else if (val === 'true' || val === true) {
+          attributes[attrSlug] = requestedLocale === 'ru' ? 'Да' : requestedLocale === 'zh' ? '是' : 'Yes';
+        } else if (val === 'false' || val === false) {
+          attributes[attrSlug] = requestedLocale === 'ru' ? 'Нет' : requestedLocale === 'zh' ? '否' : 'No';
+        } else if (Array.isArray(val)) {
+          // If it's an option array, translate each item
+          attributes[attrSlug] = val.map((v) => getLocalizedOptionLabel(attrSlug, String(v), requestedLocale as any));
+        } else if (typeof val === 'string') {
+          attributes[attrSlug] = getLocalizedOptionLabel(attrSlug, val, requestedLocale as any);
+        }
       }
     }
   }
@@ -142,8 +167,13 @@ async function getProductFromDB(slug: string, locale: string) {
         isFilterable: ca.attribute.isFilterable,
         isVisible: ca.isVisible,
         displayOrder: ca.displayOrder ?? ca.attribute.displayOrder,
-        options: ca.attribute.options,
-        colorOptions: ca.attribute.colorOptions,
+        options: ca.attribute.options?.map((opt: string) =>
+          getLocalizedOptionLabel(ca.attribute.slug, opt, requestedLocale as any)
+        ) || ca.attribute.options,
+        colorOptions: ca.attribute.colorOptions?.map((c: any) => ({
+          ...c,
+          label: getLocalizedColorName(c.value, c.label, requestedLocale as any)
+        })) || ca.attribute.colorOptions,
       }));
 
   const parentAttributes = flattenCategoryAttrs(product.category?.parent?.attributes || []);
@@ -215,11 +245,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     };
   }
 
-  const companyName = await getCompanyName(locale);
   const localized = localizeProduct(product, locale);
-  const title = localized.metaTitle
-    ? `${localized.metaTitle} — ${companyName}`
-    : `${localized.name || product.name} — ${companyName}`;
+  const title = localized.metaTitle || localized.name || product.name;
   const description = localized.metaDescription || localized.description?.slice(0, 160) || product.description?.slice(0, 160) || '';
   const firstImage = product.thumbnail || product.images?.[0] || '';
 

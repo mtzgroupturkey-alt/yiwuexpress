@@ -26,7 +26,11 @@ export async function GET(
         categoryId: params.id,
       },
       include: {
-        attribute: true,
+        attribute: {
+          include: {
+            translations: true,
+          },
+        },
       },
       orderBy: {
         displayOrder: 'asc',
@@ -41,7 +45,11 @@ export async function GET(
           categoryId: category.parentId,
         },
         include: {
-          attribute: true,
+          attribute: {
+            include: {
+              translations: true,
+            },
+          },
           category: {
             select: { name: true },
           },

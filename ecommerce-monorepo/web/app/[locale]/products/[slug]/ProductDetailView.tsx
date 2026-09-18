@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Container } from '@/components/ui/Container'
 import { SharedLayout } from '@/components/layout/SharedLayout'
@@ -8,17 +8,20 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, Heart, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle, Eye, Flame } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle } from 'lucide-react'
 import ProductCard from '@/components/products/ProductCard'
 import { ReviewSection } from '@/components/products/ReviewSection'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
+import { WishlistButton } from '@/components/products/WishlistButton'
 import { useCart } from '@/components/CartContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
+import { useSettings } from '@/components/SettingsProvider'
 import { useStoreMode, getDisplayPrice, getEffectiveMinOrderQty } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
+import { getLocalizedOptionLabel, getLocalizedColorName, getLocalizedCountry, getLocalizedMaterial } from '@/lib/utils/attributeOptionTranslations'
 import { useTranslations } from 'next-intl'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
@@ -63,6 +66,24 @@ interface ProductData {
     options?: string[] | null
     colorOptions?: { label: string; value: string }[] | null
   }> | null
+  variants?: Array<{
+    id: string
+    sku: string
+    attributes: any
+    price: number
+    comparePrice?: number | null
+    stock: number
+    images?: string[]
+    isActive?: boolean
+  }> | null
+  reviews?: Array<{
+    id: string
+    rating: number
+    title: string
+    comment: string
+    createdAt: any
+    user?: { name: string }
+  }> | null
 }
 
 interface RelatedProduct {
@@ -99,17 +120,126 @@ export default function ProductDetailView({
   const tCart = useTranslations('Cart')
   const tProducts = useTranslations('Products') as unknown as (key: string, values?: any) => string
 
-  // Store mode integration
+  // Store settings & mode integration
+  const { settings } = useSettings()
   const { storeMode, isWholesale, isRetail, isBoth } = useStoreMode()
   const { enableWholesaleSession } = useSessionMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { addToQuote } = useQuoteCart()
 
+  const rfqModel = settings?.rfqModel || 'RFQ'
+  const isInstantWholesale = rfqModel === 'INSTANT'
+
+  // Variant Management
+  const variants = useMemo(() => product.variants || [], [product.variants])
+
+  // Extract all variant dimensions (e.g. ['size', 'color'])
+  const optionKeys = useMemo(() => {
+    const keys = new Set<string>()
+    variants.forEach((v) => {
+      if (v.attributes && typeof v.attributes === 'object') {
+        Object.keys(v.attributes).forEach((k) => keys.add(k))
+      }
+    })
+    return Array.from(keys)
+  }, [variants])
+
+  // Extract unique values per dimension
+  const optionValuesMap = useMemo(() => {
+    const map: Record<string, string[]> = {}
+    optionKeys.forEach((key) => {
+      const vals = new Set<string>()
+      variants.forEach((v) => {
+        const val = v.attributes?.[key]
+        if (val) vals.add(String(val))
+      })
+      map[key] = Array.from(vals)
+    })
+    return map
+  }, [optionKeys, variants])
+
+  // Selected variant options state
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+
+  // Initialize selected options to the first available variant on mount or when product changes
+  useEffect(() => {
+    if (variants.length > 0) {
+      const firstVar = variants[0]
+      const initial: Record<string, string> = {}
+      optionKeys.forEach((k) => {
+        if (firstVar.attributes?.[k]) {
+          initial[k] = String(firstVar.attributes[k])
+        }
+      })
+      setSelectedOptions(initial)
+    } else {
+      setSelectedOptions({})
+    }
+  }, [variants, optionKeys])
+
+  // Find currently matched variant
+  const selectedVariant = useMemo(() => {
+    if (variants.length === 0) return null
+    return (
+      variants.find((v) => {
+        if (!v.attributes) return false
+        return Object.entries(selectedOptions).every(
+          ([k, val]) => String(v.attributes[k]) === val
+        )
+      }) || variants[0]
+    )
+  }, [variants, selectedOptions])
+
+  // Effective price, compare price, stock, SKU, and gallery images
+  const currentPrice = selectedVariant?.price ?? product.price
+  const currentCompareAtPrice = selectedVariant?.comparePrice ?? product.compareAtPrice
+  const currentStock = selectedVariant?.stock ?? product.stock
+  const currentSku = selectedVariant?.sku ?? product.sku
+  const currentImages = useMemo(() => {
+    const list: string[] = []
+    // If selected variant has specific photos, show them first
+    if (selectedVariant?.images && Array.isArray(selectedVariant.images)) {
+      selectedVariant.images.forEach((img) => {
+        if (img && typeof img === 'string' && !list.includes(img)) list.push(img)
+      })
+    }
+    // Include all general product gallery images
+    if (product.images && Array.isArray(product.images)) {
+      product.images.forEach((img) => {
+        if (img && typeof img === 'string' && !list.includes(img)) list.push(img)
+      })
+    }
+    // Include thumbnail if missing
+    if (product.thumbnail && !list.includes(product.thumbnail)) {
+      list.push(product.thumbnail)
+    }
+    return list.length > 0 ? list : ['/placeholder-product.png']
+  }, [selectedVariant, product.images, product.thumbnail])
+
+  // Review summaries
+  const reviewsList = useMemo(() => product.reviews || [], [product.reviews])
+  const reviewsCount = reviewsList.length
+  const averageRating = useMemo(() => {
+    if (reviewsCount === 0) return 5
+    return (
+      reviewsList.reduce((acc, r) => acc + (r.rating || 5), 0) / reviewsCount
+    )
+  }, [reviewsList, reviewsCount])
+
+  // Check if apparel/clothing category for size guide
+  const isApparelCategory = Boolean(
+    product.category?.slug?.includes('apparel') ||
+    product.category?.slug?.includes('clothing') ||
+    product.category?.slug?.includes('fashion') ||
+    product.category?.slug?.includes('shirt') ||
+    product.category?.slug?.includes('dress') ||
+    product.category?.slug?.includes('shoes')
+  )
+
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
   const [isSpecificationsExpanded, setIsSpecificationsExpanded] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
   const [showQuoteSuccess, setShowQuoteSuccess] = useState(false)
   const [moqError, setMoqError] = useState('')
@@ -117,7 +247,6 @@ export default function ProductDetailView({
   const [showQuestionForm, setShowQuestionForm] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
   const [showReturnPolicy, setShowReturnPolicy] = useState(false)
-  const [viewingCount, setViewingCount] = useState(0)
 
   // Initialize using the store-mode-effective MOQ (product already fetched
   // server-side — no loading skeleton needed on first paint).
@@ -129,7 +258,6 @@ export default function ProductDetailView({
   useEffect(() => {
     if (slug) {
       fetchRelatedProducts()
-      setViewingCount(Math.floor(Math.random() * 35) + 12)
     }
   }, [slug])
 
@@ -149,7 +277,7 @@ export default function ProductDetailView({
   const handleQuantityChange = (delta: number) => {
     const effectiveMinQty = getEffectiveMinOrderQty(product.minOrderQty, storeMode)
     const newQty = quantity + delta
-    if (newQty >= effectiveMinQty && newQty <= product.stock) {
+    if (newQty >= effectiveMinQty && newQty <= currentStock) {
       setQuantity(newQty)
       if (moqError && newQty >= (product.minOrderQty || 1)) setMoqError('')
       // Context B: crossing the wholesale minimum threshold morphs the header
@@ -171,6 +299,7 @@ export default function ProductDetailView({
         credentials: 'include', // Send httpOnly cookie
         body: JSON.stringify({
           productId: product.id,
+          variantId: selectedVariant?.id,
           quantity
         })
       })
@@ -214,17 +343,25 @@ export default function ProductDetailView({
     }
     setMoqError('')
     enableWholesaleSession()
+
+    const variantLabel = selectedVariant && Object.keys(selectedOptions).length > 0
+      ? `(${Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ')})`
+      : ''
+    const displayName = variantLabel ? `${product.name} ${variantLabel}` : product.name
+    const activeImage = selectedVariant?.images?.[0] || product.thumbnail || product.images?.[0] || null
+
     addInquiryItem({
       productId: product.id,
       slug: product.slug,
-      name: product.name,
-      image: product.thumbnail,
-      wholesalePrice: product.wholesalePrice || product.price,
-      retailPrice: product.price,
+      name: displayName,
+      image: activeImage,
+      wholesalePrice: product.wholesalePrice || currentPrice,
+      retailPrice: currentPrice,
       quantity,
       minOrderQty: moq,
-      note:
-        product.attributes && Object.keys(product.attributes).length > 0
+      note: selectedVariant
+        ? Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join('; ')
+        : product.attributes && Object.keys(product.attributes).length > 0
           ? Object.entries(product.attributes)
               .filter(([, v]) => v)
               .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
@@ -233,20 +370,15 @@ export default function ProductDetailView({
     })
     addToQuote({
       productId: product.id,
-      productName: product.name,
-      productSku: product.sku || product.slug,
-      productImage: product.thumbnail || product.images?.[0] || null,
+      productName: displayName,
+      productSku: currentSku,
+      productImage: activeImage,
       quantity,
       minOrderQty: moq,
       targetPrice: product.wholesalePrice || null,
     })
     setShowQuoteSuccess(true)
     setTimeout(() => setShowQuoteSuccess(false), 3500)
-  }
-
-  const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    // TODO: Implement API call to save favorite
   }
 
   const handleShare = () => {
@@ -273,8 +405,8 @@ export default function ProductDetailView({
     navigate(`/quotes?product=${slug}`)
   }
 
-  const discount = product.compareAtPrice
-    ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+  const discount = currentCompareAtPrice
+    ? Math.round(((currentCompareAtPrice - currentPrice) / currentCompareAtPrice) * 100)
     : 0
 
   // Expand-and-Contract Phase 3: resolve localized name/description with
@@ -302,10 +434,10 @@ export default function ProductDetailView({
 
   return (
     <SharedLayout
+      showHero={true}
       pageTitle={localized.name}
-      pageDescription={localized.description?.substring(0, 150) || `High-quality ${localized.name} from China Express`}
+      pageDescription={localized.description?.substring(0, 150) || `High-quality ${localized.name}`}
       breadcrumbs={breadcrumbs}
-      backgroundImage="/images/breadcrumb-bg.jpg"
     >
       {/* Product JSON-LD Structured Data */}
       <script
@@ -331,181 +463,49 @@ export default function ProductDetailView({
       />
       <div className="bg-gradient-to-b from-gray-50 to-white py-4">
         <Container maxWidth="2xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-          {/* Left Column: Image Gallery + Description + Specs */}
-          <div className="lg:col-span-6 animate-fade-in">
-            <div className="sticky top-20">
-              <ProductImageGallery
-                images={product.images.length > 0 ? product.images : [product.thumbnail || '']}
-                productName={localized.name}
-              />
+          {/* In-Page Clean Breadcrumb Trail */}
+          <nav aria-label="Breadcrumb" className="mb-4">
+            <ol className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-500 flex-wrap">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => navigate('/')}
+                  className="hover:text-primary-600 transition-colors font-medium"
+                >
+                  Home
+                </button>
+              </li>
+              {breadcrumbs.map((crumb, idx) => (
+                <li key={crumb.href || idx} className="flex items-center gap-1.5 sm:gap-2">
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  {idx === breadcrumbs.length - 1 ? (
+                    <span className="font-semibold text-slate-900 line-clamp-1 max-w-[200px] sm:max-w-md">
+                      {crumb.name}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => navigate(crumb.href)}
+                      className="hover:text-primary-600 transition-colors font-medium"
+                    >
+                      {crumb.name}
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+            {/* Left Column: Image Gallery */}
+            <div className="lg:col-span-6 animate-fade-in">
+              <div className="sticky top-20">
+                <ProductImageGallery
+                  images={currentImages}
+                  productName={localized.name}
+                />
+              </div>
             </div>
-
-            {/* Description & Specifications below images */}
-            <div className="mt-4 space-y-4">
-              {/* Specifications Card - Compact */}
-              <Card className="shadow-md border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3">
-                  <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'rgb(26, 58, 92)' }}>
-                    <FileText className="w-5 h-5" style={{ color: 'rgb(26, 58, 92)' }} />
-                    {t('specifications')}
-                  </h2>
-                </div>
-                <CardContent className="p-4 bg-gradient-to-br from-white to-gray-50">
-                  <dl className="space-y-0.5">{/* Build complete specifications array first */}
-                    {(() => {
-                      const allSpecs: JSX.Element[] = []
-
-                      // Product Attributes from Category
-                      if (product.attributes && Object.entries(product.attributes).length > 0) {
-                        if (product.categoryAttributes && product.categoryAttributes.length > 0) {
-                          product.categoryAttributes
-                            .filter(attr => {
-                              const value = product.attributes?.[attr.slug]
-                              if (!value) return false
-                              if (Array.isArray(value) && value.length === 0) return false
-                              return true
-                            })
-                            .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                            .forEach((attr, idx) => {
-                              const value = product.attributes?.[attr.slug]
-                              if (!value) return
-
-                              const isColorType = attr.inputType === 'COLOR' || attr.inputType === 'COLOR_MULTI'
-                              const colorOpts = attr.colorOptions || []
-
-                              // Color attribute — show swatches
-                              if (isColorType) {
-                                const colorVals: string[] = Array.isArray(value) ? value : [value]
-                                allSpecs.push(
-                                  <div key={attr.slug ?? `color-${idx}`} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
-                                    <div className="flex justify-between items-start gap-2">
-                                      <dt className="text-gray-700 font-semibold flex-shrink-0 text-xs">{attr.name}</dt>
-                                      <dd className="flex flex-wrap gap-1 justify-end">
-                                        {colorVals.map((hex: string, ci) => {
-                                          const label = colorOpts.find((c: any) => c.value === hex)?.label || hex
-                                          return (
-                                            <div key={hex ?? `color-val-${idx}-${ci}`} className="flex items-center gap-1">
-                                              <span
-                                                className="inline-block w-4 h-4 rounded-full border border-white shadow-sm ring-1 ring-gray-300"
-                                                style={{ backgroundColor: hex }}
-                                                title={label}
-                                              />
-                                              <span className="text-xs font-bold text-gray-900">{label}</span>
-                                            </div>
-                                          )
-                                        })}
-                                      </dd>
-                                    </div>
-                                  </div>
-                                )
-                              } else {
-                                // Regular attribute — text display
-                                const displayValue = Array.isArray(value) ? value.join(', ') : String(value)
-                                allSpecs.push(
-                                  <div key={attr.slug ?? `spec-${idx}`} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
-                                    <dt className="text-gray-700 font-semibold text-xs">{attr.name}</dt>
-                                    <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
-                                  </div>
-                                )
-                              }
-                            })
-                        } else {
-                          Object.entries(product.attributes)
-                            .filter(([, value]) => !!value && !(Array.isArray(value) && value.length === 0))
-                            .forEach(([key, value]) => {
-                              const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()
-                              const displayValue = Array.isArray(value) ? value.join(', ') : String(value)
-                              allSpecs.push(
-                                <div key={key} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
-                                  <dt className="text-gray-700 font-semibold text-xs">{displayName}</dt>
-                                  <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
-                                </div>
-                              )
-                            })
-                        }
-                      }
-
-                      // Basic Product Info
-                      allSpecs.push(
-                        <div key="weight" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                          <dt className="text-gray-700 font-semibold text-xs">{t('specWeight')}</dt>
-                          <dd className="font-bold text-gray-900 text-xs">{product.weightKg} kg</dd>
-                        </div>
-                      )
-
-                      if (product.hsCode) {
-                        allSpecs.push(
-                          <div key="hsCode" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                            <dt className="text-gray-700 font-semibold text-xs">{t('specHsCode')}</dt>
-                            <dd className="font-bold text-gray-900 text-xs">{product.hsCode}</dd>
-                          </div>
-                        )
-                      }
-
-                      allSpecs.push(
-                        <div key="origin" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                          <dt className="text-gray-700 font-semibold text-xs">{t('specOrigin')}</dt>
-                          <dd className="font-bold text-gray-900 text-xs">{product.countryOfOrigin}</dd>
-                        </div>
-                      )
-
-                      if (product.material) {
-                        allSpecs.push(
-                          <div key="material" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                            <dt className="text-gray-700 font-semibold text-xs">{t('specMaterial')}</dt>
-                            <dd className="font-bold text-gray-900 text-xs">{product.material}</dd>
-                          </div>
-                        )
-                      }
-
-                      if (product.dimensions) {
-                        allSpecs.push(
-                          <div key="dimensions" className="flex justify-between py-2 px-2 hover:bg-white rounded transition-colors">
-                            <dt className="text-gray-700 font-semibold text-xs">{t('specDimensions')}</dt>
-                            <dd className="font-bold text-gray-900 text-xs">
-                              {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} cm
-                            </dd>
-                          </div>
-                        )
-                      }
-
-                      // Show preview (first 5 items) or all items
-                      const previewCount = 5
-                      const specsToShow = isSpecificationsExpanded ? allSpecs : allSpecs.slice(0, previewCount)
-                      const hasMore = allSpecs.length > previewCount
-
-                      return (
-                        <>
-                          {specsToShow}
-                          {hasMore && (
-                            <div className="pt-3">
-                              <button
-                                onClick={() => setIsSpecificationsExpanded(!isSpecificationsExpanded)}
-                                className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 text-gray-800 font-semibold rounded-lg transition-all shadow-sm hover:shadow text-sm"
-                              >
-                                  {isSpecificationsExpanded ? (
-                                    <>
-                                      <span>{t('showLess')}</span>
-                                      <ChevronUp className="w-4 h-4" />
-                                    </>
-                                  ) : (
-                                    <>
-                                      <span>{t('showAllMore', { n: allSpecs.length - previewCount })}</span>
-                                      <ChevronDown className="w-4 h-4" />
-                                    </>
-                                  )}
-                              </button>
-                            </div>
-                          )}
-                        </>
-                      )
-                    })()}
-                  </dl>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
 
           {/* Right Column: Product Info */}
           <div className="lg:col-span-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
@@ -542,30 +542,39 @@ export default function ProductDetailView({
               </div>
             )}
 
-            {/* Top Action Bar - Favorites & Share */}
+            {/* Top Action Bar - Reviews Summary & Wishlist/Share */}
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1">
-                {[1,2,3,4,5].map((star) => (
-                  <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-                <span className="text-xs text-gray-600 ml-1">{t('ratedReviews')}</span>
-              </div>
               <div className="flex items-center gap-1.5">
-                <button
-                  onClick={handleToggleFavorite}
-                  className={`p-2 rounded-lg border transition-all hover:scale-105 ${
-                    isFavorite
-                      ? 'bg-red-50 border-red-300 text-red-600'
-                      : 'bg-white border-gray-300 text-gray-600 hover:border-red-300'
-                  }`}
-                  aria-label={t('addToFavorites')}
+                <div className="flex items-center">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-4 h-4 ${
+                        reviewsCount > 0 && star <= Math.round(averageRating)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'fill-gray-200 text-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <a
+                  href="#reviews"
+                  className="text-xs text-gray-600 hover:text-primary-600 font-medium transition-colors ml-1"
                 >
-                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                </button>
+                  {reviewsCount > 0 ? `${averageRating.toFixed(1)} (${reviewsCount})` : '0 reviews'}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <WishlistButton
+                  productId={product.id}
+                  size="md"
+                  className="border border-gray-200 hover:border-red-300 shadow-xs"
+                />
                 <div className="relative">
                   <button
+                    type="button"
                     onClick={handleShare}
-                    className="p-2 rounded-lg border border-gray-300 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-600 transition-all hover:scale-105"
+                    className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-600 transition-all hover:scale-105 shadow-xs"
                     aria-label={t('shareProduct')}
                   >
                     <Share2 className="w-4 h-4" />
@@ -573,6 +582,7 @@ export default function ProductDetailView({
                   {shareMenuOpen && (
                     <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 p-2 min-w-[160px] z-10">
                       <button
+                        type="button"
                         onClick={copyLink}
                         className="w-full text-left px-3 py-1.5 hover:bg-gray-50 rounded text-sm transition-colors"
                       >
@@ -591,37 +601,22 @@ export default function ProductDetailView({
                   {localizedCategoryName}
                 </Badge>
               )}
-              {product.stock > 100 && (
+              {currentStock > 100 && (
                 <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-sm px-4 py-1.5 border-0">
                   {t('inHighDemand')}
                 </Badge>
               )}
-              <span className="text-sm text-gray-500 font-medium">{t('skuLabel')}{product.sku}</span>
+              <span className="text-sm text-gray-500 font-medium">{t('skuLabel')}{currentSku}</span>
             </div>
 
-            {/* Product Name — visually the page's primary heading. The lone
-                semantic <h1> lives in the SharedLayout PageHero (SSR-rendered
-                with the same product name), so this stays a div to keep
-                exactly one h1 per page. */}
-            <div className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">{localized.name}</div>
-
-            {/* Description Card - Compact */}
-            <Card className="shadow-md border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow mb-4">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3">
-                <h2 className="text-lg font-bold" style={{ color: 'rgb(26, 58, 92)' }}>{t('productDescription')}</h2>
-              </div>
-              <CardContent className="pt-5 px-4 pb-4">
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                  {localized.description || t('noDescription')}
-                </p>
-              </CardContent>
-            </Card>
+            {/* Product Name (Primary H1) */}
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight">{localized.name}</h1>
 
             {/* Price Section - Store Mode Aware */}
             <div className="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-100">
               {(() => {
                 const { displayPrice, priceType } = getDisplayPrice(
-                  product.price,
+                  currentPrice,
                   product.wholesalePrice,
                   storeMode
                 )
@@ -637,10 +632,10 @@ export default function ProductDetailView({
                           {t('wholesalePrice')}
                         </Badge>
                       )}
-                      {product.compareAtPrice && (
+                      {currentCompareAtPrice && (
                         <>
                           <span className="text-lg text-gray-400 line-through">
-                            {formatPrice(product.compareAtPrice)}
+                            {formatPrice(currentCompareAtPrice)}
                           </span>
                           <Badge variant="destructive" className="text-xs px-2 py-0.5">
                             {t('savePct', { pct: discount })}
@@ -663,7 +658,7 @@ export default function ProductDetailView({
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-600">{t('retail')}</span>
-                            <span className="text-sm font-bold text-gray-900">{formatPrice(product.price)}</span>
+                            <span className="text-sm font-bold text-gray-900">{formatPrice(currentPrice)}</span>
                           </div>
                           {product.wholesalePrice && (
                             <div className="flex items-center justify-between">
@@ -694,25 +689,114 @@ export default function ProductDetailView({
                   {formatPrice(product.wholesalePrice)}
                 </p>
                 <p className="text-xs text-blue-600 font-medium">
-                  {t('minOrderUnits', { n: product.minOrderQty, pct: Math.round((1 - product.wholesalePrice / product.price) * 100) })}
+                  {t('minOrderUnits', { n: product.minOrderQty, pct: Math.round((1 - product.wholesalePrice / currentPrice) * 100) })}
                 </p>
+              </div>
+            )}
+
+            {/* Variant Selectors (Size, Color, Capacity, etc.) */}
+            {optionKeys.length > 0 && (
+              <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100 shadow-sm space-y-4">
+                {optionKeys.map((key) => {
+                  const values = optionValuesMap[key] || []
+                  const selectedVal = selectedOptions[key]
+                  const isColor = key.toLowerCase() === 'color'
+
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          {key.charAt(0).toUpperCase() + key.slice(1)}:
+                        </span>
+                        <span className="text-xs font-semibold text-primary-700">
+                          {selectedVal || 'Select'}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {values.map((val) => {
+                          const isSelected = selectedVal === val
+                          const matchingVar = variants.find(
+                            (v) =>
+                              v.attributes?.[key] === val &&
+                              Object.entries(selectedOptions).every(
+                                ([k, sVal]) => k === key || v.attributes?.[k] === sVal
+                              )
+                          )
+                          const isAvailable = matchingVar ? matchingVar.stock > 0 : true
+
+                          if (isColor) {
+                            const colorMap: Record<string, string> = {
+                              black: '#111827',
+                              white: '#f9fafb',
+                              gold: '#d4af37',
+                              silver: '#9ca3af',
+                              gray: '#6b7280',
+                              grey: '#6b7280',
+                              blue: '#2563eb',
+                              red: '#dc2626',
+                              green: '#16a34a',
+                              rose: '#f43f5e',
+                            }
+                            const hex = colorMap[val.toLowerCase()] || val
+
+                            return (
+                              <button
+                                key={val}
+                                type="button"
+                                onClick={() => setSelectedOptions((prev) => ({ ...prev, [key]: val }))}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                  isSelected
+                                    ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-500/20 text-primary-900 font-semibold shadow-xs'
+                                    : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                                } ${!isAvailable ? 'opacity-50' : ''}`}
+                                title={val}
+                              >
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full border border-gray-300 shadow-xs flex-shrink-0"
+                                  style={{ backgroundColor: hex }}
+                                />
+                                <span>{val}</span>
+                              </button>
+                            )
+                          }
+
+                          return (
+                            <button
+                              key={val}
+                              type="button"
+                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [key]: val }))}
+                              className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? 'border-primary-600 bg-primary-600 text-white shadow-xs'
+                                  : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700 hover:bg-gray-50'
+                              } ${!isAvailable ? 'opacity-50' : ''}`}
+                            >
+                              {val}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
 
             {/* Stock Status & Scarcity */}
             <div className="bg-white rounded-lg p-3 mb-4 border border-gray-200 shadow-sm space-y-3">
-              {product.stock > 0 ? (
+              {currentStock > 0 ? (
                 <div className="flex items-center gap-2">
                   <div className="bg-green-100 rounded-full p-1.5">
                     <Package className="w-4 h-4 text-green-600" />
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-green-700 text-sm">{t('inStock')}</p>
-                    <p className="text-xs text-gray-600">{t('unitsAvailable', { n: product.stock })}</p>
+                    <p className="text-xs text-gray-600">{t('unitsAvailable', { n: currentStock })}</p>
                   </div>
-                  {product.stock <= 50 && (
+                  {currentStock <= 50 && (
                     <Badge variant="destructive" className="animate-pulse bg-red-100 text-red-700 border-red-200 hover:bg-red-200">
-                      {t('onlyLeft', { n: product.stock })}
+                      {t('onlyLeft', { n: currentStock })}
                     </Badge>
                   )}
                 </div>
@@ -727,15 +811,6 @@ export default function ProductDetailView({
                   </div>
                 </div>
               )}
-
-              {viewingCount > 0 && (
-                <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100">
-                  <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
-                  <span className="text-xs font-medium text-gray-700">
-                    <strong className="text-orange-600">{t('peopleViewing', { n: viewingCount })}</strong>
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Quantity Selector - Store Mode Aware */}
@@ -745,10 +820,10 @@ export default function ProductDetailView({
 
                 return (
                   <>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label htmlFor="product-quantity" className="block text-sm font-semibold text-gray-900 mb-2">
                       {t('selectQuantity')}
                       {effectiveMinQty > 1 && (
-                        <span className="text-xs text-gray-600 font-normal">
+                        <span className="text-xs text-gray-600 font-normal ml-1">
                           ({t('minUnits', { n: effectiveMinQty })})
                         </span>
                       )}
@@ -762,29 +837,36 @@ export default function ProductDetailView({
                       <Button
                         variant="outline"
                         size="icon"
+                        type="button"
                         onClick={() => handleQuantityChange(-1)}
                         disabled={quantity <= effectiveMinQty}
+                        aria-label="Decrease quantity"
                         className="h-10 w-10 rounded-lg border hover:border-primary-500 hover:bg-primary-50"
                       >
                         <Minus className="w-4 h-4" />
                       </Button>
                       <input
+                        id="product-quantity"
                         type="number"
+                        aria-label={t('selectQuantity')}
                         value={quantity}
                         onChange={(e) => {
                           const val = parseInt(e.target.value)
-                          if (val >= effectiveMinQty && val <= product.stock) {
+                          if (val >= effectiveMinQty && val <= currentStock) {
                             setQuantity(val)
                           }
                         }}
                         min={effectiveMinQty}
+                        max={currentStock}
                         className="w-20 text-center border border-gray-300 rounded-lg py-2 text-base font-bold focus:border-primary-500 focus:ring-1 focus:ring-primary-200 transition-all"
                       />
                       <Button
                         variant="outline"
                         size="icon"
+                        type="button"
                         onClick={() => handleQuantityChange(1)}
-                        disabled={quantity >= product.stock}
+                        disabled={quantity >= currentStock}
+                        aria-label="Increase quantity"
                         className="h-10 w-10 rounded-lg border hover:border-primary-500 hover:bg-primary-50"
                       >
                         <Plus className="w-4 h-4" />
@@ -794,7 +876,7 @@ export default function ProductDetailView({
                       <div className="flex justify-between items-center">
                         <span className="text-gray-700 font-medium text-sm">{t('subtotal')}</span>
                         <span className="text-xl font-bold text-primary-600">
-                          {formatPrice(product.price * quantity)}
+                          {formatPrice(currentPrice * quantity)}
                         </span>
                       </div>
                     </div>
@@ -812,7 +894,7 @@ export default function ProductDetailView({
                   size="lg"
                   className="relative w-full h-12 text-base font-bold shadow-[0_8px_30px_rgb(26,58,92,0.2)] hover:shadow-[0_8px_30px_rgb(26,58,92,0.3)] transition-all rounded-xl bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 bg-[length:200%_auto] hover:bg-right hover:scale-[1.02] overflow-hidden group"
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || adding}
+                  disabled={currentStock === 0 || adding}
                 >
                   <div className="absolute inset-0 bg-white/20 -skew-x-12 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                   <ShoppingCart className="w-5 h-5 mr-2" />
@@ -832,10 +914,10 @@ export default function ProductDetailView({
                     : 'w-full h-11 text-base font-semibold border-2 border-primary-600 text-primary-700 hover:bg-primary-50 rounded-lg transition-all'
                 }
                 onClick={handleAddToQuoteList}
-                disabled={product.stock === 0}
+                disabled={currentStock === 0}
               >
                 <FileText className="w-5 h-5 mr-2" />
-                {t('addToQuoteList')}
+                {isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart') : t('addToQuoteList')}
               </Button>
 
               {/* Inline MOQ validation message */}
@@ -877,8 +959,305 @@ export default function ProductDetailView({
           </div>
         </div>
 
+        {/* Details Section: Description & Specifications */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+          {/* Product Description */}
+          <div className="lg:col-span-6">
+            <Card className="h-full shadow-md border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3">
+                <h2 className="text-lg font-bold" style={{ color: 'rgb(26, 58, 92)' }}>{t('productDescription')}</h2>
+              </div>
+              <CardContent className="pt-5 px-4 pb-4">
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                  {localized.description || t('noDescription')}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Specifications Card */}
+          <div className="lg:col-span-6">
+            <Card className="h-full shadow-md border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3">
+                <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'rgb(26, 58, 92)' }}>
+                  <FileText className="w-5 h-5" style={{ color: 'rgb(26, 58, 92)' }} />
+                  {t('specifications')}
+                </h2>
+              </div>
+              <CardContent className="p-4 bg-gradient-to-br from-white to-gray-50">
+                <dl className="space-y-0.5">{/* Build complete specifications array first */}
+                  {(() => {
+                    const allSpecs: JSX.Element[] = []
+                    let renderedDimensions = false
+
+                    // Product Attributes from Category
+                    if (product.attributes && Object.entries(product.attributes).length > 0) {
+                      if (product.categoryAttributes && product.categoryAttributes.length > 0) {
+                        product.categoryAttributes
+                          .filter(attr => {
+                            const value = product.attributes?.[attr.slug]
+                            if (!value) return false
+                            if (Array.isArray(value) && value.length === 0) return false
+                            return true
+                          })
+                          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                          .forEach((attr, idx) => {
+                            const value = product.attributes?.[attr.slug]
+                            if (!value) return
+
+                            if (attr.slug === 'dimensions' || attr.slug === 'dimensions_lwh') {
+                              renderedDimensions = true
+                            }
+
+                            const isColorType = attr.inputType === 'COLOR' || attr.inputType === 'COLOR_MULTI' || attr.slug === 'color' || attr.slug.endsWith('_color')
+                            const colorOpts = attr.colorOptions || []
+
+                            // Color attribute — show swatches with localized names
+                            if (isColorType) {
+                              let colorVals: string[] = []
+                              if (Array.isArray(value)) {
+                                colorVals = value
+                              } else if (typeof value === 'string') {
+                                if (value.startsWith('[') && value.endsWith(']')) {
+                                  try {
+                                    const parsed = JSON.parse(value)
+                                    if (Array.isArray(parsed)) colorVals = parsed
+                                  } catch {
+                                    colorVals = [value]
+                                  }
+                                } else if (value.includes(',')) {
+                                  colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
+                                } else {
+                                  colorVals = [value]
+                                }
+                              }
+
+                              allSpecs.push(
+                                <div key={attr.slug ?? `color-${idx}`} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
+                                  <div className="flex justify-between items-start gap-2">
+                                    <dt className="text-gray-700 font-semibold flex-shrink-0 text-xs">{attr.name}</dt>
+                                    <dd className="flex flex-wrap gap-1.5 justify-end">
+                                      {colorVals.map((hex: string, ci) => {
+                                        const cleanHex = hex.trim()
+                                        const rawLabel = colorOpts.find((c: any) => c.value?.toLowerCase() === cleanHex.toLowerCase())?.label
+                                        const label = getLocalizedColorName(cleanHex, rawLabel, locale)
+                                        const isHex = cleanHex.startsWith('#')
+                                        return (
+                                          <div
+                                            key={cleanHex ?? `color-val-${idx}-${ci}`}
+                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-gray-200 shadow-2xs text-xs font-semibold text-gray-800"
+                                          >
+                                            {isHex && (
+                                              <span
+                                                className="inline-block w-3.5 h-3.5 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
+                                                style={{ backgroundColor: cleanHex }}
+                                                title={label}
+                                              />
+                                            )}
+                                            <span>{label}</span>
+                                          </div>
+                                        )
+                                      })}
+                                    </dd>
+                                  </div>
+                                </div>
+                              )
+                            } else {
+                              // Regular attribute — text display with boolean and option translation fallback
+                              const isBool = attr.inputType === 'CHECKBOX' || typeof value === 'boolean' || value === 'true' || value === 'false' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
+                              let displayValue: any
+                              if (isBool) {
+                                const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
+                                if (attr.slug === 'assembly_required') {
+                                  displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
+                                } else {
+                                  displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
+                                }
+                              } else if (Array.isArray(value)) {
+                                displayValue = value.map((v: any) => getLocalizedOptionLabel(attr.slug, String(v), locale)).join(', ')
+                              } else {
+                                displayValue = getLocalizedOptionLabel(attr.slug, String(value), locale)
+                              }
+
+                              allSpecs.push(
+                                <div key={attr.slug ?? `spec-${idx}`} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
+                                  <dt className="text-gray-700 font-semibold text-xs">{attr.name}</dt>
+                                  <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
+                                </div>
+                              )
+                            }
+                          })
+                      } else {
+                        Object.entries(product.attributes)
+                          .filter(([, value]) => !!value && !(Array.isArray(value) && value.length === 0))
+                          .forEach(([key, value]) => {
+                            if (key === 'dimensions' || key === 'dimensions_lwh') {
+                              renderedDimensions = true
+                            }
+
+                            const isColor = key === 'color' || key.endsWith('_color')
+                            if (isColor) {
+                              let colorVals: string[] = []
+                              if (Array.isArray(value)) {
+                                colorVals = value
+                              } else if (typeof value === 'string') {
+                                if (value.startsWith('[') && value.endsWith(']')) {
+                                  try {
+                                    const p = JSON.parse(value)
+                                    if (Array.isArray(p)) colorVals = p
+                                  } catch {
+                                    colorVals = [value]
+                                  }
+                                } else if (value.includes(',')) {
+                                  colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
+                                } else {
+                                  colorVals = [value]
+                                }
+                              }
+
+                              allSpecs.push(
+                                <div key={key} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
+                                  <div className="flex justify-between items-start gap-2">
+                                    <dt className="text-gray-700 font-semibold flex-shrink-0 text-xs">
+                                      {locale === 'ru' ? 'Цвет' : locale === 'zh' ? '颜色' : 'Color'}
+                                    </dt>
+                                    <dd className="flex flex-wrap gap-1.5 justify-end">
+                                      {colorVals.map((hex: string, ci) => {
+                                        const cleanHex = hex.trim()
+                                        const label = getLocalizedColorName(cleanHex, undefined, locale)
+                                        const isHex = cleanHex.startsWith('#')
+                                        return (
+                                          <div
+                                            key={cleanHex ?? `color-val-${ci}`}
+                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-gray-200 shadow-2xs text-xs font-semibold text-gray-800"
+                                          >
+                                            {isHex && (
+                                              <span
+                                                className="inline-block w-3.5 h-3.5 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
+                                                style={{ backgroundColor: cleanHex }}
+                                              />
+                                            )}
+                                            <span>{label}</span>
+                                          </div>
+                                        )
+                                      })}
+                                    </dd>
+                                  </div>
+                                </div>
+                              )
+                            } else {
+                              const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()
+                              const isBool = typeof value === 'boolean' || value === 'true' || value === 'false' || key === 'assembly_required' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
+                              let displayValue: any
+                              if (isBool) {
+                                const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
+                                if (key === 'assembly_required') {
+                                  displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
+                                } else {
+                                  displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
+                                }
+                              } else if (Array.isArray(value)) {
+                                displayValue = value.map((v: any) => getLocalizedOptionLabel(key, String(v), locale)).join(', ')
+                              } else {
+                                displayValue = getLocalizedOptionLabel(key, String(value), locale)
+                              }
+
+                              allSpecs.push(
+                                <div key={key} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
+                                  <dt className="text-gray-700 font-semibold text-xs">{displayName}</dt>
+                                  <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
+                                </div>
+                              )
+                            }
+                          })
+                      }
+                    }
+
+                    // Basic Product Info
+                    allSpecs.push(
+                      <div key="weight" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
+                        <dt className="text-gray-700 font-semibold text-xs">{t('specWeight')}</dt>
+                        <dd className="font-bold text-gray-900 text-xs">{product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</dd>
+                      </div>
+                    )
+
+                    if (product.hsCode) {
+                      allSpecs.push(
+                        <div key="hsCode" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
+                          <dt className="text-gray-700 font-semibold text-xs">{t('specHsCode')}</dt>
+                          <dd className="font-bold text-gray-900 text-xs">{product.hsCode}</dd>
+                        </div>
+                      )
+                    }
+
+                    if (product.countryOfOrigin) {
+                      allSpecs.push(
+                        <div key="origin" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
+                          <dt className="text-gray-700 font-semibold text-xs">{t('specOrigin')}</dt>
+                          <dd className="font-bold text-gray-900 text-xs">{getLocalizedCountry(product.countryOfOrigin, locale)}</dd>
+                        </div>
+                      )
+                    }
+
+                    if (product.material) {
+                      allSpecs.push(
+                        <div key="material" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
+                          <dt className="text-gray-700 font-semibold text-xs">{t('specMaterial')}</dt>
+                          <dd className="font-bold text-gray-900 text-xs">{getLocalizedMaterial(product.material, locale)}</dd>
+                        </div>
+                      )
+                    }
+
+                    if (product.dimensions && !renderedDimensions) {
+                      allSpecs.push(
+                        <div key="dimensions" className="flex justify-between py-2 px-2 hover:bg-white rounded transition-colors">
+                          <dt className="text-gray-700 font-semibold text-xs">{t('specDimensions')}</dt>
+                          <dd className="font-bold text-gray-900 text-xs">
+                            {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} {locale === 'ru' ? 'см' : locale === 'zh' ? '厘米' : 'cm'}
+                          </dd>
+                        </div>
+                      )
+                    }
+
+                    // Show preview (first 5 items) or all items
+                    const previewCount = 5
+                    const specsToShow = isSpecificationsExpanded ? allSpecs : allSpecs.slice(0, previewCount)
+                    const hasMore = allSpecs.length > previewCount
+
+                    return (
+                      <>
+                        {specsToShow}
+                        {hasMore && (
+                          <div className="pt-3">
+                            <button
+                              onClick={() => setIsSpecificationsExpanded(!isSpecificationsExpanded)}
+                              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 text-gray-800 font-semibold rounded-lg transition-all shadow-sm hover:shadow text-sm"
+                            >
+                                {isSpecificationsExpanded ? (
+                                  <>
+                                    <span>{t('showLess')}</span>
+                                    <ChevronUp className="w-4 h-4" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <span>{t('showAllMore', { n: allSpecs.length - previewCount })}</span>
+                                    <ChevronDown className="w-4 h-4" />
+                                  </>
+                                )}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
+                </dl>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Additional Features Section - Compact */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4 mb-6">
+        <div className={`grid grid-cols-1 ${isApparelCategory ? 'lg:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mt-4 mb-6`}>
           {/* Ask a Question */}
           <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowQuestionForm(!showQuestionForm)}>
             <CardContent className="px-4 pt-6 pb-5">
@@ -910,46 +1289,48 @@ export default function ProductDetailView({
             </CardContent>
           </Card>
 
-          {/* Size Guide */}
-          <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowSizeGuide(!showSizeGuide)}>
-            <CardContent className="px-4 pt-6 pb-5">
-              <div className="flex items-start gap-3">
-                <div className="bg-purple-50 rounded-full p-2 flex-shrink-0">
-                  <Ruler className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-0.5 text-sm">{t('sizeGuide')}</h3>
-                  <p className="text-xs text-gray-600 mb-2">{t('findFit')}</p>
-                  <button className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                    {t('viewSizeChart')}
-                    <ChevronDown className={`w-3 h-3 transition-transform ${showSizeGuide ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>
-              </div>
-              {showSizeGuide && (
-                <div className="mt-3 pt-3 border-t border-gray-200 animate-fade-in">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-2 py-1.5 text-left font-semibold">{t('sizeHeader')}</th>
-                          <th className="px-2 py-1.5 text-left font-semibold">US</th>
-                          <th className="px-2 py-1.5 text-left font-semibold">EU</th>
-                          <th className="px-2 py-1.5 text-left font-semibold">UK</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        <tr><td className="px-2 py-1.5">S</td><td className="px-2 py-1.5">6-8</td><td className="px-2 py-1.5">36-38</td><td className="px-2 py-1.5">8-10</td></tr>
-                        <tr><td className="px-2 py-1.5">M</td><td className="px-2 py-1.5">8-10</td><td className="px-2 py-1.5">38-40</td><td className="px-2 py-1.5">10-12</td></tr>
-                        <tr><td className="px-2 py-1.5">L</td><td className="px-2 py-1.5">10-12</td><td className="px-2 py-1.5">40-42</td><td className="px-2 py-1.5">12-14</td></tr>
-                        <tr><td className="px-2 py-1.5">XL</td><td className="px-2 py-1.5">12-14</td><td className="px-2 py-1.5">42-44</td><td className="px-2 py-1.5">14-16</td></tr>
-                      </tbody>
-                    </table>
+          {/* Size Guide - Only shown for apparel / clothing items */}
+          {isApparelCategory && (
+            <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowSizeGuide(!showSizeGuide)}>
+              <CardContent className="px-4 pt-6 pb-5">
+                <div className="flex items-start gap-3">
+                  <div className="bg-purple-50 rounded-full p-2 flex-shrink-0">
+                    <Ruler className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 mb-0.5 text-sm">{t('sizeGuide')}</h3>
+                    <p className="text-xs text-gray-600 mb-2">{t('findFit')}</p>
+                    <button className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1">
+                      {t('viewSizeChart')}
+                      <ChevronDown className={`w-3 h-3 transition-transform ${showSizeGuide ? 'rotate-180' : ''}`} />
+                    </button>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                {showSizeGuide && (
+                  <div className="mt-3 pt-3 border-t border-gray-200 animate-fade-in">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left font-semibold">{t('sizeHeader')}</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">US</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">EU</th>
+                            <th className="px-2 py-1.5 text-left font-semibold">UK</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          <tr><td className="px-2 py-1.5">S</td><td className="px-2 py-1.5">6-8</td><td className="px-2 py-1.5">36-38</td><td className="px-2 py-1.5">8-10</td></tr>
+                          <tr><td className="px-2 py-1.5">M</td><td className="px-2 py-1.5">8-10</td><td className="px-2 py-1.5">38-40</td><td className="px-2 py-1.5">10-12</td></tr>
+                          <tr><td className="px-2 py-1.5">L</td><td className="px-2 py-1.5">10-12</td><td className="px-2 py-1.5">40-42</td><td className="px-2 py-1.5">12-14</td></tr>
+                          <tr><td className="px-2 py-1.5">XL</td><td className="px-2 py-1.5">12-14</td><td className="px-2 py-1.5">42-44</td><td className="px-2 py-1.5">14-16</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Return Policy */}
           <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowReturnPolicy(!showReturnPolicy)}>
@@ -994,19 +1375,20 @@ export default function ProductDetailView({
         </div>
 
         {/* Customer Support Callout - Compact */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-5 mb-6 shadow-md border border-blue-500">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-5 mb-6 shadow-md border border-blue-500 text-white">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="bg-white/20 rounded-full p-2.5 backdrop-blur-sm border border-white/30">
-                <MessageCircle className="w-5 h-5 text-gray-900" />
+                <MessageCircle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-base font-bold mb-0.5 text-gray-900">{t('needHelp')}</h3>
-                <p className="text-gray-800 text-sm">{t('chat247')}</p>
+                <h3 className="text-base font-bold mb-0.5 text-white">{t('needHelp')}</h3>
+                <p className="text-blue-100 text-sm">{t('chat247')}</p>
               </div>
             </div>
             <Button
               size="lg"
+              onClick={() => navigate('/contact')}
               className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-6 shadow-md hover:shadow-lg transition-all text-sm h-10"
             >
                 <MessageCircle className="w-4 h-4 mr-2" />
@@ -1039,6 +1421,31 @@ export default function ProductDetailView({
                   key={relatedProduct.id}
                   product={relatedProduct}
                   onAddToCart={async (productId) => {
+                    if (isWholesale && !isRetail) {
+                      const target = relatedProducts.find((p) => p.id === productId) || relatedProduct
+                      const moq = target.minOrder || (target as any).minOrderQty || 1
+                      enableWholesaleSession()
+                      addInquiryItem({
+                        productId: target.id,
+                        slug: target.slug,
+                        name: target.name,
+                        image: target.image,
+                        wholesalePrice: (target.wholesalePrice || target.price) as number,
+                        retailPrice: target.price,
+                        quantity: moq,
+                        minOrderQty: moq,
+                      })
+                      addToQuote({
+                        productId: target.id,
+                        productName: target.name,
+                        productSku: (target as any).sku || target.slug || target.id,
+                        productImage: target.image,
+                        quantity: moq,
+                        minOrderQty: moq,
+                      })
+                      return
+                    }
+
                     try {
                       // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
                       const response = await fetch('/api/cart', {

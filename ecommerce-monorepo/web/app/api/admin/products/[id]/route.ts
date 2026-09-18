@@ -18,7 +18,8 @@ export async function GET(
         category: true,
         attributeValues: {
           include: {
-            attribute: true
+            attribute: true,
+            translations: true
           }
         },
         translations: true  // ← Add translations to the include
@@ -32,8 +33,9 @@ export async function GET(
       )
     }
 
-    // Transform attributeValues array into a key-value object for easier form handling
+    // Transform attributeValues array into key-value objects for values and translations
     const attributes: Record<string, any> = {}
+    const attributeTranslations: Record<string, Record<string, string>> = {}
     product.attributeValues.forEach(av => {
       try {
         // Try to parse as JSON first (for arrays and objects)
@@ -42,13 +44,23 @@ export async function GET(
         // If not JSON, use as string
         attributes[av.attribute.slug] = av.value
       }
+
+      if (av.translations && av.translations.length > 0) {
+        if (!attributeTranslations[av.attribute.slug]) {
+          attributeTranslations[av.attribute.slug] = {}
+        }
+        av.translations.forEach(t => {
+          attributeTranslations[av.attribute.slug][t.locale] = t.value
+        })
+      }
     })
 
     return NextResponse.json({
       success: true,
       data: {
         ...product,
-        attributes
+        attributes,
+        attributeTranslations
       }
     })
   } catch (error) {
@@ -246,7 +258,8 @@ export async function PUT(
         category: true,
         attributeValues: {
           include: {
-            attribute: true
+            attribute: true,
+            translations: true
           }
         },
         translations: true  // ← Add translations to the response

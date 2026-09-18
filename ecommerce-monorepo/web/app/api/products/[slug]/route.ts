@@ -1,7 +1,12 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { localizeAttribute, localizeAttributeValue, localizeCategory } from '@/lib/utils/localize'
+import { localizeAttribute, localizeAttributeValue, localizeCategory, localizeProduct } from '@/lib/utils/localize'
+import {
+  getLocalizedOptionLabel,
+  getLocalizedColorList,
+  getLocalizedColorName
+} from '@/lib/utils/attributeOptionTranslations'
 
 const prisma = new PrismaClient()
 
@@ -109,6 +114,7 @@ export async function GET(
     // Keep a translation map (English value -> localized value) for localization.
     const attributes: Record<string, any> = {}
     const valueTranslationMap: Record<string, string> = {}
+    const slugTranslationMap: Record<string, string> = {}
     if (product.attributeValues && Array.isArray(product.attributeValues)) {
       product.attributeValues.forEach((av: any) => {
         let parsed: any
@@ -121,11 +127,16 @@ export async function GET(
         }
         attributes[av.attribute.slug] = parsed
 
-        if (typeof av.value === 'string' && av.translations) {
+        if (av.translations && Array.isArray(av.translations)) {
           const tr = (av.translations as any[]).find(
             (t) => t.locale === requestedLocale && t.value && t.value.trim().length > 0
           )
-          if (tr) valueTranslationMap[av.value] = tr.value
+          if (tr) {
+            slugTranslationMap[av.attribute.slug] = tr.value
+            if (typeof av.value === 'string') {
+              valueTranslationMap[av.value] = tr.value
+            }
+          }
         }
       })
     }
@@ -133,11 +144,18 @@ export async function GET(
     // Localize the values stored in the attributes object (best-effort string/array match)
     if (requestedLocale !== 'en') {
       for (const slug of Object.keys(attributes)) {
-        const val = attributes[slug]
-        if (typeof val === 'string' && valueTranslationMap[val]) {
-          attributes[slug] = valueTranslationMap[val]
-        } else if (Array.isArray(val)) {
-          attributes[slug] = val.map((v) => (typeof v === 'string' && valueTranslationMap[v] ? valueTranslationMap[v] : v))
+        if (slugTranslationMap[slug]) {
+          attributes[slug] = slugTranslationMap[slug]
+        } else {
+          const val = attributes[slug]
+          if (typeof val === 'string' && valueTranslationMap[val]) {
+            attributes[slug] = valueTranslationMap[val]
+          } else if (Array.isArray(val)) {
+            attributes[slug] = getLocalizedColorList(val, requestedLocale as any) ||
+              val.map((v) => getLocalizedOptionLabel(slug, String(v), requestedLocale as any))
+          } else if (typeof val === 'string') {
+            attributes[slug] = getLocalizedOptionLabel(slug, val, requestedLocale as any)
+          }
         }
       }
     }
@@ -155,7 +173,13 @@ export async function GET(
           isFilterable: ca.attribute.isFilterable,
           isVisible: ca.isVisible,
           displayOrder: ca.displayOrder ?? ca.attribute.displayOrder,
-          options: ca.attribute.options,
+          options: ca.attribute.options?.map((opt: string) =>
+            getLocalizedOptionLabel(ca.attribute.slug, opt, requestedLocale as any)
+          ) || ca.attribute.options,
+          colorOptions: ca.attribute.colorOptions?.map((c: any) => ({
+            ...c,
+            label: getLocalizedColorName(c.value, c.label, requestedLocale as any)
+          })) || ca.attribute.colorOptions,
         }))
 
     // Combine parent and current category attributes
