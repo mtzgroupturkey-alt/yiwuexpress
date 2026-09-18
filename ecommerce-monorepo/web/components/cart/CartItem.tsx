@@ -1,8 +1,9 @@
-﻿'use client'
+'use client'
 
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { Button } from '@/components/ui/button'
+import { ProductImage } from '@/components/ui/ProductImage'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 
@@ -34,18 +35,14 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
     <div className="flex gap-4 py-4 border-b border-gray-200">
       {/* Product Image */}
       <LocaleLink href={`/products/${item.product.slug}`} className="flex-shrink-0">
-        <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
-          {item.product.thumbnail ? (
-            <img
-              src={item.product.thumbnail}
-              alt={item.product.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 text-2xl">
-              ðŸ“¦
-            </div>
-          )}
+        <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden relative">
+          <ProductImage
+            src={item.product.thumbnail}
+            alt={item.product.name || 'Product image'}
+            fill
+            sizes="96px"
+            className="object-cover"
+          />
         </div>
       </LocaleLink>
 

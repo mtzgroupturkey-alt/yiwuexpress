@@ -11,6 +11,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Product } from '../types';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
@@ -181,11 +182,15 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 key={product.id}
                 className="flex items-center gap-3 pb-3 border-b border-slate-100"
               >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-16 h-16 object-contain rounded-md border border-slate-100 p-1 bg-white shrink-0"
-                />
+                <div className="w-16 h-16 rounded-md border border-slate-100 p-1 bg-white shrink-0 relative overflow-hidden">
+                  <ProductImage
+                    src={product.image}
+                    alt={product.name || 'Product image'}
+                    fill
+                    sizes="64px"
+                    className="object-contain"
+                  />
+                </div>
 
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-bold text-slate-900 truncate" title={product.name}>

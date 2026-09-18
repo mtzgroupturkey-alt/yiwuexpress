@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Star, Shield } from 'lucide-react'
 import { ModernProductData } from '@/components/ui/ModernProductCard'
 import { useCurrency } from '@/hooks/useCurrency'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 interface CompactProductCardProps {
   product: ModernProductData
@@ -17,10 +18,12 @@ export function CompactProductCard({ product, locale = 'en' }: CompactProductCar
   return (
     <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white dark:bg-[#0d1e32] border border-gray-100 dark:border-white/10 hover:border-[#c9a84c]/50 transition-all hover:shadow-md group">
       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-50 dark:bg-[#070d16] flex-shrink-0 relative">
-        <img
+        <ProductImage
           src={primaryImage}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          alt={product.name || 'Product image'}
+          fill
+          sizes="64px"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
 

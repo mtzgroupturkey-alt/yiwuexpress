@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { 
   Heart, 
   ShoppingCart, 
@@ -212,10 +213,12 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           }}
           className="aspect-square w-full rounded-lg bg-slate-50/50 overflow-hidden flex items-center justify-center mb-2.5 cursor-pointer p-2 relative block"
         >
-          <img
+          <ProductImage
             src={product.image}
-            alt={product.name}
-            className="w-full h-full object-contain mix-blend-multiply group-hover:scale-108 transition-transform duration-300 ease-out"
+            alt={product.name || 'Product image'}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain mix-blend-multiply group-hover:scale-108 transition-transform duration-300 ease-out p-2"
             loading="lazy"
           />
           {product.installmentPrice && variant === 'detailed' && (

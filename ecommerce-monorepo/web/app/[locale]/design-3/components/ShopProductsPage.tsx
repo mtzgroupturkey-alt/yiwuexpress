@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Product, Category } from '../types';
 import { UnifiedProductCard } from './UnifiedProductCard';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from 'next-intl';
@@ -1227,11 +1228,13 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                             {tBadge(product.tagBadge.text, product.tagBadge.type)}
                           </span>
                         )}
-                        <img
+                        <ProductImage
                           src={product.image}
-                          alt={product.name}
+                          alt={product.name || 'Product image'}
+                          fill
+                          sizes="(max-width: 640px) 160px, 192px"
                           onClick={() => onSelectProduct(product)}
-                          className="w-full h-full object-contain mix-blend-multiply cursor-pointer group-hover:scale-105 transition-transform"
+                          className="object-contain mix-blend-multiply cursor-pointer group-hover:scale-105 transition-transform p-3"
                         />
                       </div>
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Heart, ShoppingCart, Trash2, ArrowRight } from 'lucide-react';
 import { Product } from '../types';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { useSettings } from '@/components/SettingsProvider';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
@@ -59,11 +60,15 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
                 key={product.id}
                 className="flex items-center gap-3.5 p-3 rounded-xl border border-slate-200 hover:border-blue-200 bg-white"
               >
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-14 h-14 object-contain rounded-md border border-slate-100 p-1 shrink-0"
-                />
+                <div className="w-14 h-14 rounded-md border border-slate-100 p-1 shrink-0 relative overflow-hidden">
+                  <ProductImage
+                    src={product.image}
+                    alt={product.name || 'Product image'}
+                    fill
+                    sizes="56px"
+                    className="object-contain"
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] text-slate-400 font-semibold uppercase">{product.brand}</div>
                   <h4 className="text-xs font-bold text-slate-900 truncate" title={product.name}>

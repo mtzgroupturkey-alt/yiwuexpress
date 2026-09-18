@@ -24,6 +24,8 @@ export interface ProductImageProps {
 
 export const DEFAULT_PRODUCT_FALLBACK = '/images/product-placeholder.webp';
 
+const Img = (typeof Image === 'function' ? Image : (Image as any)?.default || Image) as typeof Image;
+
 /**
  * Robust ProductImage component that handles loading states, 404s,
  * missing images, and external image failures with a graceful fallback.
@@ -73,7 +75,7 @@ export function ProductImage({
 
   if (fill) {
     return (
-      <Image
+      <Img
         src={finalSrc}
         alt={safeAlt}
         fill
@@ -92,7 +94,7 @@ export function ProductImage({
   }
 
   return (
-    <Image
+    <Img
       src={finalSrc}
       alt={safeAlt}
       width={width || 500}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { Star, ShoppingCart, Check, Heart, Eye } from 'lucide-react'
 import { ProductItem } from '@/data/products'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
@@ -75,14 +76,13 @@ export function ElectronicsProductCard({
           </button>
 
           {/* Product Image */}
-          <Image
-            src={imageError ? '/images/placeholder.png' : product.image}
-            alt={product.name}
+          <ProductImage
+            src={product.image}
+            alt={product.name || 'Product image'}
             fill
             loading="lazy"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
             className="object-contain p-2 group-hover:scale-105 transition-transform duration-500 ease-out"
-            onError={() => setImageError(true)}
           />
 
           {/* Quick view on hover */}

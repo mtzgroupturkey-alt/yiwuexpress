@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import {
   FileText, ArrowLeft, Trash2, Building2, User, Mail, Phone,
   MapPin, Calendar, Clock, Send, ShieldCheck, CheckCircle2, AlertCircle,
@@ -176,18 +177,13 @@ export default function QuoteCartPage() {
                     <div key={item.productId} className="py-4 flex flex-col sm:flex-row gap-4">
                       {/* Product Thumbnail */}
                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden relative flex-shrink-0 border border-gray-200">
-                        {item.productImage ? (
-                          <Image
-                            src={item.productImage}
-                            alt={item.productName}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <FileText size={24} />
-                          </div>
-                        )}
+                        <ProductImage
+                          src={item.productImage}
+                          alt={item.productName || 'Product image'}
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
                       </div>
 
                       {/* Line Details */}

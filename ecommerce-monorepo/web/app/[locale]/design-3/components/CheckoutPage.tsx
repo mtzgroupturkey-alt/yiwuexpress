@@ -21,6 +21,7 @@ import {
   Gift
 } from 'lucide-react';
 import { CartItem, Product } from '../types';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
@@ -390,11 +391,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                         className="p-3.5 rounded-xl bg-slate-50/70 hover:bg-slate-50 border border-slate-100 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                       >
                         <div className="flex items-center gap-3.5 w-full sm:w-auto">
-                          <div className="w-18 h-18 rounded-xl bg-white p-2 flex items-center justify-center shrink-0 border border-slate-200 shadow-xs">
-                            <img
+                          <div className="w-18 h-18 rounded-xl bg-white p-2 flex items-center justify-center shrink-0 border border-slate-200 shadow-xs relative overflow-hidden">
+                            <ProductImage
                               src={item.product.image}
-                              alt={item.product.name}
-                              className="w-full h-full object-contain mix-blend-multiply"
+                              alt={item.product.name || 'Product image'}
+                              fill
+                              sizes="72px"
+                              className="object-contain mix-blend-multiply p-2"
                             />
                           </div>
 

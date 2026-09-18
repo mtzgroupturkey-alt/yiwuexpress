@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useWishlist } from '@/hooks/useWishlist'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { Heart, ShoppingCart, Trash2, ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
@@ -77,9 +78,9 @@ export default function WishlistPage() {
               return (
                 <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition group">
                   <Link href={`/products/${product.slug}`} className="relative block aspect-square bg-gray-100">
-                    <Image
-                      src={product.images?.[0] || '/images/placeholder-product.jpg'}
-                      alt={product.name}
+                    <ProductImage
+                      src={product.images?.[0]}
+                      alt={product.name || 'Product image'}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       className="object-cover group-hover:scale-105 transition"

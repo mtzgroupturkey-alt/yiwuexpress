@@ -201,7 +201,7 @@ export function ModernProductCard({
     ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
     : 0
 
-  const primaryImage = product.images?.[0] || product.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80'
+  const primaryImage = product.images?.[0] || product.image || '/images/product-placeholder.webp'
   const isAvailable = product.isInStock !== undefined ? product.isInStock : (product.stock === undefined || product.stock > 0)
 
   return (
@@ -249,7 +249,7 @@ export function ModernProductCard({
           )}
           
           <img
-            src={imageError ? 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80' : primaryImage}
+            src={imageError ? '/images/product-placeholder.webp' : primaryImage}
             alt={product.name}
             className={cn(
               'w-full h-full object-cover transition-opacity duration-300',

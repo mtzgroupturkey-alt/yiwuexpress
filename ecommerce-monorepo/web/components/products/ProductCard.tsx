@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { ShoppingCart, Eye, FileText, Check, Star } from 'lucide-react'
 import { WishlistButton } from './WishlistButton'
 import { useTranslations } from 'next-intl'
@@ -165,22 +166,15 @@ export default function ProductCard({
 
       {/* Image Container with Badges */}
       <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-[#070d16] flex-shrink-0">
-        {product.image && !imageError ? (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className={`object-contain p-3 transition-transform duration-500 ease-out ${
-              isHovered ? 'scale-105' : 'scale-100'
-            }`}
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-            <ShoppingCart className="w-10 h-10 text-gray-300 dark:text-gray-600" />
-          </div>
-        )}
+        <ProductImage
+          src={product.image}
+          alt={product.name || 'Product image'}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className={`object-contain p-3 transition-transform duration-500 ease-out ${
+            isHovered ? 'scale-105' : 'scale-100'
+          }`}
+        />
 
         {/* Stacked Badges: Discount (red) > New (green) > Wholesale MOQ (blue) */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 items-start">

@@ -13,6 +13,7 @@ import {
   FileText
 } from 'lucide-react';
 import { Product } from '../types';
+import { ProductImage } from '@/components/ui/ProductImage';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
@@ -148,11 +149,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </button>
             </div>
 
-            <div className="my-6 aspect-square w-full max-w-[240px] flex items-center justify-center">
-              <img
+            <div className="my-6 aspect-square w-full max-w-[240px] flex items-center justify-center relative">
+              <ProductImage
                 src={product.image}
-                alt={product.name}
-                className="w-full h-full object-contain mix-blend-multiply"
+                alt={product.name || 'Product image'}
+                fill
+                sizes="240px"
+                className="object-contain mix-blend-multiply"
               />
             </div>
 

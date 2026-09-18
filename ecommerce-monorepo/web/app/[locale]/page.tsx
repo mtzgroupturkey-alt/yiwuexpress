@@ -15,6 +15,7 @@ import { BrandZones } from './design-3/components/BrandZones';
 import { MemberClubBanner } from './design-3/components/MemberClubBanner';
 import { NewsletterBar } from './design-3/components/NewsletterBar';
 import { Footer } from './design-3/components/Footer';
+import { ProductImage } from '@/components/ui/ProductImage';
 
 // Modals & Drawers
 import { CartDrawer } from './design-3/components/CartDrawer';
@@ -659,12 +660,14 @@ export default function Home() {
                                 setSelectedProductForPDP(product);
                                 handleNavigateView('product', { product });
                               }}
-                              className="aspect-square w-full rounded-md bg-slate-50 flex items-center justify-center p-2 mb-2 cursor-pointer"
+                              className="aspect-square w-full rounded-md bg-slate-50 flex items-center justify-center p-2 mb-2 cursor-pointer relative overflow-hidden"
                             >
-                              <img
+                              <ProductImage
                                 src={product.image}
-                                alt={product.name}
-                                className="w-full h-full object-contain mix-blend-multiply"
+                                alt={product.name || 'Product image'}
+                                fill
+                                sizes="(max-width: 640px) 120px, 160px"
+                                className="object-contain mix-blend-multiply p-2"
                               />
                             </div>
                             <div className="text-[10px] text-slate-500 uppercase font-bold">{product.brand}</div>
