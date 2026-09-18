@@ -25,6 +25,11 @@ export function mapDbProductToDesign3(dbItem: any): Product {
 
   const stock = typeof dbItem.stock === 'number' ? dbItem.stock : 10;
 
+  const wholesalePrice = dbItem.wholesalePrice != null
+    ? (typeof dbItem.wholesalePrice === 'number' ? dbItem.wholesalePrice : parseFloat(dbItem.wholesalePrice))
+    : undefined;
+  const minOrderQty = dbItem.minOrderQty ? Number(dbItem.minOrderQty) : (dbItem.moq ? Number(dbItem.moq) : undefined);
+
   return {
     id: dbItem.id || String(Math.random()),
     slug: dbItem.slug || undefined,
@@ -41,6 +46,8 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     reviewsCount: dbItem.reviewsCount || Math.floor(Math.random() * 40) + 5,
     price: price,
     oldPrice: compareAtPrice,
+    wholesalePrice: wholesalePrice,
+    moq: minOrderQty,
     discountBadge: discountBadge,
     tagBadge: dbItem.isFeatured 
       ? { text: 'BESTSELLER', type: 'bestseller' } 
@@ -56,7 +63,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     description: dbItem.description || '',
     country: dbItem.countryOfOrigin || 'China',
     sku: dbItem.sku || undefined,
-    minOrderQty: dbItem.minOrderQty ? Number(dbItem.minOrderQty) : undefined,
+    minOrderQty: minOrderQty,
   };
 }
 

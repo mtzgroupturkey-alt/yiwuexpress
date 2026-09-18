@@ -40,6 +40,9 @@ import { useCart } from '@/components/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from 'next-intl';
 import { MotionReveal } from '@/components/motion/MotionReveal';
+import { useStoreMode } from '@/contexts/StoreModeContext';
+import { useSessionMode } from '@/contexts/SessionModeContext';
+import { useQuoteCart } from '@/components/QuoteCartContext';
 
 export default function Home() {
   const locale = useLocale();
@@ -49,6 +52,9 @@ export default function Home() {
   const { isAuthenticated } = useAuth();
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { wishlistCount, favoriteIds, favoritesList, toggleWishlist } = useWishlist();
+  const { storeMode } = useStoreMode();
+  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { addToQuote } = useQuoteCart();
   const queryClient = useQueryClient();
 
   // 0. Live Database Queries
@@ -318,6 +324,26 @@ export default function Home() {
 
   // Cart operations
   const handleAddToCart = async (product: Product, quantity = 1) => {
+    const isWholesaleActive =
+      storeMode === 'WHOLESALE' ||
+      (storeMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+
+    if (isWholesaleActive && settings?.rfqModel !== 'INSTANT') {
+      const moq = Math.max(1, product.minOrderQty || (product as any).moq || 1);
+      const effectiveQty = Math.max(quantity, moq);
+      addToQuote({
+        productId: product.id,
+        productName: product.name,
+        productSku: product.sku || product.slug || product.id,
+        productImage: product.image,
+        quantity: effectiveQty,
+        minOrderQty: moq,
+        targetPrice: product.wholesalePrice || null,
+      });
+      showToast(`Added "${product.name.slice(0, 30)}..." to quote request`);
+      return;
+    }
+
     const moq = Math.max(1, product.minOrderQty || 1);
     const effectiveQty = Math.max(quantity, moq);
     let savedToBackend = false;

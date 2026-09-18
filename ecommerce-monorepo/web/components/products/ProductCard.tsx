@@ -54,10 +54,10 @@ export default function ProductCard({
   const { tBadge } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const router = useRouter()
-  const { isWholesale, isRetail } = useStoreMode()
+  const { isWholesale, isRetail, storeMode } = useStoreMode()
   const { settings } = useSettings()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
-  const { enableWholesaleSession } = useSessionMode()
+  const { sessionMode, isWholesaleSession, enableWholesaleSession } = useSessionMode()
   const { addToQuote } = useQuoteCart()
   const [imageError, setImageError] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -67,6 +67,12 @@ export default function ProductCard({
   const rfqModel = settings?.rfqModel || 'RFQ'
   const isInstantWholesale = rfqModel === 'INSTANT'
   const moq = product.moq || product.minOrder || product.minOrderQty || settings?.wholesaleDefaultMoq || 1
+
+  const isWholesaleActive =
+    storeMode === 'WHOLESALE' ||
+    (storeMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
+  const showRetailCart = isRetail && !isWholesaleActive
+  const hasWholesale = Boolean(product.wholesalePrice || isWholesaleActive)
 
   const addWholesaleToCart = (p: Product) => {
     setIsAddingToCart(true)
@@ -83,9 +89,6 @@ export default function ProductCard({
     })
     setTimeout(() => setIsAddingToCart(false), 1200)
   }
-
-  const hasWholesale = product.wholesalePrice && product.wholesalePrice < product.price
-  const showRetailCart = isRetail
   const now = Date.now()
   const flashStart = product.flashSaleStart ? new Date(product.flashSaleStart).getTime() : 0
   const flashEnd = product.flashSaleEnd ? new Date(product.flashSaleEnd).getTime() : 0

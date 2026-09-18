@@ -30,6 +30,8 @@ export interface Product {
   reviewsCount: number;
   price: number;
   oldPrice?: number;
+  wholesalePrice?: number;
+  moq?: number;
   unitPrice?: string;
   discountBadge?: string;
   tagBadge?: {

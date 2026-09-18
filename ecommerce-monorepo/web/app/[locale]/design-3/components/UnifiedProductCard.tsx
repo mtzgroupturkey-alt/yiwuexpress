@@ -12,11 +12,17 @@ import {
   Minus, 
   Check, 
   Zap, 
-  ShieldCheck 
+  ShieldCheck,
+  FileText
 } from 'lucide-react';
 import { Product } from '../types';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useSettings } from '@/components/SettingsProvider';
+import { useStoreMode } from '@/contexts/StoreModeContext';
+import { useSessionMode } from '@/contexts/SessionModeContext';
+import { useQuoteCart } from '@/components/QuoteCartContext';
+import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 
 interface UnifiedProductCardProps {
   product: Product;
@@ -68,11 +74,72 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
   const isFavorite = favoriteIds.has(product.id);
   const [justAdded, setJustAdded] = useState(false);
 
+  const { settings, storeMode: systemStoreMode } = useSettings();
+  const { storeMode } = useStoreMode();
+  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { items: quoteItems, addToQuote, updateQuantity: updateQuoteQuantity, removeFromQuote } = useQuoteCart();
+  const { addItem: addInquiryItem } = useWholesaleInquiry();
+
+  const currentStoreMode = storeMode || systemStoreMode || 'WHOLESALE';
+  const isWholesaleActive =
+    currentStoreMode === 'WHOLESALE' ||
+    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+
+  const rfqModel = settings?.rfqModel || 'RFQ';
+  const isInstantWholesale = rfqModel === 'INSTANT';
+  const moq = product.minOrderQty || (product as any).moq || settings?.wholesaleDefaultMoq || 1;
+
+  const quoteItem = quoteItems.find((i) => i.productId === product.id);
+  const qtyInQuote = quoteItem?.quantity || 0;
+
+  const effectiveWholesalePrice = product.wholesalePrice || product.price;
+  const displayPrice = isWholesaleActive ? effectiveWholesalePrice : product.price;
+  const showOriginalPrice = isWholesaleActive
+    ? product.wholesalePrice && product.wholesalePrice < product.price
+      ? product.price
+      : product.oldPrice
+    : product.oldPrice;
+
   const productUrl = `/${locale}/products/${product.slug || product.id}`;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
     onAddToCart(product);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1200);
+  };
+
+  const handleAddToQuote = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToQuote({
+      productId: product.id,
+      productName: product.name,
+      productSku: product.sku || product.slug || product.id,
+      productImage: product.image,
+      quantity: moq,
+      minOrderQty: moq,
+      targetPrice: product.wholesalePrice || null,
+    });
+    addInquiryItem({
+      productId: product.id,
+      slug: product.slug || product.id,
+      name: product.name,
+      image: product.image,
+      wholesalePrice: effectiveWholesalePrice,
+      retailPrice: product.price,
+      quantity: moq,
+      minOrderQty: moq,
+    });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1200);
+  };
+
+  const handleInstantWholesaleAdd = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart({
+      ...product,
+      price: effectiveWholesalePrice,
+    });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };
@@ -190,19 +257,23 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
         <div className="mb-2">
           <div className="flex items-baseline gap-1.5 flex-wrap">
             <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-              {formatPrice(product.price)}
+              {formatPrice(displayPrice)}
             </span>
-            {product.oldPrice && (
+            {showOriginalPrice && (
               <span className="text-xs text-slate-400 line-through font-medium">
-                {formatPrice(product.oldPrice)}
+                {formatPrice(showOriginalPrice)}
               </span>
             )}
           </div>
-          {product.unitPrice && (
+          {isWholesaleActive ? (
+            <div className="text-[10px] font-bold text-blue-700 font-mono mt-0.5">
+              Wholesale (MOQ: {moq})
+            </div>
+          ) : product.unitPrice ? (
             <div className="text-[10px] text-slate-500 font-medium truncate">
               {product.unitPrice}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -225,65 +296,208 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
         )}
 
         {/* Cart Button or Rapid Stepper */}
-        {qtyInCart === 0 ? (
-          <motion.button
-            whileTap={{ scale: 0.96 }}
-            onClick={handleAdd}
-            className={`w-full font-bold py-2 px-3 rounded-md text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs ${
-              justAdded
-                ? 'bg-emerald-600 text-white'
-                : 'bg-[#F5A602] hover:bg-[#E09500] text-slate-950'
-            }`}
-          >
-            <AnimatePresence mode="wait">
-              {justAdded ? (
-                <motion.span
-                  key="added"
-                  initial={{ scale: 0.5, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.5, opacity: 0 }}
-                  className="flex items-center gap-1 font-bold"
-                >
-                  <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  <span>{tPdp('added')}</span>
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="idle"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-1.5"
-                >
-                  <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>{tFlash('addToCart')}</span>
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.button>
+        {isWholesaleActive && !isInstantWholesale ? (
+          // Wholesale RFQ Mode: "Request Quote (MOQ: X)" -> QuoteCartContext
+          qtyInQuote === 0 ? (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={handleAddToQuote}
+              className={`w-full font-bold py-2 px-3 rounded-md text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs ${
+                justAdded
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              <AnimatePresence mode="wait">
+                {justAdded ? (
+                  <motion.span
+                    key="added"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center gap-1 font-bold"
+                  >
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    <span>Added to Quote</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <FileText className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Request Quote (MOQ: {moq})</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          ) : (
+            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-md p-0.5">
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (qtyInQuote <= moq) {
+                    removeFromQuote(product.id);
+                  } else {
+                    updateQuoteQuantity(product.id, qtyInQuote - 1);
+                  }
+                }}
+                className="w-7 h-7 rounded bg-white hover:bg-blue-100 text-blue-900 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </motion.button>
+              <span className="text-xs font-bold text-blue-950 px-2 flex items-center gap-1">
+                <span className="tabular-nums">{qtyInQuote}</span>
+                <Check className="w-3 h-3 text-emerald-600" />
+              </span>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateQuoteQuantity(product.id, qtyInQuote + 1);
+                }}
+                className="w-7 h-7 rounded bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                aria-label="Increase quantity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </motion.button>
+            </div>
+          )
+        ) : isWholesaleActive && isInstantWholesale ? (
+          // Wholesale INSTANT Mode: "Add to Cart" with wholesale price + MOQ
+          qtyInCart === 0 ? (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={handleInstantWholesaleAdd}
+              className={`w-full font-bold py-2 px-3 rounded-md text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs ${
+                justAdded
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-amber-500 hover:bg-amber-600 text-slate-950'
+              }`}
+            >
+              <AnimatePresence mode="wait">
+                {justAdded ? (
+                  <motion.span
+                    key="added"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center gap-1 font-bold"
+                  >
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    <span>{tPdp('added')}</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Add to Cart (MOQ: {moq})</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          ) : (
+            <div className="flex items-center justify-between bg-slate-100 border border-slate-300 rounded-md p-0.5">
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateQuantity(product.id, Math.max(0, qtyInCart - 1));
+                }}
+                className="w-7 h-7 rounded bg-white hover:bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </motion.button>
+              <span className="text-xs font-bold text-slate-900 px-2 flex items-center gap-1">
+                <span className="tabular-nums">{qtyInCart}</span>
+                <Check className="w-3 h-3 text-emerald-600" />
+              </span>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateQuantity(product.id, qtyInCart + 1);
+                }}
+                className="w-7 h-7 rounded bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                aria-label="Increase quantity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </motion.button>
+            </div>
+          )
         ) : (
-          <div className="flex items-center justify-between bg-slate-100 border border-slate-300 rounded-md p-0.5">
+          // Retail Mode (unchanged)
+          qtyInCart === 0 ? (
             <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={() => onUpdateQuantity(product.id, qtyInCart - 1)}
-              className="w-7 h-7 rounded bg-white hover:bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
-              aria-label="Decrease quantity"
+              whileTap={{ scale: 0.96 }}
+              onClick={handleAdd}
+              className={`w-full font-bold py-2 px-3 rounded-md text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs ${
+                justAdded
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-[#F5A602] hover:bg-[#E09500] text-slate-950'
+              }`}
             >
-              <Minus className="w-3.5 h-3.5" />
+              <AnimatePresence mode="wait">
+                {justAdded ? (
+                  <motion.span
+                    key="added"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center gap-1 font-bold"
+                  >
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    <span>{tPdp('added')}</span>
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="idle"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>{tFlash('addToCart')}</span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.button>
-            <span className="text-xs font-bold text-slate-900 px-2 flex items-center gap-1">
-              <span className="tabular-nums">{qtyInCart}</span>
-              <Check className="w-3 h-3 text-emerald-600" />
-            </span>
-            <motion.button
-              whileTap={{ scale: 0.85 }}
-              onClick={() => onUpdateQuantity(product.id, qtyInCart + 1)}
-              className="w-7 h-7 rounded bg-[#F5A602] hover:bg-[#E09500] text-slate-950 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
-              aria-label="Increase quantity"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </motion.button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between bg-slate-100 border border-slate-300 rounded-md p-0.5">
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={() => onUpdateQuantity(product.id, qtyInCart - 1)}
+                className="w-7 h-7 rounded bg-white hover:bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </motion.button>
+              <span className="text-xs font-bold text-slate-900 px-2 flex items-center gap-1">
+                <span className="tabular-nums">{qtyInCart}</span>
+                <Check className="w-3 h-3 text-emerald-600" />
+              </span>
+              <motion.button
+                whileTap={{ scale: 0.85 }}
+                onClick={() => onUpdateQuantity(product.id, qtyInCart + 1)}
+                className="w-7 h-7 rounded bg-[#F5A602] hover:bg-[#E09500] text-slate-950 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer shadow-xs"
+                aria-label="Increase quantity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </motion.button>
+            </div>
+          )
         )}
       </div>
     </motion.div>
