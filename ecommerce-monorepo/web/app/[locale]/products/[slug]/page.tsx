@@ -174,12 +174,16 @@ async function getProductFromDB(slug: string, locale: string) {
       }
     : rawCategory;
 
+  const localized = localizeProduct(product, requestedLocale);
+
   return {
     id: product.id,
     sku: product.sku,
-    name: product.name,
+    name: localized.name,
     slug: product.slug,
-    description: product.description,
+    description: localized.description,
+    metaTitle: localized.metaTitle,
+    metaDescription: localized.metaDescription,
     price: product.price,
     compareAtPrice: product.compareAtPrice,
     images: Array.isArray(product.images) ? product.images : [],
@@ -213,8 +217,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const companyName = await getCompanyName(locale);
   const localized = localizeProduct(product, locale);
-  const title = `${localized.name || product.name} — ${companyName}`;
-  const description = localized.description?.slice(0, 160) || product.description?.slice(0, 160) || '';
+  const title = localized.metaTitle
+    ? `${localized.metaTitle} — ${companyName}`
+    : `${localized.name || product.name} — ${companyName}`;
+  const description = localized.metaDescription || localized.description?.slice(0, 160) || product.description?.slice(0, 160) || '';
   const firstImage = product.thumbnail || product.images?.[0] || '';
 
   return {
