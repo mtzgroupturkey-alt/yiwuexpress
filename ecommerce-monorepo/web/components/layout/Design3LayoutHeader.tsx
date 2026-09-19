@@ -30,21 +30,26 @@ export function Design3LayoutHeader() {
 
   const DELIVERY_LOCATION_KEY = 'delivery_location';
 
-  // Initialise from localStorage so the value persists across page reloads
-  const [deliveryAddress, setDeliveryAddress] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(DELIVERY_LOCATION_KEY);
-        if (saved) return saved;
-      } catch {}
-    }
-    return settings?.companyAddress || 'Worldwide Shipping';
-  });
+  // Use static fallback for SSR — localStorage is read in a post-hydration effect
+  // to avoid server/client HTML mismatch (hydration error).
+  const [deliveryAddress, setDeliveryAddress] = useState<string>(
+    settings?.companyAddress || 'Worldwide Shipping'
+  );
 
   // Persist every change to localStorage
   const persistDelivery = useCallback((addr: string) => {
     setDeliveryAddress(addr);
     try { localStorage.setItem(DELIVERY_LOCATION_KEY, addr); } catch {}
+  }, []);
+
+  // After hydration: restore the last selected delivery location from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DELIVERY_LOCATION_KEY);
+      if (saved) setDeliveryAddress(saved);
+    } catch {}
+  // Run only once after mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sync from settings when they arrive (only if still using fallback)
