@@ -572,17 +572,20 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
+                <button
                   type="button"
-                  size="sm"
-                  variant="outline"
                   onClick={handleAutoTranslateOptions}
                   disabled={isTranslatingOptions || optionItems.length === 0}
-                  className="h-7 text-xs bg-white text-indigo-600 border-indigo-200 hover:bg-indigo-50 flex items-center gap-1"
+                  className={[
+                    'group relative inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-semibold text-white shrink-0 whitespace-nowrap',
+                    'bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 bg-[length:200%_auto]',
+                    'transition-all hover:bg-right focus:outline-none focus:ring-2 focus:ring-fuchsia-300',
+                    'disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-gray-300',
+                  ].join(' ')}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                  {isTranslatingOptions ? 'Translating...' : 'Auto-Translate Options'}
-                </Button>
+                  <Sparkles className={isTranslatingOptions ? 'w-4 h-4 animate-spin' : 'w-4 h-4'} aria-hidden />
+                  {isTranslatingOptions ? dict.common.translating || 'Translating...' : 'Auto-Translate Options'}
+                </button>
 
                 <Button
                   type="button"
