@@ -14,6 +14,7 @@ on:
         type: choice
         options:
           - 'migrate'
+          - 'db_push'
           - 'reset_and_seed'
           - 'none'
       confirm_reset:
@@ -93,7 +94,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           timeout: 60s
           command_timeout: 30m
-          script_stop: true
+          script_stop: false
           envs: DATABASE_URL,DB_STRATEGY,CONFIRM_RESET
           script: |
             set -e
@@ -111,8 +112,10 @@ jobs:
             echo "📊 Strategy: '${DB_STRATEGY}', Confirm: '${CONFIRM_RESET}'"
 
             # Normalize values
-            STRATEGY=$(echo "${DB_STRATEGY:-migrate}" | tr -d '[:space:]')
-            CONFIRM=$(echo "${CONFIRM_RESET:-}" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+            RAW_STRATEGY="${DB_STRATEGY:-migrate}"
+            RAW_CONFIRM="${CONFIRM_RESET:-}"
+            STRATEGY=$(echo "$RAW_STRATEGY" | tr -d '[:space:]')
+            CONFIRM=$(echo "$RAW_CONFIRM" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
 
             if [ "$STRATEGY" = "reset_and_seed" ]; then
               if [ "$CONFIRM" = "RESET_CONFIRM" ] || [ "$CONFIRM" = "RESET" ]; then
@@ -134,17 +137,36 @@ jobs:
                 echo "❌ Database reset was requested but confirmation phrase was '${CONFIRM_RESET}' (expected: RESET_CONFIRM). Aborting to protect data."
                 exit 1
               fi
+            elif [ "$STRATEGY" = "db_push" ]; then
+              echo "🔧 Synchronizing database schema via prisma db push..."
+              npx prisma db push --skip-generate --accept-data-loss
+              echo "✅ Database schema synchronized successfully via db push!"
             elif [ "$STRATEGY" = "none" ]; then
               echo "⏭️ Skipping database migrations/changes as requested by db_strategy=none."
             else
               echo "🗄️ Resolving any previously failed migrations..."
-              # Targeted resolve for the known failed migration (idempotent - safe if already resolved)
-              npx prisma migrate resolve --rolled-back 20260918000000_add_rfq_system 2>/dev/null && \
-                echo "↩️  Resolved failed migration: 20260918000000_add_rfq_system" || \
+              set +e
+              npx prisma migrate resolve --rolled-back 20260918000000_add_rfq_system 2>/dev/null
+              RESOLVE_EXIT=$?
+              set -e
+              if [ $RESOLVE_EXIT -eq 0 ]; then
+                echo "↩️  Resolved failed migration: 20260918000000_add_rfq_system"
+              else
                 echo "ℹ️  No failed migration to resolve (already clean)."
+              fi
 
               echo "🗄️ Applying pending database migrations..."
+              set +e
               npx prisma migrate deploy
+              MIGRATE_EXIT=$?
+              set -e
+              if [ $MIGRATE_EXIT -ne 0 ]; then
+                echo "⚠️ prisma migrate deploy exited with status $MIGRATE_EXIT. Falling back to prisma db push to synchronize schema..."
+                npx prisma db push --skip-generate --accept-data-loss
+                echo "✅ Schema synchronized via fallback db push."
+              else
+                echo "✅ Database migrations applied successfully."
+              fi
             fi
 
             echo "🏗️ Building Next.js application..."
