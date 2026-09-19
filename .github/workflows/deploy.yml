@@ -108,8 +108,14 @@ jobs:
             echo "🔧 Generating Prisma client..."
             npx prisma generate
 
-            if [ "$DB_STRATEGY" = "reset_and_seed" ]; then
-              if [ "$CONFIRM_RESET" = "RESET_CONFIRM" ]; then
+            echo "📊 Strategy: '${DB_STRATEGY}', Confirm: '${CONFIRM_RESET}'"
+
+            # Normalize values
+            STRATEGY=$(echo "${DB_STRATEGY:-migrate}" | tr -d '[:space:]')
+            CONFIRM=$(echo "${CONFIRM_RESET:-}" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+
+            if [ "$STRATEGY" = "reset_and_seed" ]; then
+              if [ "$CONFIRM" = "RESET_CONFIRM" ] || [ "$CONFIRM" = "RESET" ]; then
                 echo "⚠️ OPTION C: Resetting production database and running seeds..."
                 if [ -f "prisma/migrations/backup.sh" ]; then
                   echo "📦 Creating pre-wipe backup..."
@@ -125,10 +131,10 @@ jobs:
                 npm run db:seed:products || true
                 echo "✅ Database reset and seeded with full product catalog successfully!"
               else
-                echo "❌ Database reset was requested but confirmation phrase 'RESET_CONFIRM' was missing. Aborting to protect data."
+                echo "❌ Database reset was requested but confirmation phrase was '${CONFIRM_RESET}' (expected: RESET_CONFIRM). Aborting to protect data."
                 exit 1
               fi
-            elif [ "$DB_STRATEGY" = "none" ]; then
+            elif [ "$STRATEGY" = "none" ]; then
               echo "⏭️ Skipping database migrations/changes as requested by db_strategy=none."
             else
               echo "🗄️ Resolving any previously failed migrations..."
