@@ -112,11 +112,11 @@ export default function OrdersPage() {
         {/* Left: Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           {[
-            { key: 'ALL', label: 'All Orders' },
-            { key: 'PROCESSING', label: 'Processing' },
-            { key: 'PENDING', label: 'Pending' },
-            { key: 'SHIPPED', label: 'Shipped' },
-            { key: 'DELIVERED', label: 'Delivered' },
+            { key: 'ALL', label: to('allOrders') },
+            { key: 'PROCESSING', label: to('processing') },
+            { key: 'PENDING', label: to('pending') },
+            { key: 'SHIPPED', label: to('shipped') },
+            { key: 'DELIVERED', label: to('delivered') },
           ].map((pill) => {
             const count = statusCounts[pill.key] || 0
             const isActive = statusFilter === pill.key
@@ -192,7 +192,7 @@ export default function OrdersPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-black text-sm text-slate-900">
-                            Order #{order.orderNumber || order.id.slice(0, 8)}
+                            {to('orderLabel', { number: order.orderNumber || order.id.slice(0, 8) })}
                           </p>
                           {getStatusBadge(order.status)}
                         </div>
@@ -208,14 +208,14 @@ export default function OrdersPage() {
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <p className="text-xs text-slate-400">Total Amount</p>
+                      <p className="text-xs text-slate-400">{to('totalAmount')}</p>
                       <p className="font-black text-base text-slate-900">${amount.toFixed(2)}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-3.5 border-t border-slate-100 text-xs">
                     <span className="text-slate-500 font-medium">
-                      {order.items?.length || 0} {(order.items?.length || 0) !== 1 ? to('items') : to('item')} included
+                      {to('itemsIncludedCount', { count: order.items?.length || 0 })}
                     </span>
 
                     <Link
