@@ -309,6 +309,22 @@ export const OPTION_TRANSLATIONS: Record<string, { ru: string; zh: string }> = {
   '5 Years': { ru: '5 лет', zh: '5年' },
   '10 Years': { ru: '10 лет', zh: '10年' },
   'Lifetime': { ru: 'Пожизненная', zh: '终身保修' },
+
+  // Cookware, Bakeware & Technical Specs
+  'Food-Grade PTFE Non-Stick (PFOA Free)': { ru: 'Пищевое антипригарное покрытие PTFE (без PFOA)', zh: '食品级特氟龙不粘涂层 (不含PFOA)' },
+  'Food-Grade PTFE Non-Stick': { ru: 'Пищевое антипригарное покрытие PTFE', zh: '食品级特氟龙不粘涂层' },
+  '24 Standard Size Cups': { ru: '24 стандартных чашки', zh: '24 连杯标准规格' },
+  '24 Standard Cups / 38x26 cm': { ru: '24 стандартных чашки / 38×26 см', zh: '24 连杯标准规格 / 38×26 厘米' },
+  '12 Muffin Cups': { ru: '12 чашек для маффинов', zh: '12 连杯马芬模具' },
+  '6 Jumbo Cups': { ru: '6 больших чашек (Jumbo)', zh: '6 连大号杯' },
+  'Heavy-Duty Carbon Steel': { ru: 'Высокопрочная углеродистая сталь', zh: '加厚高碳钢' },
+  'Carbon Steel': { ru: 'Углеродистая сталь', zh: '碳钢' },
+  '230°C / 450°F': { ru: '230°C / 450°F', zh: '230°C / 450°F' },
+  'Up to 230°C / 450°F': { ru: 'До 230°C / 450°F', zh: '最高耐温 230°C / 450°F' },
+  '38 × 26 × 3.2 cm': { ru: '38 × 26 × 3.2 см', zh: '38 × 26 × 3.2 厘米' },
+  'Yes (Hand wash recommended for maximum coating life)': { ru: 'Да (рекомендуется ручная мойка)', zh: '可洗碗机清洗（手洗寿命更长）' },
+  'Dishwasher Safe': { ru: 'Подходит для посудомоечной машины', zh: '可洗碗机清洗' },
+  'Hand Wash Recommended': { ru: 'Рекомендуется ручная мойка', zh: '建议手洗' },
 }
 
 /**
@@ -317,13 +333,23 @@ export const OPTION_TRANSLATIONS: Record<string, { ru: string; zh: string }> = {
  */
 export function getLocalizedOptionLabel(
   _attributeSlug: string,
-  optionValue: string,
+  optionValue: any,
   locale: 'en' | 'ru' | 'zh' | string
 ): string {
   if (!optionValue) return ''
 
+  // If optionValue is an object with translations (from rich attribute options)
+  if (typeof optionValue === 'object' && optionValue !== null) {
+    if (locale === 'ru' && optionValue.translations?.ru) return optionValue.translations.ru
+    if (locale === 'zh' && optionValue.translations?.zh) return optionValue.translations.zh
+    if (locale === 'en' && optionValue.translations?.en) return optionValue.translations.en
+    return optionValue.label || optionValue.value || ''
+  }
+
+  const strVal = String(optionValue).trim()
+
   // Boolean handling
-  const lowerVal = optionValue.toLowerCase().trim()
+  const lowerVal = strVal.toLowerCase()
   if (lowerVal === 'true' || lowerVal === 'yes' || lowerVal === 'требуется' || lowerVal === 'да') {
     if (_attributeSlug === 'assembly_required') {
       return locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes'
@@ -337,15 +363,26 @@ export function getLocalizedOptionLabel(
     return locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No'
   }
 
-  if (locale === 'en') return optionValue
+  if (locale === 'en') return strVal
 
-  const entry = OPTION_TRANSLATIONS[optionValue]
+  // Exact match
+  const entry = OPTION_TRANSLATIONS[strVal]
   if (entry) {
     if (locale === 'ru' && entry.ru) return entry.ru
     if (locale === 'zh' && entry.zh) return entry.zh
   }
 
-  return optionValue
+  // Case-insensitive fallback lookup
+  const foundKey = Object.keys(OPTION_TRANSLATIONS).find(
+    k => k.toLowerCase() === lowerVal
+  )
+  if (foundKey) {
+    const matched = OPTION_TRANSLATIONS[foundKey]
+    if (locale === 'ru' && matched.ru) return matched.ru
+    if (locale === 'zh' && matched.zh) return matched.zh
+  }
+
+  return strVal
 }
 
 /**

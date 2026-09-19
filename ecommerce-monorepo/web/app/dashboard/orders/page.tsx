@@ -198,7 +198,7 @@ export default function OrdersPage() {
                         </div>
                         <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                           <Clock className="w-3 h-3" />
-                          {new Date(order.createdAt).toLocaleDateString('en-US', {
+                          {new Date(order.createdAt).toLocaleDateString(undefined, {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
