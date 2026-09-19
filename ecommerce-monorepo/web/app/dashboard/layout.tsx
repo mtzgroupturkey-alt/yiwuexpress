@@ -78,7 +78,7 @@ export default function DashboardLayout({
             className="w-10 h-10 border-4 border-slate-200 rounded-full animate-spin" 
             style={{ borderTopColor: '#00407a' }}
           ></div>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider" suppressHydrationWarning>
             {(MESSAGES[activeLocale].Dashboard as any).loadingPortal}
           </p>
         </div>
