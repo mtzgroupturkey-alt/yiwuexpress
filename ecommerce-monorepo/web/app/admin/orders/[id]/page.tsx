@@ -367,6 +367,36 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                         <h4 className="font-semibold text-gray-900">{item.productName}</h4>
                         <p className="text-sm text-gray-600">{dict.products.sku}: {item.productSku}</p>
                         <p className="text-sm text-gray-600">{dict.wholesale.quantity}: {item.quantity}</p>
+                        {(() => {
+                          let opts = item.selectedOptions || item.variantAttributes
+                          if (typeof opts === 'string') {
+                            try { opts = JSON.parse(opts) } catch { opts = null }
+                          }
+                          if (!opts || typeof opts !== 'object' || Object.keys(opts).length === 0) return null
+                          return (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {Object.entries(opts).map(([key, val]) => {
+                                const isHex = typeof val === 'string' && val.startsWith('#')
+                                const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
+                                return (
+                                  <span
+                                    key={key}
+                                    className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-blue-900 text-xs font-medium border border-blue-200"
+                                  >
+                                    <span className="text-blue-600 font-normal">{label}:</span>
+                                    {isHex && (
+                                      <span
+                                        className="w-2.5 h-2.5 rounded-full border border-blue-300 inline-block flex-shrink-0"
+                                        style={{ backgroundColor: String(val) }}
+                                      />
+                                    )}
+                                    <span>{String(val)}</span>
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )
+                        })()}
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-gray-900">

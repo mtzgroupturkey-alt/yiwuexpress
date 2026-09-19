@@ -212,6 +212,7 @@ export async function POST(request: Request) {
         productId: product.id,
         variantId: item.variantId || null,
         variantAttributes: item.variantAttributes || null,
+        selectedOptions: item.selectedOptions || item.variantAttributes || null,
         productName: product.name,
         productSku: product.sku,
         productImage: product.thumbnail,
