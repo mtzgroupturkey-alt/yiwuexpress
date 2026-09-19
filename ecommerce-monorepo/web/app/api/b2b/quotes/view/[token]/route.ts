@@ -347,6 +347,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
                 productId: item.productId,
                 productName: item.productName,
                 productSku: item.productSku,
+                selectedOptions: (item.selectedOptions as any) ?? null,
                 quantity: item.quantity,
                 price: item.unitPriceQuoted || 0,
                 total: item.quantity * (item.unitPriceQuoted || 0),

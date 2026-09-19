@@ -345,6 +345,182 @@ export default function ProductDetailView({
     product.category?.slug?.includes('shoes')
   )
 
+  const [matrixQuantities, setMatrixQuantities] = useState<Record<string, number>>({})
+
+  // Matrix items for Wholesale Assortment ordering
+  const matrixItems = useMemo(() => {
+    if (variants.length > 0) {
+      return variants.map((v) => {
+        const attrLabel = v.attributes && typeof v.attributes === 'object'
+          ? Object.entries(v.attributes).map(([, val]) => `${val}`).join(' / ')
+          : v.sku
+        return {
+          id: v.id,
+          sku: v.sku,
+          label: attrLabel,
+          selectedOptions: v.attributes as Record<string, string>,
+          variantId: v.id,
+          price: v.price,
+          stock: v.stock,
+          image: v.images?.[0] || product.thumbnail || product.images?.[0] || null,
+        }
+      })
+    }
+
+    if (configurableAttributes.length === 1) {
+      const ca = configurableAttributes[0]
+      return ca.options.map((opt) => ({
+        id: `${ca.slug}:${opt.value}`,
+        sku: `${product.sku}-${opt.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase()}`,
+        label: opt.label,
+        selectedOptions: { [ca.slug]: opt.value },
+        variantId: null,
+        price: product.wholesalePrice || currentPrice,
+        stock: product.stock,
+        isColor: ca.isColor,
+        hex: opt.hex,
+        image: product.thumbnail || product.images?.[0] || null,
+      }))
+    }
+
+    if (configurableAttributes.length > 1) {
+      const combos: Array<{
+        id: string
+        sku: string
+        label: string
+        selectedOptions: Record<string, string>
+        variantId: null
+        price: number
+        stock: number
+        image: string | null
+      }> = []
+
+      const helper = (attrIndex: number, currentOpts: Record<string, string>, currentLabels: string[]) => {
+        if (attrIndex === configurableAttributes.length) {
+          const id = Object.entries(currentOpts).map(([k, v]) => `${k}:${v}`).join('|')
+          const skuSuffix = Object.values(currentOpts).map((v) => v.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase()).join('-')
+          combos.push({
+            id,
+            sku: `${product.sku}-${skuSuffix}`,
+            label: currentLabels.join(' / '),
+            selectedOptions: { ...currentOpts },
+            variantId: null,
+            price: product.wholesalePrice || currentPrice,
+            stock: product.stock,
+            image: product.thumbnail || product.images?.[0] || null,
+          })
+          return
+        }
+
+        const attr = configurableAttributes[attrIndex]
+        for (const opt of attr.options) {
+          helper(
+            attrIndex + 1,
+            { ...currentOpts, [attr.slug]: opt.value },
+            [...currentLabels, opt.label]
+          )
+        }
+      }
+
+      helper(0, {}, [])
+      return combos
+    }
+
+    return []
+  }, [variants, configurableAttributes, product.wholesalePrice, currentPrice, product.stock, product.sku, product.thumbnail, product.images])
+
+  const totalMatrixUnits = useMemo(
+    () => Object.values(matrixQuantities).reduce((sum, q) => sum + (q || 0), 0),
+    [matrixQuantities]
+  )
+
+  const totalMatrixPrice = totalMatrixUnits * (product.wholesalePrice || currentPrice)
+
+  const handleMatrixAddToQuote = () => {
+    const moq = product.minOrderQty || 1
+    if (totalMatrixUnits < moq) {
+      setMoqError(t('quoteListMoqError', { n: moq }))
+      return
+    }
+    setMoqError('')
+    enableWholesaleSession()
+
+    let addedCount = 0
+    matrixItems.forEach((item) => {
+      const qty = matrixQuantities[item.id] || 0
+      if (qty <= 0) return
+
+      const variantLabel = `(${Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ')})`
+      const displayName = `${product.name} ${variantLabel}`
+      const activeImage = item.image || product.thumbnail || product.images?.[0] || null
+
+      addInquiryItem({
+        productId: product.id,
+        slug: product.slug,
+        name: displayName,
+        image: activeImage,
+        wholesalePrice: item.price,
+        retailPrice: currentPrice,
+        quantity: qty,
+        minOrderQty: moq,
+        note: Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join('; '),
+      })
+      addToQuote({
+        productId: product.id,
+        productName: displayName,
+        productSku: item.sku,
+        productImage: activeImage,
+        quantity: qty,
+        minOrderQty: moq,
+        targetPrice: item.price,
+        selectedOptions: item.selectedOptions,
+        variantId: item.variantId,
+      })
+      addedCount++
+    })
+
+    if (addedCount > 0) {
+      setShowQuoteSuccess(true)
+      setTimeout(() => setShowQuoteSuccess(false), 3500)
+    }
+  }
+
+  const handleMatrixAddToCart = async () => {
+    const moq = product.minOrderQty || 1
+    if (totalMatrixUnits < moq) {
+      alert(t('quoteListMoqError', { n: moq }) || `Minimum order quantity is ${moq} units`)
+      return
+    }
+
+    try {
+      setAdding(true)
+      for (const item of matrixItems) {
+        const qty = matrixQuantities[item.id] || 0
+        if (qty <= 0) continue
+
+        await fetch('/api/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId: product.id,
+            variantId: item.variantId || undefined,
+            selectedOptions: item.selectedOptions,
+            quantity: qty,
+            mode: 'WHOLESALE',
+          }),
+        })
+      }
+      setShowSuccessMessage(true)
+      refreshCartCount()
+      setTimeout(() => setShowSuccessMessage(false), 3000)
+    } catch (err) {
+      console.error('Error adding matrix to cart:', err)
+    } finally {
+      setAdding(false)
+    }
+  }
+
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
@@ -906,6 +1082,143 @@ export default function ProductDetailView({
                 <p className="text-xs text-blue-600 font-medium">
                   {t('minOrderUnits', { n: product.minOrderQty, pct: Math.round((1 - product.wholesalePrice / currentPrice) * 100) })}
                 </p>
+              </div>
+            )}
+
+            {/* Wholesale Options Matrix Card */}
+            {(isWholesale || isBoth) && matrixItems.length > 1 && (
+              <div className="bg-white rounded-xl border-2 border-blue-200 shadow-sm p-4 mb-4">
+                <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-blue-600 rounded-lg p-1.5 text-white">
+                      <Box className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-gray-900">
+                        {locale === 'ru' ? 'Оптовая матрица заказов' : locale === 'zh' ? '批发批量选型下单' : 'Wholesale Options Matrix'}
+                      </h3>
+                      <p className="text-[11px] text-gray-500">
+                        {locale === 'ru'
+                          ? 'Укажите количество по каждому варианту / цвету'
+                          : locale === 'zh'
+                          ? '按颜色/规格分别输入订购数量'
+                          : 'Specify quantity per variant / color'}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50 text-xs">
+                    {locale === 'ru' ? 'B2B Ассортимент' : locale === 'zh' ? '多规格采购' : 'Multi-Option'}
+                  </Badge>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {matrixItems.map((item) => {
+                    const qty = matrixQuantities[item.id] || 0
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 p-2 rounded-lg bg-gray-50 hover:bg-gray-100/80 transition border border-gray-100 text-xs"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {Boolean('hex' in item && (item as any).hex) && (
+                            <span
+                              className="w-3.5 h-3.5 rounded-full border border-gray-300 flex-shrink-0"
+                              style={{ backgroundColor: (item as any).hex }}
+                            />
+                          )}
+                          <div className="truncate">
+                            <span className="font-semibold text-gray-800 block truncate">{item.label}</span>
+                            <span className="text-[10px] font-mono text-gray-400">{item.sku}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="font-mono font-semibold text-gray-700">
+                            {formatPrice(item.price)}
+                          </span>
+
+                          {/* Stepper */}
+                          <div className="flex items-center border border-gray-300 rounded-md bg-white shadow-2xs">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setMatrixQuantities((prev) => ({
+                                  ...prev,
+                                  [item.id]: Math.max(0, (prev[item.id] || 0) - 1),
+                                }))
+                              }
+                              className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded-l-md"
+                              disabled={qty <= 0}
+                            >
+                              -
+                            </button>
+                            <input
+                              type="number"
+                              min="0"
+                              value={qty === 0 ? '' : qty}
+                              placeholder="0"
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0
+                                setMatrixQuantities((prev) => ({
+                                  ...prev,
+                                  [item.id]: Math.max(0, val),
+                                }))
+                              }}
+                              className="w-12 text-center text-xs font-bold py-1 border-x border-gray-200 focus:outline-hidden"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setMatrixQuantities((prev) => ({
+                                  ...prev,
+                                  [item.id]: (prev[item.id] || 0) + 1,
+                                }))
+                              }
+                              className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded-r-md"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Matrix Total & Action */}
+                <div className="mt-3 pt-3 border-t border-gray-200 flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600">
+                      {locale === 'ru' ? 'Всего единиц:' : locale === 'zh' ? '总订购量:' : 'Total Units:'}
+                      <span className="font-bold font-mono ml-1 text-gray-900">{totalMatrixUnits}</span>
+                      <span className="text-[11px] text-gray-400 ml-1">
+                        (MOQ: {product.minOrderQty || 1})
+                      </span>
+                    </span>
+                    <span className="font-bold text-sm text-blue-700">
+                      {formatPrice(totalMatrixPrice)}
+                    </span>
+                  </div>
+
+                  {totalMatrixUnits > 0 && totalMatrixUnits < (product.minOrderQty || 1) && (
+                    <p className="text-[11px] text-amber-600 font-medium">
+                      {t('quoteListMoqError', { n: product.minOrderQty || 1 })}
+                    </p>
+                  )}
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={totalMatrixUnits < (product.minOrderQty || 1) || adding}
+                    onClick={isInstantWholesale ? handleMatrixAddToCart : handleMatrixAddToQuote}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded-lg gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    {isInstantWholesale
+                      ? (locale === 'ru' ? 'Добавить ассортимент в корзину' : locale === 'zh' ? '批量加入购物车' : 'Add Assortment to Cart')
+                      : (locale === 'ru' ? 'Добавить ассортимент в заявку' : locale === 'zh' ? '批量加入报价单' : 'Add Assortment to Quote List')}
+                  </Button>
+                </div>
               </div>
             )}
 

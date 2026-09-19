@@ -144,6 +144,7 @@ export async function POST(req: NextRequest) {
                 quantity: item.quantity,
                 unitPriceRequested: item.targetPrice ? parseFloat(item.targetPrice) : null,
                 customerNotes: item.customerNotes || null,
+                selectedOptions: item.selectedOptions || null,
                 sortOrder: index,
               };
             }),
