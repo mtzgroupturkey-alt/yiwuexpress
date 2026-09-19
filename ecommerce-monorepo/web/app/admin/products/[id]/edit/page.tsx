@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, ExternalLink } from 'lucide-react'
 import { ProductAttributesSection } from '@/components/admin/ProductAttributesSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
@@ -349,6 +349,18 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           >
             {dict.common.cancel}
           </Button>
+          {watch('slug') && (
+            <a
+              href={`/products/${watch('slug')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50/70 px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors shadow-sm"
+              title="Preview product on storefront in new tab"
+            >
+              <ExternalLink className="w-4 h-4 mr-2" />
+              View in Store
+            </a>
+          )}
           <Button 
             onClick={handleSubmit(onSubmit)} 
             disabled={submitting}

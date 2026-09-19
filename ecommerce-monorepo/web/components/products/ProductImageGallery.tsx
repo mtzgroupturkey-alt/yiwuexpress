@@ -133,7 +133,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
       <div className="space-y-3 select-none">
         {/* Main Image Container */}
         <div
-          className="relative aspect-square bg-white rounded-2xl overflow-hidden group shadow-sm hover:shadow-md border border-gray-200 cursor-zoom-in transition-all"
+          className="relative aspect-square bg-slate-50/80 dark:bg-[#0c192c] rounded-2xl overflow-hidden group shadow-sm hover:shadow-md border border-slate-200/80 dark:border-slate-800 cursor-zoom-in transition-all flex items-center justify-center"
           onClick={() => {
             setIsZoomed(true)
             setZoomLevel(1)
@@ -151,7 +151,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           <img
             src={getImageSrc(safeIndex)}
             alt={`${productName} - Image ${safeIndex + 1}`}
-            className="object-contain w-full h-full p-4 transition-transform duration-300 group-hover:scale-105"
+            className="object-contain w-full h-full p-2.5 transition-transform duration-300 group-hover:scale-105"
             loading="eager"
             onError={() => handleImageError(safeIndex)}
           />

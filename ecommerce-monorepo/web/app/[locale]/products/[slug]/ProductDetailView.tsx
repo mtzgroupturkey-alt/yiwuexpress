@@ -8,7 +8,7 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles } from 'lucide-react'
 import ProductCard from '@/components/products/ProductCard'
 import { ReviewSection } from '@/components/products/ReviewSection'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
@@ -247,6 +247,7 @@ export default function ProductDetailView({
   const [showQuestionForm, setShowQuestionForm] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
   const [showReturnPolicy, setShowReturnPolicy] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'logistics' | 'faq' | 'reviews'>('overview')
 
   // Initialize using the store-mode-effective MOQ (product already fetched
   // server-side — no loading skeleton needed on first paint).
@@ -497,13 +498,102 @@ export default function ProductDetailView({
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-            {/* Left Column: Image Gallery */}
+            {/* Left Column: Image Gallery & Sourcing Security */}
             <div className="lg:col-span-6 animate-fade-in">
-              <div className="sticky top-20">
+              <div className="sticky top-20 space-y-4">
                 <ProductImageGallery
                   images={currentImages}
                   productName={localized.name}
                 />
+
+                {/* Sourcing Security & B2B Trade Assurance Card */}
+                <div className="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-5 shadow-xs transition-all hover:shadow-sm">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700">
+                        <ShieldCheck className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                          {locale === 'ru' ? 'Торговая гарантия и защита' : locale === 'zh' ? '贸易保障与买家服务' : 'Trade Assurance & Sourcing'}
+                        </h4>
+                        <p className="text-[11px] text-slate-500">
+                          {locale === 'ru' ? '100% защита сделки и контроль качества' : locale === 'zh' ? '100%资金保障与全检服务' : '100% Payment Escrow & Pre-Shipment QC'}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-semibold px-2 py-0.5">
+                      {locale === 'ru' ? 'Проверен' : locale === 'zh' ? '已认证' : 'Verified'}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs text-slate-700">
+                    <div className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-semibold block text-slate-800">
+                          {locale === 'ru' ? 'Контроль качества' : locale === 'zh' ? '严格品控' : 'Quality Inspected'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {locale === 'ru' ? 'Инспекция перед отправкой' : locale === 'zh' ? '发货前全检' : 'Inspected before dispatch'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-semibold block text-slate-800">
+                          {locale === 'ru' ? 'Прямой экспорт' : locale === 'zh' ? '中国直发' : 'Direct Export'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {locale === 'ru' ? 'Склад в Китае / Иу' : locale === 'zh' ? '中国发货 / 义乌集运' : 'China & Yiwu Logistics Hub'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-semibold block text-slate-800">
+                          {locale === 'ru' ? 'Образцы и OEM' : locale === 'zh' ? '支持拿样' : 'Samples & OEM'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {locale === 'ru' ? 'Кастомная упаковка и лого' : locale === 'zh' ? '支持定制包装与logo' : 'Custom logo & packaging'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <span className="font-semibold block text-slate-800">
+                          {locale === 'ru' ? 'Авиа и Морской фрахт' : locale === 'zh' ? '多元物流' : 'Air & Sea Freight'}
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          {locale === 'ru' ? 'FOB, CIF, DDP варианты' : locale === 'zh' ? '支持EXW/FOB/DDP' : 'EXW, FOB, DDP express'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                      {locale === 'ru' ? 'Безопасная сделка гарантирована' : locale === 'zh' ? '平台信用保障交易' : 'Escrow Protected Order'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const tabsEl = document.getElementById('product-tabs')
+                        if (tabsEl) {
+                          setActiveTab('logistics')
+                          tabsEl.scrollIntoView({ behavior: 'smooth' })
+                        }
+                      }}
+                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    >
+                      {locale === 'ru' ? 'Условия доставки →' : locale === 'zh' ? '查看物流详情 →' : 'Logistics details →'}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -956,87 +1046,248 @@ export default function ProductDetailView({
                 </div>
               </div>
             </div>
+
+            {/* Quick Specs Snippet & Jump-to-Details */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 mb-4">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  {locale === 'ru' ? 'Ключевые параметры' : locale === 'zh' ? '核心参数' : 'Key Highlights'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('product-tabs')
+                    if (el) {
+                      setActiveTab('specs')
+                      el.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                >
+                  <span>{locale === 'ru' ? 'Все характеристики' : locale === 'zh' ? '查看全部参数' : 'Full specifications'}</span>
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                {product.material && (
+                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[11px] text-slate-500 block">{t('specMaterial')}</span>
+                    <span className="font-semibold text-slate-800 truncate block">{getLocalizedMaterial(product.material, locale)}</span>
+                  </div>
+                )}
+                {product.weightKg > 0 && (
+                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[11px] text-slate-500 block">{t('specWeight')}</span>
+                    <span className="font-semibold text-slate-800 block">{product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</span>
+                  </div>
+                )}
+                {product.countryOfOrigin && (
+                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[11px] text-slate-500 block">{t('specOrigin')}</span>
+                    <span className="font-semibold text-slate-800 block">{getLocalizedCountry(product.countryOfOrigin, locale)}</span>
+                  </div>
+                )}
+                {product.hsCode && (
+                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[11px] text-slate-500 block">{t('specHsCode')}</span>
+                    <span className="font-semibold text-slate-800 block">{product.hsCode}</span>
+                  </div>
+                )}
+                {product.minOrderQty > 1 && (
+                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
+                    <span className="text-[11px] text-slate-500 block">{locale === 'ru' ? 'Мин. заказ (MOQ)' : locale === 'zh' ? '起订量 (MOQ)' : 'MOQ'}</span>
+                    <span className="font-semibold text-slate-800 block">{product.minOrderQty} {locale === 'ru' ? 'шт.' : locale === 'zh' ? '件' : 'units'}</span>
+                  </div>
+                )}
+                <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
+                  <span className="text-[11px] text-slate-500 block">{locale === 'ru' ? 'Статус склада' : locale === 'zh' ? '现货状态' : 'Stock Status'}</span>
+                  <span className={`font-semibold block ${currentStock > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    {currentStock > 0 ? `${currentStock} ${locale === 'ru' ? 'в наличии' : locale === 'zh' ? '现货' : 'in stock'}` : t('outOfStock')}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Details Section: Description & Specifications */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-          {/* Product Description */}
-          <div className="lg:col-span-6">
-            <Card className="h-full shadow-md border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3">
-                <h2 className="text-lg font-bold" style={{ color: 'rgb(26, 58, 92)' }}>{t('productDescription')}</h2>
-              </div>
-              <CardContent className="pt-5 px-4 pb-4">
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                  {localized.description || t('noDescription')}
-                </p>
-              </CardContent>
-            </Card>
+        {/* Full-width Modern Product Hub */}
+        <div id="product-tabs" className="mt-10 mb-12 scroll-mt-24">
+          <div className="border-b border-slate-200 bg-white rounded-t-2xl px-3 sm:px-6 pt-2 shadow-xs">
+            <nav className="flex space-x-2 sm:space-x-8 overflow-x-auto scrollbar-none" aria-label="Tabs">
+              {[
+                { id: 'overview', label: t('productDescription'), count: null },
+                { id: 'specs', label: t('specifications'), count: null },
+                { id: 'logistics', label: locale === 'ru' ? 'Упаковка и логистика' : locale === 'zh' ? '包装与物流' : 'Packaging & Logistics', count: null },
+                { id: 'faq', label: locale === 'ru' ? 'Вопросы и ответы' : locale === 'zh' ? '常见问答' : 'Buyer Q&A / FAQ', count: null },
+                { id: 'reviews', label: t('customerReviews'), count: reviewsCount },
+              ].map((tab) => {
+                const isActive = activeTab === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`whitespace-nowrap py-4 px-2 sm:px-3 border-b-2 font-bold text-sm sm:text-base transition-all flex items-center gap-2 ${
+                      isActive
+                        ? 'border-blue-600 text-blue-700'
+                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    {tab.count !== null && tab.count > 0 && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
           </div>
 
-          {/* Specifications Card */}
-          <div className="lg:col-span-6">
-            <Card className="h-full shadow-md border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3">
-                <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: 'rgb(26, 58, 92)' }}>
-                  <FileText className="w-5 h-5" style={{ color: 'rgb(26, 58, 92)' }} />
-                  {t('specifications')}
-                </h2>
+          <div className="bg-white rounded-b-2xl border-x border-b border-slate-200/80 p-5 sm:p-8 shadow-xs min-h-[360px]">
+            {/* Tab 1: Overview */}
+            {activeTab === 'overview' && (
+              <div className="space-y-8 animate-fade-in">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                    {t('productDescription')}
+                  </h3>
+                  <div className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap max-w-4xl bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
+                    {localized.description || t('noDescription')}
+                  </div>
+                </div>
+
+                {/* Additional Feature Badges / Guarantees */}
+                <div className={`grid grid-cols-1 ${isApparelCategory ? 'lg:grid-cols-2' : 'sm:grid-cols-2'} gap-4`}>
+                  {/* Return Policy Card */}
+                  <div className="border border-slate-200 rounded-2xl p-5 bg-gradient-to-br from-white to-slate-50">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-emerald-50 text-emerald-700 rounded-xl p-2.5 flex-shrink-0">
+                        <RefreshCw className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">{t('easyReturns')}</h4>
+                        <p className="text-xs text-slate-500 mb-3">{t('returnPolicy30')}</p>
+                        <ul className="space-y-2 text-xs text-slate-700">
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                            <span>{t('returnWindow')}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                            <span>{t('freeReturnShipping')}</span>
+                          </li>
+                          <li className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                            <span>{t('fullRefund')}</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Size Guide - Only shown for apparel */}
+                  {isApparelCategory && (
+                    <div className="border border-slate-200 rounded-2xl p-5 bg-gradient-to-br from-white to-slate-50">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-purple-50 text-purple-700 rounded-xl p-2.5 flex-shrink-0">
+                          <Ruler className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">{t('sizeGuide')}</h4>
+                          <p className="text-xs text-slate-500 mb-3">{t('findFit')}</p>
+                          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+                            <table className="w-full text-xs">
+                              <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                  <th className="px-3 py-1.5 text-left font-semibold">{t('sizeHeader')}</th>
+                                  <th className="px-3 py-1.5 text-left font-semibold">US</th>
+                                  <th className="px-3 py-1.5 text-left font-semibold">EU</th>
+                                  <th className="px-3 py-1.5 text-left font-semibold">UK</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                <tr><td className="px-3 py-1.5 font-medium">S</td><td className="px-3 py-1.5">6-8</td><td className="px-3 py-1.5">36-38</td><td className="px-3 py-1.5">8-10</td></tr>
+                                <tr><td className="px-3 py-1.5 font-medium">M</td><td className="px-3 py-1.5">8-10</td><td className="px-3 py-1.5">38-40</td><td className="px-3 py-1.5">10-12</td></tr>
+                                <tr><td className="px-3 py-1.5 font-medium">L</td><td className="px-3 py-1.5">10-12</td><td className="px-3 py-1.5">40-42</td><td className="px-3 py-1.5">12-14</td></tr>
+                                <tr><td className="px-3 py-1.5 font-medium">XL</td><td className="px-3 py-1.5">12-14</td><td className="px-3 py-1.5">42-44</td><td className="px-3 py-1.5">14-16</td></tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <CardContent className="p-4 bg-gradient-to-br from-white to-gray-50">
-                <dl className="space-y-0.5">{/* Build complete specifications array first */}
-                  {(() => {
-                    const allSpecs: JSX.Element[] = []
-                    let renderedDimensions = false
+            )}
 
-                    // Product Attributes from Category
-                    if (product.attributes && Object.entries(product.attributes).length > 0) {
-                      if (product.categoryAttributes && product.categoryAttributes.length > 0) {
-                        product.categoryAttributes
-                          .filter(attr => {
-                            const value = product.attributes?.[attr.slug]
-                            if (!value) return false
-                            if (Array.isArray(value) && value.length === 0) return false
-                            return true
-                          })
-                          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                          .forEach((attr, idx) => {
-                            const value = product.attributes?.[attr.slug]
-                            if (!value) return
+            {/* Tab 2: Technical Specifications */}
+            {activeTab === 'specs' && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-blue-600" />
+                    {t('specifications')}
+                  </h3>
+                  <span className="text-xs text-slate-500">
+                    {locale === 'ru' ? 'Официальные фабричные спецификации' : locale === 'zh' ? '官方出厂规格参数' : 'Standard Manufacturer Specs'}
+                  </span>
+                </div>
 
-                            if (attr.slug === 'dimensions' || attr.slug === 'dimensions_lwh') {
-                              renderedDimensions = true
-                            }
+                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                  <dl className="divide-y divide-slate-100">
+                    {(() => {
+                      const allSpecs: JSX.Element[] = []
+                      let renderedDimensions = false
 
-                            const isColorType = attr.inputType === 'COLOR' || attr.inputType === 'COLOR_MULTI' || attr.slug === 'color' || attr.slug.endsWith('_color')
-                            const colorOpts = attr.colorOptions || []
+                      // Product Attributes from Category
+                      if (product.attributes && Object.entries(product.attributes).length > 0) {
+                        if (product.categoryAttributes && product.categoryAttributes.length > 0) {
+                          product.categoryAttributes
+                            .filter(attr => {
+                              const value = product.attributes?.[attr.slug]
+                              if (!value) return false
+                              if (Array.isArray(value) && value.length === 0) return false
+                              return true
+                            })
+                            .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                            .forEach((attr, idx) => {
+                              const value = product.attributes?.[attr.slug]
+                              if (!value) return
 
-                            // Color attribute — show swatches with localized names
-                            if (isColorType) {
-                              let colorVals: string[] = []
-                              if (Array.isArray(value)) {
-                                colorVals = value
-                              } else if (typeof value === 'string') {
-                                if (value.startsWith('[') && value.endsWith(']')) {
-                                  try {
-                                    const parsed = JSON.parse(value)
-                                    if (Array.isArray(parsed)) colorVals = parsed
-                                  } catch {
-                                    colorVals = [value]
-                                  }
-                                } else if (value.includes(',')) {
-                                  colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
-                                } else {
-                                  colorVals = [value]
-                                }
+                              if (attr.slug === 'dimensions' || attr.slug === 'dimensions_lwh') {
+                                renderedDimensions = true
                               }
 
-                              allSpecs.push(
-                                <div key={attr.slug ?? `color-${idx}`} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
-                                  <div className="flex justify-between items-start gap-2">
-                                    <dt className="text-gray-700 font-semibold flex-shrink-0 text-xs">{attr.name}</dt>
-                                    <dd className="flex flex-wrap gap-1.5 justify-end">
+                              const isColorType = attr.inputType === 'COLOR' || attr.inputType === 'COLOR_MULTI' || attr.slug === 'color' || attr.slug.endsWith('_color')
+                              const colorOpts = attr.colorOptions || []
+
+                              if (isColorType) {
+                                let colorVals: string[] = []
+                                if (Array.isArray(value)) {
+                                  colorVals = value
+                                } else if (typeof value === 'string') {
+                                  if (value.startsWith('[') && value.endsWith(']')) {
+                                    try {
+                                      const parsed = JSON.parse(value)
+                                      if (Array.isArray(parsed)) colorVals = parsed
+                                    } catch {
+                                      colorVals = [value]
+                                    }
+                                  } else if (value.includes(',')) {
+                                    colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
+                                  } else {
+                                    colorVals = [value]
+                                  }
+                                }
+
+                                allSpecs.push(
+                                  <div key={attr.slug ?? `color-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">{attr.name}</dt>
+                                    <dd className="sm:col-span-2 flex flex-wrap gap-2 items-center">
                                       {colorVals.map((hex: string, ci) => {
                                         const cleanHex = hex.trim()
                                         const rawLabel = colorOpts.find((c: any) => c.value?.toLowerCase() === cleanHex.toLowerCase())?.label
@@ -1045,11 +1296,11 @@ export default function ProductDetailView({
                                         return (
                                           <div
                                             key={cleanHex ?? `color-val-${idx}-${ci}`}
-                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-gray-200 shadow-2xs text-xs font-semibold text-gray-800"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs text-xs font-semibold text-slate-800"
                                           >
                                             {isHex && (
                                               <span
-                                                className="inline-block w-3.5 h-3.5 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
+                                                className="inline-block w-4 h-4 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
                                                 style={{ backgroundColor: cleanHex }}
                                                 title={label}
                                               />
@@ -1060,68 +1311,65 @@ export default function ProductDetailView({
                                       })}
                                     </dd>
                                   </div>
-                                </div>
-                              )
-                            } else {
-                              // Regular attribute — text display with boolean and option translation fallback
-                              const isBool = attr.inputType === 'CHECKBOX' || typeof value === 'boolean' || value === 'true' || value === 'false' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
-                              let displayValue: any
-                              if (isBool) {
-                                const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
-                                if (attr.slug === 'assembly_required') {
-                                  displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
-                                } else {
-                                  displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
-                                }
-                              } else if (Array.isArray(value)) {
-                                displayValue = value.map((v: any) => getLocalizedOptionLabel(attr.slug, String(v), locale)).join(', ')
+                                )
                               } else {
-                                displayValue = getLocalizedOptionLabel(attr.slug, String(value), locale)
+                                const isBool = attr.inputType === 'CHECKBOX' || typeof value === 'boolean' || value === 'true' || value === 'false' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
+                                let displayValue: any
+                                if (isBool) {
+                                  const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
+                                  if (attr.slug === 'assembly_required') {
+                                    displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
+                                  } else {
+                                    displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
+                                  }
+                                } else if (Array.isArray(value)) {
+                                  displayValue = value.map((v: any) => getLocalizedOptionLabel(attr.slug, String(v), locale)).join(', ')
+                                } else {
+                                  displayValue = getLocalizedOptionLabel(attr.slug, String(value), locale)
+                                }
+
+                                allSpecs.push(
+                                  <div key={attr.slug ?? `spec-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">{attr.name}</dt>
+                                    <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{displayValue}</dd>
+                                  </div>
+                                )
+                              }
+                            })
+                        } else {
+                          Object.entries(product.attributes)
+                            .filter(([, value]) => !!value && !(Array.isArray(value) && value.length === 0))
+                            .forEach(([key, value]) => {
+                              if (key === 'dimensions' || key === 'dimensions_lwh') {
+                                renderedDimensions = true
                               }
 
-                              allSpecs.push(
-                                <div key={attr.slug ?? `spec-${idx}`} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
-                                  <dt className="text-gray-700 font-semibold text-xs">{attr.name}</dt>
-                                  <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
-                                </div>
-                              )
-                            }
-                          })
-                      } else {
-                        Object.entries(product.attributes)
-                          .filter(([, value]) => !!value && !(Array.isArray(value) && value.length === 0))
-                          .forEach(([key, value]) => {
-                            if (key === 'dimensions' || key === 'dimensions_lwh') {
-                              renderedDimensions = true
-                            }
-
-                            const isColor = key === 'color' || key.endsWith('_color')
-                            if (isColor) {
-                              let colorVals: string[] = []
-                              if (Array.isArray(value)) {
-                                colorVals = value
-                              } else if (typeof value === 'string') {
-                                if (value.startsWith('[') && value.endsWith(']')) {
-                                  try {
-                                    const p = JSON.parse(value)
-                                    if (Array.isArray(p)) colorVals = p
-                                  } catch {
+                              const isColor = key === 'color' || key.endsWith('_color')
+                              if (isColor) {
+                                let colorVals: string[] = []
+                                if (Array.isArray(value)) {
+                                  colorVals = value
+                                } else if (typeof value === 'string') {
+                                  if (value.startsWith('[') && value.endsWith(']')) {
+                                    try {
+                                      const p = JSON.parse(value)
+                                      if (Array.isArray(p)) colorVals = p
+                                    } catch {
+                                      colorVals = [value]
+                                    }
+                                  } else if (value.includes(',')) {
+                                    colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
+                                  } else {
                                     colorVals = [value]
                                   }
-                                } else if (value.includes(',')) {
-                                  colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
-                                } else {
-                                  colorVals = [value]
                                 }
-                              }
 
-                              allSpecs.push(
-                                <div key={key} className="py-2 border-b border-gray-200 last:border-0 hover:bg-white px-2 rounded transition-colors">
-                                  <div className="flex justify-between items-start gap-2">
-                                    <dt className="text-gray-700 font-semibold flex-shrink-0 text-xs">
+                                allSpecs.push(
+                                  <div key={key} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">
                                       {locale === 'ru' ? 'Цвет' : locale === 'zh' ? '颜色' : 'Color'}
                                     </dt>
-                                    <dd className="flex flex-wrap gap-1.5 justify-end">
+                                    <dd className="sm:col-span-2 flex flex-wrap gap-2 items-center">
                                       {colorVals.map((hex: string, ci) => {
                                         const cleanHex = hex.trim()
                                         const label = getLocalizedColorName(cleanHex, undefined, locale)
@@ -1129,12 +1377,13 @@ export default function ProductDetailView({
                                         return (
                                           <div
                                             key={cleanHex ?? `color-val-${ci}`}
-                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-gray-200 shadow-2xs text-xs font-semibold text-gray-800"
+                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs text-xs font-semibold text-slate-800"
                                           >
                                             {isHex && (
                                               <span
-                                                className="inline-block w-3.5 h-3.5 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
+                                                className="inline-block w-4 h-4 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
                                                 style={{ backgroundColor: cleanHex }}
+                                                title={label}
                                               />
                                             )}
                                             <span>{label}</span>
@@ -1143,273 +1392,306 @@ export default function ProductDetailView({
                                       })}
                                     </dd>
                                   </div>
-                                </div>
-                              )
-                            } else {
-                              const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()
-                              const isBool = typeof value === 'boolean' || value === 'true' || value === 'false' || key === 'assembly_required' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
-                              let displayValue: any
-                              if (isBool) {
-                                const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
-                                if (key === 'assembly_required') {
-                                  displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
-                                } else {
-                                  displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
-                                }
-                              } else if (Array.isArray(value)) {
-                                displayValue = value.map((v: any) => getLocalizedOptionLabel(key, String(v), locale)).join(', ')
+                                )
                               } else {
-                                displayValue = getLocalizedOptionLabel(key, String(value), locale)
+                                const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()
+                                const isBool = typeof value === 'boolean' || value === 'true' || value === 'false' || key === 'assembly_required' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
+                                let displayValue: any
+                                if (isBool) {
+                                  const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
+                                  if (key === 'assembly_required') {
+                                    displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
+                                  } else {
+                                    displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
+                                  }
+                                } else if (Array.isArray(value)) {
+                                  displayValue = value.map((v: any) => getLocalizedOptionLabel(key, String(v), locale)).join(', ')
+                                } else {
+                                  displayValue = getLocalizedOptionLabel(key, String(value), locale)
+                                }
+
+                                allSpecs.push(
+                                  <div key={key} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">{displayName}</dt>
+                                    <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{displayValue}</dd>
+                                  </div>
+                                )
                               }
-
-                              allSpecs.push(
-                                <div key={key} className="flex justify-between items-center py-2 px-2 border-b border-gray-200 last:border-0 hover:bg-white rounded transition-colors">
-                                  <dt className="text-gray-700 font-semibold text-xs">{displayName}</dt>
-                                  <dd className="font-bold text-gray-900 text-xs">{displayValue}</dd>
-                                </div>
-                              )
-                            }
-                          })
+                            })
+                        }
                       }
-                    }
 
-                    // Basic Product Info
-                    allSpecs.push(
-                      <div key="weight" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                        <dt className="text-gray-700 font-semibold text-xs">{t('specWeight')}</dt>
-                        <dd className="font-bold text-gray-900 text-xs">{product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</dd>
-                      </div>
-                    )
-
-                    if (product.hsCode) {
+                      // Core Product Info
                       allSpecs.push(
-                        <div key="hsCode" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                          <dt className="text-gray-700 font-semibold text-xs">{t('specHsCode')}</dt>
-                          <dd className="font-bold text-gray-900 text-xs">{product.hsCode}</dd>
+                        <div key="weight" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specWeight')}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</dd>
                         </div>
                       )
-                    }
 
-                    if (product.countryOfOrigin) {
-                      allSpecs.push(
-                        <div key="origin" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                          <dt className="text-gray-700 font-semibold text-xs">{t('specOrigin')}</dt>
-                          <dd className="font-bold text-gray-900 text-xs">{getLocalizedCountry(product.countryOfOrigin, locale)}</dd>
-                        </div>
-                      )
-                    }
-
-                    if (product.material) {
-                      allSpecs.push(
-                        <div key="material" className="flex justify-between py-2 px-2 border-b border-gray-200 hover:bg-white rounded transition-colors">
-                          <dt className="text-gray-700 font-semibold text-xs">{t('specMaterial')}</dt>
-                          <dd className="font-bold text-gray-900 text-xs">{getLocalizedMaterial(product.material, locale)}</dd>
-                        </div>
-                      )
-                    }
-
-                    if (product.dimensions && !renderedDimensions) {
-                      allSpecs.push(
-                        <div key="dimensions" className="flex justify-between py-2 px-2 hover:bg-white rounded transition-colors">
-                          <dt className="text-gray-700 font-semibold text-xs">{t('specDimensions')}</dt>
-                          <dd className="font-bold text-gray-900 text-xs">
-                            {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} {locale === 'ru' ? 'см' : locale === 'zh' ? '厘米' : 'cm'}
-                          </dd>
-                        </div>
-                      )
-                    }
-
-                    // Show preview (first 5 items) or all items
-                    const previewCount = 5
-                    const specsToShow = isSpecificationsExpanded ? allSpecs : allSpecs.slice(0, previewCount)
-                    const hasMore = allSpecs.length > previewCount
-
-                    return (
-                      <>
-                        {specsToShow}
-                        {hasMore && (
-                          <div className="pt-3">
-                            <button
-                              onClick={() => setIsSpecificationsExpanded(!isSpecificationsExpanded)}
-                              className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-gradient-to-r from-gray-100 to-gray-50 hover:from-gray-200 hover:to-gray-100 text-gray-800 font-semibold rounded-lg transition-all shadow-sm hover:shadow text-sm"
-                            >
-                                {isSpecificationsExpanded ? (
-                                  <>
-                                    <span>{t('showLess')}</span>
-                                    <ChevronUp className="w-4 h-4" />
-                                  </>
-                                ) : (
-                                  <>
-                                    <span>{t('showAllMore', { n: allSpecs.length - previewCount })}</span>
-                                    <ChevronDown className="w-4 h-4" />
-                                  </>
-                                )}
-                            </button>
+                      if (product.hsCode) {
+                        allSpecs.push(
+                          <div key="hsCode" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specHsCode')}</dt>
+                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.hsCode}</dd>
                           </div>
-                        )}
-                      </>
-                    )
-                  })()}
-                </dl>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                        )
+                      }
 
-        {/* Additional Features Section - Compact */}
-        <div className={`grid grid-cols-1 ${isApparelCategory ? 'lg:grid-cols-3' : 'sm:grid-cols-2'} gap-4 mt-4 mb-6`}>
-          {/* Ask a Question */}
-          <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowQuestionForm(!showQuestionForm)}>
-            <CardContent className="px-4 pt-6 pb-5">
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-50 rounded-full p-2 flex-shrink-0">
-                  <HelpCircle className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-0.5 text-sm">{t('haveQuestions')}</h3>
-                  <p className="text-xs text-gray-600 mb-2">{t('expertsHelp')}</p>
-                  <button className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                    {t('askAQuestion')}
-                    <ChevronDown className={`w-3 h-3 transition-transform ${showQuestionForm ? 'rotate-180' : ''}`} />
-                  </button>
+                      if (product.countryOfOrigin) {
+                        allSpecs.push(
+                          <div key="origin" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specOrigin')}</dt>
+                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedCountry(product.countryOfOrigin, locale)}</dd>
+                          </div>
+                        )
+                      }
+
+                      if (product.material) {
+                        allSpecs.push(
+                          <div key="material" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
+                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedMaterial(product.material, locale)}</dd>
+                          </div>
+                        )
+                      }
+
+                      if (product.dimensions && !renderedDimensions) {
+                        allSpecs.push(
+                          <div key="dimensions" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specDimensions')}</dt>
+                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                              {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} {locale === 'ru' ? 'см' : locale === 'zh' ? '厘米' : 'cm'}
+                            </dd>
+                          </div>
+                        )
+                      }
+
+                      return allSpecs
+                    })()}
+                  </dl>
                 </div>
               </div>
-              {showQuestionForm && (
-                <div className="mt-3 pt-3 border-t border-gray-200 animate-fade-in">
-                  <textarea
-                    placeholder={t('questionPlaceholder')}
-                    className="w-full border border-gray-300 rounded-md p-2 text-xs focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all"
-                    rows={3}
-                  />
-                  <Button size="sm" className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-xs h-8">
-                    {t('submitQuestion')}
+            )}
+
+            {/* Tab 3: Packaging & B2B Logistics */}
+            {activeTab === 'logistics' && (
+              <div className="space-y-6 animate-fade-in">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                    <Box className="w-5 h-5 text-blue-600" />
+                    {locale === 'ru' ? 'Упаковка и B2B логистика' : locale === 'zh' ? '包装规格与物流运输' : 'Packaging & B2B Logistics'}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    {locale === 'ru'
+                      ? 'Данные о мастер-коробах, объеме (CBM), таможенном коде и способах доставки.'
+                      : locale === 'zh'
+                      ? '出口外箱尺寸、净重毛重、体积(CBM)及国际海运空运条款。'
+                      : 'Export master carton standards, gross/net weight, volume calculations (CBM) and shipping terms.'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Packaging specs */}
+                  <div className="rounded-2xl border border-slate-200 p-5 bg-gradient-to-br from-white to-slate-50/50">
+                    <h4 className="font-bold text-slate-900 mb-3 text-sm flex items-center gap-2">
+                      <Package className="w-4 h-4 text-blue-600" />
+                      {locale === 'ru' ? 'Параметры упаковки' : locale === 'zh' ? '装箱规格' : 'Packaging Specifications'}
+                    </h4>
+                    <dl className="divide-y divide-slate-100 text-xs sm:text-sm">
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Вес единицы (нетто)' : locale === 'zh' ? '单件净重' : 'Unit Net Weight'}</dt>
+                        <dd className="font-semibold text-slate-900">{product.weightKg || '0.8'} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Вес с упаковкой (брутто)' : locale === 'zh' ? '单件毛重' : 'Gross Weight'}</dt>
+                        <dd className="font-semibold text-slate-900">{((product.weightKg || 0.8) * 1.15).toFixed(2)} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Тип тары' : locale === 'zh' ? '包装材质' : 'Package Type'}</dt>
+                        <dd className="font-semibold text-slate-900">{locale === 'ru' ? '5-слойный экспортный гофрокороб' : locale === 'zh' ? '5层瓦楞出口标准纸箱' : '5-Ply Export Master Carton'}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Габариты упаковки' : locale === 'zh' ? '装箱尺寸' : 'Dimensions'}</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {product.dimensions
+                            ? `${product.dimensions.length} × ${product.dimensions.width} × ${product.dimensions.height} cm`
+                            : 'Standard export packing'}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Расчетный объем (CBM)' : locale === 'zh' ? '预估体积 (CBM)' : 'Estimated CBM'}</dt>
+                        <dd className="font-semibold text-slate-900">
+                          {product.dimensions
+                            ? `${((product.dimensions.length * product.dimensions.width * product.dimensions.height) / 1000000).toFixed(3)} m³`
+                            : '~0.025 m³'}
+                        </dd>
+                      </div>
+                      {product.hsCode && (
+                        <div className="flex justify-between py-2.5">
+                          <dt className="text-slate-500">{locale === 'ru' ? 'Код ТН ВЭД (HS Code)' : locale === 'zh' ? '海关编码 (HS Code)' : 'HS Code'}</dt>
+                          <dd className="font-semibold text-blue-700">{product.hsCode}</dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
+
+                  {/* Freight and shipping terms */}
+                  <div className="rounded-2xl border border-slate-200 p-5 bg-gradient-to-br from-white to-slate-50/50">
+                    <h4 className="font-bold text-slate-900 mb-3 text-sm flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-emerald-600" />
+                      {locale === 'ru' ? 'Условия отгрузки и фрахта' : locale === 'zh' ? '航线与贸易条款' : 'Shipping & Trade Terms'}
+                    </h4>
+                    <dl className="divide-y divide-slate-100 text-xs sm:text-sm">
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Порт отправления' : locale === 'zh' ? '发货港口' : 'Port of Dispatch'}</dt>
+                        <dd className="font-semibold text-slate-900">{locale === 'ru' ? 'Нинбо / Шанхай / Склад в Иу' : locale === 'zh' ? '宁波港 / 上海港 / 义乌集运中心' : 'Ningbo / Shanghai / Yiwu Hub'}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Базис поставки' : locale === 'zh' ? '贸易术语' : 'Supported Incoterms'}</dt>
+                        <dd className="font-semibold text-slate-900">EXW, FOB, CIF, DDP</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Авиа доставка (DDP)' : locale === 'zh' ? '空运专线 (含税到门)' : 'Air Express (DDP)'}</dt>
+                        <dd className="font-semibold text-emerald-700">5 – 8 {locale === 'ru' ? 'дней' : locale === 'zh' ? '个工作日' : 'days'}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Морской фрахт (FCL/LCL)' : locale === 'zh' ? '海运整柜/拼箱' : 'Sea Freight (FCL/LCL)'}</dt>
+                        <dd className="font-semibold text-slate-900">20 – 35 {locale === 'ru' ? 'дней' : locale === 'zh' ? '天' : 'days'}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Таможенное оформление' : locale === 'zh' ? '报关与清关' : 'Export Clearance'}</dt>
+                        <dd className="font-semibold text-slate-900">{locale === 'ru' ? 'Предоставляется полный пакет документов' : locale === 'zh' ? '全套出口报关单据 & 产地证' : 'Full export documents & CO provided'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-blue-200 bg-blue-50/50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h5 className="font-bold text-slate-900 text-sm">{locale === 'ru' ? 'Требуется расчет контейнерной партии или сборного груза?' : locale === 'zh' ? '需要计算整柜或拼箱物流费用？' : 'Need custom container calculation or LCL consolidation?'}</h5>
+                    <p className="text-xs text-slate-600">{locale === 'ru' ? 'Наши логисты подготовят точный расчет фрахта до вашего склада.' : locale === 'zh' ? '我们的物流专员将为您提供精确的门到门运费报价。' : 'Our international logistics desk can calculate exact door-to-door freight for your destination.'}</p>
+                  </div>
+                  <Button
+                    onClick={handleRequestQuote}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold px-4 h-9 whitespace-nowrap shadow-xs"
+                  >
+                    {t('requestWholesaleQuote')}
                   </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
 
-          {/* Size Guide - Only shown for apparel / clothing items */}
-          {isApparelCategory && (
-            <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowSizeGuide(!showSizeGuide)}>
-              <CardContent className="px-4 pt-6 pb-5">
-                <div className="flex items-start gap-3">
-                  <div className="bg-purple-50 rounded-full p-2 flex-shrink-0">
-                    <Ruler className="w-5 h-5 text-purple-600" />
+            {/* Tab 4: FAQ & Inquiries */}
+            {activeTab === 'faq' && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <HelpCircle className="w-5 h-5 text-blue-600" />
+                      {t('faqTitle')}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-500">{t('faqSubtitle')}</p>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 mb-0.5 text-sm">{t('sizeGuide')}</h3>
-                    <p className="text-xs text-gray-600 mb-2">{t('findFit')}</p>
-                    <button className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                      {t('viewSizeChart')}
-                      <ChevronDown className={`w-3 h-3 transition-transform ${showSizeGuide ? 'rotate-180' : ''}`} />
-                    </button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowQuestionForm(!showQuestionForm)}
+                    className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 text-xs"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1.5" />
+                    {t('askAQuestion')}
+                  </Button>
                 </div>
-                {showSizeGuide && (
-                  <div className="mt-3 pt-3 border-t border-gray-200 animate-fade-in">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-2 py-1.5 text-left font-semibold">{t('sizeHeader')}</th>
-                            <th className="px-2 py-1.5 text-left font-semibold">US</th>
-                            <th className="px-2 py-1.5 text-left font-semibold">EU</th>
-                            <th className="px-2 py-1.5 text-left font-semibold">UK</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200">
-                          <tr><td className="px-2 py-1.5">S</td><td className="px-2 py-1.5">6-8</td><td className="px-2 py-1.5">36-38</td><td className="px-2 py-1.5">8-10</td></tr>
-                          <tr><td className="px-2 py-1.5">M</td><td className="px-2 py-1.5">8-10</td><td className="px-2 py-1.5">38-40</td><td className="px-2 py-1.5">10-12</td></tr>
-                          <tr><td className="px-2 py-1.5">L</td><td className="px-2 py-1.5">10-12</td><td className="px-2 py-1.5">40-42</td><td className="px-2 py-1.5">12-14</td></tr>
-                          <tr><td className="px-2 py-1.5">XL</td><td className="px-2 py-1.5">12-14</td><td className="px-2 py-1.5">42-44</td><td className="px-2 py-1.5">14-16</td></tr>
-                        </tbody>
-                      </table>
+
+                {showQuestionForm && (
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 animate-fade-in space-y-3">
+                    <p className="text-xs font-semibold text-slate-800">{t('expertsHelp')}</p>
+                    <textarea
+                      placeholder={t('questionPlaceholder')}
+                      className="w-full border border-slate-300 rounded-xl p-3 text-xs sm:text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200 transition-all bg-white"
+                      rows={3}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => setShowQuestionForm(false)} className="text-xs">
+                        {t('cancel')}
+                      </Button>
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
+                        {t('submitQuestion')}
+                      </Button>
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Return Policy */}
-          <Card className="shadow-sm border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => setShowReturnPolicy(!showReturnPolicy)}>
-            <CardContent className="px-4 pt-6 pb-5">
-              <div className="flex items-start gap-3">
-                <div className="bg-green-50 rounded-full p-2 flex-shrink-0">
-                  <RefreshCw className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-0.5 text-sm">{t('easyReturns')}</h3>
-                  <p className="text-xs text-gray-600 mb-2">{t('returnPolicy30')}</p>
-                  <button className="text-xs font-semibold text-green-600 hover:text-green-700 flex items-center gap-1">
-                    {t('learnMore')}
-                    <ChevronDown className={`w-3 h-3 transition-transform ${showReturnPolicy ? 'rotate-180' : ''}`} />
-                  </button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { q: t('faq1q'), a: t('faq1a', { n: product.minOrderQty }) },
+                    { q: t('faq2q'), a: t('faq2a') },
+                    { q: t('faq3q'), a: t('faq3a') },
+                    { q: t('faq4q'), a: t('faq4a') },
+                    { q: t('faq5q'), a: t('faq5a') },
+                  ].map((faq, index) => (
+                    <div key={index} className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/80 hover:border-blue-200 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-blue-100 rounded-xl p-2 flex-shrink-0 mt-0.5">
+                          <HelpCircle className="w-4 h-4 text-blue-700" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900 mb-1 text-sm">{faq.q}</h4>
+                          <p className="text-slate-600 leading-relaxed text-xs">{faq.a}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-              {showReturnPolicy && (
-                <div className="mt-3 pt-3 border-t border-gray-200 animate-fade-in">
-                  <ul className="space-y-1.5 text-xs text-gray-700">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>{t('returnWindow')}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>{t('freeReturnShipping')}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>{t('fullRefund')}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>{t('noQuestions')}</span>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            )}
+
+            {/* Tab 5: Reviews */}
+            {activeTab === 'reviews' && (
+              <div className="animate-fade-in">
+                <ReviewSection productId={product.id} productName={localized.name} />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Customer Support Callout - Compact */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-5 mb-6 shadow-md border border-blue-500 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 shadow-md border border-blue-500 text-white">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 rounded-full p-2.5 backdrop-blur-sm border border-white/30">
-                <MessageCircle className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-3.5">
+              <div className="bg-white/20 rounded-2xl p-3 backdrop-blur-sm border border-white/30">
+                <MessageCircle className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-base font-bold mb-0.5 text-white">{t('needHelp')}</h3>
-                <p className="text-blue-100 text-sm">{t('chat247')}</p>
+                <h3 className="text-base sm:text-lg font-bold mb-0.5 text-white">{t('needHelp')}</h3>
+                <p className="text-blue-100 text-xs sm:text-sm">{t('chat247')}</p>
               </div>
             </div>
             <Button
               size="lg"
               onClick={() => navigate('/contact')}
-              className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-6 shadow-md hover:shadow-lg transition-all text-sm h-10"
+              className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-6 shadow-md hover:shadow-lg transition-all text-sm h-11 rounded-xl"
             >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                {t('startLiveChat')}
+              <MessageCircle className="w-4 h-4 mr-2" />
+              {t('startLiveChat')}
             </Button>
           </div>
         </div>
 
         {/* Related Products Section - Compact */}
         {relatedProducts.length > 0 && (
-          <div className="mt-8 bg-white rounded-lg shadow-md p-5 border border-gray-100">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mt-8 bg-white rounded-2xl shadow-sm p-6 border border-slate-100 mb-12">
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-0.5">{t('youMayAlsoLike')}</h2>
-                <p className="text-gray-600 text-sm">{t('discoverSimilar')}</p>
+                <h2 className="text-xl font-bold text-slate-900 mb-0.5">{t('youMayAlsoLike')}</h2>
+                <p className="text-slate-500 text-xs sm:text-sm">{t('discoverSimilar')}</p>
               </div>
               {product.category && (
                 <Button
                   variant="outline"
                   onClick={() => navigate(`/products?category=${product.category?.slug}`)}
-                  className="border border-primary-600 text-primary-700 hover:bg-primary-50 font-semibold rounded-lg px-4 text-sm h-9"
+                  className="border border-primary-600 text-primary-700 hover:bg-primary-50 font-semibold rounded-xl px-4 text-xs sm:text-sm h-9"
                 >
                   {t('viewAllIn', { name: localizedCategoryName })}
                 </Button>
@@ -1484,74 +1766,6 @@ export default function ProductDetailView({
             </div>
           </div>
         )}
-
-        {/* Customer Reviews and FAQ Section - Side by Side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Customer Reviews Section - Dynamic */}
-          <div className="bg-white rounded-lg shadow-md p-6 border border-gray-100">
-            <ReviewSection productId={product.id} productName={localized.name} />
-          </div>
-
-          {/* FAQ Section - Compact */}
-          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg shadow-md p-4 border border-gray-100">
-          <div className="mb-3">
-            <h2 className="text-lg font-bold text-gray-900 mb-0.5">{t('faqTitle')}</h2>
-            <p className="text-gray-600 text-xs">{t('faqSubtitle')}</p>
-          </div>
-
-          <div className="space-y-2">
-            {[
-              {
-                q: t('faq1q'),
-                a: t('faq1a', { n: product.minOrderQty })
-              },
-              {
-                q: t('faq2q'),
-                a: t('faq2a')
-              },
-              {
-                q: t('faq3q'),
-                a: t('faq3a')
-              },
-              {
-                q: t('faq4q'),
-                a: t('faq4a')
-              },
-              {
-                q: t('faq5q'),
-                a: t('faq5a')
-              },
-            ].map((faq, index) => (
-              <div key={index} className="bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow border border-gray-200">
-                <div className="flex items-start gap-2">
-                  <div className="bg-primary-100 rounded-full p-1.5 flex-shrink-0 mt-0.5">
-                    <HelpCircle className="w-3.5 h-3.5 text-primary-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 mb-0.5 text-sm">{faq.q}</h4>
-                    <p className="text-gray-700 leading-relaxed text-xs">{faq.a}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
-            <div className="flex items-center gap-2">
-              <div className="bg-blue-500 rounded-full p-1.5">
-                <MessageCircle className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-bold text-gray-900 mb-0 text-xs">{t('faqStillQuestions')}</h4>
-                <p className="text-gray-700 text-xs">{t('supportReady')}</p>
-              </div>
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 text-xs h-8">
-                  {t('contactSupport')}
-                </Button>
-            </div>
-          </div>
-        </div>
-        </div>
       </Container>
     </div>
     </SharedLayout>
