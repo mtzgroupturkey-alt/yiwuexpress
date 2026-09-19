@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  FileText, CheckCircle2, XCircle, Clock, Send, Printer, ArrowRight,
+  FileText, CheckCircle2, XCircle, Clock, Send, Printer, ArrowRight, ArrowLeft,
   Building2, User, MapPin, AlertCircle, AlertTriangle, ShieldCheck, RefreshCw, Calendar, DollarSign
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
@@ -270,6 +270,17 @@ export default function PublicQuoteViewPage({ params }: { params: { token: strin
   return (
     <SharedLayout>
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Back navigation — hidden in print */}
+        <div className="print:hidden">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#1a3a5c] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Link>
+        </div>
+
         {/* Top Status Alert */}
         {isAccepted && (
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-4">
