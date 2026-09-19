@@ -78,7 +78,9 @@ export default function DashboardLayout({
             className="w-10 h-10 border-4 border-slate-200 rounded-full animate-spin" 
             style={{ borderTopColor: '#00407a' }}
           ></div>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Loading Customer Portal...</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            {(MESSAGES[activeLocale].Dashboard as any).loadingPortal}
+          </p>
         </div>
       </div>
     )
@@ -100,6 +102,8 @@ export default function DashboardLayout({
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ')
+
+  const dashboardLabels = MESSAGES[activeLocale].Dashboard as any
 
   const breadcrumbs = [
     { name: breadcrumbLabels.home || 'Home', href: '/' },
@@ -155,11 +159,11 @@ export default function DashboardLayout({
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                                  {user?.name || 'Customer Account'}
+                                  {user?.name || dashboardLabels.customerAccount}
                                 </h1>
                                 <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                   <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                  Verified Buyer
+                                  {dashboardLabels.verifiedBuyer}
                                 </span>
                               </div>
                               <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
@@ -174,14 +178,14 @@ export default function DashboardLayout({
                           <div className="flex items-center gap-2 flex-wrap">
                             <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl px-3 py-1.5 text-xs text-amber-800 font-bold flex items-center gap-1.5 shadow-2xs">
                               <span>🪙</span>
-                              <span>Trade Loyalty Member</span>
+                              <span>{dashboardLabels.tradeLoyaltyMember}</span>
                             </div>
                             <Link
                               href="/store"
                               className="bg-[#00407a] hover:bg-[#003366] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                             >
                               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                              <span>Explore Catalog</span>
+                              <span>{dashboardLabels.exploreCatalog}</span>
                             </Link>
                           </div>
                         </div>

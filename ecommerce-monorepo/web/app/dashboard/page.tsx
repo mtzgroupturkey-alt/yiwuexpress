@@ -172,7 +172,7 @@ export default function CustomerDashboardPage() {
       <div className="min-h-[420px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-slate-200 rounded-full animate-spin" style={{ borderTopColor: '#00407a' }}></div>
-          <p className="text-xs text-slate-500 font-medium">Loading your portal...</p>
+          <p className="text-xs text-slate-500 font-medium">{t('loadingPortal')}</p>
         </div>
       </div>
     )
@@ -189,7 +189,7 @@ export default function CustomerDashboardPage() {
       label: t('myOrders'),
       description: t('myOrdersDesc'),
       count: orders.length,
-      badgeText: 'Shipments',
+      badgeText: t('shipments'),
       color: 'text-[#00407a] bg-blue-50/80 group-hover:bg-[#00407a] group-hover:text-white',
     },
     {
@@ -198,7 +198,7 @@ export default function CustomerDashboardPage() {
       label: t('myQuotes'),
       description: t('myQuotesDesc'),
       count: quotes.length,
-      badgeText: 'RFQs',
+      badgeText: t('rfqs'),
       color: 'text-amber-700 bg-amber-50/80 group-hover:bg-[#F5A602] group-hover:text-slate-950',
     },
     {
@@ -207,7 +207,7 @@ export default function CustomerDashboardPage() {
       label: t('wishlist'),
       description: t('wishlistDesc'),
       count: wishlistCount,
-      badgeText: 'Favorites',
+      badgeText: t('favorites'),
       color: 'text-rose-600 bg-rose-50/80 group-hover:bg-rose-600 group-hover:text-white',
     },
     {
@@ -216,7 +216,7 @@ export default function CustomerDashboardPage() {
       label: t('addresses'),
       description: t('addressesDesc'),
       count: addressCount,
-      badgeText: 'Locations',
+      badgeText: t('locations'),
       color: 'text-emerald-700 bg-emerald-50/80 group-hover:bg-emerald-600 group-hover:text-white',
     },
     {
@@ -249,7 +249,7 @@ export default function CustomerDashboardPage() {
               <Package className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-bold text-slate-400 group-hover:text-[#00407a] transition-colors flex items-center gap-0.5">
-              View <ChevronRight className="w-3 h-3" />
+              {t('viewDetails')} <ChevronRight className="w-3 h-3" />
             </span>
           </div>
           <div className="mt-3">
@@ -270,7 +270,7 @@ export default function CustomerDashboardPage() {
               <FileText className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-bold text-slate-400 group-hover:text-amber-700 transition-colors flex items-center gap-0.5">
-              Quotes <ChevronRight className="w-3 h-3" />
+              {t('myQuotes')} <ChevronRight className="w-3 h-3" />
             </span>
           </div>
           <div className="mt-3">
@@ -291,7 +291,7 @@ export default function CustomerDashboardPage() {
               <Heart className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-bold text-slate-400 group-hover:text-rose-600 transition-colors flex items-center gap-0.5">
-              Items <ChevronRight className="w-3 h-3" />
+              {t('favorites')} <ChevronRight className="w-3 h-3" />
             </span>
           </div>
           <div className="mt-3">
@@ -312,7 +312,7 @@ export default function CustomerDashboardPage() {
               <MapPin className="w-5 h-5" />
             </div>
             <span className="text-[11px] font-bold text-slate-400 group-hover:text-emerald-700 transition-colors flex items-center gap-0.5">
-              Manage <ChevronRight className="w-3 h-3" />
+              {t('addresses')} <ChevronRight className="w-3 h-3" />
             </span>
           </div>
           <div className="mt-3">
@@ -336,7 +336,7 @@ export default function CustomerDashboardPage() {
                   <Sparkles className="w-4 h-4 text-[#F5A602]" />
                   {t('quickActions')}
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">Fast shortcuts to manage your sourcing and account</p>
+                <p className="text-xs text-slate-500 font-medium">{t('shortcutsDesc')}</p>
               </div>
             </div>
 
@@ -369,7 +369,7 @@ export default function CustomerDashboardPage() {
                     </div>
 
                     <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-slate-400 group-hover:text-[#00407a] transition-colors">
-                      <span>Open section</span>
+                      <span>{t('openSection')}</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </div>
                   </Link>
@@ -391,7 +391,7 @@ export default function CustomerDashboardPage() {
                     </span>
                   )}
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">Track your custom wholesale pricing and supplier responses</p>
+                <p className="text-xs text-slate-500 font-medium">{t('trackQuotesDesc')}</p>
               </div>
 
               <div className="flex items-center gap-2">
@@ -479,12 +479,12 @@ export default function CustomerDashboardPage() {
                             </span>
                           </div>
                           <p className="text-xs text-slate-600 font-medium truncate mt-0.5 max-w-[240px] sm:max-w-[340px]">
-                            {q.items.length === 1 ? q.items[0].productName : `${q.items.length} items included`}
+                            {q.items.length === 1 ? q.items[0].productName : t('itemsIncluded', { count: q.items.length })}
                           </p>
                           <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                             <Clock className="w-3 h-3" />
                             {new Date(q.createdAt).toLocaleDateString()}
-                            {q.shippingCountry && ` · Deliver to ${q.shippingCountry}`}
+                            {q.shippingCountry && ` · ${t('deliverTo', { country: q.shippingCountry })}`}
                           </p>
                         </div>
                       </div>
@@ -494,11 +494,11 @@ export default function CustomerDashboardPage() {
                           {q.totalAmount != null ? (
                             `${q.currency} ${q.totalAmount.toFixed(2)}`
                           ) : (
-                            <span className="text-amber-600 text-xs font-bold">Pricing Pending</span>
+                            <span className="text-amber-600 text-xs font-bold">{t('pricingPending')}</span>
                           )}
                         </p>
                         <span className="text-[11px] font-bold text-[#00407a] group-hover:underline inline-flex items-center gap-0.5 mt-0.5">
-                          View details <ChevronRight className="w-3 h-3" />
+                          {t('viewDetails')} <ChevronRight className="w-3 h-3" />
                         </span>
                       </div>
                     </Link>
@@ -516,7 +516,7 @@ export default function CustomerDashboardPage() {
                   <Package className="w-4 h-4 text-[#00407a]" />
                   {t('recentActivity')}
                 </h2>
-                <p className="text-xs text-slate-500 font-medium">Recent wholesale and commercial purchases</p>
+                <p className="text-xs text-slate-500 font-medium">{t('recentPurchases')}</p>
               </div>
 
               <Link
@@ -577,7 +577,7 @@ export default function CustomerDashboardPage() {
                             </span>
                           </div>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            {new Date(order.createdAt).toLocaleDateString()} · {order.items?.length || 1} items
+                            {new Date(order.createdAt).toLocaleDateString()} · {t('itemsIncluded', { count: order.items?.length || 1 })}
                           </p>
                         </div>
                       </div>
@@ -590,7 +590,7 @@ export default function CustomerDashboardPage() {
                           href="/dashboard/orders"
                           className="text-[11px] font-bold text-[#00407a] hover:underline flex items-center gap-0.5 justify-end mt-0.5"
                         >
-                          View order <ChevronRight className="w-3 h-3" />
+                          {t('viewOrder')} <ChevronRight className="w-3 h-3" />
                         </Link>
                       </div>
                     </div>
@@ -627,7 +627,7 @@ export default function CustomerDashboardPage() {
                 href="/store"
                 className="w-full py-2.5 px-4 rounded-xl bg-[#F5A602] hover:bg-[#d99200] text-slate-950 font-black text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
               >
-                <span>Browse Wholesale Catalog</span>
+                <span>{t('browseWholesale')}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
@@ -635,7 +635,7 @@ export default function CustomerDashboardPage() {
                 className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs border border-white/15 transition-colors flex items-center justify-center gap-1.5"
               >
                 <HeadphonesIcon className="w-3.5 h-3.5" />
-                <span>Contact Sourcing Support</span>
+                <span>{t('contactSourcing')}</span>
               </Link>
             </div>
           </div>
@@ -655,7 +655,7 @@ export default function CustomerDashboardPage() {
                   <ShieldCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900">100% Escrow Protection</h4>
+                  <h4 className="text-xs font-bold text-slate-900">{t('escrowProtection')}</h4>
                   <p className="text-[11px] text-slate-500 leading-normal mt-0.5">
                     Your payments are protected securely until you confirm product receipt and quality.
                   </p>
@@ -667,7 +667,7 @@ export default function CustomerDashboardPage() {
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900">Pre-Shipment Inspection</h4>
+                  <h4 className="text-xs font-bold text-slate-900">{t('preShipment')}</h4>
                   <p className="text-[11px] text-slate-500 leading-normal mt-0.5">
                     Every order is verified at our China central warehouse before export departure.
                   </p>
@@ -679,7 +679,7 @@ export default function CustomerDashboardPage() {
                   <Truck className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900">End-to-End Customs & Logistics</h4>
+                  <h4 className="text-xs font-bold text-slate-900">{t('logistics')}</h4>
                   <p className="text-[11px] text-slate-500 leading-normal mt-0.5">
                     Air, sea, and express door-to-door delivery with duty handling included.
                   </p>
