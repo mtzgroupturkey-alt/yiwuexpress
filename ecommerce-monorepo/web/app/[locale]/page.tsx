@@ -235,6 +235,7 @@ export default function Home() {
       if (!res.ok) return null;
       return res.json();
     },
+    enabled: !!isAuthenticated,
     staleTime: 30 * 1000,
   });
 

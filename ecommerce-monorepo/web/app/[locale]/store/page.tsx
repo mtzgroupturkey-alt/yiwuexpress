@@ -11,12 +11,14 @@ import { Product, CartItem, Category } from '@/app/[locale]/design-3/types';
 import { mapDbProductToDesign3, mapDbCategoryToDesign3 } from '@/lib/adapters/design3ProductAdapter';
 import { useCart } from '@/components/CartContext';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Check } from 'lucide-react';
 
 function StoreCatalogInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const locale = useLocale();
+  const { isAuthenticated } = useAuth();
   const { refreshCartCount } = useCart();
   const queryClient = useQueryClient();
 
@@ -62,6 +64,7 @@ function StoreCatalogInner() {
       if (!res.ok) return null;
       return res.json();
     },
+    enabled: !!isAuthenticated,
     staleTime: 30 * 1000,
   });
 

@@ -1,6 +1,7 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 interface CartContextType {
   cartCount: number
@@ -12,29 +13,12 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartCount, setCartCount] = useState(0)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
-
-  // Check authentication status first (uses public endpoint, no 401)
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await fetch('/api/auth/status', {
-        credentials: 'include',
-      })
-      if (!response.ok) {
-        setIsAuthenticated(false)
-        return false
-      }
-      const data = await response.json()
-      setIsAuthenticated(data.authenticated)
-      return data.authenticated
-    } catch {
-      setIsAuthenticated(false)
-      return false
-    }
-  }, [])
+  const { isAuthenticated, isInitialized, checkAuth } = useAuth()
+  const isFetchingRef = useRef(false)
 
   const getGuestCartCount = useCallback(() => {
     try {
+      if (typeof window === 'undefined') return 0
       const saved = localStorage.getItem('yiwu_guest_cart')
       if (saved) {
         const items = JSON.parse(saved)
@@ -47,57 +31,65 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const refreshCartCount = useCallback(async () => {
-    // If not authenticated, calculate from guest cart
-    if (isAuthenticated === false) {
-      setCartCount(getGuestCartCount())
+    const guestQty = getGuestCartCount()
+
+    // If not authenticated, calculate strictly from guest cart without hitting backend
+    if (!isAuthenticated) {
+      setCartCount(guestQty)
       return
     }
 
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+
     try {
       const response = await fetch('/api/cart', {
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
       })
-      
+
       if (response.ok) {
         const data = await response.json()
-        if (data.success && data.data.cart) {
-          const distinctCount = data.data.summary.itemCount ?? data.data.summary.totalQuantity ?? 0
-          const guestQty = getGuestCartCount()
+        if (data.success && data.data?.cart) {
+          const distinctCount = data.data.summary?.itemCount ?? data.data.summary?.totalQuantity ?? 0
           setCartCount(distinctCount + guestQty)
         } else {
-          setCartCount(getGuestCartCount())
+          setCartCount(guestQty)
         }
-      } else if (response.status === 401) {
-        // Not logged in
-        setIsAuthenticated(false)
-        setCartCount(getGuestCartCount())
+      } else {
+        setCartCount(guestQty)
       }
-    } catch (err) {
-      console.error('Failed to fetch cart count', err)
-      setCartCount(getGuestCartCount())
+    } catch {
+      setCartCount(guestQty)
+    } finally {
+      isFetchingRef.current = false
     }
   }, [isAuthenticated, getGuestCartCount])
 
   const clearCart = useCallback(() => {
     try {
-      localStorage.removeItem('yiwu_guest_cart')
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('yiwu_guest_cart')
+      }
     } catch {}
     setCartCount(0)
-    window.dispatchEvent(new CustomEvent('cart-updated'))
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cart-updated'))
+    }
   }, [])
 
+  // Initialize auth state once on mount if not already done
   useEffect(() => {
-    // Check auth first, then fetch cart
-    checkAuth().then((authenticated) => {
-      if (authenticated) {
-        refreshCartCount()
-      } else {
-        setCartCount(getGuestCartCount())
-      }
-    })
-  }, [checkAuth, refreshCartCount, getGuestCartCount])
+    if (!isInitialized) {
+      checkAuth()
+    }
+  }, [isInitialized, checkAuth])
 
-  // Listen to cart-updated and storage events across the window
+  // Sync cart count when auth state changes (e.g. login / logout)
+  useEffect(() => {
+    refreshCartCount()
+  }, [refreshCartCount])
+
+  // Listen to cart-updated and storage events across windows/tabs
   useEffect(() => {
     const handleCartUpdated = () => {
       refreshCartCount()
@@ -109,15 +101,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('storage', handleCartUpdated)
     }
   }, [refreshCartCount])
-
-  // Re-fetch cart when auth status changes
-  useEffect(() => {
-    if (isAuthenticated === true) {
-      refreshCartCount()
-    } else if (isAuthenticated === false) {
-      setCartCount(getGuestCartCount())
-    }
-  }, [isAuthenticated, refreshCartCount, getGuestCartCount])
 
   return (
     <CartContext.Provider value={{ cartCount, refreshCartCount, clearCart }}>
@@ -133,3 +116,4 @@ export function useCart() {
   }
   return context
 }
+

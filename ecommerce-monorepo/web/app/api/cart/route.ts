@@ -1,15 +1,33 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
+import { getAuthUser, requireAuth, createAuthErrorResponse } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
-// GET /api/cart - Get user's cart
+// GET /api/cart - Get user's cart (authenticated returns db cart, guest returns 200 with empty cart)
 export async function GET(request: Request) {
   try {
-    // IDOR Protection: Get userId from authenticated token, not request
-    const user = await requireAuth(request)
+    // IDOR Protection: Get userId from authenticated token if present
+    const user = await getAuthUser(request)
+
+    // Guest users receive an empty cart payload instead of 401 Unauthorized
+    if (!user) {
+      return NextResponse.json({
+        success: true,
+        authenticated: false,
+        data: {
+          cart: null,
+          items: [],
+          summary: {
+            itemCount: 0,
+            totalQuantity: 0,
+            subtotal: 0,
+            totalWeight: 0,
+          },
+        },
+      })
+    }
 
     // Get or create cart
     let cart = await prisma.cart.findUnique({

@@ -192,11 +192,11 @@ export const useAuth = create<AuthState>()(
           }
 
           const data = await response.json()
-          if (data.authenticated && data.user) {
+          if (data.authenticated) {
             // Merge persisted user data with fresh auth check
             const currentUser = get().user
             set({
-              user: { ...currentUser, ...data.user } as User,
+              user: data.user ? ({ ...currentUser, ...data.user } as User) : currentUser,
               isAuthenticated: true,
               isLoading: false,
               isInitialized: true,

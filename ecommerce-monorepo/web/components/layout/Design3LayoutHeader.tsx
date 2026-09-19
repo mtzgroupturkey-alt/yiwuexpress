@@ -151,6 +151,7 @@ export function Design3LayoutHeader() {
       if (!res.ok) return null;
       return res.json();
     },
+    enabled: !!isAuthenticated,
     staleTime: 30 * 1000,
   });
 

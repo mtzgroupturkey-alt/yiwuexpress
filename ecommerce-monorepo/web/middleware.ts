@@ -149,9 +149,14 @@ async function authMiddleware(request: NextRequest) {
     '/api/payments',
   ]
 
-  const isProtectedPath = protectedPaths.some(path => 
-    pathname.startsWith(path)
-  )
+  const isProtectedPath = protectedPaths.some(path => {
+    if (!pathname.startsWith(path)) return false
+    // Allow public GET /api/cart so guests receive empty cart JSON without 401
+    if (path === '/api/cart' && pathname === '/api/cart' && request.method === 'GET') {
+      return false
+    }
+    return true
+  })
 
   if (isProtectedPath) {
     if (!token) {
