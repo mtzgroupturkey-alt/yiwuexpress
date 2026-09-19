@@ -1433,6 +1433,33 @@
       "passwordUpdated": "密码已更新！",
       "passwordUpdateFailed": "更新密码失败。请检查当前密码。",
       "preferencesSaved": "偏好已保存！"
+    },
+    "quotes": {
+      "allQuotes": "全部报价单",
+      "underReview": "审核中",
+      "pricedSent": "已报价 / 已发送",
+      "accepted": "已接受",
+      "declined": "已拒绝",
+      "searchPlaceholder": "按报价单号或商品搜索...",
+      "requestQuote": "申请报价",
+      "noQuotesYet": "暂无报价单",
+      "noQuotesDesc": "申请任何目录商品的厂家直销批发报价，享受担保交易和质量检查。",
+      "submittedOn": "提交于 {date}",
+      "destCountry": "目的地: {country}",
+      "totalQuotedPrice": "总报价金额",
+      "pricingInProgress": "正在核价中",
+      "quantityUnits": "数量: {quantity} 件",
+      "unitPrice": "单价: {price}",
+      "moreItems": "此询价单中还有 {count} 件商品",
+      "escrowProtected": "100% 担保交易",
+      "validUntilDate": "有效期至 {date}",
+      "viewQuoteAgreement": "查看报价协议",
+      "statusPending": "审核中",
+      "statusSent": "已发送",
+      "statusViewed": "已查看",
+      "statusAccepted": "已接受",
+      "statusRejected": "已拒绝",
+      "statusExpired": "已过期"
     }
   },
   "Checkout": {

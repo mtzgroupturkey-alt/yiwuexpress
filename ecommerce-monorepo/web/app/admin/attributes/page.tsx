@@ -13,6 +13,7 @@ import { toast } from 'react-hot-toast'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { AttributeForm } from '@/components/admin/AttributeForm'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { localizeCategory, localizeAttribute } from '@/lib/utils/localize'
 
 export default function AttributeManager() {
   const { dict, locale } = useAdminLocale()
@@ -187,7 +188,7 @@ export default function AttributeManager() {
                               <span className="text-gray-400 flex-shrink-0">└─</span>
                             )}
                             <span className={`truncate ${category.isParent ? 'text-gray-900' : 'text-gray-700'}`}>
-                              {category.name}
+                              {category.translations ? localizeCategory(category, locale).name : category.name}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -216,7 +217,10 @@ export default function AttributeManager() {
             <CardHeader>
               <CardTitle>
                 {selectedCategoryId
-                  ? categories?.data?.find((c: any) => c.id === selectedCategoryId)?.name || dict.attributes.title
+                  ? (() => {
+                      const selectedCat = categories?.data?.find((c: any) => c.id === selectedCategoryId)
+                      return selectedCat ? localizeCategory(selectedCat, locale).name : dict.attributes.title
+                    })()
                   : dict.attributes.selectCategory}
               </CardTitle>
               <CardDescription>
@@ -277,7 +281,7 @@ export default function AttributeManager() {
                           >
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">{attr.name}</span>
+                                <span className="font-medium">{attr.translations ? localizeAttribute(attr, locale).name : attr.name}</span>
                                 {attr.isInherited && (
                                   <Badge variant="outline" className="text-xs bg-blue-100 text-blue-700 border-blue-300">
                                     {dict.attributes.inheritedFrom.replace('{parent}', attr.inheritedFrom || '')}

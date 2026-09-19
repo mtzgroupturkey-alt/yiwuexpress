@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Container } from '@/components/design-system/Container'
 import {
   FileText,
@@ -57,6 +57,8 @@ export default function DashboardQuotesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const t = useTranslations('Dashboard')
+  const tq = useTranslations('DashboardPages.quotes')
+  const locale = useLocale()
 
   useEffect(() => {
     if (isInitialized && !authLoading && !isAuthenticated) {
@@ -124,11 +126,13 @@ export default function DashboardQuotesPage() {
       text: 'text-slate-600',
       border: 'border-slate-200',
     }
+    const statusKey = status.toLowerCase()
+    const label = ['pending', 'sent', 'viewed', 'accepted', 'rejected', 'expired'].includes(statusKey) ? tq(`status${status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}` as any) : status
     return (
       <span
         className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${s.bg} ${s.text} ${s.border}`}
       >
-        {status}
+        {label}
       </span>
     )
   }
@@ -154,11 +158,11 @@ export default function DashboardQuotesPage() {
         {/* Left: Filter Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           {[
-            { key: 'ALL', label: 'All Quotes' },
-            { key: 'PENDING', label: 'Under Review' },
-            { key: 'SENT', label: 'Priced / Sent' },
-            { key: 'ACCEPTED', label: 'Accepted' },
-            { key: 'REJECTED', label: 'Declined' },
+            { key: 'ALL', label: tq('allQuotes') },
+            { key: 'PENDING', label: tq('underReview') },
+            { key: 'SENT', label: tq('pricedSent') },
+            { key: 'ACCEPTED', label: tq('accepted') },
+            { key: 'REJECTED', label: tq('declined') },
           ].map((pill) => {
             const count = statusCounts[pill.key] || 0
             const isActive = statusFilter === pill.key
@@ -193,7 +197,7 @@ export default function DashboardQuotesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by quote # or product..."
+              placeholder={tq('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-xs bg-slate-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
@@ -205,7 +209,7 @@ export default function DashboardQuotesPage() {
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#00407a] hover:bg-[#003366] text-white rounded-xl text-xs font-bold shadow-2xs transition-colors shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Request Quote</span>
+            <span>{tq('requestQuote')}</span>
           </Link>
         </div>
       </div>
@@ -219,7 +223,7 @@ export default function DashboardQuotesPage() {
             </div>
             <h3 className="text-sm font-bold text-slate-900 mb-1">{t('noQuotesYet')}</h3>
             <p className="text-xs text-slate-500 mb-5 max-w-sm">
-              Request direct factory wholesale quotations for any item in our catalog with guaranteed escrow and QC inspection.
+              {tq('noQuotesDesc')}
             </p>
             <Link
               href="/store"
@@ -253,11 +257,11 @@ export default function DashboardQuotesPage() {
                         </div>
                         <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <Clock className="w-3 h-3" />
-                          <span>Submitted on {new Date(q.createdAt).toLocaleDateString()}</span>
+                          <span>{tq('submittedOn', { date: new Date(q.createdAt).toLocaleDateString(locale) })}</span>
                           {q.shippingCountry && (
                             <>
                               <span>•</span>
-                              <span>Dest: {q.shippingCountry}</span>
+                              <span>{tq('destCountry', { country: q.shippingCountry })}</span>
                             </>
                           )}
                         </p>
@@ -265,12 +269,12 @@ export default function DashboardQuotesPage() {
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <p className="text-[11px] font-semibold text-slate-400">Total Quoted Price</p>
+                      <p className="text-[11px] font-semibold text-slate-400">{tq("totalQuotedPrice")}</p>
                       <p className="font-black text-base text-slate-900">
                         {q.totalAmount != null ? (
                           `${q.currency} ${q.totalAmount.toFixed(2)}`
                         ) : (
-                          <span className="text-amber-600 text-xs font-bold">Pricing in Progress</span>
+                          <span className="text-amber-600 text-xs font-bold">{tq("pricingInProgress")}</span>
                         )}
                       </p>
                     </div>
@@ -294,11 +298,11 @@ export default function DashboardQuotesPage() {
                         <div className="min-w-0 flex-1">
                           <p className="font-bold text-xs text-slate-900 truncate">{item.productName}</p>
                           <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
-                            <span>Quantity: <strong>{item.quantity} units</strong></span>
+                            <span>{tq("quantityUnits", { quantity: item.quantity })}</span>
                             {item.unitPriceQuoted != null && (
                               <>
                                 <span>•</span>
-                                <span>Unit: <strong>{q.currency} {item.unitPriceQuoted.toFixed(2)}</strong></span>
+                                <span>{tq("unitPrice", { price: `${q.currency} ${item.unitPriceQuoted.toFixed(2)}` })}</span>
                               </>
                             )}
                           </div>
@@ -316,7 +320,7 @@ export default function DashboardQuotesPage() {
 
                     {q.items.length > 2 && (
                       <p className="text-xs text-slate-400 italic">
-                        + {q.items.length - 2} more item{q.items.length - 2 !== 1 ? 's' : ''} in this RFQ
+                        {tq('moreItems', { count: q.items.length - 2 })}
                       </p>
                     )}
                   </div>
@@ -326,12 +330,12 @@ export default function DashboardQuotesPage() {
                     <div className="flex items-center gap-4 text-slate-500">
                       <span className="flex items-center gap-1.5 font-medium">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                        100% Escrow Protected
+                        {tq('escrowProtected')}
                       </span>
                       {q.validUntil && (
                         <span className="flex items-center gap-1 text-slate-400">
                           <Calendar className="w-3.5 h-3.5" />
-                          Valid until {new Date(q.validUntil).toLocaleDateString()}
+                          {tq('validUntilDate', { date: new Date(q.validUntil).toLocaleDateString(locale) })}
                         </span>
                       )}
                     </div>
@@ -340,7 +344,7 @@ export default function DashboardQuotesPage() {
                       href={`/quotes/view/${q.secureToken}`}
                       className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#00407a] hover:bg-[#003366] text-white rounded-xl font-bold text-xs shadow-2xs transition-colors"
                     >
-                      <span>View Quote Agreement</span>
+                      <span>{tq('viewQuoteAgreement')}</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>

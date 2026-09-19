@@ -1416,6 +1416,33 @@
       "passwordUpdated": "Password updated!",
       "passwordUpdateFailed": "Failed to update password. Check your current password.",
       "preferencesSaved": "Preferences saved!"
+    },
+    "quotes": {
+      "allQuotes": "All Quotes",
+      "underReview": "Under Review",
+      "pricedSent": "Priced / Sent",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "searchPlaceholder": "Search by quote # or product...",
+      "requestQuote": "Request Quote",
+      "noQuotesYet": "No quotes yet",
+      "noQuotesDesc": "Request direct factory wholesale quotations for any item in our catalog with guaranteed escrow and QC inspection.",
+      "submittedOn": "Submitted on {date}",
+      "destCountry": "Dest: {country}",
+      "totalQuotedPrice": "Total Quoted Price",
+      "pricingInProgress": "Pricing in Progress",
+      "quantityUnits": "Quantity: {quantity} units",
+      "unitPrice": "Unit: {price}",
+      "moreItems": "+ {count} more items in this RFQ",
+      "escrowProtected": "100% Escrow Protected",
+      "validUntilDate": "Valid until {date}",
+      "viewQuoteAgreement": "View Quote Agreement",
+      "statusPending": "Under Review",
+      "statusSent": "Sent",
+      "statusViewed": "Viewed",
+      "statusAccepted": "Accepted",
+      "statusRejected": "Declined",
+      "statusExpired": "Expired"
     }
   },
   "Checkout": {

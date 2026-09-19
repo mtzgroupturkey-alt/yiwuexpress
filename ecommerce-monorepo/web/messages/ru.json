@@ -1416,6 +1416,33 @@
       "passwordUpdated": "Пароль обновлён!",
       "passwordUpdateFailed": "Не удалось обновить пароль. Проверьте текущий пароль.",
       "preferencesSaved": "Предпочтения сохранены!"
+    },
+    "quotes": {
+      "allQuotes": "Все заявки",
+      "underReview": "На рассмотрении",
+      "pricedSent": "Оценено / Отправлено",
+      "accepted": "Принято",
+      "declined": "Отклонено",
+      "searchPlaceholder": "Поиск по номеру заявки или товару...",
+      "requestQuote": "Запросить цену",
+      "noQuotesYet": "Пока нет заявок",
+      "noQuotesDesc": "Запрашивайте прямые оптовые цены с фабрик для любого товара с гарантированной сделкой и проверкой качества.",
+      "submittedOn": "Подано {date}",
+      "destCountry": "Доставка: {country}",
+      "totalQuotedPrice": "Итоговая цена",
+      "pricingInProgress": "Оценка в процессе",
+      "quantityUnits": "Кол-во: {quantity} шт.",
+      "unitPrice": "За шт: {price}",
+      "moreItems": "+ еще {count} товаров в запросе",
+      "escrowProtected": "100% Защита Escrow",
+      "validUntilDate": "Действительно до {date}",
+      "viewQuoteAgreement": "Смотреть соглашение",
+      "statusPending": "На рассмотрении",
+      "statusSent": "Отправлено",
+      "statusViewed": "Просмотрено",
+      "statusAccepted": "Принято",
+      "statusRejected": "Отклонено",
+      "statusExpired": "Истекло"
     }
   },
   "Checkout": {
