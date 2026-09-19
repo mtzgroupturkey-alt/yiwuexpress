@@ -11,6 +11,8 @@ interface CartItemProps {
   item: {
     id: string
     productId: string
+    variantId?: string | null
+    selectedOptions?: Record<string, any> | null
     quantity: number
     product: {
       id: string
@@ -54,6 +56,31 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
         >
           {item.product.name}
         </LocaleLink>
+
+        {/* Selected Options (Color, Size, etc.) */}
+        {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
+            {Object.entries(item.selectedOptions).map(([key, val]) => {
+              const isHex = typeof val === 'string' && val.startsWith('#')
+              const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
+              return (
+                <span
+                  key={key}
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-medium border border-slate-200 shadow-2xs"
+                >
+                  <span className="text-slate-500 font-normal">{label}:</span>
+                  {isHex && (
+                    <span
+                      className="w-2.5 h-2.5 rounded-full border border-gray-300 inline-block flex-shrink-0"
+                      style={{ backgroundColor: val }}
+                    />
+                  )}
+                  <span>{String(val)}</span>
+                </span>
+              )
+            })}
+          </div>
+        )}
         
         <p className="text-sm text-gray-500 mt-1">
           ${item.product.price.toFixed(2)} {t('perUnit')}

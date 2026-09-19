@@ -175,6 +175,8 @@ export default function CheckoutPage() {
         ...data,
         items: cart.cart.items.map((item: any) => ({
           productId: item.productId,
+          variantId: item.variantId || undefined,
+          selectedOptions: item.selectedOptions || undefined,
           quantity: item.quantity
         })),
         shippingFee,

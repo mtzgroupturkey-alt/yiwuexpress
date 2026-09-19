@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     const user = await requireAuth(request)
     
     const body = await request.json()
-    const { productId, quantity, variantId, mode: itemMode } = body
+    const { productId, quantity, variantId, selectedOptions, mode: itemMode } = body
 
     if (!productId || !quantity) {
       return NextResponse.json(
@@ -188,8 +188,18 @@ export async function POST(request: Request) {
       })
     }
 
+    // Helper to compare options
+    const areOptionsEqual = (a: any, b: any) => {
+      if (!a && !b) return true
+      if (!a || !b) return false
+      const keysA = Object.keys(a).sort()
+      const keysB = Object.keys(b).sort()
+      if (keysA.length !== keysB.length) return false
+      return keysA.every((k) => String(a[k]) === String(b[k]))
+    }
+
     // Check if item already in cart
-    const existingItem = await prisma.cartItem.findFirst({
+    const existingItems = await prisma.cartItem.findMany({
       where: {
         cartId: cart.id,
         productId,
@@ -197,6 +207,8 @@ export async function POST(request: Request) {
         mode: targetMode
       }
     })
+
+    const existingItem = existingItems.find((item) => areOptionsEqual(item.selectedOptions, selectedOptions))
 
     if (existingItem) {
       // Update quantity
@@ -248,6 +260,7 @@ export async function POST(request: Request) {
           cartId: cart.id,
           productId,
           variantId: variantId || null,
+          selectedOptions: selectedOptions || null,
           mode: targetMode,
           quantity
         },

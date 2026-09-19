@@ -21,6 +21,8 @@ interface Cart {
   items: Array<{
     id: string
     productId: string
+    variantId?: string | null
+    selectedOptions?: Record<string, any> | null
     quantity: number
     product: {
       id: string
