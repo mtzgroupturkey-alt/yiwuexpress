@@ -141,7 +141,7 @@ export function TwoRowNavbar() {
 
   const mainNavItems = [
     { nameKey: 'nav.home', href: '/' },
-    { nameKey: 'nav.products', href: '/products' },
+    { nameKey: 'nav.products', href: '/store' },
     { nameKey: 'nav.services', href: '/services' },
     { nameKey: 'nav.about', href: '/about' },
     { nameKey: 'nav.contact', href: '/contact' },
@@ -407,7 +407,7 @@ export function TwoRowNavbar() {
               </button>
 
               <LocaleLink
-                href="/products"
+                href="/store"
                 onMouseEnter={() => setHoveredCategory('all')}
                 className="relative px-3.5 py-1.5 text-xs md:text-sm font-semibold text-gray-700 hover:text-[#0055A4] transition-colors rounded-lg whitespace-nowrap flex items-center gap-1.5"
               >
@@ -433,7 +433,7 @@ export function TwoRowNavbar() {
                   }}
                 >
                   <LocaleLink
-                    href={`/products?category=${category.slug}`}
+                    href={`/store?category=${category.slug}`}
                     className="relative px-3 py-1.5 text-xs md:text-sm font-semibold text-gray-700 hover:text-[#0055A4] transition-colors rounded-lg whitespace-nowrap flex items-center gap-1"
                   >
                     <span>{category.name}</span>
@@ -468,7 +468,7 @@ export function TwoRowNavbar() {
                               transition={{ delay: idx * 0.03 }}
                             >
                               <LocaleLink
-                                href={`/products?category=${sub.slug}`}
+                                href={`/store?category=${sub.slug}`}
                                 className="block px-3 py-2 text-xs font-semibold text-gray-700 hover:text-[#0055A4] hover:bg-gray-50 rounded-xl transition"
                               >
                                 {sub.name}
@@ -478,7 +478,7 @@ export function TwoRowNavbar() {
                           {category.children.length > 8 && (
                             <li className="pt-1 border-t border-gray-100">
                               <LocaleLink
-                                href={`/products?category=${category.slug}`}
+                                href={`/store?category=${category.slug}`}
                                 className="block px-3 py-2 text-xs font-bold text-[#0055A4] hover:text-[#003d75] hover:bg-gray-50 rounded-xl transition"
                               >
                                 {t('viewAll')} →
@@ -546,7 +546,7 @@ export function TwoRowNavbar() {
               {/* CENTER: Scrollable Category Bar (Desktop) */}
               <div className="hidden lg:flex items-center overflow-x-auto no-scrollbar space-x-1 py-1 max-w-xl">
                 <LocaleLink
-                  href="/products"
+                  href="/store"
                   className="px-3 py-1 text-xs font-bold text-gray-700 hover:text-[#0055A4] hover:bg-[#0055A4]/8 rounded-lg whitespace-nowrap transition-colors"
                 >
                   {t('allProducts')}
@@ -554,7 +554,7 @@ export function TwoRowNavbar() {
                 {categories.slice(0, 6).map((cat) => (
                   <LocaleLink
                     key={cat.id}
-                    href={`/products?category=${cat.slug}`}
+                    href={`/store?category=${cat.slug}`}
                     className="px-3 py-1 text-xs font-semibold text-gray-600 hover:text-[#0055A4] hover:bg-[#0055A4]/8 rounded-lg whitespace-nowrap transition-colors"
                   >
                     {cat.name}

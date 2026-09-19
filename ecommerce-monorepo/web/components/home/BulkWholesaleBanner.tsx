@@ -105,7 +105,7 @@ export function BulkWholesaleBanner() {
               </LocaleLink>
 
               <LocaleLink
-                href="/products"
+                href="/store"
                 className="inline-flex items-center justify-center px-6 py-4 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold rounded-2xl transition-all duration-200 text-center text-sm backdrop-blur-sm"
               >
                 <span>{copy.ctaCatalog}</span>

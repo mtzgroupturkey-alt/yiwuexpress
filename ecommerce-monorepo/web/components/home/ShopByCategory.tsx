@@ -413,13 +413,13 @@ export function ShopByCategory() {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <LocaleLink
-              href="/products"
+              href="/store"
               className="px-4 py-2 bg-[#0055A4] hover:bg-[#003E7E] text-white text-xs sm:text-sm font-bold rounded-lg transition-colors"
             >
               {locale === 'ru' ? 'Каталог' : locale === 'zh' ? '全部分类' : 'Catalog'}
             </LocaleLink>
             <LocaleLink
-              href="/products"
+              href="/store"
               className="text-[#0055A4] hover:text-[#003E7E] dark:text-blue-400 text-xs sm:text-sm font-bold flex items-center gap-1 group transition-colors"
             >
               <span>{t('viewAll') || 'View All Categories'}</span>

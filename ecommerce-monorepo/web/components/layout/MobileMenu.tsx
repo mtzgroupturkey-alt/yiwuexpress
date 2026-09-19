@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -62,7 +62,7 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
         
         {/* ALL Products Link */}
         <LocaleLink
-          href="/products"
+          href="/store"
           className="block py-3 text-gray-700 hover:text-[#1a3a5c] hover:bg-gray-50 font-medium rounded px-3 transition-colors mb-2"
           onClick={onClose}
         >
@@ -96,7 +96,7 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
                 {category.children.map((sub) => (
                   <li key={sub.id}>
                     <LocaleLink
-                      href={`/products?category=${sub.slug}`}
+                      href={`/store?category=${sub.slug}`}
                       className="text-sm text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 block py-2 px-3 rounded transition-colors"
                       onClick={onClose}
                     >
@@ -111,7 +111,7 @@ export function MobileMenu({ onClose }: MobileMenuProps) {
                 ))}
                 <li className="pt-2">
                   <LocaleLink
-                    href={`/products?category=${category.slug}`}
+                    href={`/store?category=${category.slug}`}
                     className="text-sm text-[#c9a84c] font-medium hover:underline block py-2 px-3"
                     onClick={onClose}
                   >

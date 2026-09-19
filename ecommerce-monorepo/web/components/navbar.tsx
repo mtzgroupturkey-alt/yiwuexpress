@@ -154,7 +154,7 @@ export default function Navbar() {
             </LocaleLink>
             
             <LocaleLink
-              href="/products"
+              href="/store"
               className="px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] hover:from-[#2a5a8c] hover:to-[#1a3a5c] transition-all duration-300 rounded-lg relative group"
             >
               {locale === 'ru' ? 'Каталог' : locale === 'zh' ? '全部分类' : 'Catalog'}
@@ -339,19 +339,11 @@ export default function Navbar() {
               </LocaleLink>
               
               <LocaleLink
-                href="/products"
+                href="/store"
                 className="px-4 py-3 text-white font-semibold text-sm bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] hover:from-[#2a5a8c] hover:to-[#1a3a5c] transition-all duration-200 rounded-lg mx-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {locale === 'ru' ? 'Каталог' : locale === 'zh' ? '全部分类' : 'Catalog'}
-              </LocaleLink>
-              
-              <LocaleLink
-                href="/products"
-                className="px-4 py-3 text-gray-700 font-semibold text-sm hover:bg-gradient-to-r hover:from-[#c9a84c]/10 hover:to-[#1a3a5c]/10 transition-all duration-200 rounded-lg mx-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Products
               </LocaleLink>
               
               {navItems.slice(1).map((item) => (

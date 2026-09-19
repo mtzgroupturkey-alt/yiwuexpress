@@ -14,7 +14,7 @@ export function TopBar() {
     { name: 'Home', href: '/' },
     { name: 'About Us', href: '/about' },
     { name: 'Services', href: '/services' },
-    { name: 'Shop', href: '/products' },
+    { name: 'Shop', href: '/store' },
     { name: 'Blog', href: '/blog' },
     { name: 'Contact Us', href: '/contact' },
     { name: 'Wholesale', href: '/wholesale' },

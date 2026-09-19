@@ -1159,7 +1159,7 @@ function SlideFormDialog({ open, initialData, defaultMotionType = 'slide', onClo
                     { label: 'Flash Deals', url: '/#flash-deals-section' },
                     { label: 'Kitchenware', url: '/store?department=kitchen' },
                     { label: 'Electronics', url: '/store?department=electronics' },
-                    { label: 'All Products', url: '/products' },
+                    { label: 'All Products', url: '/store' },
                   ].map((s) => (
                     <button
                       key={s.url}

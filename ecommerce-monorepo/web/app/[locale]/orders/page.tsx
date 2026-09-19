@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -161,7 +161,7 @@ export default function OrdersPage() {
                   ? "You haven't placed any orders yet"
                   : "No orders match your filters"}
               </p>
-              <Button onClick={() => navigate('/products')}>
+              <Button onClick={() => navigate('/store')}>
                 Start Shopping
               </Button>
             </CardContent>

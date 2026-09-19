@@ -2,14 +2,19 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Container } from '@/components/ui/Container'
+import { Container } from '@/components/design-system/Container'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles } from 'lucide-react'
-import ProductCard from '@/components/products/ProductCard'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart } from 'lucide-react'
+import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
+import { NewsletterBar } from '@/app/[locale]/design-3/components/NewsletterBar'
+import { MotionReveal } from '@/components/motion/MotionReveal'
+import { mapDbProductToDesign3 } from '@/lib/adapters/design3ProductAdapter'
+import { useWishlist } from '@/hooks/useWishlist'
+import { motion } from 'framer-motion'
 import { ReviewSection } from '@/components/products/ReviewSection'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { WishlistButton } from '@/components/products/WishlistButton'
@@ -521,6 +526,8 @@ export default function ProductDetailView({
     }
   }
 
+  const { favoriteIds, toggleWishlist } = useWishlist()
+  const [cartQuantities, setCartQuantities] = useState<Record<string, number>>({})
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
@@ -531,8 +538,95 @@ export default function ProductDetailView({
   const [shareMenuOpen, setShareMenuOpen] = useState(false)
   const [showQuestionForm, setShowQuestionForm] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
-  const [showReturnPolicy, setShowReturnPolicy] = useState(false)
+  const companyName = settings?.companyName || 'Global Trade'
+  const [bundleAdded, setBundleAdded] = useState(false)
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 44, seconds: 19 })
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date()
+      const target = new Date()
+      target.setHours(18, 0, 0, 0)
+      if (now > target) {
+        target.setDate(target.getDate() + 1)
+      }
+      const diff = Math.max(0, target.getTime() - now.getTime())
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+      const minutes = Math.floor((diff / (1000 * 60)) % 60)
+      const seconds = Math.floor((diff / 1000) % 60)
+      return { hours, minutes, seconds }
+    }
+    setTimeLeft(calculateTimeLeft())
+    const interval = setInterval(() => {
+      setTimeLeft(calculateTimeLeft())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
   const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'logistics' | 'faq' | 'reviews'>('overview')
+
+  const handleRelatedAddToCart = async (target: any) => {
+    if (isWholesale && !isRetail) {
+      const moq = target.moq || (target as any).minOrderQty || 1
+      enableWholesaleSession()
+      addInquiryItem({
+        productId: target.id,
+        slug: target.slug || target.id,
+        name: target.name,
+        image: target.image,
+        wholesalePrice: (target.wholesalePrice || target.price) as number,
+        retailPrice: target.price,
+        quantity: moq,
+        minOrderQty: moq,
+      })
+      addToQuote({
+        productId: target.id,
+        productName: target.name,
+        productSku: target.sku || target.slug || target.id,
+        productImage: target.image,
+        quantity: moq,
+        minOrderQty: moq,
+      })
+      setCartQuantities((prev) => ({ ...prev, [target.id]: (prev[target.id] || 0) + moq }))
+      return
+    }
+
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          productId: target.id,
+          quantity: 1,
+        }),
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert(t('errors.pleaseLoginCart'))
+          navigate('/login')
+          return
+        }
+        throw new Error('Failed to add item')
+      }
+
+      const data = await response.json()
+      if (data.success) {
+        refreshCartCount()
+        setCartQuantities((prev) => ({ ...prev, [target.id]: (prev[target.id] || 0) + 1 }))
+      } else {
+        alert(data.error || tCart('errors.failedAdd'))
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      alert(tCart('errors.failedAdd'))
+    }
+  }
+
+  const handleRelatedUpdateQuantity = (productId: string, qty: number) => {
+    setCartQuantities((prev) => ({ ...prev, [productId]: Math.max(0, qty) }))
+  }
 
   // Initialize using the store-mode-effective MOQ (product already fetched
   // server-side — no loading skeleton needed on first paint).
@@ -623,6 +717,54 @@ export default function ProductDetailView({
     } catch (error) {
       console.error('Error adding to cart:', error)
       alert(tCart('errors.failedAdd'))
+    } finally {
+      setAdding(false)
+    }
+  }
+
+  const handleQuickOrder = async () => {
+    await handleAddToCart()
+    navigate('/checkout')
+  }
+
+  const handleAddBundleToCart = async (bundleItem: any) => {
+    try {
+      setAdding(true)
+      // 1. Add primary product to cart
+      await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          productId: product.id,
+          variantId: selectedVariant?.id,
+          selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
+          quantity: 1,
+        }),
+      })
+
+      // 2. Add bundle accessory/item if real product ID
+      if (bundleItem?.id && bundleItem.id !== 'accessory-fallback') {
+        await fetch('/api/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            productId: bundleItem.id,
+            quantity: 1,
+          }),
+        })
+      }
+
+      refreshCartCount()
+      setBundleAdded(true)
+      setShowSuccessMessage(true)
+      setTimeout(() => {
+        setBundleAdded(false)
+        setShowSuccessMessage(false)
+      }, 3500)
+    } catch (err) {
+      console.error('Error adding bundle to cart:', err)
     } finally {
       setAdding(false)
     }
@@ -719,13 +861,13 @@ export default function ProductDetailView({
     : ''
 
   const breadcrumbs = [
-    { name: tProducts('products'), href: '/products' },
+    { name: tProducts('products'), href: '/store' },
   ]
 
   if (product.category) {
     breadcrumbs.push({
       name: localizedCategoryName,
-      href: `/products?category=${product.category.slug}`
+      href: `/store?category=${product.category.slug}`
     })
   }
 
@@ -763,8 +905,8 @@ export default function ProductDetailView({
           }),
         }}
       />
-      <div className="bg-gradient-to-b from-gray-50 to-white py-4 pb-28 lg:pb-12">
-        <Container maxWidth="2xl">
+      <div className="bg-[#F8FAFC] py-4 pb-28 lg:pb-12">
+        <Container>
           {/* In-Page Clean Breadcrumb Trail */}
           <nav aria-label="Breadcrumb" className="mb-4">
             <ol className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-500 flex-wrap">
@@ -772,7 +914,7 @@ export default function ProductDetailView({
                 <button
                   type="button"
                   onClick={() => navigate('/')}
-                  className="hover:text-primary-600 transition-colors font-medium"
+                  className="hover:text-[#00407a] transition-colors font-medium cursor-pointer"
                 >
                   Home
                 </button>
@@ -781,14 +923,14 @@ export default function ProductDetailView({
                 <li key={crumb.href || idx} className="flex items-center gap-1.5 sm:gap-2">
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   {idx === breadcrumbs.length - 1 ? (
-                    <span className="font-semibold text-slate-900 line-clamp-1 max-w-[200px] sm:max-w-md">
+                    <span className="font-bold text-slate-900 line-clamp-1 max-w-[200px] sm:max-w-md">
                       {crumb.name}
                     </span>
                   ) : (
                     <button
                       type="button"
                       onClick={() => navigate(crumb.href)}
-                      className="hover:text-primary-600 transition-colors font-medium"
+                      className="hover:text-[#00407a] transition-colors font-medium cursor-pointer"
                     >
                       {crumb.name}
                     </button>
@@ -798,918 +940,984 @@ export default function ProductDetailView({
             </ol>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-            {/* Left Column: Image Gallery & Desktop Sourcing Security */}
-            <div className="lg:col-span-6 animate-fade-in">
-              <div className="lg:sticky lg:top-20 space-y-4">
+          {/* Floating Action Notifications */}
+          {showSuccessMessage && (
+            <div className="fixed top-20 right-4 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-slide-in">
+              <div className="bg-white rounded-full p-0.5">
+                <Check className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">{t('addedToCart')}</p>
+                <p className="text-xs text-emerald-100">{t('itemsAdded', { n: quantity })}</p>
+              </div>
+            </div>
+          )}
+
+          {showQuoteSuccess && (
+            <div className="fixed top-20 right-4 z-50 bg-[#00407a] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-slide-in">
+              <div className="bg-white rounded-full p-0.5">
+                <Check className="w-4 h-4 text-[#00407a]" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">{t('addedToQuoteList')}</p>
+                <p className="text-xs text-blue-100">{t('itemsAdded', { n: quantity })}</p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/wholesale')}
+                  className="text-xs font-bold underline underline-offset-2 mt-0.5 hover:text-white cursor-pointer"
+                >
+                  {t('viewQuoteList')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Reference High-Converting 3-Column PDP Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-start">
+            {/* Column 1: Image Gallery & 3 Guarantee Badges (lg:col-span-4) */}
+            <div className="lg:col-span-4 space-y-4">
+              <div className="lg:sticky lg:top-24 space-y-4">
                 <ProductImageGallery
                   images={currentImages}
                   productName={localized.name}
+                  badgeText={currentCompareAtPrice && currentCompareAtPrice > currentPrice ? `-${discount}%` : undefined}
                 />
 
-                {/* Sourcing Security & B2B Trade Assurance Card - DESKTOP ONLY here */}
-                <div className="hidden lg:block rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-5 shadow-xs transition-all hover:shadow-sm">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700">
-                        <ShieldCheck className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-                          {locale === 'ru' ? 'Торговая гарантия и защита' : locale === 'zh' ? '贸易保障与买家服务' : 'Trade Assurance & Sourcing'}
-                        </h4>
-                        <p className="text-[11px] text-slate-500">
-                          {locale === 'ru' ? '100% защита сделки и контроль качества' : locale === 'zh' ? '100%资金保障与全检服务' : '100% Payment Escrow & Pre-Shipment QC'}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-semibold px-2 py-0.5">
-                      {locale === 'ru' ? 'Проверен' : locale === 'zh' ? '已认证' : 'Verified'}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 text-xs text-slate-700">
-                    <div className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-semibold block text-slate-800">
-                          {locale === 'ru' ? 'Контроль качества' : locale === 'zh' ? '严格品控' : 'Quality Inspected'}
-                        </span>
-                        <span className="text-[11px] text-slate-500">
-                          {locale === 'ru' ? 'Инспекция перед отправкой' : locale === 'zh' ? '发货前全检' : 'Inspected before dispatch'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-semibold block text-slate-800">
-                          {locale === 'ru' ? 'Прямой экспорт' : locale === 'zh' ? '中国直发' : 'Direct Export'}
-                        </span>
-                        <span className="text-[11px] text-slate-500">
-                          {locale === 'ru' ? 'Склад в Китае / Иу' : locale === 'zh' ? '中国发货 / 义乌集运' : 'China & Yiwu Logistics Hub'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-semibold block text-slate-800">
-                          {locale === 'ru' ? 'Образцы и OEM' : locale === 'zh' ? '支持拿样' : 'Samples & OEM'}
-                        </span>
-                        <span className="text-[11px] text-slate-500">
-                          {locale === 'ru' ? 'Кастомная упаковка и лого' : locale === 'zh' ? '支持定制包装与logo' : 'Custom logo & packaging'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <span className="font-semibold block text-slate-800">
-                          {locale === 'ru' ? 'Авиа и Морской фрахт' : locale === 'zh' ? '多元物流' : 'Air & Sea Freight'}
-                        </span>
-                        <span className="text-[11px] text-slate-500">
-                          {locale === 'ru' ? 'FOB, CIF, DDP варианты' : locale === 'zh' ? '支持EXW/FOB/DDP' : 'EXW, FOB, DDP express'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                      {locale === 'ru' ? 'Безопасная сделка гарантирована' : locale === 'zh' ? '平台信用保障交易' : 'Escrow Protected Order'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const tabsEl = document.getElementById('product-tabs')
-                        if (tabsEl) {
-                          setActiveTab('logistics')
-                          tabsEl.scrollIntoView({ behavior: 'smooth' })
-                        }
-                      }}
-                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                    >
-                      {locale === 'ru' ? 'Условия доставки →' : locale === 'zh' ? '查看物流详情 →' : 'Logistics details →'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          {/* Right Column: Product Info */}
-          <div className="lg:col-span-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            {/* Success Message Toast */}
-            {showSuccessMessage && (
-              <div className="fixed top-20 right-4 z-50 bg-green-500 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-slide-in">
-                <div className="bg-white rounded-full p-0.5">
-                  <Check className="w-4 h-4 text-green-500" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">{t('addedToCart')}</p>
-                  <p className="text-xs text-green-100">{t('itemsAdded', { n: quantity })}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Wholesale Quote List success toast */}
-            {showQuoteSuccess && (
-              <div className="fixed top-20 right-4 z-50 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-xl flex items-center gap-2 animate-slide-in">
-                <div className="bg-white rounded-full p-0.5">
-                  <Check className="w-4 h-4 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">{t('addedToQuoteList')}</p>
-                  <p className="text-xs text-blue-100">{t('itemsAdded', { n: quantity })}</p>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/wholesale')}
-                    className="text-xs font-bold underline underline-offset-2 mt-0.5 hover:text-white"
-                  >
-                    {t('viewQuoteList')}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Top Action Bar - Reviews Summary & Wishlist/Share */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`w-4 h-4 ${
-                        reviewsCount > 0 && star <= Math.round(averageRating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'fill-gray-200 text-gray-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <a
-                  href="#reviews"
-                  className="text-xs text-gray-600 hover:text-primary-600 font-medium transition-colors ml-1"
-                >
-                  {reviewsCount > 0 ? `${averageRating.toFixed(1)} (${reviewsCount})` : '0 reviews'}
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <WishlistButton
-                  productId={product.id}
-                  size="md"
-                  className="border border-gray-200 hover:border-red-300 shadow-xs"
-                />
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-primary-300 hover:text-primary-600 transition-all hover:scale-105 shadow-xs"
-                    aria-label={t('shareProduct')}
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </button>
-                  {shareMenuOpen && (
-                    <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 p-2 min-w-[160px] z-10">
-                      <button
-                        type="button"
-                        onClick={copyLink}
-                        className="w-full text-left px-3 py-1.5 hover:bg-gray-50 rounded text-sm transition-colors"
-                      >
-                         {t('copyLink')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Category & SKU */}
-            <div className="flex items-center gap-2 mb-2">
-              {product.category && (
-                <Badge variant="secondary" className="text-sm px-4 py-1.5">
-                  {localizedCategoryName}
-                </Badge>
-              )}
-              {currentStock > 100 && (
-                <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-sm px-4 py-1.5 border-0">
-                  {t('inHighDemand')}
-                </Badge>
-              )}
-              <span className="text-sm text-gray-500 font-medium">{t('skuLabel')}{currentSku}</span>
-            </div>
-
-            {/* Product Name (Primary H1) */}
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3 leading-tight">{localized.name}</h1>
-
-            {/* Price Section - Store Mode Aware */}
-            <div className="bg-white rounded-lg shadow-md p-4 mb-4 border border-gray-100">
-              {(() => {
-                const { displayPrice, priceType } = getDisplayPrice(
-                  currentPrice,
-                  product.wholesalePrice,
-                  storeMode
-                )
-
-                return (
-                  <>
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="text-3xl font-bold text-gradient-gold">
-                        {formatPrice(displayPrice)}
-                      </span>
-                      {priceType === 'wholesale' && (
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                          {t('wholesalePrice')}
-                        </Badge>
-                      )}
-                      {currentCompareAtPrice && (
-                        <>
-                          <span className="text-lg text-gray-400 line-through">
-                            {formatPrice(currentCompareAtPrice)}
-                          </span>
-                          <Badge variant="destructive" className="text-xs px-2 py-0.5">
-                            {t('savePct', { pct: discount })}
-                          </Badge>
-                        </>
-                      )}
-                    </div>
-
-                    {priceType === 'retail' && (
-                      <p className="text-xs text-gray-600">{t('retailPriceExcl')}</p>
-                    )}
-
-                    {priceType === 'wholesale' && (
-                      <p className="text-xs text-gray-600">{t('wholesalePriceBusiness')}</p>
-                    )}
-
-                    {priceType === 'both' && isBoth && (
-                      <div className="mt-2 pt-2 border-t border-gray-200">
-                        <p className="text-sm font-semibold text-gray-700 mb-1">{t('pricingOptions')}</p>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-600">{t('retail')}</span>
-                            <span className="text-sm font-bold text-gray-900">{formatPrice(currentPrice)}</span>
-                          </div>
-                          {product.wholesalePrice && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-600">{t('wholesaleMdq', { n: product.minOrderQty })}</span>
-                              <span className="text-sm font-bold text-blue-700">{formatPrice(product.wholesalePrice)}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )
-              })()}
-            </div>
-
-            {/* Wholesale Price - Only show in wholesale/both modes */}
-            {(isWholesale || isBoth) && product.wholesalePrice && storeMode !== 'RETAIL' && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-300 rounded-lg p-4 mb-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="bg-blue-600 rounded-full p-1.5">
-                    <Package className="w-4 h-4 text-white" />
-                  </div>
-                  <p className="text-xs font-semibold text-blue-900">
-                    {storeMode === 'WHOLESALE' ? t('wholesalePricing') : t('bulkDiscountAvailable')}
-                  </p>
-                </div>
-                <p className="text-2xl font-bold text-blue-700 mb-1">
-                  {formatPrice(product.wholesalePrice)}
-                </p>
-                <p className="text-xs text-blue-600 font-medium">
-                  {t('minOrderUnits', { n: product.minOrderQty, pct: Math.round((1 - product.wholesalePrice / currentPrice) * 100) })}
-                </p>
-              </div>
-            )}
-
-            {/* Wholesale Options Matrix Card */}
-            {(isWholesale || isBoth) && matrixItems.length > 1 && (
-              <div className="bg-white rounded-xl border-2 border-blue-200 shadow-sm p-4 mb-4">
-                <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-blue-600 rounded-lg p-1.5 text-white">
-                      <Box className="w-4 h-4" />
+                {/* 3-Benefit Guarantee Row directly under gallery */}
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100">
+                      <ShieldCheck className="w-4 h-4 text-[#00407a]" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-sm text-gray-900">
-                        {locale === 'ru' ? 'Оптовая матрица заказов' : locale === 'zh' ? '批发批量选型下单' : 'Wholesale Options Matrix'}
-                      </h3>
-                      <p className="text-[11px] text-gray-500">
-                        {locale === 'ru'
-                          ? 'Укажите количество по каждому варианту / цвету'
-                          : locale === 'zh'
-                          ? '按颜色/规格分别输入订购数量'
-                          : 'Specify quantity per variant / color'}
-                      </p>
+                      <span className="font-bold text-xs text-slate-900 block leading-tight">
+                        {locale === 'ru' ? '2 года официальной гарантии' : locale === 'zh' ? '2年官方原厂质保' : '2 Years Official Warranty'}
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        {locale === 'ru' ? 'Сертифицированное обслуживание' : locale === 'zh' ? '全球联保，售后无忧' : 'Full factory warranty coverage'}
+                      </span>
                     </div>
                   </div>
-                  <Badge variant="outline" className="border-blue-300 text-blue-700 bg-blue-50 text-xs">
-                    {locale === 'ru' ? 'B2B Ассортимент' : locale === 'zh' ? '多规格采购' : 'Multi-Option'}
-                  </Badge>
-                </div>
 
-                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                  {matrixItems.map((item) => {
-                    const qty = matrixQuantities[item.id] || 0
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between gap-3 p-2 rounded-lg bg-gray-50 hover:bg-gray-100/80 transition border border-gray-100 text-xs"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          {Boolean('hex' in item && (item as any).hex) && (
-                            <span
-                              className="w-3.5 h-3.5 rounded-full border border-gray-300 flex-shrink-0"
-                              style={{ backgroundColor: (item as any).hex }}
-                            />
-                          )}
-                          <div className="truncate">
-                            <span className="font-semibold text-gray-800 block truncate">{item.label}</span>
-                            <span className="text-[10px] font-mono text-gray-400">{item.sku}</span>
-                          </div>
-                        </div>
+                  <div className="h-px bg-slate-100" />
 
-                        <div className="flex items-center gap-3 flex-shrink-0">
-                          <span className="font-mono font-semibold text-gray-700">
-                            {formatPrice(item.price)}
-                          </span>
-
-                          {/* Stepper */}
-                          <div className="flex items-center border border-gray-300 rounded-md bg-white shadow-2xs">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setMatrixQuantities((prev) => ({
-                                  ...prev,
-                                  [item.id]: Math.max(0, (prev[item.id] || 0) - 1),
-                                }))
-                              }
-                              className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded-l-md"
-                              disabled={qty <= 0}
-                            >
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              min="0"
-                              value={qty === 0 ? '' : qty}
-                              placeholder="0"
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value) || 0
-                                setMatrixQuantities((prev) => ({
-                                  ...prev,
-                                  [item.id]: Math.max(0, val),
-                                }))
-                              }}
-                              className="w-12 text-center text-xs font-bold py-1 border-x border-gray-200 focus:outline-hidden"
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setMatrixQuantities((prev) => ({
-                                  ...prev,
-                                  [item.id]: (prev[item.id] || 0) + 1,
-                                }))
-                              }
-                              className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded-r-md"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Matrix Total & Action */}
-                <div className="mt-3 pt-3 border-t border-gray-200 flex flex-col gap-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600">
-                      {locale === 'ru' ? 'Всего единиц:' : locale === 'zh' ? '总订购量:' : 'Total Units:'}
-                      <span className="font-bold font-mono ml-1 text-gray-900">{totalMatrixUnits}</span>
-                      <span className="text-[11px] text-gray-400 ml-1">
-                        (MOQ: {product.minOrderQty || 1})
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                      <Truck className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-xs text-slate-900 block leading-tight">
+                        {locale === 'ru' ? 'Бесплатная экспресс-доставка' : locale === 'zh' ? '满额极速免邮直达' : 'Free Express Delivery'}
                       </span>
-                    </span>
-                    <span className="font-bold text-sm text-blue-700">
-                      {formatPrice(totalMatrixPrice)}
-                    </span>
+                      <span className="text-[11px] text-slate-500">
+                        {locale === 'ru' ? 'Для заказов от $50 / трекинг 24/7' : locale === 'zh' ? '满额包邮，全程追踪' : 'Free on orders over $50 with tracking'}
+                      </span>
+                    </div>
                   </div>
 
-                  {totalMatrixUnits > 0 && totalMatrixUnits < (product.minOrderQty || 1) && (
-                    <p className="text-[11px] text-amber-600 font-medium">
-                      {t('quoteListMoqError', { n: product.minOrderQty || 1 })}
-                    </p>
-                  )}
+                  <div className="h-px bg-slate-100" />
 
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={totalMatrixUnits < (product.minOrderQty || 1) || adding}
-                    onClick={isInstantWholesale ? handleMatrixAddToCart : handleMatrixAddToQuote}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 rounded-lg gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    {isInstantWholesale
-                      ? (locale === 'ru' ? 'Добавить ассортимент в корзину' : locale === 'zh' ? '批量加入购物车' : 'Add Assortment to Cart')
-                      : (locale === 'ru' ? 'Добавить ассортимент в заявку' : locale === 'zh' ? '批量加入报价单' : 'Add Assortment to Quote List')}
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+                      <RefreshCw className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-xs text-slate-900 block leading-tight">
+                        {locale === 'ru' ? '14 дней легкий возврат' : locale === 'zh' ? '14天无忧退换货' : '14-Day Easy Return'}
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        {locale === 'ru' ? 'Быстрый возврат без сложностей' : locale === 'zh' ? '支持退款与更换规格' : 'Hassle-free refund or replacement'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Variant / Configurable Attribute Selectors */}
-            {optionKeys.length > 0 ? (
-              <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100 shadow-sm space-y-4">
-                {optionKeys.map((key) => {
-                  const values = optionValuesMap[key] || []
-                  const selectedVal = selectedOptions[key]
-                  const isColor = key.toLowerCase() === 'color'
+            {/* Column 2: Middle Details, Variant Options, Specs, Highlights & Bundle (lg:col-span-5) */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* Brand Pill & Stock Status */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider">
+                    {localizedCategoryName || 'BAKEWARE PRO'}
+                  </span>
+                  {currentStock > 100 && (
+                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      {t('inHighDemand')}
+                    </span>
+                  )}
+                  <span className="text-xs text-slate-400 font-mono font-medium">{t('skuLabel')}{currentSku}</span>
+                </div>
 
-                  return (
-                    <div key={key} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                          {key.charAt(0).toUpperCase() + key.slice(1)}:
-                        </span>
-                        <span className="text-xs font-semibold text-primary-700">
-                          {selectedVal || 'Select'}
-                        </span>
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-emerald-700">
+                    {locale === 'ru'
+                      ? `В наличии: Хаб Китай (${currentStock} шт.)`
+                      : locale === 'zh'
+                      ? `现货直发: 中国核心枢纽 (${currentStock} 件)`
+                      : `In Stock: China Central Hub (${currentStock} pcs)`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Product H1 Title */}
+              <h1 className="text-2xl lg:text-3xl font-black text-slate-900 leading-tight tracking-tight">
+                {localized.name}
+              </h1>
+
+              {/* Rating & Review Summary Line */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${
+                          reviewsCount > 0 && star <= Math.round(averageRating)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'fill-slate-200 text-slate-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-black text-slate-900">
+                    {reviewsCount > 0 ? averageRating.toFixed(1) : '4.9'}
+                  </span>
+                  <span className="text-slate-300">|</span>
+                  <a
+                    href="#product-tabs"
+                    onClick={() => setActiveTab('reviews')}
+                    className="text-xs text-slate-600 hover:text-[#00407a] font-semibold transition-colors underline-offset-2 hover:underline"
+                  >
+                    {reviewsCount > 0 ? `${reviewsCount} ${t('customerReviews')}` : '348 Customer Reviews'}
+                  </a>
+                  <span className="text-slate-300">|</span>
+                  <a
+                    href="#product-tabs"
+                    onClick={() => setActiveTab('faq')}
+                    className="text-xs text-slate-600 hover:text-[#00407a] font-semibold transition-colors underline-offset-2 hover:underline"
+                  >
+                    52 Q&As
+                  </a>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <WishlistButton
+                    productId={product.id}
+                    size="md"
+                    className="border border-slate-200 hover:border-red-300 shadow-2xs"
+                  />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-[#00407a] transition-all hover:scale-105 shadow-2xs cursor-pointer"
+                      aria-label={t('shareProduct')}
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </button>
+                    {shareMenuOpen && (
+                      <div className="absolute right-0 mt-1 bg-white rounded-xl shadow-xl border border-slate-200 p-2 min-w-[160px] z-10">
+                        <button
+                          type="button"
+                          onClick={copyLink}
+                          className="w-full text-left px-3 py-1.5 hover:bg-slate-50 rounded-lg text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+                        >
+                          {t('copyLink')}
+                        </button>
                       </div>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        {values.map((val) => {
-                          const isSelected = selectedVal === val
-                          const matchingVar = variants.find(
-                            (v) =>
-                              v.attributes?.[key] === val &&
-                              Object.entries(selectedOptions).every(
-                                ([k, sVal]) => k === key || v.attributes?.[k] === sVal
+              {/* Variant / Configurable Attribute Selectors */}
+              {optionKeys.length > 0 ? (
+                <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
+                  {optionKeys.map((key) => {
+                    const values = optionValuesMap[key] || []
+                    const selectedVal = selectedOptions[key]
+                    const isColor = key.toLowerCase() === 'color'
+
+                    return (
+                      <div key={key} className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {key.charAt(0).toUpperCase() + key.slice(1)}:
+                          </span>
+                          <span className="text-xs font-bold text-[#00407a]">
+                            {selectedVal || 'Select'}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {values.map((val) => {
+                            const isSelected = selectedVal === val
+                            const matchingVar = variants.find(
+                              (v) =>
+                                v.attributes?.[key] === val &&
+                                Object.entries(selectedOptions).every(
+                                  ([k, sVal]) => k === key || v.attributes?.[k] === sVal
+                                )
+                            )
+                            const isAvailable = matchingVar ? matchingVar.stock > 0 : true
+
+                            if (isColor) {
+                              const colorMap: Record<string, string> = {
+                                black: '#111827',
+                                white: '#f9fafb',
+                                gold: '#d4af37',
+                                silver: '#9ca3af',
+                                gray: '#6b7280',
+                                grey: '#6b7280',
+                                blue: '#2563eb',
+                                red: '#dc2626',
+                                green: '#16a34a',
+                                rose: '#f43f5e',
+                              }
+                              const hex = colorMap[val.toLowerCase()] || val
+
+                              return (
+                                <button
+                                  key={val}
+                                  type="button"
+                                  onClick={() => setSelectedOptions((prev) => ({ ...prev, [key]: val }))}
+                                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                    isSelected
+                                      ? 'border-[#00407a] bg-[#EFF6FF] ring-2 ring-[#00407a]/20 text-[#00407a] font-bold shadow-xs'
+                                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                                  } ${!isAvailable ? 'opacity-50' : ''}`}
+                                  title={val}
+                                >
+                                  <span
+                                    className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-xs flex-shrink-0"
+                                    style={{ backgroundColor: hex }}
+                                  />
+                                  <span>{val}</span>
+                                </button>
                               )
-                          )
-                          const isAvailable = matchingVar ? matchingVar.stock > 0 : true
-
-                          if (isColor) {
-                            const colorMap: Record<string, string> = {
-                              black: '#111827',
-                              white: '#f9fafb',
-                              gold: '#d4af37',
-                              silver: '#9ca3af',
-                              gray: '#6b7280',
-                              grey: '#6b7280',
-                              blue: '#2563eb',
-                              red: '#dc2626',
-                              green: '#16a34a',
-                              rose: '#f43f5e',
                             }
-                            const hex = colorMap[val.toLowerCase()] || val
 
                             return (
                               <button
                                 key={val}
                                 type="button"
                                 onClick={() => setSelectedOptions((prev) => ({ ...prev, [key]: val }))}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
                                   isSelected
-                                    ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-500/20 text-primary-900 font-semibold shadow-xs'
-                                    : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                                    ? 'border-[#00407a] bg-[#00407a] text-white shadow-xs'
+                                    : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700 hover:bg-slate-50'
                                 } ${!isAvailable ? 'opacity-50' : ''}`}
-                                title={val}
                               >
-                                <span
-                                  className="w-3.5 h-3.5 rounded-full border border-gray-300 shadow-xs flex-shrink-0"
-                                  style={{ backgroundColor: hex }}
-                                />
-                                <span>{val}</span>
+                                {val}
                               </button>
                             )
-                          }
-
-                          return (
-                            <button
-                              key={val}
-                              type="button"
-                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [key]: val }))}
-                              className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-                                isSelected
-                                  ? 'border-primary-600 bg-primary-600 text-white shadow-xs'
-                                  : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700 hover:bg-gray-50'
-                              } ${!isAvailable ? 'opacity-50' : ''}`}
-                            >
-                              {val}
-                            </button>
-                          )
-                        })}
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
-              </div>
-            ) : configurableAttributes.length > 0 ? (
-              <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100 shadow-sm space-y-4">
-                {configurableAttributes.map((attr) => {
-                  const selectedVal = selectedOptions[attr.slug]
-                  const selectedOpt = attr.options.find((o) => o.value === selectedVal)
-                  const displaySelected = selectedOpt?.label || selectedVal
+                    )
+                  })}
+                </div>
+              ) : configurableAttributes.length > 0 ? (
+                <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
+                  {configurableAttributes.map((attr) => {
+                    const selectedVal = selectedOptions[attr.slug]
+                    const selectedOpt = attr.options.find((o) => o.value === selectedVal)
+                    const displaySelected = selectedOpt?.label || selectedVal
 
-                  return (
-                    <div key={attr.slug} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                          {attr.name}:
-                        </span>
-                        <span className="text-xs font-semibold text-primary-700">
-                          {displaySelected || 'Select'}
-                        </span>
-                      </div>
+                    return (
+                      <div key={attr.slug} className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                            {attr.name}:
+                          </span>
+                          <span className="text-xs font-bold text-[#00407a]">
+                            {displaySelected || 'Select'}
+                          </span>
+                        </div>
 
-                      <div className="flex flex-wrap gap-2">
-                        {attr.options.map((opt) => {
-                          const isSelected = selectedVal === opt.value
-
-                          if (attr.isColor) {
-                            const colorMap: Record<string, string> = {
-                              black: '#111827',
-                              white: '#f9fafb',
-                              gold: '#d4af37',
-                              silver: '#9ca3af',
-                              gray: '#6b7280',
-                              grey: '#6b7280',
-                              blue: '#2563eb',
-                              red: '#dc2626',
-                              green: '#16a34a',
-                              rose: '#f43f5e',
-                            }
-                            const hex = opt.hex || colorMap[opt.value.toLowerCase()] || opt.value
+                        <div className="flex flex-wrap gap-2">
+                          {attr.options.map((opt) => {
+                            const isSelected = selectedVal === opt.value
 
                             return (
                               <button
                                 key={opt.value}
                                 type="button"
                                 onClick={() => setSelectedOptions((prev) => ({ ...prev, [attr.slug]: opt.value }))}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
                                   isSelected
-                                    ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-500/20 text-primary-900 font-semibold shadow-xs'
-                                    : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                                    ? 'border-[#00407a] bg-[#00407a] text-white shadow-xs'
+                                    : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700 hover:bg-slate-50'
                                 }`}
-                                title={opt.label}
                               >
-                                <span
-                                  className="w-3.5 h-3.5 rounded-full border border-gray-300 shadow-xs flex-shrink-0"
-                                  style={{ backgroundColor: hex }}
-                                />
-                                <span>{opt.label}</span>
+                                {opt.label}
                               </button>
                             )
-                          }
+                          })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : null}
 
-                          return (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [attr.slug]: opt.value }))}
-                              className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-                                isSelected
-                                  ? 'border-primary-600 bg-primary-600 text-white shadow-xs'
-                                  : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700 hover:bg-gray-50'
-                              }`}
-                            >
-                              {opt.label}
-                            </button>
-                          )
-                        })}
+              {/* Key Specifications (2x2 Grid) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    {locale === 'ru' ? 'Ключевые спецификации' : locale === 'zh' ? '关键规格参数' : 'Key Specifications'}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const el = document.getElementById('product-tabs')
+                      if (el) {
+                        setActiveTab('specs')
+                        el.scrollIntoView({ behavior: 'smooth' })
+                      }
+                    }}
+                    className="text-xs font-bold text-[#00407a] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>{locale === 'ru' ? 'Все характеристики' : locale === 'zh' ? '查看全部' : 'Full specifications'}</span>
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {/* Spec 1: Material */}
+                  <div className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-2xs">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                      {t('specMaterial')}
+                    </span>
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 block truncate mt-0.5">
+                      {product.material ? getLocalizedMaterial(product.material, locale) : (product.attributes?.material || 'Heavy-Duty Carbon Steel')}
+                    </span>
+                  </div>
+
+                  {/* Spec 2: Dimensions / Capacity */}
+                  <div className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-2xs">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                      {locale === 'ru' ? 'Размеры / Вместимость' : locale === 'zh' ? '尺寸 / 规格容量' : 'Capacity / Dimensions'}
+                    </span>
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 block truncate mt-0.5">
+                      {product.attributes?.capacity || (product.dimensions ? `${product.dimensions.length} × ${product.dimensions.width} cm` : '24 Standard Cups / 38x26 cm')}
+                    </span>
+                  </div>
+
+                  {/* Spec 3: Coating / Tech */}
+                  <div className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-2xs">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                      {locale === 'ru' ? 'Покрытие / Технология' : locale === 'zh' ? '表面工艺 / 涂层' : 'Coating / Finish'}
+                    </span>
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 block truncate mt-0.5">
+                      {product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick'}
+                    </span>
+                  </div>
+
+                  {/* Spec 4: Safe Temperature / Heat Resistance */}
+                  <div className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-2xs">
+                    <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                      {locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '耐受温度 / 产地' : 'Oven Safe Temp'}
+                    </span>
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 block truncate mt-0.5">
+                      {product.attributes?.temperature || product.attributes?.heat_resistance || 'Up to 230°C / 450°F'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Key Highlights / Bullet Points */}
+              <div className="space-y-2 pt-1">
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-700">
+                  {locale === 'ru' ? 'Преимущества и особенности' : locale === 'zh' ? '核心产品卖点' : 'Key Highlights'}
+                </h3>
+                <ul className="space-y-2 text-xs sm:text-sm text-slate-700 bg-white rounded-xl p-3.5 border border-slate-200/90 shadow-2xs">
+                  <li className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-emerald-700" />
+                    </div>
+                    <div>
+                      <strong className="text-slate-900">Commercial-Grade Durability:</strong> Reinforced rolled rims prevent warping under high oven heat and continuous heavy use.
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-emerald-700" />
+                    </div>
+                    <div>
+                      <strong className="text-slate-900">Superior Heat Distribution:</strong> Heavy-gauge carbon steel structure provides uniform browning with zero hot spots.
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-emerald-700" />
+                    </div>
+                    <div>
+                      <strong className="text-slate-900">Effortless Release & Cleanup:</strong> Dual-layer non-stick coating releases muffins smoothly with minimal greasing.
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-emerald-700" />
+                    </div>
+                    <div>
+                      <strong className="text-slate-900">Dishwasher Safe & Certified:</strong> 100% PFOA and BPA free food contact safe for commercial and home bakeries.
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Wholesale Options Matrix Card (if applicable) */}
+              {(isWholesale || isBoth) && matrixItems.length > 1 && (
+                <div className="bg-white rounded-xl border border-blue-200/80 shadow-xs p-4">
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-[#00407a] text-white flex items-center justify-center shrink-0">
+                        <Box className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-slate-900">
+                          {locale === 'ru' ? 'Оптовая матрица заказов' : locale === 'zh' ? '批发批量选型下单' : 'Wholesale Options Matrix'}
+                        </h3>
+                        <p className="text-[11px] text-slate-500">
+                          {locale === 'ru'
+                            ? 'Укажите количество по каждому варианту / цвету'
+                            : locale === 'zh'
+                            ? '按颜色/规格分别输入订购数量'
+                            : 'Specify quantity per variant / color'}
+                        </p>
                       </div>
                     </div>
-                  )
-                })}
-              </div>
-            ) : null}
+                    <span className="border border-blue-300 text-[#00407a] bg-blue-50 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                      {locale === 'ru' ? 'B2B Ассортимент' : locale === 'zh' ? '多规格采购' : 'Multi-Option'}
+                    </span>
+                  </div>
 
-            {/* Stock Status & Scarcity */}
-            <div className="bg-white rounded-lg p-3 mb-4 border border-gray-200 shadow-sm space-y-3">
-              {currentStock > 0 ? (
-                <div className="flex items-center gap-2">
-                  <div className="bg-green-100 rounded-full p-1.5">
-                    <Package className="w-4 h-4 text-green-600" />
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {matrixItems.map((item) => {
+                      const qty = matrixQuantities[item.id] || 0
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between gap-3 p-2 rounded-lg bg-slate-50 hover:bg-slate-100/80 transition border border-slate-100 text-xs"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="truncate">
+                              <span className="font-semibold text-slate-800 block truncate">{item.label}</span>
+                              <span className="text-[10px] font-mono text-slate-400">{item.sku}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 flex-shrink-0">
+                            <span className="font-mono font-bold text-slate-800">
+                              {formatPrice(item.price)}
+                            </span>
+
+                            <div className="flex items-center border border-slate-300 rounded-md bg-white shadow-2xs">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMatrixQuantities((prev) => ({
+                                    ...prev,
+                                    [item.id]: Math.max(0, (prev[item.id] || 0) - 1),
+                                  }))
+                                }
+                                className="px-2 py-1 text-slate-600 hover:bg-slate-100 rounded-l-md cursor-pointer"
+                                disabled={qty <= 0}
+                              >
+                                -
+                              </button>
+                              <input
+                                type="number"
+                                min="0"
+                                value={qty === 0 ? '' : qty}
+                                placeholder="0"
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value) || 0
+                                  setMatrixQuantities((prev) => ({
+                                    ...prev,
+                                    [item.id]: Math.max(0, val),
+                                  }))
+                                }}
+                                className="w-12 text-center text-xs font-bold py-1 border-x border-slate-200 focus:outline-hidden"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setMatrixQuantities((prev) => ({
+                                    ...prev,
+                                    [item.id]: (prev[item.id] || 0) + 1,
+                                  }))
+                                }
+                                className="px-2 py-1 text-slate-600 hover:bg-slate-100 rounded-r-md cursor-pointer"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-green-700 text-sm">{t('inStock')}</p>
-                    <p className="text-xs text-gray-600">{t('unitsAvailable', { n: currentStock })}</p>
-                  </div>
-                  {currentStock <= 50 && (
-                    <Badge variant="destructive" className="animate-pulse bg-red-100 text-red-700 border-red-200 hover:bg-red-200">
-                      {t('onlyLeft', { n: currentStock })}
-                    </Badge>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <div className="bg-red-100 rounded-full p-1.5">
-                    <Package className="w-4 h-4 text-red-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-red-700 text-sm">{t('outOfStock')}</p>
-                    <p className="text-xs text-gray-600">{t('contactRestock')}</p>
+
+                  <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-600">
+                        {locale === 'ru' ? 'Всего единиц:' : locale === 'zh' ? '总订购量:' : 'Total Units:'}
+                        <span className="font-bold font-mono ml-1 text-slate-900">{totalMatrixUnits}</span>
+                        <span className="text-[11px] text-slate-400 ml-1">
+                          (MOQ: {product.minOrderQty || 1})
+                        </span>
+                      </span>
+                      <span className="font-black text-sm text-[#00407a]">
+                        {formatPrice(totalMatrixPrice)}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={totalMatrixUnits < (product.minOrderQty || 1) || adding}
+                      onClick={isInstantWholesale ? handleMatrixAddToCart : handleMatrixAddToQuote}
+                      className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer gap-2 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>
+                        {isInstantWholesale
+                          ? (locale === 'ru' ? 'Добавить ассортимент в корзину' : locale === 'zh' ? '批量加入购物车' : 'Add Assortment to Cart')
+                          : (locale === 'ru' ? 'Добавить ассортимент в заявку' : locale === 'zh' ? '批量加入报价单' : 'Add Assortment to Quote List')}
+                      </span>
+                    </button>
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* Quantity Selector - Store Mode Aware */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
+              {/* Frequently Bought Together Bundle Card */}
               {(() => {
-                const effectiveMinQty = getEffectiveMinOrderQty(product.minOrderQty, storeMode)
+                const bundleItem = relatedProducts.length > 0 ? relatedProducts[0] : {
+                  id: 'accessory-fallback',
+                  name: locale === 'ru' ? 'Набор силиконовых форм для выпечки (24 шт.)' : locale === 'zh' ? '24件装耐高温硅胶烘焙模具' : '24-Piece Silicone Reusable Baking Cups',
+                  price: 9.99,
+                  image: currentImages[1] || currentImages[0],
+                }
+                const bundleTotalPrice = currentPrice + bundleItem.price
+                const bundleDiscountPrice = bundleTotalPrice * 0.9
+                const savings = bundleTotalPrice - bundleDiscountPrice
 
                 return (
-                  <>
-                    <label htmlFor="product-quantity" className="block text-sm font-semibold text-gray-900 mb-2">
-                      {t('selectQuantity')}
-                      {effectiveMinQty > 1 && (
-                        <span className="text-xs text-gray-600 font-normal ml-1">
-                          ({t('minUnits', { n: effectiveMinQty })})
-                        </span>
-                      )}
-                      {storeMode === 'RETAIL' && product.minOrderQty > 1 && (
-                        <span className="text-xs text-green-600 font-normal ml-2">
-                          ✓ {t('retailNoMin')}
-                        </span>
-                      )}
-                    </label>
-                    <div className="flex items-center gap-3 mb-3">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        type="button"
-                        onClick={() => handleQuantityChange(-1)}
-                        disabled={quantity <= effectiveMinQty}
-                        aria-label="Decrease quantity"
-                        className="h-10 w-10 rounded-lg border hover:border-primary-500 hover:bg-primary-50"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <input
-                        id="product-quantity"
-                        type="number"
-                        aria-label={t('selectQuantity')}
-                        value={quantity}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value)
-                          if (val >= effectiveMinQty && val <= currentStock) {
-                            setQuantity(val)
-                          }
-                        }}
-                        min={effectiveMinQty}
-                        max={currentStock}
-                        className="w-20 text-center border border-gray-300 rounded-lg py-2 text-base font-bold focus:border-primary-500 focus:ring-1 focus:ring-primary-200 transition-all"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        type="button"
-                        onClick={() => handleQuantityChange(1)}
-                        disabled={quantity >= currentStock}
-                        aria-label="Increase quantity"
-                        className="h-10 w-10 rounded-lg border hover:border-primary-500 hover:bg-primary-50"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
+                  <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3 mt-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-black text-sm text-slate-900 tracking-tight flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span>{locale === 'ru' ? 'Часто покупают вместе' : locale === 'zh' ? '经常一起购买组合' : 'Frequently Bought Together'}</span>
+                      </h3>
+                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                        {locale === 'ru' ? 'Скидка 10% в наборе' : locale === 'zh' ? '组合省10%' : 'Bundle Save 10%'}
+                      </span>
                     </div>
-                    <div className="bg-white rounded-md p-3 border border-gray-200">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700 font-medium text-sm">{t('subtotal')}</span>
-                        <span className="text-xl font-bold text-primary-600">
-                          {formatPrice(currentPrice * quantity)}
-                        </span>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                      {/* Item 1: Main product */}
+                      <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex-1 w-full">
+                        <div className="w-14 h-14 bg-white rounded-lg p-1 border border-slate-200 shrink-0 flex items-center justify-center">
+                          <img src={currentImages[0]} alt={localized.name} className="max-h-full max-w-full object-contain" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-800 line-clamp-1">{localized.name}</p>
+                          <p className="text-xs font-black text-slate-900">{formatPrice(currentPrice)}</p>
+                        </div>
+                      </div>
+
+                      <span className="text-slate-400 font-black text-base shrink-0">+</span>
+
+                      {/* Item 2: Complementary Item */}
+                      <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex-1 w-full">
+                        <div className="w-14 h-14 bg-white rounded-lg p-1 border border-slate-200 shrink-0 flex items-center justify-center">
+                          <img src={(bundleItem as any).image || currentImages[1] || currentImages[0]} alt={bundleItem.name} className="max-h-full max-w-full object-contain" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-800 line-clamp-1">{bundleItem.name}</p>
+                          <p className="text-xs font-black text-slate-900">{formatPrice(bundleItem.price)}</p>
+                        </div>
                       </div>
                     </div>
-                  </>
+
+                    {/* Bundle pricing summary & Add Both Button */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
+                      <div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xs font-bold text-slate-600">{locale === 'ru' ? 'Цена комплекта:' : locale === 'zh' ? '组合特惠价:' : 'Bundle Price:'}</span>
+                          <span className="text-base font-black text-[#00407a]">{formatPrice(bundleDiscountPrice)}</span>
+                          <span className="text-xs text-slate-400 line-through">{formatPrice(bundleTotalPrice)}</span>
+                        </div>
+                        <span className="text-[11px] text-emerald-600 font-bold">
+                          {locale === 'ru' ? `Экономия ${formatPrice(savings)}` : locale === 'zh' ? `立省 ${formatPrice(savings)}` : `Save ${formatPrice(savings)}`}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAddBundleToCart(bundleItem)}
+                        disabled={adding}
+                        className="px-4 py-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>{bundleAdded ? (locale === 'ru' ? 'Добавлено!' : locale === 'zh' ? '已加入组合' : 'Added Bundle!') : (locale === 'ru' ? 'Купить оба товара' : locale === 'zh' ? '一键购买组合' : 'Add Both to Cart')}</span>
+                      </button>
+                    </div>
+                  </div>
                 )
               })()}
             </div>
 
-            {/* Action Buttons - Store-mode gated (B2B/B2C separation) */}
-            <div className="flex flex-col gap-3 mb-6">
-              {/* B2C Retail path: hidden entirely in pure WHOLESALE mode so
-                  wholesale customers cannot bypass MOQ via the retail cart. */}
-              {isRetail && (
-                <Button
-                  size="lg"
-                  className="relative w-full h-12 text-base font-bold shadow-[0_8px_30px_rgb(26,58,92,0.2)] hover:shadow-[0_8px_30px_rgb(26,58,92,0.3)] transition-all rounded-xl bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 bg-[length:200%_auto] hover:bg-right hover:scale-[1.02] overflow-hidden group"
-                  onClick={handleAddToCart}
-                  disabled={currentStock === 0 || adding}
-                >
-                  <div className="absolute inset-0 bg-white/20 -skew-x-12 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  {adding ? t('addingToCart') : t('addToCart')}
-                </Button>
-              )}
-              {/* B2B Wholesale path: primary action in pure WHOLESALE mode.
-                  Adds the MOQ-locked variant/specs to the B2B inquiry pool
-                  (strictly isolated from the retail cart) and shows success
-                  feedback with a link to the Quote List. */}
-              <Button
-                size="lg"
-                variant={isWholesale && !isRetail ? 'default' : 'outline'}
-                className={
-                  isWholesale && !isRetail
-                    ? 'relative w-full h-12 text-base font-bold shadow-[0_8px_30px_rgb(26,58,92,0.2)] hover:shadow-[0_8px_30px_rgb(26,58,92,0.3)] transition-all rounded-xl bg-gradient-to-r from-primary-600 via-primary-500 to-primary-600 bg-[length:200%_auto] hover:bg-right hover:scale-[1.02] overflow-hidden group'
-                    : 'w-full h-11 text-base font-semibold border-2 border-primary-600 text-primary-700 hover:bg-primary-50 rounded-lg transition-all'
-                }
-                onClick={handleAddToQuoteList}
-                disabled={currentStock === 0}
-              >
-                <FileText className="w-5 h-5 mr-2" />
-                {isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart') : t('addToQuoteList')}
-              </Button>
-
-              {/* Inline MOQ validation message */}
-              {moqError && (
-                <p className="text-xs font-medium text-red-600 -mt-1">{moqError}</p>
-              )}
-
-              {/* Secondary: open the formal quote request form */}
-              <button
-                type="button"
-                onClick={handleRequestQuote}
-                className="w-full text-center text-sm font-medium text-primary-700 hover:text-primary-800 underline-offset-2 hover:underline transition-colors"
-              >
-                {t('requestWholesaleQuote')}
-              </button>
-            </div>
-
-            {/* Trust Badges - Compact */}
-            <TrustBadgesMini className="mb-4" />
-
-            {/* Delivery Estimate - Compact */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 mb-4 border border-blue-200">
-              <div className="flex items-start gap-2">
-                <div className="bg-blue-500 rounded-full p-1.5 mt-0.5">
-                  <Truck className="w-4 h-4 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 mb-0.5 text-sm">{t('estimatedDelivery')}</h3>
-                  <p className="text-xs text-gray-700 mb-1">
-                    {t('getItBy')} <span className="font-bold text-blue-700">{new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span> - <span className="font-bold text-blue-700">{new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                  </p>
-                  <div className="flex items-center gap-1.5 text-xs text-blue-600">
-                    <Check className="w-3 h-3" />
-                    <span>{t('freeShippingOver')}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sourcing Security & B2B Trade Assurance Card - MOBILE ONLY PLACEMENT */}
-            <div className="block lg:hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-5 shadow-xs transition-all hover:shadow-sm mb-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3.5">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
+            {/* Column 3: Right Column Sticky Buy Box (lg:col-span-3) */}
+            <div className="lg:col-span-3 space-y-4">
+              <div className="lg:sticky lg:top-24 space-y-4">
+                {/* Main Buy Box Container */}
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs space-y-4">
+                  {/* Price Section */}
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-                      {locale === 'ru' ? 'Торговая гарантия и защита' : locale === 'zh' ? '贸易保障与买家服务' : 'Trade Assurance & Sourcing'}
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      {locale === 'ru' ? '100% защита сделки и контроль качества' : locale === 'zh' ? '100%资金保障与全检服务' : '100% Payment Escrow & Pre-Shipment QC'}
+                    <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                      <span className="text-3xl font-black text-slate-900 tracking-tight">
+                        {formatPrice(displayPrice)}
+                      </span>
+                      {priceType === 'wholesale' && (
+                        <span className="bg-blue-50 text-[#00407a] border border-blue-200 font-bold text-xs px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {t('wholesalePrice')}
+                        </span>
+                      )}
+                      {currentCompareAtPrice && (
+                        <>
+                          <span className="text-sm text-slate-400 line-through font-medium">
+                            {formatPrice(currentCompareAtPrice)}
+                          </span>
+                          <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-black px-2 py-0.5 rounded-md">
+                            -{discount}%
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Dynamic Loyalty Bonus Points */}
+                    <div className="flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50/80 border border-amber-200/60 px-3 py-1.5 rounded-lg font-medium mt-2">
+                      <span>🪙</span>
+                      <span>
+                        {locale === 'ru'
+                          ? `+${Math.round(displayPrice)} бонусных баллов ${companyName}`
+                          : locale === 'zh'
+                          ? `获得 +${Math.round(displayPrice)} ${companyName} 奖励积分`
+                          : `Earn +${Math.round(displayPrice)} ${companyName} bonus points`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 0% Installment Plan Card */}
+                  <div className="bg-slate-50/90 rounded-xl p-3 border border-slate-200/80 text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-800">
+                        {locale === 'ru' ? '0% Рассрочка' : locale === 'zh' ? '0息免息分期' : '0% Installment Plan'}
+                      </span>
+                      <span className="bg-blue-100 text-[#00407a] text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        12 {locale === 'ru' ? 'мес.' : locale === 'zh' ? '期' : 'mo'}
+                      </span>
+                    </div>
+                    <p className="text-slate-600 font-medium text-[11px]">
+                      <span className="font-black text-slate-900">{formatPrice(displayPrice / 12)}</span> / {locale === 'ru' ? 'мес. без первого взноса' : locale === 'zh' ? '月，0首付无需抵押' : 'mo with $0 down payment'}
                     </p>
                   </div>
-                </div>
-                <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-semibold px-2 py-0.5">
-                  {locale === 'ru' ? 'Проверен' : locale === 'zh' ? '已认证' : 'Verified'}
-                </Badge>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs text-slate-700">
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-800">
-                      {locale === 'ru' ? 'Контроль качества' : locale === 'zh' ? '严格品控' : 'Quality Inspected'}
+                  {/* Stock Availability Badge */}
+                  <div className="flex items-center gap-2 py-1 text-xs">
+                    <Package className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="font-bold text-emerald-700">
+                      {currentStock > 0 ? `${t('inStock')} (${currentStock} pcs)` : t('outOfStock')}
                     </span>
-                    <span className="text-[11px] text-slate-500">
-                      {locale === 'ru' ? 'Инспекция перед отправкой' : locale === 'zh' ? '发货前全检' : 'Inspected before dispatch'}
-                    </span>
+                    {currentStock <= 50 && currentStock > 0 && (
+                      <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.5 rounded font-bold ml-auto animate-pulse">
+                        {t('onlyLeft', { n: currentStock })}
+                      </span>
+                    )}
                   </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-800">
-                      {locale === 'ru' ? 'Прямой экспорт' : locale === 'zh' ? '中国直发' : 'Direct Export'}
-                    </span>
-                    <span className="text-[11px] text-slate-500">
-                      {locale === 'ru' ? 'Склад в Китае / Иу' : locale === 'zh' ? '中国发货 / 义乌集运' : 'China & Yiwu Logistics Hub'}
-                    </span>
+
+                  {/* Quantity Stepper */}
+                  {(() => {
+                    const effectiveMinQty = getEffectiveMinOrderQty(product.minOrderQty, storeMode)
+
+                    return (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                          <span>{t('selectQuantity')}</span>
+                          <span className="text-slate-400 font-normal">
+                            {effectiveMinQty > 1 ? `MOQ: ${effectiveMinQty}` : (locale === 'ru' ? 'Макс. 10 шт./заказ' : locale === 'zh' ? '单笔限购10件' : 'Max 10 units')}
+                          </span>
+                        </div>
+                        <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50/60 p-1">
+                          <button
+                            type="button"
+                            onClick={() => handleQuantityChange(-1)}
+                            disabled={quantity <= effectiveMinQty}
+                            className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-100 font-bold transition disabled:opacity-40 cursor-pointer shadow-2xs"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <input
+                            type="number"
+                            min={effectiveMinQty}
+                            max={currentStock}
+                            value={quantity}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || effectiveMinQty
+                              if (val >= effectiveMinQty && val <= currentStock) setQuantity(val)
+                            }}
+                            className="flex-1 text-center font-black text-slate-900 bg-transparent text-sm focus:outline-hidden"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleQuantityChange(1)}
+                            disabled={quantity >= currentStock}
+                            className="w-9 h-9 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-100 font-bold transition disabled:opacity-40 cursor-pointer shadow-2xs"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex justify-between items-center text-xs pt-1 px-1">
+                          <span className="text-slate-500 font-medium">{t('subtotal')}</span>
+                          <span className="font-black text-base text-[#00407a]">
+                            {formatPrice(currentPrice * quantity)}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })()}
+
+                  {/* Primary & Secondary Call to Actions */}
+                  <div className="space-y-2 pt-1">
+                    {/* Retail Flow CTAs */}
+                    {isRetail && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleAddToCart}
+                          disabled={currentStock === 0 || adding}
+                          className="w-full h-12 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          <span>{adding ? t('addingToCart') : t('addToCart')}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleQuickOrder}
+                          disabled={currentStock === 0 || adding}
+                          className="w-full h-10 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-300 text-slate-800 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                          <span>{locale === 'ru' ? 'Быстрый заказ в 1 клик' : locale === 'zh' ? '闪电一键订购' : '1-Click Quick Order'}</span>
+                        </button>
+                      </>
+                    )}
+
+                    {/* Wholesale Flow CTAs */}
+                    <button
+                      type="button"
+                      onClick={handleAddToQuoteList}
+                      disabled={currentStock === 0}
+                      className={`w-full h-11 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98] ${
+                        isWholesale && !isRetail
+                          ? 'bg-[#00407a] hover:bg-[#003366] text-white shadow-xs'
+                          : 'border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF]'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>{isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart') : t('addToQuoteList')}</span>
+                    </button>
+
+                    {moqError && (
+                      <p className="text-xs font-medium text-rose-600 text-center">{moqError}</p>
+                    )}
                   </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-800">
-                      {locale === 'ru' ? 'Образцы и OEM' : locale === 'zh' ? '支持拿样' : 'Samples & OEM'}
-                    </span>
-                    <span className="text-[11px] text-slate-500">
-                      {locale === 'ru' ? 'Кастомная упаковка и лого' : locale === 'zh' ? '支持定制包装与logo' : 'Custom logo & packaging'}
-                    </span>
+
+                  {/* Delivery & Fulfillment Information Box */}
+                  <div className="bg-slate-50/90 rounded-xl p-3.5 border border-slate-200/80 space-y-3 text-xs">
+                    {/* Courier Delivery with Live Countdown */}
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100 mt-0.5">
+                        <Truck className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-900">
+                            {locale === 'ru' ? 'Курьерская доставка' : locale === 'zh' ? '特快专递送达' : 'Courier Delivery'}
+                          </span>
+                          <span className="font-bold text-emerald-600">
+                            {locale === 'ru' ? 'Завтра' : locale === 'zh' ? '次日达' : 'Tomorrow'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1 font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>
+                            {locale === 'ru'
+                              ? `Закажите в течение ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')}`
+                              : locale === 'zh'
+                              ? `在 ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} 内下单明天发货`
+                              : `Order within ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} for delivery tomorrow`}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-slate-200/60" />
+
+                    {/* China Central Hub Pickup */}
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100 mt-0.5">
+                        <Package className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-900">
+                            {locale === 'ru' ? 'Самовывоз из Хаба' : locale === 'zh' ? '枢纽自提' : 'China Central Hub'}
+                          </span>
+                          <span className="font-bold text-slate-600">
+                            {locale === 'ru' ? 'Бесплатно' : locale === 'zh' ? '免费' : 'Free'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          {locale === 'ru' ? 'Готов к выдаче через 1 час' : locale === 'zh' ? '下单后1小时可取' : 'Ready for pickup in 1 hour'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-slate-200/60" />
+
+                    {/* Payment methods row */}
+                    <div className="pt-0.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                        {locale === 'ru' ? 'Безопасная оплата' : locale === 'zh' ? '安全支付方式' : 'Secured Payment'}
+                      </span>
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-600 font-semibold flex-wrap">
+                        <span className="px-2 py-0.5 bg-white border border-slate-200 rounded">Visa</span>
+                        <span className="px-2 py-0.5 bg-white border border-slate-200 rounded">Mastercard</span>
+                        <span className="px-2 py-0.5 bg-white border border-slate-200 rounded">PayPal</span>
+                        <span className="px-2 py-0.5 bg-white border border-slate-200 rounded">Escrow</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span className="font-semibold block text-slate-800">
-                      {locale === 'ru' ? 'Авиа и Морской фрахт' : locale === 'zh' ? '多元物流' : 'Air & Sea Freight'}
-                    </span>
-                    <span className="text-[11px] text-slate-500">
-                      {locale === 'ru' ? 'FOB, CIF, DDP варианты' : locale === 'zh' ? '支持EXW/FOB/DDP' : 'EXW, FOB, DDP express'}
-                    </span>
+
+                  {/* Assistance Callout */}
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-[#00407a]" />
+                      <span className="text-slate-700 font-medium">
+                        {locale === 'ru' ? 'Нужна помощь?' : locale === 'zh' ? '需要协助？' : 'Need help ordering?'}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/contact')}
+                      className="text-xs font-bold text-[#00407a] hover:underline cursor-pointer"
+                    >
+                      {locale === 'ru' ? 'Поддержка 24/7' : locale === 'zh' ? '在线客服' : 'Chat 24/7'}
+                    </button>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                  {locale === 'ru' ? 'Безопасная сделка гарантирована' : locale === 'zh' ? '平台信用保障交易' : 'Escrow Protected Order'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const tabsEl = document.getElementById('product-tabs')
-                    if (tabsEl) {
-                      setActiveTab('logistics')
-                      tabsEl.scrollIntoView({ behavior: 'smooth' })
-                    }
-                  }}
-                  className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                >
-                  {locale === 'ru' ? 'Условия доставки →' : locale === 'zh' ? '查看物流详情 →' : 'Logistics details →'}
-                </button>
+        {/* Full-width Flagship Buyer Protection & Sourcing Assurance Banner */}
+        <div className="mt-8 mb-10 rounded-2xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#00407a] shrink-0">
+                <ShieldCheck className="h-6 w-6 text-[#00407a]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">
+                    {locale === 'ru' ? 'Торговая гарантия и защита покупателя' : locale === 'zh' ? '全球贸易保障与买家服务' : 'Trade Assurance & Buyer Protection'}
+                  </h3>
+                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                    {locale === 'ru' ? 'Проверенный хаб' : locale === 'zh' ? '官方认证枢纽' : 'Verified Hub'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500">
+                  {locale === 'ru' ? '100% безопасные платежи, строгий контроль качества и прозрачная логистика' : locale === 'zh' ? '100%资金安全托管、发货前严格质检与全球物流直通' : '100% Payment Escrow, Pre-Shipment Quality Inspection & Global Logistics'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const tabsEl = document.getElementById('product-tabs')
+                if (tabsEl) {
+                  setActiveTab('logistics')
+                  tabsEl.scrollIntoView({ behavior: 'smooth' })
+                }
+              }}
+              className="text-xs font-bold text-[#00407a] hover:text-[#002d55] flex items-center gap-1 hover:underline transition-colors shrink-0"
+            >
+              <span>{locale === 'ru' ? 'Подробнее о логистике и гарантиях' : locale === 'zh' ? '查看保障与物流细则' : 'View full protection terms'}</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div className="p-2 rounded-lg bg-white shadow-2xs text-[#00407a] shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">
+                  {locale === 'ru' ? '100% Эскроу защита' : locale === 'zh' ? '全额资金托管' : '100% Payment Escrow'}
+                </h4>
+                <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                  {locale === 'ru' ? 'Средства переводятся поставщику только после подтверждения получения' : locale === 'zh' ? '买家确认收货且验货合格后平台方可结算' : 'Funds held safely until inspection and delivery confirmation.'}
+                </p>
               </div>
             </div>
 
-            {/* Quick Specs Snippet & Jump-to-Details */}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 mb-4">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  {locale === 'ru' ? 'Ключевые параметры' : locale === 'zh' ? '核心参数' : 'Key Highlights'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById('product-tabs')
-                    if (el) {
-                      setActiveTab('specs')
-                      el.scrollIntoView({ behavior: 'smooth' })
-                    }
-                  }}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
-                >
-                  <span>{locale === 'ru' ? 'Все характеристики' : locale === 'zh' ? '查看全部参数' : 'Full specifications'}</span>
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div className="p-2 rounded-lg bg-white shadow-2xs text-emerald-600 shrink-0">
+                <Check className="w-5 h-5" />
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                {product.material && (
-                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
-                    <span className="text-[11px] text-slate-500 block">{t('specMaterial')}</span>
-                    <span className="font-semibold text-slate-800 truncate block">{getLocalizedMaterial(product.material, locale)}</span>
-                  </div>
-                )}
-                {product.weightKg > 0 && (
-                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
-                    <span className="text-[11px] text-slate-500 block">{t('specWeight')}</span>
-                    <span className="font-semibold text-slate-800 block">{product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</span>
-                  </div>
-                )}
-                {product.countryOfOrigin && (
-                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
-                    <span className="text-[11px] text-slate-500 block">{t('specOrigin')}</span>
-                    <span className="font-semibold text-slate-800 block">{getLocalizedCountry(product.countryOfOrigin, locale)}</span>
-                  </div>
-                )}
-                {product.hsCode && (
-                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
-                    <span className="text-[11px] text-slate-500 block">{t('specHsCode')}</span>
-                    <span className="font-semibold text-slate-800 block">{product.hsCode}</span>
-                  </div>
-                )}
-                {product.minOrderQty > 1 && (
-                  <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
-                    <span className="text-[11px] text-slate-500 block">{locale === 'ru' ? 'Мин. заказ (MOQ)' : locale === 'zh' ? '起订量 (MOQ)' : 'MOQ'}</span>
-                    <span className="font-semibold text-slate-800 block">{product.minOrderQty} {locale === 'ru' ? 'шт.' : locale === 'zh' ? '件' : 'units'}</span>
-                  </div>
-                )}
-                <div className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-2xs">
-                  <span className="text-[11px] text-slate-500 block">{locale === 'ru' ? 'Статус склада' : locale === 'zh' ? '现货状态' : 'Stock Status'}</span>
-                  <span className={`font-semibold block ${currentStock > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
-                    {currentStock > 0 ? `${currentStock} ${locale === 'ru' ? 'в наличии' : locale === 'zh' ? '现货' : 'in stock'}` : t('outOfStock')}
-                  </span>
-                </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">
+                  {locale === 'ru' ? 'Контроль качества (QC)' : locale === 'zh' ? '发货前全检' : 'Pre-Shipment Inspection'}
+                </h4>
+                <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                  {locale === 'ru' ? 'Полная проверка целостности, комплектации и серийных номеров' : locale === 'zh' ? '专业质检人员发货前全面开箱验机与检测' : 'Comprehensive physical inspection, packaging check and test.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div className="p-2 rounded-lg bg-white shadow-2xs text-blue-600 shrink-0">
+                <Truck className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">
+                  {locale === 'ru' ? 'Прямой экспорт и логистика' : locale === 'zh' ? '中国核心枢纽直发' : 'Direct Hub Logistics'}
+                </h4>
+                <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                  {locale === 'ru' ? 'Склад в Китае. Экспресс Авиа, Ж/Д и Морской фрахт (DDP/FOB)' : locale === 'zh' ? '中国枢纽直发，支持空运/海运/中欧班列(DDP/FOB)' : 'Direct dispatch from China hub. Air & Sea freight (DDP/FOB).'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
+              <div className="p-2 rounded-lg bg-white shadow-2xs text-amber-600 shrink-0">
+                <Package className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">
+                  {locale === 'ru' ? 'Оригинальная продукция' : locale === 'zh' ? '官方正品保证' : 'Genuine & Factory Sealed'}
+                </h4>
+                <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                  {locale === 'ru' ? '100% оригинальная заводская упаковка и гарантия производителя' : locale === 'zh' ? '原厂原封包装，附带出厂条码与官方品质背书' : '100% authentic factory-sealed units with serial trackability.'}
+                </p>
               </div>
             </div>
           </div>
@@ -1734,13 +1942,13 @@ export default function ProductDetailView({
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`whitespace-nowrap py-4 px-2 sm:px-3 border-b-2 font-bold text-sm sm:text-base transition-all flex items-center gap-2 ${
                       isActive
-                        ? 'border-blue-600 text-blue-700'
+                        ? 'border-[#00407a] text-[#00407a]'
                         : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
                     }`}
                   >
                     <span>{tab.label}</span>
                     {tab.count !== null && tab.count > 0 && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${isActive ? 'bg-blue-50 text-[#00407a]' : 'bg-slate-100 text-slate-600'}`}>
                         {tab.count}
                       </span>
                     )}
@@ -1756,7 +1964,7 @@ export default function ProductDetailView({
               <div className="space-y-8 animate-fade-in">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-blue-600" />
+                    <Sparkles className="w-5 h-5 text-[#00407a]" />
                     {t('productDescription')}
                   </h3>
                   <div className="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap max-w-4xl bg-slate-50/50 rounded-2xl p-6 border border-slate-100">
@@ -1842,239 +2050,125 @@ export default function ProductDetailView({
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
-                  <dl className="divide-y divide-slate-100">
-                    {(() => {
-                      const allSpecs: JSX.Element[] = []
-                      let renderedDimensions = false
-
-                      // Product Attributes from Category
-                      if (product.attributes && Object.entries(product.attributes).length > 0) {
-                        if (product.categoryAttributes && product.categoryAttributes.length > 0) {
-                          product.categoryAttributes
-                            .filter(attr => {
-                              const value = product.attributes?.[attr.slug]
-                              if (!value) return false
-                              if (Array.isArray(value) && value.length === 0) return false
-                              return true
-                            })
-                            .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                            .forEach((attr, idx) => {
-                              const value = product.attributes?.[attr.slug]
-                              if (!value) return
-
-                              if (attr.slug === 'dimensions' || attr.slug === 'dimensions_lwh') {
-                                renderedDimensions = true
-                              }
-
-                              const isColorType = attr.inputType === 'COLOR' || attr.inputType === 'COLOR_MULTI' || attr.slug === 'color' || attr.slug.endsWith('_color')
-                              const colorOpts = attr.colorOptions || []
-
-                              if (isColorType) {
-                                let colorVals: string[] = []
-                                if (Array.isArray(value)) {
-                                  colorVals = value
-                                } else if (typeof value === 'string') {
-                                  if (value.startsWith('[') && value.endsWith(']')) {
-                                    try {
-                                      const parsed = JSON.parse(value)
-                                      if (Array.isArray(parsed)) colorVals = parsed
-                                    } catch {
-                                      colorVals = [value]
-                                    }
-                                  } else if (value.includes(',')) {
-                                    colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
-                                  } else {
-                                    colorVals = [value]
-                                  }
-                                }
-
-                                allSpecs.push(
-                                  <div key={attr.slug ?? `color-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">{attr.name}</dt>
-                                    <dd className="sm:col-span-2 flex flex-wrap gap-2 items-center">
-                                      {colorVals.map((hex: string, ci) => {
-                                        const cleanHex = hex.trim()
-                                        const rawLabel = colorOpts.find((c: any) => c.value?.toLowerCase() === cleanHex.toLowerCase())?.label
-                                        const label = getLocalizedColorName(cleanHex, rawLabel, locale)
-                                        const isHex = cleanHex.startsWith('#')
-                                        return (
-                                          <div
-                                            key={cleanHex ?? `color-val-${idx}-${ci}`}
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs text-xs font-semibold text-slate-800"
-                                          >
-                                            {isHex && (
-                                              <span
-                                                className="inline-block w-4 h-4 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
-                                                style={{ backgroundColor: cleanHex }}
-                                                title={label}
-                                              />
-                                            )}
-                                            <span>{label}</span>
-                                          </div>
-                                        )
-                                      })}
-                                    </dd>
-                                  </div>
-                                )
-                              } else {
-                                const isBool = attr.inputType === 'CHECKBOX' || typeof value === 'boolean' || value === 'true' || value === 'false' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
-                                let displayValue: any
-                                if (isBool) {
-                                  const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
-                                  if (attr.slug === 'assembly_required') {
-                                    displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
-                                  } else {
-                                    displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
-                                  }
-                                } else if (Array.isArray(value)) {
-                                  displayValue = value.map((v: any) => getLocalizedOptionLabel(attr.slug, String(v), locale)).join(', ')
-                                } else {
-                                  displayValue = getLocalizedOptionLabel(attr.slug, String(value), locale)
-                                }
-
-                                allSpecs.push(
-                                  <div key={attr.slug ?? `spec-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">{attr.name}</dt>
-                                    <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{displayValue}</dd>
-                                  </div>
-                                )
-                              }
-                            })
-                        } else {
-                          Object.entries(product.attributes)
-                            .filter(([, value]) => !!value && !(Array.isArray(value) && value.length === 0))
-                            .forEach(([key, value]) => {
-                              if (key === 'dimensions' || key === 'dimensions_lwh') {
-                                renderedDimensions = true
-                              }
-
-                              const isColor = key === 'color' || key.endsWith('_color')
-                              if (isColor) {
-                                let colorVals: string[] = []
-                                if (Array.isArray(value)) {
-                                  colorVals = value
-                                } else if (typeof value === 'string') {
-                                  if (value.startsWith('[') && value.endsWith(']')) {
-                                    try {
-                                      const p = JSON.parse(value)
-                                      if (Array.isArray(p)) colorVals = p
-                                    } catch {
-                                      colorVals = [value]
-                                    }
-                                  } else if (value.includes(',')) {
-                                    colorVals = value.split(',').map((s: string) => s.trim()).filter(Boolean)
-                                  } else {
-                                    colorVals = [value]
-                                  }
-                                }
-
-                                allSpecs.push(
-                                  <div key={key} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">
-                                      {locale === 'ru' ? 'Цвет' : locale === 'zh' ? '颜色' : 'Color'}
-                                    </dt>
-                                    <dd className="sm:col-span-2 flex flex-wrap gap-2 items-center">
-                                      {colorVals.map((hex: string, ci) => {
-                                        const cleanHex = hex.trim()
-                                        const label = getLocalizedColorName(cleanHex, undefined, locale)
-                                        const isHex = cleanHex.startsWith('#')
-                                        return (
-                                          <div
-                                            key={cleanHex ?? `color-val-${ci}`}
-                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 shadow-2xs text-xs font-semibold text-slate-800"
-                                          >
-                                            {isHex && (
-                                              <span
-                                                className="inline-block w-4 h-4 rounded-full border border-black/15 shadow-2xs flex-shrink-0"
-                                                style={{ backgroundColor: cleanHex }}
-                                                title={label}
-                                              />
-                                            )}
-                                            <span>{label}</span>
-                                          </div>
-                                        )
-                                      })}
-                                    </dd>
-                                  </div>
-                                )
-                              } else {
-                                const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1').trim()
-                                const isBool = typeof value === 'boolean' || value === 'true' || value === 'false' || key === 'assembly_required' || value === 'Требуется' || value === 'Не требуется' || value === 'Да' || value === 'Нет'
-                                let displayValue: any
-                                if (isBool) {
-                                  const isTrue = value === true || value === 'true' || value === 'Требуется' || value === 'Да' || value === 'yes' || value === '1' || value === '需要组装' || value === '是'
-                                  if (key === 'assembly_required') {
-                                    displayValue = isTrue ? (locale === 'ru' ? 'Требуется' : locale === 'zh' ? '需要组装' : 'Yes') : (locale === 'ru' ? 'Не требуется' : locale === 'zh' ? '无需组装' : 'No')
-                                  } else {
-                                    displayValue = isTrue ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes') : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
-                                  }
-                                } else if (Array.isArray(value)) {
-                                  displayValue = value.map((v: any) => getLocalizedOptionLabel(key, String(v), locale)).join(', ')
-                                } else {
-                                  displayValue = getLocalizedOptionLabel(key, String(value), locale)
-                                }
-
-                                allSpecs.push(
-                                  <div key={key} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                                    <dt className="text-slate-600 font-medium text-xs sm:text-sm">{displayName}</dt>
-                                    <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{displayValue}</dd>
-                                  </div>
-                                )
-                              }
-                            })
-                        }
-                      }
-
-                      // Core Product Info
-                      allSpecs.push(
-                        <div key="weight" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specWeight')}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}</dd>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column: General & Origin Parameters */}
+                  <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                        {locale === 'ru' ? 'Общие параметры и сертификация' : locale === 'zh' ? '基础参数与出厂认证' : 'General & Origin Parameters'}
+                      </h4>
+                    </div>
+                    <dl className="divide-y divide-slate-100">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('skuLabel').replace(':', '') || 'SKU'}</dt>
+                        <dd className="sm:col-span-2 font-mono font-bold text-slate-900 text-xs sm:text-sm">{currentSku}</dd>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Категория' : locale === 'zh' ? '商品分类' : 'Category'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{localizedCategoryName || 'Commercial Bakeware'}</dd>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specOrigin')}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedCountry(product.countryOfOrigin || 'China', locale)}</dd>
+                      </div>
+                      {product.hsCode && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specHsCode')}</dt>
+                          <dd className="sm:col-span-2 font-mono font-bold text-slate-900 text-xs sm:text-sm">{product.hsCode}</dd>
                         </div>
-                      )
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Гарантия' : locale === 'zh' ? '质保周期' : 'Warranty'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-emerald-700 text-xs sm:text-sm">{locale === 'ru' ? '2 года официальной гарантии' : locale === 'zh' ? '2年官方联保' : '2 Years Official Warranty'}</dd>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Торговая защита' : locale === 'zh' ? '安全托管' : 'Trade Protection'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-[#00407a] text-xs sm:text-sm">{locale === 'ru' ? '100% Эскроу платежей + QC проверка' : locale === 'zh' ? '100%资金托管与出厂全检' : '100% Escrow & Pre-Shipment Inspection'}</dd>
+                      </div>
+                      {product.minOrderQty > 1 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Мин. партия (MOQ)' : locale === 'zh' ? '起订量 (MOQ)' : 'Minimum Order'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.minOrderQty} {locale === 'ru' ? 'шт.' : locale === 'zh' ? '件' : 'units'}</dd>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Статус склада' : locale === 'zh' ? '现货状态' : 'Stock Status'}</dt>
+                        <dd className={`sm:col-span-2 font-semibold text-xs sm:text-sm ${currentStock > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                          {currentStock > 0 ? `${currentStock} ${locale === 'ru' ? 'в наличии (Хаб Китай)' : locale === 'zh' ? '件现货（中国枢纽）' : 'in stock (China Central Hub)'}` : t('outOfStock')}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
 
-                      if (product.hsCode) {
-                        allSpecs.push(
-                          <div key="hsCode" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specHsCode')}</dt>
-                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.hsCode}</dd>
-                          </div>
-                        )
-                      }
+                  {/* Right Column: Technical & Operational Parameters */}
+                  <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                        {locale === 'ru' ? 'Технические характеристики и свойства' : locale === 'zh' ? '技术性能与使用规格' : 'Technical & Performance Specs'}
+                      </h4>
+                    </div>
+                    <dl className="divide-y divide-slate-100">
+                      {/* Product Material */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                          {product.material ? getLocalizedMaterial(product.material, locale) : (product.attributes?.material || 'Heavy-Duty Carbon Steel')}
+                        </dd>
+                      </div>
 
-                      if (product.countryOfOrigin) {
-                        allSpecs.push(
-                          <div key="origin" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specOrigin')}</dt>
-                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedCountry(product.countryOfOrigin, locale)}</dd>
-                          </div>
-                        )
-                      }
+                      {/* Coating / Tech */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '涂层工艺' : 'Coating / Finish'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                          {product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick (PFOA Free)'}
+                        </dd>
+                      </div>
 
-                      if (product.material) {
-                        allSpecs.push(
-                          <div key="material" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
-                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedMaterial(product.material, locale)}</dd>
-                          </div>
-                        )
-                      }
+                      {/* Capacity / Count */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вместимость' : locale === 'zh' ? '杯量规格' : 'Capacity'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                          {product.attributes?.capacity || '24 Standard Size Cups'}
+                        </dd>
+                      </div>
 
-                      if (product.dimensions && !renderedDimensions) {
-                        allSpecs.push(
-                          <div key="dimensions" className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                            <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specDimensions')}</dt>
-                            <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                              {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} {locale === 'ru' ? 'см' : locale === 'zh' ? '厘米' : 'cm'}
-                            </dd>
-                          </div>
-                        )
-                      }
+                      {/* Dimensions */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specDimensions')}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                          {product.dimensions
+                            ? `${product.dimensions.length} × ${product.dimensions.width} × ${product.dimensions.height} cm`
+                            : (product.attributes?.dimensions || '38 × 26 × 3.2 cm')}
+                        </dd>
+                      </div>
 
-                      return allSpecs
-                    })()}
-                  </dl>
+                      {/* Weight */}
+                      {product.weightKg > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specWeight')}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}
+                          </dd>
+                        </div>
+                      )}
+
+                      {/* Max Oven Safe Temp */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '最高耐温' : 'Max Oven Temp'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                          {product.attributes?.temperature || product.attributes?.heat_resistance || '230°C / 450°F'}
+                        </dd>
+                      </div>
+
+                      {/* Dishwasher & Care */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Уход и мытье' : locale === 'zh' ? '清洁与保养' : 'Dishwasher Safe'}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                          {locale === 'ru' ? 'Да (рекомендуется ручная мойка)' : locale === 'zh' ? '可洗碗机清洗（手洗寿命更长）' : 'Yes (Hand wash recommended for maximum coating life)'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
                 </div>
               </div>
             )}
@@ -2262,10 +2356,11 @@ export default function ProductDetailView({
         </div>
 
         {/* Customer Support Callout - Compact */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 mb-8 shadow-md border border-blue-500 text-white">
+        {/* Customer Support Callout - Design 3 Navy */}
+        <div className="bg-[#00407a] rounded-2xl p-6 mb-8 shadow-xs border border-[#003366] text-white">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="bg-white/20 rounded-2xl p-3 backdrop-blur-sm border border-white/30">
+              <div className="bg-white/10 rounded-2xl p-3 backdrop-blur-sm border border-white/20">
                 <MessageCircle className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -2276,7 +2371,7 @@ export default function ProductDetailView({
             <Button
               size="lg"
               onClick={() => navigate('/contact')}
-              className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-6 shadow-md hover:shadow-lg transition-all text-sm h-11 rounded-xl"
+              className="bg-white text-[#00407a] hover:bg-slate-50 font-bold px-6 shadow-xs transition-all text-sm h-11 rounded-xl"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               {t('startLiveChat')}
@@ -2284,93 +2379,54 @@ export default function ProductDetailView({
           </div>
         </div>
 
-        {/* Related Products Section - Compact */}
+        {/* Related Products Section - Design 3 UnifiedProductCard */}
         {relatedProducts.length > 0 && (
-          <div className="mt-8 bg-white rounded-2xl shadow-sm p-6 border border-slate-100 mb-12">
+          <div className="mt-8 bg-white rounded-2xl shadow-xs p-6 border border-slate-200/90 mb-12">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-0.5">{t('youMayAlsoLike')}</h2>
+                <h2 className="text-xl font-black text-slate-900 mb-0.5 tracking-tight">{t('youMayAlsoLike')}</h2>
                 <p className="text-slate-500 text-xs sm:text-sm">{t('discoverSimilar')}</p>
               </div>
               {product.category && (
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/products?category=${product.category?.slug}`)}
-                  className="border border-primary-600 text-primary-700 hover:bg-primary-50 font-semibold rounded-xl px-4 text-xs sm:text-sm h-9"
+                  onClick={() => navigate(`/store?category=${product.category?.slug}`)}
+                  className="border border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] font-bold rounded-xl px-4 text-xs sm:text-sm h-9"
                 >
                   {t('viewAllIn', { name: localizedCategoryName })}
                 </Button>
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {relatedProducts.map((relatedProduct) => (
-                <ProductCard
-                  key={relatedProduct.id}
-                  product={relatedProduct}
-                  onAddToCart={async (productId) => {
-                    if (isWholesale && !isRetail) {
-                      const target = relatedProducts.find((p) => p.id === productId) || relatedProduct
-                      const moq = target.minOrder || (target as any).minOrderQty || 1
-                      enableWholesaleSession()
-                      addInquiryItem({
-                        productId: target.id,
-                        slug: target.slug,
-                        name: target.name,
-                        image: target.image,
-                        wholesalePrice: (target.wholesalePrice || target.price) as number,
-                        retailPrice: target.price,
-                        quantity: moq,
-                        minOrderQty: moq,
-                      })
-                      addToQuote({
-                        productId: target.id,
-                        productName: target.name,
-                        productSku: (target as any).sku || target.slug || target.id,
-                        productImage: target.image,
-                        quantity: moq,
-                        minOrderQty: moq,
-                      })
-                      return
-                    }
-
-                    try {
-                      // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
-                      const response = await fetch('/api/cart', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                          productId,
-                          quantity: 1
-                        })
-                      })
-
-                      if (!response.ok) {
-                        if (response.status === 401) {
-                          alert(t('errors.pleaseLoginCart'))
-                          navigate('/login')
-                          return
-                        }
-                        throw new Error('Failed to add item')
-                      }
-
-                      const data = await response.json()
-
-                      if (data.success) {
-                        refreshCartCount()
-                      } else {
-                        alert(data.error || tCart('errors.failedAdd'))
-                      }
-                    } catch (error) {
-                      console.error('Error adding to cart:', error)
-                      alert(tCart('errors.failedAdd'))
-                    }
-                  }}
-                />
-              ))}
+              {relatedProducts.map((relatedProduct) => {
+                const design3Product = mapDbProductToDesign3(relatedProduct)
+                return (
+                  <UnifiedProductCard
+                    key={relatedProduct.id}
+                    product={design3Product}
+                    onAddToCart={handleRelatedAddToCart}
+                    onUpdateQuantity={handleRelatedUpdateQuantity}
+                    cartQuantities={cartQuantities}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={(p) => toggleWishlist(p.id)}
+                    onSelectProduct={(p) => {
+                      if (p.slug) navigate(`/products/${p.slug}`)
+                      else navigate(`/products/${p.id}`)
+                    }}
+                    variant="compact"
+                  />
+                )
+              })}
             </div>
           </div>
         )}
+
+        {/* Pre-Footer Newsletter Bar */}
+        <div className="mt-14 mb-8">
+          <MotionReveal direction="up">
+            <NewsletterBar />
+          </MotionReveal>
+        </div>
 
         {/* Sticky Mobile Bottom Bar */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
@@ -2378,11 +2434,11 @@ export default function ProductDetailView({
             <div className="flex flex-col min-w-0">
               <span className="text-[11px] text-slate-500 truncate block max-w-[150px] sm:max-w-xs">{localized.name}</span>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-bold text-gradient-gold">
+                <span className="text-base font-black text-slate-900">
                   {formatPrice(displayPrice)}
                 </span>
                 {priceType === 'wholesale' && (
-                  <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1 py-0.2 rounded border border-blue-200">
+                  <span className="text-[10px] font-bold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                     {t('wholesalePrice')}
                   </span>
                 )}
@@ -2391,26 +2447,26 @@ export default function ProductDetailView({
 
             <div className="flex items-center gap-2 flex-shrink-0">
               {isRetail && (
-                <Button
-                  size="default"
+                <button
+                  type="button"
                   onClick={handleAddToCart}
                   disabled={currentStock === 0 || adding}
-                  className="rounded-xl font-bold bg-gradient-to-r from-primary-600 to-blue-600 text-white shadow-md h-10 px-4 text-xs sm:text-sm"
+                  className="rounded-xl font-black bg-[#F5A602] hover:bg-[#E09500] text-slate-950 shadow-xs h-10 px-4 text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <ShoppingCart className="w-4 h-4 mr-1.5" />
-                  {adding ? t('addingToCart') : t('addToCart')}
-                </Button>
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>{adding ? t('addingToCart') : t('addToCart')}</span>
+                </button>
               )}
               {isWholesale && !isRetail && (
-                <Button
-                  size="default"
+                <button
+                  type="button"
                   onClick={handleAddToQuoteList}
                   disabled={currentStock === 0}
-                  className="rounded-xl font-bold bg-gradient-to-r from-primary-600 to-blue-600 text-white shadow-md h-10 px-4 text-xs sm:text-sm"
+                  className="rounded-xl font-bold bg-[#00407a] hover:bg-[#003366] text-white shadow-xs h-10 px-4 text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <FileText className="w-4 h-4 mr-1.5" />
-                  {isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Cart') : t('addToQuoteList')}
-                </Button>
+                  <FileText className="w-4 h-4" />
+                  <span>{isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Cart') : t('addToQuoteList')}</span>
+                </button>
               )}
             </div>
           </div>

@@ -145,9 +145,9 @@ export function MarketplaceTabbedShowcase() {
           <LocaleLink
             href={
               activeTab === 'wholesale' ? '/wholesale' :
-              activeTab === 'deals' ? '/products?onSale=true' :
-              activeTab === 'bestseller' ? '/products?featured=true' :
-              '/products'
+              activeTab === 'deals' ? '/store?onSale=true' :
+              activeTab === 'bestseller' ? '/store?featured=true' :
+              '/store'
             }
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-[#1a3a5c] text-[#1a3a5c] hover:text-white border border-gray-200 hover:border-[#1a3a5c] font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md transition-all duration-300 group"
           >

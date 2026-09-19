@@ -90,7 +90,7 @@ export function BottomCta() {
                 className="flex flex-col sm:flex-row gap-4 justify-center"
               >
                 <LocaleLink
-                  href="/products"
+                  href="/store"
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#c9a84c] to-[#deb859] hover:from-[#deb859] hover:to-[#c9a84c] text-primary-950 font-bold px-8 py-4 rounded-xl text-base md:text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-secondary-500/30 group"
                 >
                   {t('browse')}

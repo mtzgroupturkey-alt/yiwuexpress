@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -23,8 +23,8 @@ export default function HeroBanner({
   title = "Premium Kitchenware from China",
   subtitle = "Discover quality kitchen products at wholesale prices. Direct from the world's largest commodity market.",
   backgroundImage = "/uploads/hero-kitchen.jpg",
-  ctaPrimary = { text: "Shop Now", href: "/products" },
-  ctaSecondary = { text: "View Categories", href: "/products" }
+  ctaPrimary = { text: "Shop Now", href: "/store" },
+  ctaSecondary = { text: "View Categories", href: "/store" }
 }: HeroBannerProps) {
   const [imageError, setImageError] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)

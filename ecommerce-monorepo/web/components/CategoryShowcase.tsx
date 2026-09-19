@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -22,7 +22,7 @@ export default function CategoryShowcase() {
       name: 'Cookware',
       icon: Soup,
       productCount: 245,
-      href: '/products?category=cookware',
+      href: '/store?category=cookware',
       color: 'from-orange-500 to-red-500'
     },
     {
@@ -30,7 +30,7 @@ export default function CategoryShowcase() {
       name: 'Cutlery & Knives',
       icon: UtensilsCrossed,
       productCount: 189,
-      href: '/products?category=cutlery',
+      href: '/store?category=cutlery',
       color: 'from-blue-500 to-indigo-500'
     },
     {
@@ -38,7 +38,7 @@ export default function CategoryShowcase() {
       name: 'Bakeware',
       icon: ChefHat,
       productCount: 156,
-      href: '/products?category=bakeware',
+      href: '/store?category=bakeware',
       color: 'from-pink-500 to-purple-500'
     },
     {
@@ -46,7 +46,7 @@ export default function CategoryShowcase() {
       name: 'Drinkware',
       icon: Coffee,
       productCount: 178,
-      href: '/products?category=drinkware',
+      href: '/store?category=drinkware',
       color: 'from-green-500 to-teal-500'
     },
     {
@@ -54,7 +54,7 @@ export default function CategoryShowcase() {
       name: 'Barware',
       icon: Wine,
       productCount: 92,
-      href: '/products?category=barware',
+      href: '/store?category=barware',
       color: 'from-purple-500 to-pink-500'
     },
     {
@@ -62,7 +62,7 @@ export default function CategoryShowcase() {
       name: 'Storage',
       icon: Refrigerator,
       productCount: 134,
-      href: '/products?category=storage',
+      href: '/store?category=storage',
       color: 'from-cyan-500 to-blue-500'
     }
   ]
@@ -124,7 +124,7 @@ export default function CategoryShowcase() {
         {/* View All Link */}
         <div className="text-center mt-10">
           <LocaleLink
-            href="/products"
+            href="/store"
             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-lg hover:shadow-xl"
           >
             View All Products

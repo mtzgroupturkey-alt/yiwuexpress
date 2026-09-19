@@ -83,6 +83,7 @@ async function authMiddleware(request: NextRequest) {
     '/forgot-password',
     '/reset-password',
     '/products',
+    '/store',
     '/about',
     '/contact',
     '/services',
@@ -258,6 +259,20 @@ async function authMiddleware(request: NextRequest) {
 // (user-facing localized routes) through next-intl for locale detection/redirect.
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Canonical redirect: /products -> /store (preserves query params, excludes /products/[slug])
+  if (pathname === '/products') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/store'
+    return NextResponse.redirect(url, 307)
+  }
+  const productsLocaleMatch = pathname.match(/^\/(en|ru|zh)\/products\/?$/)
+  if (productsLocaleMatch) {
+    const locale = productsLocaleMatch[1]
+    const url = request.nextUrl.clone()
+    url.pathname = `/${locale}/store`
+    return NextResponse.redirect(url, 307)
+  }
 
   // The dashboard is unlocalized (bypasses next-intl). Redirect any
   // locale-prefixed variant (e.g. /ru/dashboard) to the canonical /dashboard

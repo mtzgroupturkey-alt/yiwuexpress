@@ -58,7 +58,7 @@ export default function WishlistPage() {
           </p>
         </div>
         <LocaleLink
-          href="/products"
+          href="/store"
           className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#1a3a5c] transition"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -69,12 +69,12 @@ export default function WishlistPage() {
       {/* Wishlist Items */}
       {wishlist.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-xl">
-          <div className="text-6xl mb-4">ðŸ¤</div>
+          <div className="text-6xl mb-4">🤝</div>
           <h3 className="text-lg font-medium text-gray-700">Your favorites list is empty</h3>
           <p className="text-sm text-gray-500 mt-1 max-w-md mx-auto">
             Start adding products you love by clicking the heart icon on any product.
           </p>
-          <LocaleLink href="/products">
+          <LocaleLink href="/store">
             <Button className="mt-4 bg-[#1a3a5c] hover:bg-[#2a5a8c]">
               Browse Products
             </Button>

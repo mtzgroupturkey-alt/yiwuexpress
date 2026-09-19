@@ -77,7 +77,7 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
 
                 <div className="flex items-center gap-3">
                   <LocaleLink
-                    href="/products"
+                    href="/store"
                     onClick={onClose}
                     className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[#1a3a5c] dark:text-[#c9a84c] hover:bg-gray-100 dark:hover:bg-white/5 transition"
                   >
@@ -99,7 +99,7 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                 {/* Left Column: Primary Categories List */}
                 <div className="md:col-span-4 border-r border-gray-100 dark:border-white/10 overflow-y-auto p-3 space-y-1 bg-gray-50/40 dark:bg-white/[0.01]">
                   <LocaleLink
-                    href="/products"
+                    href="/store"
                     onClick={onClose}
                     className="flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold text-[#1a3a5c] dark:text-[#e5c158] hover:bg-white dark:hover:bg-white/5 transition group shadow-xs border border-transparent hover:border-gray-200/70 dark:hover:border-white/10"
                   >
@@ -123,7 +123,7 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                         }`}
                       >
                         <LocaleLink
-                          href={`/products?category=${cat.slug}`}
+                          href={`/store?category=${cat.slug}`}
                           onClick={onClose}
                           className="flex-1 truncate"
                         >
@@ -155,7 +155,7 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                           </p>
                         </div>
                         <LocaleLink
-                          href={`/products?category=${activeCategory.slug}`}
+                          href={`/store?category=${activeCategory.slug}`}
                           onClick={onClose}
                           className="text-xs font-bold text-[#c9a84c] hover:text-[#deb859] flex items-center gap-1 group"
                         >
@@ -170,7 +170,7 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                           {activeCategory.children.map((sub) => (
                             <LocaleLink
                               key={sub.id}
-                              href={`/products?category=${sub.slug}`}
+                              href={`/store?category=${sub.slug}`}
                               onClick={onClose}
                               className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100/90 dark:hover:bg-white/10 border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/15 transition group flex flex-col justify-between min-h-[70px]"
                             >

@@ -33,7 +33,7 @@ export default function NotFound() {
             {t('backHome')}
           </LocaleLink>
           <LocaleLink
-            href="/products"
+            href="/store"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-all"
           >
             <ShoppingBag className="w-4 h-4" />

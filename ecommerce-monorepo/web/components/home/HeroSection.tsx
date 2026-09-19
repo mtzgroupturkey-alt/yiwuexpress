@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { LocaleLink } from '@/components/LocaleLink'
@@ -25,7 +25,7 @@ export function HeroSection() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <LocaleLink
-                href="/products"
+                href="/store"
                 className="bg-[#c9a84c] text-[#1a1a2e] px-8 py-3 rounded-full font-semibold hover:bg-[#e8d48b] transition-all transform hover:scale-105 shadow-lg"
               >
                 SHOP NOW

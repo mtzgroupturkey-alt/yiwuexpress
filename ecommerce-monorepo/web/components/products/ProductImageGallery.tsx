@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, ZoomIn, ZoomOut } from 'lucide-react'
 
 interface ProductImageGalleryProps {
   images: string[]
   productName: string
+  badgeText?: string
+  className?: string
 }
 
-export function ProductImageGallery({ images, productName }: ProductImageGalleryProps) {
+export function ProductImageGallery({ images, productName, badgeText, className }: ProductImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
   const [zoomLevel, setZoomLevel] = useState<1 | 2.5>(1)
@@ -116,11 +118,16 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     }
   }, [isZoomed, goToPrevious, goToNext])
 
-  // Scroll thumbnails in standard view
-  const scrollThumbnails = (direction: 'left' | 'right') => {
+  // Scroll thumbnails
+  const scrollThumbnails = (direction: 'prev' | 'next') => {
     if (thumbnailStripRef.current) {
-      const scrollAmount = direction === 'left' ? -220 : 220
-      thumbnailStripRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
+      const scrollAmount = direction === 'prev' ? -200 : 200
+      if (isDesktop) {
+        thumbnailStripRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' })
+      } else {
+        thumbnailStripRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+      }
     }
   }
 
@@ -157,103 +164,28 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
 
   return (
     <>
-      <div className="space-y-3 select-none">
-        {/* Main Image Container */}
-        <div
-          className="relative aspect-square bg-slate-50/80 dark:bg-[#0c192c] rounded-2xl overflow-hidden group shadow-sm hover:shadow-md border border-slate-200/80 dark:border-slate-800 cursor-zoom-in transition-all flex items-center justify-center touch-pan-y"
-          onClick={() => {
-            setIsZoomed(true)
-            setZoomLevel(1)
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              setIsZoomed(true)
-            }
-          }}
-          aria-label={`Zoom photo of ${productName}`}
-        >
-          {/* Main Photo - Standard uncropped object-contain view */}
-          <img
-            src={getImageSrc(safeIndex)}
-            alt={`${productName} - Image ${safeIndex + 1}`}
-            className="object-contain w-full h-full p-2.5 transition-transform duration-300 group-hover:scale-105"
-            loading="eager"
-            onError={() => handleImageError(safeIndex)}
-          />
-
-          {/* Hover Overlay Hint & Zoom Button */}
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/90 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-gray-200 text-xs font-semibold text-gray-700 transition-all group-hover:scale-105">
-            <ZoomIn className="w-3.5 h-3.5 text-primary-600" />
-            <span className="hidden sm:inline">Click to zoom</span>
-          </div>
-
-          {/* Previous / Next Arrows in Main View */}
-          {displayImages.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goToPrevious()
-                }}
-                className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-white/90 sm:bg-white/95 hover:bg-white text-gray-800 p-2 sm:p-2.5 rounded-full shadow-md border border-gray-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100 z-10"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  goToNext()
-                }}
-                className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-white/90 sm:bg-white/95 hover:bg-white text-gray-800 p-2 sm:p-2.5 rounded-full shadow-md border border-gray-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100 z-10"
-                aria-label="Next image"
-              >
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-              </button>
-            </>
-          )}
-
-          {/* Image Counter Badge */}
-          {displayImages.length > 1 && (
-            <div className="absolute bottom-3 right-3 bg-gray-900/70 backdrop-blur-sm text-white px-2.5 py-1 rounded-md text-xs font-medium tracking-wide">
-              {safeIndex + 1} / {displayImages.length}
-            </div>
-          )}
-        </div>
-
-        {/* Mobile carousel indicator dots */}
+      <div className={`flex flex-col-reverse lg:flex-row gap-3.5 items-start select-none ${className || ''}`}>
+        {/* Thumbnails rail: vertical on desktop (left), horizontal on mobile (below) */}
         {displayImages.length > 1 && (
-          <div className="sm:hidden flex items-center justify-center gap-1.5 py-1">
-            {displayImages.map((_, dotIdx) => (
-              <button
-                key={`dot-${dotIdx}`}
-                type="button"
-                onClick={() => selectIndex(dotIdx)}
-                className={`h-1.5 rounded-full transition-all ${
-                  dotIdx === safeIndex ? 'w-5 bg-blue-600' : 'w-1.5 bg-slate-300'
-                }`}
-                aria-label={`Go to slide ${dotIdx + 1}`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Thumbnails Carousel (Shows all photos in thumbnails) */}
-        {displayImages.length > 0 && (
-          <div className="relative flex items-center group/thumbs">
-            {/* Scroll Left Button if many images */}
+          <div className="relative flex lg:flex-col items-center w-full lg:w-20 shrink-0 group/thumbs">
+            {/* Desktop Scroll Up Button */}
             {displayImages.length > 5 && (
               <button
                 type="button"
-                onClick={() => scrollThumbnails('left')}
-                className="absolute -left-3 z-10 bg-white/95 hover:bg-white text-gray-700 shadow-md border border-gray-200 p-1.5 rounded-full hover:scale-110 transition-all"
+                onClick={() => scrollThumbnails('prev')}
+                className="hidden lg:flex mb-1.5 z-10 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer items-center justify-center w-7 h-7"
+                aria-label="Scroll thumbnails up"
+              >
+                <ChevronUp className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Mobile Scroll Left Button */}
+            {displayImages.length > 4 && (
+              <button
+                type="button"
+                onClick={() => scrollThumbnails('prev')}
+                className="lg:hidden absolute -left-2 z-10 bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer"
                 aria-label="Scroll thumbnails left"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -263,7 +195,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             {/* Scrollable Thumbnails Strip */}
             <div
               ref={thumbnailStripRef}
-              className="flex items-center gap-2.5 overflow-x-auto py-1 px-0.5 scrollbar-none scroll-smooth w-full"
+              className="flex lg:flex-col items-center gap-2 overflow-x-auto lg:overflow-y-auto max-h-[540px] py-1 px-0.5 scrollbar-none scroll-smooth w-full"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {displayImages.map((image, index) => (
@@ -271,33 +203,45 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   key={`thumb-${index}`}
                   type="button"
                   onClick={() => selectIndex(index)}
-                  className={`relative flex-shrink-0 w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-xl overflow-hidden bg-white border-2 transition-all cursor-pointer ${
+                  className={`relative shrink-0 w-16 h-16 sm:w-[70px] sm:h-[70px] lg:w-20 lg:h-20 rounded-xl overflow-hidden bg-white border-2 transition-all cursor-pointer flex items-center justify-center p-1 ${
                     index === safeIndex
-                      ? 'border-primary-600 ring-2 ring-primary-500/30 shadow-sm scale-102'
-                      : 'border-gray-200 hover:border-gray-300 opacity-80 hover:opacity-100'
+                      ? 'border-[#00407a] ring-2 ring-[#00407a]/25 shadow-xs scale-102'
+                      : 'border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100'
                   }`}
                   aria-label={`View photo ${index + 1}`}
                 >
                   <img
                     src={getImageSrc(index)}
                     alt={`${productName} thumbnail ${index + 1}`}
-                    className="object-contain w-full h-full p-1"
+                    className="object-contain w-full h-full"
                     loading="lazy"
                     onError={() => handleImageError(index)}
                   />
                   {index === safeIndex && (
-                    <div className="absolute inset-0 bg-primary-600/5 pointer-events-none" />
+                    <div className="absolute inset-0 bg-[#00407a]/5 pointer-events-none" />
                   )}
                 </button>
               ))}
             </div>
 
-            {/* Scroll Right Button if many images */}
+            {/* Desktop Scroll Down Button */}
             {displayImages.length > 5 && (
               <button
                 type="button"
-                onClick={() => scrollThumbnails('right')}
-                className="absolute -right-3 z-10 bg-white/95 hover:bg-white text-gray-700 shadow-md border border-gray-200 p-1.5 rounded-full hover:scale-110 transition-all"
+                onClick={() => scrollThumbnails('next')}
+                className="hidden lg:flex mt-1.5 z-10 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer items-center justify-center w-7 h-7"
+                aria-label="Scroll thumbnails down"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Mobile Scroll Right Button */}
+            {displayImages.length > 4 && (
+              <button
+                type="button"
+                onClick={() => scrollThumbnails('next')}
+                className="lg:hidden absolute -right-2 z-10 bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer"
                 aria-label="Scroll thumbnails right"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -305,6 +249,102 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             )}
           </div>
         )}
+
+        {/* Main Image Stage */}
+        <div className="flex-1 w-full space-y-2">
+          <div
+            className="relative aspect-[4/3] sm:aspect-square lg:aspect-[4/3] min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] bg-white rounded-2xl overflow-hidden group shadow-xs hover:shadow-md border border-slate-200/90 cursor-zoom-in transition-all flex items-center justify-center touch-pan-y"
+            onClick={() => {
+              setIsZoomed(true)
+              setZoomLevel(1)
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setIsZoomed(true)
+              }
+            }}
+            aria-label={`Zoom photo of ${productName}`}
+          >
+            {/* Main Photo - Crisp object-contain */}
+            <img
+              src={getImageSrc(safeIndex)}
+              alt={`${productName} - Image ${safeIndex + 1}`}
+              className="object-contain w-full h-full p-4 sm:p-6 transition-transform duration-300 group-hover:scale-105"
+              loading="eager"
+              onError={() => handleImageError(safeIndex)}
+            />
+
+            {/* Badges on main image */}
+            {badgeText && (
+              <div className="absolute top-3.5 left-3.5 bg-[#00407a] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-xs">
+                {badgeText}
+              </div>
+            )}
+
+            {/* Hover Overlay Hint & Zoom Button */}
+            <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-full shadow-xs border border-slate-200 text-xs font-bold text-slate-700 transition-all group-hover:scale-105">
+              <ZoomIn className="w-3.5 h-3.5 text-[#00407a]" />
+              <span className="hidden sm:inline">Click to zoom</span>
+            </div>
+
+            {/* Previous / Next Arrows in Main View */}
+            {displayImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    goToPrevious()
+                  }}
+                  className="absolute left-2 sm:left-3.5 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-slate-800 p-2 sm:p-2.5 rounded-full shadow-md border border-slate-200 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100 z-10 cursor-pointer"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    goToNext()
+                  }}
+                  className="absolute right-2 sm:right-3.5 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-slate-800 p-2 sm:p-2.5 rounded-full shadow-md border border-slate-200 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100 z-10 cursor-pointer"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-700" />
+                </button>
+              </>
+            )}
+
+            {/* Image Counter Badge */}
+            {displayImages.length > 1 && (
+              <div className="absolute bottom-3.5 right-3.5 bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-md text-xs font-bold tracking-wide">
+                {safeIndex + 1} / {displayImages.length}
+              </div>
+            )}
+          </div>
+
+          {/* Mobile carousel indicator dots */}
+          {displayImages.length > 1 && (
+            <div className="sm:hidden flex items-center justify-center gap-1.5 py-1">
+              {displayImages.map((_, dotIdx) => (
+                <button
+                  key={`dot-${dotIdx}`}
+                  type="button"
+                  onClick={() => selectIndex(dotIdx)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    dotIdx === safeIndex ? 'w-5 bg-[#00407a]' : 'w-1.5 bg-slate-300'
+                  }`}
+                  aria-label={`Go to slide ${dotIdx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Lightbox Modal - Portaled to document.body to break out of all parent stacking contexts */}

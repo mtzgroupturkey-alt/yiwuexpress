@@ -247,7 +247,7 @@ export default function CartPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/products')}
+            onClick={() => navigate('/store')}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             {t('continueShopping')}
@@ -273,7 +273,7 @@ export default function CartPage() {
               <p className="text-gray-600 mb-6">
                 {t('addSomeProducts')}
               </p>
-              <Button onClick={() => navigate('/products')}>
+              <Button onClick={() => navigate('/store')}>
                 {t('startShopping')}
               </Button>
             </div>

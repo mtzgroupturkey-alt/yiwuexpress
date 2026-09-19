@@ -201,8 +201,8 @@ export function ListingPageTemplate() {
       pageTitle={category}
       pageDescription={`Browse ${totalItems} items in ${category}`}
       breadcrumbs={[
-        { name: 'Shop', href: '/products' },
-        { name: category, href: `/products?category=${category.toLowerCase()}` }
+        { name: 'Shop', href: '/store' },
+        { name: category, href: `/store?category=${category.toLowerCase()}` }
       ]}
       backgroundImage="/images/category-bg.jpg"
     >

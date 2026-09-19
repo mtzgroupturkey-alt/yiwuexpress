@@ -91,7 +91,7 @@ export function CategoryGrid({ variant = 'featured' }: CategoryGridProps) {
           </div>
 
           <LocaleLink
-            href="/products"
+            href="/store"
             className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#0055A4] hover:text-[#003E7E] dark:text-blue-400 group flex-shrink-0 transition-colors"
           >
             <span>{t('viewAll')}</span>

@@ -1,7 +1,7 @@
 // Row 1: Top Menu - Static Pages ONLY
 export const topMenuItems = [
   { name: 'HOME', path: '/', icon: null, hasDropdown: false },
-  { name: 'SHOP', path: '/products', hasDropdown: true, icon: null },
+  { name: 'SHOP', path: '/store', hasDropdown: true, icon: null },
   { name: 'SERVICES', path: '/services', icon: null, hasDropdown: false },
   { name: 'ABOUT', path: '/about', icon: null, hasDropdown: false },
   { name: 'CONTACT', path: '/contact', icon: null, hasDropdown: false },

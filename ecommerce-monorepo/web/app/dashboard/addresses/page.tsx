@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { MapPin, Plus, Edit, Trash2, ArrowLeft, X, Check, Loader2 } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash2, X, Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { useTranslations } from 'next-intl'
+import { Container } from '@/components/design-system/Container'
 
 interface Address {
   id: string
@@ -298,138 +299,149 @@ export default function AddressesPage() {
 
   if (!isInitialized || authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-[420px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">{t('loadingAddresses')}</p>
+          <div className="w-10 h-10 border-4 border-slate-200 rounded-full animate-spin" style={{ borderTopColor: '#00407a' }}></div>
+          <p className="text-xs text-slate-500 font-medium">{t('loadingAddresses')}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Container className="py-6 sm:py-8 space-y-6">
       {/* Page Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-gray-500 hover:text-[#1a3a5c]">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-[#1a3a5c]">{ta('title')}</h1>
-          </div>
-          {!isAdding && (
-            <button
-              onClick={() => setIsAdding(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              {ta('addAddress')}
-            </button>
-          )}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-[#00407a]" />
+            {ta('title')}
+            {addresses.length > 0 && (
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00407a] border border-blue-200">
+                {addresses.length}
+              </span>
+            )}
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Manage your verified shipping destinations and customs delivery addresses
+          </p>
         </div>
+
+        {!isAdding && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#00407a] hover:bg-[#003366] text-white rounded-xl font-bold text-xs shadow-2xs transition-colors self-start sm:self-auto cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            {ta('addAddress')}
+          </button>
+        )}
       </div>
 
+      {/* Main Content Area */}
       <div>
         {/* Add/Edit Form */}
         {isAdding && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200/80 p-5 sm:p-6 mb-6">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+              <h2 className="text-base font-black text-slate-900 tracking-tight">
                 {editingId ? ta('editAddress') : ta('addNewAddress')}
               </h2>
-              <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
+              <button
+                onClick={resetForm}
+                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('fullName')}</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('fullName')}</label>
                   <input
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => setFormData((p) => ({ ...p, fullName: e.target.value }))}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('phone')}</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('phone')}</label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{ta('addressLine1')}</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('addressLine1')}</label>
                 <input
                   type="text"
                   value={formData.addressLine1}
                   onChange={(e) => setFormData((p) => ({ ...p, addressLine1: e.target.value }))}
                   required
                   placeholder={ta('addressLine1Placeholder')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{ta('addressLine2')}</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('addressLine2')}</label>
                 <input
                   type="text"
                   value={formData.addressLine2}
                   onChange={(e) => setFormData((p) => ({ ...p, addressLine2: e.target.value }))}
                   placeholder={ta('addressLine2Placeholder')}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('city')}</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('city')}</label>
                   <input
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('state')}</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('state')}</label>
                   <input
                     type="text"
                     value={formData.state}
                     onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('postalCode')}</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('postalCode')}</label>
                   <input
                     type="text"
                     value={formData.postalCode}
                     onChange={(e) => setFormData((p) => ({ ...p, postalCode: e.target.value }))}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{ta('country')}</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('country')}</label>
                   <select
                     value={formData.country}
                     onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all bg-white"
                   >
                     <option value="">{ta('selectCountry')}</option>
                     {COUNTRIES.map((c) => (
@@ -441,24 +453,24 @@ export default function AddressesPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
                   id="isDefault"
                   checked={formData.isDefault}
                   onChange={(e) => setFormData((p) => ({ ...p, isDefault: e.target.checked }))}
-                  className="w-4 h-4 text-[#1a3a5c] border-gray-300 rounded focus:ring-[#1a3a5c]"
+                  className="w-4 h-4 text-[#00407a] border-slate-300 rounded focus:ring-[#00407a] cursor-pointer"
                 />
-                <label htmlFor="isDefault" className="text-sm text-gray-700">
+                <label htmlFor="isDefault" className="text-xs font-bold text-slate-700 cursor-pointer">
                   {ta('setAsDefault')}
                 </label>
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors disabled:opacity-60"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-[#00407a] text-white rounded-xl font-bold text-xs hover:bg-[#003366] transition-colors disabled:opacity-60 shadow-2xs cursor-pointer"
                 >
                   {saving ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -471,7 +483,7 @@ export default function AddressesPage() {
                   type="button"
                   onClick={resetForm}
                   disabled={saving}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-5 py-2.5 border border-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   {ta('cancel')}
                 </button>
@@ -480,30 +492,29 @@ export default function AddressesPage() {
           </div>
         )}
 
-        {/* Addresses List */}
+        {/* Address Cards List */}
         {listLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-3" />
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-100 rounded w-3/4" />
-                  <div className="h-3 bg-gray-100 rounded w-1/2" />
-                </div>
+              <div key={i} className="animate-pulse bg-white rounded-2xl p-6 border border-slate-200/80 shadow-2xs space-y-3">
+                <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                <div className="h-3 bg-slate-200 rounded w-2/3"></div>
+                <div className="h-3 bg-slate-200 rounded w-1/2"></div>
               </div>
             ))}
           </div>
         ) : addresses.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MapPin className="w-8 h-8 text-gray-400" />
+          <div className="bg-white rounded-2xl shadow-2xs border border-slate-200/80 p-8 sm:p-12 text-center flex flex-col items-center justify-center">
+            <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400">
+              <MapPin className="w-7 h-7" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">{ta('noAddresses')}</h3>
-            <p className="text-gray-500 mb-6">{ta('noAddressesDesc')}</p>
+            <h3 className="text-sm font-bold text-slate-900 mb-1">{ta('noAddresses')}</h3>
+            <p className="text-xs text-slate-500 mb-5 max-w-sm">{ta('noAddressesDesc')}</p>
             <button
               onClick={() => setIsAdding(true)}
-              className="px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00407a] text-white font-bold text-xs rounded-xl hover:bg-[#003366] transition-colors shadow-2xs cursor-pointer"
             >
+              <Plus className="w-4 h-4" />
               {ta('addFirstAddress')}
             </button>
           </div>
@@ -512,44 +523,50 @@ export default function AddressesPage() {
             {addresses.map((address) => (
               <div
                 key={address.id}
-                className={`bg-white rounded-xl shadow-sm border p-6 ${
-                  address.isDefault ? 'border-[#1a3a5c]' : 'border-gray-100'
+                className={`bg-white rounded-2xl shadow-2xs border p-5 sm:p-6 transition-all duration-200 ${
+                  address.isDefault
+                    ? 'border-[#00407a] ring-1 ring-[#00407a]/20'
+                    : 'border-slate-200/80 hover:border-slate-300'
                 }`}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-[#1a3a5c]" />
-                    <span className="font-medium text-gray-900">{address.fullName}</span>
-                    {address.label && (
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
-                        {address.label}
-                      </span>
-                    )}
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-sm text-slate-900">{address.fullName}</span>
+                      {address.label && (
+                        <span className="ml-2 text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">
+                          {address.label}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {address.isDefault && (
-                    <span className="px-2 py-1 bg-[#1a3a5c] text-white text-xs rounded-full">
+                    <span className="px-2.5 py-0.5 bg-[#00407a] text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider shadow-2xs">
                       {ta('default')}
                     </span>
                   )}
                 </div>
 
-                <div className="text-sm text-gray-600 space-y-1 mb-4">
-                  <p>{address.addressLine1}</p>
+                <div className="text-xs text-slate-600 space-y-1 mb-4 pl-10">
+                  <p className="font-medium text-slate-800">{address.addressLine1}</p>
                   {address.addressLine2 && <p>{address.addressLine2}</p>}
                   <p>
                     {address.city}
                     {address.state ? `, ${address.state}` : ''} {address.postalCode}
                   </p>
-                  <p>{countryName(address.country)}</p>
-                  <p className="text-gray-500">{address.phone}</p>
+                  <p className="font-semibold text-slate-700">{countryName(address.country)}</p>
+                  <p className="text-slate-400 font-mono text-[11px] pt-0.5">{address.phone}</p>
                 </div>
 
-                <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2 pt-3 border-t border-slate-100 pl-10">
                   <button
                     onClick={() => handleEdit(address)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#1a3a5c] hover:bg-gray-50 rounded transition-colors"
+                    className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-[#00407a] hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                   >
-                    <Edit className="w-4 h-4" />
+                    <Edit className="w-3.5 h-3.5" />
                     {ta('edit')}
                   </button>
 
@@ -557,12 +574,12 @@ export default function AddressesPage() {
                     <button
                       onClick={() => handleSetDefault(address.id)}
                       disabled={settingDefault === address.id}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                     >
                       {settingDefault === address.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
-                        <Check className="w-4 h-4" />
+                        <Check className="w-3.5 h-3.5" />
                       )}
                       {ta('setDefault')}
                     </button>
@@ -571,12 +588,12 @@ export default function AddressesPage() {
                   <button
                     onClick={() => handleDelete(address.id)}
                     disabled={deleting === address.id}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 ml-auto cursor-pointer"
                   >
                     {deleting === address.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     )}
                     {ta('delete')}
                   </button>
@@ -586,6 +603,6 @@ export default function AddressesPage() {
           </div>
         )}
       </div>
-    </div>
+    </Container>
   )
 }

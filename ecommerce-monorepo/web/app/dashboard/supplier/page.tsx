@@ -75,7 +75,7 @@ export default function SupplierDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
+          <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#00407a' }}></div>
           <p className="text-sm text-gray-500">Loading supplier dashboard...</p>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function SupplierDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1a3a5c] to-[#2a5a8c] text-white">
+      <div className="bg-gradient-to-r from-[#00407a] to-[#003366] text-white">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
@@ -154,7 +154,7 @@ export default function SupplierDashboardPage() {
             </div>
             <Link
               href="/"
-              className="px-4 py-2 text-sm font-medium bg-white text-[#1a3a5c] rounded-lg hover:bg-gray-100 transition-colors"
+              className="px-4 py-2 text-sm font-medium bg-white text-[#00407a] rounded-lg hover:bg-gray-100 transition-colors"
             >
               Back to Site
             </Link>
@@ -210,7 +210,7 @@ export default function SupplierDashboardPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#1a3a5c]/20 transition-all group"
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#00407a]/20 transition-all group"
               >
                 <div className="flex items-start gap-4">
                   <div className={`${item.color} p-3 rounded-xl group-hover:scale-110 transition-transform`}>
@@ -218,11 +218,11 @@ export default function SupplierDashboardPage() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 group-hover:text-[#1a3a5c]">
+                      <h3 className="font-semibold text-gray-900 group-hover:text-[#00407a]">
                         {item.label}
                       </h3>
                       {item.count !== undefined && item.count > 0 && (
-                        <span className="text-xs font-bold bg-[#1a3a5c] text-white rounded-full px-2 py-1">
+                        <span className="text-xs font-bold bg-[#00407a] text-white rounded-full px-2 py-1">
                           {item.count}
                         </span>
                       )}

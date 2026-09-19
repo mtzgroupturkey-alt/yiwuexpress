@@ -46,6 +46,13 @@ function ProductsPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+
+  // Redirect to canonical /store route with all query params preserved
+  useEffect(() => {
+    const params = searchParams.toString()
+    router.replace(params ? `/store?${params}` : '/store')
+  }, [router, searchParams])
+
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')

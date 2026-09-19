@@ -227,7 +227,7 @@ export function ModernHeroSlider() {
                 className="flex flex-wrap gap-4"
               >
                 <LocaleLink
-                  href="/products"
+                  href="/store"
                   className="group relative bg-gradient-to-r from-[#c9a84c] to-[#e8d48b] text-[#1a1a2e] px-8 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-[#c9a84c]/50 transition-all duration-300 overflow-hidden"
                 >
                   <span className="relative z-10 flex items-center gap-2">

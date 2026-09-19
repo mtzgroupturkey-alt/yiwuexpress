@@ -1,4 +1,4 @@
-﻿import { SharedLayout } from '@/components/layout/SharedLayout'
+import { SharedLayout } from '@/components/layout/SharedLayout'
 import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
@@ -15,7 +15,7 @@ const sections = [
       { nameKey: 'home', href: '/' },
       { nameKey: 'about', href: '/about' },
       { nameKey: 'services', href: '/services' },
-      { nameKey: 'products', href: '/products' },
+      { nameKey: 'products', href: '/store' },
       { nameKey: 'network', href: '/network' },
     ],
   },

@@ -21,7 +21,7 @@ import { WholesaleInquirySlideover } from '@/components/wholesale/WholesaleInqui
 // Nav items defined outside the component so they never cause remounts
 const NAV_ITEMS = [
   { name: 'HOME', href: '/' },
-  { name: 'SHOP', href: '/products' },
+  { name: 'SHOP', href: '/store' },
   { name: 'SERVICES', href: '/services' },
   { name: 'ABOUT', href: '/about' },
   { name: 'CONTACT', href: '/contact' },
