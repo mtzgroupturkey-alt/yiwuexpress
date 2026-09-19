@@ -1442,7 +1442,10 @@
       "statusViewed": "Просмотрено",
       "statusAccepted": "Принято",
       "statusRejected": "Отклонено",
-      "statusExpired": "Истекло"
+      "statusExpired": "Истекло",
+      "statusUnder_review": "На рассмотрении",
+      "statusPriced": "Оценено",
+      "statusCancelled": "Отменено"
     }
   },
   "Checkout": {

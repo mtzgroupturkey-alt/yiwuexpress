@@ -113,11 +113,14 @@ export default function DashboardQuotesPage() {
 
   const statusStyles: Record<string, { bg: string; text: string; border: string }> = {
     PENDING: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+    UNDER_REVIEW: { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
+    PRICED: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
     SENT: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
     VIEWED: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
     ACCEPTED: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
     REJECTED: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
     EXPIRED: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
+    CANCELLED: { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' },
   }
 
   const getStatusBadge = (status: string) => {
@@ -127,7 +130,12 @@ export default function DashboardQuotesPage() {
       border: 'border-slate-200',
     }
     const statusKey = status.toLowerCase()
-    const label = ['pending', 'sent', 'viewed', 'accepted', 'rejected', 'expired'].includes(statusKey) ? tq(`status${status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}` as any) : status
+    
+    // Convert under_review to Under_review so tq('statusUnder_review') works
+    const capKey = statusKey.charAt(0).toUpperCase() + statusKey.slice(1)
+    const validKeys = ['pending', 'under_review', 'priced', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'cancelled']
+    
+    const label = validKeys.includes(statusKey) ? tq(`status${capKey}` as any) : status
     return (
       <span
         className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${s.bg} ${s.text} ${s.border}`}

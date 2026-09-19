@@ -1459,7 +1459,10 @@
       "statusViewed": "已查看",
       "statusAccepted": "已接受",
       "statusRejected": "已拒绝",
-      "statusExpired": "已过期"
+      "statusExpired": "已过期",
+      "statusUnder_review": "审核中",
+      "statusPriced": "已报价",
+      "statusCancelled": "已取消"
     }
   },
   "Checkout": {
