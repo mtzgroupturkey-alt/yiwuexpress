@@ -590,6 +590,7 @@ model OrderItem {
   productSku        String
   productImage      String?
   variantAttributes Json?
+  selectedOptions   Json?
   quantity          Int
   price             Float
   total             Float
@@ -636,7 +637,8 @@ model CartItem {
   id        String          @id @default(cuid())
   cartId    String
   productId String
-  variantId String?
+  variantId       String?
+  selectedOptions Json?
   mode      String          @default("RETAIL") // "RETAIL" | "WHOLESALE"
   quantity  Int             @default(1)
   createdAt DateTime        @default(now())
@@ -2231,6 +2233,7 @@ model ProductQuoteItem {
   productName           String
   productSku            String
   productImage          String?
+  selectedOptions       Json?
   
   quantity              Int                       @default(1)
   
