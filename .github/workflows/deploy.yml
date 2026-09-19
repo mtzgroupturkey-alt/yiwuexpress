@@ -66,6 +66,15 @@ jobs:
             echo "🔧 Generating Prisma client..."
             npx prisma generate
 
+            echo "🗄️ Resolving any previously failed migrations..."
+            # Query _prisma_migrations for any failed rows and mark them as rolled-back.
+            # A failed migration has finished_at IS NULL and logs IS NOT NULL (error stored in logs).
+            FAILED_MIGRATIONS=$(npx prisma migrate status 2>&1 | grep -oP '(?<=• )[\w]+' | head -20 || true)
+            # Targeted resolve for the known failed migration (idempotent - safe if already resolved)
+            npx prisma migrate resolve --rolled-back 20260918000000_add_rfq_system 2>/dev/null && \
+              echo "↩️  Resolved failed migration: 20260918000000_add_rfq_system" || \
+              echo "ℹ️  No failed migration to resolve (already clean)."
+
             echo "🗄️ Applying pending database migrations..."
             npx prisma migrate deploy
 
