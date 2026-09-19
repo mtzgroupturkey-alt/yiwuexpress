@@ -151,7 +151,7 @@ END $$;
 
 DO $$ BEGIN
   ALTER TABLE "product_quotes" ADD CONSTRAINT "product_quotes_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION
   WHEN duplicate_object THEN NULL;
 END $$;
