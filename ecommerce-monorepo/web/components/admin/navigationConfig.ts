@@ -143,7 +143,8 @@ export const navigationConfig: NavGroup[] = [
       { label: 'Countries', translationKey: 'countries', href: '/admin/countries', icon: Globe2 },
       { label: 'Currencies', translationKey: 'currencies', href: '/admin/currencies', icon: DollarSign },
       { label: 'Shipping Methods', translationKey: 'shippingMethods', href: '/admin/settings/shipping-methods', icon: Truck },
-      { label: 'Users & Permissions', translationKey: 'usersPermissions', href: '/admin/settings/permissions', icon: Shield },
+      { label: 'Users', translationKey: 'users', href: '/admin/users', icon: Users },
+      { label: 'Roles & Permissions', translationKey: 'usersPermissions', href: '/admin/settings/permissions', icon: Shield },
       { label: 'System', translationKey: 'system', href: '/admin/settings/system', icon: Settings },
       { label: 'Deployment', translationKey: 'deployment', href: '/admin/deployment', icon: Server },
     ]
