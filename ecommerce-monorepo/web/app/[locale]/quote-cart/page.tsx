@@ -58,9 +58,9 @@ export default function QuoteCartPage() {
     }
   }, [user])
 
-  const handleQuantityChange = (productId: string, newQty: number, moq: number) => {
+  const handleQuantityChange = (productId: string, newQty: number, moq: number, selectedOptions?: Record<string, string> | null) => {
     const validQty = Math.max(moq || 1, newQty)
-    updateQuantity(productId, validQty)
+    updateQuantity(productId, validQty, selectedOptions)
   }
 
   const handleSubmitQuote = async (e: React.FormEvent) => {
@@ -81,9 +81,14 @@ export default function QuoteCartPage() {
       const payload = {
         items: items.map((i) => ({
           productId: i.productId,
+          productName: i.productName,
+          productSku: i.productSku,
+          productImage: i.productImage,
           quantity: i.quantity,
           targetPrice: i.targetPrice ? Number(i.targetPrice) : null,
           customerNotes: i.customerNotes || null,
+          selectedOptions: i.selectedOptions || null,
+          variantId: i.variantId || null,
         })),
         guestInfo,
         shipping,
@@ -186,104 +191,140 @@ export default function QuoteCartPage() {
                 </div>
 
                 <div className="divide-y divide-gray-100">
-                  {items.map((item) => (
-                    <div key={item.productId} className="py-4 flex flex-col sm:flex-row gap-4">
-                      {/* Product Thumbnail */}
-                      <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden relative flex-shrink-0 border border-gray-200">
-                        <ProductImage
-                          src={item.productImage}
-                          alt={item.productName || 'Product image'}
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                        />
-                      </div>
+                  {items.map((item, idx) => {
+                    const itemKey = item.variantId
+                      ? `${item.productId}-${item.variantId}`
+                      : `${item.productId}-${JSON.stringify(item.selectedOptions || {})}-${idx}`
 
-                      {/* Line Details */}
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-bold text-gray-900 text-sm">{item.productName}</h3>
-                            <p className="text-[11px] font-mono text-gray-500">SKU: {item.productSku}</p>
-                            <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-0.5 inline-block">
-                              {t('moq')}: {item.minOrderQty}
-                            </span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => removeFromQuote(item.productId)}
-                            className="text-gray-400 hover:text-rose-600 transition p-1"
-                            title="Remove item"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-
-                        {/* Controls Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                          {/* Quantity Stepper */}
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                              {t('quantity')}
-                            </label>
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handleQuantityChange(item.productId, item.quantity - 1, item.minOrderQty)}
-                                className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-xs font-bold"
-                              >
-                                <Minus size={13} />
-                              </button>
-                              <input
-                                type="number"
-                                min={item.minOrderQty}
-                                value={item.quantity}
-                                onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value) || item.minOrderQty, item.minOrderQty)}
-                                className="w-20 px-2 py-1 text-center font-bold font-mono text-xs border border-gray-300 rounded-lg"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleQuantityChange(item.productId, item.quantity + 1, item.minOrderQty)}
-                                className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-xs font-bold"
-                              >
-                                <Plus size={13} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Target Unit Price (Optional) */}
-                          <div>
-                            <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                              {t('targetUnitPrice')}
-                            </label>
-                            <div className="relative">
-                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
-                              <input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                value={item.targetPrice ?? ''}
-                                onChange={(e) => updateItem(item.productId, { targetPrice: parseFloat(e.target.value) || null })}
-                                className="w-full pl-6 pr-2 py-1 bg-white border border-gray-300 rounded-lg text-xs font-mono"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Line Notes */}
-                        <div>
-                          <input
-                            type="text"
-                            placeholder={t('notesItemPlaceholder')}
-                            value={item.customerNotes || ''}
-                            onChange={(e) => updateItem(item.productId, { customerNotes: e.target.value })}
-                            className="w-full px-3 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-400"
+                    return (
+                      <div key={itemKey} className="py-4 flex flex-col sm:flex-row gap-4">
+                        {/* Product Thumbnail */}
+                        <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden relative flex-shrink-0 border border-gray-200">
+                          <ProductImage
+                            src={item.productImage}
+                            alt={item.productName || 'Product image'}
+                            fill
+                            sizes="80px"
+                            className="object-cover"
                           />
                         </div>
+
+                        {/* Line Details */}
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <h3 className="font-bold text-gray-900 text-sm">{item.productName}</h3>
+                              <p className="text-[11px] font-mono text-gray-500">SKU: {item.productSku}</p>
+                              {(() => {
+                                let opts = item.selectedOptions
+                                if (typeof opts === 'string') {
+                                  try { opts = JSON.parse(opts) } catch { opts = null }
+                                }
+                                if (!opts || typeof opts !== 'object' || Object.keys(opts).length === 0) return null
+                                return (
+                                  <div className="flex flex-wrap gap-1 mt-1.5">
+                                    {Object.entries(opts).map(([key, val]) => {
+                                      const isHex = typeof val === 'string' && val.startsWith('#')
+                                      const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
+                                      return (
+                                        <span
+                                          key={key}
+                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 text-[11px] font-medium border border-blue-200"
+                                        >
+                                          <span className="text-blue-500 font-semibold">{label}:</span>
+                                          {isHex && (
+                                            <span
+                                              className="w-2.5 h-2.5 rounded-full border border-blue-300 inline-block shrink-0"
+                                              style={{ backgroundColor: String(val) }}
+                                            />
+                                          )}
+                                          <span>{String(val)}</span>
+                                        </span>
+                                      )
+                                    })}
+                                  </div>
+                                )
+                              })()}
+                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-1.5 inline-block">
+                                {t('moq')}: {item.minOrderQty}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => removeFromQuote(item.productId, item.selectedOptions)}
+                              className="text-gray-400 hover:text-rose-600 transition p-1"
+                              title="Remove item"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+
+                          {/* Controls Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            {/* Quantity Stepper */}
+                            <div>
+                              <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                                {t('quantity')}
+                              </label>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuantityChange(item.productId, item.quantity - 1, item.minOrderQty, item.selectedOptions)}
+                                  className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-xs font-bold"
+                                >
+                                  <Minus size={13} />
+                                </button>
+                                <input
+                                  type="number"
+                                  min={item.minOrderQty}
+                                  value={item.quantity}
+                                  onChange={(e) => handleQuantityChange(item.productId, parseInt(e.target.value) || item.minOrderQty, item.minOrderQty, item.selectedOptions)}
+                                  className="w-20 px-2 py-1 text-center font-bold font-mono text-xs border border-gray-300 rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleQuantityChange(item.productId, item.quantity + 1, item.minOrderQty, item.selectedOptions)}
+                                  className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 text-xs font-bold"
+                                >
+                                  <Plus size={13} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Target Unit Price (Optional) */}
+                            <div>
+                              <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                                {t('targetUnitPrice')}
+                              </label>
+                              <div className="relative">
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">$</span>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  value={item.targetPrice ?? ''}
+                                  onChange={(e) => updateItem(item.productId, { targetPrice: parseFloat(e.target.value) || null }, item.selectedOptions)}
+                                  className="w-full pl-6 pr-2 py-1 bg-white border border-gray-300 rounded-lg text-xs font-mono"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Line Notes */}
+                          <div>
+                            <input
+                              type="text"
+                              placeholder={t('notesItemPlaceholder')}
+                              value={item.customerNotes || ''}
+                              onChange={(e) => updateItem(item.productId, { customerNotes: e.target.value }, item.selectedOptions)}
+                              className="w-full px-3 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 placeholder-gray-400"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 

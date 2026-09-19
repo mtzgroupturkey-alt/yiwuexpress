@@ -138,9 +138,9 @@ export async function POST(req: NextRequest) {
               const product = productMap.get(item.productId)!;
               return {
                 productId: product.id,
-                productName: product.name,
-                productSku: product.sku,
-                productImage: product.images?.[0] || null,
+                productName: item.productName || product.name,
+                productSku: item.productSku || product.sku,
+                productImage: item.productImage || product.images?.[0] || null,
                 quantity: item.quantity,
                 unitPriceRequested: item.targetPrice ? parseFloat(item.targetPrice) : null,
                 customerNotes: item.customerNotes || null,

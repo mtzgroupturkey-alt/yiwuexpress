@@ -24,6 +24,7 @@ interface QuoteItem {
   leadTimeDays: number
   customerNotes: string | null
   adminNotes: string | null
+  selectedOptions?: any
 }
 
 interface QuoteData {
@@ -398,6 +399,36 @@ export default function PublicQuoteViewPage({ params }: { params: { token: strin
                     <td className="py-3.5 px-3">
                       <p className="font-bold text-gray-900">{item.productName}</p>
                       <p className="font-mono text-[10px] text-gray-500">SKU: {item.productSku}</p>
+                      {(() => {
+                        let opts = item.selectedOptions
+                        if (typeof opts === 'string') {
+                          try { opts = JSON.parse(opts) } catch { opts = null }
+                        }
+                        if (!opts || typeof opts !== 'object' || Object.keys(opts).length === 0) return null
+                        return (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {Object.entries(opts).map(([key, val]) => {
+                              const isHex = typeof val === 'string' && val.startsWith('#')
+                              const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
+                              return (
+                                <span
+                                  key={key}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[10px] font-medium border border-blue-200"
+                                >
+                                  <span className="text-blue-500">{label}:</span>
+                                  {isHex && (
+                                    <span
+                                      className="w-2 h-2 rounded-full border border-blue-300 inline-block shrink-0"
+                                      style={{ backgroundColor: String(val) }}
+                                    />
+                                  )}
+                                  <span>{String(val)}</span>
+                                </span>
+                              )
+                            })}
+                          </div>
+                        )
+                      })()}
                       {item.adminNotes && (
                         <p className="text-[11px] text-blue-700 mt-0.5">Note: {item.adminNotes}</p>
                       )}

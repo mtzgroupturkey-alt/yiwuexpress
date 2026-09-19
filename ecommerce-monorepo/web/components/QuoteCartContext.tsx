@@ -15,6 +15,15 @@ export interface QuoteCartItem {
   variantId?: string | null
 }
 
+function areOptionsEqual(a?: Record<string, string> | null, b?: Record<string, string> | null) {
+  if (!a && !b) return true
+  if (!a || !b) return false
+  const keysA = Object.keys(a).sort()
+  const keysB = Object.keys(b).sort()
+  if (keysA.length !== keysB.length) return false
+  return keysA.every((k) => a[k] === b[k])
+}
+
 interface QuoteCartContextType {
   items: QuoteCartItem[]
   quoteCount: number
@@ -31,9 +40,9 @@ interface QuoteCartContextType {
     selectedOptions?: Record<string, string> | null
     variantId?: string | null
   }) => void
-  updateQuantity: (productId: string, quantity: number) => void
-  updateItem: (productId: string, updates: Partial<QuoteCartItem>) => void
-  removeFromQuote: (productId: string) => void
+  updateQuantity: (productId: string, quantity: number, selectedOptions?: Record<string, string> | null) => void
+  updateItem: (productId: string, updates: Partial<QuoteCartItem>, selectedOptions?: Record<string, string> | null) => void
+  removeFromQuote: (productId: string, selectedOptions?: Record<string, string> | null) => void
   clearQuoteCart: () => void
 }
 
@@ -85,15 +94,6 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     variantId?: string | null
   }) => {
     setItems((prev) => {
-      const areOptionsEqual = (a?: Record<string, string> | null, b?: Record<string, string> | null) => {
-        if (!a && !b) return true
-        if (!a || !b) return false
-        const keysA = Object.keys(a).sort()
-        const keysB = Object.keys(b).sort()
-        if (keysA.length !== keysB.length) return false
-        return keysA.every((k) => a[k] === b[k])
-      }
-
       const existingIndex = prev.findIndex(
         (i) => i.productId === newItem.productId && areOptionsEqual(i.selectedOptions, newItem.selectedOptions)
       )
@@ -130,10 +130,11 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number, selectedOptions?: Record<string, string> | null) => {
     setItems((prev) =>
       prev.map((item) => {
-        if (item.productId === productId) {
+        const matchesOptions = selectedOptions === undefined || areOptionsEqual(item.selectedOptions, selectedOptions)
+        if (item.productId === productId && matchesOptions) {
           const validQty = Math.max(1, quantity)
           return { ...item, quantity: validQty }
         }
@@ -142,10 +143,11 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
-  const updateItem = useCallback((productId: string, updates: Partial<QuoteCartItem>) => {
+  const updateItem = useCallback((productId: string, updates: Partial<QuoteCartItem>, selectedOptions?: Record<string, string> | null) => {
     setItems((prev) =>
       prev.map((item) => {
-        if (item.productId === productId) {
+        const matchesOptions = selectedOptions === undefined || areOptionsEqual(item.selectedOptions, selectedOptions)
+        if (item.productId === productId && matchesOptions) {
           return { ...item, ...updates }
         }
         return item
@@ -153,8 +155,14 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
-  const removeFromQuote = useCallback((productId: string) => {
-    setItems((prev) => prev.filter((item) => item.productId !== productId))
+  const removeFromQuote = useCallback((productId: string, selectedOptions?: Record<string, string> | null) => {
+    setItems((prev) => prev.filter((item) => {
+      if (item.productId !== productId) return true
+      if (selectedOptions !== undefined) {
+        return !areOptionsEqual(item.selectedOptions, selectedOptions)
+      }
+      return false
+    }))
   }, [])
 
   const clearQuoteCart = useCallback(() => {
