@@ -4,10 +4,13 @@ import { useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { NextIntlClientProvider } from 'next-intl'
 import { useAuth } from '@/hooks/useAuth'
-import { TwoRowNavbar } from '@/components/layout/TwoRowNavbar'
-import Footer from '@/components/footer'
+import { Design3LayoutHeader } from '@/components/layout/Design3LayoutHeader'
+import { Design3LayoutFooter } from '@/components/layout/Design3LayoutFooter'
 import { PageHero } from '@/components/layout/PageHero'
 import { Providers } from '@/components/providers'
+import { SettingsProvider } from '@/components/SettingsProvider'
+import { CurrencyProvider } from '@/contexts/CurrencyContext'
+import { BackToTop } from '@/components/ui/BackToTop'
 import { StoreModeProvider } from '@/contexts/StoreModeContext'
 import { SessionModeProvider } from '@/contexts/SessionModeContext'
 import { WholesaleInquiryProvider } from '@/contexts/WholesaleInquiryContext'
@@ -112,25 +115,32 @@ export default function DashboardLayout({
         <SessionModeProvider>
           <WholesaleInquiryProvider>
             <Providers>
-              <div className="min-h-screen bg-gray-50 flex flex-col relative w-full overflow-x-hidden" lang={activeLocale}>
-                {/* Header with Top Bar + Main Header + Mega Menu */}
-                <TwoRowNavbar />
+              <SettingsProvider>
+                <CurrencyProvider>
+                  <div className="min-h-screen bg-slate-50 flex flex-col relative w-full overflow-x-hidden" lang={activeLocale}>
+                    {/* Modern Design-3 Header with Live Search, Mega-Menu, Cart Drawer & User Menu */}
+                    <Design3LayoutHeader />
 
-                {/* Breadcrumb Section */}
-                <PageHero
-                  title={`${MESSAGES[activeLocale].Dashboard.welcome} ${user?.name || 'User'}!`}
-                  description={MESSAGES[activeLocale].Dashboard.manageDesc}
-                  breadcrumbs={breadcrumbs}
-                />
+                    {/* Breadcrumb Section */}
+                    <PageHero
+                      title={`${MESSAGES[activeLocale].Dashboard.welcome} ${user?.name || 'User'}!`}
+                      description={MESSAGES[activeLocale].Dashboard.manageDesc}
+                      breadcrumbs={breadcrumbs}
+                    />
 
-                {/* Main Content */}
-                <main className="flex-1 bg-gray-50">
-                  {children}
-                </main>
+                    {/* Main Content */}
+                    <main className="flex-1 bg-slate-50">
+                      {children}
+                    </main>
 
-                {/* Footer */}
-                <Footer />
-              </div>
+                    {/* Modern Design-3 Footer */}
+                    <Design3LayoutFooter />
+
+                    {/* Back to Top */}
+                    <BackToTop />
+                  </div>
+                </CurrencyProvider>
+              </SettingsProvider>
             </Providers>
           </WholesaleInquiryProvider>
         </SessionModeProvider>
