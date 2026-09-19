@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const t = useTranslations('DashboardPages')
   const ts = useTranslations('DashboardPages.settings')
   const router = useRouter()
-  const { user, isAuthenticated, isLoading: authLoading, updateUser } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, isInitialized, updateUser } = useAuth()
   const [activeTab, setActiveTab] = useState('general')
   const [isSaving, setIsSaving] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -39,16 +39,10 @@ export default function SettingsPage() {
   })
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (isInitialized && !authLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/settings')
     }
-  }, [authLoading, isAuthenticated, router])
-
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login?redirect=/dashboard/settings')
-    }
-  }, [authLoading, isAuthenticated, router])
+  }, [isInitialized, authLoading, isAuthenticated, router])
 
   useEffect(() => {
     if (user) {

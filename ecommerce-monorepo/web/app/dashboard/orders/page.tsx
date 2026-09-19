@@ -31,16 +31,16 @@ interface Order {
 
 export default function OrdersPage() {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, isInitialized } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const t = useTranslations('DashboardPages')
   const to = useTranslations('DashboardPages.orders')
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (isInitialized && !authLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/orders')
     }
-  }, [authLoading, isAuthenticated, router])
+  }, [isInitialized, authLoading, isAuthenticated, router])
 
   const { data: ordersData, isLoading } = useQuery({
     queryKey: ['orders', 'user'],

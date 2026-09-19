@@ -29,27 +29,30 @@ async function getProfileHandler(request: any) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    const userData = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      phone: user.phone,
+      country: user.country,
+      profilePhoto: user.profilePhoto,
+      companyName: user.companyName,
+      businessType: user.businessType,
+      taxId: user.taxId,
+      isActive: user.isActive,
+      isVerified: user.isVerified,
+      supplierProfile: user.supplierProfile ? {
+        id: user.supplierProfile.id,
+        companyName: user.supplierProfile.companyName,
+        businessType: user.supplierProfile.businessType,
+      } : undefined,
+      createdAt: user.createdAt,
+    }
+
     return NextResponse.json({
-      data: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        phone: user.phone,
-        country: user.country,
-        profilePhoto: user.profilePhoto,
-        companyName: user.companyName,
-        businessType: user.businessType,
-        taxId: user.taxId,
-        isActive: user.isActive,
-        isVerified: user.isVerified,
-        supplierProfile: user.supplierProfile ? {
-          id: user.supplierProfile.id,
-          companyName: user.supplierProfile.companyName,
-          businessType: user.supplierProfile.businessType,
-        } : undefined,
-        createdAt: user.createdAt,
-      },
+      data: userData,
+      user: userData,
     })
   } catch (error) {
     console.error('Get profile error:', error)
@@ -80,24 +83,27 @@ async function updateProfileHandler(request: any) {
       },
     })
 
+    const userObj = {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      name: updatedUser.name,
+      role: updatedUser.role,
+      phone: updatedUser.phone,
+      country: updatedUser.country,
+      profilePhoto: updatedUser.profilePhoto,
+      companyName: updatedUser.companyName,
+      businessType: updatedUser.businessType,
+      taxId: updatedUser.taxId,
+      supplierProfile: updatedUser.supplierProfile ? {
+        id: updatedUser.supplierProfile.id,
+        companyName: updatedUser.supplierProfile.companyName,
+        businessType: updatedUser.supplierProfile.businessType,
+      } : undefined,
+    }
+
     return NextResponse.json({
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        role: updatedUser.role,
-        phone: updatedUser.phone,
-        country: updatedUser.country,
-        profilePhoto: updatedUser.profilePhoto,
-        companyName: updatedUser.companyName,
-        businessType: updatedUser.businessType,
-        taxId: updatedUser.taxId,
-        supplierProfile: updatedUser.supplierProfile ? {
-          id: updatedUser.supplierProfile.id,
-          companyName: updatedUser.supplierProfile.companyName,
-          businessType: updatedUser.supplierProfile.businessType,
-        } : undefined,
-      },
+      data: userObj,
+      user: userObj,
       message: 'Profile updated successfully',
     })
   } catch (error) {

@@ -12,16 +12,16 @@ import { useTranslations } from 'next-intl'
 
 export default function WishlistPage() {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, isInitialized } = useAuth()
   const { wishlist, isLoading, removeFromWishlist } = useWishlist()
   const t = useTranslations('DashboardPages')
   const tw = useTranslations('DashboardPages.wishlist')
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (isInitialized && !authLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/wishlist')
     }
-  }, [authLoading, isAuthenticated, router])
+  }, [isInitialized, authLoading, isAuthenticated, router])
 
   const handleRemove = async (productId: string) => {
     await removeFromWishlist(productId)

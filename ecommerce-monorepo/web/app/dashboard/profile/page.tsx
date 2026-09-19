@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const t = useTranslations('DashboardPages')
   const tp = useTranslations('DashboardPages.profile')
   const router = useRouter()
-  const { user, isAuthenticated, isLoading: authLoading, updateUser } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, isInitialized, updateUser } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
   const [success, setSuccess] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
@@ -28,10 +28,10 @@ export default function ProfilePage() {
   })
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (isInitialized && !authLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/profile')
     }
-  }, [authLoading, isAuthenticated, router])
+  }, [isInitialized, authLoading, isAuthenticated, router])
 
   useEffect(() => {
     if (user) {

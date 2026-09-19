@@ -28,7 +28,7 @@ interface QuoteItem {
 
 export default function CustomerDashboardPage() {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, isInitialized } = useAuth()
   const t = useTranslations('Dashboard')
   const [stats, setStats] = useState<DashboardStats>({
     totalOrders: 0,
@@ -40,12 +40,12 @@ export default function CustomerDashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isInitialized && !isLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard')
       return
     }
 
-    if (!isLoading && user) {
+    if (isInitialized && !isLoading && user) {
       // Redirect non-customers
       if (user.role === 'ADMIN') {
         router.push('/admin')
@@ -59,7 +59,7 @@ export default function CustomerDashboardPage() {
       loadDashboardData()
       loadQuotes()
     }
-  }, [user, isAuthenticated, isLoading, router])
+  }, [user, isAuthenticated, isLoading, isInitialized, router])
 
   const loadDashboardData = async () => {
     try {
@@ -102,7 +102,7 @@ export default function CustomerDashboardPage() {
   const statusClass = (status: string) =>
     statusStyles[status] || 'bg-gray-100 text-gray-600'
 
-  if (isLoading || loading) {
+  if (!isInitialized || isLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">

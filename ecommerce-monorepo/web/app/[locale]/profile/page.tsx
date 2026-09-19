@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -30,7 +30,7 @@ export default function ProfilePage() {
   const [userData, setUserData] = useState<any>(null)
   const router = useRouter()
   const navigate = useLocaleNav()
-  const { checkAuth, isAuthenticated, updateUser } = useAuth()
+  const { checkAuth, isAuthenticated, isInitialized, updateUser } = useAuth()
 
   const {
     register,
@@ -44,22 +44,21 @@ export default function ProfilePage() {
 
   useEffect(() => {
     checkAuth()
-  }, [])
+  }, [checkAuth])
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchProfile()
-    } else if (!isLoading && !isAuthenticated) {
+    } else if (isInitialized && !isAuthenticated) {
       navigate('/login')
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, isInitialized])
 
   const fetchProfile = async () => {
     try {
       setIsLoading(true)
       setError('')
 
-      // âœ… MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
       const response = await fetch('/api/auth/me', {
         credentials: 'include'
       })
@@ -73,15 +72,16 @@ export default function ProfilePage() {
       }
 
       const result = await response.json()
-      setUserData(result.user)
+      const profile = result.user || result.data
+      setUserData(profile)
       
       // Populate form values
-      setValue('name', result.user.name || '')
-      setValue('companyName', result.user.companyName || '')
-      setValue('businessType', result.user.businessType || 'OTHER')
-      setValue('phone', result.user.phone || '')
-      setValue('taxId', result.user.taxId || '')
-      setValue('country', result.user.country || '')
+      setValue('name', profile?.name || '')
+      setValue('companyName', profile?.companyName || '')
+      setValue('businessType', profile?.businessType || 'OTHER')
+      setValue('phone', profile?.phone || '')
+      setValue('taxId', profile?.taxId || '')
+      setValue('country', profile?.country || '')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load profile')
     } finally {
@@ -95,7 +95,6 @@ export default function ProfilePage() {
       setError('')
       setSuccessMsg('')
 
-      // âœ… MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
       const response = await fetch('/api/auth/me', {
         method: 'PUT',
         headers: {
@@ -110,12 +109,13 @@ export default function ProfilePage() {
       }
 
       const result = await response.json()
-      setUserData(result.user)
+      const updated = result.user || result.data
+      setUserData(updated)
       setSuccessMsg('Profile updated successfully!')
       setIsEditing(false)
       
       // Update global auth state
-      updateUser(result.user)
+      updateUser(updated)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update profile')
     } finally {

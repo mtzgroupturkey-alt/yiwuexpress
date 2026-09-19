@@ -27,6 +27,7 @@ interface AuthState {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
+  isInitialized: boolean
   login: (email: string, password: string) => Promise<User>
   register: (data: RegisterData) => Promise<User>
   logout: () => Promise<void>
@@ -49,8 +50,9 @@ export const useAuth = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      isLoading: false,
+      isLoading: true,
       isAuthenticated: false,
+      isInitialized: false,
 
       login: async (email: string, password: string) => {
         console.log('[useAuth] Starting login...', { email })
@@ -96,6 +98,7 @@ export const useAuth = create<AuthState>()(
             user,
             isAuthenticated: true,
             isLoading: false,
+            isInitialized: true,
           })
 
           console.log('[useAuth] State updated, login complete')
@@ -105,7 +108,7 @@ export const useAuth = create<AuthState>()(
           return user
         } catch (error: any) {
           console.error('[useAuth] Login error:', error)
-          set({ isLoading: false })
+          set({ isLoading: false, isInitialized: true })
           throw error
         }
       },
@@ -132,11 +135,12 @@ export const useAuth = create<AuthState>()(
             user,
             isAuthenticated: true,
             isLoading: false,
+            isInitialized: true,
           })
 
           return user
         } catch (error: any) {
-          set({ isLoading: false })
+          set({ isLoading: false, isInitialized: true })
           throw error
         }
       },
@@ -155,6 +159,8 @@ export const useAuth = create<AuthState>()(
           set({
             user: null,
             isAuthenticated: false,
+            isLoading: false,
+            isInitialized: true,
           })
         }
       },
@@ -169,11 +175,6 @@ export const useAuth = create<AuthState>()(
       checkAuth: async () => {
         // Prevent multiple simultaneous checks
         if (isCheckingAuth) {
-          return
-        }
-        
-        // Don't check if already loading
-        if (get().isLoading) {
           return
         }
         
@@ -198,12 +199,13 @@ export const useAuth = create<AuthState>()(
               user: { ...currentUser, ...data.user } as User,
               isAuthenticated: true,
               isLoading: false,
+              isInitialized: true,
             })
           } else {
-            set({ user: null, isAuthenticated: false, isLoading: false })
+            set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true })
           }
         } catch {
-          set({ user: null, isAuthenticated: false, isLoading: false })
+          set({ user: null, isAuthenticated: false, isLoading: false, isInitialized: true })
         } finally {
           isCheckingAuth = false
         }

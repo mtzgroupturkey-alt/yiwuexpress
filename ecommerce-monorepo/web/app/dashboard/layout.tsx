@@ -28,7 +28,7 @@ export default function DashboardLayout({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, isAuthenticated, isLoading, checkAuth } = useAuth()
+  const { user, isAuthenticated, isLoading, isInitialized, checkAuth } = useAuth()
   const hasCheckedAuth = useRef(false)
 
   // Resolve the active locale: ?locale= param (set by the navbar switcher on
@@ -56,15 +56,15 @@ export default function DashboardLayout({
     }
   }, [checkAuth])
 
-  // Redirect if not authenticated (only after loading completes)
+  // Redirect if not authenticated (only after initialization and loading completes)
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isInitialized && !isLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard')
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [isInitialized, isLoading, isAuthenticated, router])
 
-  // Show loading state
-  if (isLoading) {
+  // Show loading state while checking or initializing auth
+  if (!isInitialized || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">

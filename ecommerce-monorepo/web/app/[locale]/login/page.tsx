@@ -10,6 +10,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { loginSchema, LoginInput } from '@/lib/validation'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useSettings } from '@/components/SettingsProvider'
+import { useAuth } from '@/hooks/useAuth'
 import { Mail, Lock, Globe, Shield, Clock, BarChart3, AlertCircle } from 'lucide-react'
 
 export default function LocalizedLoginPage() {
@@ -22,6 +23,7 @@ export default function LocalizedLoginPage() {
   const navigate = useLocaleNav()
   const locale = useLocale()
   const t = useTranslations('Auth')
+  const { login } = useAuth()
 
   const {
     register,
@@ -36,32 +38,19 @@ export default function LocalizedLoginPage() {
       setIsLoading(true)
       setError('')
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Send/receive httpOnly cookies
-        body: JSON.stringify(data),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed')
-      }
+      const user = await login(data.email, data.password)
 
       // Redirect based on role or redirect parameter
       const redirectUrl = searchParams.get('redirect')
       if (redirectUrl && redirectUrl !== '/') {
         window.location.href = redirectUrl
-      } else if (result.user?.role === 'ADMIN') {
+      } else if (user?.role === 'ADMIN') {
         window.location.href = '/admin'
-      } else if (result.user?.role === 'SUPPLIER') {
+      } else if (user?.role === 'SUPPLIER') {
         window.location.href = '/dashboard/supplier'
       } else {
-        // Customer - redirect to localized dashboard or profile
-        window.location.href = `/${locale}/profile`
+        // Customer - redirect to dashboard
+        window.location.href = '/dashboard'
       }
     } catch (err: any) {
       setError(err?.message || 'Login failed')

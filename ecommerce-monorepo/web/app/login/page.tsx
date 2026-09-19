@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { loginSchema, LoginInput } from '@/lib/validation'
 import { SharedLayout } from '@/components/layout/SharedLayout'
+import { useAuth } from '@/hooks/useAuth'
 import { Building, Mail, Lock, Globe } from 'lucide-react'
 
 export default function LoginPage() {
@@ -15,6 +16,7 @@ export default function LoginPage() {
   const [companyName, setCompanyName] = useState('Global Trade')
   const [companyLogo, setCompanyLogo] = useState('')
   const router = useRouter()
+  const { login } = useAuth()
 
   // Fetch company settings
   useEffect(() => {
@@ -42,22 +44,8 @@ export default function LoginPage() {
       setIsLoading(true)
       setError('')
 
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Send/receive cookies
-        body: JSON.stringify(data),
-      })
+      const user = await login(data.email, data.password)
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Login failed')
-      }
-
-      // NO localStorage - token is in httpOnly cookie
       // Get redirect URL from query params
       const urlParams = new URLSearchParams(window.location.search)
       const redirectUrl = urlParams.get('redirect')
@@ -66,9 +54,9 @@ export default function LoginPage() {
       if (redirectUrl && redirectUrl !== '/') {
         // If there's a redirect URL, use it
         window.location.href = redirectUrl
-      } else if (result.user.role === 'ADMIN') {
+      } else if (user.role === 'ADMIN') {
         window.location.href = '/admin'
-      } else if (result.user.role === 'SUPPLIER') {
+      } else if (user.role === 'SUPPLIER') {
         window.location.href = '/dashboard/supplier'
       } else {
         // Customer - redirect to dashboard

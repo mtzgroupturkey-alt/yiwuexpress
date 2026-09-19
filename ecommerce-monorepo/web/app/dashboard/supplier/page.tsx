@@ -24,7 +24,7 @@ interface SupplierStats {
 
 export default function SupplierDashboardPage() {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading, isInitialized } = useAuth()
   const [stats, setStats] = useState<SupplierStats>({
     totalProducts: 0,
     totalSales: 0,
@@ -34,12 +34,12 @@ export default function SupplierDashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isInitialized && !isLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/supplier')
       return
     }
 
-    if (!isLoading && user) {
+    if (isInitialized && !isLoading && user) {
       // Only suppliers can access this dashboard
       if (user.role !== 'SUPPLIER') {
         if (user.role === 'ADMIN') {

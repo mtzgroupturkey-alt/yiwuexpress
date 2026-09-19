@@ -115,7 +115,7 @@ const COUNTRIES = [
 
 export default function AddressesPage() {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { user, isAuthenticated, isLoading: authLoading, isInitialized } = useAuth()
   const t = useTranslations('DashboardPages')
   const ta = useTranslations('DashboardPages.addresses')
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -124,10 +124,10 @@ export default function AddressesPage() {
   const [formData, setFormData] = useState<Omit<Address, 'id'>>(INITIAL_FORM)
 
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (isInitialized && !authLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/addresses')
     }
-  }, [authLoading, isAuthenticated, router])
+  }, [isInitialized, authLoading, isAuthenticated, router])
 
   // Load addresses from localStorage on mount
   useEffect(() => {
