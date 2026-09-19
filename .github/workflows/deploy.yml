@@ -117,6 +117,8 @@ jobs:
                 fi
                 npx prisma migrate reset --force --skip-generate
                 npm run db:seed
+                echo "🌱 Seeding categories, products, admin and sample data..."
+                npm run db:seed:sample || true
                 echo "✅ Database reset and seeded successfully!"
               else
                 echo "❌ Database reset was requested but confirmation phrase 'RESET_CONFIRM' was missing. Aborting to protect data."
