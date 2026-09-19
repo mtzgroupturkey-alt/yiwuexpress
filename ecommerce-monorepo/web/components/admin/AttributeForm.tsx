@@ -253,12 +253,12 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
       })
 
       const json = await res.json()
-      if (res.ok && json.data) {
+      if (res.ok && json.success && json.translations) {
         setOptionItems((prev) =>
           prev.map((opt, idx) => {
             const key = `opt_${idx}`
-            const ruTrans = json.data.ru?.[key] || getLocalizedOptionLabel(slug, opt.label, 'ru')
-            const zhTrans = json.data.zh?.[key] || getLocalizedOptionLabel(slug, opt.label, 'zh')
+            const ruTrans = json.translations.ru?.[key] || getLocalizedOptionLabel(slug, opt.label, 'ru')
+            const zhTrans = json.translations.zh?.[key] || getLocalizedOptionLabel(slug, opt.label, 'zh')
             return {
               ...opt,
               translations: {
