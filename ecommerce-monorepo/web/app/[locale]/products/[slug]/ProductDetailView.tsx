@@ -195,6 +195,10 @@ export default function ProductDetailView({
   const currentCompareAtPrice = selectedVariant?.comparePrice ?? product.compareAtPrice
   const currentStock = selectedVariant?.stock ?? product.stock
   const currentSku = selectedVariant?.sku ?? product.sku
+  const { displayPrice, priceType } = useMemo(
+    () => getDisplayPrice(currentPrice, product.wholesalePrice, storeMode),
+    [currentPrice, product.wholesalePrice, storeMode]
+  )
   const currentImages = useMemo(() => {
     const list: string[] = []
     // If selected variant has specific photos, show them first
@@ -462,7 +466,7 @@ export default function ProductDetailView({
           }),
         }}
       />
-      <div className="bg-gradient-to-b from-gray-50 to-white py-4">
+      <div className="bg-gradient-to-b from-gray-50 to-white py-4 pb-28 lg:pb-12">
         <Container maxWidth="2xl">
           {/* In-Page Clean Breadcrumb Trail */}
           <nav aria-label="Breadcrumb" className="mb-4">
@@ -498,16 +502,16 @@ export default function ProductDetailView({
           </nav>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-            {/* Left Column: Image Gallery & Sourcing Security */}
+            {/* Left Column: Image Gallery & Desktop Sourcing Security */}
             <div className="lg:col-span-6 animate-fade-in">
-              <div className="sticky top-20 space-y-4">
+              <div className="lg:sticky lg:top-20 space-y-4">
                 <ProductImageGallery
                   images={currentImages}
                   productName={localized.name}
                 />
 
-                {/* Sourcing Security & B2B Trade Assurance Card */}
-                <div className="rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-5 shadow-xs transition-all hover:shadow-sm">
+                {/* Sourcing Security & B2B Trade Assurance Card - DESKTOP ONLY here */}
+                <div className="hidden lg:block rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-5 shadow-xs transition-all hover:shadow-sm">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3.5">
                     <div className="flex items-center gap-2.5">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700">
@@ -1044,6 +1048,95 @@ export default function ProductDetailView({
                     <span>{t('freeShippingOver')}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Sourcing Security & B2B Trade Assurance Card - MOBILE ONLY PLACEMENT */}
+            <div className="block lg:hidden rounded-2xl border border-slate-200/90 bg-gradient-to-br from-slate-50 via-white to-blue-50/30 p-4 sm:p-5 shadow-xs transition-all hover:shadow-sm mb-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-700">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                      {locale === 'ru' ? 'Торговая гарантия и защита' : locale === 'zh' ? '贸易保障与买家服务' : 'Trade Assurance & Sourcing'}
+                    </h4>
+                    <p className="text-[11px] text-slate-500">
+                      {locale === 'ru' ? '100% защита сделки и контроль качества' : locale === 'zh' ? '100%资金保障与全检服务' : '100% Payment Escrow & Pre-Shipment QC'}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-semibold px-2 py-0.5">
+                  {locale === 'ru' ? 'Проверен' : locale === 'zh' ? '已认证' : 'Verified'}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs text-slate-700">
+                <div className="flex items-start gap-2">
+                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold block text-slate-800">
+                      {locale === 'ru' ? 'Контроль качества' : locale === 'zh' ? '严格品控' : 'Quality Inspected'}
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      {locale === 'ru' ? 'Инспекция перед отправкой' : locale === 'zh' ? '发货前全检' : 'Inspected before dispatch'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold block text-slate-800">
+                      {locale === 'ru' ? 'Прямой экспорт' : locale === 'zh' ? '中国直发' : 'Direct Export'}
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      {locale === 'ru' ? 'Склад в Китае / Иу' : locale === 'zh' ? '中国发货 / 义乌集运' : 'China & Yiwu Logistics Hub'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold block text-slate-800">
+                      {locale === 'ru' ? 'Образцы и OEM' : locale === 'zh' ? '支持拿样' : 'Samples & OEM'}
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      {locale === 'ru' ? 'Кастомная упаковка и лого' : locale === 'zh' ? '支持定制包装与logo' : 'Custom logo & packaging'}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <span className="font-semibold block text-slate-800">
+                      {locale === 'ru' ? 'Авиа и Морской фрахт' : locale === 'zh' ? '多元物流' : 'Air & Sea Freight'}
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      {locale === 'ru' ? 'FOB, CIF, DDP варианты' : locale === 'zh' ? '支持EXW/FOB/DDP' : 'EXW, FOB, DDP express'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                  {locale === 'ru' ? 'Безопасная сделка гарантирована' : locale === 'zh' ? '平台信用保障交易' : 'Escrow Protected Order'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const tabsEl = document.getElementById('product-tabs')
+                    if (tabsEl) {
+                      setActiveTab('logistics')
+                      tabsEl.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
+                  className="font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                >
+                  {locale === 'ru' ? 'Условия доставки →' : locale === 'zh' ? '查看物流详情 →' : 'Logistics details →'}
+                </button>
               </div>
             </div>
 
@@ -1766,6 +1859,50 @@ export default function ProductDetailView({
             </div>
           </div>
         )}
+
+        {/* Sticky Mobile Bottom Bar */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] text-slate-500 truncate block max-w-[150px] sm:max-w-xs">{localized.name}</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-base font-bold text-gradient-gold">
+                  {formatPrice(displayPrice)}
+                </span>
+                {priceType === 'wholesale' && (
+                  <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1 py-0.2 rounded border border-blue-200">
+                    {t('wholesalePrice')}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isRetail && (
+                <Button
+                  size="default"
+                  onClick={handleAddToCart}
+                  disabled={currentStock === 0 || adding}
+                  className="rounded-xl font-bold bg-gradient-to-r from-primary-600 to-blue-600 text-white shadow-md h-10 px-4 text-xs sm:text-sm"
+                >
+                  <ShoppingCart className="w-4 h-4 mr-1.5" />
+                  {adding ? t('addingToCart') : t('addToCart')}
+                </Button>
+              )}
+              {isWholesale && !isRetail && (
+                <Button
+                  size="default"
+                  onClick={handleAddToQuoteList}
+                  disabled={currentStock === 0}
+                  className="rounded-xl font-bold bg-gradient-to-r from-primary-600 to-blue-600 text-white shadow-md h-10 px-4 text-xs sm:text-sm"
+                >
+                  <FileText className="w-4 h-4 mr-1.5" />
+                  {isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Cart') : t('addToQuoteList')}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
       </Container>
     </div>
     </SharedLayout>

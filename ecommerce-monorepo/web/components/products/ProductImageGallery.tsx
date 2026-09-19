@@ -65,6 +65,33 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
     setCurrentIndex(index)
   }
 
+  // Mobile touch swipe handling
+  const touchStartX = useRef<number | null>(null)
+  const touchEndX = useRef<number | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    touchEndX.current = null
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX
+  }
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current !== null && touchEndX.current !== null) {
+      const diff = touchStartX.current - touchEndX.current
+      const minSwipeDistance = 35
+      if (diff > minSwipeDistance) {
+        goToNext()
+      } else if (diff < -minSwipeDistance) {
+        goToPrevious()
+      }
+    }
+    touchStartX.current = null
+    touchEndX.current = null
+  }
+
   // Keyboard navigation for lightbox
   useEffect(() => {
     if (!isZoomed) return
@@ -133,11 +160,14 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
       <div className="space-y-3 select-none">
         {/* Main Image Container */}
         <div
-          className="relative aspect-square bg-slate-50/80 dark:bg-[#0c192c] rounded-2xl overflow-hidden group shadow-sm hover:shadow-md border border-slate-200/80 dark:border-slate-800 cursor-zoom-in transition-all flex items-center justify-center"
+          className="relative aspect-square bg-slate-50/80 dark:bg-[#0c192c] rounded-2xl overflow-hidden group shadow-sm hover:shadow-md border border-slate-200/80 dark:border-slate-800 cursor-zoom-in transition-all flex items-center justify-center touch-pan-y"
           onClick={() => {
             setIsZoomed(true)
             setZoomLevel(1)
           }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -171,10 +201,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   e.stopPropagation()
                   goToPrevious()
                 }}
-                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100"
+                className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-white/90 sm:bg-white/95 hover:bg-white text-gray-800 p-2 sm:p-2.5 rounded-full shadow-md border border-gray-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100 z-10"
                 aria-label="Previous image"
               >
-                <ChevronLeft className="w-5 h-5 text-gray-700" />
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
               </button>
               <button
                 type="button"
@@ -182,10 +212,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   e.stopPropagation()
                   goToNext()
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white text-gray-800 p-2.5 rounded-full shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100"
+                className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-white/90 sm:bg-white/95 hover:bg-white text-gray-800 p-2 sm:p-2.5 rounded-full shadow-md border border-gray-200 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-all hover:scale-110 focus:opacity-100 z-10"
                 aria-label="Next image"
               >
-                <ChevronRight className="w-5 h-5 text-gray-700" />
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
               </button>
             </>
           )}
@@ -197,6 +227,23 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             </div>
           )}
         </div>
+
+        {/* Mobile carousel indicator dots */}
+        {displayImages.length > 1 && (
+          <div className="sm:hidden flex items-center justify-center gap-1.5 py-1">
+            {displayImages.map((_, dotIdx) => (
+              <button
+                key={`dot-${dotIdx}`}
+                type="button"
+                onClick={() => selectIndex(dotIdx)}
+                className={`h-1.5 rounded-full transition-all ${
+                  dotIdx === safeIndex ? 'w-5 bg-blue-600' : 'w-1.5 bg-slate-300'
+                }`}
+                aria-label={`Go to slide ${dotIdx + 1}`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Thumbnails Carousel (Shows all photos in thumbnails) */}
         {displayImages.length > 0 && (
