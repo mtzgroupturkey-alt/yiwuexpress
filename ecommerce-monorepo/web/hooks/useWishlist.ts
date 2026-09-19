@@ -34,7 +34,7 @@ const GUEST_STORAGE_KEY = 'yiwu_guest_wishlist'
 
 export function useWishlist() {
   const queryClient = useQueryClient()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isInitialized } = useAuth()
   const [guestWishlist, setGuestWishlist] = useState<WishlistItem[]>([])
   const [isClient, setIsClient] = useState(false)
 
@@ -74,12 +74,12 @@ export function useWishlist() {
     },
     staleTime: 60 * 1000,
     retry: false,
-    enabled: !!isAuthenticated,
+    enabled: !!(isAuthenticated && isInitialized),
   })
 
   // Sync guest items to DB on login
   useEffect(() => {
-    if (isAuthenticated && guestWishlist.length > 0) {
+    if (isAuthenticated && isInitialized && guestWishlist.length > 0) {
       const syncItems = async () => {
         for (const item of guestWishlist) {
           try {

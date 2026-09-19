@@ -151,9 +151,11 @@ async function authMiddleware(request: NextRequest) {
 
   const isProtectedPath = protectedPaths.some(path => {
     if (!pathname.startsWith(path)) return false
-    // Allow public GET /api/cart so guests receive empty cart JSON without 401
-    if (path === '/api/cart' && pathname === '/api/cart' && request.method === 'GET') {
-      return false
+    // Allow public GET for endpoints where guests receive 200 with empty collections instead of 401
+    if (request.method === 'GET') {
+      if (path === '/api/cart' && pathname === '/api/cart') return false
+      if (path === '/api/wishlist' && pathname === '/api/wishlist') return false
+      if (path === '/api/addresses' && pathname === '/api/addresses') return false
     }
     return true
   })

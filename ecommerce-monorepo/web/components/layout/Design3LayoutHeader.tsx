@@ -23,7 +23,7 @@ import { useAuth } from '@/hooks/useAuth';
 export function Design3LayoutHeader() {
   const locale = useLocale();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isInitialized } = useAuth();
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { settings } = useSettings();
   const { wishlistCount, favoritesList, toggleWishlist } = useWishlist();
@@ -64,7 +64,7 @@ export function Design3LayoutHeader() {
   const [userAddresses, setUserAddresses] = useState<UserAddressOption[]>([]);
 
   const fetchUserAddresses = useCallback(async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !isInitialized) {
       setUserAddresses([]);
       return;
     }
@@ -88,15 +88,15 @@ export function Design3LayoutHeader() {
         const currentSaved = (() => {
           try { return localStorage.getItem(DELIVERY_LOCATION_KEY); } catch { return null; }
         })();
-        const fallbacks = ['Worldwide Shipping', settings?.companyAddress ?? ''];
-        if (!currentSaved || fallbacks.includes(currentSaved)) {
-          persistDelivery(`${defaultAddr.city}, ${defaultAddr.country}`);
+        if (!currentSaved || currentSaved === 'Worldwide Shipping' || currentSaved === settings?.companyAddress) {
+          const locStr = [defaultAddr.city, defaultAddr.country].filter(Boolean).join(', ');
+          if (locStr) persistDelivery(locStr);
         }
       }
     } catch (err) {
       console.error('Failed to fetch user addresses:', err);
     }
-  }, [isAuthenticated, settings?.companyAddress, persistDelivery]);
+  }, [isAuthenticated, isInitialized, settings?.companyAddress, persistDelivery]);
 
   useEffect(() => {
     fetchUserAddresses();

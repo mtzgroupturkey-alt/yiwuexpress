@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth'
 
-// GET: Fetch user's wishlist
+// GET: Fetch user's wishlist (authenticated returns DB items, guest returns 200 with empty array)
 export async function GET(req: NextRequest) {
   const user = await getAuthUser(req)
   if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ success: true, authenticated: false, data: [] })
   }
 
   try {
