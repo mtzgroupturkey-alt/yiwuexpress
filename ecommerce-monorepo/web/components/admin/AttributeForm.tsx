@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { DialogFooter } from '@/components/ui/dialog'
 import { toast } from 'react-hot-toast'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
-import { Plus, X, Palette, Sparkles, Globe2, List, Edit3 } from 'lucide-react'
+import { Plus, X, Palette, Sparkles, Globe2, List, Edit3, Info } from 'lucide-react'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 import {
   COLOR_TRANSLATIONS,
@@ -118,10 +118,19 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
   ]
 
   // Translations for locales other than English (name, placeholder, helperText)
-  const [translations, setTranslations] = useState<Record<string, { name: string }>>(() => {
-    const map: Record<string, { name: string }> = {}
+  const [translations, setTranslations] = useState<
+    Record<string, { name: string; placeholder: string; helperText: string }>
+  >(() => {
+    const map: Record<string, { name: string; placeholder: string; helperText: string }> = {
+      ru: { name: '', placeholder: '', helperText: '' },
+      zh: { name: '', placeholder: '', helperText: '' },
+    }
     ;(initialData?.translations || []).forEach((t: any) => {
-      map[t.locale] = { name: t.name || '' }
+      map[t.locale] = {
+        name: t.name || '',
+        placeholder: t.placeholder || '',
+        helperText: t.helperText || '',
+      }
     })
     return map
   })
@@ -129,8 +138,16 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
   const isColorType  = type === 'COLOR' || type === 'COLOR_MULTI'
   const isSelectType = type === 'SELECT' || type === 'MULTISELECT'
 
-  const updateTranslation = (locale: string, name: string) =>
-    setTranslations((prev) => ({ ...prev, [locale]: { name } }))
+  const updateTranslation = (locale: string, field: 'name' | 'placeholder' | 'helperText', val: string) =>
+    setTranslations((prev) => ({
+      ...prev,
+      [locale]: {
+        name: prev[locale]?.name || '',
+        placeholder: prev[locale]?.placeholder || '',
+        helperText: prev[locale]?.helperText || '',
+        [field]: val,
+      },
+    }))
 
   // Auto-generate slug from name (only on create)
   useEffect(() => {
@@ -413,8 +430,18 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
         isVariant,
         categoryId,
         translations: ['ru', 'zh']
-          .filter((l) => translations[l]?.name?.trim())
-          .map((l) => ({ locale: l, name: translations[l].name.trim() })),
+          .filter(
+            (l) =>
+              translations[l]?.name?.trim() ||
+              translations[l]?.placeholder?.trim() ||
+              translations[l]?.helperText?.trim()
+          )
+          .map((l) => ({
+            locale: l,
+            name: translations[l]?.name?.trim() || name.trim(),
+            placeholder: translations[l]?.placeholder?.trim() || placeholder.trim(),
+            helperText: translations[l]?.helperText?.trim() || helperText.trim(),
+          })),
       }
 
       const url = initialData?.id ? `/api/admin/attributes/${initialData.id}` : '/api/admin/attributes'
@@ -461,19 +488,31 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
             </p>
             <AutoTranslateButton
               allFields={{
-                en: { name },
-                ru: { name: translations.ru?.name || '' },
-                zh: { name: translations.zh?.name || '' },
+                en: { name, placeholder, helperText },
+                ru: {
+                  name: translations.ru?.name || '',
+                  placeholder: translations.ru?.placeholder || '',
+                  helperText: translations.ru?.helperText || '',
+                },
+                zh: {
+                  name: translations.zh?.name || '',
+                  placeholder: translations.zh?.placeholder || '',
+                  helperText: translations.zh?.helperText || '',
+                },
               }}
               onTranslated={(result) => {
-                if (result.en?.name && !name.trim()) {
-                  setName(result.en.name)
-                }
+                if (result.en?.name && !name.trim()) setName(result.en.name)
+                if (result.en?.placeholder && !placeholder.trim()) setPlaceholder(result.en.placeholder)
+                if (result.en?.helperText && !helperText.trim()) setHelperText(result.en.helperText)
                 setTranslations((prev) => {
                   const next = { ...prev }
-                  for (const loc of Object.keys(result)) {
-                    if (loc === 'ru' || loc === 'zh') {
-                      next[loc] = { name: result[loc].name || prev[loc]?.name || '' }
+                  for (const loc of ['ru', 'zh'] as const) {
+                    if (result[loc]) {
+                      next[loc] = {
+                        name: result[loc].name ?? prev[loc]?.name ?? '',
+                        placeholder: result[loc].placeholder ?? prev[loc]?.placeholder ?? '',
+                        helperText: result[loc].helperText ?? prev[loc]?.helperText ?? '',
+                      }
                     }
                   }
                   return next
@@ -486,7 +525,7 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
               <span className="w-8 text-xs font-semibold uppercase text-gray-500">{loc}</span>
               <Input
                 value={translations[loc]?.name || ''}
-                onChange={(e) => updateTranslation(loc, e.target.value)}
+                onChange={(e) => updateTranslation(loc, 'name', e.target.value)}
                 placeholder={`${dict.common.name} (${loc.toUpperCase()})`}
                 className="flex-1 h-8 text-xs"
               />
@@ -773,25 +812,106 @@ export function AttributeForm({ initialData, categoryId, onSuccess, onCancel }: 
           </div>
         )}
 
-        {/* Placeholder */}
-        <div>
-          <Label>{dict.attributes.placeholder}</Label>
-          <Input
-            value={placeholder}
-            onChange={(e) => setPlaceholder(e.target.value)}
-            placeholder="e.g., Select surface coating..."
-          />
+        {/* Placeholder (Multilingual Inputs) */}
+        <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/60 space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#1a3a5c]" />
+              {dict.attributes.placeholder} (Hint / Example)
+            </Label>
+            <span className="text-[11px] text-slate-500 font-normal">
+              e.g., Apple, Nike, Tefal, Bosch
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-14 text-[11px] font-bold uppercase text-slate-700 bg-white border border-slate-200 py-1 px-1.5 rounded text-center shrink-0 shadow-2xs">
+                EN *
+              </span>
+              <Input
+                value={placeholder}
+                onChange={(e) => setPlaceholder(e.target.value)}
+                placeholder="e.g., Apple, Nike, Tefal, Bosch (EN)"
+                className="h-8 text-xs bg-white border-slate-200"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="w-14 text-[11px] font-bold uppercase text-blue-700 bg-blue-50 border border-blue-200 py-1 px-1.5 rounded text-center shrink-0 shadow-2xs">
+                RU
+              </span>
+              <Input
+                value={translations.ru?.placeholder || ''}
+                onChange={(e) => updateTranslation('ru', 'placeholder', e.target.value)}
+                placeholder="напр., Apple, Nike, Tefal, Bosch (Русский)"
+                className="h-8 text-xs bg-white border-slate-200"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="w-14 text-[11px] font-bold uppercase text-red-700 bg-red-50 border border-red-200 py-1 px-1.5 rounded text-center shrink-0 shadow-2xs">
+                ZH
+              </span>
+              <Input
+                value={translations.zh?.placeholder || ''}
+                onChange={(e) => updateTranslation('zh', 'placeholder', e.target.value)}
+                placeholder="例如：苹果、耐克、特福、博世 (中文)"
+                className="h-8 text-xs bg-white border-slate-200"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Helper Text */}
-        <div>
-          <Label>{dict.attributes.helperText}</Label>
-          <Textarea
-            value={helperText}
-            onChange={(e) => setHelperText(e.target.value)}
-            placeholder={dict.attributes.helperTextPlaceholder}
-            rows={2}
-          />
+        {/* Helper Text (Multilingual Inputs) */}
+        <div className="border border-slate-200 rounded-xl p-3.5 bg-slate-50/60 space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5 text-[#1a3a5c]" />
+              {dict.attributes.helperText} (Guidance / Instructions)
+            </Label>
+            <span className="text-[11px] text-slate-500 font-normal">
+              Instructions for sellers & customers
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="w-14 text-[11px] font-bold uppercase text-slate-700 bg-white border border-slate-200 py-1 px-1.5 rounded text-center shrink-0 mt-0.5 shadow-2xs">
+                EN *
+              </span>
+              <Input
+                value={helperText}
+                onChange={(e) => setHelperText(e.target.value)}
+                placeholder={dict.attributes.helperTextPlaceholder || 'Additional instructions for sellers/staff (EN)'}
+                className="h-8 text-xs bg-white border-slate-200"
+              />
+            </div>
+
+            <div className="flex items-start gap-2">
+              <span className="w-14 text-[11px] font-bold uppercase text-blue-700 bg-blue-50 border border-blue-200 py-1 px-1.5 rounded text-center shrink-0 mt-0.5 shadow-2xs">
+                RU
+              </span>
+              <Input
+                value={translations.ru?.helperText || ''}
+                onChange={(e) => updateTranslation('ru', 'helperText', e.target.value)}
+                placeholder="Дополнительные инструкции для продавцов (Русский)"
+                className="h-8 text-xs bg-white border-slate-200"
+              />
+            </div>
+
+            <div className="flex items-start gap-2">
+              <span className="w-14 text-[11px] font-bold uppercase text-red-700 bg-red-50 border border-red-200 py-1 px-1.5 rounded text-center shrink-0 mt-0.5 shadow-2xs">
+                ZH
+              </span>
+              <Input
+                value={translations.zh?.helperText || ''}
+                onChange={(e) => updateTranslation('zh', 'helperText', e.target.value)}
+                placeholder="针对商家或买家的规格填写指南 (中文)"
+                className="h-8 text-xs bg-white border-slate-200"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Toggles */}

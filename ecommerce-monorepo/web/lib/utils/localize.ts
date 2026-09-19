@@ -441,13 +441,22 @@ function resolveByLocale<T extends { locale: string }>(
 export interface RawAttributeFromDb {
   id: string
   name: string
-  translations?: Array<{ locale: string; name: string }> | null
+  placeholder?: string | null
+  helperText?: string | null
+  translations?: Array<{ locale: string; name: string; placeholder?: string | null; helperText?: string | null }> | null
 }
 
 export function localizeAttribute(attribute: RawAttributeFromDb, locale: string) {
   const target = String(locale)
-  const row = resolveByLocale(attribute.translations, target, (t) => !!t.name && t.name.trim().length > 0)
-  return { id: attribute.id, name: row?.name ?? attribute.name }
+  const nameRow = resolveByLocale(attribute.translations, target, (t) => !!t.name && t.name.trim().length > 0)
+  const placeholderRow = resolveByLocale(attribute.translations, target, (t) => !!t.placeholder && t.placeholder.trim().length > 0)
+  const helperTextRow = resolveByLocale(attribute.translations, target, (t) => !!t.helperText && t.helperText.trim().length > 0)
+  return {
+    id: attribute.id,
+    name: nameRow?.name ?? attribute.name,
+    placeholder: placeholderRow?.placeholder ?? attribute.placeholder ?? null,
+    helperText: helperTextRow?.helperText ?? attribute.helperText ?? null,
+  }
 }
 
 export interface RawAttributeValueFromDb {

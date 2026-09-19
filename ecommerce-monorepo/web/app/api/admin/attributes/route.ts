@@ -2,24 +2,36 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-// Always seed `en` from the legacy `name` so the fallback chain stays intact.
+// Always seed `en` from the legacy columns so the fallback chain stays intact.
 function buildAttributeTranslations(
-  translations: Array<{ locale: string; name?: string }> | undefined,
-  legacyName: string
-): Array<{ locale: string; name: string }> {
-  const rows: Array<{ locale: string; name: string }> = []
+  translations: Array<{ locale: string; name?: string; placeholder?: string | null; helperText?: string | null }> | undefined,
+  legacyName: string,
+  legacyPlaceholder?: string | null,
+  legacyHelperText?: string | null
+): Array<{ locale: string; name: string; placeholder?: string | null; helperText?: string | null }> {
+  const rows: Array<{ locale: string; name: string; placeholder?: string | null; helperText?: string | null }> = []
   const seen = new Set<string>()
 
   if (Array.isArray(translations)) {
     for (const t of translations) {
       if (!t.locale || seen.has(t.locale)) continue
       seen.add(t.locale)
-      rows.push({ locale: t.locale, name: t.name ?? legacyName })
+      rows.push({
+        locale: t.locale,
+        name: t.name ?? legacyName,
+        placeholder: t.placeholder ?? legacyPlaceholder ?? null,
+        helperText: t.helperText ?? legacyHelperText ?? null,
+      })
     }
   }
 
   if (!seen.has('en')) {
-    rows.push({ locale: 'en', name: legacyName })
+    rows.push({
+      locale: 'en',
+      name: legacyName,
+      placeholder: legacyPlaceholder ?? null,
+      helperText: legacyHelperText ?? null,
+    })
   }
 
   return rows
@@ -190,7 +202,7 @@ export async function POST(req: NextRequest) {
         isFilterable: isFilterable !== false,
         isVariant: isVariant || false,
         translations: {
-          create: buildAttributeTranslations(translations, name)
+          create: buildAttributeTranslations(translations, name, placeholder, helperText)
         }
       },
     })

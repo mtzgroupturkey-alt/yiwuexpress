@@ -102,8 +102,8 @@ export async function PUT(
         type,
         options: options || [],
         colorOptions: colorOptions ?? null,
-        placeholder,
-        helperText,
+        placeholder: en?.placeholder ?? placeholder,
+        helperText: en?.helperText ?? helperText,
         isRequired,
         isFilterable,
         isVariant,
@@ -115,8 +115,18 @@ export async function PUT(
         if (!t.locale) continue
         await prisma.attributeTranslation.upsert({
           where: { attributeId_locale: { attributeId: params.id, locale: t.locale } },
-          create: { attributeId: params.id, locale: t.locale, name: t.name ?? attribute.name },
-          update: { name: t.name ?? attribute.name },
+          create: {
+            attributeId: params.id,
+            locale: t.locale,
+            name: t.name ?? attribute.name,
+            placeholder: t.placeholder !== undefined ? t.placeholder : attribute.placeholder,
+            helperText: t.helperText !== undefined ? t.helperText : attribute.helperText,
+          },
+          update: {
+            name: t.name ?? attribute.name,
+            placeholder: t.placeholder !== undefined ? t.placeholder : attribute.placeholder,
+            helperText: t.helperText !== undefined ? t.helperText : attribute.helperText,
+          },
         })
       }
     }

@@ -151,6 +151,26 @@ export function ProductAttributesSection({
     return attribute.name
   }
 
+  const getLocalizedPlaceholder = (attribute: any, tab: 'en' | 'ru' | 'zh') => {
+    if (attribute.translations && Array.isArray(attribute.translations)) {
+      const match = attribute.translations.find((t: any) => t.locale === tab)
+      if (match && match.placeholder && match.placeholder.trim().length > 0) {
+        return match.placeholder
+      }
+    }
+    return attribute.placeholder || ''
+  }
+
+  const getLocalizedHelperText = (attribute: any, tab: 'en' | 'ru' | 'zh') => {
+    if (attribute.translations && Array.isArray(attribute.translations)) {
+      const match = attribute.translations.find((t: any) => t.locale === tab)
+      if (match && match.helperText && match.helperText.trim().length > 0) {
+        return match.helperText
+      }
+    }
+    return attribute.helperText || ''
+  }
+
   const getTranslatableFieldsForLocale = (loc: 'en' | 'ru' | 'zh'): Record<string, string> => {
     const fields: Record<string, string> = {}
     for (const attr of categoryAttributes) {
@@ -254,9 +274,10 @@ export function ProductAttributesSection({
       : (attrTranslations[slug]?.[activeTab] ?? '')
     const colorOpts: { label: string; value: string }[] = attribute.colorOptions || []
 
+    const localizedPlaceholder = getLocalizedPlaceholder(attribute, activeTab)
     const placeholderText = !isEn && attributeValues[slug]
       ? `EN: "${attributeValues[slug]}"`
-      : (attribute.placeholder || '')
+      : (localizedPlaceholder || '')
 
     switch (attribute.type) {
       // ── Text types ──────────────────────────────────────────────────────
@@ -510,9 +531,12 @@ export function ProductAttributesSection({
               </span>
             </Label>
             {renderInput(attribute)}
-            {attribute.helperText && attribute.type !== 'CHECKBOX' && (
-              <p className="text-xs text-[#1a3a5c]/70 mt-1 italic">{attribute.helperText}</p>
-            )}
+            {(() => {
+              const localizedHelper = getLocalizedHelperText(attribute, activeTab)
+              return localizedHelper && attribute.type !== 'CHECKBOX' ? (
+                <p className="text-xs text-[#1a3a5c]/70 mt-1 italic">{localizedHelper}</p>
+              ) : null
+            })()}
           </div>
         ))}
       </CardContent>

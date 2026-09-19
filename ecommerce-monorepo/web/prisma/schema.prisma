@@ -914,6 +914,8 @@ model AttributeTranslation {
   attributeId String
   locale      String
   name        String
+  placeholder String?
+  helperText  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
