@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, use } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -108,8 +108,8 @@ interface Warehouse {
   city: string | null
 }
 
-export default function AdminQuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params)
+export default function AdminQuoteDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = params
   const router = useRouter()
   const { isAdmin, loading: authLoading } = useAdminAuth()
 
