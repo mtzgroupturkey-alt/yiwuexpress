@@ -13,17 +13,28 @@ interface DashboardStats {
   savedAddresses: number
 }
 
-interface QuoteItem {
+interface ProductQuoteItem {
   id: string
-  serviceType: string
-  origin: string
-  destination: string
+  productName: string
+  productSku: string | null
+  productImage: string | null
+  quantity: number
+  unitPriceQuoted: number | null
+  lineTotal: number | null
+}
+
+interface ProductQuote {
+  id: string
+  quoteNumber: string
   status: string
-  price: number | null
+  currency: string
+  subtotal: number | null
+  totalAmount: number | null
   validUntil: string | null
-  description: string | null
+  secureToken: string
+  shippingCountry: string | null
   createdAt: string
-  service: { name: string } | null
+  items: ProductQuoteItem[]
 }
 
 export default function CustomerDashboardPage() {
@@ -35,7 +46,7 @@ export default function CustomerDashboardPage() {
     wishlistItems: 0,
     savedAddresses: 0,
   })
-  const [quotes, setQuotes] = useState<QuoteItem[]>([])
+  const [quotes, setQuotes] = useState<ProductQuote[]>([])
   const [quotesLoading, setQuotesLoading] = useState(true)
   const [loading, setLoading] = useState(true)
 
@@ -81,7 +92,7 @@ export default function CustomerDashboardPage() {
   const loadQuotes = async () => {
     try {
       setQuotesLoading(true)
-      const res = await fetch('/api/quotes', { credentials: 'include' })
+      const res = await fetch('/api/b2b/quotes', { credentials: 'include' })
       if (!res.ok) return
       const data = await res.json()
       setQuotes(data.quotes || [])
@@ -94,7 +105,9 @@ export default function CustomerDashboardPage() {
 
   const statusStyles: Record<string, string> = {
     PENDING: 'bg-amber-100 text-amber-700',
-    APPROVED: 'bg-green-100 text-green-700',
+    SENT: 'bg-blue-100 text-blue-700',
+    VIEWED: 'bg-purple-100 text-purple-700',
+    ACCEPTED: 'bg-green-100 text-green-700',
     REJECTED: 'bg-red-100 text-red-700',
     EXPIRED: 'bg-gray-100 text-gray-600',
   }
@@ -184,7 +197,7 @@ export default function CustomerDashboardPage() {
 
       <div>
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 rounded-xl">
@@ -217,6 +230,18 @@ export default function CustomerDashboardPage() {
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stats.savedAddresses}</p>
                 <p className="text-sm text-gray-500">{t('savedAddresses')}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-indigo-100 rounded-xl">
+                <FileText className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{quotes.length}</p>
+                <p className="text-sm text-gray-500">{t('myQuotes')}</p>
               </div>
             </div>
           </div>
@@ -280,7 +305,7 @@ export default function CustomerDashboardPage() {
                 <FileText className="w-12 h-12 text-gray-300 mb-3" />
                 <p className="text-gray-500 text-center">{t('noQuotesYet')}</p>
                 <Link
-                  href="/quotes"
+                  href="/products"
                   className="mt-3 px-5 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors text-sm"
                 >
                   {t('requestAQuote')}
@@ -291,14 +316,29 @@ export default function CustomerDashboardPage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="divide-y divide-gray-100">
                 {quotes.slice(0, 5).map((q) => (
-                  <div
+                  <Link
                     key={q.id}
-                    className="flex items-center justify-between gap-4 p-4 hover:bg-gray-50 transition-colors"
+                    href={`/quotes/view/${q.secureToken}`}
+                    className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                    {/* Product thumbnail */}
+                    {q.items[0]?.productImage ? (
+                      <img
+                        src={q.items[0].productImage}
+                        alt={q.items[0].productName}
+                        className="w-12 h-12 rounded-lg object-cover shrink-0 border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5 text-gray-400" />
+                      </div>
+                    )}
+
+                    {/* Quote info */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium text-gray-900 truncate">
-                          {q.service?.name || q.serviceType}
+                          {q.quoteNumber}
                         </p>
                         <span
                           className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusClass(q.status)}`}
@@ -306,19 +346,26 @@ export default function CustomerDashboardPage() {
                           {q.status}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-500 truncate">
-                        {q.origin} &rarr; {q.destination}
+                      <p className="text-sm text-gray-500 truncate mt-0.5">
+                        {q.items.length === 1
+                          ? q.items[0].productName
+                          : `${q.items.length} items`}
+                        {q.shippingCountry ? ` · ${q.shippingCountry}` : ''}
                       </p>
                     </div>
+
+                    {/* Price + date */}
                     <div className="text-right shrink-0">
                       <p className="font-semibold text-gray-900">
-                        {q.price != null ? `$${q.price.toFixed(2)}` : '—'}
+                        {q.totalAmount != null
+                          ? `${q.currency} ${q.totalAmount.toFixed(2)}`
+                          : <span className="text-amber-600 text-sm">Pending pricing</span>}
                       </p>
                       <p className="text-xs text-gray-400">
                         {new Date(q.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
