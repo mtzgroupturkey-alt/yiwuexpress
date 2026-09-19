@@ -1055,7 +1055,7 @@ export default function AttributeManager() {
                           <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-600">
                             {dict.attributes?.visible || 'Visible'}
                           </TableHead>
-                          <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-slate-600">
+                          <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-slate-600 min-w-[170px]">
                             {dict.common?.actions || 'Actions'}
                           </TableHead>
                         </TableRow>
@@ -1167,29 +1167,30 @@ export default function AttributeManager() {
                               {/* Actions */}
                               <TableCell className="py-3 text-right">
                                 {!attr.isInherited ? (
-                                  <div className="flex items-center justify-end gap-1">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      type="button"
                                       onClick={() => handleEdit(attr)}
-                                      className="h-8 w-8 p-0 text-slate-500 hover:text-[#1a3a5c] hover:bg-slate-100 rounded-lg"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-2xs transition-all group cursor-pointer"
                                       title="Edit attribute"
                                     >
-                                      <Pencil className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
+                                      <Pencil className="w-3.5 h-3.5 text-blue-600 group-hover:text-white transition-colors" />
+                                      <span>{dict.common?.edit || 'Edit'}</span>
+                                    </button>
+                                    <button
+                                      type="button"
                                       onClick={() => handleDelete(attr.id)}
-                                      className="h-8 w-8 p-0 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 hover:border-red-600 shadow-2xs transition-all group cursor-pointer"
                                       title="Delete attribute"
                                     >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                      <Trash2 className="w-3.5 h-3.5 text-red-600 group-hover:text-white transition-colors" />
+                                      <span>{dict.common?.delete || 'Delete'}</span>
+                                    </button>
                                   </div>
                                 ) : (
-                                  <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-1 rounded">
-                                    {dict.attributes?.readOnly || 'Inherited'}
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                                    {dict.attributes?.readOnly || 'Inherited (Read-only)'}
                                   </span>
                                 )}
                               </TableCell>
@@ -1269,27 +1270,28 @@ export default function AttributeManager() {
                               </div>
 
                               {!attr.isInherited ? (
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
                                     onClick={() => handleEdit(attr)}
-                                    className="h-7 px-2 text-xs text-slate-600 hover:text-[#1a3a5c]"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-2xs transition-all group cursor-pointer"
                                   >
-                                    <Pencil className="w-3.5 h-3.5 mr-1" />
-                                    Edit
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
+                                    <Pencil className="w-3 h-3 text-blue-600 group-hover:text-white transition-colors" />
+                                    <span>{dict.common?.edit || 'Edit'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
                                     onClick={() => handleDelete(attr.id)}
-                                    className="h-7 px-2 text-xs text-red-600 hover:bg-red-50"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 hover:border-red-600 shadow-2xs transition-all group cursor-pointer"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
+                                    <Trash2 className="w-3 h-3 text-red-600 group-hover:text-white transition-colors" />
+                                    <span>{dict.common?.delete || 'Delete'}</span>
+                                  </button>
                                 </div>
                               ) : (
-                                <span className="text-[10px] text-slate-400">Read-only</span>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                  {dict.attributes?.readOnly || 'Read-only'}
+                                </span>
                               )}
                             </div>
                           </div>
