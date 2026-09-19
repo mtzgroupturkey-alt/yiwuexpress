@@ -232,10 +232,11 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                   aria-label={`View photo ${index + 1}`}
                 >
                   <img
-                    src={image}
+                    src={getImageSrc(index)}
                     alt={`${productName} thumbnail ${index + 1}`}
                     className="object-contain w-full h-full p-1"
                     loading="lazy"
+                    onError={() => handleImageError(index)}
                   />
                   {index === safeIndex && (
                     <div className="absolute inset-0 bg-primary-600/5 pointer-events-none" />
@@ -347,7 +348,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
               onClick={handleStageClick}
             >
               <img
-                src={displayImages[safeIndex]}
+                src={getImageSrc(safeIndex)}
                 alt={`${productName} zoomed`}
                 style={{
                   transformOrigin: `${panOrigin.x}% ${panOrigin.y}%`,
@@ -356,6 +357,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                 }}
                 className="max-h-[75vh] max-w-[85vw] object-contain select-none pointer-events-auto shadow-2xl"
                 draggable={false}
+                onError={() => handleImageError(safeIndex)}
               />
             </div>
 
@@ -411,10 +413,11 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                       aria-label={`Jump to photo ${index + 1}`}
                     >
                       <img
-                        src={image}
+                        src={getImageSrc(index)}
                         alt={`Photo thumbnail ${index + 1}`}
                         className="object-contain w-full h-full p-1 bg-white rounded-md"
                         loading="lazy"
+                        onError={() => handleImageError(index)}
                       />
                     </button>
                   ))}
