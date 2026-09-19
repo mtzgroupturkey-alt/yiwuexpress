@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { MapPin, Plus, Edit, Trash2, ArrowLeft, X, Check } from 'lucide-react'
+import { MapPin, Plus, Edit, Trash2, ArrowLeft, X, Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { useTranslations } from 'next-intl'
@@ -12,8 +12,24 @@ interface Address {
   id: string
   fullName: string
   phone: string
-  addressLine: string
-  addressLine2?: string
+  label?: string | null
+  company?: string | null
+  addressLine1: string
+  addressLine2?: string | null
+  city: string
+  state?: string | null
+  postalCode: string
+  country: string
+  isDefault: boolean
+}
+
+interface AddressFormData {
+  fullName: string
+  phone: string
+  label: string
+  company: string
+  addressLine1: string
+  addressLine2: string
   city: string
   state: string
   postalCode: string
@@ -21,10 +37,12 @@ interface Address {
   isDefault: boolean
 }
 
-const INITIAL_FORM: Omit<Address, 'id'> = {
+const INITIAL_FORM: AddressFormData = {
   fullName: '',
   phone: '',
-  addressLine: '',
+  label: '',
+  company: '',
+  addressLine1: '',
   addressLine2: '',
   city: '',
   state: '',
@@ -113,40 +131,53 @@ const COUNTRIES = [
   { code: 'VN', name: 'Vietnam' },
 ]
 
+function countryName(code: string) {
+  return COUNTRIES.find((c) => c.code === code)?.name || code
+}
+
 export default function AddressesPage() {
   const router = useRouter()
-  const { user, isAuthenticated, isLoading: authLoading, isInitialized } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, isInitialized } = useAuth()
   const t = useTranslations('DashboardPages')
   const ta = useTranslations('DashboardPages.addresses')
+
   const [addresses, setAddresses] = useState<Address[]>([])
+  const [listLoading, setListLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [settingDefault, setSettingDefault] = useState<string | null>(null)
+
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<Omit<Address, 'id'>>(INITIAL_FORM)
+  const [formData, setFormData] = useState<AddressFormData>(INITIAL_FORM)
 
+  // Auth guard
   useEffect(() => {
     if (isInitialized && !authLoading && !isAuthenticated) {
       router.push('/login?redirect=/dashboard/addresses')
     }
   }, [isInitialized, authLoading, isAuthenticated, router])
 
-  // Load addresses from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('user_addresses')
-    if (saved) {
-      try {
-        setAddresses(JSON.parse(saved))
-      } catch {
-        setAddresses([])
-      }
+  // Load addresses from API
+  const loadAddresses = useCallback(async () => {
+    try {
+      setListLoading(true)
+      const res = await fetch('/api/addresses', { credentials: 'include' })
+      if (!res.ok) return
+      const data = await res.json()
+      setAddresses(data.data || [])
+    } catch (err) {
+      console.error('Error loading addresses:', err)
+    } finally {
+      setListLoading(false)
     }
   }, [])
 
-  // Save addresses to localStorage whenever they change
   useEffect(() => {
-    if (addresses.length > 0) {
-      localStorage.setItem('user_addresses', JSON.stringify(addresses))
+    if (isInitialized && isAuthenticated) {
+      loadAddresses()
     }
-  }, [addresses])
+  }, [isInitialized, isAuthenticated, loadAddresses])
 
   const resetForm = () => {
     setFormData(INITIAL_FORM)
@@ -158,72 +189,114 @@ export default function AddressesPage() {
     setFormData({
       fullName: address.fullName,
       phone: address.phone,
-      addressLine: address.addressLine,
+      label: address.label || '',
+      company: address.company || '',
+      addressLine1: address.addressLine1,
       addressLine2: address.addressLine2 || '',
       city: address.city,
-      state: address.state,
+      state: address.state || '',
       postalCode: address.postalCode,
       country: address.country,
       isDefault: address.isDefault,
     })
     setEditingId(address.id)
     setIsAdding(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (editingId) {
-      // Update existing
-      setAddresses(prev =>
-        prev.map(addr =>
-          addr.id === editingId
-            ? { ...addr, ...formData }
-            : formData.isDefault
-            ? { ...addr, isDefault: false }
-            : addr
-        )
-      )
-      toast.success(ta('toastUpdated'))
-    } else {
-      // Add new
-      const newAddress: Address = {
-        id: Date.now().toString(),
+    setSaving(true)
+    try {
+      const payload = {
         ...formData,
+        ...(editingId ? { id: editingId } : {}),
       }
-      
-      if (formData.isDefault) {
-        setAddresses(prev => [
-          newAddress,
-          ...prev.map(addr => ({ ...addr, isDefault: false }))
-        ])
-      } else {
-        setAddresses(prev => [...prev, newAddress])
+      const res = await fetch('/api/addresses', {
+        method: editingId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.error || 'Failed to save address')
+        return
       }
-      toast.success(ta('toastAdded'))
+      toast.success(editingId ? ta('toastUpdated') : ta('toastAdded'))
+      resetForm()
+      await loadAddresses()
+      // Notify header to refresh delivery address list
+      window.dispatchEvent(new CustomEvent('addresses-updated'))
+    } catch (err) {
+      console.error('Error saving address:', err)
+      toast.error('Failed to save address')
+    } finally {
+      setSaving(false)
     }
-    
-    resetForm()
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm(ta('deleteConfirm'))) {
-      setAddresses(prev => prev.filter(addr => addr.id !== id))
+  const handleDelete = async (id: string) => {
+    if (!confirm(ta('deleteConfirm'))) return
+    setDeleting(id)
+    try {
+      const res = await fetch(`/api/addresses?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        toast.error('Failed to delete address')
+        return
+      }
       toast.success(ta('toastDeleted'))
+      await loadAddresses()
+      window.dispatchEvent(new CustomEvent('addresses-updated'))
+    } catch (err) {
+      console.error('Error deleting address:', err)
+      toast.error('Failed to delete address')
+    } finally {
+      setDeleting(null)
     }
   }
 
-  const handleSetDefault = (id: string) => {
-    setAddresses(prev =>
-      prev.map(addr => ({
-        ...addr,
-        isDefault: addr.id === id,
-      }))
-    )
-    toast.success(ta('toastDefaultUpdated'))
+  const handleSetDefault = async (id: string) => {
+    const addr = addresses.find((a) => a.id === id)
+    if (!addr) return
+    setSettingDefault(id)
+    try {
+      const res = await fetch('/api/addresses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          id,
+          fullName: addr.fullName,
+          phone: addr.phone,
+          addressLine1: addr.addressLine1,
+          addressLine2: addr.addressLine2,
+          city: addr.city,
+          state: addr.state,
+          postalCode: addr.postalCode,
+          country: addr.country,
+          isDefault: true,
+        }),
+      })
+      if (!res.ok) {
+        toast.error('Failed to update default address')
+        return
+      }
+      toast.success(ta('toastDefaultUpdated'))
+      await loadAddresses()
+      window.dispatchEvent(new CustomEvent('addresses-updated'))
+    } catch (err) {
+      console.error('Error setting default:', err)
+      toast.error('Failed to update default address')
+    } finally {
+      setSettingDefault(null)
+    }
   }
 
-  if (authLoading) {
+  if (!isInitialized || authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -262,14 +335,14 @@ export default function AddressesPage() {
         {isAdding && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-               <h2 className="text-lg font-semibold text-gray-900">
-                 {editingId ? ta('editAddress') : ta('addNewAddress')}
-               </h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {editingId ? ta('editAddress') : ta('addNewAddress')}
+              </h2>
               <button onClick={resetForm} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -277,7 +350,7 @@ export default function AddressesPage() {
                   <input
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                    onChange={(e) => setFormData((p) => ({ ...p, fullName: e.target.value }))}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   />
@@ -287,43 +360,43 @@ export default function AddressesPage() {
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{ta('addressLine1')}</label>
                 <input
                   type="text"
-                  value={formData.addressLine}
-                  onChange={(e) => setFormData(prev => ({ ...prev, addressLine: e.target.value }))}
+                  value={formData.addressLine1}
+                  onChange={(e) => setFormData((p) => ({ ...p, addressLine1: e.target.value }))}
                   required
                   placeholder={ta('addressLine1Placeholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{ta('addressLine2')}</label>
                 <input
                   type="text"
                   value={formData.addressLine2}
-                  onChange={(e) => setFormData(prev => ({ ...prev, addressLine2: e.target.value }))}
+                  onChange={(e) => setFormData((p) => ({ ...p, addressLine2: e.target.value }))}
                   placeholder={ta('addressLine2Placeholder')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{ta('city')}</label>
                   <input
                     type="text"
                     value={formData.city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    onChange={(e) => setFormData((p) => ({ ...p, city: e.target.value }))}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   />
@@ -333,19 +406,19 @@ export default function AddressesPage() {
                   <input
                     type="text"
                     value={formData.state}
-                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{ta('postalCode')}</label>
                   <input
                     type="text"
                     value={formData.postalCode}
-                    onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
+                    onChange={(e) => setFormData((p) => ({ ...p, postalCode: e.target.value }))}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   />
@@ -354,40 +427,50 @@ export default function AddressesPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">{ta('country')}</label>
                   <select
                     value={formData.country}
-                    onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                    onChange={(e) => setFormData((p) => ({ ...p, country: e.target.value }))}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]"
                   >
                     <option value="">{ta('selectCountry')}</option>
-                    {COUNTRIES.map(c => (
-                      <option key={c.code} value={c.code}>{c.name}</option>
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="isDefault"
                   checked={formData.isDefault}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+                  onChange={(e) => setFormData((p) => ({ ...p, isDefault: e.target.checked }))}
                   className="w-4 h-4 text-[#1a3a5c] border-gray-300 rounded focus:ring-[#1a3a5c]"
                 />
-                <label htmlFor="isDefault" className="text-sm text-gray-700">{ta('setAsDefault')}</label>
+                <label htmlFor="isDefault" className="text-sm text-gray-700">
+                  {ta('setAsDefault')}
+                </label>
               </div>
-              
+
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-6 py-2 bg-[#1a3a5c] text-white rounded-lg hover:bg-[#2a5a8c] transition-colors disabled:opacity-60"
                 >
-                  <Check className="w-4 h-4" />
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
                   {editingId ? ta('updateAddress') : ta('saveAddress')}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
+                  disabled={saving}
                   className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   {ta('cancel')}
@@ -398,7 +481,19 @@ export default function AddressesPage() {
         )}
 
         {/* Addresses List */}
-        {addresses.length === 0 ? (
+        {listLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-3" />
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-3/4" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : addresses.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <MapPin className="w-8 h-8 text-gray-400" />
@@ -425,6 +520,11 @@ export default function AddressesPage() {
                   <div className="flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-[#1a3a5c]" />
                     <span className="font-medium text-gray-900">{address.fullName}</span>
+                    {address.label && (
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+                        {address.label}
+                      </span>
+                    )}
                   </div>
                   {address.isDefault && (
                     <span className="px-2 py-1 bg-[#1a3a5c] text-white text-xs rounded-full">
@@ -432,14 +532,18 @@ export default function AddressesPage() {
                     </span>
                   )}
                 </div>
-                
+
                 <div className="text-sm text-gray-600 space-y-1 mb-4">
-                  <p>{address.addressLine}</p>
-                  <p>{address.city}{address.state ? `, ${address.state}` : ''} {address.postalCode}</p>
-                  <p>{COUNTRIES.find(c => c.code === address.country)?.name || address.country}</p>
+                  <p>{address.addressLine1}</p>
+                  {address.addressLine2 && <p>{address.addressLine2}</p>}
+                  <p>
+                    {address.city}
+                    {address.state ? `, ${address.state}` : ''} {address.postalCode}
+                  </p>
+                  <p>{countryName(address.country)}</p>
                   <p className="text-gray-500">{address.phone}</p>
                 </div>
-                
+
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
                   <button
                     onClick={() => handleEdit(address)}
@@ -448,20 +552,32 @@ export default function AddressesPage() {
                     <Edit className="w-4 h-4" />
                     {ta('edit')}
                   </button>
+
                   {!address.isDefault && (
                     <button
                       onClick={() => handleSetDefault(address.id)}
-                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded transition-colors"
+                      disabled={settingDefault === address.id}
+                      className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
                     >
-                      <Check className="w-4 h-4" />
+                      {settingDefault === address.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4" />
+                      )}
                       {ta('setDefault')}
                     </button>
                   )}
+
                   <button
                     onClick={() => handleDelete(address.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
+                    disabled={deleting === address.id}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {deleting === address.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
                     {ta('delete')}
                   </button>
                 </div>

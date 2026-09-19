@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/app/[locale]/design-3/components/Header';
 import { CartDrawer } from '@/app/[locale]/design-3/components/CartDrawer';
 import { CatalogModal } from '@/app/[locale]/design-3/components/CatalogModal';
-import { LocationModal } from '@/app/[locale]/design-3/components/LocationModal';
+import { LocationModal, UserAddressOption } from '@/app/[locale]/design-3/components/LocationModal';
 import { FavoritesModal } from '@/app/[locale]/design-3/components/FavoritesModal';
 import { OrdersModal } from '@/app/[locale]/design-3/components/OrdersModal';
 import { MemberModal } from '@/app/[locale]/design-3/components/MemberModal';
@@ -28,17 +28,85 @@ export function Design3LayoutHeader() {
   const { settings } = useSettings();
   const { wishlistCount, favoritesList, toggleWishlist } = useWishlist();
 
-  const [deliveryAddress, setDeliveryAddress] = useState(
-    settings?.companyAddress || 'China, Yiwu Trade Center'
-  );
+  const DELIVERY_LOCATION_KEY = 'delivery_location';
+
+  // Initialise from localStorage so the value persists across page reloads
+  const [deliveryAddress, setDeliveryAddress] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(DELIVERY_LOCATION_KEY);
+        if (saved) return saved;
+      } catch {}
+    }
+    return settings?.companyAddress || 'Worldwide Shipping';
+  });
+
+  // Persist every change to localStorage
+  const persistDelivery = useCallback((addr: string) => {
+    setDeliveryAddress(addr);
+    try { localStorage.setItem(DELIVERY_LOCATION_KEY, addr); } catch {}
+  }, []);
+
+  // Sync from settings when they arrive (only if still using fallback)
+  useEffect(() => {
+    if (settings?.companyAddress && deliveryAddress === 'Worldwide Shipping') {
+      persistDelivery(settings.companyAddress);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings?.companyAddress]);
+
+  // Fetch user's saved addresses from DB
+  const [userAddresses, setUserAddresses] = useState<UserAddressOption[]>([]);
+
+  const fetchUserAddresses = useCallback(async () => {
+    if (!isAuthenticated) {
+      setUserAddresses([]);
+      return;
+    }
+    try {
+      const res = await fetch('/api/addresses', { credentials: 'include' });
+      if (!res.ok) return;
+      const data = await res.json();
+      const addrs: UserAddressOption[] = (data.data || []).map((a: any) => ({
+        id: a.id,
+        city: a.city,
+        country: a.country,
+        addressLine1: a.addressLine1,
+        isDefault: a.isDefault,
+        label: a.label ?? null,
+      }));
+      setUserAddresses(addrs);
+
+      // Auto-set delivery to default address city+country (only if using generic fallback)
+      const defaultAddr = addrs.find((a) => a.isDefault) ?? addrs[0];
+      if (defaultAddr) {
+        const currentSaved = (() => {
+          try { return localStorage.getItem(DELIVERY_LOCATION_KEY); } catch { return null; }
+        })();
+        const fallbacks = ['Worldwide Shipping', settings?.companyAddress ?? ''];
+        if (!currentSaved || fallbacks.includes(currentSaved)) {
+          persistDelivery(`${defaultAddr.city}, ${defaultAddr.country}`);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch user addresses:', err);
+    }
+  }, [isAuthenticated, settings?.companyAddress, persistDelivery]);
+
+  useEffect(() => {
+    fetchUserAddresses();
+  }, [fetchUserAddresses]);
+
+  // Re-fetch when dashboard addresses page fires this event
+  useEffect(() => {
+    const handler = () => fetchUserAddresses();
+    window.addEventListener('addresses-updated', handler);
+    return () => window.removeEventListener('addresses-updated', handler);
+
+  }, [fetchUserAddresses]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
-
-  React.useEffect(() => {
-    if (settings?.companyAddress && (!deliveryAddress || deliveryAddress === 'China, Yiwu Trade Center')) {
-      setDeliveryAddress(settings.companyAddress);
-    }
-  }, [settings?.companyAddress]);
 
   // Live Categories from DB / Admin Panel
   const { data: categoriesResponse } = useQuery({
@@ -336,8 +404,10 @@ export function Design3LayoutHeader() {
         isOpen={isLocationOpen}
         onClose={() => setIsLocationOpen(false)}
         currentAddress={deliveryAddress}
+        userAddresses={userAddresses}
+        isAuthenticated={isAuthenticated}
         onSelectAddress={(addr) => {
-          setDeliveryAddress(addr);
+          persistDelivery(addr);
           setIsLocationOpen(false);
         }}
       />
