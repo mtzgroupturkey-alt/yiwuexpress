@@ -662,42 +662,48 @@ async function main() {
 
   // 9. Create Shipping Methods
   console.log('Creating shipping methods...')
-  const shippingMethods = await Promise.all([
-    prisma.shippingMethod.upsert({
-      where: { slug: 'standard-air-freight' },
-      update: {},
-      create: {
-        name: 'Standard Air Freight',
-        slug: 'standard-air-freight',
-        description: 'Standard air freight shipping - 7-10 business days via various airlines',
-        defaultStatuses: ['BOOKED', 'IN_TRANSIT', 'CUSTOMS', 'DELIVERED'],
-        isActive: true,
-      },
-    }),
-    prisma.shippingMethod.upsert({
-      where: { slug: 'express-air-freight' },
-      update: {},
-      create: {
-        name: 'Express Air Freight',
-        slug: 'express-air-freight',
-        description: 'Express air freight shipping - 3-5 business days via DHL/FedEx',
-        defaultStatuses: ['BOOKED', 'IN_TRANSIT', 'DELIVERED'],
-        isActive: true,
-      },
-    }),
-    prisma.shippingMethod.upsert({
-      where: { slug: 'sea-freight' },
-      update: {},
-      create: {
-        name: 'Sea Freight',
-        slug: 'sea-freight',
-        description: 'Economy sea freight shipping - 30-45 business days via ocean carriers',
-        defaultStatuses: ['BOOKED', 'LOADING', 'IN_TRANSIT', 'PORT_ARRIVAL', 'CUSTOMS', 'DELIVERED'],
-        isActive: true,
-      },
-    }),
-  ])
-  console.log('✅ Shipping methods created')
+  let shippingMethodsCount = 0
+  if ((prisma as any).shippingMethod) {
+    const shippingMethods = await Promise.all([
+      (prisma as any).shippingMethod.upsert({
+        where: { slug: 'standard-air-freight' },
+        update: {},
+        create: {
+          name: 'Standard Air Freight',
+          slug: 'standard-air-freight',
+          description: 'Standard air freight shipping - 7-10 business days via various airlines',
+          defaultStatuses: ['BOOKED', 'IN_TRANSIT', 'CUSTOMS', 'DELIVERED'],
+          isActive: true,
+        },
+      }),
+      (prisma as any).shippingMethod.upsert({
+        where: { slug: 'express-air-freight' },
+        update: {},
+        create: {
+          name: 'Express Air Freight',
+          slug: 'express-air-freight',
+          description: 'Express air freight shipping - 3-5 business days via DHL/FedEx',
+          defaultStatuses: ['BOOKED', 'IN_TRANSIT', 'DELIVERED'],
+          isActive: true,
+        },
+      }),
+      (prisma as any).shippingMethod.upsert({
+        where: { slug: 'sea-freight' },
+        update: {},
+        create: {
+          name: 'Sea Freight',
+          slug: 'sea-freight',
+          description: 'Economy sea freight shipping - 30-45 business days via ocean carriers',
+          defaultStatuses: ['BOOKED', 'LOADING', 'IN_TRANSIT', 'PORT_ARRIVAL', 'CUSTOMS', 'DELIVERED'],
+          isActive: true,
+        },
+      }),
+    ])
+    shippingMethodsCount = shippingMethods.length
+    console.log('✅ Shipping methods created')
+  } else {
+    console.log('ℹ️ ShippingMethod model not present in schema, skipped')
+  }
 
   console.log('\n🎉 Sample data seeding completed successfully!')
   console.log('\n📊 Summary:')
@@ -712,7 +718,7 @@ async function main() {
   console.log(`   - ${heroSlides.length} Hero Slides`)
   console.log(`   - ${suppliers.length} Suppliers`)
   console.log(`   - ${testimonials.length} Testimonials`)
-  console.log(`   - ${shippingMethods.length} Shipping Methods`)
+  console.log(`   - ${shippingMethodsCount} Shipping Methods`)
   console.log('\n✅ You can now log in to the admin panel!')
 }
 
