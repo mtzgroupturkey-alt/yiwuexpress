@@ -103,7 +103,7 @@ jobs:
             echo "📦 Installing dependencies on server..."
             export npm_config_cache="/tmp/.npm-cache"
             mkdir -p /tmp/.npm-cache
-            npm install --legacy-peer-deps --cache /tmp/.npm-cache
+            npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline --cache /tmp/.npm-cache
 
             echo "🔧 Generating Prisma client..."
             npx prisma generate
