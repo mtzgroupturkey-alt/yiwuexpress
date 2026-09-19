@@ -13,6 +13,7 @@ import {
   User as UserIcon,
 } from 'lucide-react'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
+import { useAdminAuth } from '@/app/admin/contexts/AdminAuthContext'
 import { navigationConfig, ADMIN_NAV_ITEMS, isItemActive } from './navigationConfig'
 import { SidebarGroup } from './SidebarGroup'
 import { SidebarItem } from './SidebarItem'
@@ -46,6 +47,7 @@ function AdminSidebarContent({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { dict } = useAdminLocale()
+  const { user } = useAdminAuth()
 
   // Track expanded groups (all groups like Settings, Products, Buying are expanded by default or loaded from localStorage)
   const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
@@ -273,7 +275,7 @@ function AdminSidebarContent({
         <Link
           href="/admin/users"
           onClick={() => isMobile && setMobileMenuOpen(false)}
-          title="Administrator (admin@dromkok.com)"
+          title={`${user?.name || 'Administrator'} (${user?.email || 'admin@example.com'})`}
           className={cn(
             'rounded-xl hover:bg-white border border-transparent hover:border-slate-200/80 transition-all group',
             isCollapsed
@@ -281,13 +283,19 @@ function AdminSidebarContent({
               : 'flex items-center gap-2.5 px-2.5 py-1.5'
           )}
         >
-          <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
-            <UserIcon size={14} />
-          </div>
+          {user?.profilePhoto ? (
+            <div className="w-8 h-8 rounded-full shrink-0 shadow-xs overflow-hidden relative">
+              <Image src={user.profilePhoto} alt="Profile" fill className="object-cover" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
+              <UserIcon size={14} />
+            </div>
+          )}
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-slate-900 truncate">Administrator</div>
-              <div className="text-[11px] text-slate-400 truncate">admin@dromkok.com</div>
+              <div className="text-xs font-bold text-slate-900 truncate">{user?.name || 'Administrator'}</div>
+              <div className="text-[11px] text-slate-400 truncate">{user?.email || 'admin@example.com'}</div>
             </div>
           )}
         </Link>
