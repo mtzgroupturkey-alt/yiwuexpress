@@ -7,12 +7,16 @@ import { api } from '@/lib/api'
 import { User, Mail, Phone, Globe, Loader2, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Container } from '@/components/design-system/Container'
+
+const COUNTRY_CODES = ['AF', 'AL', 'DZ', 'AR', 'AU', 'AT', 'AZ', 'BD', 'BY', 'BE', 'BR', 'BG', 'CA', 'CL', 'CN', 'CO', 'HR', 'CZ', 'DK', 'EG', 'EE', 'FI', 'FR', 'GE', 'DE', 'GR', 'HK', 'HU', 'IN', 'ID', 'IR', 'IQ', 'IE', 'IL', 'IT', 'JP', 'KZ', 'KE', 'KR', 'KW', 'LV', 'LT', 'MY', 'MX', 'MA', 'NL', 'NZ', 'NG', 'NO', 'PK', 'PH', 'PL', 'PT', 'QA', 'RO', 'RU', 'SA', 'RS', 'SG', 'SK', 'SI', 'ZA', 'ES', 'SE', 'CH', 'TW', 'TJ', 'TH', 'TN', 'TR', 'TM', 'UA', 'AE', 'GB', 'US', 'UZ', 'VN']
 
 export default function ProfilePage() {
   const t = useTranslations('DashboardPages')
   const tp = useTranslations('DashboardPages.profile')
+  const locale = useLocale()
+  const regionNames = new Intl.DisplayNames([locale === 'zh' ? 'zh-CN' : locale], { type: 'region' })
   const router = useRouter()
   const { user, isAuthenticated, isLoading: authLoading, isInitialized, updateUser } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
@@ -142,7 +146,7 @@ export default function ProfilePage() {
             {tp('title')}
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Manage personal details, avatar photo, and account contacts
+            {tp('description')}
           </p>
         </div>
 
@@ -204,7 +208,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">{user?.name}</h2>
                   <span className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full uppercase tracking-wider">
-                    {user?.role === 'USER' ? 'Verified Buyer' : user?.role}
+                    {user?.role === 'USER' ? tp('verifiedBuyer') : user?.role}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">{user?.email}</p>
@@ -299,83 +303,9 @@ export default function ProfilePage() {
                   className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] transition-all bg-white"
                 >
                   <option value="">{tp('selectCountry')}</option>
-                  <option value="AF">Afghanistan</option>
-                  <option value="AL">Albania</option>
-                  <option value="DZ">Algeria</option>
-                  <option value="AR">Argentina</option>
-                  <option value="AU">Australia</option>
-                  <option value="AT">Austria</option>
-                  <option value="AZ">Azerbaijan</option>
-                  <option value="BD">Bangladesh</option>
-                  <option value="BY">Belarus</option>
-                  <option value="BE">Belgium</option>
-                  <option value="BR">Brazil</option>
-                  <option value="BG">Bulgaria</option>
-                  <option value="CA">Canada</option>
-                  <option value="CL">Chile</option>
-                  <option value="CN">China</option>
-                  <option value="CO">Colombia</option>
-                  <option value="HR">Croatia</option>
-                  <option value="CZ">Czech Republic</option>
-                  <option value="DK">Denmark</option>
-                  <option value="EG">Egypt</option>
-                  <option value="EE">Estonia</option>
-                  <option value="FI">Finland</option>
-                  <option value="FR">France</option>
-                  <option value="GE">Georgia</option>
-                  <option value="DE">Germany</option>
-                  <option value="GR">Greece</option>
-                  <option value="HK">Hong Kong</option>
-                  <option value="HU">Hungary</option>
-                  <option value="IN">India</option>
-                  <option value="ID">Indonesia</option>
-                  <option value="IR">Iran</option>
-                  <option value="IQ">Iraq</option>
-                  <option value="IE">Ireland</option>
-                  <option value="IL">Israel</option>
-                  <option value="IT">Italy</option>
-                  <option value="JP">Japan</option>
-                  <option value="KZ">Kazakhstan</option>
-                  <option value="KE">Kenya</option>
-                  <option value="KR">South Korea</option>
-                  <option value="KW">Kuwait</option>
-                  <option value="LV">Latvia</option>
-                  <option value="LT">Lithuania</option>
-                  <option value="MY">Malaysia</option>
-                  <option value="MX">Mexico</option>
-                  <option value="MA">Morocco</option>
-                  <option value="NL">Netherlands</option>
-                  <option value="NZ">New Zealand</option>
-                  <option value="NG">Nigeria</option>
-                  <option value="NO">Norway</option>
-                  <option value="PK">Pakistan</option>
-                  <option value="PH">Philippines</option>
-                  <option value="PL">Poland</option>
-                  <option value="PT">Portugal</option>
-                  <option value="QA">Qatar</option>
-                  <option value="RO">Romania</option>
-                  <option value="RU">Russia</option>
-                  <option value="SA">Saudi Arabia</option>
-                  <option value="RS">Serbia</option>
-                  <option value="SG">Singapore</option>
-                  <option value="SK">Slovakia</option>
-                  <option value="SI">Slovenia</option>
-                  <option value="ZA">South Africa</option>
-                  <option value="ES">Spain</option>
-                  <option value="SE">Sweden</option>
-                  <option value="CH">Switzerland</option>
-                  <option value="TW">Taiwan</option>
-                  <option value="TJ">Tajikistan</option>
-                  <option value="TH">Thailand</option>
-                  <option value="TN">Tunisia</option>
-                  <option value="TR">Turkey</option>
-                  <option value="TM">Turkmenistan</option>
-                  <option value="UA">Ukraine</option>
-                  <option value="AE">United Arab Emirates</option>
-                  <option value="GB">United Kingdom</option>
-                  <option value="US">United States</option>
-                  <option value="UZ">Uzbekistan</option>
-                  <option value="VN">Vietnam</option>
+                  {COUNTRY_CODES.map(code => (
+                    <option key={code} value={code}>{regionNames.of(code)}</option>
+                  ))}
                 </select>
               </div>
 

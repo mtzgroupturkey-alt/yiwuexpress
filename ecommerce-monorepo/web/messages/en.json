@@ -1307,7 +1307,9 @@
       "photoUploaded": "Photo uploaded successfully!",
       "photoUploadFailed": "Failed to upload photo",
       "profileUpdated": "Profile updated successfully!",
-      "profileUpdateFailed": "Failed to update profile"
+      "profileUpdateFailed": "Failed to update profile",
+      "description": "Manage personal details, avatar photo, and account contacts",
+      "verifiedBuyer": "Verified Buyer"
     },
     "orders": {
       "title": "My Orders",

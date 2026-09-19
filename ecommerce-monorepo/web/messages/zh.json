@@ -1324,7 +1324,9 @@
       "photoUploaded": "照片上传成功！",
       "photoUploadFailed": "照片上传失败",
       "profileUpdated": "个人资料更新成功！",
-      "profileUpdateFailed": "更新个人资料失败"
+      "profileUpdateFailed": "更新个人资料失败",
+      "description": "管理个人详细信息、头像照片和帐户联系人",
+      "verifiedBuyer": "认证买家"
     },
     "orders": {
       "title": "我的订单",
