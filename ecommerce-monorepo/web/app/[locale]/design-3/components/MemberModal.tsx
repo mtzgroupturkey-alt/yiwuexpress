@@ -3,6 +3,7 @@ import { X, Tag, Sparkles, ShieldCheck, Gift, Truck, Check, User as UserIcon, Lo
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useSettings } from '@/components/SettingsProvider';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
   onClose,
 }) => {
   const companyName = useCompanyName();
+  const { tModals } = useStorefrontTranslation();
   const { settings } = useSettings();
   const { formatPrice } = useCurrency();
   const { user, isAuthenticated, logout } = useAuth();
@@ -78,7 +80,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-black text-white">{user.name || user.email}</h3>
                     <span className="bg-[#F5A602] text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-                      {user.role === 'ADMIN' ? 'Administrator' : user.role === 'SUPPLIER' ? 'Verified Supplier' : 'VIP Member'}
+                      {user.role === 'ADMIN' ? tModals('administrator') : user.role === 'SUPPLIER' ? tModals('verifiedSupplier') : tModals('vipMember')}
                     </span>
                   </div>
                   <p className="text-xs text-blue-200 mt-0.5">{user.email}</p>
@@ -90,15 +92,15 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl p-3.5 flex items-center justify-between">
                 <div>
                   <span className="text-[11px] uppercase tracking-wider text-blue-200 block font-semibold">
-                    Available Club Points
+                    {tModals('availablePoints')}
                   </span>
                   <div className="text-2xl font-black text-amber-300">
-                    1,280 <span className="text-sm font-semibold text-white">points</span>
+                    1,280 <span className="text-sm font-semibold text-white">{tModals('pointsUnit')}</span>
                   </div>
                 </div>
                 <div className="text-right text-xs">
-                  <span className="text-blue-100">1 point = 1.00 {currency}</span>
-                  <div className="text-amber-300 font-bold">= 1,280.00 {currency} value</div>
+                  <span className="text-blue-100">{tModals('pointRate', { currency })}</span>
+                  <div className="text-amber-300 font-bold">{tModals('pointsValue', { amount: '1,280.00', currency })}</div>
                 </div>
               </div>
             </>
@@ -107,22 +109,22 @@ export const MemberModal: React.FC<MemberModalProps> = ({
               <div className="w-14 h-14 rounded-full bg-white/10 border border-white/20 text-white flex items-center justify-center mx-auto mb-3">
                 <UserIcon className="w-7 h-7 text-amber-400" />
               </div>
-              <h3 className="text-xl font-black text-white">Welcome to {companyName} Club</h3>
+              <h3 className="text-xl font-black text-white">{tModals('memberWelcome', { name: companyName })}</h3>
               <p className="text-xs text-blue-200 mt-1 max-w-sm mx-auto">
-                Sign in to manage your orders, access member pricing, and track live deliveries.
+                {tModals('memberWelcomeDesc')}
               </p>
               <div className="flex items-center justify-center gap-3 mt-4">
                 <button
                   onClick={() => handleNavigate(`/${locale}/login`)}
                   className="px-5 py-2 rounded-xl bg-[#F5A602] hover:bg-[#E09500] text-slate-950 text-xs font-black transition-colors cursor-pointer shadow-md"
                 >
-                  Sign In
+                  {tModals('signIn')}
                 </button>
                 <button
                   onClick={() => handleNavigate(`/${locale}/register`)}
                   className="px-5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-colors cursor-pointer"
                 >
-                  Create Account
+                  {tModals('createAccount')}
                 </button>
               </div>
             </div>
@@ -134,7 +136,7 @@ export const MemberModal: React.FC<MemberModalProps> = ({
           {isAuthenticated && user ? (
             <>
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Account Quick Links
+                {tModals('accountQuickLinks')}
               </h4>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -142,28 +144,28 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   className="p-3 rounded-xl border border-slate-200 hover:border-[#00407a] hover:bg-blue-50/50 flex flex-col items-center justify-center text-center transition-all cursor-pointer group shadow-2xs"
                 >
                   <LayoutDashboard className="w-5 h-5 text-[#00407a] mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-bold text-slate-800">Dashboard</span>
+                  <span className="text-xs font-bold text-slate-800">{tModals('dashboard')}</span>
                 </button>
                 <button
                   onClick={() => handleNavigate(`/${locale}/dashboard/orders`)}
                   className="p-3 rounded-xl border border-slate-200 hover:border-[#00407a] hover:bg-blue-50/50 flex flex-col items-center justify-center text-center transition-all cursor-pointer group shadow-2xs"
                 >
                   <Package className="w-5 h-5 text-emerald-600 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-bold text-slate-800">My Orders</span>
+                  <span className="text-xs font-bold text-slate-800">{tModals('myOrders')}</span>
                 </button>
                 <button
                   onClick={() => handleNavigate(`/${locale}/dashboard/addresses`)}
                   className="p-3 rounded-xl border border-slate-200 hover:border-[#00407a] hover:bg-blue-50/50 flex flex-col items-center justify-center text-center transition-all cursor-pointer group shadow-2xs"
                 >
                   <MapPin className="w-5 h-5 text-amber-600 mb-1 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-bold text-slate-800">Addresses</span>
+                  <span className="text-xs font-bold text-slate-800">{tModals('addresses')}</span>
                 </button>
               </div>
             </>
           ) : null}
 
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-            Active Member Privileges
+            {tModals('activePrivileges')}
           </h4>
 
           <div className="space-y-2.5">
@@ -172,8 +174,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div className="text-xs">
-                <strong className="text-slate-900 font-bold block">Instant Cashback & Bonuses</strong>
-                <span className="text-slate-500">Earn reward points on every order across hypermarket, furniture, and electronics.</span>
+                <strong className="text-slate-900 font-bold block">{tModals('cashbackTitle')}</strong>
+                <span className="text-slate-500">{tModals('cashbackDesc')}</span>
               </div>
             </div>
 
@@ -182,13 +184,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 <Truck className="w-4 h-4" />
               </div>
               <div className="text-xs">
-                <strong className="text-slate-900 font-bold block">Express Priority Dispatch</strong>
-                <span className="text-slate-500">
-                  Direct courier delivery with guaranteed express arrival slots on orders above{' '}
-                  <strong className="font-semibold text-slate-700" suppressHydrationWarning>
-                    {formatPrice(typeof settings?.freeShippingThreshold === 'number' ? settings.freeShippingThreshold : (parseFloat(String(settings?.freeShippingThreshold)) || 35))}
-                  </strong>.
-                </span>
+                <strong className="text-slate-900 font-bold block">{tModals('expressDispatchTitle')}</strong>
+                <span className="text-slate-500">{tModals('expressDispatchDesc')}</span>
               </div>
             </div>
 
@@ -197,8 +194,8 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 <Gift className="w-4 h-4" />
               </div>
               <div className="text-xs">
-                <strong className="text-slate-900 font-bold block">Exclusive Member Price Drops</strong>
-                <span className="text-slate-500">Access to closed VIP sales on factory direct electronics and home selections.</span>
+                <strong className="text-slate-900 font-bold block">{tModals('exclusiveDropsTitle')}</strong>
+                <span className="text-slate-500">{tModals('exclusiveDropsDesc')}</span>
               </div>
             </div>
           </div>
@@ -210,14 +207,14 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                 className="flex-1 border border-red-200 text-red-600 hover:bg-red-50 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Sign Out</span>
+                <span>{tModals('signOut')}</span>
               </button>
             ) : null}
             <button
               onClick={onClose}
               className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
             >
-              Close
+              {tModals('close')}
             </button>
           </div>
         </div>

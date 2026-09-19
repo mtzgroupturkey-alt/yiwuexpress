@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { MOTION_TOKENS } from '@/lib/motion';
 import { 
   Zap, 
@@ -184,6 +185,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const currentLocale = useLocale();
   const router = useRouter();
+  const { tHeroBanner, tBadge } = useStorefrontTranslation();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   // Fetch dynamic hero slides & side banners from live DB
@@ -314,12 +316,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 style={{ backgroundColor: currentSlide.badgeColor || '#F5A602' }}
               >
                 <Zap className="w-3.5 h-3.5 fill-slate-950" />
-                {currentSlide.tag}
+                {tBadge(currentSlide.tag)}
               </span>
             )}
             <span className="inline-flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Official Distributor Guaranteed
+              {tHeroBanner('officialDistributor')}
             </span>
           </div>
 
@@ -363,7 +365,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 onClick={handlePrimaryClick}
                 className="bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-black px-5 py-2.5 rounded-lg text-sm flex items-center gap-2 transition-all cursor-pointer shadow-lg hover:shadow-xl active:scale-95"
               >
-                <span>{currentSlide.btnText || currentSlide.ctaText || 'Shop Deals Now'}</span>
+                <span>{currentSlide.btnText || currentSlide.ctaText || tHeroBanner('shopDealsNow')}</span>
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </motion.button>
 
@@ -375,7 +377,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 className="bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold px-4 py-2.5 rounded-lg text-sm flex items-center gap-2 transition-colors cursor-pointer backdrop-blur-md shadow-xs"
               >
                 <Clock className="w-4 h-4 text-amber-300" />
-                <span>{currentSlide.secondaryBtnText || currentSlide.secondaryCtaText || 'View Flash Drops'}</span>
+                <span>{currentSlide.secondaryBtnText || currentSlide.secondaryCtaText || tHeroBanner('viewFlashDrops')}</span>
               </motion.button>
             </div>
 
@@ -415,8 +417,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 ))}
               </div>
 
-              <span className="hidden sm:inline-block">
-                Slide <strong className="text-white font-bold">{currentSlideIndex + 1}</strong> / {slides.length}
+              <span className="hidden sm:inline-block text-white font-bold">
+                {tHeroBanner('slideProgress', { current: currentSlideIndex + 1, total: slides.length })}
               </span>
             </div>
           </div>

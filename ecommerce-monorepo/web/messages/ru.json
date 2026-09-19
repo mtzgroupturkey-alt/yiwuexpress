@@ -1464,6 +1464,12 @@
     "backHome": "На главную"
   },
   "Storefront": {
+    "heroBanner": {
+      "officialDistributor": "Официальный дистрибьютор",
+      "shopDealsNow": "Смотреть скидки",
+      "viewFlashDrops": "Смотреть новые поступления",
+      "slideProgress": "Слайд {current} / {total}"
+    },
     "categories": {
       "title": "Категории товаров",
       "subtitle": "Качественная мебель, посуда, освещение и декор для каждого дома",
@@ -1582,8 +1588,14 @@
       "removeItem": "Удалить товар"
     },
     "modals": {
-      "quickAdd": "Быстрый просмотр",
-      "viewFullPdp": "Полные характеристики и страница товара",
+      "fullCatalog": "Полный каталог",
+      "catalogSubtitle": "Тысячи товаров напрямую от производителей",
+      "allProducts": "Все товары",
+      "subcategories": "Подкатегории",
+      "viewAllDeptGoods": "Смотреть все {dept}",
+      "backToCategories": "Назад к категориям",
+      "quickAdd": "Быстрое добавление",
+      "viewFullPdp": "Полная информация о товаре",
       "addedToCart": "Добавлено в корзину",
       "inStock": "В наличии (осталось {count} шт.)",
       "outOfStock": "Нет в наличии",

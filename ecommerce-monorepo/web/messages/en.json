@@ -1464,6 +1464,12 @@
     "backHome": "Back to Home"
   },
   "Storefront": {
+    "heroBanner": {
+      "officialDistributor": "Official Distributor Guaranteed",
+      "shopDealsNow": "Shop Deals Now",
+      "viewFlashDrops": "View Flash Drops",
+      "slideProgress": "Slide {current} / {total}"
+    },
     "categories": {
       "title": "Shop by Category",
       "subtitle": "Quality furniture, kitchenware, lighting, and decor for every living space",
@@ -1582,6 +1588,12 @@
       "removeItem": "Remove item"
     },
     "modals": {
+      "fullCatalog": "Full Product Catalog",
+      "catalogSubtitle": "Browse thousands of products direct from manufacturers",
+      "allProducts": "All Products",
+      "subcategories": "Subcategories",
+      "viewAllDeptGoods": "View All {dept}",
+      "backToCategories": "Back to Categories",
       "quickAdd": "Quick Add",
       "viewFullPdp": "View Full Product Page & Specs",
       "addedToCart": "Added to Cart",

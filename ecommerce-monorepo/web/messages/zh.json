@@ -1481,6 +1481,12 @@
     "backHome": "返回首页"
   },
   "Storefront": {
+    "heroBanner": {
+      "officialDistributor": "官方经销商保障",
+      "shopDealsNow": "立即购买特惠",
+      "viewFlashDrops": "查看限时折扣",
+      "slideProgress": "幻灯片 {current} / {total}"
+    },
     "categories": {
       "title": "商品分类导航",
       "subtitle": "优质家居家具、精选厨具、灯饰照明与生活美学好物",
@@ -1599,8 +1605,14 @@
       "removeItem": "删除商品"
     },
     "modals": {
-      "quickAdd": "快速预览",
-      "viewFullPdp": "查看完整商品详情与参数",
+      "fullCatalog": "完整商品目录",
+      "catalogSubtitle": "直接浏览数千款工厂货源",
+      "allProducts": "所有商品",
+      "subcategories": "子分类",
+      "viewAllDeptGoods": "查看所有 {dept}",
+      "backToCategories": "返回分类",
+      "quickAdd": "快速添加",
+      "viewFullPdp": "查看商品详情和规格",
       "addedToCart": "已成功加入购物车",
       "inStock": "现货（仅剩 {count} 件）",
       "outOfStock": "暂时缺货",

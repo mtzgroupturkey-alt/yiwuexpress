@@ -187,6 +187,9 @@ export function useStorefrontTranslation() {
       tPdp: (key: string, values?: any) => {
         try { return (t as any)(`pdp.${key}`, values); } catch { return key; }
       },
+      tHeroBanner: (key: string, values?: any) => {
+        try { return (t as any)(`heroBanner.${key}`, values); } catch { return key; }
+      },
     };
   } catch (error) {
     // Graceful fallback for non-intl contexts
@@ -212,6 +215,7 @@ export function useStorefrontTranslation() {
       tModals: fallbackFn,
       tShop: fallbackFn,
       tPdp: fallbackFn,
+      tHeroBanner: fallbackFn,
     };
   }
 }

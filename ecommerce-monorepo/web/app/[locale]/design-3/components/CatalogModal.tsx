@@ -177,7 +177,7 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
                   className="flex items-center gap-1.5 text-xs font-bold text-[#00407a] bg-blue-50 px-3 py-1.5 rounded-lg active:scale-95 transition-all"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  <span>Back to Categories</span>
+                  <span>{tModals('backToCategories')}</span>
                 </button>
               </div>
 
