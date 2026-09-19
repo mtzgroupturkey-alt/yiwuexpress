@@ -44,16 +44,41 @@ jobs:
           PORT="${SERVER_PORT:-22}"
 
           mkdir -p ~/.ssh
-          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          cat << 'EOF' > ~/.ssh/config
+          Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            ServerAliveInterval 15
+            ServerAliveCountMax 4
+            TCPKeepAlive yes
+            ConnectTimeout 15
+          EOF
+          chmod 600 ~/.ssh/config
 
-          # Sync source files to server (keep node_modules, .env, .next on server)
-          sshpass -p "$SERVER_PASSWORD" rsync -az --delete \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.next' \
-            --exclude='.env*' \
-            -e "ssh -p $PORT" \
-            ecommerce-monorepo/web/ ${SERVER_USER}@${SERVER_HOST}:${TARGET}/
+          # Sync source files to server with retry logic
+          SUCCESS=0
+          for attempt in 1 2 3 4; do
+            echo "🔄 Sync attempt $attempt..."
+            if sshpass -p "$SERVER_PASSWORD" rsync -az --delete \
+              --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='.next' \
+              --exclude='.env*' \
+              -e "ssh -p $PORT -o ConnectTimeout=15 -o ServerAliveInterval=15" \
+              ecommerce-monorepo/web/ ${SERVER_USER}@${SERVER_HOST}:${TARGET}/; then
+              echo "✅ Files synced successfully."
+              SUCCESS=1
+              break
+            else
+              echo "⚠️ Sync attempt $attempt failed. Waiting 5 seconds before retrying..."
+              sleep 5
+            fi
+          done
+
+          if [ $SUCCESS -ne 1 ]; then
+            echo "❌ All sync attempts failed."
+            exit 1
+          fi
 
       - name: Build and restart on server
         uses: appleboy/ssh-action@v1.2.0
