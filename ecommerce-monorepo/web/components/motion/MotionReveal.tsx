@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface MotionRevealProps {
   children: React.ReactNode;
@@ -17,10 +17,26 @@ export const MotionReveal: React.FC<MotionRevealProps> = ({
   className = '',
 }) => {
   const [isMounted, setIsMounted] = useState(false);
-  const shouldReduceMotion = useReducedMotion();
+  const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setShouldReduceMotion(mediaQuery.matches);
+
+      const handleChange = (event: MediaQueryListEvent) => {
+        setShouldReduceMotion(event.matches);
+      };
+
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
+      } else if ((mediaQuery as any).addListener) {
+        (mediaQuery as any).addListener(handleChange);
+        return () => (mediaQuery as any).removeListener(handleChange);
+      }
+    }
   }, []);
 
   // During SSR and initial client hydration, or when reduced motion is requested,

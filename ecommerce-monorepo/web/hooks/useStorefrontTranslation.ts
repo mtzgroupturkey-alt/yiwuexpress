@@ -82,17 +82,29 @@ const BADGE_MAP: Record<string, string> = {
   'alpha 9 ai gen7': 'alpha9Gen7',
 };
 
-function resolveBadge(tFunc: (key: string, values?: any) => string, text?: string, type?: string): string {
+function resolveBadge(
+  tFunc: (key: string, values?: any) => string,
+  text?: string,
+  type?: string,
+  hasKey?: (key: string) => boolean
+): string {
   if (!text && !type) return '';
   const raw = (text || '').trim();
   const lower = raw.toLowerCase();
 
-  // 1. Direct lookup by text
-  if (lower && BADGE_MAP[lower]) {
+  const safeTranslate = (key: string): string | null => {
+    if (hasKey && !hasKey(key)) return null;
     try {
-      const res = tFunc(`badges.${BADGE_MAP[lower]}`);
-      if (res && res !== `badges.${BADGE_MAP[lower]}` && !res.startsWith('badges.')) return res;
+      const res = tFunc(key);
+      if (res && res !== key && !res.startsWith('badges.')) return res;
     } catch {}
+    return null;
+  };
+
+  // 1. Direct lookup by text in known BADGE_MAP
+  if (lower && BADGE_MAP[lower]) {
+    const res = safeTranslate(`badges.${BADGE_MAP[lower]}`);
+    if (res) return res;
   }
 
   // 2. Percentage promo (e.g. "-18% PROMO")
@@ -101,15 +113,11 @@ function resolveBadge(tFunc: (key: string, values?: any) => string, text?: strin
     const prefix = promoMatch[1].trim();
     const suffix = promoMatch[2].trim().toLowerCase();
     if (suffix && BADGE_MAP[suffix]) {
-      try {
-        const res = tFunc(`badges.${BADGE_MAP[suffix]}`);
-        if (res && !res.startsWith('badges.')) return `${prefix} ${res}`;
-      } catch {}
+      const res = safeTranslate(`badges.${BADGE_MAP[suffix]}`);
+      if (res) return `${prefix} ${res}`;
     }
-    try {
-      const res = tFunc('badges.promo');
-      if (res && !res.startsWith('badges.')) return `${prefix} ${res}`;
-    } catch {}
+    const promoRes = safeTranslate('badges.promo');
+    if (promoRes) return `${prefix} ${promoRes}`;
   }
 
   // 3. Lookup by badge type
@@ -117,18 +125,16 @@ function resolveBadge(tFunc: (key: string, values?: any) => string, text?: strin
     const typeLower = type.toLowerCase();
     const mappedKey = BADGE_MAP[typeLower] || (typeLower === 'promo' ? 'promo' : typeLower === 'hot' ? 'hot' : typeLower === 'bestseller' ? 'bestseller' : typeLower === 'warranty' ? 'warranty' : null);
     if (mappedKey) {
-      try {
-        const res = tFunc(`badges.${mappedKey}`);
-        if (res && res !== `badges.${mappedKey}` && !res.startsWith('badges.')) return res;
-      } catch {}
+      const res = safeTranslate(`badges.${mappedKey}`);
+      if (res) return res;
     }
   }
 
-  // 4. Fallback: try raw key or return original text
-  try {
-    const direct = tFunc(`badges.${raw}`);
-    if (direct && direct !== `badges.${raw}` && !direct.startsWith('badges.')) return direct;
-  } catch {}
+  // 4. Fallback: only check badges dictionary if raw looks like a valid alphanumeric identifier
+  if (/^[a-zA-Z0-9_-]+$/.test(raw)) {
+    const direct = safeTranslate(`badges.${raw}`);
+    if (direct) return direct;
+  }
 
   return raw;
 }
@@ -136,60 +142,50 @@ function resolveBadge(tFunc: (key: string, values?: any) => string, text?: strin
 export function useStorefrontTranslation() {
   try {
     const t = useTranslations('Storefront');
-    const tBadges = (key: string, values?: any) => {
-      try { return (t as any)(`badges.${key}`, values); } catch { return key; }
+
+    const hasKey = (fullKey: string): boolean => {
+      try {
+        if (typeof (t as any)?.has === 'function') {
+          return (t as any).has(fullKey);
+        }
+      } catch {}
+      return false;
     };
+
+    const safeTranslateWithPrefix = (prefix: string) => (key: string, values?: any) => {
+      const fullKey = `${prefix}.${key}`;
+      if (typeof (t as any)?.has === 'function' && !(t as any).has(fullKey)) {
+        return key;
+      }
+      try {
+        return (t as any)(fullKey, values);
+      } catch {
+        return key;
+      }
+    };
+
+    const tBadges = safeTranslateWithPrefix('badges');
 
     return {
       t,
       tBadges,
-      tBadge: (text?: string, type?: string) => resolveBadge((k, v) => (t as any)(k, v), text, type),
-      // Helper shortcuts
-      tCategories: (key: string, values?: any) => {
-        try { return (t as any)(`categories.${key}`, values); } catch { return key; }
-      },
-      tTrust: (key: string, values?: any) => {
-        try { return (t as any)(`trust.${key}`, values); } catch { return key; }
-      },
-      tFlash: (key: string, values?: any) => {
-        try { return (t as any)(`flashDeals.${key}`, values); } catch { return key; }
-      },
-      tElectronics: (key: string, values?: any) => {
-        try { return (t as any)(`electronics.${key}`, values); } catch { return key; }
-      },
-      tKitchen: (key: string, values?: any) => {
-        try { return (t as any)(`kitchen.${key}`, values); } catch { return key; }
-      },
-      tBestSellers: (key: string, values?: any) => {
-        try { return (t as any)(`bestSellers.${key}`, values); } catch { return key; }
-      },
-      tWeekly: (key: string, values?: any) => {
-        try { return (t as any)(`weeklyBargains.${key}`, values); } catch { return key; }
-      },
-      tBrandZones: (key: string, values?: any) => {
-        try { return (t as any)(`brandZones.${key}`, values); } catch { return key; }
-      },
-      tMemberClub: (key: string, values?: any) => {
-        try { return (t as any)(`memberClub.${key}`, values); } catch { return key; }
-      },
-      tNewsletter: (key: string, values?: any) => {
-        try { return (t as any)(`newsletter.${key}`, values); } catch { return key; }
-      },
-      tCartDrawer: (key: string, values?: any) => {
-        try { return (t as any)(`cartDrawer.${key}`, values); } catch { return key; }
-      },
-      tModals: (key: string, values?: any) => {
-        try { return (t as any)(`modals.${key}`, values); } catch { return key; }
-      },
-      tShop: (key: string, values?: any) => {
-        try { return (t as any)(`shop.${key}`, values); } catch { return key; }
-      },
-      tPdp: (key: string, values?: any) => {
-        try { return (t as any)(`pdp.${key}`, values); } catch { return key; }
-      },
-      tHeroBanner: (key: string, values?: any) => {
-        try { return (t as any)(`heroBanner.${key}`, values); } catch { return key; }
-      },
+      tBadge: (text?: string, type?: string) => resolveBadge((k, v) => (t as any)(k, v), text, type, hasKey),
+      // Helper shortcuts with key existence check
+      tCategories: safeTranslateWithPrefix('categories'),
+      tTrust: safeTranslateWithPrefix('trust'),
+      tFlash: safeTranslateWithPrefix('flashDeals'),
+      tElectronics: safeTranslateWithPrefix('electronics'),
+      tKitchen: safeTranslateWithPrefix('kitchen'),
+      tBestSellers: safeTranslateWithPrefix('bestSellers'),
+      tWeekly: safeTranslateWithPrefix('weeklyBargains'),
+      tBrandZones: safeTranslateWithPrefix('brandZones'),
+      tMemberClub: safeTranslateWithPrefix('memberClub'),
+      tNewsletter: safeTranslateWithPrefix('newsletter'),
+      tCartDrawer: safeTranslateWithPrefix('cartDrawer'),
+      tModals: safeTranslateWithPrefix('modals'),
+      tShop: safeTranslateWithPrefix('shop'),
+      tPdp: safeTranslateWithPrefix('pdp'),
+      tHeroBanner: safeTranslateWithPrefix('heroBanner'),
     };
   } catch (error) {
     // Graceful fallback for non-intl contexts
