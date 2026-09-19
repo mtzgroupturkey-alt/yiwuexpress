@@ -1642,7 +1642,15 @@
     "brandZones": {
       "title": "品牌官方旗舰专区",
       "subtitle": "源头工厂直供，品质认证官方严选",
-      "viewZone": "进入品牌专区"
+      "viewZone": "进入品牌专区",
+      "deals": {
+        "samsung": "最高立减 -20%",
+        "xiaomi": "智能生态特惠",
+        "philips": "专享立减券",
+        "tefal": "品质厨具特卖",
+        "lavazza": "大师咖啡狂欢",
+        "pgHome": "超值家庭量贩装"
+      }
     },
     "memberClub": {
       "badge": "专属会员俱乐部",

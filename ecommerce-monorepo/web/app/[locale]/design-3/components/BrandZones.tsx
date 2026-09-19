@@ -39,20 +39,26 @@ export const BrandZones: React.FC<BrandZonesProps> = ({
 
       {/* 6 Brand Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {BRAND_ZONES.map((brand, idx) => (
-          <button
-            key={idx}
-            onClick={() => onSelectBrand(brand.name)}
-            className="bg-[#EFF6FF]/60 hover:bg-[#DBEAFE]/70 border border-blue-100 hover:border-blue-300 rounded-xl p-3.5 flex flex-col items-center text-center transition-all cursor-pointer group hover:shadow-xs"
-          >
-            <span className="text-xs sm:text-sm font-black text-slate-900 tracking-wider group-hover:text-[#00407a] transition-colors font-mono">
-              {brand.name}
-            </span>
-            <span className="text-[11px] font-semibold text-[#00407a] mt-1">
-              {brand.deal}
-            </span>
-          </button>
-        ))}
+        {BRAND_ZONES.map((brand, idx) => {
+          const dealKey = (brand as any).dealKey;
+          const localizedDeal = dealKey ? tBrandZones(`deals.${dealKey}`) : brand.deal;
+          const dealText = localizedDeal && !localizedDeal.startsWith('deals.') ? localizedDeal : brand.deal;
+
+          return (
+            <button
+              key={idx}
+              onClick={() => onSelectBrand(brand.name)}
+              className="bg-[#EFF6FF]/60 hover:bg-[#DBEAFE]/70 border border-blue-100 hover:border-blue-300 rounded-xl p-3.5 flex flex-col items-center text-center transition-all cursor-pointer group hover:shadow-xs"
+            >
+              <span className="text-xs sm:text-sm font-black text-slate-900 tracking-wider group-hover:text-[#00407a] transition-colors font-mono">
+                {brand.name}
+              </span>
+              <span className="text-[11px] font-semibold text-[#00407a] mt-1">
+                {dealText}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </section>
   );

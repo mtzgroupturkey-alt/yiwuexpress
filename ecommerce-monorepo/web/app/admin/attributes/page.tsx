@@ -723,8 +723,12 @@ export default function AttributeManager() {
                           )}
 
                           {hasChildren && (
-                            <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                              {subCategories.length} sub
+                            <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 rounded">
+                              {locale === 'zh'
+                                ? `${subCategories.length} 个子分类`
+                                : locale === 'ru'
+                                ? `${subCategories.length} подкат.`
+                                : `${subCategories.length} sub`}
                             </span>
                           )}
                         </div>

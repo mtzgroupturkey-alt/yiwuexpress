@@ -1625,7 +1625,15 @@
     "brandZones": {
       "title": "Official Brand Zones & Manufacturers",
       "subtitle": "Shop authentic collections directly from certified factory flagships",
-      "viewZone": "Explore Brand Zone"
+      "viewZone": "Explore Brand Zone",
+      "deals": {
+        "samsung": "Up to -20%",
+        "xiaomi": "Ecosystem Deal",
+        "philips": "Vouchers Inside",
+        "tefal": "Cookware Mega Sale",
+        "lavazza": "Coffee Fest",
+        "pgHome": "Family Packs"
+      }
     },
     "memberClub": {
       "badge": "EXCLUSIVE MEMBER CLUB",

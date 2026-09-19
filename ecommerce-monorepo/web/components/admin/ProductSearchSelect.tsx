@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Search, X, ChevronDown, Check } from 'lucide-react'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 interface ProductSearchSelectProps {
   products: any[]
@@ -19,6 +20,7 @@ export function ProductSearchSelect({
   onClose,
   selectedIds,
 }: ProductSearchSelectProps) {
+  const { locale } = useAdminLocale()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
   const [categorySearch, setCategorySearch] = useState('')
@@ -210,7 +212,8 @@ export function ProductSearchSelect({
                         
                         {cat.isParent && (
                           <span className="ml-auto text-xs text-gray-400">
-                            {filteredCategories.filter(c => c.parentId === cat.id).length} sub
+                            {filteredCategories.filter(c => c.parentId === cat.id).length}{' '}
+                            {locale === 'zh' ? '个子分类' : locale === 'ru' ? 'подкат.' : 'sub'}
                           </span>
                         )}
                       </button>

@@ -677,12 +677,12 @@ export const ALL_PRODUCTS: Product[] = [
 ];
 
 export const BRAND_ZONES = [
-  { name: 'SAMSUNG', deal: 'Up to -20%', bg: 'bg-[#EFF6FF]' },
-  { name: 'XIAOMI', deal: 'Ecosystem Deal', bg: 'bg-[#FFF7ED]' },
-  { name: 'PHILIPS', deal: 'Vouchers Inside', bg: 'bg-[#F0FDF4]' },
-  { name: 'TEFAL', deal: 'Cookware Mega Sale', bg: 'bg-[#FEF2F2]' },
-  { name: 'LAVAZZA', deal: 'Coffee Fest', bg: 'bg-[#FFFBEB]' },
-  { name: 'P&G HOME', deal: 'Family Packs', bg: 'bg-[#F5F3FF]' },
+  { id: 'samsung', name: 'SAMSUNG', dealKey: 'samsung', deal: 'Up to -20%', bg: 'bg-[#EFF6FF]' },
+  { id: 'xiaomi', name: 'XIAOMI', dealKey: 'xiaomi', deal: 'Ecosystem Deal', bg: 'bg-[#FFF7ED]' },
+  { id: 'philips', name: 'PHILIPS', dealKey: 'philips', deal: 'Vouchers Inside', bg: 'bg-[#F0FDF4]' },
+  { id: 'tefal', name: 'TEFAL', dealKey: 'tefal', deal: 'Cookware Mega Sale', bg: 'bg-[#FEF2F2]' },
+  { id: 'lavazza', name: 'LAVAZZA', dealKey: 'lavazza', deal: 'Coffee Fest', bg: 'bg-[#FFFBEB]' },
+  { id: 'pgHome', name: 'P&G HOME', dealKey: 'pgHome', deal: 'Family Packs', bg: 'bg-[#F5F3FF]' },
 ];
 
 export const DEPARTMENTS: Department[] = [
