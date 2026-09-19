@@ -167,6 +167,9 @@ async function getProductFromDB(slug: string, locale: string) {
         isFilterable: ca.attribute.isFilterable,
         isVisible: ca.isVisible,
         displayOrder: ca.displayOrder ?? ca.attribute.displayOrder,
+        isVariant: ca.attribute.isVariant ?? false,
+        rawOptions: ca.attribute.options || [],
+        rawColorOptions: ca.attribute.colorOptions || [],
         options: ca.attribute.options?.map((opt: string) =>
           getLocalizedOptionLabel(ca.attribute.slug, opt, requestedLocale as any)
         ) || ca.attribute.options,
@@ -189,6 +192,33 @@ async function getProductFromDB(slug: string, locale: string) {
     }
     return acc;
   }, []);
+
+  if (product.attributeValues && Array.isArray(product.attributeValues)) {
+    product.attributeValues.forEach((av: any) => {
+      if (av.attribute && !uniqueAttributes.some((a: any) => a.slug === av.attribute.slug)) {
+        uniqueAttributes.push({
+          id: av.attribute.id,
+          slug: av.attribute.slug,
+          name: localizeAttribute(av.attribute, requestedLocale).name,
+          inputType: av.attribute.type,
+          isRequired: av.attribute.isRequired,
+          isFilterable: av.attribute.isFilterable,
+          isVariant: av.attribute.isVariant ?? false,
+          isVisible: true,
+          displayOrder: av.attribute.displayOrder,
+          options: av.attribute.options?.map((opt: string) =>
+            getLocalizedOptionLabel(av.attribute.slug, opt, requestedLocale as any)
+          ) || av.attribute.options,
+          rawOptions: av.attribute.options || [],
+          colorOptions: av.attribute.colorOptions?.map((c: any) => ({
+            ...c,
+            label: getLocalizedColorName(c.value, c.label, requestedLocale as any)
+          })) || av.attribute.colorOptions,
+          rawColorOptions: av.attribute.colorOptions || [],
+        });
+      }
+    });
+  }
 
   const rawCategory = product.category as any;
   const localizedCategory = rawCategory

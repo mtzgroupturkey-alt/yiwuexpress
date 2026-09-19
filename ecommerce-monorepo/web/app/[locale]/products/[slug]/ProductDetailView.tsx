@@ -61,10 +61,13 @@ interface ProductData {
     inputType: string
     isRequired: boolean
     isFilterable: boolean
+    isVariant?: boolean
     isVisible: boolean
     displayOrder: number
     options?: string[] | null
+    rawOptions?: string[] | null
     colorOptions?: { label: string; value: string }[] | null
+    rawColorOptions?: { label: string; value: string }[] | null
   }> | null
   variants?: Array<{
     id: string
@@ -161,6 +164,100 @@ export default function ProductDetailView({
   // Selected variant options state
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
 
+  // Configurable Attributes (when product has multi-value attributes or isVariant=true but no ProductVariant records)
+  const configurableAttributes = useMemo(() => {
+    if (variants.length > 0) return []
+
+    const list: Array<{
+      slug: string
+      name: string
+      type: string
+      isColor: boolean
+      options: Array<{ value: string; label: string; hex?: string }>
+    }> = []
+
+    const catAttrs = product.categoryAttributes || []
+    const prodAttrs = product.attributes || {}
+
+    catAttrs.forEach((ca) => {
+      const val = prodAttrs[ca.slug]
+      const hasMultiValue = Array.isArray(val) && val.length > 1
+      const isVariant = ca.isVariant ?? false
+      const isColor = ca.inputType === 'COLOR' || ca.slug === 'color' || ca.slug.endsWith('_color')
+
+      if (isVariant || hasMultiValue) {
+        let optionsList: Array<{ value: string; label: string; hex?: string }> = []
+
+        if (Array.isArray(val) && val.length > 0) {
+          optionsList = val.map((v: any) => {
+            const strVal = typeof v === 'string' ? v : String(v?.value || v)
+            const strLabel = typeof v === 'object' && v?.label ? v.label : strVal
+            if (isColor) {
+              const hex = strVal.startsWith('#') ? strVal : undefined
+              return { value: strVal, label: getLocalizedColorName(strVal, strLabel, locale as any), hex: hex || strVal }
+            }
+            return { value: strVal, label: getLocalizedOptionLabel(ca.slug, strLabel, locale as any) }
+          })
+        } else if (typeof val === 'string' && val.trim().length > 0) {
+          const strVal = val.trim()
+          if (isColor) {
+            optionsList = [{ value: strVal, label: getLocalizedColorName(strVal, strVal, locale as any), hex: strVal }]
+          } else {
+            optionsList = [{ value: strVal, label: getLocalizedOptionLabel(ca.slug, strVal, locale as any) }]
+          }
+        } else if (isVariant && (ca.options?.length || ca.colorOptions?.length)) {
+          if (isColor && ca.colorOptions && ca.colorOptions.length > 0) {
+            optionsList = ca.colorOptions.map((co: any) => ({
+              value: co.value,
+              label: co.label || co.value,
+              hex: co.value
+            }))
+          } else if (ca.options && ca.options.length > 0) {
+            optionsList = ca.options.map((opt: string) => ({
+              value: opt,
+              label: opt
+            }))
+          }
+        }
+
+        if (optionsList.length > 0) {
+          list.push({
+            slug: ca.slug,
+            name: ca.name,
+            type: ca.inputType,
+            isColor,
+            options: optionsList
+          })
+        }
+      }
+    })
+
+    // Also check prodAttrs directly for any other array attributes not in catAttrs
+    Object.entries(prodAttrs).forEach(([key, val]) => {
+      if (Array.isArray(val) && val.length > 1 && !list.some((a) => a.slug === key)) {
+        const isColor = key.toLowerCase().includes('color')
+        const optionsList = val.map((v: any) => {
+          const strVal = typeof v === 'string' ? v : String(v?.value || v)
+          const strLabel = typeof v === 'object' && v?.label ? v.label : strVal
+          if (isColor) {
+            return { value: strVal, label: getLocalizedColorName(strVal, strLabel, locale as any), hex: strVal }
+          }
+          return { value: strVal, label: getLocalizedOptionLabel(key, strLabel, locale as any) }
+        })
+        const displayName = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+        list.push({
+          slug: key,
+          name: displayName,
+          type: isColor ? 'COLOR' : 'SELECT',
+          isColor,
+          options: optionsList
+        })
+      }
+    })
+
+    return list
+  }, [variants, product.categoryAttributes, product.attributes, locale])
+
   // Initialize selected options to the first available variant on mount or when product changes
   useEffect(() => {
     if (variants.length > 0) {
@@ -172,10 +269,18 @@ export default function ProductDetailView({
         }
       })
       setSelectedOptions(initial)
+    } else if (configurableAttributes.length > 0) {
+      const initial: Record<string, string> = {}
+      configurableAttributes.forEach((ca) => {
+        if (ca.options.length > 0) {
+          initial[ca.slug] = ca.options[0].value
+        }
+      })
+      setSelectedOptions(initial)
     } else {
       setSelectedOptions({})
     }
-  }, [variants, optionKeys])
+  }, [variants, optionKeys, configurableAttributes])
 
   // Find currently matched variant
   const selectedVariant = useMemo(() => {
@@ -294,7 +399,17 @@ export default function ProductDetailView({
   }
 
   const handleAddToCart = async () => {
+    // Validate that all configurable attributes are selected
+    if (configurableAttributes.length > 0) {
+      const missing = configurableAttributes.find((ca) => !selectedOptions[ca.slug])
+      if (missing) {
+        alert(`${locale === 'ru' ? 'Пожалуйста, выберите' : locale === 'zh' ? '请选择' : 'Please select'} ${missing.name}`)
+        return
+      }
+    }
+
     try {
+      setAdding(true)
       // ✅ MIGRATED TO COOKIE-BASED AUTH - userId extracted from cookie on server
       const response = await fetch('/api/cart', {
         method: 'POST',
@@ -305,6 +420,7 @@ export default function ProductDetailView({
         body: JSON.stringify({
           productId: product.id,
           variantId: selectedVariant?.id,
+          selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
           quantity
         })
       })
@@ -349,7 +465,8 @@ export default function ProductDetailView({
     setMoqError('')
     enableWholesaleSession()
 
-    const variantLabel = selectedVariant && Object.keys(selectedOptions).length > 0
+    const hasOptions = Object.keys(selectedOptions).length > 0
+    const variantLabel = hasOptions
       ? `(${Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join(', ')})`
       : ''
     const displayName = variantLabel ? `${product.name} ${variantLabel}` : product.name
@@ -364,14 +481,16 @@ export default function ProductDetailView({
       retailPrice: currentPrice,
       quantity,
       minOrderQty: moq,
-      note: selectedVariant
+      note: hasOptions
         ? Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join('; ')
-        : product.attributes && Object.keys(product.attributes).length > 0
-          ? Object.entries(product.attributes)
-              .filter(([, v]) => v)
-              .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
-              .join('; ')
-          : undefined,
+        : selectedVariant
+          ? Object.entries(selectedOptions).map(([k, v]) => `${k}: ${v}`).join('; ')
+          : product.attributes && Object.keys(product.attributes).length > 0
+            ? Object.entries(product.attributes)
+                .filter(([, v]) => v)
+                .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+                .join('; ')
+            : undefined,
     })
     addToQuote({
       productId: product.id,
@@ -381,6 +500,8 @@ export default function ProductDetailView({
       quantity,
       minOrderQty: moq,
       targetPrice: product.wholesalePrice || null,
+      selectedOptions: hasOptions ? selectedOptions : undefined,
+      variantId: selectedVariant?.id || null,
     })
     setShowQuoteSuccess(true)
     setTimeout(() => setShowQuoteSuccess(false), 3500)
@@ -788,8 +909,8 @@ export default function ProductDetailView({
               </div>
             )}
 
-            {/* Variant Selectors (Size, Color, Capacity, etc.) */}
-            {optionKeys.length > 0 && (
+            {/* Variant / Configurable Attribute Selectors */}
+            {optionKeys.length > 0 ? (
               <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100 shadow-sm space-y-4">
                 {optionKeys.map((key) => {
                   const values = optionValuesMap[key] || []
@@ -875,7 +996,85 @@ export default function ProductDetailView({
                   )
                 })}
               </div>
-            )}
+            ) : configurableAttributes.length > 0 ? (
+              <div className="bg-white rounded-lg p-4 mb-4 border border-gray-100 shadow-sm space-y-4">
+                {configurableAttributes.map((attr) => {
+                  const selectedVal = selectedOptions[attr.slug]
+                  const selectedOpt = attr.options.find((o) => o.value === selectedVal)
+                  const displaySelected = selectedOpt?.label || selectedVal
+
+                  return (
+                    <div key={attr.slug} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          {attr.name}:
+                        </span>
+                        <span className="text-xs font-semibold text-primary-700">
+                          {displaySelected || 'Select'}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {attr.options.map((opt) => {
+                          const isSelected = selectedVal === opt.value
+
+                          if (attr.isColor) {
+                            const colorMap: Record<string, string> = {
+                              black: '#111827',
+                              white: '#f9fafb',
+                              gold: '#d4af37',
+                              silver: '#9ca3af',
+                              gray: '#6b7280',
+                              grey: '#6b7280',
+                              blue: '#2563eb',
+                              red: '#dc2626',
+                              green: '#16a34a',
+                              rose: '#f43f5e',
+                            }
+                            const hex = opt.hex || colorMap[opt.value.toLowerCase()] || opt.value
+
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => setSelectedOptions((prev) => ({ ...prev, [attr.slug]: opt.value }))}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                                  isSelected
+                                    ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-500/20 text-primary-900 font-semibold shadow-xs'
+                                    : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                                }`}
+                                title={opt.label}
+                              >
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full border border-gray-300 shadow-xs flex-shrink-0"
+                                  style={{ backgroundColor: hex }}
+                                />
+                                <span>{opt.label}</span>
+                              </button>
+                            )
+                          }
+
+                          return (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [attr.slug]: opt.value }))}
+                              className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                                isSelected
+                                  ? 'border-primary-600 bg-primary-600 text-white shadow-xs'
+                                  : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : null}
 
             {/* Stock Status & Scarcity */}
             <div className="bg-white rounded-lg p-3 mb-4 border border-gray-200 shadow-sm space-y-3">

@@ -11,6 +11,8 @@ export interface QuoteCartItem {
   minOrderQty: number
   targetPrice?: number | null
   customerNotes?: string
+  selectedOptions?: Record<string, string> | null
+  variantId?: string | null
 }
 
 interface QuoteCartContextType {
@@ -26,6 +28,8 @@ interface QuoteCartContextType {
     minOrderQty?: number
     targetPrice?: number | null
     customerNotes?: string
+    selectedOptions?: Record<string, string> | null
+    variantId?: string | null
   }) => void
   updateQuantity: (productId: string, quantity: number) => void
   updateItem: (productId: string, updates: Partial<QuoteCartItem>) => void
@@ -77,9 +81,22 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     minOrderQty?: number
     targetPrice?: number | null
     customerNotes?: string
+    selectedOptions?: Record<string, string> | null
+    variantId?: string | null
   }) => {
     setItems((prev) => {
-      const existingIndex = prev.findIndex((i) => i.productId === newItem.productId)
+      const areOptionsEqual = (a?: Record<string, string> | null, b?: Record<string, string> | null) => {
+        if (!a && !b) return true
+        if (!a || !b) return false
+        const keysA = Object.keys(a).sort()
+        const keysB = Object.keys(b).sort()
+        if (keysA.length !== keysB.length) return false
+        return keysA.every((k) => a[k] === b[k])
+      }
+
+      const existingIndex = prev.findIndex(
+        (i) => i.productId === newItem.productId && areOptionsEqual(i.selectedOptions, newItem.selectedOptions)
+      )
       const moq = newItem.minOrderQty && newItem.minOrderQty > 0 ? newItem.minOrderQty : 1
       const initialQty = Math.max(newItem.quantity, moq)
 
@@ -106,6 +123,8 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
           minOrderQty: moq,
           targetPrice: newItem.targetPrice ?? null,
           customerNotes: newItem.customerNotes || '',
+          selectedOptions: newItem.selectedOptions || null,
+          variantId: newItem.variantId || null,
         },
       ]
     })
