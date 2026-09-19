@@ -47,8 +47,16 @@ function AdminSidebarContent({
   const searchParams = useSearchParams()
   const { dict } = useAdminLocale()
 
-  // Track expanded groups (all collapsed by default except current active group)
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['dashboard'])
+  // Track expanded groups (all groups like Settings, Products, Buying are expanded by default or loaded from localStorage)
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('admin_expanded_groups')
+        if (saved) return JSON.parse(saved)
+      } catch (e) {}
+    }
+    return ['dashboard', 'buying', 'warehouses', 'shipping', 'selling', 'customers', 'products', 'money', 'website', 'settings']
+  })
   const [searchQuery, setSearchQuery] = useState('')
 
   // Live badge counts from /api/admin/stats
@@ -110,9 +118,15 @@ function AdminSidebarContent({
   }, [pathname, searchParams])
 
   const toggleGroup = (groupId: string) => {
-    setExpandedGroups((prev) =>
-      prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
-    )
+    setExpandedGroups((prev) => {
+      const next = prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('admin_expanded_groups', JSON.stringify(next))
+        } catch (e) {}
+      }
+      return next
+    })
   }
 
   // Filter groups and items when searching
