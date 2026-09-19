@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, use } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -55,8 +55,8 @@ interface QuoteData {
   items: QuoteItem[]
 }
 
-export default function PublicQuoteViewPage({ params }: { params: Promise<{ token: string }> }) {
-  const resolvedParams = use(params)
+export default function PublicQuoteViewPage({ params }: { params: { token: string; locale?: string } }) {
+  const resolvedParams = params
   const router = useRouter()
 
   const [quote, setQuote] = useState<QuoteData | null>(null)
