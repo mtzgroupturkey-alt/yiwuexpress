@@ -77,10 +77,12 @@ function TranslationBadges({ product }: { product: Product }) {
 function ProductThumbnail({
   src,
   alt,
+  productId,
   size = 'md'
 }: {
   src?: string | null
   alt: string
+  productId?: string
   size?: 'md' | 'lg'
 }) {
   const [imgSrc, setImgSrc] = useState<string | null>(src || null)
@@ -92,25 +94,47 @@ function ProductThumbnail({
   }, [src])
 
   const dim = size === 'lg' ? 'w-16 h-16' : 'w-12 h-12'
+  const isMissing = !imgSrc || hasError
 
-  return (
-    <div className={`${dim} rounded-xl bg-gray-50 border border-gray-200/80 overflow-hidden shrink-0 relative flex items-center justify-center`}>
+  const thumbnailBox = (
+    <div className={`${dim} rounded-xl bg-gray-50 border border-gray-200/80 overflow-hidden shrink-0 relative flex items-center justify-center group/thumb`}>
       {!hasError && imgSrc ? (
         <img
           src={imgSrc}
           alt={alt}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-200"
           onError={() => {
             setHasError(true)
           }}
         />
       ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-400">
-          <Package size={size === 'lg' ? 24 : 18} />
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-400 relative">
+          <img
+            src="/images/product-placeholder.webp"
+            alt={alt}
+            className="w-full h-full object-contain p-1 opacity-70"
+          />
+          <span className="absolute inset-x-0 bottom-0 bg-amber-500/90 text-white text-[8px] font-bold text-center py-0.5 leading-none">
+            No image
+          </span>
         </div>
       )}
     </div>
   )
+
+  if (isMissing && productId) {
+    return (
+      <Link
+        href={`/admin/products/${productId}/edit`}
+        title="No image uploaded — click to edit and upload"
+        className="cursor-pointer hover:opacity-90 transition-opacity focus:outline-hidden"
+      >
+        {thumbnailBox}
+      </Link>
+    )
+  }
+
+  return thumbnailBox
 }
 
 export default function AdminProductsPage() {
@@ -580,7 +604,7 @@ export default function AdminProductsPage() {
                         {/* Product Info */}
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3.5">
-                            <ProductThumbnail src={product.thumbnail} alt={localized.name} />
+                            <ProductThumbnail src={product.thumbnail} alt={localized.name} productId={product.id} />
                             <div className="min-w-0">
                               <p className="font-bold text-gray-900 truncate max-w-xs group-hover:text-[#1a3a5c] transition-colors">
                                 {localized.name}
@@ -719,7 +743,7 @@ export default function AdminProductsPage() {
               return (
                 <div key={product.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                   <div className="flex gap-3.5">
-                    <ProductThumbnail src={product.thumbnail} alt={localized.name} size="lg" />
+                    <ProductThumbnail src={product.thumbnail} alt={localized.name} size="lg" productId={product.id} />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-gray-900 text-sm truncate">{localized.name}</h3>
                       <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {product.sku || '—'}</p>
