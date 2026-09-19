@@ -6,6 +6,21 @@ on:
       - production
       - main
   workflow_dispatch:
+    inputs:
+      db_strategy:
+        description: 'Database handling strategy'
+        required: true
+        default: 'migrate'
+        type: choice
+        options:
+          - 'migrate'
+          - 'reset_and_seed'
+          - 'none'
+      confirm_reset:
+        description: 'Type RESET_CONFIRM to confirm database reset (only needed for reset_and_seed)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   deploy:
@@ -44,6 +59,8 @@ jobs:
         uses: appleboy/ssh-action@v1.2.0
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_STRATEGY: ${{ inputs.db_strategy || 'migrate' }}
+          CONFIRM_RESET: ${{ inputs.confirm_reset || '' }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
@@ -52,7 +69,7 @@ jobs:
           timeout: 60s
           command_timeout: 30m
           script_stop: true
-          envs: DATABASE_URL
+          envs: DATABASE_URL,DB_STRATEGY,CONFIRM_RESET
           script: |
             set -e
             TARGET="/www/wwwroot/www.dromkok.com/web"
@@ -66,17 +83,32 @@ jobs:
             echo "🔧 Generating Prisma client..."
             npx prisma generate
 
-            echo "🗄️ Resolving any previously failed migrations..."
-            # Query _prisma_migrations for any failed rows and mark them as rolled-back.
-            # A failed migration has finished_at IS NULL and logs IS NOT NULL (error stored in logs).
-            FAILED_MIGRATIONS=$(npx prisma migrate status 2>&1 | grep -oP '(?<=• )[\w]+' | head -20 || true)
-            # Targeted resolve for the known failed migration (idempotent - safe if already resolved)
-            npx prisma migrate resolve --rolled-back 20260918000000_add_rfq_system 2>/dev/null && \
-              echo "↩️  Resolved failed migration: 20260918000000_add_rfq_system" || \
-              echo "ℹ️  No failed migration to resolve (already clean)."
+            if [ "$DB_STRATEGY" = "reset_and_seed" ]; then
+              if [ "$CONFIRM_RESET" = "RESET_CONFIRM" ]; then
+                echo "⚠️ OPTION C: Resetting production database and running seeds..."
+                if [ -f "prisma/migrations/backup.sh" ]; then
+                  echo "📦 Creating pre-wipe backup..."
+                  bash prisma/migrations/backup.sh "pre_reset_$(date +%Y%m%d_%H%M%S)" || true
+                fi
+                npx prisma migrate reset --force --skip-generate
+                npm run db:seed
+                echo "✅ Database reset and seeded successfully!"
+              else
+                echo "❌ Database reset was requested but confirmation phrase 'RESET_CONFIRM' was missing. Aborting to protect data."
+                exit 1
+              fi
+            elif [ "$DB_STRATEGY" = "none" ]; then
+              echo "⏭️ Skipping database migrations/changes as requested by db_strategy=none."
+            else
+              echo "🗄️ Resolving any previously failed migrations..."
+              # Targeted resolve for the known failed migration (idempotent - safe if already resolved)
+              npx prisma migrate resolve --rolled-back 20260918000000_add_rfq_system 2>/dev/null && \
+                echo "↩️  Resolved failed migration: 20260918000000_add_rfq_system" || \
+                echo "ℹ️  No failed migration to resolve (already clean)."
 
-            echo "🗄️ Applying pending database migrations..."
-            npx prisma migrate deploy
+              echo "🗄️ Applying pending database migrations..."
+              npx prisma migrate deploy
+            fi
 
             echo "🏗️ Building Next.js application..."
             rm -rf .next
