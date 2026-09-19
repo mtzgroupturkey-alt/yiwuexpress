@@ -270,7 +270,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           </div>
           {isWholesaleActive ? (
             <div className="text-[10px] font-bold text-blue-700 font-mono mt-0.5">
-              Wholesale (MOQ: {moq})
+              {tPdp('wholesaleMoq', { moq })}
             </div>
           ) : product.unitPrice ? (
             <div className="text-[10px] text-slate-500 font-medium truncate">
@@ -321,7 +321,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                     className="flex items-center gap-1 font-bold"
                   >
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
-                    <span>Added to Quote</span>
+                    <span>{tPdp('addedToQuote')}</span>
                   </motion.span>
                 ) : (
                   <motion.span
@@ -332,7 +332,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                     className="flex items-center gap-1.5"
                   >
                     <FileText className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Request Quote (MOQ: {moq})</span>
+                    <span>{tPdp('requestQuoteMoq', { moq })}</span>
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -404,7 +404,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                     className="flex items-center gap-1.5"
                   >
                     <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Add to Cart (MOQ: {moq})</span>
+                    <span>{tPdp('addToCartMoq', { moq })}</span>
                   </motion.span>
                 )}
               </AnimatePresence>

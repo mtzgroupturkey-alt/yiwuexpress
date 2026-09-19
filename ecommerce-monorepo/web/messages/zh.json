@@ -293,7 +293,20 @@
       "wholesaleLogisticsNotice": "大宗批发物流：运费将在发货配货时核算",
       "everywhere": "全部",
       "deliverTo": "配送至",
-      "expressDeliveryDaily": "每日快速配送"
+      "expressDeliveryDaily": "每日快速配送",
+      "selectCurrency": "选择货币",
+      "quoteRequest": "询价单",
+      "wholesaleCart": "批发购物车",
+      "account": "账户",
+      "item": "件商品",
+      "items": "件商品",
+      "roleAdmin": "管理员",
+      "roleSupplier": "供应商",
+      "roleMember": "会员",
+      "worldwideShipping": "全球配送",
+      "globalTagline": "全球批发与零售",
+      "officialDistributor": "官方正品授权直供",
+      "slideProgress": "轮播 {current} / {total}"
     },
     "footer": {
       "title": "家居生活系列",
@@ -1087,7 +1100,20 @@
     },
     "messages": {
       "linkCopied": "链接已复制到剪贴板！"
-    }
+    },
+    "wholesaleMoq": "批发 (起订: {moq})",
+    "requestQuoteMoq": "询价 (起订: {moq})",
+    "addedToQuote": "已加入询价单",
+    "addToCartMoq": "加入购物车 (起订: {moq})",
+    "requestQuoteUnits": "申请报价（{quantity} 件）",
+    "commercialDurability": "商用级耐用度",
+    "commercialDurabilityDesc": "加厚卷边结构，长期高温不易变形。",
+    "evenHeating": "受热均匀",
+    "evenHeatingDesc": "高厚度合金材质，烘烤上色均匀。",
+    "effortlessRelease": "轻松脱模",
+    "effortlessReleaseDesc": "双层不粘涂层，清洁省时省力。",
+    "certifiedSafe": "食品级安全认证",
+    "certifiedSafeDesc": "100%不含PFOA和BPA，通过食品接触安全检测。"
   },
   "TrustBadges": {
     "secureCheckout": "安全结账",
@@ -1629,7 +1655,37 @@
       "orderSuccessTitle": "订单提交成功！",
       "orderSuccessDesc": "您的订单已确认，仓库正在加急拣货出库。",
       "orderNumber": "订单编号：",
-      "continueShopping": "继续购物"
+      "continueShopping": "继续购物",
+      "memberWelcome": "欢迎加入 {name} 会员俱乐部",
+      "memberWelcomeDesc": "登录以管理您的订单、享受会员特价并实时追踪物流。",
+      "signIn": "登录",
+      "createAccount": "注册账户",
+      "availablePoints": "可用俱乐部积分",
+      "pointsUnit": "积分",
+      "pointRate": "1 积分 = 1.00 {currency}",
+      "pointsValue": "= {amount} {currency} 等值",
+      "accountQuickLinks": "账户快捷入口",
+      "dashboard": "控制台",
+      "addresses": "收货地址",
+      "activePrivileges": "会员专属权益",
+      "cashbackTitle": "即时返现与积分",
+      "cashbackDesc": "家居、数码和百货所有订单均可累积丰厚会员奖励。",
+      "expressDispatchTitle": "极速优先发货",
+      "expressDispatchDesc": "官方直属物流，符合条件的订单享受优先出库与极速送达。",
+      "exclusiveDropsTitle": "会员专属特惠",
+      "exclusiveDropsDesc": "抢先获取原厂直供精选商品专属折扣与闪购特权。",
+      "signOut": "退出登录",
+      "close": "关闭",
+      "manageSavedAddresses": "管理已保存地址",
+      "noSavedAddresses": "暂无已保存的地址。",
+      "addFirstAddress": "添加您的第一个地址",
+      "defaultBadge": "默认",
+      "itemsOrdered": "已订购 {count} 件商品",
+      "moreItems": "（还有 {count} 件）",
+      "myOrders": "我的订单",
+      "administrator": "管理员",
+      "verifiedSupplier": "认证供应商",
+      "vipMember": "VIP 会员"
     },
     "shop": {
       "filters": "筛选与精选条件",
@@ -1721,7 +1777,20 @@
       "qAndACount": "{count} 条问答",
       "keySpecs": "核心参数亮点",
       "finishVariant": "外观款式：",
-      "finishesAvailable": "共有 {count} 种款式可选"
+      "finishesAvailable": "共有 {count} 种款式可选",
+      "wholesaleMoq": "批发 (起订: {moq})",
+      "requestQuoteMoq": "询价 (起订: {moq})",
+      "addedToQuote": "已加入询价单",
+      "addToCartMoq": "加入购物车 (起订: {moq})",
+      "requestQuoteUnits": "申请报价（{quantity} 件）",
+      "commercialDurability": "商用级耐用度",
+      "commercialDurabilityDesc": "加厚卷边结构，长期高温不易变形。",
+      "evenHeating": "受热均匀",
+      "evenHeatingDesc": "高厚度合金材质，烘烤上色均匀。",
+      "effortlessRelease": "轻松脱模",
+      "effortlessReleaseDesc": "双层不粘涂层，清洁省时省力。",
+      "certifiedSafe": "食品级安全认证",
+      "certifiedSafeDesc": "100%不含PFOA和BPA，通过食品接触安全检测。"
     },
     "badges": {
       "express": "特快配送",
@@ -1755,7 +1824,11 @@
       "flexiarmDock": "全能机械臂基站",
       "dualZone": "双温区 9.5L",
       "pepSystem": "P.E.P.萃取系统",
-      "alpha9Gen7": "Alpha 9 AI 音画芯片"
+      "alpha9Gen7": "Alpha 9 AI 音画芯片",
+      "wholesaleMoq": "批发 (起订: {moq})",
+      "requestQuoteMoq": "询价 (起订: {moq})",
+      "addedToQuote": "已加入询价单",
+      "addToCartMoq": "加入购物车 (起订: {moq})"
     }
   },
   "QuoteCart": {

@@ -208,7 +208,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </span>
                   {isWholesaleActive && (
                     <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
-                      Wholesale (MOQ: {moq})
+                      {tPdp('wholesaleMoq', { moq })}
                     </span>
                   )}
                   {!isWholesaleActive && product.oldPrice && (
@@ -294,12 +294,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   {added ? (
                     <>
                       <Check className="w-4 h-4 stroke-[3]" />
-                      <span>Added to Quote</span>
+                      <span>{tPdp('addedToQuote')}</span>
                     </>
                   ) : (
                     <>
                       <FileText className="w-4 h-4 stroke-[2.5]" />
-                      <span>Request Quote ({quantity} units)</span>
+                      <span>{tPdp('requestQuoteUnits', { quantity })}</span>
                     </>
                   )}
                 </button>
@@ -316,7 +316,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   ) : (
                     <>
                       <ShoppingCart className="w-4 h-4 stroke-[2.5]" />
-                      <span>Add to Cart ({formatPrice(displayPrice * quantity)})</span>
+                      <span>{tPdp('addToCart')} ({formatPrice(displayPrice * quantity)})</span>
                     </>
                   )}
                 </button>

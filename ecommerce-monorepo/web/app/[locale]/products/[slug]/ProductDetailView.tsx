@@ -1070,7 +1070,7 @@ export default function ProductDetailView({
               <Check className="w-2.5 h-2.5 text-emerald-700" />
             </div>
             <div>
-              <strong className="text-slate-900">Commercial Durability:</strong> Reinforced rolled rims prevent warping.
+              <strong className="text-slate-900">{t('commercialDurability')}:</strong> {t('commercialDurabilityDesc')}
             </div>
           </li>
           <li className="flex items-start gap-2">
@@ -1078,7 +1078,7 @@ export default function ProductDetailView({
               <Check className="w-2.5 h-2.5 text-emerald-700" />
             </div>
             <div>
-              <strong className="text-slate-900">Even Heating:</strong> Heavy-gauge steel provides uniform browning.
+              <strong className="text-slate-900">{t('evenHeating')}:</strong> {t('evenHeatingDesc')}
             </div>
           </li>
           <li className="flex items-start gap-2">
@@ -1086,7 +1086,7 @@ export default function ProductDetailView({
               <Check className="w-2.5 h-2.5 text-emerald-700" />
             </div>
             <div>
-              <strong className="text-slate-900">Effortless Release:</strong> Dual-layer non-stick coating for easy cleanup.
+              <strong className="text-slate-900">{t('effortlessRelease')}:</strong> {t('effortlessReleaseDesc')}
             </div>
           </li>
           <li className="flex items-start gap-2">
@@ -1094,7 +1094,7 @@ export default function ProductDetailView({
               <Check className="w-2.5 h-2.5 text-emerald-700" />
             </div>
             <div>
-              <strong className="text-slate-900">Certified Safe:</strong> 100% PFOA and BPA free food contact safe.
+              <strong className="text-slate-900">{t('certifiedSafe')}:</strong> {t('certifiedSafeDesc')}
             </div>
           </li>
         </ul>

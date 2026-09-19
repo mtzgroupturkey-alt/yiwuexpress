@@ -276,7 +276,20 @@
       "wholesaleLogisticsNotice": "Wholesale Freight: delivery fees calculated upon dispatch",
       "everywhere": "Everywhere",
       "deliverTo": "Deliver to",
-      "expressDeliveryDaily": "Express Delivery"
+      "expressDeliveryDaily": "Express Delivery",
+      "selectCurrency": "Select Currency",
+      "quoteRequest": "Quote Request",
+      "wholesaleCart": "Wholesale Cart",
+      "account": "Account",
+      "item": "item",
+      "items": "items",
+      "roleAdmin": "Admin",
+      "roleSupplier": "Supplier",
+      "roleMember": "Member",
+      "worldwideShipping": "Worldwide Shipping",
+      "globalTagline": "Global Wholesale & Retail",
+      "officialDistributor": "Official Distributor Guaranteed",
+      "slideProgress": "Slide {current} / {total}"
     },
     "footer": {
       "title": "Home Living Collections",
@@ -1070,7 +1083,20 @@
     },
     "messages": {
       "linkCopied": "Link copied to clipboard!"
-    }
+    },
+    "wholesaleMoq": "Wholesale (MOQ: {moq})",
+    "requestQuoteMoq": "Request Quote (MOQ: {moq})",
+    "addedToQuote": "Added to Quote",
+    "addToCartMoq": "Add to Cart (MOQ: {moq})",
+    "requestQuoteUnits": "Request Quote ({quantity} units)",
+    "commercialDurability": "Commercial Durability",
+    "commercialDurabilityDesc": "Reinforced rolled rims prevent warping.",
+    "evenHeating": "Even Heating",
+    "evenHeatingDesc": "Heavy-gauge steel provides uniform browning.",
+    "effortlessRelease": "Effortless Release",
+    "effortlessReleaseDesc": "Dual-layer non-stick coating for easy cleanup.",
+    "certifiedSafe": "Certified Safe",
+    "certifiedSafeDesc": "100% PFOA and BPA free food contact safe."
   },
   "TrustBadges": {
     "secureCheckout": "Secure Checkout",
@@ -1612,7 +1638,37 @@
       "orderSuccessTitle": "Order Successfully Placed!",
       "orderSuccessDesc": "Your order has been confirmed and dispatched.",
       "orderNumber": "Order Number:",
-      "continueShopping": "Continue Shopping"
+      "continueShopping": "Continue Shopping",
+      "memberWelcome": "Welcome to {name} Club",
+      "memberWelcomeDesc": "Sign in to manage your orders, access member pricing, and track live deliveries.",
+      "signIn": "Sign In",
+      "createAccount": "Create Account",
+      "availablePoints": "Available Club Points",
+      "pointsUnit": "points",
+      "pointRate": "1 point = 1.00 {currency}",
+      "pointsValue": "= {amount} {currency} value",
+      "accountQuickLinks": "Account Quick Links",
+      "dashboard": "Dashboard",
+      "addresses": "Addresses",
+      "activePrivileges": "Active Member Privileges",
+      "cashbackTitle": "Instant Cashback & Bonuses",
+      "cashbackDesc": "Earn reward points on every order across hypermarket, furniture, and electronics.",
+      "expressDispatchTitle": "Express Priority Dispatch",
+      "expressDispatchDesc": "Direct courier delivery with guaranteed express arrival slots on eligible orders.",
+      "exclusiveDropsTitle": "Exclusive Member Price Drops",
+      "exclusiveDropsDesc": "Access to closed VIP sales on factory direct electronics and home selections.",
+      "signOut": "Sign Out",
+      "close": "Close",
+      "manageSavedAddresses": "Manage saved addresses",
+      "noSavedAddresses": "No saved addresses yet.",
+      "addFirstAddress": "Add your first address",
+      "defaultBadge": "Default",
+      "itemsOrdered": "{count} items ordered",
+      "moreItems": "(+{count} more)",
+      "myOrders": "My Orders",
+      "administrator": "Administrator",
+      "verifiedSupplier": "Verified Supplier",
+      "vipMember": "VIP Member"
     },
     "shop": {
       "filters": "Filters & Refinements",
@@ -1704,7 +1760,20 @@
       "qAndACount": "{count} Q&As",
       "keySpecs": "Key Specifications",
       "finishVariant": "Finish Variant:",
-      "finishesAvailable": "{count} finishes available"
+      "finishesAvailable": "{count} finishes available",
+      "wholesaleMoq": "Wholesale (MOQ: {moq})",
+      "requestQuoteMoq": "Request Quote (MOQ: {moq})",
+      "addedToQuote": "Added to Quote",
+      "addToCartMoq": "Add to Cart (MOQ: {moq})",
+      "requestQuoteUnits": "Request Quote ({quantity} units)",
+      "commercialDurability": "Commercial Durability",
+      "commercialDurabilityDesc": "Reinforced rolled rims prevent warping.",
+      "evenHeating": "Even Heating",
+      "evenHeatingDesc": "Heavy-gauge steel provides uniform browning.",
+      "effortlessRelease": "Effortless Release",
+      "effortlessReleaseDesc": "Dual-layer non-stick coating for easy cleanup.",
+      "certifiedSafe": "Certified Safe",
+      "certifiedSafeDesc": "100% PFOA and BPA free food contact safe."
     },
     "badges": {
       "express": "EXPRESS",
@@ -1738,7 +1807,11 @@
       "flexiarmDock": "FLEXIARM DOCK",
       "dualZone": "DUAL ZONE 9.5L",
       "pepSystem": "P.E.P. SYSTEM",
-      "alpha9Gen7": "ALPHA 9 AI GEN7"
+      "alpha9Gen7": "ALPHA 9 AI GEN7",
+      "wholesaleMoq": "Wholesale (MOQ: {moq})",
+      "requestQuoteMoq": "Request Quote (MOQ: {moq})",
+      "addedToQuote": "Added to Quote",
+      "addToCartMoq": "Add to Cart (MOQ: {moq})"
     }
   },
   "QuoteCart": {

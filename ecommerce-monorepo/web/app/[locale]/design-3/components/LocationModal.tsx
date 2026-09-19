@@ -102,7 +102,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
                           <p className="text-xs font-normal text-slate-500 truncate mt-0.5">
                             {addr.addressLine1}
                             {addr.label ? ` · ${addr.label}` : ''}
-                            {addr.isDefault ? ' · Default' : ''}
+                            {addr.isDefault ? ` · ${tModals('defaultBadge')}` : ''}
                           </p>
                         </div>
                       </div>
@@ -120,7 +120,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
                   className="flex items-center gap-1.5 text-xs text-[#00407a] hover:underline font-medium"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  Manage saved addresses
+                  {tModals('manageSavedAddresses')}
                 </Link>
               </div>
             </div>
@@ -128,14 +128,14 @@ export const LocationModal: React.FC<LocationModalProps> = ({
             /* Logged in but no addresses yet */
             <div className="text-center py-4">
               <MapPin className="w-10 h-10 text-slate-200 mx-auto mb-2" />
-              <p className="text-sm text-slate-500 mb-3">No saved addresses yet.</p>
+              <p className="text-sm text-slate-500 mb-3">{tModals('noSavedAddresses')}</p>
               <Link
                 href="/dashboard/addresses"
                 onClick={onClose}
                 className="inline-flex items-center gap-1.5 text-xs text-[#00407a] hover:underline font-medium"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                Add your first address
+                {tModals('addFirstAddress')}
               </Link>
             </div>
           ) : null}

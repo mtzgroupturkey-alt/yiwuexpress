@@ -1290,7 +1290,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                           </div>
                           {isWholesaleActive && (
                             <div className="text-[11px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded mt-0.5 inline-block">
-                              Wholesale (MOQ: {moq})
+                              {tPdp('wholesaleMoq', { moq })}
                             </div>
                           )}
                           {!isWholesaleActive && product.oldPrice && (
@@ -1353,7 +1353,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs flex items-center gap-1.5"
                               >
                                 <FileText className="w-3.5 h-3.5" />
-                                <span>Request Quote (MOQ: {moq})</span>
+                                <span>{tPdp('requestQuoteMoq', { moq })}</span>
                               </button>
                             ) : (
                               <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl p-1">
@@ -1401,7 +1401,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                                 }}
                                 className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer whitespace-nowrap shadow-xs"
                               >
-                                Add to Cart (MOQ: {moq})
+                                {tPdp('addToCartMoq', { moq })}
                               </button>
                             ) : (
                               <div className="flex items-center gap-2 bg-slate-100 border border-slate-300 rounded-xl p-1">

@@ -276,7 +276,20 @@
       "wholesaleLogisticsNotice": "Оптовая логистика: расчет стоимости доставки при отправке",
       "everywhere": "Везде",
       "deliverTo": "Доставка в",
-      "expressDeliveryDaily": "Экспресс-доставка"
+      "expressDeliveryDaily": "Экспресс-доставка",
+      "selectCurrency": "Выбрать валюту",
+      "quoteRequest": "Запрос котировки",
+      "wholesaleCart": "Оптовая корзина",
+      "account": "Аккаунт",
+      "item": "товар",
+      "items": "товаров",
+      "roleAdmin": "Администратор",
+      "roleSupplier": "Поставщик",
+      "roleMember": "Клиент",
+      "worldwideShipping": "Доставка по всему миру",
+      "globalTagline": "Глобальный опт и розница",
+      "officialDistributor": "Официальный дистрибьютор",
+      "slideProgress": "Слайд {current} / {total}"
     },
     "footer": {
       "title": "Коллекции товаров для дома",
@@ -1070,7 +1083,20 @@
     },
     "messages": {
       "linkCopied": "Ссылка скопирована в буфер обмена!"
-    }
+    },
+    "wholesaleMoq": "Опт (Мин: {moq})",
+    "requestQuoteMoq": "Запросить цену (Мин: {moq})",
+    "addedToQuote": "Добавлено в запрос",
+    "addToCartMoq": "В корзину (Мин: {moq})",
+    "requestQuoteUnits": "Запросить цену ({quantity} шт.)",
+    "commercialDurability": "Промышленная долговечность",
+    "commercialDurabilityDesc": "Усиленные завальцованные края предотвращают деформацию.",
+    "evenHeating": "Равномерный нагрев",
+    "evenHeatingDesc": "Утолщенная сталь обеспечивает равномерное пропекание.",
+    "effortlessRelease": "Легкое извлечение",
+    "effortlessReleaseDesc": "Двухслойное антипригарное покрытие для легкой очистки.",
+    "certifiedSafe": "Сертифицированная безопасность",
+    "certifiedSafeDesc": "100% без PFOA и BPA, безопасно для контакта с пищей."
   },
   "TrustBadges": {
     "secureCheckout": "Безопасная оплата",
@@ -1612,7 +1638,37 @@
       "orderSuccessTitle": "Заказ успешно оформлен!",
       "orderSuccessDesc": "Ваш заказ принят в работу и передан на сборку.",
       "orderNumber": "Номер заказа:",
-      "continueShopping": "Продолжить покупки"
+      "continueShopping": "Продолжить покупки",
+      "memberWelcome": "Добро пожаловать в клуб {name}",
+      "memberWelcomeDesc": "Войдите, чтобы управлять заказами, получать клубные цены и отслеживать доставку.",
+      "signIn": "Войти",
+      "createAccount": "Регистрация",
+      "availablePoints": "Доступные клубные баллы",
+      "pointsUnit": "баллов",
+      "pointRate": "1 балл = 1.00 {currency}",
+      "pointsValue": "= {amount} {currency} стоимость",
+      "accountQuickLinks": "Быстрые разделы аккаунта",
+      "dashboard": "Панель управления",
+      "addresses": "Адреса доставки",
+      "activePrivileges": "Привилегии участника",
+      "cashbackTitle": "Кэшбэк и бонусы",
+      "cashbackDesc": "Получайте бонусные баллы за каждый заказ в гипермаркете, мебели и электронике.",
+      "expressDispatchTitle": "Приоритетная экспресс-доставка",
+      "expressDispatchDesc": "Прямая курьерская доставка с гарантированными экспресс-сроками на заказы.",
+      "exclusiveDropsTitle": "Закрытые скидки для участников",
+      "exclusiveDropsDesc": "Доступ к закрытым VIP-распродажам фабричной электроники и товаров для дома.",
+      "signOut": "Выйти",
+      "close": "Закрыть",
+      "manageSavedAddresses": "Управление сохраненными адресами",
+      "noSavedAddresses": "Нет сохраненных адресов.",
+      "addFirstAddress": "Добавить первый адрес",
+      "defaultBadge": "По умолчанию",
+      "itemsOrdered": "{count} тов. заказано",
+      "moreItems": "(+еще {count})",
+      "myOrders": "Мои заказы",
+      "administrator": "Администратор",
+      "verifiedSupplier": "Проверенный поставщик",
+      "vipMember": "VIP-клиент"
     },
     "shop": {
       "filters": "Фильтры и параметры",
@@ -1704,7 +1760,20 @@
       "qAndACount": "{count} вопросов",
       "keySpecs": "Ключевые характеристики",
       "finishVariant": "Вариант исполнения:",
-      "finishesAvailable": "Доступно {count} варианта"
+      "finishesAvailable": "Доступно {count} варианта",
+      "wholesaleMoq": "Опт (Мин: {moq})",
+      "requestQuoteMoq": "Запросить цену (Мин: {moq})",
+      "addedToQuote": "Добавлено в запрос",
+      "addToCartMoq": "В корзину (Мин: {moq})",
+      "requestQuoteUnits": "Запросить цену ({quantity} шт.)",
+      "commercialDurability": "Промышленная долговечность",
+      "commercialDurabilityDesc": "Усиленные завальцованные края предотвращают деформацию.",
+      "evenHeating": "Равномерный нагрев",
+      "evenHeatingDesc": "Утолщенная сталь обеспечивает равномерное пропекание.",
+      "effortlessRelease": "Легкое извлечение",
+      "effortlessReleaseDesc": "Двухслойное антипригарное покрытие для легкой очистки.",
+      "certifiedSafe": "Сертифицированная безопасность",
+      "certifiedSafeDesc": "100% без PFOA и BPA, безопасно для контакта с пищей."
     },
     "badges": {
       "express": "ЭКСПРЕСС",
@@ -1738,7 +1807,11 @@
       "flexiarmDock": "FLEXIARM DOCK",
       "dualZone": "ДВЕ ЗОНЫ 9.5Л",
       "pepSystem": "СИСТЕМА P.E.P.",
-      "alpha9Gen7": "ALPHA 9 AI GEN7"
+      "alpha9Gen7": "ALPHA 9 AI GEN7",
+      "wholesaleMoq": "Опт (Мин: {moq})",
+      "requestQuoteMoq": "Запросить цену (Мин: {moq})",
+      "addedToQuote": "Добавлено в запрос",
+      "addToCartMoq": "В корзину (Мин: {moq})"
     }
   },
   "QuoteCart": {
