@@ -306,7 +306,8 @@
       "worldwideShipping": "全球配送",
       "globalTagline": "全球批发与零售",
       "officialDistributor": "官方正品授权直供",
-      "slideProgress": "轮播 {current} / {total}"
+      "slideProgress": "轮播 {current} / {total}",
+      "subCount": "{count} 个子分类"
     },
     "footer": {
       "title": "家居生活系列",

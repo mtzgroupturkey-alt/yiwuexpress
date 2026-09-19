@@ -826,7 +826,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="bg-white border border-slate-200/90 rounded-xl shadow-[0_16px_36px_rgba(0,0,0,0.16)] py-2 w-[230px] text-xs shrink-0 relative">
             <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between">
               <span className="truncate max-w-[150px]">{activeDropdown.category.name}</span>
-              <span className="text-blue-600 font-semibold">{activeDropdown.category.children?.length || 0} sub</span>
+              <span className="text-blue-600 font-semibold">{tHeader('subCount', { count: activeDropdown.category.children?.length || 0 })}</span>
             </div>
             
             {/* View all in department option */}

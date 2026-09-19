@@ -289,7 +289,8 @@
       "worldwideShipping": "Worldwide Shipping",
       "globalTagline": "Global Wholesale & Retail",
       "officialDistributor": "Official Distributor Guaranteed",
-      "slideProgress": "Slide {current} / {total}"
+      "slideProgress": "Slide {current} / {total}",
+      "subCount": "{count} sub"
     },
     "footer": {
       "title": "Home Living Collections",

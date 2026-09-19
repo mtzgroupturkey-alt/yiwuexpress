@@ -289,7 +289,8 @@
       "worldwideShipping": "Доставка по всему миру",
       "globalTagline": "Глобальный опт и розница",
       "officialDistributor": "Официальный дистрибьютор",
-      "slideProgress": "Слайд {current} / {total}"
+      "slideProgress": "Слайд {current} / {total}",
+      "subCount": "{count} подк."
     },
     "footer": {
       "title": "Коллекции товаров для дома",
