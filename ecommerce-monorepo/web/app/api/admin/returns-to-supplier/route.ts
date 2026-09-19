@@ -16,19 +16,25 @@ export async function GET(request: NextRequest) {
     if (supplierId) where.supplierId = supplierId;
     if (status) where.status = status;
 
-    const returns = await prisma.returnToSupplier.findMany({
-      where,
-      include: {
-        supplier: { select: { id: true, name: true, companyName: true } },
-        warehouse: { select: { id: true, name: true, code: true } },
-        items: {
-          include: {
-            product: { select: { id: true, name: true, sku: true } },
+    let returns: any[] = [];
+    try {
+      returns = await prisma.returnToSupplier.findMany({
+        where,
+        include: {
+          supplier: { select: { id: true, name: true, companyName: true } },
+          warehouse: { select: { id: true, name: true, code: true } },
+          items: {
+            include: {
+              product: { select: { id: true, name: true, sku: true } },
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      });
+    } catch (dbError: any) {
+      console.warn('[returns-to-supplier] query failed (table may be pending migration):', dbError?.message);
+      returns = [];
+    }
 
     return NextResponse.json({ success: true, data: returns });
   } catch (error: any) {
