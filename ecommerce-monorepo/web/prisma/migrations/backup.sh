@@ -13,8 +13,13 @@
 set -e
 
 # ── Configuration ─────────────────────────────────────────────────────────────
-BACKUP_DIR="/www/backup/dromkok"
 PROJECT_DIR="/www/wwwroot/www.dromkok.com/web"
+BACKUP_DIR="/www/backup/dromkok"
+if ! mkdir -p "$BACKUP_DIR" 2>/dev/null; then
+  BACKUP_DIR="${PROJECT_DIR}/backups"
+  mkdir -p "$BACKUP_DIR" 2>/dev/null || BACKUP_DIR="/tmp/backups"
+  mkdir -p "$BACKUP_DIR" 2>/dev/null || true
+fi
 PG_BIN="/www/server/pgsql/bin"
 MAX_BACKUPS=7
 LABEL="${1:-}"

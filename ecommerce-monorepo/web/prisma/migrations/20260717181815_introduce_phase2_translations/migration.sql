@@ -1,3 +1,20 @@
+-- CreateTable (ensure base table exists)
+CREATE TABLE IF NOT EXISTS "contact_locations" (
+    "id" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'HUB',
+    "city" TEXT NOT NULL DEFAULT '',
+    "address" TEXT,
+    "phone" TEXT,
+    "email" TEXT,
+    "hours" TEXT,
+    "sortOrder" INTEGER NOT NULL DEFAULT 0,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "contact_locations_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateTable
 CREATE TABLE "contact_location_translations" (
     "id" TEXT NOT NULL,
