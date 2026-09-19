@@ -1027,7 +1027,7 @@ export default function ProductDetailView({
             {t('specMaterial')}
           </span>
           <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {product.material ? getLocalizedMaterial(product.material, locale) : (product.attributes?.material || 'Heavy-Duty Carbon Steel')}
+            {getLocalizedMaterial(product.material || product.attributes?.material || 'Heavy-Duty Carbon Steel', locale)}
           </span>
         </div>
 
@@ -1037,7 +1037,11 @@ export default function ProductDetailView({
             {locale === 'ru' ? 'Размеры' : locale === 'zh' ? '尺寸规格' : 'Dimensions'}
           </span>
           <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {product.attributes?.capacity || (product.dimensions ? `${product.dimensions.length} × ${product.dimensions.width} cm` : '24 Standard Cups / 38x26 cm')}
+            {product.attributes?.capacity
+              ? getLocalizedOptionLabel('capacity', product.attributes.capacity, locale)
+              : (product.dimensions
+                  ? `${product.dimensions.length} × ${product.dimensions.width} cm`
+                  : getLocalizedOptionLabel('capacity', '24 Standard Cups / 38x26 cm', locale))}
           </span>
         </div>
 
@@ -1047,7 +1051,11 @@ export default function ProductDetailView({
             {locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '表面工艺' : 'Coating'}
           </span>
           <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick'}
+            {getLocalizedOptionLabel(
+              'coating',
+              product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick',
+              locale
+            )}
           </span>
         </div>
 
@@ -1057,7 +1065,11 @@ export default function ProductDetailView({
             {locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '耐受温度' : 'Oven Safe'}
           </span>
           <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {product.attributes?.temperature || product.attributes?.heat_resistance || 'Up to 230°C / 450°F'}
+            {getLocalizedOptionLabel(
+              'temperature',
+              product.attributes?.temperature || product.attributes?.heat_resistance || 'Up to 230°C / 450°F',
+              locale
+            )}
           </span>
         </div>
       </div>
@@ -2081,7 +2093,7 @@ export default function ProductDetailView({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
                         <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {product.material ? getLocalizedMaterial(product.material, locale) : (product.attributes?.material || 'Heavy-Duty Carbon Steel')}
+                          {getLocalizedMaterial(product.material || product.attributes?.material || 'Heavy-Duty Carbon Steel', locale)}
                         </dd>
                       </div>
 
@@ -2089,7 +2101,11 @@ export default function ProductDetailView({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '涂层工艺' : 'Coating / Finish'}</dt>
                         <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick (PFOA Free)'}
+                          {getLocalizedOptionLabel(
+                            'coating',
+                            product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick (PFOA Free)',
+                            locale
+                          )}
                         </dd>
                       </div>
 
@@ -2097,7 +2113,11 @@ export default function ProductDetailView({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вместимость' : locale === 'zh' ? '杯量规格' : 'Capacity'}</dt>
                         <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {product.attributes?.capacity || '24 Standard Size Cups'}
+                          {getLocalizedOptionLabel(
+                            'capacity',
+                            product.attributes?.capacity || '24 Standard Size Cups',
+                            locale
+                          )}
                         </dd>
                       </div>
 
@@ -2125,7 +2145,11 @@ export default function ProductDetailView({
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '最高耐温' : 'Max Oven Temp'}</dt>
                         <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {product.attributes?.temperature || product.attributes?.heat_resistance || '230°C / 450°F'}
+                          {getLocalizedOptionLabel(
+                            'temperature',
+                            product.attributes?.temperature || product.attributes?.heat_resistance || '230°C / 450°F',
+                            locale
+                          )}
                         </dd>
                       </div>
 

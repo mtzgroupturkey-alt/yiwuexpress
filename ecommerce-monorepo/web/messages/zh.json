@@ -1342,7 +1342,9 @@
       "delivered": "已送达",
       "orderLabel": "订单号 #{number}",
       "totalAmount": "总金额",
-      "itemsIncludedCount": "共 {count} 件商品"
+      "itemsIncludedCount": "共 {count} 件商品",
+      "cancelled": "已取消",
+      "paid": "已支付"
     },
     "addresses": {
       "title": "我的地址",

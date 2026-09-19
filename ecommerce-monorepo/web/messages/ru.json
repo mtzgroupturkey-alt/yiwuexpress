@@ -1325,7 +1325,9 @@
       "delivered": "Доставлен",
       "orderLabel": "Заказ #{number}",
       "totalAmount": "Итоговая сумма",
-      "itemsIncludedCount": "Товаров: {count}"
+      "itemsIncludedCount": "Товаров: {count}",
+      "cancelled": "Отменен",
+      "paid": "Оплачен"
     },
     "addresses": {
       "title": "Мои адреса",

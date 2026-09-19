@@ -299,10 +299,11 @@ export function ProductAttributesSection({
             className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-[#1a3a5c]/20 focus:border-[#1a3a5c] outline-none"
           >
             <option value="">Select {getLocalizedAttributeName(attribute, activeTab)}</option>
-            {attribute.options?.map((opt: string) => {
+            {attribute.options?.map((opt: any) => {
+              const optVal = typeof opt === 'object' && opt !== null ? (opt.value || opt.label || '') : opt
               const translatedOpt = getLocalizedOptionLabel(attribute.slug, opt, activeTab)
               return (
-                <option key={opt} value={opt}>{translatedOpt}</option>
+                <option key={optVal} value={optVal}>{translatedOpt}</option>
               )
             })}
           </select>
@@ -319,10 +320,11 @@ export function ProductAttributesSection({
             }}
             className="w-full border border-gray-300 rounded-md p-2 text-sm min-h-[100px] focus:ring-2 focus:ring-[#1a3a5c]/20 focus:border-[#1a3a5c] outline-none"
           >
-            {attribute.options?.map((opt: string) => {
+            {attribute.options?.map((opt: any) => {
+              const optVal = typeof opt === 'object' && opt !== null ? (opt.value || opt.label || '') : opt
               const translatedOpt = getLocalizedOptionLabel(attribute.slug, opt, activeTab)
               return (
-                <option key={opt} value={opt}>{translatedOpt}</option>
+                <option key={optVal} value={optVal}>{translatedOpt}</option>
               )
             })}
           </select>

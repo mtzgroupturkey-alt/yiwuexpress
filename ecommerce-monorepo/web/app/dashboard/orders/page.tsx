@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { Package, Search, Eye, Clock, ChevronRight, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Container } from '@/components/design-system/Container'
 
 interface OrderItem {
@@ -38,6 +38,7 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const t = useTranslations('DashboardPages')
   const to = useTranslations('DashboardPages.orders')
+  const locale = useLocale()
 
   useEffect(() => {
     if (isInitialized && !authLoading && !isAuthenticated) {
@@ -87,9 +88,15 @@ export default function OrdersPage() {
       CANCELLED: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
     }
     const s = styles[status] || { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' }
+    const statusKey = status.toLowerCase()
+    // A tiny helper to safely translate if the key exists, else fallback to status
+    const label = ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled'].includes(statusKey)
+      ? to(statusKey as any)
+      : status
+
     return (
       <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${s.bg} ${s.text} ${s.border}`}>
-        {status}
+        {label}
       </span>
     )
   }
@@ -198,7 +205,7 @@ export default function OrdersPage() {
                         </div>
                         <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                           <Clock className="w-3 h-3" />
-                          {new Date(order.createdAt).toLocaleDateString(undefined, {
+                          {new Date(order.createdAt).toLocaleDateString(locale, {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',

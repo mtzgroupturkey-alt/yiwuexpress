@@ -1325,7 +1325,9 @@
       "delivered": "Delivered",
       "orderLabel": "Order #{number}",
       "totalAmount": "Total Amount",
-      "itemsIncludedCount": "{count, plural, =1 {1 item included} other {# items included}}"
+      "itemsIncludedCount": "{count, plural, =1 {1 item included} other {# items included}}",
+      "cancelled": "Cancelled",
+      "paid": "Paid"
     },
     "addresses": {
       "title": "My Addresses",
