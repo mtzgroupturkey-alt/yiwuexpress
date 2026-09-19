@@ -116,6 +116,8 @@ jobs:
                   bash prisma/migrations/backup.sh "pre_reset_$(date +%Y%m%d_%H%M%S)" || true
                 fi
                 npx prisma migrate reset --force --skip-generate
+                echo "🔧 Synchronizing schema with database..."
+                npx prisma db push --skip-generate
                 npm run db:seed
                 echo "🌱 Seeding categories, admin, and initial products/sample data..."
                 npm run db:seed:sample
