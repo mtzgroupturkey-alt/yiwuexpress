@@ -16,11 +16,11 @@ const updateUserSchema = z.object({
   userType: z.enum(['RETAIL', 'WHOLESALE', 'BOTH']).optional(),
   verificationStatus: z.enum(['UNVERIFIED', 'PENDING', 'APPROVED', 'REJECTED', 'DOCUMENTS_REQUIRED']).optional(),
   verificationNotes: z.string().optional(),
-  // Supplier fields
-  companyName: z.string().optional(),
-  businessType: z.enum(['MANUFACTURER', 'WHOLESALER', 'DISTRIBUTOR']).optional(),
-  taxId: z.string().optional(),
-  profilePhoto: z.string().optional(),
+  // Profile & Business fields
+  companyName: z.string().optional().nullable(),
+  businessType: z.string().optional().nullable(),
+  taxId: z.string().optional().nullable(),
+  profilePhoto: z.string().optional().nullable(),
 })
 
 // GET /api/admin/users/[id] - Get single user
@@ -158,6 +158,10 @@ export async function PUT(
       }
     }
     if (validatedData.verificationNotes !== undefined) updateData.verificationNotes = validatedData.verificationNotes
+
+    if (validatedData.companyName !== undefined) updateData.companyName = validatedData.companyName || null
+    if (validatedData.businessType !== undefined) updateData.businessType = validatedData.businessType || null
+    if (validatedData.taxId !== undefined) updateData.taxId = validatedData.taxId || null
 
     // Only hash password if provided (blank = no change)
     if (validatedData.password) {

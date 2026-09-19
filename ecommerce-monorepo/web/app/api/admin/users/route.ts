@@ -12,11 +12,11 @@ const createUserSchema = z.object({
   role: z.enum(['USER', 'SUPPLIER', 'ADMIN']),
   phone: z.string().optional(),
   country: z.string().optional(),
-  // Supplier fields
-  companyName: z.string().optional(),
-  businessType: z.enum(['MANUFACTURER', 'WHOLESALER', 'DISTRIBUTOR']).optional(),
-  taxId: z.string().optional(),
-  profilePhoto: z.string().optional(),
+  // Profile & Business fields
+  companyName: z.string().optional().nullable(),
+  businessType: z.string().optional().nullable(),
+  taxId: z.string().optional().nullable(),
+  profilePhoto: z.string().optional().nullable(),
 })
 
 // GET /api/admin/users - List all users (ADMIN only)
