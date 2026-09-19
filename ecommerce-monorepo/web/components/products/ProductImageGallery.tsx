@@ -121,13 +121,8 @@ export function ProductImageGallery({ images, productName, badgeText, className 
   // Scroll thumbnails
   const scrollThumbnails = (direction: 'prev' | 'next') => {
     if (thumbnailStripRef.current) {
-      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024
-      const scrollAmount = direction === 'prev' ? -200 : 200
-      if (isDesktop) {
-        thumbnailStripRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' })
-      } else {
-        thumbnailStripRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-      }
+      const scrollAmount = direction === 'prev' ? -240 : 240
+      thumbnailStripRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
     }
   }
 
@@ -164,96 +159,11 @@ export function ProductImageGallery({ images, productName, badgeText, className 
 
   return (
     <>
-      <div className={`flex flex-col-reverse lg:flex-row gap-3.5 items-start select-none ${className || ''}`}>
-        {/* Thumbnails rail: vertical on desktop (left), horizontal on mobile (below) */}
-        {displayImages.length > 1 && (
-          <div className="relative flex lg:flex-col items-center w-full lg:w-20 shrink-0 group/thumbs">
-            {/* Desktop Scroll Up Button */}
-            {displayImages.length > 5 && (
-              <button
-                type="button"
-                onClick={() => scrollThumbnails('prev')}
-                className="hidden lg:flex mb-1.5 z-10 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer items-center justify-center w-7 h-7"
-                aria-label="Scroll thumbnails up"
-              >
-                <ChevronUp className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* Mobile Scroll Left Button */}
-            {displayImages.length > 4 && (
-              <button
-                type="button"
-                onClick={() => scrollThumbnails('prev')}
-                className="lg:hidden absolute -left-2 z-10 bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer"
-                aria-label="Scroll thumbnails left"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* Scrollable Thumbnails Strip */}
-            <div
-              ref={thumbnailStripRef}
-              className="flex lg:flex-col items-center gap-2 overflow-x-auto lg:overflow-y-auto max-h-[540px] py-1 px-0.5 scrollbar-none scroll-smooth w-full"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {displayImages.map((image, index) => (
-                <button
-                  key={`thumb-${index}`}
-                  type="button"
-                  onClick={() => selectIndex(index)}
-                  className={`relative shrink-0 w-16 h-16 sm:w-[70px] sm:h-[70px] lg:w-20 lg:h-20 rounded-xl overflow-hidden bg-white border-2 transition-all cursor-pointer flex items-center justify-center p-1 ${
-                    index === safeIndex
-                      ? 'border-[#00407a] ring-2 ring-[#00407a]/25 shadow-xs scale-102'
-                      : 'border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100'
-                  }`}
-                  aria-label={`View photo ${index + 1}`}
-                >
-                  <img
-                    src={getImageSrc(index)}
-                    alt={`${productName} thumbnail ${index + 1}`}
-                    className="object-contain w-full h-full"
-                    loading="lazy"
-                    onError={() => handleImageError(index)}
-                  />
-                  {index === safeIndex && (
-                    <div className="absolute inset-0 bg-[#00407a]/5 pointer-events-none" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Desktop Scroll Down Button */}
-            {displayImages.length > 5 && (
-              <button
-                type="button"
-                onClick={() => scrollThumbnails('next')}
-                className="hidden lg:flex mt-1.5 z-10 bg-white hover:bg-slate-50 text-slate-700 shadow-2xs border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer items-center justify-center w-7 h-7"
-                aria-label="Scroll thumbnails down"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* Mobile Scroll Right Button */}
-            {displayImages.length > 4 && (
-              <button
-                type="button"
-                onClick={() => scrollThumbnails('next')}
-                className="lg:hidden absolute -right-2 z-10 bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 p-1 rounded-full hover:scale-110 transition-all cursor-pointer"
-                aria-label="Scroll thumbnails right"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        )}
-
+      <div className={`w-full min-w-0 max-w-full overflow-hidden select-none space-y-3 ${className || ''}`}>
         {/* Main Image Stage */}
-        <div className="flex-1 w-full space-y-2">
+        <div className="w-full min-w-0">
           <div
-            className="relative aspect-[4/3] sm:aspect-square lg:aspect-[4/3] min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] bg-white rounded-2xl overflow-hidden group shadow-xs hover:shadow-md border border-slate-200/90 cursor-zoom-in transition-all flex items-center justify-center touch-pan-y"
+            className="relative aspect-square w-full max-h-[500px] bg-white rounded-2xl overflow-hidden group shadow-xs hover:shadow-md border border-slate-200/90 cursor-zoom-in transition-all flex items-center justify-center touch-pan-y"
             onClick={() => {
               setIsZoomed(true)
               setZoomLevel(1)
@@ -281,13 +191,13 @@ export function ProductImageGallery({ images, productName, badgeText, className 
 
             {/* Badges on main image */}
             {badgeText && (
-              <div className="absolute top-3.5 left-3.5 bg-[#00407a] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-xs">
+              <div className="absolute top-3.5 left-3.5 bg-[#00407a] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-xs z-10">
                 {badgeText}
               </div>
             )}
 
             {/* Hover Overlay Hint & Zoom Button */}
-            <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-full shadow-xs border border-slate-200 text-xs font-bold text-slate-700 transition-all group-hover:scale-105">
+            <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-white/95 hover:bg-white backdrop-blur-md px-3 py-1.5 rounded-full shadow-xs border border-slate-200 text-xs font-bold text-slate-700 transition-all group-hover:scale-105 z-10">
               <ZoomIn className="w-3.5 h-3.5 text-[#00407a]" />
               <span className="hidden sm:inline">Click to zoom</span>
             </div>
@@ -322,29 +232,90 @@ export function ProductImageGallery({ images, productName, badgeText, className 
 
             {/* Image Counter Badge */}
             {displayImages.length > 1 && (
-              <div className="absolute bottom-3.5 right-3.5 bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-md text-xs font-bold tracking-wide">
+              <div className="absolute bottom-3.5 right-3.5 bg-slate-900/80 backdrop-blur-sm text-white px-2.5 py-1 rounded-md text-xs font-bold tracking-wide z-10">
                 {safeIndex + 1} / {displayImages.length}
               </div>
             )}
           </div>
+        </div>
 
-          {/* Mobile carousel indicator dots */}
-          {displayImages.length > 1 && (
-            <div className="sm:hidden flex items-center justify-center gap-1.5 py-1">
-              {displayImages.map((_, dotIdx) => (
+        {/* Thumbnails Rail (Clean horizontal strip underneath the main photo) */}
+        {displayImages.length > 1 && (
+          <div className="relative flex items-center w-full min-w-0 group/thumbs px-0.5">
+            {/* Scroll Left Button */}
+            {displayImages.length > 4 && (
+              <button
+                type="button"
+                onClick={() => scrollThumbnails('prev')}
+                className="absolute -left-1 z-10 bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 p-1.5 rounded-full hover:scale-110 transition-all cursor-pointer items-center justify-center"
+                aria-label="Scroll thumbnails left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Scrollable Thumbnails Strip */}
+            <div
+              ref={thumbnailStripRef}
+              className="flex items-center gap-2 overflow-x-auto py-1 px-1 scrollbar-none scroll-smooth w-full min-w-0"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {displayImages.map((image, index) => (
                 <button
-                  key={`dot-${dotIdx}`}
+                  key={`thumb-${index}`}
                   type="button"
-                  onClick={() => selectIndex(dotIdx)}
-                  className={`h-1.5 rounded-full transition-all ${
-                    dotIdx === safeIndex ? 'w-5 bg-[#00407a]' : 'w-1.5 bg-slate-300'
+                  onClick={() => selectIndex(index)}
+                  className={`relative shrink-0 w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-xl overflow-hidden bg-white border-2 transition-all cursor-pointer flex items-center justify-center p-1.5 ${
+                    index === safeIndex
+                      ? 'border-[#00407a] ring-2 ring-[#00407a]/25 shadow-xs scale-102'
+                      : 'border-slate-200 hover:border-slate-300 opacity-80 hover:opacity-100'
                   }`}
-                  aria-label={`Go to slide ${dotIdx + 1}`}
-                />
+                  aria-label={`View photo ${index + 1}`}
+                >
+                  <img
+                    src={getImageSrc(index)}
+                    alt={`${productName} thumbnail ${index + 1}`}
+                    className="object-contain w-full h-full"
+                    loading="lazy"
+                    onError={() => handleImageError(index)}
+                  />
+                  {index === safeIndex && (
+                    <div className="absolute inset-0 bg-[#00407a]/5 pointer-events-none" />
+                  )}
+                </button>
               ))}
             </div>
-          )}
-        </div>
+
+            {/* Scroll Right Button */}
+            {displayImages.length > 4 && (
+              <button
+                type="button"
+                onClick={() => scrollThumbnails('next')}
+                className="absolute -right-1 z-10 bg-white/95 hover:bg-white text-slate-700 shadow-md border border-slate-200 p-1.5 rounded-full hover:scale-110 transition-all cursor-pointer items-center justify-center"
+                aria-label="Scroll thumbnails right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Mobile carousel indicator dots */}
+        {displayImages.length > 1 && (
+          <div className="sm:hidden flex items-center justify-center gap-1.5 py-0.5">
+            {displayImages.map((_, dotIdx) => (
+              <button
+                key={`dot-${dotIdx}`}
+                type="button"
+                onClick={() => selectIndex(dotIdx)}
+                className={`h-1.5 rounded-full transition-all ${
+                  dotIdx === safeIndex ? 'w-5 bg-[#00407a]' : 'w-1.5 bg-slate-300'
+                }`}
+                aria-label={`Go to slide ${dotIdx + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Lightbox Modal - Portaled to document.body to break out of all parent stacking contexts */}

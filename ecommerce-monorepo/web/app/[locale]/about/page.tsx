@@ -18,8 +18,10 @@ import {
   Sparkles,
   CheckCircle2,
   Star,
-  Quote
+  Quote,
+  ChevronRight
 } from 'lucide-react'
+import { Container } from '@/components/ui/Container'
 import { StorySection } from '@/components/home/StorySection'
 import { CompanyTimeline } from '@/components/about/CompanyTimeline'
 import { ProcessFlow } from '@/components/about/ProcessFlow'
@@ -79,7 +81,7 @@ export default async function AboutPage({
       ],
       strategicHubs: [
         {
-          name: 'Yiwu Central Logistics Park',
+          name: 'China Central Logistics Park',
           role: 'Consolidation & Quality Inspection HQ',
           specs: '30,000+ sqm automated sorting hub',
           icon: Building2
@@ -165,7 +167,7 @@ export default async function AboutPage({
       ],
       strategicHubs: [
         {
-          name: '义乌中央集运与国际物流园区',
+          name: '中国中央集运与国际物流园区',
           role: '自营集货仓与出厂质检中心',
           specs: '30,000+ ㎡ 智能化分拣仓储中心',
           icon: Building2
@@ -255,17 +257,74 @@ export default async function AboutPage({
   const banner = rawBanner ? localizePageBanner(rawBanner, locale) : null
 
   return (
-    <SharedLayout 
-      pageTitle={banner?.title || t('pageTitle', { name: companyName })}
-      pageDescription={banner?.subtitle || t('pageDescription')}
-      breadcrumbs={[
-        { name: t('breadcrumb'), href: '/about' }
-      ]}
-      pageSlug="about"
-      backgroundImage={banner?.imageUrl || undefined}
-      overlayColor={banner?.overlayColor || undefined}
-    >
-      <div className="bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#060d17] dark:via-[#0a1628] dark:to-[#060d17]">
+    <SharedLayout showHero={true}>
+      <div className="bg-slate-50/70 min-h-screen">
+        {/* =========================================================================
+            1. HERO SECTION (Design 3 Navy Gradient & Trust Badges)
+           ========================================================================= */}
+        <section className="relative bg-gradient-to-b from-[#0B192C] via-[#00407a] to-[#0B192C] text-white py-14 sm:py-18 overflow-hidden border-b border-slate-800">
+          <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#F5A602_1px,transparent_1px)] [background-size:24px_24px]"></div>
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#00B4D8]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <Container className="relative z-10">
+            {/* Breadcrumb Pill */}
+            <nav className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-slate-200 mb-5">
+              <LocaleLink href="/" className="hover:text-white transition">
+                {locale === 'ru' ? 'Главная' : locale === 'zh' ? '首页' : 'Home'}
+              </LocaleLink>
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <span className="text-[#F5A602] font-semibold">{t('breadcrumb')}</span>
+            </nav>
+
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#F5A602]/20 border border-[#F5A602]/40 text-[#F5A602] text-xs font-black uppercase tracking-wider mb-3 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{locale === 'ru' ? 'О компании и логистической сети' : locale === 'zh' ? '源头直供 · 自营网点' : 'Direct Sourcing & Logistics Infrastructure'}</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-4">
+                {t('pageTitle', { name: companyName })}
+              </h1>
+
+              <p className="text-slate-200 text-sm sm:text-base leading-relaxed max-w-2xl font-normal">
+                {t('pageDescription')}
+              </p>
+
+              {/* Trust Metric Badges */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-white/15 mt-8">
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                    <Building2 className="w-3.5 h-3.5" />
+                  </div>
+                  <span>15+ Years Direct</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <span>99.7% Approval</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+                  <div className="w-7 h-7 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0 border border-sky-500/30">
+                    <Globe className="w-3.5 h-3.5" />
+                  </div>
+                  <span>180+ Corridors</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+                  <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/30">
+                    <Clock className="w-3.5 h-3.5" />
+                  </div>
+                  <span>100% Escrow</span>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        <div className="bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-[#060d17] dark:via-[#0a1628] dark:to-[#060d17]">
         {/* Top Story Narrative Section */}
         <StorySection />
 
@@ -506,6 +565,7 @@ export default async function AboutPage({
             </div>
           </div>
         </section>
+        </div>
       </div>
     </SharedLayout>
   )
