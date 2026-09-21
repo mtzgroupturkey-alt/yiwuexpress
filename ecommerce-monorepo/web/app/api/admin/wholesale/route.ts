@@ -1,12 +1,12 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/admin/wholesale - List all wholesale inquiries
 export async function GET(request: Request) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -68,6 +68,9 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching wholesale inquiries:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch wholesale inquiries' },

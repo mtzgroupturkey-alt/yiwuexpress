@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/admin/wholesale/[id] - Get single wholesale inquiry
 export async function GET(
@@ -10,6 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { id } = params
 
     const inquiry = await prisma.wholesaleInquiry.findUnique({
@@ -45,6 +45,9 @@ export async function GET(
       data: inquiry
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching wholesale inquiry:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch wholesale inquiry' },
@@ -59,6 +62,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { id } = params
     const body = await request.json()
 
@@ -93,6 +97,9 @@ export async function PUT(
       message: 'Wholesale inquiry updated successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error updating wholesale inquiry:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update wholesale inquiry' },

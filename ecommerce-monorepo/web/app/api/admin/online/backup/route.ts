@@ -1,12 +1,11 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { createBackup, listBackups, restoreBackup, deleteBackup, getBackupSize } from '@/lib/deploy/backup';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { requireRole, createAuthErrorResponse } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
+    await requireRole(request, ['ADMIN']);
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action') || 'list';
 
@@ -23,6 +22,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error);
+    }
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
@@ -32,12 +34,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await requireRole(request, ['ADMIN']);
     const { action, filename, type } = await request.json();
 
     if (action === 'create') {
       const backupFilename = await createBackup(type || 'manual');
-
-      // Record in database removed as the table does not exist
 
       return NextResponse.json({ success: true, filename: backupFilename });
     }
@@ -58,13 +59,14 @@ export async function POST(request: Request) {
 
       await deleteBackup(filename);
 
-      // Delete from database removed as the table does not exist
-
       return NextResponse.json({ success: true });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error: any) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error);
+    }
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

@@ -1,9 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { buildCountryTranslations } from '@/lib/utils/translation-builders'
-
-const prisma = new PrismaClient()
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/admin/countries/[id] - Get single country
 export async function GET(
@@ -11,6 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { id } = params
 
     const country = await prisma.country.findUnique({
@@ -30,6 +30,9 @@ export async function GET(
       data: country
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching country:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch country' },
@@ -44,6 +47,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { id } = params
     const body = await request.json()
 
@@ -124,6 +128,9 @@ export async function PUT(
       message: 'Country updated successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error updating country:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update country' },
@@ -138,6 +145,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { id } = params
     await prisma.country.delete({
       where: { id }
@@ -148,6 +156,9 @@ export async function DELETE(
       message: 'Country deleted successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error deleting country:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to delete country' },

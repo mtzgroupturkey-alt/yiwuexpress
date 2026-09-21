@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // POST /api/admin/wholesale/[id]/convert - Convert wholesale inquiry to order
 export async function POST(
@@ -10,6 +9,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { id } = params
     const body = await request.json()
 
@@ -93,6 +93,9 @@ export async function POST(
       message: 'Wholesale inquiry converted to order successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error converting wholesale inquiry:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to convert wholesale inquiry' },

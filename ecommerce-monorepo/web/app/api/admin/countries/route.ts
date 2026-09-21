@@ -1,13 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { buildCountryTranslations } from '@/lib/utils/translation-builders'
-
-const prisma = new PrismaClient()
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/admin/countries - List all countries
 export async function GET(request: Request) {
   try {
+    await requireRole(request, ['ADMIN'])
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
 
@@ -32,6 +32,9 @@ export async function GET(request: Request) {
       data: countries
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching countries:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch countries' },
@@ -43,6 +46,7 @@ export async function GET(request: Request) {
 // POST /api/admin/countries - Create new country
 export async function POST(request: Request) {
   try {
+    await requireRole(request, ['ADMIN'])
     const body = await request.json()
 
     // Validate required fields
@@ -90,6 +94,9 @@ export async function POST(request: Request) {
       message: 'Country created successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error creating country:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create country' },

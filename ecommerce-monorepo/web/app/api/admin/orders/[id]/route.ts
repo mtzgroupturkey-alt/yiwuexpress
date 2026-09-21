@@ -1,8 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/admin/orders/:id - Get single order details
 export async function GET(
@@ -10,6 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const order = await prisma.order.findUnique({
       where: { id: params.id },
       include: {
@@ -67,6 +67,9 @@ export async function GET(
       data: order
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching order:', error)
     return NextResponse.json(
       { 
@@ -85,6 +88,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     const body = await request.json()
     const { status, trackingNumber, carrier, adminNotes } = body
 
@@ -138,6 +142,9 @@ export async function PATCH(
       message: 'Order updated successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error updating order:', error)
     return NextResponse.json(
       { 
@@ -156,6 +163,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    await requireRole(request, ['ADMIN'])
     await prisma.order.delete({
       where: { id: params.id }
     })
@@ -165,6 +173,9 @@ export async function DELETE(
       message: 'Order deleted successfully'
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error deleting order:', error)
     return NextResponse.json(
       { 

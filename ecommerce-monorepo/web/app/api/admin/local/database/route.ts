@@ -1,12 +1,12 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { syncPrismaSchema, generatePrismaClient, seedDatabase, openPrismaStudio, exportDatabase } from '@/lib/deploy/local';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/db';
+import { requireRole, createAuthErrorResponse } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    await requireRole(request, ['ADMIN']);
     const { action } = await request.json();
 
     let result: any;
@@ -49,6 +49,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, result });
   } catch (error: any) {
+    if (error instanceof Error && (error.message.includes('Unauthorized') || error.message.includes('Forbidden') || error.message.includes('Account is disabled'))) {
+      return createAuthErrorResponse(error);
+    }
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

@@ -3,10 +3,9 @@ import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import { DeploymentLog } from '@/types/deploy';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 
 const execAsync = promisify(exec);
-const prisma = new PrismaClient();
 
 const LOCK_FILE = '/tmp/deployment.lock';
 const DEPLOY_SCRIPT = process.env.DEPLOY_SCRIPT || '/www/wwwroot/www.dromkok.com/web/deploy.sh';
