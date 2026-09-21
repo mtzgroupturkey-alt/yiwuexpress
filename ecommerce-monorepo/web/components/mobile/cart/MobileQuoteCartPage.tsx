@@ -23,6 +23,7 @@ import { ProductImage } from '@/components/ui/ProductImage'
 import { MobileHeader } from '../MobileHeader'
 import { EmptyState } from '../EmptyState'
 import { QuoteCartItem } from '@/components/QuoteCartContext'
+import { CompactQuoteAttributeSelector } from '@/components/cart/CompactQuoteAttributeSelector'
 
 export interface GuestInfo {
   name: string
@@ -207,19 +208,25 @@ export function MobileQuoteCartPage({
                         SKU: {item.productSku}
                       </p>
 
-                      {/* Selected Options Pills */}
-                      {opts && typeof opts === 'object' && Object.keys(opts).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {Object.entries(opts).map(([key, val]) => (
-                            <span
-                              key={key}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 text-[10px] font-medium border border-blue-200/80 dark:border-blue-800/60"
-                            >
-                              <span>{String(val)}</span>
-                            </span>
-                          ))}
-                        </div>
-                      )}
+                      {/* Compact Attribute Selection */}
+                      <CompactQuoteAttributeSelector
+                        productId={item.productId}
+                        productName={item.productName}
+                        selectedOptions={opts}
+                        variantId={item.variantId}
+                        onUpdateOptions={(newOptions, matched) => {
+                          onUpdateItem(
+                            item.productId,
+                            {
+                              selectedOptions: newOptions,
+                              ...(matched?.id ? { variantId: matched.id } : {}),
+                              ...(matched?.sku ? { productSku: matched.sku } : {}),
+                              ...(matched?.image ? { productImage: matched.image } : {}),
+                            },
+                            item.selectedOptions
+                          )
+                        }}
+                      />
 
                       <div className="mt-1.5">
                         <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded">

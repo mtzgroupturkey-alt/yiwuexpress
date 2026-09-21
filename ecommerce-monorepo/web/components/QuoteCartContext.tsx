@@ -144,15 +144,37 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const updateItem = useCallback((productId: string, updates: Partial<QuoteCartItem>, selectedOptions?: Record<string, string> | null) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        const matchesOptions = selectedOptions === undefined || areOptionsEqual(item.selectedOptions, selectedOptions)
-        if (item.productId === productId && matchesOptions) {
-          return { ...item, ...updates }
+    setItems((prev) => {
+      const targetIndex = prev.findIndex(
+        (item) => item.productId === productId && (selectedOptions === undefined || areOptionsEqual(item.selectedOptions, selectedOptions))
+      )
+      if (targetIndex === -1) return prev
+
+      const currentItem = prev[targetIndex]
+      const nextItem = { ...currentItem, ...updates }
+
+      // If options were updated and another item in the cart already has these exact options, merge them
+      if (updates.selectedOptions !== undefined && !areOptionsEqual(currentItem.selectedOptions, updates.selectedOptions)) {
+        const duplicateIndex = prev.findIndex(
+          (item, idx) => idx !== targetIndex && item.productId === productId && areOptionsEqual(item.selectedOptions, updates.selectedOptions)
+        )
+        if (duplicateIndex > -1) {
+          const updated = [...prev]
+          const duplicate = updated[duplicateIndex]
+          updated[duplicateIndex] = {
+            ...duplicate,
+            ...updates,
+            quantity: duplicate.quantity + currentItem.quantity,
+          }
+          updated.splice(targetIndex, 1)
+          return updated
         }
-        return item
-      })
-    )
+      }
+
+      const updated = [...prev]
+      updated[targetIndex] = nextItem
+      return updated
+    })
   }, [])
 
   const removeFromQuote = useCallback((productId: string, selectedOptions?: Record<string, string> | null) => {

@@ -17,6 +17,7 @@ import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useAuth } from '@/hooks/useAuth'
 import { MobileQuoteCartPage } from '@/components/mobile/cart/MobileQuoteCartPage'
+import { CompactQuoteAttributeSelector } from '@/components/cart/CompactQuoteAttributeSelector'
 
 export default function QuoteCartPage() {
   const router = useRouter()
@@ -241,36 +242,25 @@ export default function QuoteCartPage() {
                             <div>
                               <h3 className="font-bold text-gray-900 text-sm">{item.productName}</h3>
                               <p className="text-[11px] font-mono text-gray-500">SKU: {item.productSku}</p>
-                              {(() => {
-                                let opts = item.selectedOptions
-                                if (typeof opts === 'string') {
-                                  try { opts = JSON.parse(opts) } catch { opts = null }
-                                }
-                                if (!opts || typeof opts !== 'object' || Object.keys(opts).length === 0) return null
-                                return (
-                                  <div className="flex flex-wrap gap-1 mt-1.5">
-                                    {Object.entries(opts).map(([key, val]) => {
-                                      const isHex = typeof val === 'string' && val.startsWith('#')
-                                      const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')
-                                      return (
-                                        <span
-                                          key={key}
-                                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 text-[11px] font-medium border border-blue-200"
-                                        >
-                                          <span className="text-blue-500 font-semibold">{label}:</span>
-                                          {isHex && (
-                                            <span
-                                              className="w-2.5 h-2.5 rounded-full border border-blue-300 inline-block shrink-0"
-                                              style={{ backgroundColor: String(val) }}
-                                            />
-                                          )}
-                                          <span>{String(val)}</span>
-                                        </span>
-                                      )
-                                    })}
-                                  </div>
-                                )
-                              })()}
+                              {/* Compact Attribute Selection */}
+                              <CompactQuoteAttributeSelector
+                                productId={item.productId}
+                                productName={item.productName}
+                                selectedOptions={item.selectedOptions}
+                                variantId={item.variantId}
+                                onUpdateOptions={(newOptions, matched) => {
+                                  updateItem(
+                                    item.productId,
+                                    {
+                                      selectedOptions: newOptions,
+                                      ...(matched?.id ? { variantId: matched.id } : {}),
+                                      ...(matched?.sku ? { productSku: matched.sku } : {}),
+                                      ...(matched?.image ? { productImage: matched.image } : {}),
+                                    },
+                                    item.selectedOptions
+                                  )
+                                }}
+                              />
                               <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-1.5 inline-block">
                                 {t('moq')}: {item.minOrderQty}
                               </span>
