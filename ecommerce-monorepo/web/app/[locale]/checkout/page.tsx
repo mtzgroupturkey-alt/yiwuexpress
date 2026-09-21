@@ -18,6 +18,8 @@ import { useSettings } from '@/components/SettingsProvider'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useLocale, useTranslations } from 'next-intl'
+import { MobileCheckoutPage } from '@/components/mobile/checkout/MobileCheckoutPage'
+
 
 const buildCheckoutSchema = (t: (key: string, values?: any) => string) => z.object({
   customerName: z.string().min(2, t('errName')),
@@ -256,10 +258,86 @@ export default function CheckoutPage() {
 
   const total = cart ? cart.summary.subtotal + shippingFee : 0
 
+  const summaryItems = (cart?.cart?.items || []).map((it: any) => ({
+    id: it.id,
+    name: it.product?.name || 'Product',
+    quantity: it.quantity,
+    price: it.product?.price || 0,
+    image: it.product?.thumbnail,
+  }))
+
+  const handleMobileSubmitOrder = async (payload: any) => {
+    setShippingMethod(payload.shippingMethod)
+    setAgreeTerms(payload.agreeTerms)
+
+    const orderData = {
+      ...payload,
+      items: (cart?.cart?.items || []).map((item: any) => ({
+        productId: item.productId,
+        variantId: item.variantId || undefined,
+        selectedOptions: item.selectedOptions || undefined,
+        quantity: item.quantity,
+      })),
+      shippingFee,
+      tax: 0,
+      discount: 0,
+    }
+
+    setSubmitting(true)
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(orderData),
+      })
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          navigate('/login')
+          return
+        }
+        throw new Error('Failed to create order')
+      }
+
+      const result = await response.json()
+
+      if (result.success) {
+        alert(t('orderPlaced'))
+        navigate(`/orders/${result.data.id}`)
+      } else {
+        alert(result.error || t('failedCreateOrder'))
+      }
+    } catch (error) {
+      console.error('Error creating order:', error)
+      alert(t('failedCreateOrder'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+    <>
+      {/* MOBILE CHECKOUT VIEW (Phase 4, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileCheckoutPage
+          items={summaryItems}
+          subtotal={cart ? cart.summary.subtotal : 0}
+          shippingFee={shippingFee}
+          totalWeight={cart ? cart.summary.totalWeight : 0}
+          countries={countries}
+          onSubmitOrder={handleMobileSubmitOrder}
+          isSubmitting={submitting}
+          onBackToCart={() => navigate('/cart')}
+        />
+      </div>
+
+      {/* DESKTOP CHECKOUT VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <Button
@@ -736,7 +814,9 @@ export default function CheckoutPage() {
             </div>
           </div>
         </form>
-      </div>
-    </div>
-  )
-}
+          </div>
+        </div>
+      </>
+    )
+  }
+
