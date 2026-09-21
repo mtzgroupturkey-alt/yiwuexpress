@@ -149,7 +149,7 @@ export default function Footer() {
   ]
 
   return (
-    <footer className="bg-[#0B1524] text-slate-300 border-t border-slate-800/80">
+    <footer className="hidden md:block bg-[#0B1524] text-slate-300 border-t border-slate-800/80">
       {/* 1. Newsletter & Hotline Strip (5element / oma.by style) */}
       <div className="border-b border-slate-800 bg-[#070E1A]/80 py-8">
         <Container maxWidth="2xl">

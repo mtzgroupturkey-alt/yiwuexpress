@@ -65,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-[#051121] border-t border-slate-800 text-slate-400 relative overflow-hidden">
+    <footer className="hidden md:block w-full bg-[#051121] border-t border-slate-800 text-slate-400 relative overflow-hidden">
       {/* Subtle background ambient glow */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
