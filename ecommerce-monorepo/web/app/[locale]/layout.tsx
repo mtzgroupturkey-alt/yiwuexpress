@@ -18,6 +18,7 @@ import { isMobile as checkIsMobile, isIOS as checkIsIOS, isAndroid as checkIsAnd
 import { MobileProvider } from '@/components/MobileProvider'
 import { BottomNav } from '@/components/mobile/BottomNav'
 import { InstallPrompt } from '@/components/mobile/InstallPrompt'
+import { LocaleCurrencyAutoDetect } from '@/components/i18n/LocaleCurrencyAutoDetect'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,6 +112,7 @@ export default async function LocaleLayout({
 
   const cookieStore = cookies()
   const rawSessionCookie = cookieStore.get('store_session_mode')?.value
+  const rawCurrencyCookie = cookieStore.get('NEXT_CURRENCY')?.value
 
   let resolvedSessionMode: 'wholesale' | 'retail' = 'wholesale'
   if (serverSettings.storeMode === 'WHOLESALE') {
@@ -185,7 +187,8 @@ export default async function LocaleLayout({
               <WholesaleInquiryProvider>
                 <Providers>
                   <SettingsProvider initialSettings={serverSettings}>
-                    <CurrencyProvider>
+                    <CurrencyProvider initialCurrency={rawCurrencyCookie}>
+                      <LocaleCurrencyAutoDetect />
                       <MobileProvider
                         initialIsMobile={initialIsMobile}
                         initialIsIOS={initialIsIOS}

@@ -33,6 +33,8 @@ import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher';
 
 export interface NavChildCategory {
   id: string;
@@ -352,102 +354,10 @@ export const Header: React.FC<HeaderProps> = ({
 
             <span className="h-3 w-px bg-slate-300 hidden sm:inline-block" />
 
-            {/* Real Dynamic Currency Switcher Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCurrencyDropdown(!showCurrencyDropdown);
-                  setShowLangDropdown(false);
-                }}
-                className="flex items-center gap-1 px-2 py-1 rounded-md bg-white border border-slate-200/90 hover:border-slate-300 transition-colors font-semibold text-slate-700 cursor-pointer text-xs"
-                title="Change Currency"
-              >
-                <span className="text-[11px] font-extrabold text-[#00407a]">
-                  {currentCurrency.symbol} {currency}
-                </span>
-                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${showCurrencyDropdown ? 'rotate-180' : ''}`} />
-              </button>
-
-              {showCurrencyDropdown && (
-                <div className="absolute right-0 top-full mt-1.5 w-52 max-h-72 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
-                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    {tHeader('selectCurrency')}
-                  </div>
-                  {currencies.filter((c) => c.isActive).map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      onClick={() => {
-                        setCurrency(c.code);
-                        setShowCurrencyDropdown(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-left text-xs font-medium transition-colors ${
-                        currency === c.code
-                          ? 'bg-blue-50 text-[#00407a] font-bold'
-                          : 'text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="w-6 text-center font-bold text-slate-500">{c.symbol}</span>
-                        <span>{c.code}</span>
-                        <span className="text-[10px] text-slate-400 truncate max-w-[80px]">({c.name})</span>
-                      </span>
-                      {currency === c.code && (
-                        <span className="text-xs text-[#00407a]">✓</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Real Locale Switcher Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLangDropdown(!showLangDropdown);
-                  setShowCurrencyDropdown(false);
-                }}
-                className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-white border border-slate-200/90 hover:border-slate-300 transition-colors font-semibold text-slate-700 cursor-pointer text-xs"
-              >
-                <span className="uppercase font-bold">
-                  {currentLocale || 'en'}
-                </span>
-                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${showLangDropdown ? 'rotate-180' : ''}`} />
-              </button>
-
-              {showLangDropdown && (
-                <div className="absolute right-0 top-full mt-1.5 w-40 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
-                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    {tHeader('selectLanguage')}
-                  </div>
-                  {[
-                    { code: 'ru', label: 'Русский', flag: '🇷🇺' },
-                    { code: 'en', label: 'English', flag: '🇬🇧' },
-                    { code: 'zh', label: '中文 (Chinese)', flag: '🇨🇳' },
-                  ].map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => switchLocale(lang.code)}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-left text-xs font-medium transition-colors ${
-                        currentLocale === lang.code
-                          ? 'bg-blue-50 text-[#00407a] font-bold'
-                          : 'text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>{lang.flag}</span>
-                        <span>{lang.label}</span>
-                      </span>
-                      {currentLocale === lang.code && (
-                        <span className="text-xs text-[#00407a]">✓</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+            {/* Standard Discoverable Language & Currency Selectors (R1) */}
+            <div className="flex items-center gap-1.5 pl-1">
+              <LanguageSwitcher variant="header-dropdown" />
+              <CurrencySwitcher variant="header-dropdown" />
             </div>
           </div>
         </div>

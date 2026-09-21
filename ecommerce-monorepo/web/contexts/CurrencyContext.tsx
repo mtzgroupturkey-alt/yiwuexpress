@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react'
 import { useSettings } from '@/components/SettingsProvider'
 
+import { setCookie, getCookie } from '@/lib/locale-navigation'
+
 export interface CurrencyItem {
   id?: string
   code: string
@@ -45,10 +47,18 @@ export interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | null>(null)
 
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
+export function CurrencyProvider({ 
+  children,
+  initialCurrency,
+}: { 
+  children: React.ReactNode
+  initialCurrency?: string
+}) {
   const { settings } = useSettings()
   const [currencies, setCurrencies] = useState<CurrencyItem[]>(DEFAULT_CURRENCIES)
-  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string>('')
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string>(
+    initialCurrency?.toUpperCase() || ''
+  )
   const [isLoading, setIsLoading] = useState(true)
 
   // Fetch active currencies with live exchange rates from DB / API
@@ -72,23 +82,33 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     fetchCurrencies()
   }, [fetchCurrencies])
 
-  // Initialize selected currency from localStorage or settings
+  // Initialize selected currency from cookie, localStorage, initialCurrency or settings
   useEffect(() => {
+    const cookieCurrency = getCookie('NEXT_CURRENCY')
     const saved = typeof window !== 'undefined' ? localStorage.getItem('user_currency') : null
-    if (saved) {
+    
+    if (cookieCurrency) {
+      setSelectedCurrencyCode(cookieCurrency.toUpperCase())
+    } else if (saved) {
       setSelectedCurrencyCode(saved.toUpperCase())
+      setCookie('NEXT_CURRENCY', saved.toUpperCase(), 365)
+    } else if (initialCurrency) {
+      setSelectedCurrencyCode(initialCurrency.toUpperCase())
     } else if (settings?.currency) {
       setSelectedCurrencyCode(settings.currency.toUpperCase())
     } else {
       setSelectedCurrencyCode('USD')
     }
-  }, [settings?.currency])
+  }, [initialCurrency, settings?.currency])
 
   const setCurrency = useCallback((code: string) => {
     const upper = code.toUpperCase()
     setSelectedCurrencyCode(upper)
     if (typeof window !== 'undefined') {
-      localStorage.setItem('user_currency', upper)
+      try {
+        localStorage.setItem('user_currency', upper)
+      } catch {}
+      setCookie('NEXT_CURRENCY', upper, 365)
     }
   }, [])
 

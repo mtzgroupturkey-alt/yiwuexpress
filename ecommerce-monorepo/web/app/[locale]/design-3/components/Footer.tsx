@@ -26,6 +26,8 @@ import {
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useSettings } from '@/components/SettingsProvider';
 import { useLocale, useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher';
 
 interface FooterProps {
   onOpenCatalog?: () => void;
@@ -566,8 +568,8 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
-        {/* 4. Bottom Legal Registration & Copyright Strip */}
-        <div className="pt-6 mt-6 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center md:text-left">
+        {/* 4. Bottom Legal Registration & Copyright Strip (R4) */}
+        <div className="pt-6 mt-6 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500 text-center md:text-left">
           <div>
             <p className="text-slate-400 font-medium">
               © {currentYear} {companyName}. {tFooter('allRightsReserved')}
@@ -581,9 +583,17 @@ export const Footer: React.FC<FooterProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-            <Globe className="w-3.5 h-3.5 text-slate-400" />
-            <span>Global Export & Wholesale Hub</span>
+          {/* Desktop Footer Language & Currency Selectors (R4) */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <LanguageSwitcher variant="footer-dropdown" />
+              <CurrencySwitcher variant="footer-dropdown" />
+            </div>
+            <span className="text-slate-700 hidden sm:inline">|</span>
+            <div className="hidden sm:flex items-center gap-1.5 text-slate-500 text-[11px]">
+              <Globe className="w-3.5 h-3.5 text-slate-500" />
+              <span>Global Export & Wholesale Hub</span>
+            </div>
           </div>
         </div>
       </div>

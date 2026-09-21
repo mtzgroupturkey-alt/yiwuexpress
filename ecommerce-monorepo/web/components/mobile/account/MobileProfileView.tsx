@@ -19,7 +19,8 @@ import {
   Heart, 
   ChevronRight,
   Coins,
-  AlertCircle
+  AlertCircle,
+  Bell
 } from 'lucide-react'
 import { MobileHeader } from '../MobileHeader'
 import { MobilePreferencesSheet } from './MobilePreferencesSheet'
@@ -57,11 +58,13 @@ export function MobileProfileView({
 }: MobileProfileViewProps) {
   const router = useRouter()
   const locale = useLocale()
-  const { currency } = useCurrency()
+  const { currency, currentCurrency } = useCurrency()
 
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isPrefOpen, setIsPrefOpen] = useState(false)
+  const [prefTab, setPrefTab] = useState<'language' | 'currency'>('language')
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [localError, setLocalError] = useState('')
 
@@ -355,27 +358,72 @@ export function MobileProfileView({
               )}
             </div>
 
-            {/* Language & Currency Preferences Row */}
-            <div className="bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-200/80 dark:border-slate-800 p-4 shadow-2xs space-y-3">
-              <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
-                {locale === 'zh' ? '应用偏好设置' : locale === 'ru' ? 'Настройки' : 'Preferences'}
+            {/* Language & Currency Preferences Section (R3) */}
+            <div className="bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-200/80 dark:border-slate-800 p-4 shadow-2xs space-y-2">
+              <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-2">
+                {locale === 'zh' ? '语言与货币' : locale === 'ru' ? 'Язык и валюта' : 'Language & Currency'}
               </h3>
+              
+              {/* Language Row */}
               <button
                 type="button"
-                onClick={() => setIsPrefOpen(true)}
-                className="w-full min-h-[48px] px-3.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/60 flex items-center justify-between text-xs active:scale-98 transition-transform touch-manipulation"
+                onClick={() => {
+                  setPrefTab('language')
+                  setIsPrefOpen(true)
+                }}
+                className="w-full min-h-[48px] px-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/60 dark:bg-slate-800/40 hover:bg-gray-100/80 dark:hover:bg-slate-800 flex items-center justify-between text-xs active:scale-98 transition-transform touch-manipulation cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 text-gray-800 dark:text-slate-200">
-                  <Globe className="w-4 h-4 text-primary-500" />
-                  <span className="font-semibold">{locale === 'zh' ? '语言与货币' : locale === 'ru' ? 'Язык и валюта' : 'Language & Currency'}</span>
+                  <Globe className="w-4 h-4 text-[#00407a] dark:text-sky-400" />
+                  <span className="font-semibold">{locale === 'zh' ? '界面语言' : locale === 'ru' ? 'Язык' : 'Language'}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-400">
-                  <span className="uppercase font-mono text-[11px] font-bold text-primary-600">
-                    {locale.toUpperCase()} / {currency}
+                  <span className="font-bold text-gray-700 dark:text-slate-300">
+                    {locale === 'zh' ? '中文' : locale === 'ru' ? 'Русский' : 'English'}
                   </span>
                   <ChevronRight className="w-4 h-4" />
                 </div>
               </button>
+
+              {/* Currency Row */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPrefTab('currency')
+                  setIsPrefOpen(true)
+                }}
+                className="w-full min-h-[48px] px-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/60 dark:bg-slate-800/40 hover:bg-gray-100/80 dark:hover:bg-slate-800 flex items-center justify-between text-xs active:scale-98 transition-transform touch-manipulation cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 text-gray-800 dark:text-slate-200">
+                  <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-semibold">{locale === 'zh' ? '结算货币' : locale === 'ru' ? 'Валюта' : 'Currency'}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-gray-400">
+                  <span className="font-bold text-gray-700 dark:text-slate-300">
+                    {currency} ({currentCurrency?.symbol || '$'})
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </button>
+
+              {/* Notifications Row */}
+              <div className="w-full min-h-[48px] px-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/60 dark:bg-slate-800/40 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2.5 text-gray-800 dark:text-slate-200">
+                  <Bell className="w-4 h-4 text-amber-500" />
+                  <span className="font-semibold">{locale === 'zh' ? '订单与追踪通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors cursor-pointer ${
+                    notificationsEnabled
+                      ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60'
+                      : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300'
+                  }`}
+                >
+                  {notificationsEnabled ? 'On' : 'Off'}
+                </button>
+              </div>
             </div>
 
             {/* Sign Out Action */}
@@ -402,6 +450,7 @@ export function MobileProfileView({
       {/* Preferences Bottom Sheet */}
       <MobilePreferencesSheet
         isOpen={isPrefOpen}
+        initialTab={prefTab}
         onClose={() => setIsPrefOpen(false)}
       />
     </div>

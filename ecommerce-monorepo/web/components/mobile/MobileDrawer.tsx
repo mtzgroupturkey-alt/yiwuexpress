@@ -32,6 +32,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useCurrency, type CurrencyItem } from '@/hooks/useCurrency'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher'
+import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher'
 
 export interface MobileDrawerProps {
   isOpen?: boolean
@@ -415,62 +417,35 @@ export function MobileDrawer({
                     </LocaleLink>
                   </div>
 
-                  {/* Preferences: Language & Currency */}
-                  <div className="space-y-3 pt-3">
-                    <p className="text-[11px] font-semibold text-gray-400 dark:text-slate-400 uppercase tracking-wider px-3 mb-1">
-                      {locale === 'zh' ? '设置' : locale === 'ru' ? 'Настройки' : 'Preferences'}
-                    </p>
-
-                    {/* Language Switcher */}
-                    <div className="px-3">
-                      <label className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1.5 mb-1.5">
-                        <Globe className="w-3.5 h-3.5" />
-                        <span>{locale === 'zh' ? '语言' : locale === 'ru' ? 'Язык' : 'Language'}</span>
-                      </label>
-                      <div className="grid grid-cols-3 gap-1.5">
-                        {LANGUAGES.map((lang) => (
-                          <button
-                            key={lang.code}
-                            type="button"
-                            onClick={() => handleLanguageChange(lang.code)}
-                            className={`min-h-[44px] px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 border transition-colors ${
-                              locale === lang.code
-                                ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-500 text-primary-700 dark:text-primary-300'
-                                : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <span>{lang.flag}</span>
-                            <span>{lang.label}</span>
-                          </button>
-                        ))}
-                      </div>
+                  {/* Dedicated Language & Currency Section (R2) */}
+                  <div className="pt-3 pb-1 border-t border-gray-100 dark:border-slate-800/80">
+                    <div className="px-3 mb-2 flex items-center justify-between">
+                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 dark:text-slate-400">
+                        Language & Currency
+                      </span>
+                      <div className="h-px flex-1 bg-gray-100 dark:bg-slate-800 ml-3" />
                     </div>
 
-                    {/* Currency Switcher */}
-                    {currencies && currencies.length > 0 && (
-                      <div className="px-3">
-                        <label className="text-xs text-gray-500 dark:text-slate-400 flex items-center gap-1.5 mb-1.5">
-                          <Coins className="w-3.5 h-3.5" />
-                          <span>{locale === 'zh' ? '货币' : locale === 'ru' ? 'Валюта' : 'Currency'}</span>
-                        </label>
-                        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-                          {currencies.map((c: CurrencyItem) => (
-                            <button
-                              key={c.code}
-                              type="button"
-                              onClick={() => setCurrency(c.code)}
-                              className={`shrink-0 min-w-[56px] min-h-[44px] px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center border transition-colors ${
-                                currency === c.code
-                                  ? 'bg-primary-50 dark:bg-primary-950/40 border-primary-500 text-primary-700 dark:text-primary-300'
-                                  : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300'
-                              }`}
-                            >
-                              {c.symbol} {c.code}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="px-2 space-y-4">
+                      {/* Language Radio List */}
+                      <LanguageSwitcher 
+                        variant="drawer-radio" 
+                        onSelect={(targetLoc) => {
+                          const segments = pathname.split('/')
+                          if (segments[1] === 'en' || segments[1] === 'ru' || segments[1] === 'zh') {
+                            segments[1] = targetLoc
+                          } else {
+                            segments.splice(1, 0, targetLoc)
+                          }
+                          const newPath = segments.join('/') || `/${targetLoc}`
+                          try { router.push(newPath) } catch {}
+                          handleClose()
+                        }}
+                      />
+
+                      {/* Currency Radio List */}
+                      <CurrencySwitcher variant="drawer-radio" />
+                    </div>
                   </div>
 
                   {/* Logout Action if Authenticated */}

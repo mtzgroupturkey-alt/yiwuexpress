@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl'
 import { Globe, Coins, Check, ArrowRight } from 'lucide-react'
 import { BottomSheet } from '../BottomSheet'
 import { useCurrency, type CurrencyItem } from '@/hooks/useCurrency'
+import { switchLocale } from '@/lib/locale-navigation'
 
 export interface MobilePreferencesSheetProps {
   isOpen: boolean
@@ -31,13 +32,17 @@ export function MobilePreferencesSheet({
 
   const [activeTab, setActiveTab] = useState<'language' | 'currency'>(initialTab)
 
+  React.useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab)
+    }
+  }, [isOpen, initialTab])
+
   const handleLanguageChange = (targetLocale: string) => {
     if (targetLocale === locale) {
       onClose()
       return
     }
-
-    // Replace current locale prefix with new locale
     const segments = pathname.split('/')
     if (segments.length > 1 && ['en', 'ru', 'zh'].includes(segments[1])) {
       segments[1] = targetLocale
@@ -45,8 +50,11 @@ export function MobilePreferencesSheet({
       segments.splice(1, 0, targetLocale)
     }
     const newPath = segments.join('/') || `/${targetLocale}`
-    router.push(newPath)
+    try {
+      router.push(newPath)
+    } catch {}
     onClose()
+    switchLocale(targetLocale, locale, pathname)
   }
 
   const handleCurrencyChange = (currCode: string) => {
