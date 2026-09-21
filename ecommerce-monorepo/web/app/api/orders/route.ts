@@ -1,9 +1,10 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { requireAuth, getAuthUser, createAuthErrorResponse, hashPassword, generateToken, setAuthCookie } from '@/lib/auth'
+import { requireAuth, getAuthUser, createAuthErrorResponse, hashPassword, generateToken, setAuthCookie, isApprovedWholesaleUser } from '@/lib/auth'
 import { sendOrderConfirmationEmail } from '@/lib/email'
 import { logger } from '@/lib/logger'
+import { calculateOrderTotals } from '@/lib/pricing/engine'
 import crypto from 'crypto'
 
 // GET /api/orders - Get user's orders
@@ -169,70 +170,39 @@ export async function POST(request: Request) {
 
     const shippingCountryId = country.id
 
-    // Pre-validate products and build order items BEFORE transaction
-    let subtotal = 0
-    const orderItems: any[] = []
-    const stockDecrements: Array<{ productId: string; variantId?: string; quantity: number; productName: string }> = []
+    // Authoritatively calculate order totals and resolve tiered/wholesale/contract pricing
+    const orderMode: 'RETAIL' | 'WHOLESALE' = (body.mode && body.mode.toUpperCase() === 'WHOLESALE') ? 'WHOLESALE' : 'RETAIL'
+    const isApprovedWholesale = isApprovedWholesaleUser(authUser)
 
-    for (const item of body.items) {
-      const product = await prisma.product.findUnique({
-        where: { id: item.productId },
-        include: { variants: { where: item.variantId ? { id: item.variantId } : undefined } }
-      })
-
-      if (!product || !product.isActive) {
-        return NextResponse.json(
-          { success: false, error: `Product ${item.productId} not found or not available` },
-          { status: 400 }
-        )
-      }
-
-      if (product.stock < item.quantity) {
-        return NextResponse.json(
-          { success: false, error: `Insufficient stock for ${product.name}` },
-          { status: 400 }
-        )
-      }
-
-      // Check variant stock if variant specified
-      if (item.variantId) {
-        const variant = product.variants.find((v: any) => v.id === item.variantId)
-        if (variant && variant.stock < item.quantity) {
-          return NextResponse.json(
-            { success: false, error: `Insufficient variant stock for ${product.name}` },
-            { status: 400 }
-          )
-        }
-      }
-
-      const itemTotal = product.price * item.quantity
-      subtotal += itemTotal
-
-      orderItems.push({
-        productId: product.id,
-        variantId: item.variantId || null,
-        variantAttributes: item.variantAttributes || null,
-        selectedOptions: item.selectedOptions || item.variantAttributes || null,
-        productName: product.name,
-        productSku: product.sku,
-        productImage: product.thumbnail,
-        quantity: item.quantity,
-        price: product.price,
-        total: itemTotal
-      })
-
-      stockDecrements.push({
-        productId: product.id,
-        variantId: item.variantId || undefined,
-        quantity: item.quantity,
-        productName: product.name,
-      })
+    let calculation
+    try {
+      calculation = await calculateOrderTotals(
+        body.items,
+        {
+          userId: effectiveUserId,
+          userType: authUser?.userType,
+          verificationStatus: authUser?.verificationStatus,
+          role: authUser?.role,
+          isApprovedWholesale,
+          mode: orderMode,
+        },
+        shippingCountryId,
+        body.shippingMethod
+      )
+    } catch (calcError: any) {
+      return NextResponse.json(
+        { success: false, error: calcError.message || 'Pricing and order validation failed' },
+        { status: 400 }
+      )
     }
 
-    const shippingFee = body.shippingFee || 0
-    const tax = body.tax || 0
-    const discount = body.discount || 0
-    const total = subtotal + shippingFee + tax - discount
+    const subtotal = calculation.subtotal
+    const shippingFee = calculation.shippingFee
+    const tax = calculation.tax
+    const discount = calculation.discount
+    const total = calculation.total
+    const orderItems = calculation.items
+    const stockDecrements = calculation.stockDecrements
     const orderNumber = `YWE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
 
     // ── ATOMIC TRANSACTION ──────────────────────────────────────────────────

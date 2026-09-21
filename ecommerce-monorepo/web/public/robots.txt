@@ -1,8 +1,14 @@
 User-agent: *
 Allow: /
 
-# Admin routes should not be indexed
+# Private, authenticated, and transaction routes should not be indexed
 Disallow: /admin/
 Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /quote-cart/
+Disallow: /cart/
+Disallow: /quotes/
 
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: https://dromkok.com/sitemap.xml

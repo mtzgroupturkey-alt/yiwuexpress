@@ -146,6 +146,10 @@ export async function getUserFromToken(token: string) {
       country: true,
       isActive: true,
       isVerified: true,
+      userType: true,
+      verificationStatus: true,
+      companyName: true,
+      taxId: true,
       supplierId: true,
       supplierProfile: {
         select: {
@@ -156,6 +160,18 @@ export async function getUserFromToken(token: string) {
       },
     },
   })
+}
+
+/**
+ * Check if a user is an approved wholesale customer or administrator
+ */
+export function isApprovedWholesaleUser(user: any): boolean {
+  if (!user) return false
+  if (user.role === 'ADMIN') return true
+  return (
+    (user.userType === 'WHOLESALE' || user.userType === 'BOTH') &&
+    user.verificationStatus === 'APPROVED'
+  )
 }
 
 /**

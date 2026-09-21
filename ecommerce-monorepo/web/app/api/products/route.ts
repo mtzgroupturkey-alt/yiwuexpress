@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getLocalField, localizeEntity } from '@/lib/utils/localize'
-import { requireRole, createAuthErrorResponse } from '@/lib/auth'
+import { requireRole, createAuthErrorResponse, getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 
 interface FilterMetadata {
   id: string
@@ -535,9 +536,18 @@ export async function GET(request: Request) {
       }
     })
 
+    // Check caller wholesale access permissions
+    const currentUser = await getAuthUser(request)
+    const canViewWholesale = isApprovedWholesaleUser(currentUser)
+    const isAdmin = currentUser?.role === 'ADMIN'
+
+    const safeProducts = localizedProducts.map((p: any) =>
+      sanitizeProductForClient(p, canViewWholesale, isAdmin)
+    )
+
     return NextResponse.json({
       success: true,
-      data: localizedProducts,
+      data: safeProducts,
       pagination: {
         page,
         limit,

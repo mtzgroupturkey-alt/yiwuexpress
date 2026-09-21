@@ -69,12 +69,13 @@ const nextConfig = {
   },
   // Add CORS headers and security headers to all routes
   async headers() {
+    const allowedOrigin = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://dromkok.com'
     return [
       {
         source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' }, // In production, replace with specific origin
+          { key: 'Access-Control-Allow-Origin', value: allowedOrigin },
           { key: 'Access-Control-Allow-Methods', value: 'GET,DELETE,PATCH,POST,PUT,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
         ],

@@ -1,9 +1,9 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
-
-const prisma = new PrismaClient()
 
 function withTranslations<T extends Record<string, any>>(select: T): T {
   return { ...select, translations: { select: { locale: true, name: true, description: true } } }
@@ -156,9 +156,17 @@ export async function GET(
       }
     })
 
+    const currentUser = await getAuthUser(request)
+    const canViewWholesale = isApprovedWholesaleUser(currentUser)
+    const isAdmin = currentUser?.role === 'ADMIN'
+
+    const safeProducts = transformedProducts.map((p) =>
+      sanitizeProductForClient(p, canViewWholesale, isAdmin)
+    )
+
     return NextResponse.json({
       success: true,
-      data: transformedProducts,
+      data: safeProducts,
     })
   } catch (error) {
     console.error('Error fetching related products:', error)

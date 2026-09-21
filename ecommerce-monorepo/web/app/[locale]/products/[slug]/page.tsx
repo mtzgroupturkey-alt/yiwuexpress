@@ -280,6 +280,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const description = localized.metaDescription || localized.description?.slice(0, 160) || product.description?.slice(0, 160) || '';
   const firstImage = product.thumbnail || product.images?.[0] || '';
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://dromkok.com';
+
   return {
     title,
     description,
@@ -296,11 +298,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       images: firstImage ? [firstImage] : [],
     },
     alternates: {
-      canonical: `/${locale}/products/${product.slug || slug}`,
+      canonical: `${baseUrl}/${locale}/products/${product.slug || slug}`,
       languages: {
-        en: `/en/products/${product.slug || slug}`,
-        ru: `/ru/products/${product.slug || slug}`,
-        zh: `/zh/products/${product.slug || slug}`,
+        en: `${baseUrl}/en/products/${product.slug || slug}`,
+        ru: `${baseUrl}/ru/products/${product.slug || slug}`,
+        zh: `${baseUrl}/zh/products/${product.slug || slug}`,
       },
     },
   };
@@ -314,5 +316,37 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  return <ProductDetailView product={product} slug={slug} locale={locale} />;
+  const companyName = await getCompanyName();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://dromkok.com';
+  const localized = localizeProduct(product, locale);
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: localized.name || product.name,
+    image: product.thumbnail || product.images?.[0] ? [product.thumbnail || product.images[0]] : [],
+    description: localized.description || product.description?.slice(0, 300) || '',
+    sku: product.sku,
+    brand: {
+      '@type': 'Brand',
+      name: companyName,
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `${baseUrl}/${locale}/products/${product.slug || slug}`,
+      priceCurrency: 'USD',
+      price: product.price,
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition',
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetailView product={product} slug={slug} locale={locale} />
+    </>
+  );
 }

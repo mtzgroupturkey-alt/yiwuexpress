@@ -1,14 +1,14 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 import { localizeAttribute, localizeAttributeValue, localizeCategory, localizeProduct } from '@/lib/utils/localize'
 import {
   getLocalizedOptionLabel,
   getLocalizedColorList,
   getLocalizedColorName
 } from '@/lib/utils/attributeOptionTranslations'
-
-const prisma = new PrismaClient()
 
 // GET /api/products/[slug] - Get single product by slug
 export async function GET(
@@ -233,9 +233,16 @@ export async function GET(
       categoryAttributes: uniqueAttributes
     }
 
+    // Check caller wholesale access permissions
+    const currentUser = await getAuthUser(request)
+    const canViewWholesale = isApprovedWholesaleUser(currentUser)
+    const isAdmin = currentUser?.role === 'ADMIN'
+
+    const safeProduct = sanitizeProductForClient(formattedProduct, canViewWholesale, isAdmin)
+
     return NextResponse.json({
       success: true,
-      data: formattedProduct
+      data: safeProduct
     })
   } catch (error) {
     console.error('Error fetching product:', error)

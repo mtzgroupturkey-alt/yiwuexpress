@@ -64,11 +64,41 @@ export async function POST(req: NextRequest) {
 
     const captureData = await captureResponse.json()
 
-    if (!captureResponse.ok) {
+    if (!captureResponse.ok || captureData.status !== 'COMPLETED') {
       console.error('[PAYPAL CAPTURE] Error:', captureData)
       return NextResponse.json(
-        { success: false, error: 'Failed to capture PayPal payment' },
-        { status: 500 }
+        { success: false, error: 'Failed to capture PayPal payment or payment not completed' },
+        { status: 400 }
+      )
+    }
+
+    // 1. Verify purchase_unit reference_id matches this order if provided
+    const purchaseUnit = captureData.purchase_units?.[0]
+    if (purchaseUnit?.reference_id && purchaseUnit.reference_id !== order.id) {
+      console.error(`[PAYPAL FRAUD] Reference ID mismatch. Expected: ${order.id}, Received: ${purchaseUnit.reference_id}`)
+      return NextResponse.json(
+        { success: false, error: 'Payment reference mismatch. Transaction blocked.' },
+        { status: 400 }
+      )
+    }
+
+    // 2. Validate captured amount matches order total
+    const capture = purchaseUnit?.payments?.captures?.[0]
+    if (!capture || capture.status !== 'COMPLETED') {
+      return NextResponse.json(
+        { success: false, error: 'Payment capture was not completed by provider' },
+        { status: 400 }
+      )
+    }
+
+    const capturedAmount = parseFloat(capture.amount?.value || '0')
+    const expectedAmount = parseFloat(order.total.toFixed(2))
+
+    if (Math.abs(capturedAmount - expectedAmount) > 0.01) {
+      console.error(`[PAYPAL FRAUD] Amount mismatch! Order: ${expectedAmount}, Captured: ${capturedAmount}`)
+      return NextResponse.json(
+        { success: false, error: 'Captured payment amount does not match order total. Transaction flagged for review.' },
+        { status: 400 }
       )
     }
 
@@ -78,6 +108,7 @@ export async function POST(req: NextRequest) {
         paymentStatus: 'PAID',
         paidAt: new Date(),
         status: order.status === 'PENDING' ? 'PAID' : order.status,
+        customerCarrierNotes: `PayPal Capture ID: ${capture.id}`,
       },
     })
 

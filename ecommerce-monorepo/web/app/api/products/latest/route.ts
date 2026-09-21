@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,9 +47,17 @@ export async function GET(req: NextRequest) {
       isNewArrival: product.isNewArrival,
     }))
 
+    const currentUser = await getAuthUser(req)
+    const canViewWholesale = isApprovedWholesaleUser(currentUser)
+    const isAdmin = currentUser?.role === 'ADMIN'
+
+    const safeProducts = formattedProducts.map((p) =>
+      sanitizeProductForClient(p, canViewWholesale, isAdmin)
+    )
+
     return NextResponse.json({ 
       success: true,
-      data: formattedProducts 
+      data: safeProducts 
     })
   } catch (error) {
     console.error('Error fetching latest products:', error)
