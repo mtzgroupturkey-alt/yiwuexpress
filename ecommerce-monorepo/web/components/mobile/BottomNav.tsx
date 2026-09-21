@@ -20,6 +20,7 @@ export function BottomNav() {
   const pathname = usePathname() || ''
   const locale = useLocale()
   const { settings } = useSettings()
+  const companyLogo = settings?.companyLogo || '/uploads/general/1789563604789-1787644810312-logo_pixian_ai.png'
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [logoFailed, setLogoFailed] = useState(false)
@@ -267,10 +268,10 @@ export function BottomNav() {
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-100 dark:border-slate-800">
                 <div className="flex items-center gap-2.5">
-                  {settings?.companyLogo && !logoFailed ? (
+                  {!logoFailed ? (
                     <div className="flex items-center justify-center shrink-0">
                       <img
-                        src={settings.companyLogo}
+                        src={companyLogo}
                         alt={`${settings?.companyName || 'Company'} Logo`}
                         onError={() => setLogoFailed(true)}
                         className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
