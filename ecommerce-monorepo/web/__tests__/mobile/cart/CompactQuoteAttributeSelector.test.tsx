@@ -39,7 +39,7 @@ describe('CompactQuoteAttributeSelector', () => {
     })
   })
 
-  it('renders existing selected options in compact format', () => {
+  it('renders existing selected options in closed format and opens options on button click', () => {
     const handleUpdate = vi.fn()
     render(
       <CompactQuoteAttributeSelector
@@ -50,11 +50,29 @@ describe('CompactQuoteAttributeSelector', () => {
       />
     )
 
-    expect(screen.getByTestId('compact-quote-attribute-selector')).toBeInTheDocument()
+    // Closed state: shows just selected options
+    expect(screen.getByTestId('compact-quote-attribute-selector-closed')).toBeInTheDocument()
     expect(screen.getByText('Color:')).toBeInTheDocument()
+    expect(screen.getByText('Silver')).toBeInTheDocument()
     expect(screen.getByText('Voltage:')).toBeInTheDocument()
+    expect(screen.getByText('220V')).toBeInTheDocument()
+
+    // Click "Select Options" button to open
+    const openBtn = screen.getByRole('button', { name: /select options/i })
+    fireEvent.click(openBtn)
+
+    // Open state: shows selector with Done button
+    expect(screen.getByTestId('compact-quote-attribute-selector-open')).toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: /select color/i })).toHaveValue('Silver')
     expect(screen.getByRole('combobox', { name: /select voltage/i })).toHaveValue('220V')
+
+    // Click "Done" (Close) button
+    const doneBtn = screen.getByRole('button', { name: /close options/i })
+    fireEvent.click(doneBtn)
+
+    // Closed state restored: shows just selected options
+    expect(screen.getByTestId('compact-quote-attribute-selector-closed')).toBeInTheDocument()
+    expect(screen.getByText('Silver')).toBeInTheDocument()
   })
 
   it('fetches product variants and updates options on select change', async () => {
@@ -67,6 +85,10 @@ describe('CompactQuoteAttributeSelector', () => {
         onUpdateOptions={handleUpdate}
       />
     )
+
+    // Open options
+    const openBtn = screen.getByRole('button', { name: /select options/i })
+    fireEvent.click(openBtn)
 
     await waitFor(() => {
       const colorSelect = screen.getByRole('combobox', { name: /select color/i })
@@ -86,7 +108,7 @@ describe('CompactQuoteAttributeSelector', () => {
     )
   })
 
-  it('allows adding a custom specification via + Spec button', () => {
+  it('allows adding a custom specification via + Spec button when open', () => {
     const handleUpdate = vi.fn()
     render(
       <CompactQuoteAttributeSelector
@@ -96,6 +118,10 @@ describe('CompactQuoteAttributeSelector', () => {
         onUpdateOptions={handleUpdate}
       />
     )
+
+    // Open options
+    const openBtn = screen.getByRole('button', { name: /select options/i })
+    fireEvent.click(openBtn)
 
     const specBtn = screen.getByTitle('Add custom specification')
     fireEvent.click(specBtn)
