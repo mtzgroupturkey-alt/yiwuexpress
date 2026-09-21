@@ -1,13 +1,15 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { Star, Plus, Heart, Package, FileText } from 'lucide-react'
+import { Star, Plus, Heart, Package, ClipboardList, Check } from 'lucide-react'
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useStoreMode } from '@/contexts/StoreModeContext'
+import { useSettings } from '@/components/SettingsProvider'
 
 interface MobileProductCardProps {
   product: Product
@@ -30,6 +32,28 @@ export function MobileProductCard({
   const locale = useLocale()
   const { formatPrice } = useCurrency()
   const { isWholesaleSession } = useSessionMode()
+  const { storeMode } = useStoreMode()
+  const { settings } = useSettings()
+
+  const [justAdded, setJustAdded] = useState(false)
+
+  const isWholesaleActive =
+    isWholesaleSession !== undefined
+      ? isWholesaleSession
+      : storeMode === 'WHOLESALE'
+
+  const rfqModel = settings?.rfqModel || 'RFQ'
+  const isInstantWholesale = rfqModel === 'INSTANT'
+  const isRfqMode = isWholesaleActive && !isInstantWholesale
+
+  const moq =
+    product.minOrderQty ||
+    (product as any).moq ||
+    (product as any).minOrder ||
+    settings?.wholesaleDefaultMoq ||
+    1
+  const effectiveWholesalePrice = product.wholesalePrice || product.price
+  const displayPrice = isWholesaleActive ? effectiveWholesalePrice : product.price
 
   const handleCardClick = () => {
     if (onSelectProduct) {
@@ -41,6 +65,8 @@ export function MobileProductCard({
 
   const handleActionClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setJustAdded(true)
+    setTimeout(() => setJustAdded(false), 1500)
     if (onAddToCart) {
       onAddToCart(product, 1)
     }
@@ -53,9 +79,9 @@ export function MobileProductCard({
     }
   }
 
-  const hasDiscount = product.oldPrice && product.oldPrice > product.price
+  const hasDiscount = product.oldPrice && product.oldPrice > displayPrice
   const discountPercent = hasDiscount
-    ? Math.round(((product.oldPrice! - product.price) / product.oldPrice!) * 100)
+    ? Math.round(((product.oldPrice! - displayPrice) / product.oldPrice!) * 100)
     : null
 
   return (
@@ -129,16 +155,21 @@ export function MobileProductCard({
         <div className="flex items-end justify-between gap-1 pt-1.5 border-t border-gray-100 dark:border-slate-800/80">
           <div>
             <div className="font-extrabold text-sm text-[#00407a] dark:text-[#F5A602]">
-              {formatPrice(product.price)}
+              {formatPrice(displayPrice)}
             </div>
             {hasDiscount && (
               <div className="text-[10px] text-gray-400 line-through">
                 {formatPrice(product.oldPrice!)}
               </div>
             )}
-            {product.moq && (
-              <div className="text-[10px] text-gray-500 dark:text-slate-400">
-                MOQ: {product.moq} pcs
+            {isWholesaleActive && product.wholesalePrice && product.wholesalePrice < product.price && !hasDiscount && (
+              <div className="text-[10px] text-gray-400 line-through">
+                {formatPrice(product.price)}
+              </div>
+            )}
+            {isWholesaleActive && (
+              <div className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                MOQ: {moq} {moq > 1 ? 'pcs' : 'pc'}
               </div>
             )}
           </div>
@@ -146,11 +177,20 @@ export function MobileProductCard({
           <button
             type="button"
             onClick={handleActionClick}
-            aria-label={isWholesaleSession ? 'Request Quote' : 'Add to Cart'}
-            className="min-w-[40px] min-h-[40px] rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform touch-manipulation"
+            aria-label={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
+            title={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
+            className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-90 transition-all touch-manipulation cursor-pointer ${
+              justAdded
+                ? 'bg-emerald-600'
+                : isRfqMode
+                ? 'bg-[#00407a] hover:bg-[#003366]'
+                : 'bg-primary-600 hover:bg-primary-700'
+            }`}
           >
-            {isWholesaleSession ? (
-              <FileText className="w-4 h-4" />
+            {justAdded ? (
+              <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
+            ) : isRfqMode ? (
+              <ClipboardList className="w-4 h-4" />
             ) : (
               <Plus className="w-4 h-4" />
             )}

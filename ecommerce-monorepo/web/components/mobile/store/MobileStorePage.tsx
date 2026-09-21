@@ -37,6 +37,16 @@ export function MobileStorePage({
     category: initialCategory || undefined,
   })
 
+  // Synchronize when initialCategory changes externally (e.g. navigation or URL update)
+  React.useEffect(() => {
+    if (initialCategory !== undefined) {
+      setFilters((prev) => ({
+        ...prev,
+        category: initialCategory || undefined,
+      }))
+    }
+  }, [initialCategory])
+
   // Filtering products
   const filteredProducts = useMemo(() => {
     let list = [...products]
@@ -54,12 +64,13 @@ export function MobileStorePage({
 
     // 2. Category filter
     if (filters.category) {
-      const catLower = filters.category.toLowerCase()
+      const catLower = filters.category.toLowerCase().trim()
       list = list.filter(
         (p) =>
-          (p.category && p.category.toLowerCase() === catLower) ||
-          (p.department && p.department.toLowerCase() === catLower) ||
-          (p.categorySlug && p.categorySlug.toLowerCase() === catLower)
+          (p.category && p.category.toLowerCase().trim() === catLower) ||
+          (p.department && p.department.toLowerCase().trim() === catLower) ||
+          (p.categorySlug && p.categorySlug.toLowerCase().trim() === catLower) ||
+          (p.category && p.category.toLowerCase().replace(/\s+/g, '-') === catLower)
       )
     }
 
@@ -78,12 +89,12 @@ export function MobileStorePage({
 
     // 5. Wholesale only
     if (filters.wholesaleOnly) {
-      list = list.filter((p) => p.moq && p.moq > 1)
+      list = list.filter((p) => (p.moq && p.moq > 1) || (p.minOrderQty && p.minOrderQty > 1))
     }
 
     // 6. Rating
     if (filters.minRating) {
-      list = list.filter((p) => p.rating >= filters.minRating!)
+      list = list.filter((p) => (p.rating || 0) >= filters.minRating!)
     }
 
     // 7. Sort
@@ -112,8 +123,12 @@ export function MobileStorePage({
   const activeFilterChips = useMemo(() => {
     const chips: { id: string; label: string }[] = []
     if (filters.category) {
+      const catLower = filters.category.toLowerCase().trim()
       const foundCat = categories.find(
-        (c) => (c.slug || c.id) === filters.category
+        (c) =>
+          (c.slug && c.slug.toLowerCase() === catLower) ||
+          (c.id && c.id.toLowerCase() === catLower) ||
+          (c.name && c.name.toLowerCase() === catLower)
       )
       chips.push({
         id: 'category',
@@ -132,6 +147,9 @@ export function MobileStorePage({
     if (filters.wholesaleOnly) {
       chips.push({ id: 'wholesale', label: 'Wholesale Only' })
     }
+    if (filters.minRating && filters.minRating > 0) {
+      chips.push({ id: 'rating', label: `${filters.minRating}★+` })
+    }
     return chips
   }, [filters, categories])
 
@@ -145,6 +163,7 @@ export function MobileStorePage({
       }
       if (filterId === 'inStock') next.inStockOnly = false
       if (filterId === 'wholesale') next.wholesaleOnly = false
+      if (filterId === 'rating') next.minRating = undefined
       return next
     })
   }

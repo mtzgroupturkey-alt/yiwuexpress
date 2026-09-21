@@ -1,5 +1,5 @@
 import React from 'react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MobileProductCard } from '@/components/mobile/store/MobileProductCard'
 import { Product } from '@/app/[locale]/design-3/types'
@@ -18,13 +18,21 @@ vi.mock('@/hooks/useCurrency', () => ({
   }),
 }))
 
+let mockIsWholesaleSession = false
+
 vi.mock('@/contexts/SessionModeContext', () => ({
   useSessionMode: () => ({
-    isWholesaleSession: false,
+    get isWholesaleSession() {
+      return mockIsWholesaleSession
+    },
   }),
 }))
 
 describe('MobileProductCard (components/mobile/store/MobileProductCard.tsx)', () => {
+  beforeEach(() => {
+    mockIsWholesaleSession = false
+  })
+
   const sampleProduct: Product = {
     id: 'prod-101',
     name: 'Industrial CNC Lathe Machine',
@@ -50,7 +58,7 @@ describe('MobileProductCard (components/mobile/store/MobileProductCard.tsx)', ()
     expect(screen.getByText('$4500.00')).toBeInTheDocument()
   })
 
-  it('handles card selection and add to cart clicks', () => {
+  it('handles card selection and add to cart clicks in retail mode', () => {
     const handleSelect = vi.fn()
     const handleAddToCart = vi.fn()
 
@@ -69,6 +77,25 @@ describe('MobileProductCard (components/mobile/store/MobileProductCard.tsx)', ()
     const addBtn = screen.getByRole('button', { name: /add to cart/i })
     fireEvent.click(addBtn)
     expect(handleAddToCart).toHaveBeenCalledWith(sampleProduct, 1)
+  })
+
+  it('renders Add to RFQ button in wholesale mode and triggers action', () => {
+    mockIsWholesaleSession = true
+    const handleAddToCart = vi.fn()
+
+    render(
+      <MobileProductCard
+        product={{ ...sampleProduct, minOrderQty: 5 }}
+        onAddToCart={handleAddToCart}
+      />
+    )
+
+    const rfqBtn = screen.getByRole('button', { name: /add to rfq/i })
+    expect(rfqBtn).toBeInTheDocument()
+    expect(screen.getByText(/moq: 5 pcs/i)).toBeInTheDocument()
+
+    fireEvent.click(rfqBtn)
+    expect(handleAddToCart).toHaveBeenCalledWith(expect.objectContaining({ id: 'prod-101' }), 1)
   })
 
   it('handles toggle favorite click', () => {

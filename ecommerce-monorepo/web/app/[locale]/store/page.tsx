@@ -13,6 +13,11 @@ import { mapDbProductToDesign3, mapDbCategoryToDesign3 } from '@/lib/adapters/de
 import { useCart } from '@/components/CartContext';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { useStoreMode } from '@/contexts/StoreModeContext';
+import { useSessionMode } from '@/contexts/SessionModeContext';
+import { useSettings } from '@/components/SettingsProvider';
+import { useQuoteCart } from '@/components/QuoteCartContext';
+import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 import { Loader2, Check } from 'lucide-react';
 
 function StoreCatalogInner() {
@@ -22,6 +27,22 @@ function StoreCatalogInner() {
   const { isAuthenticated } = useAuth();
   const { refreshCartCount } = useCart();
   const queryClient = useQueryClient();
+
+  const { storeMode: ctxStoreMode } = useStoreMode();
+  const { sessionMode, isWholesaleSession, enableWholesaleSession } = useSessionMode();
+  const { settings, storeMode: systemStoreMode } = useSettings();
+  const { addToQuote } = useQuoteCart();
+  const { addItem: addInquiryItem } = useWholesaleInquiry();
+
+  const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE';
+  const isWholesaleActive =
+    currentStoreMode === 'WHOLESALE' ||
+    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession)) ||
+    Boolean(isWholesaleSession);
+
+  const rfqModel = settings?.rfqModel || 'RFQ';
+  const isInstantWholesale = rfqModel === 'INSTANT';
+  const isRfqMode = isWholesaleActive && !isInstantWholesale;
 
   const initialCategory = searchParams.get('category') || searchParams.get('cat') || null;
   const initialDepartment = searchParams.get('department') || searchParams.get('dept') || null;
@@ -160,8 +181,44 @@ function StoreCatalogInner() {
   };
 
   const handleAddToCart = async (product: Product, quantity = 1) => {
-    const moq = Math.max(1, product.minOrderQty || 1);
+    const moq = Math.max(
+      1,
+      product.minOrderQty ||
+        (product as any).moq ||
+        (product as any).minOrder ||
+        settings?.wholesaleDefaultMoq ||
+        1
+    );
     const effectiveQty = Math.max(quantity, moq);
+    const effectiveWholesalePrice = product.wholesalePrice || product.price;
+
+    // Wholesale RFQ Mode: Add to quote cart and wholesale inquiry, NOT retail cart
+    if (isRfqMode) {
+      enableWholesaleSession();
+      addToQuote({
+        productId: product.id,
+        productName: product.name,
+        productSku: product.sku || (product as any).slug || product.id,
+        productImage: product.image,
+        quantity: effectiveQty,
+        minOrderQty: moq,
+        targetPrice: product.wholesalePrice || null,
+      });
+      addInquiryItem({
+        productId: product.id,
+        slug: (product as any).slug || product.id,
+        name: product.name,
+        image: product.image,
+        wholesalePrice: effectiveWholesalePrice,
+        retailPrice: product.price,
+        quantity: effectiveQty,
+        minOrderQty: moq,
+      });
+      showToast(`Added "${product.name.slice(0, 30)}..." to Quote Request`);
+      return;
+    }
+
+    // Retail Mode or Instant Wholesale: Add to retail cart
     let savedToBackend = false;
 
     if (cartResponse?.data?.cart) {
@@ -251,7 +308,7 @@ function StoreCatalogInner() {
     <div className="py-6 relative">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#00407a] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 bg-[#00407a] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <Check className="w-5 h-5 text-emerald-400" />
           <span className="text-sm font-semibold">{toastMessage}</span>
         </div>
