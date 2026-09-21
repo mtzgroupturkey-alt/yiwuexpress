@@ -1,13 +1,12 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/admin/products - Get all products (admin view, includes inactive)
 export async function GET(request: Request) {
   try {
-    // TODO: Add admin authentication check
+    await requireRole(request, ['ADMIN'])
     
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
@@ -126,6 +125,9 @@ export async function GET(request: Request) {
       }
     })
   } catch (error) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching products:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch products' },
