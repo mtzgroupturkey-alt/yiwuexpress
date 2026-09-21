@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // In production, send email:
     // await sendContactFormEmail({
-    //   to: process.env.COMPANY_EMAIL || 'info@yiwuexpress.com',
+    //   to: process.env.COMPANY_EMAIL || 'info@dromkok.com',
     //   from: validatedData.email,
     //   name: validatedData.name,
     //   company: validatedData.company,

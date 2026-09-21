@@ -63,7 +63,7 @@ echo ✅ DATABASE SETUP COMPLETE!
 echo ====================================
 echo.
 echo Test credentials:
-echo - Admin: admin@yiwuexpress.com / admin123
+echo - Admin: admin@dromkok.com / admin123
 echo - User: user@example.com / password123
 echo.
 echo Database location: web\prisma\dev.db

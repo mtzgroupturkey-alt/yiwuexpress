@@ -38,7 +38,7 @@ npm run dev
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "admin@yiwuexpress.com",
+    "email": "admin@dromkok.com",
     "password": "admin123"
   }'
 ```
@@ -46,7 +46,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 Expected response:
 ```json
 {
-  "user": { "role": "ADMIN", "email": "admin@yiwuexpress.com" },
+  "user": { "role": "ADMIN", "email": "admin@dromkok.com" },
   "token": "eyJ..."
 }
 ```
@@ -83,7 +83,7 @@ curl -X GET http://localhost:3000/api/admin/stats \
 ### Issue: `403 Forbidden`
 **Cause:** User doesn't have ADMIN role
 **Solution:**
-- Use admin credentials: `admin@yiwuexpress.com` / `admin123`
+- Use admin credentials: `admin@dromkok.com` / `admin123`
 - Check user role in database
 
 ## 7. **Database Schema Issues**
@@ -146,7 +146,7 @@ After server restart, test each endpoint:
 ## 12. **Admin Login Credentials**
 
 - **URL:** `http://localhost:3000/auth/login`
-- **Email:** `admin@yiwuexpress.com`
+- **Email:** `admin@dromkok.com`
 - **Password:** `admin123`
 
 ## Expected Behavior After Fix:

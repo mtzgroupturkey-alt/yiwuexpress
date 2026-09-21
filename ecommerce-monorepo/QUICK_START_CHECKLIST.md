@@ -21,7 +21,7 @@ Open http://localhost:3001 and check:
 
 ### [ ] Step 4: Test Password Reset (5 min)
 1. Go to http://localhost:3001/forgot-password
-2. Enter: `admin@yiwuexpress.com`
+2. Enter: `admin@dromkok.com`
 3. Check console for reset link
 4. Copy token and visit http://localhost:3001/reset-password?token=TOKEN
 5. Set new password
@@ -99,7 +99,7 @@ npx shadcn-ui@latest add textarea -y
 # Request reset
 curl -X POST http://localhost:3001/api/auth/forgot-password \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"admin@yiwuexpress.com\"}"
+  -d "{\"email\":\"admin@dromkok.com\"}"
 
 # Check console for token, then reset
 curl -X POST http://localhost:3001/api/auth/reset-password \

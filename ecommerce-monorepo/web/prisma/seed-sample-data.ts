@@ -10,10 +10,10 @@ async function main() {
   console.log('Creating admin user...')
   const hashedPassword = await bcrypt.hash('admin123', 10)
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@yiwuexpress.com' },
+    where: { email: 'admin@dromkok.com' },
     update: {},
     create: {
-      email: 'admin@yiwuexpress.com',
+      email: 'admin@dromkok.com',
       password: hashedPassword,
       name: 'Admin User',
       role: 'ADMIN',
@@ -707,7 +707,7 @@ async function main() {
 
   console.log('\n🎉 Sample data seeding completed successfully!')
   console.log('\n📊 Summary:')
-  console.log(`   - 1 Admin user (admin@yiwuexpress.com / password: admin123)`)
+  console.log(`   - 1 Admin user (admin@dromkok.com / password: admin123)`)
   console.log(`   - ${categories.length} Categories`)
   console.log(`   - ${products.length} Products`)
   console.log(`     • 3 Featured Products`)

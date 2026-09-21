@@ -931,7 +931,7 @@ DATABASE_URL="your_supabase_url" npm run db:seed
    -- In your production database
    UPDATE "User" 
    SET password = 'new_hashed_password' 
-   WHERE email = 'admin@yiwuexpress.com';
+   WHERE email = 'admin@dromkok.com';
    ```
 
 2. **Review Security:**

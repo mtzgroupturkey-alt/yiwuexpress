@@ -143,7 +143,7 @@ Scan QR code with Expo Go app
 After seeding, use these credentials to log in:
 
 **Admin Account:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 
 **Customer Account:**
@@ -503,17 +503,17 @@ MIT License - see LICENSE file for details
 ## 👥 Team
 
 - **Development Team:** YIWU EXPRESS Engineering
-- **Contact:** info@yiwuexpress.com
-- **Website:** https://yiwuexpress.com
+- **Contact:** info@dromkok.com
+- **Website:** https://dromkok.com
 
 ---
 
 ## 🆘 Support
 
 For support and questions:
-- 📧 Email: info@yiwuexpress.com
+- 📧 Email: info@dromkok.com
 - 📞 Phone: +86 579 8555 1234
-- 🌐 Website: https://yiwuexpress.com
+- 🌐 Website: https://dromkok.com
 
 ---
 

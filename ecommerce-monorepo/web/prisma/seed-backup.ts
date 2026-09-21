@@ -582,7 +582,7 @@ main()
   const users = [
     {
       id: 'user-admin',
-      email: 'admin@yiwuexpress.com',
+      email: 'admin@dromkok.com',
       password: hashedPassword,
       name: 'Admin User',
       role: 'ADMIN',
@@ -1410,7 +1410,7 @@ main()
   console.log(`   - ${services.length} Services`)
   console.log(`   - ${quotes.length} Quotes`)
   console.log('\n🌐 View your site at: http://localhost:3001')
-  console.log('👤 Admin Login: admin@yiwuexpress.com / Password123!')
+  console.log('👤 Admin Login: admin@dromkok.com / Password123!')
   console.log('👤 Customer Login: john.doe@example.com / Password123!')
   console.log('\n')
 }

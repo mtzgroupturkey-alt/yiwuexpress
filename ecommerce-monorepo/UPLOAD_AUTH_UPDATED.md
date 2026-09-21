@@ -39,7 +39,7 @@ Go to the login page and use admin credentials:
 ```
 URL: http://localhost:3005/auth/login
 
-Email: admin@yiwuexpress.com
+Email: admin@dromkok.com
 Password: admin123
 ```
 
@@ -104,7 +104,7 @@ http://localhost:3005/admin/settings/company
 
 **Solution**:
 1. You need ADMIN role, not USER or SUPPLIER
-2. Log out and login with admin@yiwuexpress.com
+2. Log out and login with admin@dromkok.com
 3. Check the admin auth endpoint: `http://localhost:3005/api/admin/auth`
 4. Should return `{"valid":true,"user":{...}}`
 
@@ -134,7 +134,7 @@ http://localhost:3005/admin/settings/company
 ### Authentication Flow
 
 ```
-User Login (admin@yiwuexpress.com)
+User Login (admin@dromkok.com)
     ↓
 POST /api/auth/login
     ↓
@@ -204,7 +204,7 @@ This approach:
 
 ### Admin Account
 ```
-Email: admin@yiwuexpress.com
+Email: admin@dromkok.com
 Password: admin123
 ```
 

@@ -7,7 +7,7 @@ Your database has been populated with comprehensive sample data for testing and 
 ## 🔐 Admin Login Credentials
 
 ```
-Email: admin@yiwuexpress.com
+Email: admin@dromkok.com
 Password: admin123
 ```
 
@@ -18,7 +18,7 @@ Password: admin123
 ### 1. Admin User (1)
 - Full admin access to all features
 - Can manage products, orders, users, and settings
-- Email: admin@yiwuexpress.com
+- Email: admin@dromkok.com
 
 ### 2. Categories (4)
 - **Electronics** - Electronic devices and gadgets

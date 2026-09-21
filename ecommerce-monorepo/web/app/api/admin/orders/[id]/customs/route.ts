@@ -117,7 +117,7 @@ async function generateCustomsInvoice(request: NextRequest, id: string) {
       .text('China, Zhejiang Province, 322000')
       .text('China')
       .text('Phone: +86 579 8555 1234')
-      .text('Email: export@yiwuexpress.com')
+      .text('Email: export@dromkok.com')
       .moveDown()
 
     // Buyer information
@@ -293,7 +293,7 @@ async function generateCustomsInvoice(request: NextRequest, id: string) {
       .fontSize(8)
       .font('Helvetica')
       .text(
-        'Global Trade | China, Zhejiang, China | +86 579 8555 1234 | www.yiwuexpress.com',
+        'Global Trade | China, Zhejiang, China | +86 579 8555 1234 | www.dromkok.com',
         50,
         750,
         { align: 'center', width: 495 }

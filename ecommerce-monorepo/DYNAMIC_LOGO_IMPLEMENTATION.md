@@ -112,7 +112,7 @@ const { settings } = useSettings()
     "primaryColor": "#1a3a5c",
     "accentColor": "#c9a84c",
     "companyPhone": "+86-579-8555-1234",
-    "companyEmail": "info@yiwuexpress.com",
+    "companyEmail": "info@dromkok.com",
     ...
   }
 }

@@ -1255,7 +1255,7 @@ SMTP_HOST="smtp.sendgrid.net"
 SMTP_PORT="587"
 SMTP_USER="apikey"
 SMTP_PASSWORD="your-sendgrid-api-key"
-SMTP_FROM="noreply@yiwuexpress.com"
+SMTP_FROM="noreply@dromkok.com"
 
 # Application
 APP_URL="https://yourdomain.com"
@@ -1274,7 +1274,7 @@ PAYPAL_SECRET="..."
 ### C. Test Credentials
 
 **Admin Account:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 - Role: Administrator
 - Access: Full admin panel

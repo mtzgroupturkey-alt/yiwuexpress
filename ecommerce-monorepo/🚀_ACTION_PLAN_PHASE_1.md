@@ -83,7 +83,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-EMAIL_FROM=noreply@yiwuexpress.com
+EMAIL_FROM=noreply@dromkok.com
 ```
 
 #### Task 2.2: Create Email Templates (8 hours)
@@ -198,10 +198,10 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-EMAIL_FROM=noreply@yiwuexpress.com
+EMAIL_FROM=noreply@dromkok.com
 
 # CORS
-ALLOWED_ORIGINS=https://yiwuexpress.com,https://api.yiwuexpress.com
+ALLOWED_ORIGINS=https://dromkok.com,https://api.dromkok.com
 
 # Server
 PORT=3001

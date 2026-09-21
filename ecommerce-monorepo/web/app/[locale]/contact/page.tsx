@@ -50,7 +50,7 @@ export default function ContactPage() {
   const companyName = settings?.companyName || 'Global Trade'
   const companyAddress = settings?.companyAddress || 'China International Trade Center, Chouzhou Road, Zhejiang, China'
   const companyPhone = settings?.companyPhone || '+86 579 8555 1234'
-  const companyEmail = settings?.companyEmail || 'support@yiwuexpress.com'
+  const companyEmail = settings?.companyEmail || 'support@dromkok.com'
   const storeHours = settings?.storeHours || 'Mon - Sat: 9:00 AM - 6:00 PM (CST)'
   const whatsappNumber = settings?.whatsappNumber || ''
   const wechatId = settings?.wechatId || ''
@@ -75,7 +75,7 @@ export default function ContactPage() {
         ? '浙江省宁波市北仑港区百官路88号' 
         : 'No. 88 Baiguan Road, Beilun Deepwater Port, Ningbo, Zhejiang, China',
       phone: '+86 574 8688 5678',
-      email: 'nb-ops@yiwuexpress.com',
+      email: 'nb-ops@dromkok.com',
       hours: 'Mon - Fri: 9:00 AM - 5:30 PM (CST)',
     },
   ]

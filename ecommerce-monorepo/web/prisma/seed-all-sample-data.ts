@@ -34,7 +34,7 @@ function daysFromNow(days: number): Date {
   const existingSuppliers = await prisma.supplier.findMany()
   const variants = await prisma.productVariant.findMany({ take: 20 })
 
-  const adminUser = existingUsers.find(u => u.email === 'admin@yiwuexpress.com')
+  const adminUser = existingUsers.find(u => u.email === 'admin@dromkok.com')
   const customerUser = existingUsers.find(u => u.email === 'user@example.com')
   const russia = countries.find(c => c.code === 'RU')
   const kazakhstan = countries.find(c => c.code === 'KZ')
@@ -54,12 +54,12 @@ function daysFromNow(days: number): Date {
   const passwordHash = await bcrypt.hash('password123', 10)
 
   const newUsersData = [
-    { email: 'supplier@yiwuexpress.com', name: 'Li Wei Supply', companyName: 'Yiwu Supply Chain Ltd', businessType: 'manufacturer', role: 'SUPPLIER', country: 'China', phone: '+86 139 1234 5678' },
+    { email: 'supplier@dromkok.com', name: 'Li Wei Supply', companyName: 'Yiwu Supply Chain Ltd', businessType: 'manufacturer', role: 'SUPPLIER', country: 'China', phone: '+86 139 1234 5678' },
     { email: 'alex@example.com', name: 'Alex Petrov', companyName: 'Petrov Trading', businessType: 'wholesaler', role: 'USER', country: 'Russia', phone: '+7 912 345-67-89' },
     { email: 'maria@example.com', name: 'Maria Kuznetsova', companyName: 'Kuznetsova Retail', businessType: 'retailer', role: 'USER', country: 'Kazakhstan', phone: '+7 701 234-56-78' },
     { email: 'bek@example.com', name: 'Bekzod Karimov', companyName: 'Karimov Imports', businessType: 'wholesaler', role: 'USER', country: 'Uzbekistan', phone: '+998 90 123-45-67' },
     { email: 'sergey@example.com', name: 'Sergey Ivanov', companyName: 'Ivanov Group', businessType: 'distributor', role: 'USER', country: 'Belarus', phone: '+375 29 123-45-67' },
-    { email: 'manager@yiwuexpress.com', name: 'Chen Wei', companyName: 'YIWU EXPRESS', businessType: 'logistics_provider', role: 'ADMIN', country: 'China', phone: '+86 579 8555 5678' },
+    { email: 'manager@dromkok.com', name: 'Chen Wei', companyName: 'YIWU EXPRESS', businessType: 'logistics_provider', role: 'ADMIN', country: 'China', phone: '+86 579 8555 5678' },
   ]
 
   const createdUsers: any[] = []
@@ -591,10 +591,10 @@ function daysFromNow(days: number): Date {
       { userEmail: 'user@example.com', type: 'RETURN_UPDATE', title: 'Return Approved', message: 'Your return request RET-0002 has been approved.', isRead: false },
       { userEmail: 'user@example.com', type: 'PAYMENT_RECEIVED', title: 'Payment Confirmed', message: 'Payment of $162.00 for order ORD-00003 has been received.', isRead: true },
       { userEmail: 'alex@example.com', type: 'ORDER_CONFIRMED', title: 'Order Placed', message: 'Your order ORD-00004 has been placed successfully.', isRead: false },
-      { userEmail: 'admin@yiwuexpress.com', type: 'ADMIN_ALERT', title: 'New Order Received', message: 'New order ORD-00004 requires processing.', isRead: false },
-      { userEmail: 'admin@yiwuexpress.com', type: 'ADMIN_ALERT', title: 'Return Request', message: 'New return request RET-0003 needs review.', isRead: false },
-      { userEmail: 'admin@yiwuexpress.com', type: 'ADMIN_ALERT', title: 'Low Stock Alert', message: 'Product "Non-Stick Frying Pan 8"" is running low on stock (20 remaining).', isRead: true },
-      { userEmail: 'admin@yiwuexpress.com', type: 'WHOLESALE_UPDATE', title: 'New Wholesale Inquiry', message: 'New wholesale inquiry WI-00005 received from Kuznetsova Retail.', isRead: false },
+      { userEmail: 'admin@dromkok.com', type: 'ADMIN_ALERT', title: 'New Order Received', message: 'New order ORD-00004 requires processing.', isRead: false },
+      { userEmail: 'admin@dromkok.com', type: 'ADMIN_ALERT', title: 'Return Request', message: 'New return request RET-0003 needs review.', isRead: false },
+      { userEmail: 'admin@dromkok.com', type: 'ADMIN_ALERT', title: 'Low Stock Alert', message: 'Product "Non-Stick Frying Pan 8"" is running low on stock (20 remaining).', isRead: true },
+      { userEmail: 'admin@dromkok.com', type: 'WHOLESALE_UPDATE', title: 'New Wholesale Inquiry', message: 'New wholesale inquiry WI-00005 received from Kuznetsova Retail.', isRead: false },
       { userEmail: 'maria@example.com', type: 'ORDER_CONFIRMED', title: 'Order Shipped', message: 'Your order ORD-00008 has been shipped!', isRead: false },
     ]
 
@@ -625,14 +625,14 @@ function daysFromNow(days: number): Date {
     console.log(`   ⏭️  ${existingLogs.length} activity logs already exist`)
   } else {
     const activities = [
-      { email: 'admin@yiwuexpress.com', action: 'LOGIN', resource: 'auth', resourceId: null, desc: 'Admin logged in' },
-      { email: 'admin@yiwuexpress.com', action: 'CREATE', resource: 'product', resourceId: products[0]?.id, desc: `Created product ${products[0]?.name}` },
-      { email: 'admin@yiwuexpress.com', action: 'UPDATE', resource: 'settings', resourceId: null, desc: 'Updated system settings - company info' },
-      { email: 'admin@yiwuexpress.com', action: 'CREATE', resource: 'category', resourceId: categories[0]?.id, desc: `Created category ${categories[0]?.name}` },
-      { email: 'admin@yiwuexpress.com', action: 'UPDATE', resource: 'order', resourceId: null, desc: 'Updated order ORD-00002 status to SHIPPED' },
-      { email: 'admin@yiwuexpress.com', action: 'DELETE', resource: 'product', resourceId: null, desc: 'Deleted inactive product' },
-      { email: 'admin@yiwuexpress.com', action: 'APPROVE', resource: 'return', resourceId: null, desc: 'Approved return request RET-0002' },
-      { email: 'admin@yiwuexpress.com', action: 'CREATE', resource: 'user', resourceId: null, desc: 'Created new staff user account' },
+      { email: 'admin@dromkok.com', action: 'LOGIN', resource: 'auth', resourceId: null, desc: 'Admin logged in' },
+      { email: 'admin@dromkok.com', action: 'CREATE', resource: 'product', resourceId: products[0]?.id, desc: `Created product ${products[0]?.name}` },
+      { email: 'admin@dromkok.com', action: 'UPDATE', resource: 'settings', resourceId: null, desc: 'Updated system settings - company info' },
+      { email: 'admin@dromkok.com', action: 'CREATE', resource: 'category', resourceId: categories[0]?.id, desc: `Created category ${categories[0]?.name}` },
+      { email: 'admin@dromkok.com', action: 'UPDATE', resource: 'order', resourceId: null, desc: 'Updated order ORD-00002 status to SHIPPED' },
+      { email: 'admin@dromkok.com', action: 'DELETE', resource: 'product', resourceId: null, desc: 'Deleted inactive product' },
+      { email: 'admin@dromkok.com', action: 'APPROVE', resource: 'return', resourceId: null, desc: 'Approved return request RET-0002' },
+      { email: 'admin@dromkok.com', action: 'CREATE', resource: 'user', resourceId: null, desc: 'Created new staff user account' },
     ]
 
     for (const a of activities) {
@@ -896,10 +896,10 @@ function daysFromNow(days: number): Date {
 
   console.log('\n✅ Sample data seeding complete!')
   console.log('📝 New test accounts:')
-  console.log(`   Supplier:     supplier@yiwuexpress.com / password123`)
+  console.log(`   Supplier:     supplier@dromkok.com / password123`)
   console.log(`   Customer 2:   alex@example.com / password123`)
   console.log(`   Customer 3:   maria@example.com / password123`)
-  console.log(`   Manager:      manager@yiwuexpress.com / password123`)
+  console.log(`   Manager:      manager@dromkok.com / password123`)
 }
 
 // Standalone execution

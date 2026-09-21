@@ -397,7 +397,7 @@ export default function CompanyInfoPage() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={settings.companyWebsite}
                   onChange={(e) => handleInputChange('companyWebsite', e.target.value)}
-                  placeholder="https://yiwuexpress.com"
+                  placeholder="https://dromkok.com"
                 />
               </div>
             </div>
@@ -439,7 +439,7 @@ export default function CompanyInfoPage() {
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={settings.companyEmail}
                   onChange={(e) => handleInputChange('companyEmail', e.target.value)}
-                  placeholder="info@yiwuexpress.com"
+                  placeholder="info@dromkok.com"
                 />
               </div>
             </div>

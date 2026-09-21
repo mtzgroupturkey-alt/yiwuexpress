@@ -106,7 +106,7 @@ This will open a web interface at `http://localhost:5555` where you can browse a
 After seeding, you can log in with:
 
 **Admin Account:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 
 **Customer Account:**
@@ -227,4 +227,4 @@ For production deployment:
 
 ---
 
-**Need Help?** Contact: info@yiwuexpress.com
+**Need Help?** Contact: info@dromkok.com

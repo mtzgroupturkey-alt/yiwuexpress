@@ -9,7 +9,7 @@ All pages have been populated with sample data for immediate testing.
 1. Navigate to: `http://localhost:8081/admin` (or your configured port)
 2. Login with:
    ```
-   Email: admin@yiwuexpress.com
+   Email: admin@dromkok.com
    Password: admin123
    ```
 

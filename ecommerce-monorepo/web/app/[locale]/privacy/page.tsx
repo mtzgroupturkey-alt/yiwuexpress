@@ -28,7 +28,7 @@ export default function PrivacyPage() {
   const { settings } = useSettings()
 
   const companyName = settings?.companyName || 'Global Trade'
-  const privacyEmail = settings?.companyEmail || 'privacy@yiwuexpress.com'
+  const privacyEmail = settings?.companyEmail || 'privacy@dromkok.com'
 
   const handlePrint = () => {
     if (typeof window !== 'undefined') {

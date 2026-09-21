@@ -4,7 +4,7 @@ echo  Sync Admin Header User Info Fix
 echo ========================================
 echo.
 echo This will fix the admin header to show actual logged-in user info
-echo instead of hardcoded "Admin / admin@yiwuexpress.com"
+echo instead of hardcoded "Admin / admin@dromkok.com"
 echo.
 pause
 

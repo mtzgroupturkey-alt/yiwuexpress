@@ -34,7 +34,7 @@
 
 ### Step 2: Test Login Flow
 1. Go to `http://localhost:3005/auth/login`
-2. Login with: `admin@yiwuexpress.com` / `admin123`
+2. Login with: `admin@dromkok.com` / `admin123`
 3. **Check immediately:**
    - Opens DevTools Console (F12)
    - Look for any RED errors
@@ -64,7 +64,7 @@ fetch('/api/auth/me', { credentials: 'include' })
 {
   "data": {
     "id": "...",
-    "email": "admin@yiwuexpress.com",
+    "email": "admin@dromkok.com",
     "name": "Admin User",
     "role": "ADMIN",
     ...
@@ -110,7 +110,7 @@ fetch('/api/auth/login', {
   headers: { 'Content-Type': 'application/json' },
   credentials: 'include',
   body: JSON.stringify({
-    email: 'admin@yiwuexpress.com',
+    email: 'admin@dromkok.com',
     password: 'admin123'
   })
 })

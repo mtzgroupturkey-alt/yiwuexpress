@@ -197,7 +197,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASSWORD=your-app-password-here
-SMTP_FROM="YIWU EXPRESS <noreply@yiwuexpress.com>"
+SMTP_FROM="YIWU EXPRESS <noreply@dromkok.com>"
 
 # Application URL
 APP_URL=http://localhost:3001

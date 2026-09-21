@@ -92,7 +92,7 @@ fetch('/api/auth/login', {
   headers: { 'Content-Type': 'application/json' },
   credentials: 'include',
   body: JSON.stringify({
-    email: 'admin@yiwuexpress.com',
+    email: 'admin@dromkok.com',
     password: 'admin123'
   })
 })

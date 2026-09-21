@@ -129,7 +129,7 @@ npm run db:seed
 ### STEP 5: Test Your Live Site (5 min)
 
 1. Go to your Vercel deployment URL:
-   - Example: `https://yiwuexpress-xxx.vercel.app`
+   - Example: `https://dromkok-xxx.vercel.app`
 
 2. **Test these:**
    - [ ] Homepage loads
@@ -138,7 +138,7 @@ npm run db:seed
    - [ ] Login page accessible
 
 3. **Login with default credentials:**
-   - Email: `admin@yiwuexpress.com`
+   - Email: `admin@dromkok.com`
    - Password: `admin123`
 
 ✅ **SITE IS LIVE!** 🎉
@@ -167,7 +167,7 @@ After deployment, save these:
 # Run this SQL (replace with YOUR password):
 UPDATE "User" 
 SET password = '$2a$10$NEW_HASHED_PASSWORD_HERE' 
-WHERE email = 'admin@yiwuexpress.com';
+WHERE email = 'admin@dromkok.com';
 ```
 
 Or change it through the admin panel after logging in.

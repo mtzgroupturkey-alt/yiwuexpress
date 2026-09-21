@@ -56,7 +56,7 @@ http://localhost:3000/auth/login
 ```
 
 ### **Admin Credentials:**
-- **Email:** `admin@yiwuexpress.com`
+- **Email:** `admin@dromkok.com`
 - **Password:** `admin123`
 
 ### **Test User Credentials:**
@@ -207,7 +207,7 @@ The YIWU EXPRESS admin system is complete and ready for daily operations. All ma
 **To get started right now:**
 1. Run `cd web && node scripts/fix-admin.js`
 2. Visit `http://localhost:3000/auth/login`
-3. Login with `admin@yiwuexpress.com` / `admin123`
+3. Login with `admin@dromkok.com` / `admin123`
 4. Start managing your logistics business!
 
 **🎉 Enjoy your new comprehensive admin dashboard!**

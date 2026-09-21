@@ -10,7 +10,7 @@ async function testAdminSystem() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'admin@yiwuexpress.com',
+        email: 'admin@dromkok.com',
         password: 'admin123'
       })
     })
@@ -70,7 +70,7 @@ async function testAdminSystem() {
     console.log('\n🎉 All tests passed! Admin system is working correctly.')
     console.log('\n🚀 You can now:')
     console.log('   1. Visit: http://localhost:3000/auth/login')
-    console.log('   2. Login with: admin@yiwuexpress.com / admin123')
+    console.log('   2. Login with: admin@dromkok.com / admin123')
     console.log('   3. Access the admin dashboard')
 
   } catch (error) {

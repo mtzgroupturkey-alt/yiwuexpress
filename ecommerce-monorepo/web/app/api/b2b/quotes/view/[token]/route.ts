@@ -299,7 +299,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
         let orderUserId = quote.userId;
         if (!orderUserId) {
           // Find or create guest user account
-          const guestEmail = quote.guestEmail || 'b2b-guest@yiwuexpress.com';
+          const guestEmail = quote.guestEmail || 'b2b-guest@dromkok.com';
           let userRecord = await tx.user.findUnique({ where: { email: guestEmail } });
           if (!userRecord) {
             userRecord = await tx.user.create({
@@ -320,7 +320,7 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
             orderNumber,
             userId: orderUserId,
             customerName: quote.guestName || 'B2B Customer',
-            customerEmail: quote.guestEmail || 'b2b@yiwuexpress.com',
+            customerEmail: quote.guestEmail || 'b2b@dromkok.com',
             customerPhone: quote.guestPhone || '',
             companyName: quote.guestCompany || null,
             shippingAddress: quote.shippingAddress || 'Commercial Freight Address',

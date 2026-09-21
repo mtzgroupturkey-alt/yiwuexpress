@@ -4,7 +4,7 @@ import { getOpenAPISpecification } from '@/lib/openapi'
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  const host = req.nextUrl.origin || 'https://yiwuexpress.com'
+  const host = req.nextUrl.origin || 'https://dromkok.com'
   const spec = getOpenAPISpecification(host)
 
   return NextResponse.json(spec, {

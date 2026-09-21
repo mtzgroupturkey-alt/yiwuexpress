@@ -3,7 +3,7 @@
 ## Problem
 When logging in with different users, the admin panel header always shows:
 - Name: "Admin"
-- Email: "admin@yiwuexpress.com"
+- Email: "admin@dromkok.com"
 
 Instead of showing the actual logged-in user's name and email.
 
@@ -14,7 +14,7 @@ The admin layout (`app/admin/layout.tsx`) had **hardcoded** user info:
 
 ```typescript
 <p className="text-xs font-semibold text-gray-700">Admin</p>
-<p className="text-xs text-gray-400">admin@yiwuexpress.com</p>
+<p className="text-xs text-gray-400">admin@dromkok.com</p>
 ```
 
 ### Issue 2: AdminAuthContext Missing User Data
@@ -98,7 +98,7 @@ const { isAdmin, loading, user } = useAdminAuth()
 )}
 <div className="hidden sm:block">
   <p className="text-xs font-semibold text-gray-700">{user?.name || 'Admin'}</p>
-  <p className="text-xs text-gray-400">{user?.email || 'admin@yiwuexpress.com'}</p>
+  <p className="text-xs text-gray-400">{user?.email || 'admin@dromkok.com'}</p>
 </div>
 ```
 

@@ -55,7 +55,7 @@ export default function Footer() {
   const [contactInfo, setContactInfo] = useState({
     address: 'China, Zhejiang, China',
     phone: '+86 579 8555 1234',
-    email: 'info@yiwuexpress.com'
+    email: 'info@dromkok.com'
   })
   
   const [socialLinks, setSocialLinks] = useState({
@@ -91,7 +91,7 @@ export default function Footer() {
           setContactInfo({
             address: getLocalizedValue('companyAddress', data.settings.companyAddress || 'China, Zhejiang, China'),
             phone: data.settings.companyPhone || '+86 579 8555 1234',
-            email: data.settings.companyEmail || 'info@yiwuexpress.com'
+            email: data.settings.companyEmail || 'info@dromkok.com'
           })
 
           setSocialLinks({

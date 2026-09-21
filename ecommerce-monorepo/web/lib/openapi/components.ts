@@ -50,7 +50,7 @@
       images: {
         type: 'array',
         items: { type: 'string', format: 'uri' },
-        example: ['https://yiwuexpress.com/images/machine1.jpg'],
+        example: ['https://dromkok.com/images/machine1.jpg'],
       },
       countryOfOrigin: { type: 'string', example: 'China' },
       isActive: { type: 'boolean', example: true },

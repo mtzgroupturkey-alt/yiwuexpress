@@ -69,7 +69,7 @@ This will open 2 terminal windows automatically.
 Open your mobile app at http://localhost:8081 and login with:
 
 **Admin Account:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 
 **OR Customer Account:**
@@ -114,7 +114,7 @@ You should see a JSON array of services.
 
 ### 3. Test Login from Mobile App
 - Open http://localhost:8081
-- Enter: `admin@yiwuexpress.com` / `admin123`
+- Enter: `admin@dromkok.com` / `admin123`
 - Click Login
 - Should redirect to dashboard (no 500 error!)
 

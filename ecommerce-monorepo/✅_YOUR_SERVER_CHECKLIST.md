@@ -178,7 +178,7 @@ Follow prompts, choose redirect HTTP to HTTPS.
 Visit: **https://yourdomain.com**
 
 **Login:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 
 **⚠️ CHANGE PASSWORD IMMEDIATELY!**

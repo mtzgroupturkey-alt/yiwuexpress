@@ -94,7 +94,7 @@ All pending tasks from the context transfer have been successfully completed!
 - **21 Categories**: 6 main categories + 15 subcategories
 - **8 Countries**: Russia, Belarus, Turkmenistan, Afghanistan, Kazakhstan, Uzbekistan, Tajikistan, Kyrgyzstan
 - **6 Services**: Air Freight, Sea Freight, Customs, Warehouse, Sourcing, Door-to-Door
-- **2 Users**: Admin (admin@yiwuexpress.com) + Customer (user@example.com)
+- **2 Users**: Admin (admin@dromkok.com) + Customer (user@example.com)
 
 ---
 
@@ -145,7 +145,7 @@ npm run db:studio
 ```
 
 **Login Credentials:**
-- Admin: admin@yiwuexpress.com / admin123
+- Admin: admin@dromkok.com / admin123
 - Customer: user@example.com / password123
 
 ### 2. Start Development Server

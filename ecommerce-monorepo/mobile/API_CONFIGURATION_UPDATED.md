@@ -204,7 +204,7 @@ You mentioned you changed the web app to use port 3005, so the backend must be r
 
 ### **Development vs Production**
 These settings are for **local development only**. For production:
-- Backend will have a real domain (e.g., `https://api.yiwuexpress.com`)
+- Backend will have a real domain (e.g., `https://api.dromkok.com`)
 - You'll need to update the API URL in production builds
 - CORS will be configured for your production domains
 

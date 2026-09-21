@@ -112,7 +112,7 @@ All sample data files, seed scripts, and placeholder image infrastructure have b
 6. Door-to-Door Delivery
 
 ### Users
-- **Admin:** admin@yiwuexpress.com / admin123
+- **Admin:** admin@dromkok.com / admin123
 - **Customer:** user@example.com / password123
 
 ---

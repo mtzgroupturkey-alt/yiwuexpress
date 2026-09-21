@@ -213,7 +213,7 @@ Test if API works directly:
 ```bash
 curl -X POST https://dromkok.com/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@yiwuexpress.com","password":"your_password"}' \
+  -d '{"email":"admin@dromkok.com","password":"your_password"}' \
   -v -c cookies.txt
 
 # Check if cookie was set

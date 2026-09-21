@@ -7,12 +7,12 @@ async function setupAdmin() {
   try {
     // Check if admin user exists
     const adminExists = await prisma.user.findUnique({
-      where: { email: 'admin@yiwuexpress.com' }
+      where: { email: 'admin@dromkok.com' }
     })
 
     if (adminExists) {
       console.log('✅ Admin user already exists!')
-      console.log('📧 Email: admin@yiwuexpress.com')
+      console.log('📧 Email: admin@dromkok.com')
       console.log('🔑 Password: admin123')
       return
     }
@@ -21,7 +21,7 @@ async function setupAdmin() {
     const adminPassword = await bcrypt.hash('admin123', 10)
     const admin = await prisma.user.create({
       data: {
-        email: 'admin@yiwuexpress.com',
+        email: 'admin@dromkok.com',
         password: adminPassword,
         name: 'YIWU Express Admin',
         companyName: 'YIWU EXPRESS',
@@ -33,7 +33,7 @@ async function setupAdmin() {
     })
 
     console.log('✅ Admin user created successfully!')
-    console.log('📧 Email: admin@yiwuexpress.com')
+    console.log('📧 Email: admin@dromkok.com')
     console.log('🔑 Password: admin123')
     console.log('👤 User ID:', admin.id)
 

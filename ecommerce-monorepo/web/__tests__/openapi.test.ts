@@ -2,7 +2,7 @@
 import { getOpenAPISpecification } from '../lib/openapi'
 
 describe('OpenAPI Specification Generator', () => {
-  const spec = getOpenAPISpecification('https://yiwuexpress.com')
+  const spec = getOpenAPISpecification('https://dromkok.com')
 
   it('generates valid OpenAPI 3.0.3 metadata', () => {
     expect(spec.openapi).toBe('3.0.3')

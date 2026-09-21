@@ -20,7 +20,7 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@yiwuexpress.com",
+  "email": "admin@dromkok.com",
   "password": "admin123"
 }
 ```

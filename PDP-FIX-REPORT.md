@@ -163,7 +163,7 @@ Test Files  13 passed (13)
 | **English PDP Status** | `GET /en/products/premium-cotton-t-shirt-unisex` | HTTP 200 | **HTTP 200** | **PASS** |
 | **English `<title>`** | Inspected HTML | Product Title | `Premium Cotton T-Shirt - Unisex - Premium Quality — dromkok` | **PASS** |
 | **SSR `<h1>` Tag** | Inspected HTML | Product Name | `<h1>Premium Cotton T-Shirt - Unisex</h1>` | **PASS** |
-| **Canonical Link** | Inspected HTML | Valid URL | `<link rel="canonical" href="https://yiwuexpress.com/en/products/premium-cotton-t-shirt-unisex"/>` | **PASS** |
+| **Canonical Link** | Inspected HTML | Valid URL | `<link rel="canonical" href="https://dromkok.com/en/products/premium-cotton-t-shirt-unisex"/>` | **PASS** |
 | **JSON-LD Schema** | Inspected HTML | Product Schema | `{"@context":"https://schema.org","@type":"Product",...}` | **PASS** |
 | **Russian PDP** | `GET /ru/products/premium-cotton-t-shirt-unisex` | HTTP 200 | **HTTP 200** (`... — Глобал Трейд`) | **PASS** |
 | **Chinese PDP** | `GET /zh/products/premium-cotton-t-shirt-unisex` | HTTP 200 | **HTTP 200** (`... — dromkok`) | **PASS** |

@@ -50,7 +50,7 @@
 - [ ] Notification bell icon displays
 - [ ] Red notification dot visible on bell
 - [ ] Admin avatar shows "A" with gradient
-- [ ] Email "admin@yiwuexpress.com" displays (hidden on mobile)
+- [ ] Email "admin@dromkok.com" displays (hidden on mobile)
 
 ---
 

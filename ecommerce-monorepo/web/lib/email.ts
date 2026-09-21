@@ -223,7 +223,7 @@ export async function sendPasswordResetEmail(email: string, token: string, local
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"${companyName}" <noreply@yiwuexpress.com>`,
+      from: process.env.SMTP_FROM || `"${companyName}" <noreply@dromkok.com>`,
       to: email,
       subject,
       html,
@@ -258,7 +258,7 @@ export async function sendOrderConfirmationEmail(
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"${companyName}" <orders@yiwuexpress.com>`,
+      from: process.env.SMTP_FROM || `"${companyName}" <orders@dromkok.com>`,
       to: email,
       subject,
       html,
@@ -294,7 +294,7 @@ export async function sendShipmentUpdateEmail(
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"${companyName}" <shipping@yiwuexpress.com>`,
+      from: process.env.SMTP_FROM || `"${companyName}" <shipping@dromkok.com>`,
       to: email,
       subject,
       html,
@@ -325,7 +325,7 @@ export async function sendWelcomeEmail(
 
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || `"${companyName}" <welcome@yiwuexpress.com>`,
+      from: process.env.SMTP_FROM || `"${companyName}" <welcome@dromkok.com>`,
       to: email,
       subject,
       html,

@@ -64,7 +64,7 @@ npm run db:seed
 ```
 
 **Test Credentials After Setup:**
-- Admin: `admin@yiwuexpress.com` / `admin123`
+- Admin: `admin@dromkok.com` / `admin123`
 - Customer: `user@example.com` / `password123`
 
 ## ✅ Verify Everything Works

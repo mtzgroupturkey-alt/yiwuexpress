@@ -83,7 +83,7 @@ All settings are fetched from `/api/settings` endpoint.
 ## Additional Notes
 
 ### Other Hardcoded Values Found:
-- Admin email: `admin@yiwuexpress.com` (line 447)
+- Admin email: `admin@dromkok.com` (line 447)
   - This could also be made dynamic if needed
   - Would require adding admin user info to the settings or auth context
 

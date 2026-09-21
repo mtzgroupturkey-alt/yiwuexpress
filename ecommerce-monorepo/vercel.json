@@ -19,7 +19,7 @@
     "SMTP_PORT": "587",
     "SMTP_USER": "@smtp_user",
     "SMTP_PASSWORD": "@smtp_password",
-    "SMTP_FROM": "noreply@yiwuexpress.com",
+    "SMTP_FROM": "noreply@dromkok.com",
     "LOG_LEVEL": "info"
   }
 }

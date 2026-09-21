@@ -30,7 +30,7 @@ npm run dev
 
 ### **3. Access Admin Dashboard**
 - **URL:** `http://localhost:3000/auth/login`
-- **Admin Email:** `admin@yiwuexpress.com`
+- **Admin Email:** `admin@dromkok.com`
 - **Admin Password:** `admin123`
 
 ---

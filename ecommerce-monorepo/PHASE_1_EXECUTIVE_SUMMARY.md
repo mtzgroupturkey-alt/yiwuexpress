@@ -346,7 +346,7 @@ npx expo start
 ```
 
 ### Test Credentials
-- **Admin:** admin@yiwuexpress.com / admin123
+- **Admin:** admin@dromkok.com / admin123
 - **User:** user@example.com / password123
 
 ### URLs

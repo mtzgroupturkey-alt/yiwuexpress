@@ -346,7 +346,7 @@ Visit: **https://yourdomain.com**
 - Admin: `https://yourdomain.com/admin/login`
 
 **Default Admin Login:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 
 **⚠️ IMPORTANT:** Change admin password immediately!

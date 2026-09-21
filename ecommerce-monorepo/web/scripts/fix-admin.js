@@ -24,7 +24,7 @@ try {
   console.log('   1. Run: npm run dev')
   console.log('   2. Visit: http://localhost:3000/auth/login')
   console.log('   3. Login with:')
-  console.log('      Email: admin@yiwuexpress.com')
+  console.log('      Email: admin@dromkok.com')
   console.log('      Password: admin123')
   console.log('')
   

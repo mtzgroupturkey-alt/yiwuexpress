@@ -27,7 +27,7 @@ export default function TermsPage() {
   const { settings } = useSettings()
 
   const companyName = settings?.companyName || 'Global Trade'
-  const legalEmail = settings?.companyEmail || 'legal@yiwuexpress.com'
+  const legalEmail = settings?.companyEmail || 'legal@dromkok.com'
   const businessLicense = settings?.businessLicense || ''
   const taxNumber = settings?.taxRegistrationNumber || ''
 

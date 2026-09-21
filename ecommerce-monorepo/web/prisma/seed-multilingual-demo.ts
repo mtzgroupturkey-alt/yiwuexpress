@@ -17,7 +17,7 @@ export async function seedMultilingualDemo() {
     update: {
       companyName: 'Global Trade',
       companyDescription: 'Leading B2B portal for factory-direct industrial machinery, power tools, and equipment from China.',
-      companyEmail: 'contact@yiwuexpress.com',
+      companyEmail: 'contact@dromkok.com',
       companyPhone: '+86 579 8555 8888',
       companyAddress: 'No. 888 Chouzhou North Road, Yiwu International Trade Center, Zhejiang, China',
       currency: 'USD',
@@ -28,7 +28,7 @@ export async function seedMultilingualDemo() {
       singletonKey: 'SINGLETON',
       companyName: 'Global Trade',
       companyDescription: 'Leading B2B portal for factory-direct industrial machinery, power tools, and equipment from China.',
-      companyEmail: 'contact@yiwuexpress.com',
+      companyEmail: 'contact@dromkok.com',
       companyPhone: '+86 579 8555 8888',
       companyAddress: 'No. 888 Chouzhou North Road, Yiwu International Trade Center, Zhejiang, China',
       currency: 'USD',
@@ -237,7 +237,7 @@ export async function seedMultilingualDemo() {
   console.log('👤 Seeding Users...')
   const usersData = [
     {
-      email: 'admin@yiwuexpress.com',
+      email: 'admin@dromkok.com',
       password: passwordHash,
       name: 'System Administrator',
       companyName: 'Global Trade Operations',

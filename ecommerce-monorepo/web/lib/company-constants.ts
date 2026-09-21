@@ -17,8 +17,8 @@ export const DEFAULT_COMPANY = {
   companyName: DEFAULT_COMPANY_NAME,
   companyAddress: 'China',
   companyPhone: '+86 579 8555 1234',
-  companyEmail: 'info@yiwuexpress.com',
-  companyWebsite: 'https://yiwuexpress.com',
+  companyEmail: 'info@dromkok.com',
+  companyWebsite: 'https://dromkok.com',
   companyDescription:
     'Leading logistics and trade services provider connecting China to the world',
   companyLogo: '',

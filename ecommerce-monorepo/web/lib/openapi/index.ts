@@ -10,7 +10,7 @@ import { quotePaths } from './paths/quotes'
 import { userPaths } from './paths/users'
 import { settingPaths } from './paths/settings'
 
-export function getOpenAPISpecification(host = 'https://yiwuexpress.com') {
+export function getOpenAPISpecification(host = 'https://dromkok.com') {
   return {
     openapi: '3.0.3',
     info: {
@@ -20,7 +20,7 @@ export function getOpenAPISpecification(host = 'https://yiwuexpress.com') {
         'REST API documentation for B2B/B2C E-Commerce, Logistics, Sourcing, and Order Management from China.',
       contact: {
         name: 'API Support',
-        email: 'support@yiwuexpress.com',
+        email: 'support@dromkok.com',
       },
     },
     servers: [
@@ -29,7 +29,7 @@ export function getOpenAPISpecification(host = 'https://yiwuexpress.com') {
         description: 'Current Environment Server',
       },
       {
-        url: 'https://yiwuexpress.com',
+        url: 'https://dromkok.com',
         description: 'Production API Gateway',
       },
       {

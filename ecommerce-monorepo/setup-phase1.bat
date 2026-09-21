@@ -86,7 +86,7 @@ echo Phase 1 Setup Complete! ✓
 echo ========================================
 echo.
 echo Login Credentials:
-echo   Admin:    admin@yiwuexpress.com / admin123
+echo   Admin:    admin@dromkok.com / admin123
 echo   Customer: user@example.com / password123
 echo.
 echo Next Steps:

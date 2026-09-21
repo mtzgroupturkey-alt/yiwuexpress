@@ -182,7 +182,7 @@ npm run db:studio              # View data
 ```
 
 **Login:**
-- Admin: admin@yiwuexpress.com / admin123
+- Admin: admin@dromkok.com / admin123
 - Customer: user@example.com / password123
 
 ---

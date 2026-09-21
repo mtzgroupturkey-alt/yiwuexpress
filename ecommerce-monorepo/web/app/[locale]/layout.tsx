@@ -43,7 +43,7 @@ export async function generateMetadata({
     description:
       companyDescription ||
       `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
-    metadataBase: new URL('https://yiwuexpress.com'),
+    metadataBase: new URL('https://dromkok.com'),
     icons: {
       icon: companyFavicon,
       shortcut: companyFavicon,
@@ -127,8 +127,8 @@ export default async function LocaleLayout({
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": companyName,
-            "url": "https://yiwuexpress.com",
-            "logo": companyLogo || "https://yiwuexpress.com/logo.svg",
+            "url": "https://dromkok.com",
+            "logo": companyLogo || "https://dromkok.com/logo.svg",
             "description": `${companyName} & Logistics Platform from China`,
             "address": {
               "@type": "PostalAddress",

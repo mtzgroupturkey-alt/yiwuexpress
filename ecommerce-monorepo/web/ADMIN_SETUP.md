@@ -12,7 +12,7 @@ http://localhost:3000/auth/login
 ```
 
 ### **Admin Credentials:**
-- **Email:** `admin@yiwuexpress.com`
+- **Email:** `admin@dromkok.com`
 - **Password:** `admin123`
 
 ### **Test Customer Credentials:**
@@ -137,5 +137,5 @@ The admin system is fully functional and ready for production use. All features 
 - ✅ Admin-only access protection with JWT authentication
 
 **Admin Panel URL:** `http://localhost:3000/auth/login`
-**Admin Email:** `admin@yiwuexpress.com`
+**Admin Email:** `admin@dromkok.com`
 **Admin Password:** `admin123`

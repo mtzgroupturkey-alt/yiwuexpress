@@ -51,7 +51,7 @@ echo Backend API: http://localhost:3001
 echo Mobile App:  http://localhost:8081
 echo.
 echo Test Credentials:
-echo - Admin: admin@yiwuexpress.com / admin123
+echo - Admin: admin@dromkok.com / admin123
 echo - User: user@example.com / password123
 echo.
 echo Check the opened terminal windows for status

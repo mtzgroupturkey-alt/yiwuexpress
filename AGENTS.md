@@ -8,7 +8,7 @@ You are an expert **Senior Full-Stack Developer** specializing in **Next.js, Typ
 
 The store/company name must be **dynamic**, not hardcoded. Apply this rule to every agent task unless the user explicitly overrides it.
 
-- **Current static brand to replace:** `"YIWU EXPRESS"` and all case-variations (`"Yiwu Express"`, `"yiwuexpress"` where it refers to the **user-facing brand** — NOT the email domain `yiwuexpress.com`, which must stay).
+- **Current static brand to replace:** `"YIWU EXPRESS"` and all case-variations (`"Yiwu Express"`, `"yiwuexpress"` where it refers to the **user-facing brand** — NOT the email domain `dromkok.com`, which must stay).
 - **New default fallback name:** `"Global Trade"`.
 - **Target behavior:** The name must be fetched **dynamically from the database** (admin panel `SystemSettings.companyName`), with `"Global Trade"` as the fallback when no row/value exists.
 
@@ -21,7 +21,7 @@ The store/company name must be **dynamic**, not hardcoded. Apply this rule to ev
 
 ### Hard rules
 - Never introduce a NEW hardcoded `"YIWU EXPRESS"` brand string in user-facing UI.
-- Geography refactor (separate concern): replace `"Yiwu"` location text with `"China"` (e.g. "Ship from Yiwu" → "Ship from China", "Yiwu warehouse" → "China warehouse"), but keep the `yiwuexpress.com` domain intact.
+- Geography refactor (separate concern): replace `"Yiwu"` location text with `"China"` (e.g. "Ship from Yiwu" → "Ship from China", "Yiwu warehouse" → "China warehouse"), but keep the `dromkok.com` domain intact.
 - Preserve the Prisma `SystemSettings` model and its social/branding fields; no migration is needed to change brand display.
 
 ## CRITICAL: Cross-Platform Environment Rule

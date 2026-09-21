@@ -361,7 +361,7 @@ Browse data at `http://localhost:5555`
 ## 🔐 Seeded Login Credentials
 
 **Admin Account:**
-- Email: `admin@yiwuexpress.com`
+- Email: `admin@dromkok.com`
 - Password: `admin123`
 
 **Customer Account:**

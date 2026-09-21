@@ -251,7 +251,7 @@ Target URL: `http://localhost:3001/en/products/10-inch-android-tablet`
   - Inside the product buy-box, the name is in a `<div className="text-2xl font-bold">` to avoid duplicate `<h1>`.
   - **Recommendation**: If `PageHero` is removed to align with standard e-commerce PDPs, convert the in-card product title to the primary `<h1>`.
 - **Canonical & Hreflang**:
-  - Canonical: `<link rel="canonical" href="https://yiwuexpress.com/en/products/10-inch-android-tablet"/>`
+  - Canonical: `<link rel="canonical" href="https://dromkok.com/en/products/10-inch-android-tablet"/>`
   - Hreflang alternates: `en`, `ru`, `zh` all present in `<head>`.
 - **JSON-LD Schema (`schema.org/Product`)**:
   - Injected as `<script type="application/ld+json">`.

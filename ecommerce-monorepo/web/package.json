@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "YIWU EXPRESS - Global Trade & Logistics Platform from Yiwu, China",
-  "author": "YIWU EXPRESS <info@yiwuexpress.com>",
+  "author": "YIWU EXPRESS <info@dromkok.com>",
   "license": "MIT",
   "scripts": {
     "dev": "node server.js",

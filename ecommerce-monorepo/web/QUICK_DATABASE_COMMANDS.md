@@ -69,7 +69,7 @@ WHERE email = 'your-email@example.com';
 -- If Administrator role ID is 'cmqpjiviu0009v19gp8fnf6lx'
 UPDATE User 
 SET roleId = 'cmqpjiviu0009v19gp8fnf6lx'
-WHERE email = 'admin@yiwuexpress.com';
+WHERE email = 'admin@dromkok.com';
 ```
 
 ### 4. Remove Permission Role from User

@@ -8,7 +8,7 @@ export function AboutContactCTA() {
   const t = useTranslations('About')
   const { settings } = useSettings()
 
-  const email = settings?.companyEmail || 'hello@yiwuexpress.com'
+  const email = settings?.companyEmail || 'hello@dromkok.com'
   const phone = settings?.companyPhone || '+86 571 8512 7890'
 
   return (
