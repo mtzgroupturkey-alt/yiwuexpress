@@ -55,6 +55,10 @@ export interface Product {
   dietaryTag?: string;
   finishVariants?: { name: string; colorHex: string }[];
   customerReviews?: ProductReview[];
+  material?: string | null;
+  weightKg?: number | null;
+  dimensions?: any;
+  attributes?: Record<string, any> | null;
 }
 
 export interface FilterState {

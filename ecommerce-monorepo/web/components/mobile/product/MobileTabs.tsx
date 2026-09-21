@@ -96,6 +96,41 @@ export function MobileTabs({ product, className = '' }: MobileTabsProps) {
                   <span className="font-semibold text-gray-900 dark:text-white">{product.sku}</span>
                 </div>
               )}
+              {(product as any).material && (
+                <div className="py-2 flex justify-between">
+                  <span className="text-gray-400">Material</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{(product as any).material}</span>
+                </div>
+              )}
+              {(product as any).weightKg && (
+                <div className="py-2 flex justify-between">
+                  <span className="text-gray-400">Weight</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{(product as any).weightKg} kg</span>
+                </div>
+              )}
+              {(product as any).dimensions && (
+                <div className="py-2 flex justify-between">
+                  <span className="text-gray-400">Dimensions</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {typeof (product as any).dimensions === 'string'
+                      ? (product as any).dimensions
+                      : JSON.stringify((product as any).dimensions)}
+                  </span>
+                </div>
+              )}
+              {(product as any).attributes &&
+                typeof (product as any).attributes === 'object' &&
+                Object.entries((product as any).attributes).map(([attrKey, attrVal]) => {
+                  if (!attrVal) return null
+                  const displayKey = attrKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                  const displayVal = Array.isArray(attrVal) ? attrVal.join(', ') : String(attrVal)
+                  return (
+                    <div key={attrKey} className="py-2 flex justify-between">
+                      <span className="text-gray-400">{displayKey}</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-right max-w-[60%]">{displayVal}</span>
+                    </div>
+                  )
+                })}
             </div>
           </div>
         )}

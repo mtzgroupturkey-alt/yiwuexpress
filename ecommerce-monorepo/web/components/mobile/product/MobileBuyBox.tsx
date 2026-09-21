@@ -11,6 +11,11 @@ import { MobileQuantityStepper } from './MobileQuantityStepper'
 interface MobileBuyBoxProps {
   product: Product
   quantity: number
+  price?: number
+  compareAtPrice?: number | null
+  stock?: number
+  isWholesale?: boolean
+  isInstantWholesale?: boolean
   onQuantityChange: (qty: number) => void
   onAddToCart: () => void
   onInquireSupplier?: () => void
@@ -21,6 +26,11 @@ interface MobileBuyBoxProps {
 export function MobileBuyBox({
   product,
   quantity,
+  price,
+  compareAtPrice,
+  stock,
+  isWholesale,
+  isInstantWholesale = false,
   onQuantityChange,
   onAddToCart,
   onInquireSupplier,
@@ -31,7 +41,10 @@ export function MobileBuyBox({
   const locale = useLocale()
   const { isWholesaleSession } = useSessionMode()
 
-  const hasDiscount = product.oldPrice && product.oldPrice > product.price
+  const effectivePrice = price !== undefined ? price : product.price
+  const effectiveCompareAtPrice = compareAtPrice !== undefined ? compareAtPrice : product.oldPrice
+  const hasDiscount = Boolean(effectiveCompareAtPrice && effectiveCompareAtPrice > effectivePrice)
+  const isWholesaleActive = isWholesale !== undefined ? isWholesale : isWholesaleSession
   const minQty = product.moq || 1
 
   return (
@@ -44,11 +57,11 @@ export function MobileBuyBox({
         <div className="space-y-0.5">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black text-[#00407a] dark:text-[#F5A602]">
-              {formatPrice(product.price)}
+              {formatPrice(effectivePrice)}
             </span>
             {hasDiscount && (
               <span className="text-xs text-gray-400 line-through">
-                {formatPrice(product.oldPrice!)}
+                {formatPrice(effectiveCompareAtPrice!)}
               </span>
             )}
             <span className="text-xs text-gray-500">/ unit</span>
@@ -71,7 +84,7 @@ export function MobileBuyBox({
             Subtotal
           </p>
           <p className="text-base font-extrabold text-gray-900 dark:text-white">
-            {formatPrice(product.price * quantity)}
+            {formatPrice(effectivePrice * quantity)}
           </p>
         </div>
       </div>
@@ -94,14 +107,15 @@ export function MobileBuyBox({
         <button
           type="button"
           onClick={onAddToCart}
-          disabled={isAdding}
-          className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          disabled={isAdding || (stock !== undefined && stock <= 0)}
+          aria-label={isWholesaleActive && !isInstantWholesale ? 'Request Wholesale Quote (RFQ)' : 'Add to Shopping Cart'}
+          className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50 cursor-pointer"
         >
-          {isWholesaleSession ? (
+          {isWholesaleActive && !isInstantWholesale ? (
             <>
               <FileText className="w-5 h-5" />
               <span>
-                {locale === 'zh' ? '加入询价清单' : locale === 'ru' ? 'Запросить расчет цен' : 'Add to Quote Cart'}
+                {locale === 'zh' ? '加入询价清单' : locale === 'ru' ? 'Запросить расчет цен' : 'Request Wholesale Quote (RFQ)'}
               </span>
             </>
           ) : (

@@ -1269,7 +1269,24 @@ export default function ProductDetailView({
             setQuantity(q);
             handleAddToCart();
           }}
+          onRequestQuote={(_p, q) => {
+            setQuantity(q);
+            handleAddToQuoteList();
+          }}
           onBack={() => router.back()}
+          optionKeys={optionKeys}
+          optionValuesMap={optionValuesMap}
+          configurableAttributes={configurableAttributes}
+          selectedOptions={selectedOptions}
+          onSelectOption={(k, v) => setSelectedOptions((prev) => ({ ...prev, [k]: v }))}
+          variants={variants}
+          selectedVariant={selectedVariant}
+          displayPrice={displayPrice}
+          compareAtPrice={currentCompareAtPrice}
+          stock={currentStock}
+          allImages={currentImages}
+          isWholesale={isWholesale}
+          isInstantWholesale={isInstantWholesale}
         />
       </div>
 

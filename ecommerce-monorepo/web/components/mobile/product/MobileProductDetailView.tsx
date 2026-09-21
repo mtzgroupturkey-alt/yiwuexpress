@@ -8,41 +8,98 @@ import { MobileBuyBox } from './MobileBuyBox'
 import { MobileTrustBadges } from './MobileTrustBadges'
 import { MobileTabs } from './MobileTabs'
 import { MobileVariantChips, VariantOption } from './MobileVariantChips'
+import { MobileAttributeSelector, ConfigurableAttribute } from './MobileAttributeSelector'
 import { StickyBuyBar } from '../StickyBuyBar'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 
-interface MobileProductDetailViewProps {
+export interface MobileProductDetailViewProps {
   product: Product
   relatedProducts?: Product[]
   onAddToCart?: (product: Product, quantity: number) => void
+  onRequestQuote?: (product: Product, quantity: number) => void
   onSelectProduct?: (product: Product) => void
   onBack?: () => void
   className?: string
+  // Dynamic variant & attribute props:
+  optionKeys?: string[]
+  optionValuesMap?: Record<string, string[]>
+  configurableAttributes?: ConfigurableAttribute[]
+  selectedOptions?: Record<string, string>
+  onSelectOption?: (key: string, value: string) => void
+  variants?: any[]
+  selectedVariant?: any
+  displayPrice?: number
+  compareAtPrice?: number | null
+  stock?: number
+  allImages?: string[]
+  isWholesale?: boolean
+  isInstantWholesale?: boolean
 }
 
 export function MobileProductDetailView({
   product,
   relatedProducts = [],
   onAddToCart,
+  onRequestQuote,
   onSelectProduct,
   onBack,
   className = '',
+  optionKeys = [],
+  optionValuesMap = {},
+  configurableAttributes = [],
+  selectedOptions,
+  onSelectOption,
+  variants = [],
+  selectedVariant,
+  displayPrice,
+  compareAtPrice,
+  stock,
+  allImages,
+  isWholesale,
+  isInstantWholesale = false,
 }: MobileProductDetailViewProps) {
   const { isWholesaleSession } = useSessionMode()
   const [quantity, setQuantity] = useState(product.moq || 1)
-  const [selectedVariant, setSelectedVariant] = useState('default')
+  const [legacySelectedVariant, setLegacySelectedVariant] = useState('default')
+  const [internalSelectedOptions, setInternalSelectedOptions] = useState<Record<string, string>>({})
   const [isAdding, setIsAdding] = useState(false)
+
+  const activeSelectedOptions = selectedOptions ?? internalSelectedOptions
+  const handleOptionSelect = (key: string, val: string) => {
+    if (onSelectOption) {
+      onSelectOption(key, val)
+    } else {
+      setInternalSelectedOptions((prev) => ({ ...prev, [key]: val }))
+    }
+  }
+
+  const isWholesaleActive = isWholesale !== undefined ? isWholesale : isWholesaleSession
 
   const handleAddToCart = () => {
     setIsAdding(true)
-    if (onAddToCart) {
+    if (isWholesaleActive && !isInstantWholesale && onRequestQuote) {
+      onRequestQuote(product, quantity)
+    } else if (onAddToCart) {
       onAddToCart(product, quantity)
     }
     setTimeout(() => setIsAdding(false), 500)
   }
 
-  // Sample variants if product doesn't define custom finishVariants
-  const variants: VariantOption[] = product.finishVariants?.map((f, idx) => ({
+  const handleInquireSupplier = () => {
+    if (onRequestQuote) {
+      onRequestQuote(product, quantity)
+    } else if (onAddToCart) {
+      onAddToCart(product, quantity)
+    }
+  }
+
+  const activePrice = displayPrice !== undefined ? displayPrice : (selectedVariant?.price ?? product.price)
+  const activeCompareAtPrice = compareAtPrice !== undefined ? compareAtPrice : (selectedVariant?.comparePrice ?? product.oldPrice)
+  const activeStock = stock !== undefined ? stock : (selectedVariant?.stock ?? (product.inStock ? 999 : 0))
+  const activeImages = allImages && allImages.length > 0 ? allImages : (product.images && product.images.length > 0 ? product.images : [product.image])
+
+  // Sample variants if product doesn't define custom finishVariants and has no dynamic options
+  const fallbackVariants: VariantOption[] = product.finishVariants?.map((f, idx) => ({
     id: `v-${idx}`,
     name: f.name,
     colorHex: f.colorHex,
@@ -50,6 +107,10 @@ export function MobileProductDetailView({
     { id: 'standard', name: 'Standard Export Model' },
     { id: 'heavy-duty', name: 'Heavy-Duty Reinforced' },
   ]
+
+  const hasDynamicAttributes =
+    (optionKeys && optionKeys.length > 0) ||
+    (configurableAttributes && configurableAttributes.length > 0)
 
   return (
     <div
@@ -66,11 +127,11 @@ export function MobileProductDetailView({
 
       {/* 2. Swipeable Image Gallery */}
       <MobileGallery
-        images={product.images && product.images.length > 0 ? product.images : [product.image]}
-        mainImage={product.image}
+        images={activeImages}
+        mainImage={activeImages[0] || product.image}
         productName={product.name}
         discountBadge={product.discountBadge}
-        inStock={product.inStock}
+        inStock={activeStock > 0}
       />
 
       {/* 3. Product Information Container */}
@@ -88,20 +149,37 @@ export function MobileProductDetailView({
           {product.name}
         </h1>
 
-        {/* Variant selection */}
-        <MobileVariantChips
-          title="Model Variant"
-          variants={variants}
-          selectedId={selectedVariant}
-          onSelect={(id) => setSelectedVariant(id)}
-        />
+        {/* Dynamic Attributes or Legacy Variant chips */}
+        {hasDynamicAttributes ? (
+          <MobileAttributeSelector
+            optionKeys={optionKeys}
+            optionValuesMap={optionValuesMap}
+            configurableAttributes={configurableAttributes}
+            selectedOptions={activeSelectedOptions}
+            onSelectOption={handleOptionSelect}
+            variants={variants}
+          />
+        ) : (
+          <MobileVariantChips
+            title="Model Variant"
+            variants={fallbackVariants}
+            selectedId={legacySelectedVariant}
+            onSelect={(id) => setLegacySelectedVariant(id)}
+          />
+        )}
 
         {/* Buy Box with Price & Stepper */}
         <MobileBuyBox
           product={product}
           quantity={quantity}
+          price={activePrice}
+          compareAtPrice={activeCompareAtPrice}
+          stock={activeStock}
+          isWholesale={isWholesaleActive}
+          isInstantWholesale={isInstantWholesale}
           onQuantityChange={(q) => setQuantity(q)}
           onAddToCart={handleAddToCart}
+          onInquireSupplier={handleInquireSupplier}
           isAdding={isAdding}
         />
 
@@ -115,16 +193,18 @@ export function MobileProductDetailView({
       {/* 4. Sticky Buy Bar (Always accessible for 1-tap checkout/inquiry) */}
       <StickyBuyBar
         isVisible={true}
-        price={product.price}
-        compareAtPrice={product.oldPrice}
+        price={activePrice}
+        compareAtPrice={activeCompareAtPrice}
         quantity={quantity}
         onQuantityChange={(q) => setQuantity(q)}
         onAddToCart={handleAddToCart}
-        isWholesale={isWholesaleSession}
+        isWholesale={isWholesaleActive}
+        isInstantWholesale={isInstantWholesale}
         minQty={product.moq || 1}
         productName={product.name}
-        productImage={product.image}
+        productImage={activeImages[0] || product.image}
       />
     </div>
   )
 }
+

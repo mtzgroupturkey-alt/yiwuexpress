@@ -124,4 +124,54 @@ describe('MobileProductDetailView (components/mobile/product/MobileProductDetail
 
     expect(handleBack).toHaveBeenCalledTimes(1)
   })
+
+  it('renders dynamic attributes selector when optionKeys or configurableAttributes are passed', () => {
+    const handleSelectOption = vi.fn()
+    render(
+      <MobileProductDetailView
+        product={sampleProduct}
+        optionKeys={['Color', 'Voltage']}
+        optionValuesMap={{
+          Color: ['Silver', 'Black'],
+          Voltage: ['110V', '220V'],
+        }}
+        selectedOptions={{ Color: 'Silver', Voltage: '220V' }}
+        onSelectOption={handleSelectOption}
+        displayPrice={3450}
+        compareAtPrice={3900}
+        stock={15}
+      />
+    )
+
+    expect(screen.getByTestId('mobile-attribute-selector')).toBeInTheDocument()
+    expect(screen.getByText('Color:')).toBeInTheDocument()
+    expect(screen.getByText('Voltage:')).toBeInTheDocument()
+    expect(screen.getAllByText('$3450.00').length).toBeGreaterThan(0)
+
+    // Clicking an option invokes onSelectOption callback
+    const blackSwatch = screen.getByRole('button', { name: /^black$/i })
+    fireEvent.click(blackSwatch)
+    expect(handleSelectOption).toHaveBeenCalledWith('Color', 'Black')
+  })
+
+  it('invokes onRequestQuote instead of onAddToCart in wholesale mode', () => {
+    const handleAddToCart = vi.fn()
+    const handleRequestQuote = vi.fn()
+
+    render(
+      <MobileProductDetailView
+        product={sampleProduct}
+        onAddToCart={handleAddToCart}
+        onRequestQuote={handleRequestQuote}
+        isWholesale={true}
+        isInstantWholesale={false}
+      />
+    )
+
+    const quoteBtn = screen.getByRole('button', { name: /request wholesale quote/i })
+    fireEvent.click(quoteBtn)
+
+    expect(handleRequestQuote).toHaveBeenCalledWith(sampleProduct, 1)
+    expect(handleAddToCart).not.toHaveBeenCalled()
+  })
 })

@@ -64,6 +64,10 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     country: dbItem.countryOfOrigin || 'China',
     sku: dbItem.sku || undefined,
     minOrderQty: minOrderQty,
+    material: dbItem.material || undefined,
+    weightKg: dbItem.weightKg || undefined,
+    dimensions: dbItem.dimensions || undefined,
+    attributes: dbItem.attributes || undefined,
   };
 }
 
