@@ -96,7 +96,7 @@ export function MobileQuoteCartPage({
   return (
     <div
       data-testid="mobile-quote-cart-page"
-      className={`md:hidden flex flex-col min-h-screen bg-slate-50 dark:bg-[#0b1120] pt-[calc(56px+env(safe-area-inset-top,0px))] pb-36 ${className}`}
+      className={`md:hidden flex flex-col min-h-screen bg-slate-50 dark:bg-[#0b1120] pt-[calc(56px+env(safe-area-inset-top,0px))] pb-52 ${className}`}
     >
       {/* 1. Header with Back Navigation (Title matches App Style) */}
       <MobileHeader
@@ -553,12 +553,9 @@ export function MobileQuoteCartPage({
             />
           </div>
 
-          {/* Fixed Bottom Action Bar */}
+          {/* Fixed Bottom Action Bar (Positioned above BottomNav) */}
           <div
-            className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
-            style={{
-              paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-            }}
+            className="fixed bottom-[calc(64px+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
           >
             <div className="max-w-lg mx-auto flex items-center justify-between gap-3">
               <div className="flex flex-col">

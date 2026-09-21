@@ -119,10 +119,13 @@ describe('BottomNav (components/mobile/BottomNav.tsx)', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('hides BottomNav on /quote-cart submit view route', () => {
+  it('renders BottomNav on /quote-cart route with active quotes tab', () => {
     mockPathname = '/en/quote-cart'
-    const { container } = render(<BottomNav />)
-    expect(container.firstChild).toBeNull()
+    mockIsWholesaleSession = true
+    render(<BottomNav />)
+    expect(screen.getByRole('navigation', { name: /mobile navigation/i })).toBeInTheDocument()
+    const quoteLink = screen.getByRole('link', { name: /quotes/i })
+    expect(quoteLink).toBeInTheDocument()
   })
 
   it('hides BottomNav on /quotes/view/[token] route', () => {

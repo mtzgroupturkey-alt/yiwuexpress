@@ -54,12 +54,10 @@ export function BottomNav() {
   const cleanPath = pathname.replace(/^\/(en|ru|zh)(\/|$)/, '/') || '/'
 
   // 2.3 Hide on certain pages:
-  // /checkout, /quote-cart (submit view), /quotes/view/[token]
+  // /checkout, /quotes/view/[token]
   const isHiddenRoute =
     cleanPath === '/checkout' ||
     cleanPath.startsWith('/checkout/') ||
-    cleanPath === '/quote-cart' ||
-    cleanPath.startsWith('/quote-cart/') ||
     cleanPath.startsWith('/quotes/view')
 
   if (isHiddenRoute) {
