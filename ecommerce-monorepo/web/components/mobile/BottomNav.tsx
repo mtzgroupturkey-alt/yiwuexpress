@@ -22,6 +22,7 @@ export function BottomNav() {
   const { settings } = useSettings()
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [logoFailed, setLogoFailed] = useState(false)
 
   // Cart & Wholesale context
   const { cartCount } = useCart()
@@ -264,17 +265,34 @@ export function BottomNav() {
               </div>
 
               {/* Drawer Header */}
-              <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-slate-800">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#1a3a5c] text-[#c9a84c] flex items-center justify-center font-bold text-sm">
-                    GT
-                  </div>
+              <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-100 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  {settings?.companyLogo && !logoFailed ? (
+                    <div className="flex items-center justify-center shrink-0">
+                      <img
+                        src={settings.companyLogo}
+                        alt={`${settings?.companyName || 'Company'} Logo`}
+                        onError={() => setLogoFailed(true)}
+                        className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
+                        loading="eager"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-[#00407a] dark:bg-primary-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                      {(settings?.companyName || 'Global Trade')
+                        .split(' ')
+                        .map((w: string) => w[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase() || 'GT'}
+                    </div>
+                  )}
                   <div>
                     <h3 className="font-bold text-sm text-gray-900 dark:text-white">
                       {settings?.companyName || 'Global Trade'}
                     </h3>
                     <p className="text-[11px] text-gray-500 dark:text-slate-400">
-                      {locale === 'zh' ? '全球采购与供应链' : locale === 'ru' ? 'Международная торговля' : 'Global Trade Platform'}
+                      {settings?.siteTagline || (locale === 'zh' ? '全球采购与供应链' : locale === 'ru' ? 'Международная торговля' : 'Global Trade Platform')}
                     </p>
                   </div>
                 </div>
