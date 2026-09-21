@@ -53,14 +53,14 @@ export function MobileCartPage({
   return (
     <div
       data-testid="mobile-cart-page"
-      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pb-40 ${className}`}
+      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pt-[calc(56px+env(safe-area-inset-top,0px))] pb-40 ${className}`}
     >
       {/* 1. Header with Back Navigation */}
       <MobileHeader
         showBack={true}
         onBack={handleBack}
-        title={locale === 'zh' ? '我的购物车' : locale === 'ru' ? 'Корзина' : 'Shopping Cart'}
-        showSearchToggle={false}
+        title={locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина' : 'Cart'}
+        showSearch={false}
       />
 
       {/* Wholesale Mode Notice if active */}

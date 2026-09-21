@@ -32,6 +32,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
+import { MobileHeader } from '@/components/mobile/MobileHeader';
 
 export interface NavChildCategory {
   id: string;
@@ -249,90 +250,21 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/98 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        {/* MOBILE HEADER (56px tall, logo left, search right, cart right with badge, menu right) */}
-        <div className="md:hidden flex items-center justify-between h-14 px-4 bg-white/98 border-b border-slate-200/90 shadow-2xs">
-          {/* Logo Left */}
-          <Link
-            href={`/${currentLocale}`}
-            className="flex items-center gap-2 cursor-pointer focus:outline-none min-w-0"
-            title={`${companyName} Home`}
-          >
-            {settings?.companyLogo && !mobileLogoFailed ? (
-              <img
-                src={settings.companyLogo}
-                alt={`${companyName} Logo`}
-                onError={() => setMobileLogoFailed(true)}
-                className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
-                loading="eager"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-lg bg-[#00407a] flex items-center justify-center text-white font-black text-base shrink-0 shadow-xs">
-                {companyName ? companyName.charAt(0).toUpperCase() : 'G'}
-              </div>
-            )}
-            <span className="text-lg font-black tracking-tight text-[#00407a] font-['Inter'] truncate">
-              {companyName}
-            </span>
-          </Link>
-
-          {/* Right Icons: Search, Cart with Badge, Menu */}
-          <div className="flex items-center gap-1 shrink-0">
-            {/* Search Icon */}
-            <button
-              type="button"
-              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-              className="p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer"
-              aria-label="Search products"
-            >
-              {isMobileSearchOpen ? <X className="w-5 h-5 text-slate-700" /> : <Search className="w-5 h-5 text-slate-700" />}
-            </button>
-
-            {/* Cart Icon with live badge */}
-            {isWholesaleActive && !isInstantWholesale ? (
-              <Link
-                href={`/${currentLocale}/quote-cart`}
-                className="relative p-2 rounded-xl text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
-                aria-label="Quote cart"
-              >
-                <FileText className="w-5 h-5" />
-                {quoteCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-black rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
-                    {quoteCount}
-                  </span>
-                )}
-              </Link>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenCart}
-                className="relative p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer"
-                aria-label="Shopping cart"
-              >
-                <ShoppingCart className="w-5 h-5 text-slate-700" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-[#F5A602] text-slate-950 text-[10px] font-black rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-            )}
-
-            {/* Menu Icon */}
-            <button
-              type="button"
-              onClick={onOpenCatalog}
-              className="p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer"
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5 text-[#00407a]" />
-            </button>
-          </div>
-        </div>
+        {/* MOBILE HEADER (Native App Style, hidden on md+) */}
+        <MobileHeader
+          showSearch={true}
+          onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+          onMenuClick={onOpenCatalog}
+          onCartClick={onOpenCart}
+        />
 
         {/* Collapsible Mobile Search Input */}
         {isMobileSearchOpen && (
-          <div className="md:hidden px-4 py-2.5 bg-slate-50 border-b border-slate-200 animate-in slide-in-from-top-2 duration-150">
-            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+          <div
+            className="md:hidden fixed left-0 right-0 z-30 px-4 py-2.5 bg-slate-50 border-b border-slate-200 shadow-md animate-in slide-in-from-top-2 duration-150"
+            style={{ top: 'calc(56px + env(safe-area-inset-top, 0px))' }}
+          >
+            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 max-w-lg mx-auto">
               <div className="relative flex-1">
                 <input
                   type="text"
@@ -340,13 +272,13 @@ export const Header: React.FC<HeaderProps> = ({
                   onChange={(e) => onSearchChange(e.target.value)}
                   placeholder={tHeader('searchPlaceholder')}
                   autoFocus
-                  className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#00407a]"
+                  className="w-full h-10 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#00407a]"
                 />
-                <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
               <button
                 type="submit"
-                className="h-9 px-3 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-lg shrink-0"
+                className="h-10 px-4 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-xl shrink-0 cursor-pointer active:scale-95 transition-transform"
               >
                 {currentLocale === 'zh' ? '搜索' : currentLocale === 'ru' ? 'Поиск' : 'Search'}
               </button>

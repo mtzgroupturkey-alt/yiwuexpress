@@ -54,7 +54,7 @@ export function MobileProductDetailView({
   return (
     <div
       data-testid="mobile-pdp"
-      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pb-28 ${className}`}
+      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pt-[calc(56px+env(safe-area-inset-top,0px))] pb-28 ${className}`}
     >
       {/* 1. Mobile Header with Back Button */}
       <MobileHeader

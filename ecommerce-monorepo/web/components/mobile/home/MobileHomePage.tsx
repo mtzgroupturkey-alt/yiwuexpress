@@ -38,7 +38,7 @@ export function MobileHomePage({
   return (
     <div
       data-testid="mobile-home-page"
-      className={`md:hidden flex flex-col space-y-2 pb-6 ${className}`}
+      className={`md:hidden flex flex-col space-y-2 pt-[calc(56px+env(safe-area-inset-top,0px))] pb-6 ${className}`}
     >
       {/* 1. Mobile Hero Carousel */}
       <MobileHero

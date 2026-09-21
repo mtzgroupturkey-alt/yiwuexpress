@@ -64,8 +64,8 @@ export function MobileShell({
       <main
         data-testid="mobile-main-content"
         className={`flex-1 w-full max-w-lg mx-auto ${
-          showBottomNav ? 'pb-20' : 'pb-6'
-        }`}
+          showHeader ? 'pt-[calc(56px+env(safe-area-inset-top,0px))]' : ''
+        } ${showBottomNav ? 'pb-20' : 'pb-6'}`}
       >
         {children}
       </main>

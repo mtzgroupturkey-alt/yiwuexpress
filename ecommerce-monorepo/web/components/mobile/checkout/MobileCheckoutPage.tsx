@@ -137,7 +137,7 @@ export function MobileCheckoutPage({
   return (
     <div
       data-testid="mobile-checkout-page"
-      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pb-28 ${className}`}
+      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pt-[calc(56px+env(safe-area-inset-top,0px))] pb-28 ${className}`}
     >
       {/* 1. Header with contextual back button */}
       <MobileHeader
