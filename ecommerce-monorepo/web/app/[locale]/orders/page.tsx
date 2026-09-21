@@ -9,6 +9,7 @@ import { Package, Eye, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { MobileOrdersList } from '@/components/mobile/account/MobileOrdersList'
 
 interface Order {
   id: string
@@ -101,22 +102,35 @@ export default function OrdersPage() {
     setFilteredOrders(filtered)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
-          <p className="text-gray-600">View and track your order history</p>
-        </div>
+    <>
+      {/* MOBILE ORDERS VIEW (Phase 6, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileOrdersList
+          orders={filteredOrders}
+          isLoading={loading}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSelectOrder={(id) => navigate(`/orders/${id}`)}
+        />
       </div>
+
+      {/* DESKTOP ORDERS VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        {loading ? (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div className="min-h-screen bg-gray-50">
+            <div className="bg-white border-b border-gray-200">
+              <div className="container mx-auto px-4 py-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
+                <p className="text-gray-600">View and track your order history</p>
+              </div>
+            </div>
 
       <div className="container mx-auto px-4 py-8">
         {/* Filters */}
@@ -224,5 +238,8 @@ export default function OrdersPage() {
         )}
       </div>
     </div>
+        )}
+      </div>
+    </>
   )
 }

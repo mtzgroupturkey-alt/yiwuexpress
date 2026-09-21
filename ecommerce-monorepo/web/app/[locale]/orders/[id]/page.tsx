@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Package, MapPin, CreditCard, Truck, Check, ExternalLink } from 'lucide-react'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { MobileOrderDetailView } from '@/components/mobile/account/MobileOrderDetailView'
 
 interface Order {
   id: string
@@ -92,34 +93,40 @@ export default function OrderDetailPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  if (error || !order) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-            <p className="text-red-800 text-lg">{error || 'Order not found'}</p>
-            <Button onClick={() => navigate('/orders')} className="mt-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Orders
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+    <>
+      {/* MOBILE ORDER DETAIL VIEW (Phase 6, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileOrderDetailView
+          order={order}
+          isLoading={loading}
+          error={error}
+          onBack={() => navigate('/orders')}
+        />
+      </div>
+
+      {/* DESKTOP ORDER DETAIL VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        {loading ? (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : error || !order ? (
+          <div className="min-h-screen bg-gray-50">
+            <div className="container mx-auto px-4 py-8">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+                <p className="text-red-800 text-lg">{error || 'Order not found'}</p>
+                <Button onClick={() => navigate('/orders')} className="mt-4">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Orders
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-6">
           <Button
             variant="ghost"
@@ -350,5 +357,8 @@ export default function OrderDetailPage() {
         </div>
       </div>
     </div>
+        )}
+      </div>
+    </>
   )
 }

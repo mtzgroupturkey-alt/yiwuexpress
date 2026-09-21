@@ -9,6 +9,7 @@ import Navbar from '@/components/navbar'
 import { User, Building, Phone, Mail, Globe, Shield, Edit2, Check, X, Calendar } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
+import { MobileProfileView } from '@/components/mobile/account/MobileProfileView'
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Contact name must be at least 2 characters'),
@@ -138,25 +139,50 @@ export default function ProfilePage() {
     setError('')
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-600 font-medium">Loading profile...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+    <>
+      {/* MOBILE PROFILE VIEW (Phase 6, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileProfileView
+          user={userData}
+          isLoading={isLoading}
+          error={error}
+          onSave={async (data) => {
+            const res = await fetch('/api/auth/me', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify(data),
+            })
+            if (!res.ok) throw new Error('Failed to update profile')
+            const result = await res.json()
+            setUserData(result.user || result.data)
+          }}
+          onLogout={async () => {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+            navigate('/login')
+          }}
+          onBack={() => navigate('/')}
+        />
+      </div>
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+      {/* DESKTOP PROFILE VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        {isLoading ? (
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Navbar />
+            <div className="flex-1 flex items-center justify-center">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-gray-600 font-medium">Loading profile...</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <Navbar />
+
+            <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         {/* Header Summary */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -402,5 +428,8 @@ export default function ProfilePage() {
         </div>
       </main>
     </div>
+        )}
+      </div>
+    </>
   )
 }
