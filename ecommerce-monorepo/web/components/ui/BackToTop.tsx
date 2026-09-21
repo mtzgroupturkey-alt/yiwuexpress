@@ -83,7 +83,7 @@ export function BackToTop() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.6, y: 20 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-6 right-6 z-40 sm:bottom-8 sm:right-8"
+          className="fixed bottom-[6.5rem] right-4 z-40 md:bottom-8 md:right-8"
         >
           <motion.button
             onClick={scrollToTop}

@@ -2,6 +2,37 @@ const createNextIntlPlugin = require('next-intl/plugin');
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  fallbacks: {
+    document: '/offline',
+  },
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/media\.dromkok\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'images',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+      },
+    },
+    {
+      urlPattern: /^https?.*/,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'general',
+        networkTimeoutSeconds: 10,
+      },
+    },
+  ],
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -65,11 +96,11 @@ const nextConfig = {
         destination: '/auth/login',
         permanent: true,
       },
-    ]
+    ];
   },
   // Add CORS headers and security headers to all routes
   async headers() {
-    const allowedOrigin = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://dromkok.com'
+    const allowedOrigin = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://dromkok.com';
     return [
       {
         source: '/api/:path*',
@@ -103,4 +134,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withNextIntl(nextConfig);
+module.exports = withPWA(withNextIntl(nextConfig));

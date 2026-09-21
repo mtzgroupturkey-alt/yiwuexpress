@@ -110,15 +110,20 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-4">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal Dialog */}
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+      {/* Modal Dialog on desktop, BottomSheet on mobile */}
+      <div className="relative w-full md:max-w-2xl bg-white max-md:rounded-t-3xl md:rounded-2xl max-md:max-h-[90vh] shadow-2xl overflow-y-auto md:overflow-hidden z-10 animate-in max-md:slide-in-from-bottom md:zoom-in-95 duration-200">
+        {/* Drag handle on mobile */}
+        <div className="md:hidden flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+        </div>
+
         {/* Close button */}
         <button
           onClick={onClose}

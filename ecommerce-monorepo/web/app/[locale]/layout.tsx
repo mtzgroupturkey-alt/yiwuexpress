@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { Providers } from '@/components/providers'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { StoreSessionProvider } from '@/components/providers/StoreSessionProvider'
@@ -14,6 +14,10 @@ import { getServerSettings } from '@/lib/settings/server-settings'
 import { routing } from '@/i18n/routing'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { BackToTop } from '@/components/ui/BackToTop'
+import { isMobile as checkIsMobile, isIOS as checkIsIOS, isAndroid as checkIsAndroid } from '@/lib/device'
+import { MobileProvider } from '@/components/MobileProvider'
+import { BottomNav } from '@/components/mobile/BottomNav'
+import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,10 +48,16 @@ export async function generateMetadata({
       companyDescription ||
       `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
     metadataBase: new URL('https://dromkok.com'),
+    manifest: '/manifest.json',
     icons: {
       icon: companyFavicon,
       shortcut: companyFavicon,
-      apple: companyFavicon,
+      apple: '/icons/apple-touch-icon.png',
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: companyName || 'Global Trade',
     },
     openGraph: {
       type: 'website',
@@ -77,6 +87,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  themeColor: '#00407a',
 }
 
 export default async function LocaleLayout({
@@ -112,11 +123,22 @@ export default async function LocaleLayout({
     resolvedSessionMode = 'retail'
   }
 
+  const headerList = headers()
+  const userAgent = headerList.get('user-agent') || ''
+  const initialIsMobile = checkIsMobile(userAgent)
+  const initialIsIOS = checkIsIOS(userAgent)
+  const initialIsAndroid = checkIsAndroid(userAgent)
+
   return (
     <>
       <link rel="icon" href={companyFavicon} />
       <link rel="shortcut icon" href={companyFavicon} />
-      <link rel="apple-touch-icon" href={companyFavicon} />
+      <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+      <link rel="manifest" href="/manifest.json" />
+      <meta name="theme-color" content="#00407a" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-title" content={companyName || 'GlobalTrade'} />
       {companyLogo && (
         <link rel="preload" as="image" href={companyLogo} />
       )}
@@ -152,7 +174,6 @@ export default async function LocaleLayout({
           })
         }}
       />
-      <script src="/unregister-sw.js" defer></script>
       <NextIntlClientProvider messages={messages}>
         <PreloaderWrapper initialLogo={companyLogo} initialCompanyName={companyName}>
           <StoreSessionProvider
@@ -165,8 +186,18 @@ export default async function LocaleLayout({
                 <Providers>
                   <SettingsProvider initialSettings={serverSettings}>
                     <CurrencyProvider>
-                      {children}
-                      <BackToTop />
+                      <MobileProvider
+                        initialIsMobile={initialIsMobile}
+                        initialIsIOS={initialIsIOS}
+                        initialIsAndroid={initialIsAndroid}
+                      >
+                        <main className="pb-20 md:pb-0 min-h-screen">
+                          {children}
+                        </main>
+                        <InstallPrompt />
+                        <BottomNav />
+                        <BackToTop />
+                      </MobileProvider>
                     </CurrencyProvider>
                   </SettingsProvider>
                 </Providers>

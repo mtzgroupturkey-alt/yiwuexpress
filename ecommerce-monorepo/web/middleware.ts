@@ -26,6 +26,7 @@ const BYPASS_PREFIXES = [
   '/og-image.png',
   '/logo.svg',
   '/unregister-sw.js',
+  '/offline',
 ]
 
 function isBypassPath(pathname: string): boolean {
@@ -102,6 +103,7 @@ async function authMiddleware(request: NextRequest) {
     '/api/webhooks',
     '/_next',
     '/favicon.ico',
+    '/offline',
   ]
 
   // Check if path is locale-prefixed (e.g., /en/, /ru/, /zh/)

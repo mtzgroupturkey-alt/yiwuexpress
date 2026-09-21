@@ -125,6 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [selectedSearchScope, setSelectedSearchScope] = useState(() => tHeader('everywhere'));
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const [mounted, setMounted] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -247,6 +248,111 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/98 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
+        {/* MOBILE HEADER (56px tall, logo left, search right, cart right with badge, menu right) */}
+        <div className="md:hidden flex items-center justify-between h-14 px-4 bg-white/98 border-b border-slate-200/90 shadow-2xs">
+          {/* Logo Left */}
+          <Link
+            href={`/${currentLocale}`}
+            className="flex items-center gap-2 cursor-pointer focus:outline-none min-w-0"
+            title={`${companyName} Home`}
+          >
+            {settings?.companyLogo ? (
+              <img
+                src={settings.companyLogo}
+                alt={`${companyName} Logo`}
+                className="h-8 w-auto object-contain shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-[#00407a] flex items-center justify-center text-white font-black text-base shrink-0 shadow-xs">
+                {companyName ? companyName.charAt(0).toUpperCase() : 'G'}
+              </div>
+            )}
+            <span className="text-lg font-black tracking-tight text-[#00407a] font-['Inter'] truncate">
+              {companyName}
+            </span>
+          </Link>
+
+          {/* Right Icons: Search, Cart with Badge, Menu */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Search Icon */}
+            <button
+              type="button"
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Search products"
+            >
+              {isMobileSearchOpen ? <X className="w-5 h-5 text-slate-700" /> : <Search className="w-5 h-5 text-slate-700" />}
+            </button>
+
+            {/* Cart Icon with live badge */}
+            {isWholesaleActive && !isInstantWholesale ? (
+              <Link
+                href={`/${currentLocale}/quote-cart`}
+                className="relative p-2 rounded-xl text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
+                aria-label="Quote cart"
+              >
+                <FileText className="w-5 h-5" />
+                {quoteCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[10px] font-black rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
+                    {quoteCount}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenCart}
+                className="relative p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Shopping cart"
+              >
+                <ShoppingCart className="w-5 h-5 text-slate-700" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-[#F5A602] text-slate-950 text-[10px] font-black rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Menu Icon */}
+            <button
+              type="button"
+              onClick={onOpenCatalog}
+              className="p-2 rounded-xl text-slate-700 hover:text-[#00407a] hover:bg-slate-100 transition-colors cursor-pointer"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5 text-[#00407a]" />
+            </button>
+          </div>
+        </div>
+
+        {/* Collapsible Mobile Search Input */}
+        {isMobileSearchOpen && (
+          <div className="md:hidden px-4 py-2.5 bg-slate-50 border-b border-slate-200 animate-in slide-in-from-top-2 duration-150">
+            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  placeholder={tHeader('searchPlaceholder')}
+                  autoFocus
+                  className="w-full h-9 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-[#00407a]"
+                />
+                <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
+              </div>
+              <button
+                type="submit"
+                className="h-9 px-3 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-lg shrink-0"
+              >
+                {currentLocale === 'zh' ? '搜索' : currentLocale === 'ru' ? 'Поиск' : 'Search'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* DESKTOP HEADER (Unchanged, hidden on mobile) */}
+        <div className="hidden md:block">
         {/* 1. Micro Top Bar with Service Info & Quick Actions */}
         <div className="bg-[#F8FAFC] border-b border-slate-200/70 text-xs py-1.5 px-4 lg:px-6 relative z-50">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
@@ -668,31 +774,6 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Mobile Search Bar (under header for small screens) */}
-      <div className="px-4 pb-3 md:hidden">
-        <div className="flex items-center border border-slate-300 rounded-md overflow-hidden bg-white">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={tHeader('searchPlaceholder')}
-            className="w-full px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
-          />
-          <button
-            onClick={() => {
-              const q = searchQuery.trim();
-              if (q) {
-                router.push(`/${currentLocale}/store?search=${encodeURIComponent(q)}`);
-              } else {
-                router.push(`/${currentLocale}/store`);
-              }
-            }}
-            className="bg-[#F5A602] text-slate-900 px-3 py-2 flex items-center justify-center cursor-pointer"
-          >
-            <Search className="w-3.5 h-3.5 stroke-[2.5]" />
-          </button>
-        </div>
       </div>
 
       {/* 3. Category Navigation Ribbon */}

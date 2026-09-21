@@ -1554,14 +1554,19 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
         </div>
       </div>
 
-      {/* MOBILE FILTER MODAL / DRAWER */}
+      {/* MOBILE FILTER BOTTOM SHEET */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
           <div 
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
             onClick={() => setIsMobileFilterOpen(false)}
           />
-          <div className="relative w-full max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-200">
+          <div className="relative w-full max-h-[90vh] bg-white rounded-t-3xl shadow-2xl flex flex-col z-10 animate-in slide-in-from-bottom duration-300 overflow-hidden">
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0 bg-slate-50">
+              <div className="w-12 h-1.5 bg-slate-300 rounded-full" />
+            </div>
+
             {/* Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2 text-sm font-black text-slate-900">
