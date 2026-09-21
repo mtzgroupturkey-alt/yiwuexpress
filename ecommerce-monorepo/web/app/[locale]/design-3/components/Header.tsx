@@ -249,45 +249,44 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/98 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        {/* MOBILE HEADER (Native App Style, hidden on md+) */}
-        <MobileHeader
-          showSearch={true}
-          onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-          onMenuClick={onOpenCatalog}
-          onCartClick={onOpenCart}
-        />
+      {/* MOBILE HEADER (Native App Style, hidden on md+) */}
+      <MobileHeader
+        showSearch={true}
+        onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+        onMenuClick={onOpenCatalog}
+        onCartClick={onOpenCart}
+      />
 
-        {/* Collapsible Mobile Search Input */}
-        {isMobileSearchOpen && (
-          <div
-            className="md:hidden fixed left-0 right-0 z-30 px-4 py-2.5 bg-slate-50 border-b border-slate-200 shadow-md animate-in slide-in-from-top-2 duration-150"
-            style={{ top: 'calc(56px + env(safe-area-inset-top, 0px))' }}
-          >
-            <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 max-w-lg mx-auto">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange(e.target.value)}
-                  placeholder={tHeader('searchPlaceholder')}
-                  autoFocus
-                  className="w-full h-10 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#00407a]"
-                />
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-              </div>
-              <button
-                type="submit"
-                className="h-10 px-4 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-xl shrink-0 cursor-pointer active:scale-95 transition-transform"
-              >
-                {currentLocale === 'zh' ? '搜索' : currentLocale === 'ru' ? 'Поиск' : 'Search'}
-              </button>
-            </form>
-          </div>
-        )}
+      {/* Collapsible Mobile Search Input */}
+      {isMobileSearchOpen && (
+        <div
+          className="md:hidden fixed left-0 right-0 z-50 px-4 py-2.5 bg-slate-50 border-b border-slate-200 shadow-md animate-in slide-in-from-top-2 duration-150"
+          style={{ top: 'calc(56px + env(safe-area-inset-top, 0px))' }}
+        >
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 max-w-lg mx-auto">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder={tHeader('searchPlaceholder')}
+                autoFocus
+                className="w-full h-10 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#00407a]"
+              />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+            </div>
+            <button
+              type="submit"
+              className="h-10 px-4 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-xl shrink-0 cursor-pointer active:scale-95 transition-transform"
+            >
+              {currentLocale === 'zh' ? '搜索' : currentLocale === 'ru' ? 'Поиск' : 'Search'}
+            </button>
+          </form>
+        </div>
+      )}
 
-        {/* DESKTOP HEADER (Unchanged, hidden on mobile) */}
-        <div className="hidden md:block">
+      {/* DESKTOP HEADER (100% desktop experience, hidden on mobile) */}
+      <header className="hidden md:block sticky top-0 z-40 bg-white/98 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
         {/* 1. Micro Top Bar with Service Info & Quick Actions */}
         <div className="bg-[#F8FAFC] border-b border-slate-200/70 text-xs py-1.5 px-4 lg:px-6 relative z-50">
         <div className="max-w-[1440px] mx-auto flex items-center justify-between gap-4">
@@ -708,7 +707,6 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </button>
         </div>
-      </div>
       </div>
 
       {/* 3. Category Navigation Ribbon */}

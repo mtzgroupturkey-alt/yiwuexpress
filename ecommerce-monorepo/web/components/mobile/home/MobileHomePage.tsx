@@ -47,7 +47,7 @@ export function MobileHomePage({
 
       {/* 2. Mobile Category Row */}
       <MobileCategoryRow
-        categories={categories}
+        categories={categories && categories.length > 0 ? categories : undefined}
         onSelectCategory={(cat) => {
           if (typeof cat === 'string') {
             onNavigateView?.('shop', { category: cat })
