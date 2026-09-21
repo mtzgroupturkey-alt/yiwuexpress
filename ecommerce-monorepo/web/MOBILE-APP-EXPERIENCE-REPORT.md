@@ -1,59 +1,50 @@
-# MOBILE APP EXPERIENCE REPORT — PHASE 1 & 2
+# MOBILE APP EXPERIENCE REPORT — PHASES 1, 2 & 3
 
 ## 1. Executive Summary
 
-Phase 1 (Foundation) and Phase 2 (Homepage Mobile Layout) have both been completed with zero regressions to the desktop layout (`hidden md:block` / `md:hidden` pattern). 
+Phases 1 (Foundation), 2 (Homepage Mobile Layout), and 3 (Store + PDP Mobile) have all been completed with zero regressions to the desktop layout (`hidden md:block` / `md:hidden` pattern).
 
 On mobile viewports (< 768px):
-- Mobile users receive a native app-like experience with single-column rhythm, swipeable carousels, 48px touch targets, sticky headers, smart cart toggling, and complete absence of desktop footers.
-- The homepage features an optimized mobile component sequence:
-  1. **MobileHero**: Swipeable hero carousel with live factory indicators and B2B/B2C sourcing CTAs.
-  2. **MobileCategoryRow**: Horizontal category scroll with snap points and visual icons.
-  3. **MobileFlashDeals**: Flash deals carousel with countdown timer pill and instant add/quote actions.
-  4. **MobilePromoBanner**: B2B Trade Assurance and Sourcing Concierge banner.
-  5. **MobileBestsellersGrid**: Clean 2-column mobile card grid with rating stars, price, and MOQ indicators.
-  6. **MobileBrandStrip**: Verified factory partners trust strip with compliance badges.
-  7. **MobileNewsletterCard**: Single-column factory drop email subscription card.
+- Mobile users receive a native app-like experience with single-column rhythm, swipeable carousels, 48px touch targets, sticky headers, smart cart toggling, bottom sheets for filters/sorts, and complete absence of desktop footers.
+- The store page (`/store`) features:
+  1. **MobileFilterChips**: Sticky chip bar with active filter counters, filter modal trigger, sort trigger, and active filter tags.
+  2. **MobileFilters (BottomSheet)**: Drag-handle bottom sheet with category pills, price range, in-stock, and wholesale toggles.
+  3. **MobileSort (BottomSheet)**: Clean bottom sheet with radio-style sort criteria.
+  4. **MobileProductGrid**: 2-column mobile card grid with skeleton loading and empty state fallback.
+  5. **MobileProductCard**: Optimized card with thumbnail, discount badge, wishlist heart, rating, price, MOQ, and 1-tap add/quote action.
+- The product detail page (`/products/[slug]`) features:
+  1. **MobileHeader**: Header with back navigation, search toggle, and live cart/quote badges.
+  2. **MobileGallery**: Touch-friendly carousel with dot indicators, stock badge, and full-screen lightbox.
+  3. **MobileVariantChips**: Pill selectors for product finishes and specifications.
+  4. **MobileBuyBox**: Dedicated buy box with price, MOQ, real-time subtotal calculation, 44px quantity stepper, and primary CTA.
+  5. **MobileTrustBadges**: Factory verification, escrow payment, and direct cargo shipping guarantees.
+  6. **MobileTabs**: Collapsible mobile accordion tabs for specs, description, shipping, and supplier background.
+  7. **StickyBuyBar**: Fixed bottom buy bar docked above bottom navigation for instant 1-tap conversion.
 
 On desktop viewports (≥ 768px):
 - Layout and components remain 100% byte-identical.
 
 ---
 
-## 2. Component Tree
+## 2. Component Tree (Store & PDP)
 
 ```
-MobileShell (components/mobile/MobileShell.tsx) [md:hidden]
-├── MobileHeader (components/mobile/MobileHeader.tsx) [h-14, sticky top-0, z-40]
-│   ├── Left: BackButton OR Menu Hamburger Button (≥48px tap target)
-│   ├── Center: Dynamic Logo / CompanyName ("Global Trade" fallback)
-│   └── Right: Search Toggle, Notifications Button (🔔), Smart Cart / Quote Badge
-├── MobileSearch (components/mobile/MobileSearch.tsx) [sticky top-14, z-30]
-│   ├── Search input with clear button (X) and submit arrow
-│   └── Popular suggestion tags horizontal carousel
-├── MobileDrawer (components/mobile/MobileDrawer.tsx) [slide-in modal, z-50]
-│   ├── Header: Brand Logo & Title + Close Button (≥48px tap target)
-│   ├── User Profile Card (Authenticated user details OR Sign In/Register buttons)
-│   ├── Tab Switcher (Main Menu vs Categories)
-│   ├── Store Mode Switcher (Retail B2C ⇄ Wholesale B2B toggle)
-│   ├── Sourcing & Logistics Quick Links (Track Cargo, Freight Calculator, Services, About)
-│   ├── Language Switcher (🇺🇸 English, 🇷🇺 Русский, 🇨🇳 中文)
-│   ├── Currency Switcher (USD, EUR, CNY, RUB, etc.)
-│   └── Sign Out Action (when logged in)
-├── <main> Page Content (components/mobile/home/MobileHomePage.tsx) [single-column]
-│   ├── 1. MobileHero (carousel with swipe & auto-rotation)
-│   ├── 2. MobileCategoryRow (horizontal snap scroll)
-│   ├── 3. MobileFlashDeals (swipeable deals with countdown timer)
-│   ├── 4. MobilePromoBanner (B2B Concierge & RFQ banner)
-│   ├── 5. MobileBestsellersGrid (2-column card grid)
-│   ├── 6. MobileBrandStrip (verified factory trust pills)
-│   └── 7. MobileNewsletterCard (email subscription card)
-└── BottomNav (components/mobile/BottomNav.tsx) [h-16, fixed bottom-0, z-40]
-    ├── 1. Home
-    ├── 2. Search / Store
-    ├── 3. Smart Cart / Quote Cart
-    ├── 4. Wishlist
-    └── 5. More (Drawer Trigger)
+MobileStorePage (components/mobile/store/MobileStorePage.tsx) [md:hidden]
+├── MobileFilterChips (sticky filter triggers & active filter pills)
+├── MobileFilters (BottomSheet filter controls)
+├── MobileSort (BottomSheet sort options)
+└── MobileProductGrid (2-column card grid)
+    └── MobileProductCard (product card with 1-tap add & wishlist)
+
+MobileProductDetailView (components/mobile/product/MobileProductDetailView.tsx) [md:hidden]
+├── MobileHeader (back button, title, cart badge)
+├── MobileGallery (swipeable carousel, dots, full-screen lightbox)
+├── Product Info (brand, category, title)
+├── MobileVariantChips (finish/model selections)
+├── MobileBuyBox (stepper, price/subtotal, add to cart/quote)
+├── MobileTrustBadges (trade assurance, inspection, customs)
+├── MobileTabs (overview, specifications, shipping, reviews)
+└── StickyBuyBar (fixed bottom bar above BottomNav)
 ```
 
 ---
@@ -96,11 +87,44 @@ MobileShell (components/mobile/MobileShell.tsx) [md:hidden]
 16. `__tests__/mobile/home/MobileNewsletterCard.test.tsx`
 17. `__tests__/mobile/home/MobileHomePage.test.tsx`
 
+### Created in Phase 3 (Store + PDP):
+1. `components/mobile/Chip.tsx`
+2. `components/mobile/EmptyState.tsx`
+3. `components/mobile/store/MobileProductCard.tsx`
+4. `components/mobile/store/MobileProductGrid.tsx`
+5. `components/mobile/store/MobileFilterChips.tsx`
+6. `components/mobile/store/MobileFilters.tsx`
+7. `components/mobile/store/MobileSort.tsx`
+8. `components/mobile/store/MobileStorePage.tsx`
+9. `components/mobile/store/index.ts`
+10. `components/mobile/product/MobileGallery.tsx`
+11. `components/mobile/product/MobileQuantityStepper.tsx`
+12. `components/mobile/product/MobileVariantChips.tsx`
+13. `components/mobile/product/MobileBuyBox.tsx`
+14. `components/mobile/product/MobileTrustBadges.tsx`
+15. `components/mobile/product/MobileTabs.tsx`
+16. `components/mobile/product/MobileProductDetailView.tsx`
+17. `components/mobile/product/index.ts`
+18. `__tests__/mobile/Chip.test.tsx`
+19. `__tests__/mobile/EmptyState.test.tsx`
+20. `__tests__/mobile/store/MobileProductCard.test.tsx`
+21. `__tests__/mobile/store/MobileProductGrid.test.tsx`
+22. `__tests__/mobile/store/MobileFilterChips.test.tsx`
+23. `__tests__/mobile/store/MobileFilters.test.tsx`
+24. `__tests__/mobile/store/MobileSort.test.tsx`
+25. `__tests__/mobile/store/MobileStorePage.test.tsx`
+26. `__tests__/mobile/product/MobileGallery.test.tsx`
+27. `__tests__/mobile/product/MobileQuantityStepper.test.tsx`
+28. `__tests__/mobile/product/MobileBuyBox.test.tsx`
+29. `__tests__/mobile/product/MobileProductDetailView.test.tsx`
+
 ### Modified Files:
-1. `app/[locale]/page.tsx` — Integrated `MobileHomePage` for `md:hidden` and preserved desktop sections inside `hidden md:block`.
-2. `app/[locale]/design-3/components/Footer.tsx` — Hidden on mobile via `hidden md:block`.
-3. `components/footer.tsx` — Hidden on mobile via `hidden md:block`.
-4. `components/MobileProvider.tsx` — Added drawer and search controls.
+1. `app/[locale]/page.tsx` — Integrated `MobileHomePage` (`md:hidden`) with desktop inside `hidden md:block`.
+2. `app/[locale]/store/page.tsx` — Integrated `MobileStorePage` (`md:hidden`) with desktop `ShopProductsPage` inside `hidden md:block`.
+3. `app/[locale]/products/[slug]/ProductDetailView.tsx` — Integrated `MobileProductDetailView` (`md:hidden`) with desktop view inside `hidden md:block`.
+4. `app/[locale]/design-3/components/Footer.tsx` — Hidden on mobile via `hidden md:block`.
+5. `components/footer.tsx` — Hidden on mobile via `hidden md:block`.
+6. `components/MobileProvider.tsx` — Added drawer, search controls, and device context.
 
 ---
 
@@ -108,20 +132,12 @@ MobileShell (components/mobile/MobileShell.tsx) [md:hidden]
 
 ### Vitest Unit & Integration Tests:
 ```
-Test Files  32 passed (32)
-     Tests  131 passed (131)
-  Duration  6.32s
+Test Files  44 passed (44)
+     Tests  158 passed (158)
+  Duration  8.72s
 ```
 
-All mobile home test suites passed:
-- `✓ __tests__/mobile/home/MobileHero.test.tsx (4 tests)`
-- `✓ __tests__/mobile/home/MobileCategoryRow.test.tsx (3 tests)`
-- `✓ __tests__/mobile/home/MobileFlashDeals.test.tsx (3 tests)`
-- `✓ __tests__/mobile/home/MobileBestsellersGrid.test.tsx (3 tests)`
-- `✓ __tests__/mobile/home/MobileBrandStrip.test.tsx (1 test)`
-- `✓ __tests__/mobile/home/MobilePromoBanner.test.tsx (2 tests)`
-- `✓ __tests__/mobile/home/MobileNewsletterCard.test.tsx (2 tests)`
-- `✓ __tests__/mobile/home/MobileHomePage.test.tsx (1 test)`
+All 44 test suites passed with 0 failures, covering all mobile foundation, homepage, store, and product detail components.
 
 ### TypeScript Typecheck (`npx tsc --noEmit`):
 ```
@@ -133,10 +149,11 @@ Exit code: 0
 
 ## 5. Desktop Unchanged Evidence
 
-- Desktop homepage sections are preserved verbatim inside `<div className="hidden md:block">`.
+- Desktop storefront pages (`/store`, `/products/[slug]`, `/`) are preserved verbatim inside `<div className="hidden md:block">`.
 - Desktop footers are preserved inside `<footer className="hidden md:block ...">`.
 - Mobile components render only inside `<div className="md:hidden">`.
-- No desktop routes or API routes were modified.
+- Dynamic store name defaults to `"Global Trade"` via `useSettings()` / `getCompanyName()`.
+- Zero desktop styling or functional regressions.
 
 ---
 
@@ -145,7 +162,11 @@ Exit code: 0
 According to the Execution Order:
 > **1. Phase 1 — Foundation** [COMPLETE]  
 > **2. Phase 2 — Homepage** [COMPLETE]  
-> **3. STOP and wait for user approval** [CURRENT STATUS]  
-> **4. Phase 3 — Store + PDP mobile**
+> **3. Phase 3 — Store + PDP mobile** [COMPLETE]  
+> **4. STOP and wait for user approval** [CURRENT STATUS]  
+> **5. Phase 4 — Cart + Checkout mobile**  
+> **6. Phase 5 — Sourcing & Logistics mobile**  
+> **7. Phase 6 — Account & Orders mobile**  
 
-**Phase 2 is complete and verified. Execution is STOPPED awaiting user approval before proceeding to Phase 3.**
+**Phase 3 is complete, tested, and verified. Execution is STOPPED awaiting user approval before proceeding to Phase 4.**
+

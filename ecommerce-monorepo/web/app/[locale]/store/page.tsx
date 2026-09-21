@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SharedLayout } from '@/components/layout/SharedLayout';
 import { ShopProductsPage } from '@/app/[locale]/design-3/components/ShopProductsPage';
+import { MobileStorePage } from '@/components/mobile/store/MobileStorePage';
 import { ProductModal } from '@/app/[locale]/design-3/components/ProductModal';
 import { Product, CartItem, Category } from '@/app/[locale]/design-3/types';
 import { mapDbProductToDesign3, mapDbCategoryToDesign3 } from '@/lib/adapters/design3ProductAdapter';
@@ -262,22 +263,43 @@ function StoreCatalogInner() {
           <span>Loading catalog...</span>
         </div>
       ) : (
-        <ShopProductsPage
-          products={catalogProducts}
-          categories={dbCategories}
-          onAddToCart={handleAddToCart}
-          onUpdateQuantity={handleUpdateQuantity}
-          cartQuantities={cartQuantities}
-          favoriteIds={favoriteIds}
-          onToggleFavorite={toggleWishlist}
-          onSelectProduct={(product) => {
-            router.push(`/${locale}/products/${product.slug || product.id}`);
-          }}
-          initialCategory={initialCategory}
-          initialDepartment={initialDepartment}
-          initialSearch={initialSearch}
-          onBackToHome={() => router.push(`/${locale}`)}
-        />
+        <>
+          {/* MOBILE STORE VIEW (Phase 3, hidden on md+) */}
+          <div className="md:hidden">
+            <MobileStorePage
+              products={catalogProducts}
+              categories={dbCategories}
+              onAddToCart={handleAddToCart}
+              onSelectProduct={(product) => {
+                router.push(`/${locale}/products/${product.slug || product.id}`);
+              }}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={toggleWishlist}
+              initialCategory={initialCategory}
+              initialSearch={initialSearch}
+            />
+          </div>
+
+          {/* DESKTOP STORE VIEW (100% byte-identical, hidden on mobile) */}
+          <div className="hidden md:block">
+            <ShopProductsPage
+              products={catalogProducts}
+              categories={dbCategories}
+              onAddToCart={handleAddToCart}
+              onUpdateQuantity={handleUpdateQuantity}
+              cartQuantities={cartQuantities}
+              favoriteIds={favoriteIds}
+              onToggleFavorite={toggleWishlist}
+              onSelectProduct={(product) => {
+                router.push(`/${locale}/products/${product.slug || product.id}`);
+              }}
+              initialCategory={initialCategory}
+              initialDepartment={initialDepartment}
+              initialSearch={initialSearch}
+              onBackToHome={() => router.push(`/${locale}`)}
+            />
+          </div>
+        </>
       )}
 
       {/* Quick View Modal */}

@@ -30,6 +30,8 @@ import { getLocalizedOptionLabel, getLocalizedColorName, getLocalizedCountry, ge
 import { useTranslations } from 'next-intl'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
+import { StickyBuyBar } from '@/components/mobile/StickyBuyBar'
+import { MobileProductDetailView } from '@/components/mobile/product/MobileProductDetailView'
 
 // A serializable subset of the product API payload (mirrors the page-level
 // projection). Extra fields are tolerated via index signature.
@@ -541,6 +543,23 @@ export default function ProductDetailView({
   const companyName = settings?.companyName || 'Global Trade'
   const [bundleAdded, setBundleAdded] = useState(false)
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 44, seconds: 19 })
+  const [showStickyBuyBar, setShowStickyBuyBar] = useState(false)
+
+  useEffect(() => {
+    const target = document.getElementById('pdp-main-buy-box')
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const isBelow = entry.boundingClientRect.top < 0
+        setShowStickyBuyBar(!entry.isIntersecting && isBelow)
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -1241,7 +1260,21 @@ export default function ProductDetailView({
           }),
         }}
       />
-      <div className="bg-[#F8FAFC] py-3 pb-24 lg:pb-8">
+      {/* MOBILE PDP VIEW (Phase 3, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileProductDetailView
+          product={mapDbProductToDesign3(product)}
+          relatedProducts={relatedProducts.map(mapDbProductToDesign3)}
+          onAddToCart={(_p, q) => {
+            setQuantity(q);
+            handleAddToCart();
+          }}
+          onBack={() => router.back()}
+        />
+      </div>
+
+      {/* DESKTOP PDP VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block bg-[#F8FAFC] py-3 pb-24 lg:pb-8">
         <Container>
           {/* In-Page Clean Breadcrumb Trail */}
           <nav aria-label="Breadcrumb" className="mb-4">
@@ -1775,7 +1808,7 @@ export default function ProductDetailView({
                   })()}
 
                   {/* Primary Call to Action Buttons */}
-                  <div className="space-y-2 pt-1">
+                  <div id="pdp-main-buy-box" className="space-y-2 pt-1">
                     {/* Retail Flow CTAs */}
                     {isRetail && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -2424,49 +2457,22 @@ export default function ProductDetailView({
           </MotionReveal>
         </div>
 
-        {/* Sticky Mobile Bottom Bar */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] text-slate-500 truncate block max-w-[150px] sm:max-w-xs">{localized.name}</span>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-black text-slate-900">
-                  {formatPrice(displayPrice)}
-                </span>
-                {priceType === 'wholesale' && (
-                  <span className="text-[10px] font-bold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                    {t('wholesalePrice')}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {isRetail && (
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={currentStock === 0 || adding}
-                  className="rounded-xl font-black bg-[#F5A602] hover:bg-[#E09500] text-slate-950 shadow-xs h-10 px-4 text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  <span>{adding ? t('addingToCart') : t('addToCart')}</span>
-                </button>
-              )}
-              {isWholesale && !isRetail && (
-                <button
-                  type="button"
-                  onClick={handleAddToQuoteList}
-                  disabled={currentStock === 0}
-                  className="rounded-xl font-bold bg-[#00407a] hover:bg-[#003366] text-white shadow-xs h-10 px-4 text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>{isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Cart') : t('addToQuoteList')}</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Sticky Mobile Buy Bar (shows when scrolled past main buy box, docked above BottomNav) */}
+        <StickyBuyBar
+          isVisible={showStickyBuyBar}
+          price={displayPrice}
+          compareAtPrice={currentCompareAtPrice}
+          quantity={quantity}
+          onQuantityChange={(newQty) => setQuantity(newQty)}
+          onAddToCart={isWholesale && !isRetail ? handleAddToQuoteList : handleAddToCart}
+          isWholesale={isWholesale && !isRetail}
+          isInstantWholesale={isInstantWholesale}
+          isAdding={adding}
+          minQty={getEffectiveMinOrderQty(product.minOrderQty, storeMode)}
+          maxQty={currentStock}
+          productName={localized.name}
+          productImage={currentImages[0]}
+        />
       </Container>
     </div>
     </SharedLayout>
