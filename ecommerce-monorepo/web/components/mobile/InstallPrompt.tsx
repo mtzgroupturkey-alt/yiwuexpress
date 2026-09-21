@@ -16,6 +16,7 @@ export function InstallPrompt() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [logoFailed, setLogoFailed] = useState(false)
 
   useEffect(() => {
     // Only run on client
@@ -92,9 +93,20 @@ export function InstallPrompt() {
       className="fixed bottom-20 left-3 right-3 z-50 md:hidden bg-white/98 dark:bg-[#0f172a]/98 backdrop-blur-xl border border-primary-200/80 dark:border-primary-900/80 rounded-2xl p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.18)] flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300"
     >
       {/* App Icon */}
-      <div className="w-12 h-12 rounded-xl bg-[#00407a] flex items-center justify-center text-[#F5A602] font-black text-sm shadow-xs shrink-0 border border-[#F5A602]/30">
-        GT
-      </div>
+      {settings?.companyLogo && !logoFailed ? (
+        <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center p-1.5 shadow-xs shrink-0 border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <img
+            src={settings.companyLogo}
+            alt={`${companyName} Logo`}
+            onError={() => setLogoFailed(true)}
+            className="w-full h-full object-contain"
+          />
+        </div>
+      ) : (
+        <div className="w-12 h-12 rounded-xl bg-[#00407a] flex items-center justify-center text-[#F5A602] font-black text-sm shadow-xs shrink-0 border border-[#F5A602]/30">
+          {(companyName || 'GT').slice(0, 2).toUpperCase()}
+        </div>
+      )}
 
       {/* Info */}
       <div className="flex-1 min-w-0">

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { createContext, useContext, useEffect, useMemo, ReactNode } from 'react'
 import { useLocale } from 'next-intl'
@@ -67,11 +67,19 @@ export function SettingsProvider({ initialSettings, children }: SettingsProvider
     }
   }
 
-  const storeMode = settings?.storeMode || 'WHOLESALE'
+  const effectiveSettings = useMemo(() => {
+    return {
+      ...DEFAULT_SETTINGS,
+      ...(initialSettings || {}),
+      ...(settings && settings !== DEFAULT_SETTINGS ? settings : {}),
+    }
+  }, [settings, initialSettings])
+
+  const storeMode = effectiveSettings?.storeMode || 'WHOLESALE'
 
   const value: SettingsContextType = useMemo(
     () => ({
-      settings: settings || DEFAULT_SETTINGS,
+      settings: effectiveSettings,
       loading,
       refreshSettings: fetchSettings,
       storeMode,
@@ -79,7 +87,7 @@ export function SettingsProvider({ initialSettings, children }: SettingsProvider
       isRetailOnly: storeMode === 'RETAIL',
       isHybridMode: storeMode === 'BOTH',
     }),
-    [settings, loading, storeMode]
+    [effectiveSettings, loading, storeMode]
   )
 
   return (

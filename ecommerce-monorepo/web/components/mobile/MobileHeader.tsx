@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import { useLocale } from 'next-intl'
 import { Menu, ShoppingCart, ClipboardList, Bell, Search, X } from 'lucide-react'
@@ -56,6 +56,7 @@ export function MobileHeader({
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)
   const companyName = settings?.companyName || 'Global Trade'
+  const [logoFailed, setLogoFailed] = useState(false)
 
   const handleMenuClick = () => {
     if (onMenuClick) {
@@ -109,19 +110,18 @@ export function MobileHeader({
               aria-label={companyName}
               className="flex items-center gap-2 max-w-[200px] select-none active:opacity-80 transition-opacity touch-manipulation"
             >
-              {settings?.companyLogo ? (
-                <div className="relative w-8 h-8 shrink-0">
-                  <Image
+              {settings?.companyLogo && !logoFailed ? (
+                <div className="flex items-center justify-center shrink-0">
+                  <img
                     src={settings.companyLogo}
                     alt={`${companyName} Logo`}
-                    fill
-                    sizes="32px"
-                    className="object-contain"
-                    priority
+                    onError={() => setLogoFailed(true)}
+                    className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
+                    loading="eager"
                   />
                 </div>
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-[#1a3a5c] dark:bg-primary-600 text-[#c9a84c] dark:text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                <div className="w-8 h-8 rounded-lg bg-[#00407a] dark:bg-primary-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
                   {companyName
                     .split(' ')
                     .map((w: string) => w[0])
@@ -130,7 +130,7 @@ export function MobileHeader({
                     .toUpperCase() || 'GT'}
                 </div>
               )}
-              <span className="font-bold text-sm tracking-tight text-[#1a3a5c] dark:text-white truncate">
+              <span className="font-bold text-sm tracking-tight text-[#00407a] dark:text-white truncate">
                 {companyName}
               </span>
             </LocaleLink>

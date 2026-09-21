@@ -73,6 +73,7 @@ export function MobileDrawer({
   const isOpen = propIsOpen !== undefined ? propIsOpen : (contextIsOpen ?? false)
 
   const [activeTab, setActiveTab] = useState<'menu' | 'categories'>('menu')
+  const [logoFailed, setLogoFailed] = useState(false)
 
   const handleClose = () => {
     if (onClose) {
@@ -166,18 +167,18 @@ export function MobileDrawer({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-slate-800 shrink-0">
               <div className="flex items-center gap-2.5">
-                {settings?.companyLogo ? (
-                  <div className="relative w-8 h-8 shrink-0">
-                    <Image
+                {settings?.companyLogo && !logoFailed ? (
+                  <div className="flex items-center justify-center shrink-0">
+                    <img
                       src={settings.companyLogo}
                       alt={`${companyName} Logo`}
-                      fill
-                      sizes="32px"
-                      className="object-contain"
+                      onError={() => setLogoFailed(true)}
+                      className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
+                      loading="eager"
                     />
                   </div>
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-[#1a3a5c] dark:bg-primary-600 text-[#c9a84c] dark:text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                  <div className="w-8 h-8 rounded-lg bg-[#00407a] dark:bg-primary-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                     {companyName
                       .split(' ')
                       .map((w: string) => w[0])

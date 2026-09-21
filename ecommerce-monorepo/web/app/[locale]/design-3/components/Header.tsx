@@ -126,6 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [selectedSearchScope, setSelectedSearchScope] = useState(() => tHeader('everywhere'));
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
 
   const [mounted, setMounted] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -256,11 +257,13 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 cursor-pointer focus:outline-none min-w-0"
             title={`${companyName} Home`}
           >
-            {settings?.companyLogo ? (
+            {settings?.companyLogo && !mobileLogoFailed ? (
               <img
                 src={settings.companyLogo}
                 alt={`${companyName} Logo`}
-                className="h-8 w-auto object-contain shrink-0"
+                onError={() => setMobileLogoFailed(true)}
+                className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
+                loading="eager"
               />
             ) : (
               <div className="w-8 h-8 rounded-lg bg-[#00407a] flex items-center justify-center text-white font-black text-base shrink-0 shadow-xs">
