@@ -16,6 +16,7 @@ import { MemberClubBanner } from './design-3/components/MemberClubBanner';
 import { NewsletterBar } from './design-3/components/NewsletterBar';
 import { Footer } from './design-3/components/Footer';
 import { ProductImage } from '@/components/ui/ProductImage';
+import { MobileHomePage } from '@/components/mobile/home/MobileHomePage';
 
 // Modals & Drawers
 import { CartDrawer } from './design-3/components/CartDrawer';
@@ -614,8 +615,32 @@ export default function Home() {
           />
         ) : (
           <>
-            {/* Search Results Filter View (if searching on home) */}
-            {searchResults && (
+            {/* =========================================================================
+                MOBILE HOMEPAGE (Single-column native app experience, hidden on md+)
+                ========================================================================= */}
+            <div className="md:hidden">
+              <MobileHomePage
+                products={dbProducts}
+                categories={activeCategories}
+                flashDeals={activeFlashDeals}
+                bestSellers={activeBestSellers}
+                onAddToCart={(p, qty) => handleAddToCart(p, qty || 1)}
+                onSelectProduct={(product) => {
+                  setSelectedProductForPDP(product);
+                  handleNavigateView('product', { product });
+                }}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={toggleWishlist}
+                onNavigateView={handleNavigateView}
+              />
+            </div>
+
+            {/* =========================================================================
+                DESKTOP HOMEPAGE (100% byte-identical, hidden on mobile)
+                ========================================================================= */}
+            <div className="hidden md:block">
+              {/* Search Results Filter View (if searching on home) */}
+              {searchResults && (
               <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
                 <div className="bg-white border border-blue-200 rounded-2xl p-5 shadow-xs mb-6">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -844,6 +869,7 @@ export default function Home() {
             <MotionReveal direction="up">
               <NewsletterBar />
             </MotionReveal>
+            </div>
           </>
         )}
       </main>
