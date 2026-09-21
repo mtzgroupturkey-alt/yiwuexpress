@@ -98,6 +98,18 @@ export function MobileHeader({
     }
   }
 
+  const handleCartClick = (e: React.MouseEvent) => {
+    if (isWholesale || cartHref === '/quote-cart') {
+      // In wholesale RFQ mode, do NOT open retail cart drawer or checkout modal.
+      // Allow direct link navigation to /quote-cart page.
+      return
+    }
+    if (onCartClick) {
+      e.preventDefault()
+      onCartClick()
+    }
+  }
+
   return (
     <header
       data-testid="mobile-header"
@@ -188,7 +200,7 @@ export function MobileHeader({
           {showCart && (
             <LocaleLink
               href={cartHref}
-              onClick={onCartClick}
+              onClick={handleCartClick}
               aria-label={
                 isWholesale
                   ? locale === 'zh' ? '报价询价车' : locale === 'ru' ? 'Корзина запросов' : 'Quote Cart'

@@ -16,6 +16,7 @@ import { useQuoteCart } from '@/components/QuoteCartContext'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useAuth } from '@/hooks/useAuth'
+import { MobileQuoteCartPage } from '@/components/mobile/cart/MobileQuoteCartPage'
 
 export default function QuoteCartPage() {
   const router = useRouter()
@@ -119,14 +120,39 @@ export default function QuoteCartPage() {
   }
 
   return (
-    <SharedLayout
-      pageTitle={t('pageTitle')}
-      pageDescription={t('pageDescription')}
-      breadcrumbs={[
-        { name: t('breadcrumb'), href: '/quote-cart' }
-      ]}
-    >
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+    <>
+      {/* MOBILE QUOTE CART VIEW (Native Mobile App Experience, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileQuoteCartPage
+          items={items}
+          quoteCount={quoteCount}
+          totalUnits={totalUnits}
+          guestInfo={guestInfo}
+          setGuestInfo={setGuestInfo}
+          shipping={shipping}
+          setShipping={setShipping}
+          customerNotes={customerNotes}
+          setCustomerNotes={setCustomerNotes}
+          submitting={submitting}
+          onQuantityChange={handleQuantityChange}
+          onUpdateItem={updateItem}
+          onRemoveItem={removeFromQuote}
+          onClearCart={clearQuoteCart}
+          onSubmit={handleSubmitQuote}
+          onBrowseCatalog={() => navigate('/store')}
+        />
+      </div>
+
+      {/* DESKTOP QUOTE CART VIEW (100% desktop experience, hidden on mobile) */}
+      <div className="hidden md:block">
+        <SharedLayout
+          pageTitle={t('pageTitle')}
+          pageDescription={t('pageDescription')}
+          breadcrumbs={[
+            { name: t('breadcrumb'), href: '/quote-cart' }
+          ]}
+        >
+          <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
           <div>
@@ -488,7 +514,9 @@ export default function QuoteCartPage() {
             </div>
           </form>
         )}
-      </div>
-    </SharedLayout>
+        </div>
+      </SharedLayout>
+    </div>
+  </>
   )
 }

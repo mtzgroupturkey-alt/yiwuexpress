@@ -254,7 +254,7 @@ export const Header: React.FC<HeaderProps> = ({
         showSearch={true}
         onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
         onMenuClick={onOpenCatalog}
-        onCartClick={onOpenCart}
+        onCartClick={isWholesaleActive && !isInstantWholesale ? undefined : onOpenCart}
       />
 
       {/* Collapsible Mobile Search Input */}

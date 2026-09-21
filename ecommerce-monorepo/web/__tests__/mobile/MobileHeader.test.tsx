@@ -186,4 +186,24 @@ describe('MobileHeader (components/mobile/MobileHeader.tsx)', () => {
     fireEvent.click(notifBtn)
     expect(onNotifClick).toHaveBeenCalledTimes(1)
   })
+
+  it('triggers onCartClick in retail mode', () => {
+    mockIsWholesale = false
+    const onCartClick = vi.fn()
+    render(<MobileHeader onCartClick={onCartClick} />)
+
+    const cartBtn = screen.getByTestId('mobile-cart-trigger')
+    fireEvent.click(cartBtn)
+    expect(onCartClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT trigger onCartClick in wholesale RFQ mode to prevent opening retail checkout modal', () => {
+    mockIsWholesale = true
+    const onCartClick = vi.fn()
+    render(<MobileHeader onCartClick={onCartClick} />)
+
+    const cartBtn = screen.getByTestId('mobile-cart-trigger')
+    fireEvent.click(cartBtn)
+    expect(onCartClick).not.toHaveBeenCalled()
+  })
 })
