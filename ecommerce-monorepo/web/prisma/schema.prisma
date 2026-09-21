@@ -60,6 +60,7 @@ model User {
   verificationDocs   VerificationDocument[]
   contractPrices     ContractPrice[]
   targetedPurchaseOrders PurchaseOrder[] @relation("TargetCustomerPOs")
+  pushSubscriptions  PushSubscription[]
 
   @@index([email])
   @@index([role])
@@ -2296,5 +2297,74 @@ model ProductQuoteMessage {
   @@index([quoteId])
   @@index([createdAt])
   @@map("product_quote_messages")
+}
+
+model PushSubscription {
+  id         String         @id @default(cuid())
+  endpoint   String         @unique
+  p256dh     String
+  auth       String
+  userId     String?
+  deviceType String?        // "desktop", "mobile", "tablet"
+  os         String?        // "ios", "android", "windows", "macos", "linux"
+  browser    String?        // "chrome", "safari", "firefox", "edge"
+  country    String?
+  language   String?
+  isActive   Boolean        @default(true)
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  user       User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deliveries PushDelivery[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@map("push_subscriptions")
+}
+
+model PushNotification {
+  id           String         @id @default(cuid())
+  title        String
+  body         String
+  iconUrl      String?
+  imageUrl     String?
+  actionUrl    String?
+  actionLabel  String?
+  segment      String         @default("ALL") // "ALL", "ACTIVE_30D", "BUYERS", "INACTIVE", "SINGLE_USER"
+  targetUserId String?
+  status       String         @default("DRAFT") // "DRAFT", "SCHEDULED", "SENDING", "SENT", "FAILED", "CANCELLED"
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  totalTargets Int            @default(0)
+  totalSent    Int            @default(0)
+  totalFailed  Int            @default(0)
+  totalClicked Int            @default(0)
+  createdBy    String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deliveries   PushDelivery[]
+
+  @@index([status])
+  @@index([scheduledFor])
+  @@index([createdAt])
+  @@map("push_notifications")
+}
+
+model PushDelivery {
+  id             String           @id @default(cuid())
+  notificationId String
+  subscriptionId String
+  status         String           @default("PENDING") // "PENDING", "SENT", "FAILED", "CLICKED"
+  errorMessage   String?
+  sentAt         DateTime?
+  clickedAt      DateTime?
+  createdAt      DateTime         @default(now())
+  notification   PushNotification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  subscription   PushSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@map("push_deliveries")
 }
 

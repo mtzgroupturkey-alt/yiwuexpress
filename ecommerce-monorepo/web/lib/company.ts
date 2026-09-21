@@ -9,6 +9,9 @@
  */
 
 import { cache } from 'react'
+
+const safeCache = (typeof cache === 'function' ? cache : ((fn: any) => fn)) as typeof cache
+
 import { prisma } from '@/lib/db'
 import {
   DEFAULT_COMPANY,
@@ -47,7 +50,7 @@ export type SystemSettings = {
 /**
  * Cached fetch of the (single) SystemSettings row with locale support.
  */
-export const getSystemSettings = cache(
+export const getSystemSettings = safeCache(
   async (locale: string = 'en'): Promise<SystemSettings | null> => {
     try {
       const settings = await prisma.systemSettings.findFirst({
