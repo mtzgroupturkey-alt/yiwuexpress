@@ -78,4 +78,21 @@ describe('MobileCategoryRow (components/mobile/home/MobileCategoryRow.tsx)', () 
 
     expect(handleSelect).toHaveBeenCalledWith(customCats[0])
   })
+
+  it('renders Lucide SVG icons instead of raw text strings for DB icon names', () => {
+    const customCats = [
+      { id: 'cat-cloth', name: 'Clothing', slug: 'clothing', icon: 'Shirt' },
+      { id: 'cat-cook', name: 'Cookware & Pans', slug: 'cookware-pans', icon: 'CookingPot' },
+      { id: 'cat-elec', name: 'Smart TVs', slug: 'smart-tvs', icon: 'Tv' },
+    ]
+    const { container } = render(<MobileCategoryRow categories={customCats as any} />)
+
+    // Verify SVGs are rendered inside the circle
+    const svgs = container.querySelectorAll('.rounded-full svg')
+    expect(svgs.length).toBe(3)
+
+    // Verify the raw icon names ("Shirt", "CookingPot") are NOT rendered as text inside the circle
+    const circleTexts = Array.from(container.querySelectorAll('.rounded-full')).map((c) => c.textContent)
+    expect(circleTexts.every((t) => t === '')).toBe(true)
+  })
 })

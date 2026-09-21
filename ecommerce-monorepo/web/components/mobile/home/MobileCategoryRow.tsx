@@ -3,7 +3,8 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { ChevronRight, Package } from 'lucide-react'
+import * as LucideIcons from 'lucide-react'
+import { ChevronRight, Package, Folder } from 'lucide-react'
 import { Category } from '@/app/[locale]/design-3/types'
 
 interface MobileCategoryRowProps {
@@ -103,6 +104,104 @@ function getCategoryEmoji(name: string, slug?: string): string {
   return '🏷️'
 }
 
+function getLucideIcon(
+  iconName?: string | null
+): React.ComponentType<{ className?: string; strokeWidth?: number }> | null {
+  if (!iconName) return null
+  const trimmed = iconName.trim()
+  if (!trimmed) return null
+
+  // 1. Direct key match (e.g. "Shirt", "Tv", "Microwave", "CookingPot")
+  if ((LucideIcons as any)[trimmed]) {
+    return (LucideIcons as any)[trimmed]
+  }
+
+  // 2. PascalCase conversion (e.g. "cooking-pot" -> "CookingPot", "shirt" -> "Shirt")
+  const pascalCase = trimmed
+    .split(/[-_ ]+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join('')
+  if ((LucideIcons as any)[pascalCase]) {
+    return (LucideIcons as any)[pascalCase]
+  }
+
+  // 3. Case-insensitive key lookup across all Lucide export keys
+  const lowerClean = trimmed.toLowerCase().replace(/[-_ ]/g, '')
+  const matchedKey = Object.keys(LucideIcons).find(
+    (key) => key.toLowerCase() === lowerClean
+  )
+  if (matchedKey && (LucideIcons as any)[matchedKey]) {
+    return (LucideIcons as any)[matchedKey]
+  }
+
+  return null
+}
+
+function renderCategoryVisual(cat: Category, imageUrl?: string | null) {
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={cat.name}
+        className="w-full h-full object-cover rounded-full"
+        loading="lazy"
+      />
+    )
+  }
+
+  const rawIcon = cat.icon
+
+  // 1. If cat.icon is a valid React element
+  if (React.isValidElement(rawIcon)) {
+    return rawIcon
+  }
+
+  // 2. If cat.icon is a React component function
+  if (typeof rawIcon === 'function') {
+    const IconComponent = rawIcon as React.ComponentType<{ className?: string; strokeWidth?: number }>
+    return (
+      <IconComponent
+        className="w-10 h-10 text-[#00407a] dark:text-blue-400 transition-transform group-hover:scale-110"
+        strokeWidth={1.8}
+      />
+    )
+  }
+
+  // 3. If cat.icon is a string (Lucide icon name or emoji)
+  if (typeof rawIcon === 'string' && rawIcon.trim()) {
+    const trimmed = rawIcon.trim()
+
+    // 3a. Check if it resolves to a Lucide icon
+    const LucideComponent = getLucideIcon(trimmed)
+    if (LucideComponent) {
+      return (
+        <LucideComponent
+          className="w-10 h-10 text-[#00407a] dark:text-blue-400 transition-transform group-hover:scale-110"
+          strokeWidth={1.8}
+        />
+      )
+    }
+
+    // 3b. Check if it's an emoji (non-ASCII string)
+    const isAsciiIdentifier = /^[A-Za-z0-9_-]+$/.test(trimmed)
+    if (!isAsciiIdentifier) {
+      return (
+        <span className="text-3xl select-none" role="img" aria-label={cat.name}>
+          {trimmed}
+        </span>
+      )
+    }
+  }
+
+  // 4. Default emoji fallback from category name / slug
+  const emoji = getCategoryEmoji(cat.name, cat.slug)
+  return (
+    <span className="text-3xl select-none" role="img" aria-label={cat.name}>
+      {emoji}
+    </span>
+  )
+}
+
 export function MobileCategoryRow({
   categories: customCategories,
   onSelectCategory,
@@ -184,7 +283,6 @@ export function MobileCategoryRow({
           {customCategories && customCategories.length > 0
             ? customCategories.map((cat) => {
                 const imageUrl = (cat as any).image || (cat as any).imageUrl || (cat as any).thumbnail
-                const fallbackEmoji = cat.icon || getCategoryEmoji(cat.name, cat.slug)
 
                 return (
                   <button
@@ -197,18 +295,7 @@ export function MobileCategoryRow({
                   >
                     {/* 3. Category card: 88×88px circle image + label below */}
                     <div className="w-[88px] h-[88px] rounded-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 border border-gray-200/90 dark:border-slate-700 shadow-2xs group-hover:border-[#00407a] transition-colors flex items-center justify-center relative">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt={cat.name}
-                          className="w-full h-full object-cover rounded-full"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <span className="text-3xl select-none" role="img" aria-label={cat.name}>
-                          {fallbackEmoji}
-                        </span>
-                      )}
+                      {renderCategoryVisual(cat, imageUrl)}
                     </div>
                     <span className="text-xs font-medium text-gray-800 dark:text-slate-200 text-center line-clamp-2 leading-tight w-[88px] break-words">
                       {cat.name}
