@@ -25,6 +25,7 @@ import {
   Globe2,
   ArrowRight
 } from 'lucide-react'
+import { MobileServicesView, MobileServiceItem } from '@/components/mobile/logistics/MobileServicesView'
 
 interface ServiceResponse {
   services: Service[]
@@ -69,9 +70,28 @@ export default function ServicesPage() {
     { value: 'sourcing', label: t('filter.sourcing'), icon: Users },
   ]
 
+  const mobileServices: MobileServiceItem[] = (data?.services ?? []).map((s) => ({
+    id: s.id,
+    title: s.name,
+    type: s.type,
+    description: s.description ?? '',
+    price: typeof s.price === 'number' ? s.price : Number(s.price) || null,
+  }))
+
   return (
-    <SharedLayout showHero={true}>
-      <div className="bg-slate-50/70 min-h-screen">
+    <>
+      {/* MOBILE SERVICES VIEW (Phase 5, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileServicesView
+          services={mobileServices}
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* DESKTOP SERVICES VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        <SharedLayout showHero={true}>
+          <div className="bg-slate-50/70 min-h-screen">
         {/* =========================================================================
             1. HERO SECTION (Design 3 Navy Gradient & Trust Badges)
            ========================================================================= */}
@@ -259,6 +279,8 @@ export default function ServicesPage() {
           </Container>
         </section>
       </div>
-    </SharedLayout>
+        </SharedLayout>
+      </div>
+    </>
   )
 }

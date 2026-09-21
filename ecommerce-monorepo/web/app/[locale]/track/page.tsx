@@ -7,6 +7,9 @@ import { SharedLayout } from '@/components/layout/SharedLayout'
 import { Container } from '@/components/ui/Container'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useSettings } from '@/components/SettingsProvider'
+import { MobileTrackingView } from '@/components/mobile/logistics/MobileTrackingView'
+
+
 import { 
   Search, 
   MapPin, 
@@ -101,13 +104,52 @@ export default function TrackPage() {
 
   const sampleCodes = ['YWE87349823CN', 'GLT-88210T', 'CONT-99412D']
 
+  const mobileShipment = result ? {
+    trackingNumber: result.trackingNumber || searchTerm,
+    status: result.status,
+    statusText: getStatusText(result.status),
+    origin: result.origin || 'China Warehouse',
+    destination: result.destination || 'Destination Country',
+    transportMode: result.transportMode || 'sea',
+    carrier: result.carrier,
+    vesselOrFlight: result.vesselOrFlight,
+    estimatedDelivery: result.estimatedDelivery,
+    events: (result.events || []).map((ev: any, idx: number) => ({
+      id: ev.id || `ev-${idx}`,
+      title: ev.title || ev.status,
+      location: ev.location,
+      timestamp: ev.timestamp ? new Date(ev.timestamp).toLocaleDateString() : '',
+      completed: true,
+      current: idx === 0,
+      description: ev.description,
+    })),
+  } : null
+
   return (
-    <SharedLayout showHero={true}>
-      <div className="bg-slate-50/70 min-h-screen">
-        {/* =========================================================================
-            1. HERO SECTION (Design 3 Navy Gradient & Search Bar)
-           ========================================================================= */}
-        <section className="relative bg-gradient-to-b from-[#0B192C] via-[#00407a] to-[#0B192C] text-white py-14 sm:py-18 overflow-hidden border-b border-slate-800">
+    <>
+      {/* MOBILE TRACKING VIEW (Phase 5, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileTrackingView
+          shipment={mobileShipment}
+          searchTerm={searchTerm}
+          onSearch={(num) => {
+            setTrackingNumber(num)
+            setSearchTerm(num)
+          }}
+          isLoading={isLoading}
+          error={error ? (error as any).message : null}
+        />
+      </div>
+
+      {/* DESKTOP TRACKING VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        <SharedLayout showHero={true}>
+          <div className="bg-slate-50/70 min-h-screen">
+            {/* =========================================================================
+                1. HERO SECTION (Design 3 Navy Gradient & Search Bar)
+               ========================================================================= */}
+            <section className="relative bg-gradient-to-b from-[#0B192C] via-[#00407a] to-[#0B192C] text-white py-14 sm:py-18 overflow-hidden border-b border-slate-800">
+
           <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#F5A602_1px,transparent_1px)] [background-size:24px_24px]"></div>
           <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#00B4D8]/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -340,7 +382,10 @@ export default function TrackPage() {
             </div>
           </Container>
         </section>
+          </div>
+        </SharedLayout>
       </div>
-    </SharedLayout>
+    </>
   )
 }
+

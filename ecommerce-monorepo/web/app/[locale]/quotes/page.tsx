@@ -9,6 +9,7 @@ import { SharedLayout } from '@/components/layout/SharedLayout'
 import { Container } from '@/components/ui/Container'
 import { Service, Quote } from '@prisma/client'
 import { FileText, Plus, Calculator, ArrowRight, ShieldCheck, Mail, Phone, Calendar } from 'lucide-react'
+import { MobileRfqForm, RfqFormData } from '@/components/mobile/logistics/MobileRfqForm'
 
 interface QuoteWithService extends Quote {
   service: Service
@@ -136,14 +137,49 @@ export default function QuotesPage() {
 
   const quotesList = Array.isArray(quotesData) ? quotesData : quotesData?.quotes || []
 
+  const mobileServices = (servicesData?.services ?? []).map((s: Service) => ({
+    id: s.id,
+    title: s.name,
+  }))
+
+  const handleMobileSubmit = async (data: RfqFormData) => {
+    if (!isAuthenticated) {
+      setErrorMessage(t('authError'))
+      return
+    }
+    createQuoteMutation.mutate({
+      serviceId: data.serviceId,
+      serviceType: 'shipping',
+      weight: data.weight,
+      dimensions: data.dimensions,
+      origin: data.origin,
+      destination: data.destination,
+      description: data.description,
+    })
+  }
+
   return (
-    <SharedLayout
-      pageTitle={t('pageTitle')}
-      pageDescription={t('pageDescription')}
-      breadcrumbs={[{ name: t('breadcrumb'), href: '/quotes' }]}
-    >
-      <div className="bg-slate-50/70 py-8 min-h-[calc(100vh-200px)]">
-        <Container>
+    <>
+      {/* MOBILE RFQ VIEW (Phase 5, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileRfqForm
+          services={mobileServices}
+          initialData={productContext ? { description: `Product: ${productContext.name}` } : undefined}
+          onSubmit={handleMobileSubmit}
+          isSubmitting={createQuoteMutation.isPending}
+          error={errorMessage || null}
+        />
+      </div>
+
+      {/* DESKTOP QUOTES VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        <SharedLayout
+          pageTitle={t('pageTitle')}
+          pageDescription={t('pageDescription')}
+          breadcrumbs={[{ name: t('breadcrumb'), href: '/quotes' }]}
+        >
+          <div className="bg-slate-50/70 py-8 min-h-[calc(100vh-200px)]">
+            <Container>
         {isAuthenticated && (
           <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border border-blue-100/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -389,8 +425,10 @@ export default function QuotesPage() {
               </div>
             </div>
           )}
-        </Container>
+            </Container>
+          </div>
+        </SharedLayout>
       </div>
-    </SharedLayout>
+    </>
   )
 }

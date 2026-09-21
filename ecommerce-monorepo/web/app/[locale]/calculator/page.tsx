@@ -25,6 +25,7 @@ import {
   Building2,
   Globe2
 } from 'lucide-react'
+import { MobileFreightCalculator } from '@/components/mobile/logistics/MobileFreightCalculator'
 
 export default function CalculatorPage() {
   const t = useTranslations('Calculator')
@@ -103,9 +104,53 @@ export default function CalculatorPage() {
     { id: 'express', label: locale === 'ru' ? 'Экспресс-курьер' : locale === 'zh' ? '特快急件清关' : 'Express Courier', speed: '3-5 Days', icon: Zap, color: 'text-amber-500' },
   ]
 
+  const handleCalculateMobile = async (params: {
+    origin: string
+    destination: string
+    weight: string
+    dimensions: string
+    serviceType: string
+    insuranceRequired: boolean
+  }) => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/quotes/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to calculate. Please try again.')
+      }
+
+      const data = await response.json()
+      setEstimate(data)
+    } catch (err: any) {
+      setError(err.message || 'Server calculation error. Please retry.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <SharedLayout showHero={true}>
-      <div className="bg-slate-50/70 min-h-screen">
+    <>
+      {/* MOBILE FREIGHT CALCULATOR VIEW (Phase 5, hidden on md+) */}
+      <div className="md:hidden">
+        <MobileFreightCalculator
+          onCalculate={handleCalculateMobile}
+          estimate={estimate}
+          isLoading={loading}
+          error={error}
+        />
+      </div>
+
+      {/* DESKTOP FREIGHT CALCULATOR VIEW (100% byte-identical, hidden on mobile) */}
+      <div className="hidden md:block">
+        <SharedLayout showHero={true}>
+          <div className="bg-slate-50/70 min-h-screen">
         {/* =========================================================================
             1. HERO SECTION (Design 3 Navy Gradient & Trust Badges)
            ========================================================================= */}
@@ -462,5 +507,7 @@ export default function CalculatorPage() {
         </section>
       </div>
     </SharedLayout>
+  </div>
+</>
   )
 }
