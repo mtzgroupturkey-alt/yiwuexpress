@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 
 export async function GET(req: NextRequest) {
   try {
@@ -34,6 +36,11 @@ export async function GET(req: NextRequest) {
       },
     })
 
+    // Check caller wholesale access permissions
+    const currentUser = await getAuthUser(req)
+    const canViewWholesale = isApprovedWholesaleUser(currentUser)
+    const isAdmin = currentUser?.role === 'ADMIN'
+
     // Calculate additional metadata for each product
     const enrichedProducts = products.map((product) => {
       const discount = product.flashSalePrice
@@ -44,13 +51,15 @@ export async function GET(req: NextRequest) {
         ? new Date(product.flashSaleEnd).getTime() - now.getTime()
         : 0
 
-      return {
+      const itemWithMeta = {
         ...product,
         discount,
         timeRemaining,
         hasLimitedStock: product.flashSaleStock !== null,
         stockRemaining: product.flashSaleStock,
       }
+
+      return sanitizeProductForClient(itemWithMeta, canViewWholesale, isAdmin)
     })
 
     return NextResponse.json({
