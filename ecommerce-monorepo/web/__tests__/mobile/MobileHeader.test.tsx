@@ -6,13 +6,14 @@ import { MobileHeader } from '@/components/mobile/MobileHeader'
 let mockCartCount = 4
 let mockQuoteCount = 0
 let mockIsWholesale = false
-let mockIsSearchOpen = false
 const mockToggleDrawer = vi.fn()
 const mockToggleSearch = vi.fn()
+const mockRouterBack = vi.fn()
+const mockRouterPush = vi.fn()
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/en',
-  useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
+  useRouter: () => ({ push: mockRouterPush, back: mockRouterBack }),
 }))
 
 vi.mock('next-intl', () => ({
@@ -32,7 +33,7 @@ vi.mock('@/components/MobileProvider', () => ({
     isMobile: true,
     isIOS: false,
     isAndroid: false,
-    isSearchOpen: mockIsSearchOpen,
+    isSearchOpen: false,
     toggleDrawer: mockToggleDrawer,
     toggleSearch: mockToggleSearch,
   }),
@@ -73,15 +74,23 @@ describe('MobileHeader (components/mobile/MobileHeader.tsx)', () => {
     mockCartCount = 4
     mockQuoteCount = 0
     mockIsWholesale = false
-    mockIsSearchOpen = false
   })
 
-  it('renders brand name with dynamic Global Trade fallback', () => {
+  it('renders brand wordmark without large logo image on homepage', () => {
     render(<MobileHeader />)
 
+    // Brand text wordmark
     expect(screen.getByText('Global Trade')).toBeInTheDocument()
-    // Brand initial badge
-    expect(screen.getByText('GT')).toBeInTheDocument()
+    // No large logo image tag
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  it('has md:hidden class to remain hidden on desktop', () => {
+    const { container } = render(<MobileHeader />)
+    const headerEl = container.querySelector('header')
+    expect(headerEl).toHaveClass('md:hidden')
+    expect(headerEl).toHaveClass('fixed')
+    expect(headerEl).toHaveClass('top-0')
   })
 
   it('triggers mobile menu drawer when hamburger is clicked', () => {
@@ -102,6 +111,13 @@ describe('MobileHeader (components/mobile/MobileHeader.tsx)', () => {
     expect(screen.getByTestId('mobile-cart-badge')).toHaveTextContent('4')
   })
 
+  it('caps cart badge at 99+ when cart count exceeds 99', () => {
+    mockCartCount = 150
+    render(<MobileHeader />)
+
+    expect(screen.getByTestId('mobile-cart-badge')).toHaveTextContent('99+')
+  })
+
   it('shows wholesale quote badge and routes to /quote-cart in wholesale mode', () => {
     mockIsWholesale = true
     mockQuoteCount = 7
@@ -113,7 +129,7 @@ describe('MobileHeader (components/mobile/MobileHeader.tsx)', () => {
     expect(screen.getByTestId('mobile-cart-badge')).toHaveTextContent('7')
   })
 
-  it('toggles search bar when search button is clicked', () => {
+  it('triggers search toggle when search button is clicked', () => {
     render(<MobileHeader />)
 
     const searchBtn = screen.getByTestId('mobile-search-toggle')
@@ -122,18 +138,37 @@ describe('MobileHeader (components/mobile/MobileHeader.tsx)', () => {
     expect(mockToggleSearch).toHaveBeenCalledTimes(1)
   })
 
-  it('shows custom page title and back button when showBack is enabled', () => {
+  it('shows custom page title and back arrow when showBack is enabled', () => {
     render(
       <MobileHeader
         title="Product Details"
         showBack={true}
-        backHref="/store"
       />
     )
 
     expect(screen.getByText('Product Details')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /go back/i })).toBeInTheDocument()
+    const backBtn = screen.getByTestId('mobile-back-button')
+    expect(backBtn).toBeInTheDocument()
     expect(screen.queryByTestId('mobile-menu-trigger')).not.toBeInTheDocument()
+
+    fireEvent.click(backBtn)
+    expect(mockRouterBack).toHaveBeenCalledTimes(1)
+  })
+
+  it('triggers custom onBack callback when provided', () => {
+    const onBack = vi.fn()
+    render(
+      <MobileHeader
+        title="Cart"
+        showBack={true}
+        onBack={onBack}
+      />
+    )
+
+    const backBtn = screen.getByTestId('mobile-back-button')
+    fireEvent.click(backBtn)
+    expect(onBack).toHaveBeenCalledTimes(1)
+    expect(mockRouterBack).not.toHaveBeenCalled()
   })
 
   it('handles notification click and renders badge when notificationCount > 0', () => {

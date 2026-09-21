@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
-import Image from 'next/image'
+import React from 'react'
+import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { Menu, ShoppingCart, ClipboardList, Bell, Search, X } from 'lucide-react'
+import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useSettings } from '@/components/SettingsProvider'
 import { useMobile } from '@/components/MobileProvider'
@@ -12,17 +12,20 @@ import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
-import { BackButton } from './BackButton'
 
 export interface MobileHeaderProps {
   title?: string
   showBack?: boolean
   backHref?: string
   onBack?: () => void
+  showSearch?: boolean
   showSearchToggle?: boolean
+  onSearchClick?: () => void
   showNotifications?: boolean
   notificationCount?: number
   onNotificationsClick?: () => void
+  showCart?: boolean
+  onCartClick?: () => void
   onMenuClick?: () => void
   className?: string
 }
@@ -32,16 +35,21 @@ export function MobileHeader({
   showBack = false,
   backHref,
   onBack,
+  showSearch,
   showSearchToggle = true,
+  onSearchClick,
   showNotifications = true,
   notificationCount = 0,
   onNotificationsClick,
+  showCart = true,
+  onCartClick,
   onMenuClick,
   className = '',
 }: MobileHeaderProps) {
+  const router = useRouter()
   const locale = useLocale()
   const { settings } = useSettings()
-  const { openDrawer, toggleDrawer, isSearchOpen, toggleSearch } = useMobile()
+  const { openDrawer, toggleDrawer, toggleSearch } = useMobile()
 
   const { cartCount } = useCart()
   const { quoteCount } = useQuoteCart()
@@ -56,7 +64,9 @@ export function MobileHeader({
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)
   const companyName = settings?.companyName || 'Global Trade'
-  const [logoFailed, setLogoFailed] = useState(false)
+
+  // Resolve search toggle visibility (accept either showSearch or legacy showSearchToggle)
+  const isSearchVisible = showSearch !== undefined ? showSearch : showSearchToggle
 
   const handleMenuClick = () => {
     if (onMenuClick) {
@@ -68,128 +78,140 @@ export function MobileHeader({
     }
   }
 
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack()
+    } else if (backHref) {
+      router.push(backHref)
+    } else {
+      router.back()
+    }
+  }
+
+  const handleSearchAction = () => {
+    if (onSearchClick) {
+      onSearchClick()
+    } else if (toggleSearch) {
+      toggleSearch()
+    } else {
+      router.push(`/${locale}/store`)
+    }
+  }
+
   return (
     <header
       data-testid="mobile-header"
-      className={`md:hidden sticky top-0 z-40 w-full bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 transition-colors ${className}`}
+      className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white dark:bg-[#0f172a] border-b border-gray-200/80 dark:border-slate-800 transition-colors shadow-2xs ${className}`}
       style={{
         paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
-      <div className="h-14 px-2 sm:px-3 flex items-center justify-between gap-2 max-w-lg mx-auto">
-        {/* LEFT: Menu Hamburger or Back Button */}
-        <div className="flex items-center min-w-[48px]">
+      <div className="h-14 px-3 flex items-center justify-between gap-1.5 max-w-lg mx-auto">
+        {/* LEFT: Menu Hamburger or Back Arrow */}
+        <div className="flex items-center min-w-[44px]">
           {showBack ? (
-            <BackButton
-              fallbackHref={backHref}
-              onClick={onBack}
-              label=""
-            />
+            <button
+              type="button"
+              onClick={handleBackClick}
+              aria-label={locale === 'zh' ? '返回' : locale === 'ru' ? 'Назад' : 'Go back'}
+              data-testid="mobile-back-button"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
           ) : (
             <button
               type="button"
               onClick={handleMenuClick}
               aria-label={locale === 'zh' ? '打开菜单' : locale === 'ru' ? 'Открыть меню' : 'Open menu'}
               data-testid="mobile-menu-trigger"
-              className="min-w-[48px] min-h-[48px] flex items-center justify-center text-gray-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white rounded-full active:scale-95 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               <Menu className="w-6 h-6" />
             </button>
           )}
         </div>
 
-        {/* CENTER: Title or Dynamic Logo / Brand Name */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden px-1">
+        {/* CENTER: Text Wordmark (Homepage) or Page Title (Subpages) */}
+        <div className="flex-1 flex items-center justify-center overflow-hidden px-2 text-center min-w-0">
           {title ? (
-            <h1 className="text-base font-semibold text-gray-900 dark:text-white truncate text-center">
+            <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">
               {title}
             </h1>
           ) : (
             <LocaleLink
               href="/"
               aria-label={companyName}
-              className="flex items-center gap-2 max-w-[200px] select-none active:opacity-80 transition-opacity touch-manipulation"
+              className="select-none active:opacity-75 transition-opacity touch-manipulation truncate inline-block"
             >
-              {settings?.companyLogo && !logoFailed ? (
-                <div className="flex items-center justify-center shrink-0">
-                  <img
-                    src={settings.companyLogo}
-                    alt={`${companyName} Logo`}
-                    onError={() => setLogoFailed(true)}
-                    className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
-                    loading="eager"
-                  />
-                </div>
-              ) : (
-                <div className="w-8 h-8 rounded-lg bg-[#00407a] dark:bg-primary-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                  {companyName
-                    .split(' ')
-                    .map((w: string) => w[0])
-                    .join('')
-                    .slice(0, 2)
-                    .toUpperCase() || 'GT'}
-                </div>
-              )}
-              <span className="font-bold text-sm tracking-tight text-[#00407a] dark:text-white truncate">
+              <span className="text-base sm:text-lg font-black tracking-tight text-[#00407a] dark:text-white truncate">
                 {companyName}
               </span>
             </LocaleLink>
           )}
         </div>
 
-        {/* RIGHT: Search Toggle, Notifications, Smart Cart */}
-        <div className="flex items-center justify-end gap-0.5 min-w-[48px]">
-          {showSearchToggle && (
+        {/* RIGHT: Search, Notifications, Cart (in that strict order) */}
+        <div className="flex items-center justify-end gap-0.5 min-w-[44px]">
+          {/* 1. Search Icon */}
+          {isSearchVisible && (
             <button
               type="button"
-              onClick={toggleSearch}
-              aria-label={isSearchOpen ? 'Close search' : 'Open search'}
+              onClick={handleSearchAction}
+              aria-label={locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}
               data-testid="mobile-search-toggle"
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white rounded-full active:scale-95 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
-              {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              <Search className="w-5 h-5" />
             </button>
           )}
 
+          {/* 2. Notifications Icon */}
           {showNotifications && (
             <button
               type="button"
               onClick={onNotificationsClick}
-              aria-label="Notifications"
+              aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
               data-testid="mobile-notifications-trigger"
-              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white rounded-full active:scale-95 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               <Bell className="w-5 h-5" />
-              {notificationCount > 0 && (
-                <span className="absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {notificationCount > 0 ? (
+                <span className="absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
                   {notificationCount > 99 ? '99+' : notificationCount}
                 </span>
-              )}
+              ) : null}
             </button>
           )}
 
-          <LocaleLink
-            href={cartHref}
-            aria-label={isWholesale ? 'Quote Cart' : 'Shopping Cart'}
-            data-testid="mobile-cart-trigger"
-            className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-700 dark:text-slate-200 hover:text-[#1a3a5c] dark:hover:text-[#c9a84c] rounded-full active:scale-95 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-          >
-            {isWholesale ? (
-              <ClipboardList className="w-5 h-5" />
-            ) : (
-              <ShoppingCart className="w-5 h-5" />
-            )}
-            {effectiveCartCount > 0 && (
-              <span
-                data-testid="mobile-cart-badge"
-                className={`absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-white text-[10px] font-bold flex items-center justify-center shadow-xs ${
-                  isWholesale ? 'bg-blue-600' : 'bg-secondary-500'
-                }`}
-              >
-                {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
-              </span>
-            )}
-          </LocaleLink>
+          {/* 3. Cart Icon with Red Dot Badge (max 99+) */}
+          {showCart && (
+            <LocaleLink
+              href={cartHref}
+              onClick={onCartClick}
+              aria-label={
+                isWholesale
+                  ? locale === 'zh' ? '报价询价车' : locale === 'ru' ? 'Корзина запросов' : 'Quote Cart'
+                  : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина покупок' : 'Shopping Cart'
+              }
+              data-testid="mobile-cart-trigger"
+              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              {isWholesale ? (
+                <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
+              ) : (
+                <ShoppingCart className="w-5 h-5 text-gray-900 dark:text-white" />
+              )}
+              {effectiveCartCount > 0 && (
+                <span
+                  data-testid="mobile-cart-badge"
+                  className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs"
+                >
+                  {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
+                </span>
+              )}
+            </LocaleLink>
+          )}
         </div>
       </div>
     </header>
