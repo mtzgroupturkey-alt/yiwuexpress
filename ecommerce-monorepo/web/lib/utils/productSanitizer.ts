@@ -7,8 +7,8 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
   product: T,
   canViewWholesale: boolean,
   isAdmin: boolean = false
-): T {
-  if (!product) return product
+): T & { isWholesaleGated: boolean } {
+  if (!product) return product as T & { isWholesaleGated: boolean }
 
   // 1. Strip sensitive backend/supplier margin fields from all non-admins
   const safe: Record<string, any> = { ...product }
@@ -40,5 +40,5 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
     safe.isWholesaleGated = false
   }
 
-  return safe as T
+  return safe as T & { isWholesaleGated: boolean }
 }
