@@ -1,8 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/db'
 
 // Valid wholesale status transitions (12-state workflow)
 const WHOLESALE_STATUS_TRANSITIONS: Record<string, string[]> = {

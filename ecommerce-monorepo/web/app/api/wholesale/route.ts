@@ -1,9 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { verifyToken } from '@/lib/auth'
-
-const prisma = new PrismaClient()
 
 function getUserId(request: NextRequest): string | null {
   const cookieToken = request.cookies.get('auth_token')?.value

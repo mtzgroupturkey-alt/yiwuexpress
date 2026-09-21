@@ -1,9 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
-
-const prisma = new PrismaClient()
 
 // PUT /api/cart/[itemId] - Update cart item quantity
 export async function PUT(

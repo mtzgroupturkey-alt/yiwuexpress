@@ -1,9 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/db'
 import { getAuthUser, requireAuth, createAuthErrorResponse } from '@/lib/auth'
-
-const prisma = new PrismaClient()
 
 // GET /api/cart - Get user's cart (authenticated returns db cart, guest returns 200 with empty cart)
 export async function GET(request: Request) {
