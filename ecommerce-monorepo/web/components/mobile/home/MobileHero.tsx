@@ -36,6 +36,11 @@ export function MobileHero({
   const { settings } = useSettings()
   const { isStandalone } = useMobile()
 
+  // ALL hooks must be called unconditionally at the top
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
   const defaultSlides: HeroSlide[] = [
     {
       id: '1',
@@ -135,21 +140,12 @@ export function MobileHero({
     },
   ]
 
-  // 10. Fallback: if no slides (explicitly empty array), do not render the section
   const slides = customSlides !== undefined ? customSlides : defaultSlides
+  const hasSlides = slides && slides.length > 0
 
-  if (!slides || slides.length === 0) {
-    console.info('[MobileHero] No active hero slides found for locale, skipping render.')
-    return null
-  }
-
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPaused, setIsPaused] = useState(false)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-
-  // 4. Auto-rotate every 5 seconds, 5. Pause when user touches / hovers / prefers reduced motion
+  // Auto-rotate every 5 seconds — only in standalone (native app) mode
   useEffect(() => {
-    if (isPaused || slides.length <= 1) return
+    if (!hasSlides || isPaused || slides.length <= 1 || !isStandalone) return
 
     if (
       typeof window !== 'undefined' &&
@@ -175,9 +171,12 @@ export function MobileHero({
     }, 5000)
 
     return () => clearInterval(timer)
-  }, [isPaused, slides.length])
+  }, [isPaused, slides.length, isStandalone, hasSlides])
 
-  // 12. Swipe left/right works via scroll detection
+  if (!hasSlides) {
+    return null
+  }
+
   const handleScroll = () => {
     if (!containerRef.current) return
     const { scrollLeft, clientWidth } = containerRef.current
@@ -188,7 +187,6 @@ export function MobileHero({
     }
   }
 
-  // 11. Dot buttons clickable to jump to slide
   const goToSlide = (idx: number) => {
     setCurrentIndex(idx)
     if (containerRef.current) {
@@ -209,62 +207,110 @@ export function MobileHero({
     }
   }
 
-  // In browser mode, render a static banner instead of the carousel
+  // ─── BROWSER MODE ─────────────────────────────────────────────────────────
+  // Responsive slider: same swipeable carousel but with rounded corners,
+  // horizontal padding, and fixed height (not full-bleed). Website-style.
   if (!isStandalone) {
-    const firstSlide = slides[0]
     return (
       <section
         data-testid="mobile-hero"
-        aria-label="Mobile Hero Banner"
+        aria-label="Mobile Hero Carousel"
         className={`w-full px-4 py-3 select-none ${className}`}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)}
       >
-        <div
-          className={`relative rounded-2xl px-6 py-8 text-white overflow-hidden bg-gradient-to-br ${
-            firstSlide.bgGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]'
-          }`}
-        >
-          {/* Decorative overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent pointer-events-none" />
+        {/* Rounded carousel container */}
+        <div className="relative rounded-2xl overflow-hidden h-[220px] sm:h-[260px]">
+          {/* Swipeable slides */}
+          <div
+            ref={containerRef}
+            onScroll={handleScroll}
+            className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {slides.map((slide, idx) => (
+              <div
+                key={slide.id || idx}
+                data-testid={`hero-slide-${idx}`}
+                className="w-full min-w-full shrink-0 h-full snap-center relative flex flex-col justify-end p-5 pb-10 text-white overflow-hidden"
+              >
+                {/* Background image */}
+                {slide.image || slide.imageUrl ? (
+                  <img
+                    src={slide.image || slide.imageUrl}
+                    alt={slide.title}
+                    loading={idx === 0 ? 'eager' : 'lazy'}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${
+                      slide.bgGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]'
+                    }`}
+                  />
+                )}
 
-          {/* Icon — top-right decoration */}
-          <div className="absolute top-5 right-5 opacity-20">
-            {firstSlide.icon || <Sparkles className="w-16 h-16 text-white" />}
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+
+                {/* Content */}
+                <div className="relative z-10 space-y-1.5 max-w-[85%]">
+                  {slide.badge && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold text-white border border-white/20">
+                      {slide.icon || <Sparkles className="w-3 h-3 text-[#F5A602]" />}
+                      <span>{slide.badge}</span>
+                    </div>
+                  )}
+
+                  <h2 className="text-lg font-black tracking-tight leading-tight text-white line-clamp-2 drop-shadow-md">
+                    {slide.title}
+                  </h2>
+
+                  <p className="text-[11px] text-white/85 line-clamp-1 leading-relaxed drop-shadow-xs">
+                    {slide.subtitle}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCtaClick(slide)}
+                    aria-label={slide.ctaText}
+                    className="mt-1 min-h-[38px] h-[38px] px-5 rounded-lg bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold text-xs inline-flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform touch-manipulation cursor-pointer"
+                  >
+                    <span>{slide.ctaText}</span>
+                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Content */}
-          <div className="relative z-10 space-y-3 max-w-[80%]">
-            {firstSlide.badge && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-white border border-white/20 shadow-xs">
-                {firstSlide.icon || <Sparkles className="w-3.5 h-3.5 text-[#F5A602]" />}
-                <span>{firstSlide.badge}</span>
-              </div>
-            )}
-
-            <h2 className="text-2xl font-black tracking-tight leading-tight text-white line-clamp-2 drop-shadow-md">
-              {firstSlide.title}
-            </h2>
-
-            <p className="text-xs text-white/85 line-clamp-2 leading-relaxed drop-shadow-xs">
-              {firstSlide.subtitle}
-            </p>
-
-            <div className="pt-1">
+          {/* Dots indicator */}
+          <div className="absolute bottom-2.5 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-auto">
+            {slides.map((_, idx) => (
               <button
+                key={idx}
                 type="button"
-                onClick={() => handleCtaClick(firstSlide)}
-                aria-label={firstSlide.ctaText}
-                className="min-h-[44px] h-[44px] px-6 rounded-xl bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold text-xs inline-flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform touch-manipulation cursor-pointer"
+                onClick={() => goToSlide(idx)}
+                aria-label={`Slide ${idx + 1}`}
+                className="min-h-[28px] min-w-[24px] flex items-center justify-center touch-manipulation cursor-pointer"
               >
-                <span>{firstSlide.ctaText}</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                <span
+                  className={`block rounded-full transition-all duration-300 ${
+                    currentIndex === idx
+                      ? 'w-5 h-1.5 bg-[#F5A602] shadow-xs'
+                      : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                  }`}
+                />
               </button>
-            </div>
+            ))}
           </div>
         </div>
       </section>
     )
   }
 
+  // ─── STANDALONE / PWA MODE ────────────────────────────────────────────────
+  // Full-bleed native app carousel: edge-to-edge, tall, swipeable, auto-rotating
   return (
     <section
       data-testid="mobile-hero"
@@ -275,7 +321,6 @@ export function MobileHero({
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* 2. Horizontal scroll with snap-to-next, 1 slide = 100vw width, full height */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
@@ -288,13 +333,11 @@ export function MobileHero({
             data-testid={`hero-slide-${idx}`}
             className="w-full min-w-full shrink-0 h-full snap-center relative flex flex-col justify-end p-5 pb-12 text-white overflow-hidden"
           >
-            {/* 7. Background image + gradient fallback */}
             {slide.image || slide.imageUrl ? (
               <img
                 src={slide.image || slide.imageUrl}
                 alt={slide.title}
                 loading={idx === 0 ? 'eager' : 'lazy'}
-                // 9. First slide image loads with priority
                 className="absolute inset-0 w-full h-full object-cover"
               />
             ) : (
@@ -305,12 +348,9 @@ export function MobileHero({
               />
             )}
 
-            {/* Gradient overlay at bottom */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
 
-            {/* Slide Content */}
             <div className="relative z-10 space-y-2 max-w-md">
-              {/* Optional Badge */}
               {slide.badge && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-white border border-white/20 shadow-xs">
                   {slide.icon || <Sparkles className="w-3.5 h-3.5 text-[#F5A602]" />}
@@ -318,17 +358,14 @@ export function MobileHero({
                 </div>
               )}
 
-              {/* Headline (2 lines max) */}
               <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight text-white line-clamp-2 drop-shadow-md">
                 {slide.title}
               </h2>
 
-              {/* Subtitle (2 lines max) */}
               <p className="text-xs sm:text-sm text-white/90 line-clamp-2 leading-relaxed max-w-[95%] drop-shadow-xs">
                 {slide.subtitle}
               </p>
 
-              {/* 7. CTA button (44px height) */}
               <div className="pt-2">
                 <button
                   type="button"
@@ -345,7 +382,7 @@ export function MobileHero({
         ))}
       </div>
 
-      {/* 6. Dots indicator at bottom (small pill for active slide) */}
+      {/* Dots indicator */}
       <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-auto">
         {slides.map((_, idx) => (
           <button
