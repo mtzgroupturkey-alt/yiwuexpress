@@ -37,13 +37,6 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
   const { storeMode } = useStoreMode()
   const { isWholesaleSession } = useSessionMode()
 
-  // Progressive PWA Strategy:
-  // In Browser mode, standard mobile website navigation is used and BottomNav is hidden.
-  // In Standalone mode (installed PWA), BottomNav is visible for the app-like experience.
-  if (!isStandalone && !forceVisible) {
-    return null
-  }
-
   // Close drawer on path change
   useEffect(() => {
     setIsDrawerOpen(false)
@@ -71,7 +64,9 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
     cleanPath.startsWith('/checkout/') ||
     cleanPath.startsWith('/quotes/view')
 
-  if (isHiddenRoute) {
+  // Progressive PWA Strategy: BottomNav is hidden in browser mode.
+  // Must be after all hooks to comply with Rules of Hooks.
+  if ((!isStandalone && !forceVisible) || isHiddenRoute) {
     return null
   }
 
