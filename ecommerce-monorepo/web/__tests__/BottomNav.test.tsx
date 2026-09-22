@@ -27,7 +27,7 @@ vi.mock('@/components/LocaleLink', () => ({
 }))
 
 vi.mock('@/components/MobileProvider', () => ({
-  useMobile: () => ({ isMobile: true, isIOS: false, isAndroid: false }),
+  useMobile: () => ({ isMobile: true, isIOS: false, isAndroid: false, isStandalone: true }),
 }))
 
 vi.mock('@/components/CartContext', () => ({

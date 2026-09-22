@@ -32,6 +32,7 @@ import { useCurrency } from '@/hooks/useCurrency'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { StickyBuyBar } from '@/components/mobile/StickyBuyBar'
 import { MobileProductDetailView } from '@/components/mobile/product/MobileProductDetailView'
+import { useMobile } from '@/components/MobileProvider'
 
 // A serializable subset of the product API payload (mirrors the page-level
 // projection). Extra fields are tolerated via index signature.
@@ -541,6 +542,7 @@ export default function ProductDetailView({
   const [showQuestionForm, setShowQuestionForm] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
   const companyName = settings?.companyName || 'Global Trade'
+  const { isStandalone } = useMobile()
   const [bundleAdded, setBundleAdded] = useState(false)
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 44, seconds: 19 })
   const [showStickyBuyBar, setShowStickyBuyBar] = useState(false)
@@ -2474,9 +2476,9 @@ export default function ProductDetailView({
           </MotionReveal>
         </div>
 
-        {/* Sticky Mobile Buy Bar (shows when scrolled past main buy box, docked above BottomNav) */}
+        {/* Sticky Mobile Buy Bar (shows when scrolled past main buy box in standalone PWA mode) */}
         <StickyBuyBar
-          isVisible={showStickyBuyBar}
+          isVisible={showStickyBuyBar && isStandalone}
           price={displayPrice}
           compareAtPrice={currentCompareAtPrice}
           quantity={quantity}

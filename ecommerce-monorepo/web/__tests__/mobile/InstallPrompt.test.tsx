@@ -3,14 +3,23 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 
+vi.mock('next/navigation', () => ({ usePathname: () => '/en' }))
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }))
 vi.mock('@/components/SettingsProvider', () => ({
   useSettings: () => ({ settings: { companyName: 'Global Trade' } }),
+}))
+vi.mock('@/components/MobileProvider', () => ({
+  useMobile: () => ({
+    isStandalone: false,
+    isMobile: true,
+    isBrowser: true,
+  }),
 }))
 
 describe('InstallPrompt', () => {
   beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
     vi.restoreAllMocks()
   })
 

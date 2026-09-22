@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowUp } from 'lucide-react'
 import { useLocale } from 'next-intl'
+import { useMobile } from '@/components/MobileProvider'
 
 export function BackToTop() {
   const locale = useLocale()
+  const { isStandalone } = useMobile()
   const [isVisible, setIsVisible] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
 
@@ -83,7 +85,7 @@ export function BackToTop() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.6, y: 20 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-[6.5rem] right-4 z-40 md:bottom-8 md:right-8"
+          className={`fixed ${isStandalone ? 'bottom-[6.5rem]' : 'bottom-6'} right-4 z-40 md:bottom-8 md:right-8`}
         >
           <motion.button
             onClick={scrollToTop}

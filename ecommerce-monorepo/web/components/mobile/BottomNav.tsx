@@ -15,8 +15,12 @@ import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useSettings } from '@/components/SettingsProvider'
 
-export function BottomNav() {
-  const { isMobile } = useMobile()
+export interface BottomNavProps {
+  forceVisible?: boolean
+}
+
+export function BottomNav({ forceVisible }: BottomNavProps = {}) {
+  const { isMobile, isStandalone } = useMobile()
   const pathname = usePathname() || ''
   const locale = useLocale()
   const { settings } = useSettings()
@@ -32,6 +36,13 @@ export function BottomNav() {
   const { wishlistCount } = useWishlist()
   const { storeMode } = useStoreMode()
   const { isWholesaleSession } = useSessionMode()
+
+  // Progressive PWA Strategy:
+  // In Browser mode, standard mobile website navigation is used and BottomNav is hidden.
+  // In Standalone mode (installed PWA), BottomNav is visible for the app-like experience.
+  if (!isStandalone && !forceVisible) {
+    return null
+  }
 
   // Close drawer on path change
   useEffect(() => {
@@ -97,6 +108,7 @@ export function BottomNav() {
           Tap targets: >= 44px
           ========================================================================= */}
       <nav
+        data-testid="mobile-bottom-nav"
         aria-label="Mobile Navigation"
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-t border-gray-200/80 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
         style={{

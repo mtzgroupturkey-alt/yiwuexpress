@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { ArrowRight, Sparkles, ShieldCheck, Truck, Factory } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
+import { useMobile } from '@/components/MobileProvider'
 
 export interface HeroSlide {
   id: string

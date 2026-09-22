@@ -1,11 +1,16 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useDisplayMode, DisplayMode } from '@/hooks/useDisplayMode'
 
 interface MobileContextType {
   isMobile: boolean
   isIOS: boolean
   isAndroid: boolean
+  isStandalone: boolean
+  isBrowser: boolean
+  isMinimalUI: boolean
+  mode: DisplayMode
   isDrawerOpen?: boolean
   setIsDrawerOpen?: (open: boolean) => void
   openDrawer?: () => void
@@ -22,6 +27,10 @@ const MobileContext = createContext<MobileContextType>({
   isMobile: false,
   isIOS: false,
   isAndroid: false,
+  isStandalone: false,
+  isBrowser: true,
+  isMinimalUI: false,
+  mode: 'browser',
   isDrawerOpen: false,
   setIsDrawerOpen: () => {},
   openDrawer: () => {},
@@ -39,6 +48,7 @@ export interface MobileProviderProps {
   initialIsMobile?: boolean
   initialIsIOS?: boolean
   initialIsAndroid?: boolean
+  initialIsStandalone?: boolean
 }
 
 export function MobileProvider({
@@ -46,12 +56,22 @@ export function MobileProvider({
   initialIsMobile = false,
   initialIsIOS = false,
   initialIsAndroid = false,
+  initialIsStandalone,
 }: MobileProviderProps) {
   const [isMobile, setIsMobile] = useState<boolean>(initialIsMobile)
   const [isIOS, setIsIOS] = useState<boolean>(initialIsIOS)
   const [isAndroid, setIsAndroid] = useState<boolean>(initialIsAndroid)
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false)
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false)
+
+  // Use the progressive PWA display mode hook
+  const displayMode = useDisplayMode()
+
+  // Allow explicit override if passed via props (e.g. in test suites)
+  const isStandalone = initialIsStandalone !== undefined ? initialIsStandalone : displayMode.isStandalone
+  const isBrowser = initialIsStandalone !== undefined ? !initialIsStandalone : displayMode.isBrowser
+  const isMinimalUI = displayMode.isMinimalUI
+  const mode = initialIsStandalone ? 'standalone' : displayMode.mode
 
   const openDrawer = () => setIsDrawerOpen(true)
   const closeDrawer = () => setIsDrawerOpen(false)
@@ -101,6 +121,10 @@ export function MobileProvider({
         isMobile,
         isIOS,
         isAndroid,
+        isStandalone,
+        isBrowser,
+        isMinimalUI,
+        mode,
         isDrawerOpen,
         setIsDrawerOpen,
         openDrawer,
@@ -125,6 +149,10 @@ export function useMobile(): MobileContextType {
       isMobile: false,
       isIOS: false,
       isAndroid: false,
+      isStandalone: false,
+      isBrowser: true,
+      isMinimalUI: false,
+      mode: 'browser',
       isDrawerOpen: false,
       setIsDrawerOpen: () => {},
       openDrawer: () => {},

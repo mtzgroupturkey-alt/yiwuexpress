@@ -16,6 +16,7 @@ import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { BackToTop } from '@/components/ui/BackToTop'
 import { isMobile as checkIsMobile, isIOS as checkIsIOS, isAndroid as checkIsAndroid } from '@/lib/device'
 import { MobileProvider } from '@/components/MobileProvider'
+import { MobileLayoutContainer } from '@/components/mobile/MobileLayoutContainer'
 import { BottomNav } from '@/components/mobile/BottomNav'
 import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 import { LocaleCurrencyAutoDetect } from '@/components/i18n/LocaleCurrencyAutoDetect'
@@ -194,9 +195,9 @@ export default async function LocaleLayout({
                         initialIsIOS={initialIsIOS}
                         initialIsAndroid={initialIsAndroid}
                       >
-                        <main className="pb-20 md:pb-0 min-h-screen">
+                        <MobileLayoutContainer>
                           {children}
-                        </main>
+                        </MobileLayoutContainer>
                         <InstallPrompt />
                         <BottomNav />
                         <BackToTop />

@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl'
 import * as LucideIcons from 'lucide-react'
 import { ChevronRight, Package, Folder } from 'lucide-react'
 import { Category } from '@/app/[locale]/design-3/types'
+import { useMobile } from '@/components/MobileProvider'
 
 interface MobileCategoryRowProps {
   categories?: Category[]
@@ -209,6 +210,7 @@ export function MobileCategoryRow({
 }: MobileCategoryRowProps) {
   const router = useRouter()
   const locale = useLocale()
+  const { isStandalone } = useMobile()
 
   const handleCategoryClick = (catId: string, customCat?: Category) => {
     if (onSelectCategory) {
@@ -275,10 +277,15 @@ export function MobileCategoryRow({
           </p>
         </div>
       ) : (
-        /* 2. Horizontal scroll container with snap-to-next, 12px gap, 16px padding, hidden scrollbar, iOS momentum */
+        /* 2. Layout Container: Horizontal scroll for standalone mode, standard responsive grid for browser mode */
         <div
-          className="flex items-start gap-3 overflow-x-auto px-4 py-1.5 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          data-testid="category-items-container"
+          className={
+            isStandalone
+              ? "flex items-start gap-3 overflow-x-auto px-4 py-1.5 scroll-smooth snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              : "grid grid-cols-4 gap-3 px-4 py-2"
+          }
+          style={isStandalone ? { WebkitOverflowScrolling: 'touch' } : undefined}
         >
           {customCategories && customCategories.length > 0
             ? customCategories.map((cat) => {
@@ -291,7 +298,9 @@ export function MobileCategoryRow({
                     onClick={() => handleCategoryClick(cat.slug || cat.id, cat)}
                     data-testid={`category-card-${cat.id}`}
                     aria-label={cat.name}
-                    className="snap-start shrink-0 flex flex-col items-center gap-1.5 w-[88px] min-w-[88px] focus:outline-none group active:scale-95 transition-transform touch-manipulation cursor-pointer"
+                    className={`flex flex-col items-center gap-1.5 focus:outline-none group active:scale-95 transition-transform touch-manipulation cursor-pointer ${
+                      isStandalone ? 'snap-start shrink-0 w-[88px] min-w-[88px]' : 'w-full'
+                    }`}
                   >
                     {/* 3. Category card: 88×88px circle image + label below */}
                     <div className="w-[88px] h-[88px] rounded-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 border border-gray-200/90 dark:border-slate-700 shadow-2xs group-hover:border-[#00407a] transition-colors flex items-center justify-center relative">
@@ -314,7 +323,9 @@ export function MobileCategoryRow({
                     onClick={() => handleCategoryClick(cat.slug)}
                     data-testid={`category-card-${cat.id}`}
                     aria-label={label}
-                    className="snap-start shrink-0 flex flex-col items-center gap-1.5 w-[88px] min-w-[88px] focus:outline-none group active:scale-95 transition-transform touch-manipulation cursor-pointer"
+                    className={`flex flex-col items-center gap-1.5 focus:outline-none group active:scale-95 transition-transform touch-manipulation cursor-pointer ${
+                      isStandalone ? 'snap-start shrink-0 w-[88px] min-w-[88px]' : 'w-full'
+                    }`}
                   >
                     {/* 3. Category card: 88×88px circle */}
                     <div

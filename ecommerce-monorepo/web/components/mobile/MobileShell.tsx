@@ -31,14 +31,15 @@ export function MobileShell({
   searchProps,
   showDrawer = true,
   drawerProps,
-  showBottomNav = true,
+  showBottomNav,
   title,
   showBack = false,
   backHref,
   onBack,
   className = '',
 }: MobileShellProps) {
-  const { isDrawerOpen, closeDrawer } = useMobile()
+  const { isDrawerOpen, closeDrawer, isStandalone } = useMobile()
+  const effectiveShowBottomNav = showBottomNav !== undefined ? showBottomNav : isStandalone
 
   return (
     <div
@@ -65,7 +66,7 @@ export function MobileShell({
         data-testid="mobile-main-content"
         className={`flex-1 w-full max-w-lg mx-auto ${
           showHeader ? 'pt-[calc(56px+env(safe-area-inset-top,0px))]' : ''
-        } ${showBottomNav ? 'pb-20' : 'pb-6'}`}
+        } ${effectiveShowBottomNav ? 'pb-20' : 'pb-6'}`}
       >
         {children}
       </main>
@@ -80,7 +81,7 @@ export function MobileShell({
       )}
 
       {/* 5. Bottom Navigation Bar */}
-      {showBottomNav && <BottomNav />}
+      {effectiveShowBottomNav && <BottomNav forceVisible={effectiveShowBottomNav} />}
     </div>
   )
 }
