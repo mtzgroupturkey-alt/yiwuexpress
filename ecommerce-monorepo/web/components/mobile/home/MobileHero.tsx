@@ -34,6 +34,7 @@ export function MobileHero({
   const router = useRouter()
   const locale = useLocale()
   const { settings } = useSettings()
+  const { isStandalone } = useMobile()
 
   const defaultSlides: HeroSlide[] = [
     {
@@ -206,6 +207,62 @@ export function MobileHero({
     } else {
       router.push(`/${locale}${slide.href}`)
     }
+  }
+
+  // In browser mode, render a static banner instead of the carousel
+  if (!isStandalone) {
+    const firstSlide = slides[0]
+    return (
+      <section
+        data-testid="mobile-hero"
+        aria-label="Mobile Hero Banner"
+        className={`w-full px-4 py-3 select-none ${className}`}
+      >
+        <div
+          className={`relative rounded-2xl px-6 py-8 text-white overflow-hidden bg-gradient-to-br ${
+            firstSlide.bgGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]'
+          }`}
+        >
+          {/* Decorative overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent pointer-events-none" />
+
+          {/* Icon — top-right decoration */}
+          <div className="absolute top-5 right-5 opacity-20">
+            {firstSlide.icon || <Sparkles className="w-16 h-16 text-white" />}
+          </div>
+
+          {/* Content */}
+          <div className="relative z-10 space-y-3 max-w-[80%]">
+            {firstSlide.badge && (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-white border border-white/20 shadow-xs">
+                {firstSlide.icon || <Sparkles className="w-3.5 h-3.5 text-[#F5A602]" />}
+                <span>{firstSlide.badge}</span>
+              </div>
+            )}
+
+            <h2 className="text-2xl font-black tracking-tight leading-tight text-white line-clamp-2 drop-shadow-md">
+              {firstSlide.title}
+            </h2>
+
+            <p className="text-xs text-white/85 line-clamp-2 leading-relaxed drop-shadow-xs">
+              {firstSlide.subtitle}
+            </p>
+
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => handleCtaClick(firstSlide)}
+                aria-label={firstSlide.ctaText}
+                className="min-h-[44px] h-[44px] px-6 rounded-xl bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold text-xs inline-flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform touch-manipulation cursor-pointer"
+              >
+                <span>{firstSlide.ctaText}</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (

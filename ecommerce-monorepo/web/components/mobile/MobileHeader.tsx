@@ -49,7 +49,7 @@ export function MobileHeader({
   const router = useRouter()
   const locale = useLocale()
   const { settings } = useSettings()
-  const { openDrawer, toggleDrawer, toggleSearch } = useMobile()
+  const { openDrawer, toggleDrawer, toggleSearch, isStandalone } = useMobile()
 
   const { cartCount } = useCart()
   const { quoteCount } = useQuoteCart()
@@ -113,7 +113,11 @@ export function MobileHeader({
   return (
     <header
       data-testid="mobile-header"
-      className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white dark:bg-[#0f172a] border-b border-gray-200/80 dark:border-slate-800 transition-colors shadow-2xs ${className}`}
+      className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white dark:bg-[#0f172a] transition-colors ${
+        isStandalone
+          ? 'shadow-2xs border-b border-gray-200/80 dark:border-slate-800'
+          : 'shadow-none border-b border-gray-100 dark:border-slate-800/50'
+      } ${className}`}
       style={{
         paddingTop: 'env(safe-area-inset-top, 0px)',
       }}

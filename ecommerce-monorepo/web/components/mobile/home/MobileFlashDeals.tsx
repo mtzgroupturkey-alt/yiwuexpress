@@ -8,6 +8,7 @@ import { Zap, Clock, Plus, Check, ChevronRight, ShoppingCart, FileText } from 'l
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useMobile } from '@/components/MobileProvider'
 
 interface MobileFlashDealsProps {
   deals: Product[]
@@ -30,6 +31,7 @@ export function MobileFlashDeals({
   const locale = useLocale()
   const { formatPrice } = useCurrency()
   const { isWholesaleSession } = useSessionMode()
+  const { isStandalone } = useMobile()
 
   // Countdown timer state (e.g. 06:45:12)
   const [timeLeft, setTimeLeft] = useState({ hours: 6, minutes: 42, seconds: 18 })
@@ -107,105 +109,206 @@ export function MobileFlashDeals({
         </button>
       </div>
 
-      {/* Horizontal Swipeable Cards */}
-      <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar px-4 py-1 scroll-smooth snap-x snap-mandatory">
-        {deals && deals.length > 0 ? (
-          deals.map((product) => {
-            const hasDiscount =
-              product.oldPrice && product.oldPrice > product.price
-            const discountPercent = hasDiscount
-              ? Math.round(
-                  ((product.oldPrice! - product.price) / product.oldPrice!) * 100
-                )
-              : null
+      {/* Cards: 2-col grid in browser mode, horizontal scroll in standalone */}
+      {isStandalone ? (
+        <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar px-4 py-1 scroll-smooth snap-x snap-mandatory">
+          {deals && deals.length > 0 ? (
+            deals.map((product) => {
+              const hasDiscount =
+                product.oldPrice && product.oldPrice > product.price
+              const discountPercent = hasDiscount
+                ? Math.round(
+                    ((product.oldPrice! - product.price) / product.oldPrice!) * 100
+                  )
+                : null
 
-            return (
-              <div
-                key={product.id}
-                onClick={() => handleCardClick(product)}
-                className="snap-start shrink-0 w-[156px] rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between overflow-hidden cursor-pointer active:scale-98 transition-transform touch-manipulation"
-              >
-                {/* Product Image + Discount Badge */}
-                <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 p-2">
-                  {discountPercent && (
-                    <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded-md bg-red-600 text-white font-black text-[10px] shadow-xs">
-                      -{discountPercent}%
-                    </span>
-                  )}
-                  {product.image ? (
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      sizes="156px"
-                      className="object-contain p-2"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                      <Zap className="w-8 h-8" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Info */}
-                <div className="p-2.5 flex flex-col justify-between flex-1 gap-1.5">
-                  <h4 className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
-                    {product.name}
-                  </h4>
-
-                  <div className="mt-auto">
-                    {/* Price and Action Row */}
-                    <div className="flex items-end justify-between gap-1">
-                      <div>
-                        <div className="font-extrabold text-sm text-[#00407a] dark:text-[#F5A602]">
-                          {formatPrice(product.price)}
-                        </div>
-                        {hasDiscount && (
-                          <div className="text-[10px] text-gray-400 line-through">
-                            {formatPrice(product.oldPrice!)}
-                          </div>
-                        )}
-                        {product.moq && (
-                          <div className="text-[10px] text-gray-500 dark:text-slate-400">
-                            MOQ: {product.moq} pcs
-                          </div>
-                        )}
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => handleCardClick(product)}
+                  className="snap-start shrink-0 w-[156px] rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between overflow-hidden cursor-pointer active:scale-98 transition-transform touch-manipulation"
+                >
+                  {/* Product Image + Discount Badge */}
+                  <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 p-2">
+                    {discountPercent && (
+                      <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded-md bg-red-600 text-white font-black text-[10px] shadow-xs">
+                        -{discountPercent}%
+                      </span>
+                    )}
+                    {product.image ? (
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="156px"
+                        className="object-contain p-2"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Zap className="w-8 h-8" />
                       </div>
+                    )}
+                  </div>
 
-                      {/* Add Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => handleActionClick(e, product)}
-                        aria-label={
-                          isWholesaleSession
-                            ? 'Request quote'
-                            : 'Add to shopping cart'
-                        }
-                        className="min-w-[40px] min-h-[40px] rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform touch-manipulation"
-                      >
-                        {isWholesaleSession ? (
-                          <FileText className="w-4 h-4" />
-                        ) : (
-                          <Plus className="w-4 h-4" />
-                        )}
-                      </button>
+                  {/* Product Info */}
+                  <div className="p-2.5 flex flex-col justify-between flex-1 gap-1.5">
+                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
+                      {product.name}
+                    </h4>
+
+                    <div className="mt-auto">
+                      {/* Price and Action Row */}
+                      <div className="flex items-end justify-between gap-1">
+                        <div>
+                          <div className="font-extrabold text-sm text-[#00407a] dark:text-[#F5A602]">
+                            {formatPrice(product.price)}
+                          </div>
+                          {hasDiscount && (
+                            <div className="text-[10px] text-gray-400 line-through">
+                              {formatPrice(product.oldPrice!)}
+                            </div>
+                          )}
+                          {product.moq && (
+                            <div className="text-[10px] text-gray-500 dark:text-slate-400">
+                              MOQ: {product.moq} pcs
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Add Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleActionClick(e, product)}
+                          aria-label={
+                            isWholesaleSession
+                              ? 'Request quote'
+                              : 'Add to shopping cart'
+                          }
+                          className="min-w-[40px] min-h-[40px] rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform touch-manipulation"
+                        >
+                          {isWholesaleSession ? (
+                            <FileText className="w-4 h-4" />
+                          ) : (
+                            <Plus className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )
-          })
-        ) : (
-          <div className="w-full py-6 text-center text-xs text-gray-400">
-            {locale === 'zh'
-              ? '今日限时抢购正在更新中...'
-              : locale === 'ru'
-              ? 'Горящие предложения обновляются...'
-              : 'Flash deals updating...'}
-          </div>
-        )}
-      </div>
+              )
+            })
+          ) : (
+            <div className="w-full py-6 text-center text-xs text-gray-400">
+              {locale === 'zh'
+                ? '今日限时抢购正在更新中...'
+                : locale === 'ru'
+                ? 'Горящие предложения обновляются...'
+                : 'Flash deals updating...'}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 px-4 py-1">
+          {deals && deals.length > 0 ? (
+            deals.map((product) => {
+              const hasDiscount =
+                product.oldPrice && product.oldPrice > product.price
+              const discountPercent = hasDiscount
+                ? Math.round(
+                    ((product.oldPrice! - product.price) / product.oldPrice!) * 100
+                  )
+                : null
+
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => handleCardClick(product)}
+                  className="rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 shadow-xs flex flex-col justify-between overflow-hidden cursor-pointer active:scale-98 transition-transform touch-manipulation"
+                >
+                  {/* Product Image + Discount Badge */}
+                  <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 p-2">
+                    {discountPercent && (
+                      <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded-md bg-red-600 text-white font-black text-[10px] shadow-xs">
+                        -{discountPercent}%
+                      </span>
+                    )}
+                    {product.image ? (
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 200px"
+                        className="object-contain p-2"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Zap className="w-8 h-8" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Info */}
+                  <div className="p-2.5 flex flex-col justify-between flex-1 gap-1.5">
+                    <h4 className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
+                      {product.name}
+                    </h4>
+
+                    <div className="mt-auto">
+                      {/* Price and Action Row */}
+                      <div className="flex items-end justify-between gap-1">
+                        <div>
+                          <div className="font-extrabold text-sm text-[#00407a] dark:text-[#F5A602]">
+                            {formatPrice(product.price)}
+                          </div>
+                          {hasDiscount && (
+                            <div className="text-[10px] text-gray-400 line-through">
+                              {formatPrice(product.oldPrice!)}
+                            </div>
+                          )}
+                          {product.moq && (
+                            <div className="text-[10px] text-gray-500 dark:text-slate-400">
+                              MOQ: {product.moq} pcs
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Add Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleActionClick(e, product)}
+                          aria-label={
+                            isWholesaleSession
+                              ? 'Request quote'
+                              : 'Add to shopping cart'
+                          }
+                          className="min-w-[40px] min-h-[40px] rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform touch-manipulation"
+                        >
+                          {isWholesaleSession ? (
+                            <FileText className="w-4 h-4" />
+                          ) : (
+                            <Plus className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <div className="col-span-2 py-6 text-center text-xs text-gray-400">
+              {locale === 'zh'
+                ? '今日限时抢购正在更新中...'
+                : locale === 'ru'
+                ? 'Горящие предложения обновляются...'
+                : 'Flash deals updating...'}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }
