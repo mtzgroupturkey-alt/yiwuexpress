@@ -3,49 +3,50 @@ import { X, LayoutGrid, ChevronRight, ChevronLeft, Zap, ArrowRight, Sparkles } f
 import { DEPARTMENTS } from '../data/catalogData';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
-export interface CatalogChildCategory {
-  id: string;
-  name: string;
-  slug?: string;
-  level?: number;
-  children?: Array<{ id: string; name: string; slug?: string; level?: number }>;
-}
+  export interface CatalogChildCategory {
+    id: string;
+    name: string;
+    slug?: string;
+    level?: number;
+    itemCount?: number;
+    children?: Array<{ id: string; name: string; slug?: string; level?: number; itemCount?: number }>;
+  }
 
-export interface CatalogCategory {
-  id: string;
-  name: string;
-  slug?: string;
-  itemCount?: number;
-  subcategories?: string[];
-  children?: CatalogChildCategory[];
-}
+  export interface CatalogCategory {
+    id: string;
+    name: string;
+    slug?: string;
+    itemCount?: number;
+    subcategories?: string[];
+    children?: CatalogChildCategory[];
+  }
 
-interface CatalogModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelectDepartment: (deptName: string, subcategory?: string) => void;
-  categories?: CatalogCategory[];
-}
+  interface CatalogModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelectDepartment: (deptName: string, subcategory?: string) => void;
+    categories?: CatalogCategory[];
+  }
 
-export const CatalogModal: React.FC<CatalogModalProps> = ({
-  isOpen,
-  onClose,
-  onSelectDepartment,
-  categories,
-}) => {
-  const { tModals } = useStorefrontTranslation();
-  const departmentsList = (categories && categories.length > 0)
-    ? categories.map((c) => ({
-        id: c.id,
-        name: c.name,
-        slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
-        itemCount: c.itemCount || 10,
-        subcategories: c.subcategories && c.subcategories.length > 0
-          ? c.subcategories
-          : ['All ' + c.name, 'Best Sellers', 'New Arrivals', 'Special Offers'],
-        children: c.children,
-      }))
-    : DEPARTMENTS.map((d) => ({ ...d, children: undefined as CatalogChildCategory[] | undefined }));
+  export const CatalogModal: React.FC<CatalogModalProps> = ({
+    isOpen,
+    onClose,
+    onSelectDepartment,
+    categories,
+  }) => {
+    const { tModals } = useStorefrontTranslation();
+    const departmentsList = (categories && categories.length > 0)
+      ? categories.map((c) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
+          itemCount: typeof c.itemCount === 'number' ? c.itemCount : 0,
+          subcategories: c.subcategories && c.subcategories.length > 0
+            ? c.subcategories
+            : ['All ' + c.name, 'Best Sellers', 'New Arrivals', 'Special Offers'],
+          children: c.children,
+        }))
+      : DEPARTMENTS.map((d) => ({ ...d, children: undefined as CatalogChildCategory[] | undefined }));
 
   const [activeDeptId, setActiveDeptId] = useState(departmentsList[0]?.id || DEPARTMENTS[0].id);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
@@ -227,17 +228,24 @@ export const CatalogModal: React.FC<CatalogModalProps> = ({
                               {child.name}
                             </span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              onSelectDepartment(child.name);
-                              onClose();
-                            }}
-                            className="text-slate-300 group-hover:text-[#00407a] p-0.5 cursor-pointer shrink-0 transition-colors"
-                            title={`View all ${child.name}`}
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {typeof child.itemCount === 'number' && (
+                              <span className="text-[10px] text-slate-400 font-semibold px-1.5 py-0.5 rounded-full bg-slate-100">
+                                {child.itemCount}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onSelectDepartment(child.name);
+                                onClose();
+                              }}
+                              className="text-slate-300 group-hover:text-[#00407a] p-0.5 cursor-pointer shrink-0 transition-colors"
+                              title={`View all ${child.name}`}
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Level 3 Children Tags (if any) */}

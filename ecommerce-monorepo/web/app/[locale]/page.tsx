@@ -198,7 +198,7 @@ export default function Home() {
         name: c.name,
         slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
         level: c.level || 1,
-        itemCount: c.itemCount || 10,
+        itemCount: typeof c.itemCount === 'number' ? c.itemCount : 0,
         subcategories,
         children: childrenList,
       };

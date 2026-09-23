@@ -33,87 +33,129 @@ export async function GET(request: Request) {
       where.level = level
     }
 
-    const categories = await prisma.category.findMany({
-      where,
-      include: {
-        _count: {
-          select: {
-            products: {
-              where: { isActive: true }
-            }
-          }
-        },
-        parent: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            translations: {
-              where: { locale: { in: [locale, 'en'] } },
-              select: { locale: true, name: true, description: true }
-            }
-          }
-        },
-        children: includeChildren ? {
-          where: { isActive: true },
-          orderBy: [
-            { menuOrder: 'asc' },
-            { displayOrder: 'asc' },
-            { name: 'asc' }
-          ],
-          include: {
-            children: {
-              where: { isActive: true },
-              orderBy: [
-                { menuOrder: 'asc' },
-                { displayOrder: 'asc' },
-                { name: 'asc' }
-              ],
-              include: {
-                children: {
-                  where: { isActive: true },
-                  orderBy: [
-                    { menuOrder: 'asc' },
-                    { displayOrder: 'asc' },
-                    { name: 'asc' }
-                  ],
-                  include: {
-                    translations: {
-                      where: { locale: { in: [locale, 'en'] } },
-                      select: { locale: true, name: true, description: true }
-                    }
-                  }
-                },
-                translations: {
-                  where: { locale: { in: [locale, 'en'] } },
-                  select: { locale: true, name: true, description: true }
-                }
+    const [categories, productGroups] = await Promise.all([
+      prisma.category.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              products: {
+                where: { isActive: true }
               }
-            },
-            translations: {
-              where: { locale: { in: [locale, 'en'] } },
-              select: { locale: true, name: true, description: true }
             }
+          },
+          parent: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              translations: {
+                where: { locale: { in: [locale, 'en'] } },
+                select: { locale: true, name: true, description: true }
+              }
+            }
+          },
+          children: includeChildren ? {
+            where: { isActive: true },
+            orderBy: [
+              { menuOrder: 'asc' },
+              { displayOrder: 'asc' },
+              { name: 'asc' }
+            ],
+            include: {
+              children: {
+                where: { isActive: true },
+                orderBy: [
+                  { menuOrder: 'asc' },
+                  { displayOrder: 'asc' },
+                  { name: 'asc' }
+                ],
+                include: {
+                  children: {
+                    where: { isActive: true },
+                    orderBy: [
+                      { menuOrder: 'asc' },
+                      { displayOrder: 'asc' },
+                      { name: 'asc' }
+                    ],
+                    include: {
+                      translations: {
+                        where: { locale: { in: [locale, 'en'] } },
+                        select: { locale: true, name: true, description: true }
+                      }
+                    }
+                  },
+                  translations: {
+                    where: { locale: { in: [locale, 'en'] } },
+                    select: { locale: true, name: true, description: true }
+                  }
+                }
+              },
+              translations: {
+                where: { locale: { in: [locale, 'en'] } },
+                select: { locale: true, name: true, description: true }
+              }
+            }
+          } : false,
+          translations: {
+            where: { locale: { in: [locale, 'en'] } },
+            select: { locale: true, name: true, description: true }
           }
-        } : false,
-        translations: {
-          where: { locale: { in: [locale, 'en'] } },
-          select: { locale: true, name: true, description: true }
+        },
+        orderBy: [
+          { menuOrder: 'asc' },
+          { displayOrder: 'asc' },
+          { name: 'asc' }
+        ],
+        take: limit
+      }),
+      prisma.product.groupBy({
+        by: ['categoryId'],
+        where: { isActive: true },
+        _count: { id: true },
+      })
+    ])
+
+    const countMap = new Map<string, number>()
+    for (const item of productGroups) {
+      if (item.categoryId) {
+        countMap.set(item.categoryId, item._count.id)
+      }
+    }
+
+    // Attach recursive product counts (direct products + products in child subcategories)
+    const attachRecursiveCount = (node: any): number => {
+      const direct = countMap.get(node.id) || 0
+      let subTotal = 0
+      if (Array.isArray(node.children) && node.children.length > 0) {
+        for (const child of node.children) {
+          subTotal += attachRecursiveCount(child)
         }
-      },
-      orderBy: [
-        { menuOrder: 'asc' },
-        { displayOrder: 'asc' },
-        { name: 'asc' }
-      ],
-      take: limit
-    })
+      }
+      const total = direct + subTotal
+      node.directProductCount = direct
+      node.itemCount = total
+      node.productCount = total
+      node._count = { products: total }
+      return total
+    }
+
+    for (const cat of categories) {
+      attachRecursiveCount(cat)
+    }
 
     // Expand-and-Contract read-path localization: resolve each category's name
     // (and nested children) to the active locale with English fallback.
     const localizeNode = (node: any): any => {
       const localized = localizeCategory(node, locale)
-      const out = { ...node, name: localized.name, description: localized.description }
+      const out = {
+        ...node,
+        name: localized.name,
+        description: localized.description,
+        itemCount: node.itemCount ?? 0,
+        productCount: node.productCount ?? 0,
+        _count: { products: node.itemCount ?? 0 },
+      }
       if (Array.isArray(node.children)) {
         out.children = node.children.map(localizeNode)
       }

@@ -145,7 +145,11 @@ export function Design3LayoutHeader() {
       id: c.id,
       name: c.name,
       slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
-      itemCount: (c._count?.products || 0) + (c.children?.length ? c.children.length * 6 : 8),
+      itemCount: typeof c.itemCount === 'number'
+        ? c.itemCount
+        : typeof c.productCount === 'number'
+        ? c.productCount
+        : (c._count?.products || 0),
       subcategories: Array.isArray(c.children) && c.children.length > 0
         ? c.children.map((sub: any) => sub.name)
         : ['All ' + c.name, 'Best Sellers', 'New Arrivals', 'Featured'],

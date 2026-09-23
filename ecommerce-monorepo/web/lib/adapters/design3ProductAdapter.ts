@@ -101,7 +101,11 @@ export function mapDbCategoryToDesign3(dbCat: any): Category {
     }
   }
 
-  const rawCount = dbCat._count?.products ?? dbCat.productCount;
+  const rawCount = typeof dbCat.itemCount === 'number'
+    ? dbCat.itemCount
+    : typeof dbCat.productCount === 'number'
+    ? dbCat.productCount
+    : dbCat._count?.products;
   const itemCount = typeof rawCount === 'number' ? rawCount : 0;
 
   const children = Array.isArray(dbCat.children) && dbCat.children.length > 0

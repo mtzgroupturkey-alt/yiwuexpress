@@ -10,6 +10,8 @@ interface SubCategory {
   id: string
   name: string
   slug: string
+  itemCount?: number
+  _count?: { products: number }
 }
 
 interface Category {
@@ -18,6 +20,8 @@ interface Category {
   slug: string
   children?: SubCategory[]
   image?: string | null
+  itemCount?: number
+  _count?: { products: number }
 }
 
 interface MegaMenuDrawerProps {
@@ -129,6 +133,15 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                         >
                           {cat.name}
                         </LocaleLink>
+                        {typeof cat.itemCount === 'number' && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full mr-1.5 font-bold shrink-0 ${
+                            isSelected
+                              ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-300'
+                              : 'bg-gray-200/70 text-gray-500 dark:bg-white/10 dark:text-gray-400'
+                          }`}>
+                            {cat.itemCount}
+                          </span>
+                        )}
                         {cat.children && cat.children.length > 0 && (
                           <ChevronRight
                             className={`w-4 h-4 shrink-0 transition-transform ${
@@ -147,10 +160,17 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                     <div>
                       <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100 dark:border-white/10">
                         <div>
-                          <h3 className="text-lg font-black text-gray-900 dark:text-white">
-                            {activeCategory.name}
-                          </h3>
-                          <p className="text-xs text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white">
+                              {activeCategory.name}
+                            </h3>
+                            {typeof activeCategory.itemCount === 'number' && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-100 text-[#00407a] dark:bg-blue-900/40 dark:text-blue-300">
+                                {activeCategory.itemCount} {locale === 'ru' ? 'товаров' : 'products'}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">
                             {locale === 'ru' ? 'Выберите подкатегорию для быстрого перехода' : 'Select subcategory to browse'}
                           </p>
                         </div>
@@ -174,9 +194,16 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                               onClick={onClose}
                               className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100/90 dark:hover:bg-white/10 border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/15 transition group flex flex-col justify-between min-h-[70px]"
                             >
-                              <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 group-hover:text-[#1a3a5c] dark:group-hover:text-[#c9a84c] transition-colors line-clamp-2">
-                                {sub.name}
-                              </span>
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 group-hover:text-[#1a3a5c] dark:group-hover:text-[#c9a84c] transition-colors line-clamp-2">
+                                  {sub.name}
+                                </span>
+                                {typeof sub.itemCount === 'number' && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold bg-gray-200/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 shrink-0">
+                                    {sub.itemCount}
+                                  </span>
+                                )}
+                              </div>
                               <span className="text-[10px] text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 font-medium mt-1 flex items-center gap-0.5">
                                 {locale === 'ru' ? 'Перейти' : 'Explore'} →
                               </span>
