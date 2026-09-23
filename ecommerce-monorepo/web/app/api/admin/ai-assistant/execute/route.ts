@@ -28,8 +28,14 @@ export async function POST(request: NextRequest) {
 
     switch (action.type) {
       case 'createCategories': {
-        const categories = action.payload.categories || []
-        if (categories.length === 0) {
+        const payload = action.payload || {}
+        const categories =
+          payload.categories ||
+          (Array.isArray(payload) ? payload : null) ||
+          (action as any).categories ||
+          []
+
+        if (!Array.isArray(categories) || categories.length === 0) {
           return NextResponse.json(
             { success: false, error: 'No categories found in action payload.' },
             { status: 400 }
@@ -40,8 +46,14 @@ export async function POST(request: NextRequest) {
       }
 
       case 'createAttributes': {
-        const attributes = action.payload.attributes || []
-        if (attributes.length === 0) {
+        const payload = action.payload || {}
+        const attributes =
+          payload.attributes ||
+          (Array.isArray(payload) ? payload : null) ||
+          (action as any).attributes ||
+          []
+
+        if (!Array.isArray(attributes) || attributes.length === 0) {
           return NextResponse.json(
             { success: false, error: 'No attributes found in action payload.' },
             { status: 400 }
@@ -52,8 +64,10 @@ export async function POST(request: NextRequest) {
       }
 
       case 'bulkTranslate': {
-        const translations = action.payload.translations
-        if (!translations || !translations.itemIds || translations.itemIds.length === 0) {
+        const payload = action.payload || {}
+        const translations = payload.translations || (action as any).translations || payload
+
+        if (!translations || !translations.itemIds || !Array.isArray(translations.itemIds) || translations.itemIds.length === 0) {
           return NextResponse.json(
             { success: false, error: 'No translation items found in action payload.' },
             { status: 400 }
@@ -83,7 +97,7 @@ export async function POST(request: NextRequest) {
       message: 'Operation executed successfully.',
     })
   } catch (error: any) {
-    console.error('[AI Assistant Execute] Execution failed:', error)
+    console.error('[AI Assistant Execute] Execution failed:', error.stack || error)
     return NextResponse.json(
       { success: false, error: error.message || 'Failed to execute proposed changes.' },
       { status: 500 }

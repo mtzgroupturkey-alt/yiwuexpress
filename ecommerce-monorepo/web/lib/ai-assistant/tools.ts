@@ -171,9 +171,12 @@ export async function createCategories(
   }
 
   const results: Array<{ id: string; name: string; slug: string; level: number; parentId: string | null }> = []
+  const batchCreatedMap = new Map<string, { id: string; level: number }>()
 
   await prisma.$transaction(async (tx) => {
     for (const item of items) {
+      if (!item || !item.name?.trim()) continue
+
       let finalSlug = item.slug ? slugify(item.slug) : slugify(item.name)
 
       // Ensure slug uniqueness
@@ -185,21 +188,47 @@ export async function createCategories(
       }
       finalSlug = slugCandidate
 
-      // Resolve parentId if parentName was provided
-      let parentId = item.parentId || null
-      let level = item.level || 1
+      // Flexible parent resolution:
+      let parentId: string | null = null
+      let level = item.level && item.level > 0 ? item.level : 1
 
-      if (!parentId && item.parentName) {
+      // 1. Check if parent was created in this same batch
+      const parentNameTarget = (item.parentName || item.parentId || '').trim()
+      if (parentNameTarget && batchCreatedMap.has(parentNameTarget.toLowerCase())) {
+        const parentInfo = batchCreatedMap.get(parentNameTarget.toLowerCase())!
+        parentId = parentInfo.id
+        level = parentInfo.level + 1
+      }
+
+      // 2. Otherwise search in database by ID, slug, or name
+      if (!parentId && item.parentId) {
         const parentCat = await tx.category.findFirst({
-          where: { name: { equals: item.parentName, mode: 'insensitive' } },
+          where: {
+            OR: [
+              { id: item.parentId },
+              { slug: item.parentId },
+              { name: { equals: item.parentId, mode: 'insensitive' } },
+            ],
+          },
         })
         if (parentCat) {
           parentId = parentCat.id
           level = parentCat.level + 1
         }
-      } else if (parentId) {
-        const parentCat = await tx.category.findUnique({ where: { id: parentId } })
+      }
+
+      // 3. Or search in database by parentName
+      if (!parentId && item.parentName) {
+        const parentCat = await tx.category.findFirst({
+          where: {
+            OR: [
+              { name: { equals: item.parentName, mode: 'insensitive' } },
+              { slug: slugify(item.parentName) },
+            ],
+          },
+        })
         if (parentCat) {
+          parentId = parentCat.id
           level = parentCat.level + 1
         }
       }
@@ -216,6 +245,12 @@ export async function createCategories(
           showInMenu: true,
         },
       })
+
+      // Register in batch map for child items in same payload
+      batchCreatedMap.set(item.name.trim().toLowerCase(), { id: created.id, level: created.level })
+      if (item.slug) {
+        batchCreatedMap.set(item.slug.trim().toLowerCase(), { id: created.id, level: created.level })
+      }
 
       // Create translations for ru, zh, and en
       const translationsToCreate: Array<{ locale: string; name: string; description: string | null }> = []
@@ -246,6 +281,7 @@ export async function createCategories(
       }
 
       for (const t of translationsToCreate) {
+        const safeName = (t.name || item.name.trim()).trim()
         await tx.categoryTranslation.upsert({
           where: {
             categoryId_locale: {
@@ -254,13 +290,13 @@ export async function createCategories(
             },
           },
           update: {
-            name: t.name,
+            name: safeName,
             description: t.description,
           },
           create: {
             categoryId: created.id,
             locale: t.locale,
-            name: t.name,
+            name: safeName,
             description: t.description,
           },
         })
@@ -362,7 +398,15 @@ export async function createAttributes(
   const results: Array<{ id: string; name: string; slug: string; type: string }> = []
 
   await prisma.$transaction(async (tx) => {
+    // Valid Prisma AttributeType enum values
+    const VALID_ATTRIBUTE_TYPES = new Set([
+      'TEXT', 'TEXTAREA', 'NUMBER', 'SELECT', 'MULTISELECT',
+      'COLOR', 'COLOR_MULTI', 'FILE', 'URL', 'CHECKBOX', 'DATE'
+    ])
+
     for (const item of items) {
+      if (!item || !item.name?.trim()) continue
+
       let finalSlug = item.slug ? slugify(item.slug) : slugify(item.name)
 
       let slugCandidate = finalSlug
@@ -373,12 +417,34 @@ export async function createAttributes(
       }
       finalSlug = slugCandidate
 
+      // Normalize attribute type
+      const rawType = String(item.type || 'TEXT').toUpperCase().trim()
+      let safeType: any = 'TEXT'
+      if (VALID_ATTRIBUTE_TYPES.has(rawType)) {
+        safeType = rawType
+      } else if (rawType.includes('SELECT') || rawType.includes('DROPDOWN') || rawType.includes('RADIO') || rawType.includes('OPTION')) {
+        safeType = 'SELECT'
+      } else if (rawType.includes('NUM') || rawType.includes('INT') || rawType.includes('FLOAT') || rawType.includes('PRICE') || rawType.includes('WEIGHT')) {
+        safeType = 'NUMBER'
+      } else if (rawType.includes('CHECK') || rawType.includes('BOOL') || rawType.includes('SWITCH')) {
+        safeType = 'CHECKBOX'
+      } else if (rawType.includes('COLOR')) {
+        safeType = rawType.includes('MULTI') ? 'COLOR_MULTI' : 'COLOR'
+      } else if (rawType.includes('AREA') || rawType.includes('DESC')) {
+        safeType = 'TEXTAREA'
+      } else {
+        safeType = 'TEXT'
+      }
+
+      // Format options
+      const safeOptions = Array.isArray(item.options) && item.options.length > 0 ? item.options : undefined
+
       const created = await tx.attribute.create({
         data: {
           name: item.name.trim(),
           slug: finalSlug,
-          type: item.type || 'TEXT',
-          options: item.options && item.options.length > 0 ? item.options : undefined,
+          type: safeType,
+          options: safeOptions,
           placeholder: item.placeholder?.trim() || null,
           helperText: item.helperText?.trim() || null,
           isRequired: Boolean(item.isRequired),
@@ -422,6 +488,7 @@ export async function createAttributes(
       }
 
       for (const t of translationsToCreate) {
+        const safeName = (t.name || item.name.trim()).trim()
         await tx.attributeTranslation.upsert({
           where: {
             attributeId_locale: {
@@ -430,37 +497,74 @@ export async function createAttributes(
             },
           },
           update: {
-            name: t.name,
+            name: safeName,
             placeholder: t.placeholder,
             helperText: t.helperText,
           },
           create: {
             attributeId: created.id,
             locale: t.locale,
-            name: t.name,
+            name: safeName,
             placeholder: t.placeholder,
             helperText: t.helperText,
           },
         })
       }
 
-      // Bind to categories if specified
-      if (item.categoryIds && item.categoryIds.length > 0) {
-        for (const catId of item.categoryIds) {
-          await tx.categoryAttribute.upsert({
+      // Bind to categories safely by verifying IDs or resolving categoryNames
+      const categoryIdsToBind = new Set<string>()
+
+      if (Array.isArray(item.categoryIds)) {
+        for (const cid of item.categoryIds) {
+          if (!cid) continue
+          const cat = await tx.category.findFirst({
             where: {
-              categoryId_attributeId: {
-                categoryId: catId,
-                attributeId: created.id,
-              },
+              OR: [
+                { id: cid },
+                { slug: cid },
+                { name: { equals: cid, mode: 'insensitive' } },
+              ],
             },
-            update: {},
-            create: {
+            select: { id: true },
+          })
+          if (cat) categoryIdsToBind.add(cat.id)
+        }
+      }
+
+      if (Array.isArray(item.categoryNames)) {
+        for (const cname of item.categoryNames) {
+          if (!cname) continue
+          const cat = await tx.category.findFirst({
+            where: {
+              OR: [
+                { name: { equals: cname, mode: 'insensitive' } },
+                { slug: slugify(cname) },
+              ],
+            },
+            select: { id: true },
+          })
+          if (cat) categoryIdsToBind.add(cat.id)
+        }
+      }
+
+      for (const catId of categoryIdsToBind) {
+        await tx.categoryAttribute.upsert({
+          where: {
+            categoryId_attributeId: {
               categoryId: catId,
               attributeId: created.id,
             },
-          })
-        }
+          },
+          update: {
+            isVisible: true,
+          },
+          create: {
+            categoryId: catId,
+            attributeId: created.id,
+            isRequired: Boolean(item.isRequired),
+            isVisible: true,
+          },
+        })
       }
 
       results.push({
