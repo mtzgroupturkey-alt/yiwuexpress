@@ -162,10 +162,10 @@ export function MobileHeader({
         className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white/98 dark:bg-[#0f172a]/98 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.07)] transition-colors ${className}`}
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
-        {/* Row 1: Brand / Logo on left, language/currency, cart, menu on right (64px height) */}
-        <div className="h-16 px-3.5 sm:px-5 flex items-center justify-between gap-2.5 w-full max-w-4xl mx-auto">
-          {/* Left: Back button (if on subpage) and Brand Logo */}
-          <div className="flex items-center gap-2 min-w-0 shrink">
+        {/* Row 1: Full Brand Name / Logo on left, cart, menu on right (64px height) */}
+        <div className="h-16 px-3.5 sm:px-5 flex items-center justify-between gap-3 w-full max-w-4xl mx-auto">
+          {/* Left: Back button (if on subpage) and Full Brand Logo & Name */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             {showBack ? (
               <button
                 type="button"
@@ -196,11 +196,11 @@ export function MobileHeader({
                 </div>
               )}
               <div className="flex flex-col min-w-0">
-                <span className="text-[17px] font-black tracking-tight text-[#00407a] dark:text-white truncate leading-tight">
+                <span className="text-[17px] sm:text-lg font-black tracking-tight text-[#00407a] dark:text-white truncate leading-tight">
                   {title || companyName}
                 </span>
                 {!title && (
-                  <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase leading-none hidden xs:inline-block">
+                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase leading-none hidden min-[360px]:inline-block mt-0.5">
                     {settings?.siteTagline || 'Global Sourcing & Freight'}
                   </span>
                 )}
@@ -208,11 +208,11 @@ export function MobileHeader({
             </LocaleLink>
           </div>
 
-          {/* Right: Discoverable Language & Currency, Notifications, Cart, Menu */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Standard Language & Currency selectors (Homepage only to keep subpage headers clean) */}
-            {!showBack && !title && (
-              <div className="hidden min-[400px]:flex items-center gap-1 scale-90 origin-right bg-slate-100/80 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
+          {/* Right: Notifications, Cart, Menu (plus Language/Currency fallback if search is hidden) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Fallback Language & Currency in Row 1 only if Row 2 (Search) is hidden */}
+            {!isSearchVisible && (
+              <div className="flex items-center gap-0.5 sm:gap-1 scale-90 origin-right bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-lg border border-slate-200/70 dark:border-slate-700/70 shadow-2xs mr-1">
                 <LanguageSwitcher variant="header-dropdown" />
                 <CurrencySwitcher variant="header-dropdown" />
               </div>
@@ -278,17 +278,24 @@ export function MobileHeader({
           </div>
         </div>
 
-        {/* Row 2: Website Mobile Search Bar (56px height) */}
+        {/* Row 2: Language & Currency Switcher + Website Mobile Search Bar (56px height) */}
         {isSearchVisible && (
-          <div className="h-14 px-3.5 sm:px-5 flex items-center w-full max-w-4xl mx-auto pb-2.5 pt-0.5">
-            <form onSubmit={handleInputSubmit} className="flex items-center gap-2 w-full">
-              <div className="relative flex-1">
+          <div className="h-14 px-3.5 sm:px-5 flex items-center gap-2 w-full max-w-4xl mx-auto pb-2.5 pt-0.5">
+            {/* Language & Currency selectors in Row 2 */}
+            <div className="flex items-center gap-0.5 bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs shrink-0 scale-90 sm:scale-95 origin-left">
+              <LanguageSwitcher variant="header-dropdown" />
+              <CurrencySwitcher variant="header-dropdown" />
+            </div>
+
+            {/* Search Input Form */}
+            <form onSubmit={handleInputSubmit} className="flex-1 flex items-center gap-1.5 min-w-0">
+              <div className="relative flex-1 min-w-0">
                 <button
                   type="button"
                   onClick={handleSearchAction}
                   data-testid="mobile-search-toggle"
                   aria-label="Search"
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 touch-manipulation"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 touch-manipulation"
                 >
                   <Search className="w-4 h-4" />
                 </button>
@@ -297,14 +304,14 @@ export function MobileHeader({
                   value={localQuery}
                   onChange={handleInputChange}
                   placeholder={searchPlaceholder}
-                  className="w-full h-10 pl-10 pr-9 text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs"
+                  className="w-full h-10 pl-9 pr-8 text-xs sm:text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs"
                 />
                 {localQuery ? (
                   <button
                     type="button"
                     onClick={handleClearInput}
                     aria-label="Clear search"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -312,7 +319,7 @@ export function MobileHeader({
               </div>
               <button
                 type="submit"
-                className="h-10 px-4 bg-gradient-to-r from-[#F5A602] to-[#FFB72B] hover:from-[#E09500] hover:to-[#F5A602] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shrink-0 active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                className="h-10 px-3 sm:px-4 bg-gradient-to-r from-[#F5A602] to-[#FFB72B] hover:from-[#E09500] hover:to-[#F5A602] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shrink-0 active:scale-95 transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
               >
                 <span>{locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}</span>
               </button>

@@ -171,23 +171,23 @@ export function CurrencySwitcher({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label="Select Currency"
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 transition-colors font-semibold text-slate-700 cursor-pointer text-xs shadow-2xs group"
+        className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/90 hover:border-slate-300 dark:border-slate-700 transition-colors font-semibold text-slate-700 dark:text-slate-200 text-xs shadow-2xs group"
       >
         <span className="w-4 h-4 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
           {currentCurrency?.symbol || '$'}
         </span>
-        <span className="font-extrabold text-[#00407a] tracking-tight">
+        <span className="font-extrabold text-[#00407a] dark:text-blue-300 tracking-tight">
           {displayCode}
         </span>
-        <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3 h-3 text-slate-400 dark:text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <div 
           role="listbox"
-          className="absolute right-0 top-full mt-1.5 w-56 max-h-80 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150"
+          className="absolute left-0 sm:right-0 sm:left-auto top-full mt-1.5 w-56 max-h-80 overflow-y-auto bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150"
         >
-          <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          <div className="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             Select Currency
           </div>
           {displayCurrencies.map((c) => {
@@ -201,8 +201,8 @@ export function CurrencySwitcher({
                 onClick={() => handleChoose(c.code)}
                 className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs font-medium transition-colors cursor-pointer ${
                   isSelected
-                    ? 'bg-blue-50 text-[#00407a] font-bold'
-                    : 'text-slate-700 hover:bg-slate-50'
+                    ? 'bg-blue-50 dark:bg-blue-950/60 text-[#00407a] dark:text-blue-300 font-bold'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
                 <span className="flex items-center gap-2.5">
