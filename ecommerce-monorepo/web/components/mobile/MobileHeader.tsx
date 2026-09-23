@@ -324,18 +324,10 @@ export function MobileHeader({
           </div>
         </div>
 
-        {/* Row 2: Language & Currency Switcher + Dynamically Expanding Mobile Search Bar (56px height) */}
+        {/* Row 2: Website Mobile Search Bar (Left) + Language & Currency Switcher (Right) (56px height) */}
         {isSearchVisible && (
           <div className="h-14 px-3.5 sm:px-5 flex items-center gap-2 w-full max-w-4xl mx-auto pb-2.5 pt-0.5">
-            {/* Language & Currency selectors in Row 2 (smoothly hides when search expands) */}
-            {!isSearchExpanded && (
-              <div className="flex items-center gap-0.5 bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs shrink-0 scale-90 sm:scale-95 origin-left transition-all duration-200">
-                <LanguageSwitcher variant="header-dropdown" />
-                <CurrencySwitcher variant="header-dropdown" />
-              </div>
-            )}
-
-            {/* Search Input Form (smoothly expands to 100% full width when active) */}
+            {/* Search Input Form (takes left side, expands to 100% full width when active) */}
             <form onSubmit={handleInputSubmit} className="flex-1 flex items-center gap-2 min-w-0 transition-all duration-200">
               <div className="relative flex-1 min-w-0">
                 <button
@@ -380,6 +372,14 @@ export function MobileHeader({
                 </button>
               )}
             </form>
+
+            {/* Language & Currency selectors on the right side of Row 2 (smoothly hides when search expands) */}
+            {!isSearchExpanded && (
+              <div className="flex items-center gap-0.5 bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs shrink-0 scale-90 sm:scale-95 origin-right transition-all duration-200">
+                <LanguageSwitcher variant="header-dropdown" />
+                <CurrencySwitcher variant="header-dropdown" />
+              </div>
+            )}
           </div>
         )}
 

@@ -182,7 +182,7 @@ export function LanguageSwitcher({
       {isOpen && (
         <div 
           role="listbox"
-          className="absolute left-0 sm:right-0 sm:left-auto top-full mt-1.5 w-44 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150"
+          className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in-50 zoom-in-95 duration-150"
         >
           <div className="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             {currentLocale === 'zh' ? '选择界面语言' : currentLocale === 'ru' ? 'Выберите язык' : 'Select Language'}
