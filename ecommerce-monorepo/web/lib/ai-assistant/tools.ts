@@ -233,24 +233,73 @@ export async function createCategories(
         }
       }
 
-      // Create Category
-      const created = await tx.category.create({
-        data: {
-          name: item.name.trim(),
-          slug: finalSlug,
-          description: item.description?.trim() || null,
-          parentId,
-          level,
-          isActive: true,
-          showInMenu: true,
-        },
+      const trimmedName = item.name.trim()
+
+      // Check if category already exists by name or slug
+      let existing = await tx.category.findFirst({
+        where: { name: { equals: trimmedName, mode: 'insensitive' } },
       })
 
-      // Register in batch map for child items in same payload
-      batchCreatedMap.set(item.name.trim().toLowerCase(), { id: created.id, level: created.level })
-      if (item.slug) {
-        batchCreatedMap.set(item.slug.trim().toLowerCase(), { id: created.id, level: created.level })
+      if (!existing && item.slug) {
+        existing = await tx.category.findUnique({
+          where: { slug: slugify(item.slug) },
+        })
       }
+
+      let categoryRecord: { id: string; name: string; slug: string; level: number; parentId: string | null }
+
+      if (existing) {
+        // If it already exists, update parentId if needed and reuse without failing
+        const updated = await tx.category.update({
+          where: { id: existing.id },
+          data: {
+            description: item.description?.trim() || existing.description,
+            parentId: existing.parentId || parentId,
+            isActive: true,
+            showInMenu: true,
+          },
+        })
+        categoryRecord = {
+          id: updated.id,
+          name: updated.name,
+          slug: updated.slug,
+          level: updated.level,
+          parentId: updated.parentId,
+        }
+      } else {
+        // Ensure slug uniqueness
+        let slugCandidate = finalSlug
+        let counter = 1
+        while (await tx.category.findUnique({ where: { slug: slugCandidate } })) {
+          slugCandidate = `${finalSlug}-${counter}`
+          counter++
+        }
+        finalSlug = slugCandidate
+
+        // Create Category
+        const created = await tx.category.create({
+          data: {
+            name: trimmedName,
+            slug: finalSlug,
+            description: item.description?.trim() || null,
+            parentId,
+            level,
+            isActive: true,
+            showInMenu: true,
+          },
+        })
+        categoryRecord = {
+          id: created.id,
+          name: created.name,
+          slug: created.slug,
+          level: created.level,
+          parentId: created.parentId,
+        }
+      }
+
+      // Register in batch map for child items in same payload
+      batchCreatedMap.set(categoryRecord.name.toLowerCase(), { id: categoryRecord.id, level: categoryRecord.level })
+      batchCreatedMap.set(categoryRecord.slug.toLowerCase(), { id: categoryRecord.id, level: categoryRecord.level })
 
       // Create translations for ru, zh, and en
       const translationsToCreate: Array<{ locale: string; name: string; description: string | null }> = []
@@ -258,7 +307,7 @@ export async function createCategories(
       // Add English translation
       translationsToCreate.push({
         locale: 'en',
-        name: item.translations?.en?.name?.trim() || item.name.trim(),
+        name: item.translations?.en?.name?.trim() || categoryRecord.name,
         description: item.translations?.en?.description?.trim() || item.description?.trim() || null,
       })
 
@@ -281,11 +330,11 @@ export async function createCategories(
       }
 
       for (const t of translationsToCreate) {
-        const safeName = (t.name || item.name.trim()).trim()
+        const safeName = (t.name || categoryRecord.name).trim()
         await tx.categoryTranslation.upsert({
           where: {
             categoryId_locale: {
-              categoryId: created.id,
+              categoryId: categoryRecord.id,
               locale: t.locale,
             },
           },
@@ -294,7 +343,7 @@ export async function createCategories(
             description: t.description,
           },
           create: {
-            categoryId: created.id,
+            categoryId: categoryRecord.id,
             locale: t.locale,
             name: safeName,
             description: t.description,
@@ -302,13 +351,7 @@ export async function createCategories(
         })
       }
 
-      results.push({
-        id: created.id,
-        name: created.name,
-        slug: created.slug,
-        level: created.level,
-        parentId: created.parentId,
-      })
+      results.push(categoryRecord)
     }
   })
 
