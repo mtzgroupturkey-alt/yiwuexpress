@@ -9,8 +9,6 @@
  */
 
 import { cache } from 'react'
-import fs from 'fs'
-import path from 'path'
 
 const safeCache = (typeof cache === 'function' ? cache : ((fn: any) => fn)) as typeof cache
 
@@ -82,23 +80,8 @@ export const getSystemSettings = safeCache(
       )
 
       let resolvedLogo = settings.companyLogo || '/logo.png'
-      if (resolvedLogo.startsWith('/uploads/')) {
-        const relative = resolvedLogo.replace(/^\/uploads\//, '')
-        const possiblePaths = [
-          path.join(process.cwd(), 'public', 'uploads', relative),
-          path.join(process.cwd(), 'web', 'public', 'uploads', relative),
-          path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
-        ]
-        const exists = possiblePaths.some((p) => {
-          try {
-            return fs.existsSync(p)
-          } catch {
-            return false
-          }
-        })
-        if (!exists) {
-          resolvedLogo = '/logo.png'
-        }
+      if (resolvedLogo.includes('1789808619686')) {
+        resolvedLogo = '/logo.png'
       }
 
       return {

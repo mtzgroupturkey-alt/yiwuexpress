@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslations, useLocale } from 'next-intl'
-import { DEFAULT_COMPANY_NAME } from '@/lib/company'
+import { DEFAULT_COMPANY_NAME } from '@/lib/company-constants'
 
 interface PreloaderProps {
   onComplete?: () => void
