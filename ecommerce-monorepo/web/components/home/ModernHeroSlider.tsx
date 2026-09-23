@@ -354,22 +354,40 @@ export function ModernHeroSlider() {
             {slide.mobileImageUrl ? (
               <>
                 <img
-                  src={slide.imageUrl}
+                  src={slide.imageUrl || '/images/hero/hero-1.jpg'}
                   alt={slide.title}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement
+                    if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
+                      target.src = '/images/hero/hero-1.jpg'
+                    }
+                  }}
                   className="hidden md:block w-full h-full object-cover"
                   loading="lazy"
                 />
                 <img
-                  src={slide.mobileImageUrl}
+                  src={slide.mobileImageUrl || '/images/hero/hero-1.jpg'}
                   alt={slide.title}
+                  onError={(e) => {
+                    const target = e.currentTarget as HTMLImageElement
+                    if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
+                      target.src = '/images/hero/hero-1.jpg'
+                    }
+                  }}
                   className="md:hidden w-full h-full object-cover"
                   loading="lazy"
                 />
               </>
             ) : (
               <img
-                src={slide.imageUrl}
+                src={slide.imageUrl || '/images/hero/hero-1.jpg'}
                 alt={slide.title}
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement
+                  if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
+                    target.src = '/images/hero/hero-1.jpg'
+                  }
+                }}
                 className="w-full h-full object-cover"
                 loading="lazy"
               />

@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
   MessageSquare, Building2, User, FolderTree, Tag, Star,
   PieChart, ArrowUpCircle, ArrowDownCircle, TrendingUp, Image as ImageIcon,
-  Building, Globe2, Shield, BarChart3, Server, Bell, LucideIcon
+  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, LucideIcon
 } from 'lucide-react'
 
 export interface NavItem {
@@ -34,6 +34,7 @@ export const navigationConfig: NavGroup[] = [
     icon: LayoutDashboard,
     items: [
       { label: 'Home', translationKey: 'home', href: '/admin', icon: LayoutDashboard },
+      { label: 'AI Assistant', translationKey: 'aiAssistant', href: '/admin/ai-assistant', icon: Sparkles },
       { label: 'Reports', translationKey: 'reports', href: '/admin/reports/sales', icon: BarChart3 },
     ]
   },

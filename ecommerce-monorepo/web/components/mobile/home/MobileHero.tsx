@@ -26,6 +26,14 @@ interface MobileHeroProps {
   className?: string
 }
 
+const LOCAL_HERO_FALLBACKS = [
+  '/images/hero/hero-1.jpg',
+  '/images/hero/hero-2.jpg',
+  '/images/hero/hero-3.jpg',
+  '/uploads/general/1783111746070-3d4329c4824b0db3e33a8ebc287f8486.jpg',
+  '/uploads/general/1783111760596-3d1db3241362aaa0526d244d94eb6a0a.jpg',
+]
+
 export function MobileHero({
   slides: customSlides,
   onShopNow,
@@ -50,17 +58,25 @@ export function MobileHero({
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (!active || !data?.data || !Array.isArray(data.data) || data.data.length === 0) return
-          const mapped = data.data.map((item: any, idx: number) => ({
-            id: String(item.id || idx),
-            badge: item.badgeText || item.tag || item.subtag || '',
-            title: item.title || item.headline || '',
-            subtitle: item.subtitle || item.description || '',
-            ctaText: item.ctaText || item.btnText || (locale === 'zh' ? '立即探索' : locale === 'ru' ? 'Смотреть' : 'Explore Catalog'),
-            href: item.ctaLink || item.btnLink || '/store',
-            image: item.mobileImageUrl || item.imageUrl || item.image || '',
-            bgGradient: item.overlayGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]',
-            icon: <Sparkles className="w-3.5 h-3.5 text-[#F5A602]" />,
-          }))
+          const mapped = data.data.map((item: any, idx: number) => {
+            const fallbackImg = LOCAL_HERO_FALLBACKS[idx % LOCAL_HERO_FALLBACKS.length]
+            let img = item.mobileImageUrl || item.imageUrl || item.image || fallbackImg
+            // Automatically replace blocked/unreliable Unsplash images with local high-res photos
+            if (!img || img.includes('unsplash.com')) {
+              img = fallbackImg
+            }
+            return {
+              id: String(item.id || idx),
+              badge: item.badgeText || item.tag || item.subtag || '',
+              title: item.title || item.headline || '',
+              subtitle: item.subtitle || item.description || '',
+              ctaText: item.ctaText || item.btnText || (locale === 'zh' ? '立即探索' : locale === 'ru' ? 'Смотреть' : 'Explore Catalog'),
+              href: item.ctaLink || item.btnLink || '/store',
+              image: img,
+              bgGradient: item.overlayGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]',
+              icon: <Sparkles className="w-3.5 h-3.5 text-[#F5A602]" />,
+            }
+          })
           setApiSlides(mapped)
         })
         .catch(() => {})
@@ -98,8 +114,7 @@ export function MobileHero({
           ? 'Смотреть каталог'
           : 'Explore Catalog',
       href: '/store',
-      image:
-        'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200&auto=format&fit=crop',
+      image: '/images/hero/hero-1.jpg',
       bgGradient: 'from-[#002f5e] via-[#00407a] to-[#0a5296]',
       icon: <Factory className="w-3.5 h-3.5 text-[#F5A602]" />,
     },
@@ -130,8 +145,7 @@ export function MobileHero({
           ? 'Оптовый раздел'
           : 'Wholesale Sourcing',
       href: '/wholesale',
-      image:
-        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1200&auto=format&fit=crop',
+      image: '/images/hero/hero-2.jpg',
       bgGradient: 'from-[#112233] via-[#1a3a5c] to-[#254b77]',
       icon: <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />,
     },
@@ -162,8 +176,7 @@ export function MobileHero({
           ? 'Калькулятор доставки'
           : 'Calculate Freight',
       href: '/calculator',
-      image:
-        'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=1200&auto=format&fit=crop',
+      image: '/images/hero/hero-3.jpg',
       bgGradient: 'from-[#0b172a] via-[#152a4a] to-[#1e3a66]',
       icon: <Truck className="w-3.5 h-3.5 text-blue-400" />,
     },
@@ -282,7 +295,13 @@ export function MobileHero({
                     alt={slide.title}
                     loading={idx === 0 ? 'eager' : 'lazy'}
                     onError={(e) => {
-                      ;(e.currentTarget as HTMLElement).style.display = 'none'
+                      const target = e.currentTarget as HTMLImageElement
+                      const fallback = LOCAL_HERO_FALLBACKS[idx % LOCAL_HERO_FALLBACKS.length]
+                      if (target.src && !target.src.endsWith(fallback)) {
+                        target.src = fallback
+                      } else {
+                        target.style.display = 'none'
+                      }
                     }}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -294,7 +313,7 @@ export function MobileHero({
                 />
 
                 {/* Studio gradient overlay for contrast */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/85 via-[#002b54]/40 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/70 via-[#002b54]/25 to-transparent pointer-events-none" />
 
                 {/* Content */}
                 <div className="relative z-10 space-y-1.5 max-w-[88%]">
@@ -405,7 +424,13 @@ export function MobileHero({
                 alt={slide.title}
                 loading={idx === 0 ? 'eager' : 'lazy'}
                 onError={(e) => {
-                  ;(e.currentTarget as HTMLElement).style.display = 'none'
+                  const target = e.currentTarget as HTMLImageElement
+                  const fallback = LOCAL_HERO_FALLBACKS[idx % LOCAL_HERO_FALLBACKS.length]
+                  if (target.src && !target.src.endsWith(fallback)) {
+                    target.src = fallback
+                  } else {
+                    target.style.display = 'none'
+                  }
                 }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
@@ -416,7 +441,7 @@ export function MobileHero({
               }`}
             />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/85 via-[#002b54]/40 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/70 via-[#002b54]/25 to-transparent pointer-events-none" />
 
             <div className="relative z-10 space-y-2 max-w-md">
               {slide.badge && (

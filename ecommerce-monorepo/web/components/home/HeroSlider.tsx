@@ -48,9 +48,9 @@ const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
     title: 'Industrial Machinery & Precision CNC Equipment',
     subtitle: 'FACTORY-DIRECT B2B WHOLESALE & RETAIL',
     description: 'Direct procurement from Tier-1 Chinese manufacturers. High-precision CNC centers, hydraulic presses, automated production lines with full CE & ISO certification.',
-    imageUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1920&q=85',
-    mobileImageUrl: null,
-    productImageUrl: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/images/hero/hero-1.jpg',
+    mobileImageUrl: '/images/hero/hero-1.jpg',
+    productImageUrl: '/images/hero/hero-1.jpg',
     badgeText: 'PREMIUM INDUSTRIAL SELECTION',
     badgeColor: '#0055A4',
     ctaText: 'Explore Machinery Catalog',
@@ -70,9 +70,9 @@ const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
     title: 'Heavy-Duty Power Tools & Workshop Hardware',
     subtitle: 'ENGINEERED FOR EXTREME DURABILITY',
     description: 'Equip your workshop with professional brushless cordless tools, pneumatic equipment, precision measuring systems, and industrial hardware backed by manufacturer warranties.',
-    imageUrl: 'https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?auto=format&fit=crop&w=1920&q=85',
-    mobileImageUrl: null,
-    productImageUrl: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/images/hero/hero-2.jpg',
+    mobileImageUrl: '/images/hero/hero-2.jpg',
+    productImageUrl: '/images/hero/hero-2.jpg',
     badgeText: 'PRO TOOLS & EQUIPMENT',
     badgeColor: '#0055A4',
     ctaText: 'Shop Power Tools',
@@ -92,9 +92,9 @@ const DEFAULT_CINEMATIC_SLIDES: HeroSlide[] = [
     title: 'Volume Tier Pricing & Direct Factory Supply',
     subtitle: 'CUSTOM OEM/ODM & CONTAINER LOADS',
     description: 'Save up to 45% with tiered wholesale discounts. Low MOQs for trial orders, dedicated quality inspection on site in China, and seamless international delivery to your door.',
-    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1920&q=85',
-    mobileImageUrl: null,
-    productImageUrl: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/images/hero/hero-3.jpg',
+    mobileImageUrl: '/images/hero/hero-3.jpg',
+    productImageUrl: '/images/hero/hero-3.jpg',
     badgeText: 'WHOLESALE PRICING GUARANTEED',
     badgeColor: '#0055A4',
     ctaText: 'Start Wholesale Order',
@@ -248,9 +248,15 @@ export function HeroSlider() {
             className="absolute inset-0"
           >
             <img
-              src={currentSlide.imageUrl}
+              src={currentSlide.imageUrl || '/images/hero/hero-1.jpg'}
               alt={currentSlide.title}
-              className="w-full h-full object-cover object-center brightness-[0.32] contrast-125"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement
+                if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
+                  target.src = '/images/hero/hero-1.jpg'
+                }
+              }}
+              className="w-full h-full object-cover object-center brightness-[0.55] contrast-110"
             />
           </motion.div>
         </AnimatePresence>

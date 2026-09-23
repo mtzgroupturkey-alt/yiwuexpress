@@ -249,7 +249,17 @@ export function localizeHeroSlide(
     (t) => t.locale === FALLBACK_LOCALE && t.title && t.title.trim().length > 0
   )
 
-  const rawImage = resolution?.imageUrl ?? slide.imageUrl ?? ''
+  let rawImage = resolution?.imageUrl ?? slide.imageUrl ?? ''
+  let mobileImage = resolution?.mobileImageUrl ?? slide.mobileImageUrl ?? null
+
+  // Ensure Unsplash URLs (blocked in China/unreliable) and empty images fallback to local hero images
+  if (!rawImage || rawImage.includes('unsplash.com')) {
+    rawImage = '/images/hero/hero-1.jpg'
+  }
+  if (mobileImage && mobileImage.includes('unsplash.com')) {
+    mobileImage = '/images/hero/hero-1.jpg'
+  }
+
   const resolvedBadge = resolution?.badgeText ?? slide.badgeText ?? null
   const resolvedTitle = resolution?.title ?? slide.title
   const resolvedSub = resolution?.subtitle ?? slide.subtitle ?? ''
@@ -276,7 +286,7 @@ export function localizeHeroSlide(
     secondaryCtaText: resolvedSecCta,
     secondaryCtaLink: slide.secondaryCtaLink ?? null,
     imageUrl: rawImage,
-    mobileImageUrl: resolution?.mobileImageUrl ?? slide.mobileImageUrl ?? null,
+    mobileImageUrl: mobileImage,
     productImageUrl: resolution?.productImageUrl ?? slide.productImageUrl ?? null,
     overlayColor: slide.overlayColor ?? null,
     textColor: slide.textColor ?? '#ffffff',
