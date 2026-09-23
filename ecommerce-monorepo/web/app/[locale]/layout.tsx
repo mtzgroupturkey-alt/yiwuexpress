@@ -107,7 +107,7 @@ export default async function LocaleLayout({
 
   const serverSettings = await getServerSettings(locale)
   const companyName = serverSettings.companyName || (await getCompanyName(locale))
-  const companyLogo = serverSettings.companyLogo || null
+  const companyLogo = serverSettings.companyLogo || '/logo.png'
   const companyFavicon = serverSettings.companyFavicon || '/favicon.svg'
   const messages = await getMessages()
 

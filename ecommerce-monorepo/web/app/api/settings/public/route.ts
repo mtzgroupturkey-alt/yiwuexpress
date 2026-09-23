@@ -59,9 +59,9 @@ export async function GET(request: NextRequest) {
       companyEmail: 'info@dromkok.com',
       companyWebsite: 'https://dromkok.com',
       companyDescription: 'Leading logistics and trade services provider connecting China to the world',
-      companyLogo: '',
+      companyLogo: '/logo.png',
       companyLogoHeight: 40,
-      companyFavicon: '',
+      companyFavicon: '/favicon.svg',
       primaryColor: '#1a3a5c',
       accentColor: '#c9a84c',
       currency: 'USD',
@@ -95,6 +95,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       settings: {
         ...publicSettings,
+        companyLogo: publicSettings.companyLogo || '/logo.png',
+        companyFavicon: publicSettings.companyFavicon || '/favicon.svg',
         companyName: localizedName,
         companyDescription: localizedDescription,
       }
@@ -110,9 +112,9 @@ export async function GET(request: NextRequest) {
       companyEmail: 'info@dromkok.com',
       companyWebsite: 'https://dromkok.com',
       companyDescription: 'Leading logistics and trade services provider connecting China to the world',
-      companyLogo: '',
+      companyLogo: '/logo.png',
       companyLogoHeight: 40,
-      companyFavicon: '',
+      companyFavicon: '/favicon.svg',
       primaryColor: '#1a3a5c',
       accentColor: '#c9a84c',
       currency: 'USD',

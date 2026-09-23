@@ -23,7 +23,7 @@ export function Preloader({
   const t = useTranslations('Common')
   const locale = useLocale()
   
-  const [logoUrl, setLogoUrl] = useState(initialLogo || '')
+  const [logoUrl, setLogoUrl] = useState(initialLogo || '/logo.png')
   const [companyName, setCompanyName] = useState(initialCompanyName || DEFAULT_COMPANY_NAME)
   const [progress, setProgress] = useState(12)
 
@@ -182,6 +182,7 @@ export function Preloader({
                 alt={companyName}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
+                onError={() => setLogoUrl('')}
                 className="w-full h-full object-contain filter brightness-110 drop-shadow-md"
               />
             ) : (

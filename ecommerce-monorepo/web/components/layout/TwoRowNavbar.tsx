@@ -86,9 +86,14 @@ export function TwoRowNavbar() {
 
   const company = companyData?.data
   const companyName = company?.name || settings?.companyName || 'Global Trade'
-  const companyLogo = company?.logo || settings?.companyLogo
+  const companyLogo = company?.logo || settings?.companyLogo || '/logo.png'
   const companyLogoHeight = company?.logoHeight || settings?.companyLogoHeight || 36
   const siteTagline = settings?.siteTagline || 'Global Trade & Logistics Platform'
+  const [logoFailed, setLogoFailed] = useState(false)
+
+  useEffect(() => {
+    setLogoFailed(false)
+  }, [companyLogo])
 
   const { data: categoriesData } = useQuery({
     queryKey: ['categories', 'menu', locale],
@@ -225,7 +230,7 @@ export function TwoRowNavbar() {
             
             {/* BRAND LOGO & TITLE */}
             <LocaleLink href="/" className="flex items-center gap-3 shrink-0 group">
-              {companyLogo ? (
+              {companyLogo && !logoFailed ? (
                 <div
                   className="relative transition-transform duration-300 group-hover:scale-105"
                   style={{ height: `${companyLogoHeight}px`, width: `${companyLogoHeight * 2}px` }}
@@ -237,6 +242,7 @@ export function TwoRowNavbar() {
                     priority
                     sizes="(max-width: 640px) 90px, 160px"
                     className="object-contain"
+                    onError={() => setLogoFailed(true)}
                   />
                 </div>
               ) : (

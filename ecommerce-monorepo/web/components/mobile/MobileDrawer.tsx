@@ -75,7 +75,12 @@ export function MobileDrawer({
   const isOpen = propIsOpen !== undefined ? propIsOpen : (contextIsOpen ?? false)
 
   const [activeTab, setActiveTab] = useState<'menu' | 'categories'>('menu')
+  const effectiveLogo = settings?.companyLogo || '/logo.png'
   const [logoFailed, setLogoFailed] = useState(false)
+
+  useEffect(() => {
+    setLogoFailed(false)
+  }, [effectiveLogo])
 
   const handleClose = () => {
     if (onClose) {
@@ -169,10 +174,10 @@ export function MobileDrawer({
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-slate-800 shrink-0">
               <div className="flex items-center gap-2.5">
-                {settings?.companyLogo && !logoFailed ? (
+                {effectiveLogo && !logoFailed ? (
                   <div className="flex items-center justify-center shrink-0">
                     <img
-                      src={settings.companyLogo}
+                      src={effectiveLogo}
                       alt={`${companyName} Logo`}
                       onError={() => setLogoFailed(true)}
                       className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"

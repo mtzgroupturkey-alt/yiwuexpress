@@ -22,7 +22,7 @@ export function InstallPrompt() {
   const { isStandalone, isIOS } = useMobile()
 
   const companyName = settings?.companyName || 'Global Trade'
-  const companyLogo = settings?.companyLogo || '/uploads/general/1789563604789-1787644810312-logo_pixian_ai.png'
+  const companyLogo = settings?.companyLogo || '/logo.png'
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [isVisible, setIsVisible] = useState(false)

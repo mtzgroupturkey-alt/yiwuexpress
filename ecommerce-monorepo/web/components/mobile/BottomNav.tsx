@@ -24,7 +24,7 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
   const pathname = usePathname() || ''
   const locale = useLocale()
   const { settings } = useSettings()
-  const companyLogo = settings?.companyLogo || '/uploads/general/1789563604789-1787644810312-logo_pixian_ai.png'
+  const companyLogo = settings?.companyLogo || '/logo.png'
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [logoFailed, setLogoFailed] = useState(false)

@@ -87,7 +87,12 @@ export function MobileHeader({
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)
   const companyName = settings?.companyName || 'Global Trade'
-  const companyLogo = settings?.companyLogo
+  const effectiveLogo = settings?.companyLogo
+  const [logoFailed, setLogoFailed] = useState(false)
+
+  useEffect(() => {
+    setLogoFailed(false)
+  }, [effectiveLogo])
 
   const isSearchVisible = showSearch !== undefined ? showSearch : showSearchToggle
   const popularTags = POPULAR_SEARCH_TAGS[locale] || POPULAR_SEARCH_TAGS.en
@@ -229,10 +234,11 @@ export function MobileHeader({
               aria-label={companyName}
               className="flex items-center gap-2.5 select-none active:opacity-80 transition-opacity touch-manipulation min-w-0"
             >
-              {companyLogo ? (
+              {effectiveLogo && !logoFailed ? (
                 <img
-                  src={companyLogo}
+                  src={effectiveLogo}
                   alt={companyName}
+                  onError={() => setLogoFailed(true)}
                   className="h-9 max-h-9 w-auto object-contain shrink-0"
                   loading="eager"
                 />
@@ -465,8 +471,17 @@ export function MobileHeader({
             <LocaleLink
               href="/"
               aria-label={companyName}
-              className="select-none active:opacity-75 transition-opacity touch-manipulation truncate inline-block"
+              className="flex items-center justify-center gap-2 select-none active:opacity-75 transition-opacity touch-manipulation truncate"
             >
+              {effectiveLogo && !logoFailed ? (
+                <img
+                  src={effectiveLogo}
+                  alt={companyName}
+                  onError={() => setLogoFailed(true)}
+                  className="h-7 max-h-7 w-auto object-contain shrink-0"
+                  loading="eager"
+                />
+              ) : null}
               <span className="text-base sm:text-lg font-black tracking-tight text-[#00407a] dark:text-white truncate">
                 {companyName}
               </span>

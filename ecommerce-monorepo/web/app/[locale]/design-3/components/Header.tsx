@@ -131,7 +131,12 @@ export const Header: React.FC<HeaderProps> = ({
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [selectedSearchScope, setSelectedSearchScope] = useState(() => tHeader('everywhere'));
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
+  const desktopLogo = settings?.companyLogo || '/logo.png';
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  useEffect(() => {
+    setLogoFailed(false);
+  }, [desktopLogo]);
 
   const [mounted, setMounted] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -404,14 +409,15 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-2 group cursor-pointer text-left focus:outline-none"
             title={`${companyName} Home Store`}
           >
-            {settings?.companyLogo ? (
+            {desktopLogo && !logoFailed ? (
               <div 
                 className="flex items-center justify-center shrink-0"
                 style={{ height: settings?.companyLogoHeight ? `${settings.companyLogoHeight}px` : '40px' }}
               >
                 <img
-                  src={settings.companyLogo}
+                  src={desktopLogo}
                   alt={`${companyName} Logo`}
+                  onError={() => setLogoFailed(true)}
                   className="w-auto object-contain transition-transform group-hover:scale-105"
                   style={{ maxHeight: settings?.companyLogoHeight ? `${settings.companyLogoHeight}px` : '40px' }}
                 />

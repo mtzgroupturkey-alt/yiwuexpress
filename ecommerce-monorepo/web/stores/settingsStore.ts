@@ -46,6 +46,9 @@ export interface SettingsState {
 
 export const DEFAULT_SETTINGS: CompanySettings = {
   companyName: 'Global Trade',
+  companyLogo: '/logo.png',
+  companyLogoHeight: 40,
+  companyFavicon: '/favicon.svg',
   primaryColor: '#1a3a5c',
   accentColor: '#c9a84c',
   currency: 'USD',

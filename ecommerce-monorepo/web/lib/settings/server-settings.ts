@@ -22,7 +22,7 @@ export const getServerSettings = cache(async (locale = 'en'): Promise<CompanySet
       businessLicense: raw.businessLicense || undefined,
       taxRegistrationNumber: raw.taxRegistrationNumber || undefined,
       companyDescription: raw.companyDescription || undefined,
-      companyLogo: raw.companyLogo || undefined,
+      companyLogo: raw.companyLogo || DEFAULT_SETTINGS.companyLogo,
       companyLogoHeight: raw.companyLogoHeight || 40,
       companyFavicon: raw.companyFavicon || '/favicon.svg',
       primaryColor: raw.primaryColor || DEFAULT_SETTINGS.primaryColor,

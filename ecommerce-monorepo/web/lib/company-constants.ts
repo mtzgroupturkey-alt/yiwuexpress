@@ -7,6 +7,7 @@
  */
 
 export const DEFAULT_COMPANY_NAME = 'Global Trade'
+export const DEFAULT_COMPANY_LOGO = '/logo.png'
 
 /**
  * Default system settings used as a fallback when no SystemSettings row
@@ -21,9 +22,9 @@ export const DEFAULT_COMPANY = {
   companyWebsite: 'https://dromkok.com',
   companyDescription:
     'Leading logistics and trade services provider connecting China to the world',
-  companyLogo: '',
+  companyLogo: DEFAULT_COMPANY_LOGO,
   companyLogoHeight: 40,
-  companyFavicon: '',
+  companyFavicon: '/favicon.svg',
   primaryColor: '#1a3a5c',
   accentColor: '#c9a84c',
   currency: 'USD',

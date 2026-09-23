@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ShieldCheck, 
@@ -50,6 +50,12 @@ export const Footer: React.FC<FooterProps> = ({
 
   const [isWechatModalOpen, setIsWechatModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const effectiveLogo = settings?.companyLogo || '/logo.png';
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  useEffect(() => {
+    setLogoFailed(false);
+  }, [effectiveLogo]);
 
   // Social Links with fallbacks from SystemSettings
   const facebookUrl = settings?.facebookUrl || 'https://facebook.com';
@@ -152,10 +158,11 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="lg:col-span-4 space-y-5">
             {/* Logo / Brand */}
             <div className="flex items-center gap-3">
-              {settings?.companyLogo ? (
+              {effectiveLogo && !logoFailed ? (
                 <img
-                  src={settings.companyLogo}
+                  src={effectiveLogo}
                   alt={`${companyName} Logo`}
+                  onError={() => setLogoFailed(true)}
                   className="h-9 w-auto object-contain brightness-0 invert opacity-95"
                 />
               ) : (

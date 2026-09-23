@@ -48,7 +48,7 @@ export default function Footer() {
   const t = useTranslations('Footer')
   const tl = useTranslations('FooterLinks')
   const locale = useLocale()
-  const [logoUrl, setLogoUrl] = useState('')
+  const [logoUrl, setLogoUrl] = useState('/logo.png')
   const [companyName, setCompanyName] = useState('Global Trade')
   const [siteTagline, setSiteTagline] = useState('')
   
@@ -197,7 +197,7 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               {logoUrl ? (
                 <div className="w-11 h-11 rounded-xl bg-white/10 p-1.5 flex items-center justify-center">
-                  <img src={logoUrl} alt={companyName} className="w-full h-full object-contain" />
+                  <img src={logoUrl} alt={companyName} onError={() => setLogoUrl('')} className="w-full h-full object-contain" />
                 </div>
               ) : (
                 <div className="w-11 h-11 rounded-xl bg-[#0055A4] flex items-center justify-center text-white font-black shadow-md">

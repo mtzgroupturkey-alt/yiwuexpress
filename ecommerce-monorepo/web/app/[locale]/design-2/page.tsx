@@ -460,10 +460,10 @@ export default function FigmaStorePage() {
             {/* Store Brand / Logo */}
             <div className="flex items-center shrink-0">
               <Link href="/" className="flex items-center gap-2.5">
-                {settings?.companyLogo ? (
+                {(settings?.companyLogo || '/logo.png') ? (
                   <div className="h-10 flex items-center justify-center shrink-0">
                     <img
-                      src={settings.companyLogo}
+                      src={settings?.companyLogo || '/logo.png'}
                       alt={`${companyName} Logo`}
                       className="max-h-10 w-auto object-contain"
                     />
@@ -1126,9 +1126,9 @@ export default function FigmaStorePage() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-8 mb-10">
             <div className="col-span-2 sm:col-span-1">
               <div className="flex items-center gap-2 mb-3">
-                {settings?.companyLogo ? (
+                {(settings?.companyLogo || '/logo.png') ? (
                   <img
-                    src={settings.companyLogo}
+                    src={settings?.companyLogo || '/logo.png'}
                     alt={`${companyName} Logo`}
                     className="h-8 w-auto object-contain brightness-0 invert"
                   />

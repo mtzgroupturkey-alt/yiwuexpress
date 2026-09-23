@@ -22,7 +22,7 @@ export default function Navbar() {
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [logoUrl, setLogoUrl] = useState('')
+  const [logoUrl, setLogoUrl] = useState('/logo.png')
   const [companyName, setCompanyName] = useState('Global Trade')
   const [logoHeight, setLogoHeight] = useState(40)
   const [primaryColor, setPrimaryColor] = useState('#1a3a5c')
@@ -125,6 +125,7 @@ export default function Navbar() {
                 <img
                   src={logoUrl}
                   alt={`${companyName} Logo`}
+                  onError={() => setLogoUrl('')}
                   className="object-contain p-1"
                   style={{
                     width: `${logoHeight * 0.7}px`,
