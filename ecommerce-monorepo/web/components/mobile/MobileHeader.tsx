@@ -87,12 +87,23 @@ export function MobileHeader({
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)
   const companyName = settings?.companyName || 'Global Trade'
-  const effectiveLogo = settings?.companyLogo
+  const [logoSrc, setLogoSrc] = useState<string | null>(settings?.companyLogo ?? null)
   const [logoFailed, setLogoFailed] = useState(false)
 
   useEffect(() => {
-    setLogoFailed(false)
-  }, [effectiveLogo])
+    if (settings?.companyLogo !== undefined) {
+      setLogoSrc(settings.companyLogo)
+      setLogoFailed(false)
+    }
+  }, [settings?.companyLogo])
+
+  const handleLogoError = () => {
+    if (logoSrc && logoSrc !== '/logo.png') {
+      setLogoSrc('/logo.png')
+    } else {
+      setLogoFailed(true)
+    }
+  }
 
   const isSearchVisible = showSearch !== undefined ? showSearch : showSearchToggle
   const popularTags = POPULAR_SEARCH_TAGS[locale] || POPULAR_SEARCH_TAGS.en
@@ -234,11 +245,11 @@ export function MobileHeader({
               aria-label={companyName}
               className="flex items-center gap-2.5 select-none active:opacity-80 transition-opacity touch-manipulation min-w-0"
             >
-              {effectiveLogo && !logoFailed ? (
+              {logoSrc && !logoFailed ? (
                 <img
-                  src={effectiveLogo}
+                  src={logoSrc}
                   alt={companyName}
-                  onError={() => setLogoFailed(true)}
+                  onError={handleLogoError}
                   className="h-9 max-h-9 w-auto object-contain shrink-0"
                   loading="eager"
                 />
@@ -473,11 +484,11 @@ export function MobileHeader({
               aria-label={companyName}
               className="flex items-center justify-center gap-2 select-none active:opacity-75 transition-opacity touch-manipulation truncate"
             >
-              {effectiveLogo && !logoFailed ? (
+              {logoSrc && !logoFailed ? (
                 <img
-                  src={effectiveLogo}
+                  src={logoSrc}
                   alt={companyName}
-                  onError={() => setLogoFailed(true)}
+                  onError={handleLogoError}
                   className="h-7 max-h-7 w-auto object-contain shrink-0"
                   loading="eager"
                 />

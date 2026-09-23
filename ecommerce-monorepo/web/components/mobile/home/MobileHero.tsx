@@ -261,7 +261,7 @@ export function MobileHero({
         onMouseLeave={() => setIsPaused(false)}
       >
         {/* Responsive Rounded Slider Card */}
-        <div className="relative rounded-2xl overflow-hidden h-[260px] sm:h-[300px] shadow-md border border-slate-200/80 dark:border-slate-800 bg-slate-900 group">
+        <div className="relative rounded-2xl overflow-hidden h-[260px] sm:h-[300px] shadow-md border border-slate-200/80 bg-gradient-to-br from-[#003366] via-[#00407a] to-[#0055a4] group">
           {/* Swipeable slides */}
           <div
             ref={containerRef}
@@ -286,13 +286,13 @@ export function MobileHero({
                 ) : (
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${
-                      slide.bgGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]'
+                      slide.bgGradient || 'from-[#003366] via-[#00407a] to-[#0055a4]'
                     }`}
                   />
                 )}
 
                 {/* Studio gradient overlay for contrast */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/85 via-[#002b54]/40 to-transparent pointer-events-none" />
 
                 {/* Content */}
                 <div className="relative z-10 space-y-1.5 max-w-[88%]">
@@ -407,12 +407,12 @@ export function MobileHero({
             ) : (
               <div
                 className={`absolute inset-0 bg-gradient-to-br ${
-                  slide.bgGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]'
+                  slide.bgGradient || 'from-[#003366] via-[#00407a] to-[#0055a4]'
                 }`}
               />
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/85 via-[#002b54]/40 to-transparent pointer-events-none" />
 
             <div className="relative z-10 space-y-2 max-w-md">
               {slide.badge && (
