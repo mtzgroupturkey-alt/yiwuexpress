@@ -35,6 +35,10 @@ npm install --cache /tmp/.npm-cache
 npx prisma generate
 npx prisma db push --accept-data-loss || true
 
+echo '=== 4.5 Ensuring uploads directory & write permissions ==='
+mkdir -p public/uploads/general public/uploads/favicons public/uploads/products
+chmod -R 775 public/uploads 2>/dev/null || chmod -R 755 public/uploads 2>/dev/null || true
+
 echo '=== 5. Building fresh Next.js application ==='
 npm run build
 
