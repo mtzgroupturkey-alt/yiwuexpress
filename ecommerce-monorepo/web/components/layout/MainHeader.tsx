@@ -51,6 +51,24 @@ export function MainHeader() {
   const { count: inquiryCount } = useWholesaleInquiry()
   const { quoteCount } = useQuoteCart()
 
+  const [logoSrc, setLogoSrc] = useState<string | null>(settings?.companyLogo || '/logo.png')
+  const [logoFailed, setLogoFailed] = useState(false)
+
+  useEffect(() => {
+    if (settings?.companyLogo) {
+      setLogoSrc(settings.companyLogo)
+      setLogoFailed(false)
+    }
+  }, [settings?.companyLogo])
+
+  const handleLogoError = () => {
+    if (logoSrc && logoSrc !== '/logo.png') {
+      setLogoSrc('/logo.png')
+    } else {
+      setLogoFailed(true)
+    }
+  }
+
   // Effective cart display mode. When the store is purely wholesale or retail
   // the icon reflects the admin-configured store mode. In hybrid (BOTH) mode
   // the visitor's session toggle drives the morph (defaulting to retail).
@@ -126,7 +144,7 @@ export function MainHeader() {
 
             {/* â”€â”€ LOGO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <LocaleLink href="/" className="flex items-center gap-3 shrink-0">
-              {settings?.companyLogo ? (
+              {logoSrc && !logoFailed ? (
                 <div
                   className="relative flex-shrink-0 transition-all duration-300"
                   style={{
@@ -138,13 +156,12 @@ export function MainHeader() {
                       : `${settings?.companyLogoHeight || 40}px`,
                   }}
                 >
-                  <Image
-                    src={settings.companyLogo}
-                    alt={`${settings.companyName || 'Company'} Logo`}
-                    fill
-                    sizes="(max-width: 768px) 36px, 40px"
-                    className="object-contain"
-                    priority
+                  <img
+                    src={logoSrc}
+                    alt={`${settings?.companyName || 'Company'} Logo`}
+                    onError={handleLogoError}
+                    className="w-full h-full object-contain"
+                    loading="eager"
                   />
                 </div>
               ) : (

@@ -104,6 +104,8 @@ async function authMiddleware(request: NextRequest) {
     '/_next',
     '/favicon.ico',
     '/offline',
+    '/uploads',
+    '/logo.png',
   ]
 
   // Check if path is locale-prefixed (e.g., /en/, /ru/, /zh/)

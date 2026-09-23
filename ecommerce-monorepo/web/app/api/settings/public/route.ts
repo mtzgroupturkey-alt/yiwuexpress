@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextResponse, NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { localizeSystemSetting } from '@/lib/utils/localize'
+import fs from 'fs'
+import path from 'path'
 
 // Note: CORS is handled globally by next.config.js
 
@@ -92,11 +94,52 @@ export async function GET(request: NextRequest) {
     const { translations, ...publicSettings } = effectiveSettings
 
 
+    // Verify companyLogo file exists on disk; if missing, fall back to /logo.png
+    let resolvedLogo = publicSettings.companyLogo || '/logo.png'
+    if (resolvedLogo.startsWith('/uploads/')) {
+      const relative = resolvedLogo.replace(/^\/uploads\//, '')
+      const possiblePaths = [
+        path.join(process.cwd(), 'public', 'uploads', relative),
+        path.join(process.cwd(), 'web', 'public', 'uploads', relative),
+        path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
+      ]
+      const exists = possiblePaths.some((p) => {
+        try {
+          return fs.existsSync(p)
+        } catch {
+          return false
+        }
+      })
+      if (!exists) {
+        resolvedLogo = '/logo.png'
+      }
+    }
+
+    let resolvedFavicon = publicSettings.companyFavicon || '/favicon.svg'
+    if (resolvedFavicon.startsWith('/uploads/')) {
+      const relative = resolvedFavicon.replace(/^\/uploads\//, '')
+      const possiblePaths = [
+        path.join(process.cwd(), 'public', 'uploads', relative),
+        path.join(process.cwd(), 'web', 'public', 'uploads', relative),
+        path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
+      ]
+      const exists = possiblePaths.some((p) => {
+        try {
+          return fs.existsSync(p)
+        } catch {
+          return false
+        }
+      })
+      if (!exists) {
+        resolvedFavicon = '/favicon.ico'
+      }
+    }
+
     return NextResponse.json({
       settings: {
         ...publicSettings,
-        companyLogo: publicSettings.companyLogo || '/logo.png',
-        companyFavicon: publicSettings.companyFavicon || '/favicon.svg',
+        companyLogo: resolvedLogo,
+        companyFavicon: resolvedFavicon,
         companyName: localizedName,
         companyDescription: localizedDescription,
       }

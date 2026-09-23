@@ -86,10 +86,24 @@ export async function POST(request: NextRequest) {
       subDir = 'general'
     }
     
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', subDir)
+    // Resolve upload directories safely whether running from repo root or web/
+    const targetDirs: string[] = []
     
-    // Ensure directory exists
-    await mkdir(uploadDir, { recursive: true })
+    // Direct public/uploads
+    const dirA = path.join(process.cwd(), 'public', 'uploads', subDir)
+    targetDirs.push(dirA)
+
+    // Subdirectory web/public/uploads if running from monorepo root
+    const dirB = path.join(process.cwd(), 'web', 'public', 'uploads', subDir)
+    if (dirB !== dirA) {
+      targetDirs.push(dirB)
+    }
+
+    // Server canonical path if running on Linux production
+    const prodDir = path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', subDir)
+    if (!targetDirs.includes(prodDir)) {
+      targetDirs.push(prodDir)
+    }
 
     // Special handling for favicon naming
     let filename: string
@@ -100,9 +114,15 @@ export async function POST(request: NextRequest) {
       filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`
     }
 
-    const filepath = path.join(uploadDir, filename)
-    
-    await writeFile(filepath, buffer)
+    // Write file to all applicable target locations
+    for (const dir of targetDirs) {
+      try {
+        await mkdir(dir, { recursive: true })
+        await writeFile(path.join(dir, filename), buffer)
+      } catch {
+        // Silently skip non-existent production paths when running locally
+      }
+    }
 
     return NextResponse.json({ 
       url: `/uploads/${subDir}/${filename}`,

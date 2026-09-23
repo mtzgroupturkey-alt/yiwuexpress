@@ -281,15 +281,17 @@ export function MobileHero({
                     src={slide.image || slide.imageUrl}
                     alt={slide.title}
                     loading={idx === 0 ? 'eager' : 'lazy'}
+                    onError={(e) => {
+                      ;(e.currentTarget as HTMLElement).style.display = 'none'
+                    }}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                ) : (
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${
-                      slide.bgGradient || 'from-[#003366] via-[#00407a] to-[#0055a4]'
-                    }`}
-                  />
-                )}
+                ) : null}
+                <div
+                  className={`absolute inset-0 -z-10 bg-gradient-to-br ${
+                    slide.bgGradient || 'from-[#003366] via-[#00407a] to-[#0055a4]'
+                  }`}
+                />
 
                 {/* Studio gradient overlay for contrast */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/85 via-[#002b54]/40 to-transparent pointer-events-none" />
@@ -402,15 +404,17 @@ export function MobileHero({
                 src={slide.image || slide.imageUrl}
                 alt={slide.title}
                 loading={idx === 0 ? 'eager' : 'lazy'}
+                onError={(e) => {
+                  ;(e.currentTarget as HTMLElement).style.display = 'none'
+                }}
                 className="absolute inset-0 w-full h-full object-cover"
               />
-            ) : (
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${
-                  slide.bgGradient || 'from-[#003366] via-[#00407a] to-[#0055a4]'
-                }`}
-              />
-            )}
+            ) : null}
+            <div
+              className={`absolute inset-0 -z-10 bg-gradient-to-br ${
+                slide.bgGradient || 'from-[#003366] via-[#00407a] to-[#0055a4]'
+              }`}
+            />
 
             <div className="absolute inset-0 bg-gradient-to-t from-[#001f3f]/85 via-[#002b54]/40 to-transparent pointer-events-none" />
 
