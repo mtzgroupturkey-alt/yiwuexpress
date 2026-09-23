@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { ArrowRight, Sparkles, ShieldCheck, Truck, Factory } from 'lucide-react'
+import { ArrowRight, Sparkles, ShieldCheck, Truck, Factory, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useSettings } from '@/components/SettingsProvider'
 import { useMobile } from '@/components/MobileProvider'
 
@@ -39,9 +39,38 @@ export function MobileHero({
   // ALL hooks must be called unconditionally at the top
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [apiSlides, setApiSlides] = useState<HeroSlide[] | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  const defaultSlides: HeroSlide[] = [
+  // Fetch real dynamic hero slides from API using useEffect so it's safe without QueryClientProvider
+  useEffect(() => {
+    let active = true
+    if (typeof fetch === 'function') {
+      fetch(`/api/hero-slides?locale=${encodeURIComponent(locale || 'en')}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!active || !data?.data || !Array.isArray(data.data) || data.data.length === 0) return
+          const mapped = data.data.map((item: any, idx: number) => ({
+            id: String(item.id || idx),
+            badge: item.badgeText || item.tag || item.subtag || '',
+            title: item.title || item.headline || '',
+            subtitle: item.subtitle || item.description || '',
+            ctaText: item.ctaText || item.btnText || (locale === 'zh' ? '立即探索' : locale === 'ru' ? 'Смотреть' : 'Explore Catalog'),
+            href: item.ctaLink || item.btnLink || '/store',
+            image: item.mobileImageUrl || item.imageUrl || item.image || '',
+            bgGradient: item.overlayGradient || 'from-[#002f5e] via-[#00407a] to-[#0a5296]',
+            icon: <Sparkles className="w-3.5 h-3.5 text-[#F5A602]" />,
+          }))
+          setApiSlides(mapped)
+        })
+        .catch(() => {})
+    }
+    return () => {
+      active = false
+    }
+  }, [locale])
+
+  const defaultSlides: HeroSlide[] = useMemo(() => [
     {
       id: '1',
       badge:
@@ -138,14 +167,14 @@ export function MobileHero({
       bgGradient: 'from-[#0b172a] via-[#152a4a] to-[#1e3a66]',
       icon: <Truck className="w-3.5 h-3.5 text-blue-400" />,
     },
-  ]
+  ], [locale])
 
-  const slides = customSlides !== undefined ? customSlides : defaultSlides
+  const slides = customSlides !== undefined ? customSlides : (apiSlides || defaultSlides)
   const hasSlides = slides && slides.length > 0
 
-  // Auto-rotate every 5 seconds — only in standalone (native app) mode
+  // Auto-rotate every 5 seconds (works in both modes, pauses on user interaction)
   useEffect(() => {
-    if (!hasSlides || isPaused || slides.length <= 1 || !isStandalone) return
+    if (!hasSlides || isPaused || slides.length <= 1) return
 
     if (
       typeof window !== 'undefined' &&
@@ -171,7 +200,7 @@ export function MobileHero({
     }, 5000)
 
     return () => clearInterval(timer)
-  }, [isPaused, slides.length, isStandalone, hasSlides])
+  }, [isPaused, slides.length, hasSlides])
 
   if (!hasSlides) {
     return null
@@ -199,6 +228,18 @@ export function MobileHero({
     }
   }
 
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const prevIdx = (currentIndex - 1 + slides.length) % slides.length
+    goToSlide(prevIdx)
+  }
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const nextIdx = (currentIndex + 1) % slides.length
+    goToSlide(nextIdx)
+  }
+
   const handleCtaClick = (slide: HeroSlide) => {
     if (onShopNow) {
       onShopNow()
@@ -207,20 +248,20 @@ export function MobileHero({
     }
   }
 
-  // ─── BROWSER MODE ─────────────────────────────────────────────────────────
-  // Responsive slider: same swipeable carousel but with rounded corners,
-  // horizontal padding, and fixed height (not full-bleed). Website-style.
+  // ─── BROWSER MODE: Website Responsive Slider Card ─────────────────────────
   if (!isStandalone) {
     return (
       <section
         data-testid="mobile-hero"
-        aria-label="Mobile Hero Carousel"
-        className={`w-full px-4 py-3 select-none ${className}`}
+        aria-label="Mobile Hero Slider"
+        className={`w-full px-3 sm:px-4 py-2 select-none ${className}`}
         onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setTimeout(() => setIsPaused(false), 2000)}
+        onTouchEnd={() => setTimeout(() => setIsPaused(false), 3000)}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
       >
-        {/* Rounded carousel container */}
-        <div className="relative rounded-2xl overflow-hidden h-[220px] sm:h-[260px]">
+        {/* Responsive Rounded Slider Card */}
+        <div className="relative rounded-2xl overflow-hidden h-[260px] sm:h-[300px] shadow-md border border-slate-200/80 dark:border-slate-800 bg-slate-900 group">
           {/* Swipeable slides */}
           <div
             ref={containerRef}
@@ -250,39 +291,63 @@ export function MobileHero({
                   />
                 )}
 
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+                {/* Studio gradient overlay for contrast */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent pointer-events-none" />
 
                 {/* Content */}
-                <div className="relative z-10 space-y-1.5 max-w-[85%]">
+                <div className="relative z-10 space-y-1.5 max-w-[88%]">
                   {slide.badge && (
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold text-white border border-white/20">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-bold text-white border border-white/20 shadow-xs">
                       {slide.icon || <Sparkles className="w-3 h-3 text-[#F5A602]" />}
-                      <span>{slide.badge}</span>
+                      <span className="truncate">{slide.badge}</span>
                     </div>
                   )}
 
-                  <h2 className="text-lg font-black tracking-tight leading-tight text-white line-clamp-2 drop-shadow-md">
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight text-white line-clamp-2 drop-shadow-md">
                     {slide.title}
                   </h2>
 
-                  <p className="text-[11px] text-white/85 line-clamp-1 leading-relaxed drop-shadow-xs">
+                  <p className="text-xs text-white/90 line-clamp-2 leading-relaxed drop-shadow-xs">
                     {slide.subtitle}
                   </p>
 
-                  <button
-                    type="button"
-                    onClick={() => handleCtaClick(slide)}
-                    aria-label={slide.ctaText}
-                    className="mt-1 min-h-[38px] h-[38px] px-5 rounded-lg bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold text-xs inline-flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform touch-manipulation cursor-pointer"
-                  >
-                    <span>{slide.ctaText}</span>
-                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </button>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleCtaClick(slide)}
+                      aria-label={slide.ctaText}
+                      className="min-h-[44px] h-[44px] px-5 rounded-xl bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-extrabold text-xs inline-flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform touch-manipulation cursor-pointer"
+                    >
+                      <span>{slide.ctaText}</span>
+                      <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* Left & Right arrows for easy navigation */}
+          {slides.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrev}
+                aria-label="Previous slide"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs flex items-center justify-center transition-all opacity-70 hover:opacity-100 touch-manipulation"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                aria-label="Next slide"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs flex items-center justify-center transition-all opacity-70 hover:opacity-100 touch-manipulation"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
 
           {/* Dots indicator */}
           <div className="absolute bottom-2.5 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-auto">
@@ -292,12 +357,12 @@ export function MobileHero({
                 type="button"
                 onClick={() => goToSlide(idx)}
                 aria-label={`Slide ${idx + 1}`}
-                className="min-h-[28px] min-w-[24px] flex items-center justify-center touch-manipulation cursor-pointer"
+                className="min-h-[28px] min-w-[22px] flex items-center justify-center touch-manipulation cursor-pointer"
               >
                 <span
                   className={`block rounded-full transition-all duration-300 ${
                     currentIndex === idx
-                      ? 'w-5 h-1.5 bg-[#F5A602] shadow-xs'
+                      ? 'w-6 h-1.5 bg-[#F5A602] shadow-xs'
                       : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
                   }`}
                 />
@@ -309,8 +374,7 @@ export function MobileHero({
     )
   }
 
-  // ─── STANDALONE / PWA MODE ────────────────────────────────────────────────
-  // Full-bleed native app carousel: edge-to-edge, tall, swipeable, auto-rotating
+  // ─── STANDALONE / PWA MODE: Native App Carousel (Edge-to-edge, 55vh) ──────
   return (
     <section
       data-testid="mobile-hero"

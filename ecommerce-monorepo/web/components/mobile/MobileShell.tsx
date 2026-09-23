@@ -65,7 +65,11 @@ export function MobileShell({
       <main
         data-testid="mobile-main-content"
         className={`flex-1 w-full max-w-lg mx-auto ${
-          showHeader ? 'pt-[calc(56px+env(safe-area-inset-top,0px))]' : ''
+          showHeader
+            ? isStandalone
+              ? 'pt-[calc(56px+env(safe-area-inset-top,0px))]'
+              : 'pt-[calc(104px+env(safe-area-inset-top,0px))]'
+            : ''
         } ${effectiveShowBottomNav ? 'pb-20' : 'pb-6'}`}
       >
         {children}

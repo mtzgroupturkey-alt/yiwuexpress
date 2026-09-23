@@ -33,6 +33,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
+import { useMobile } from '@/components/MobileProvider';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher';
 
@@ -111,6 +112,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { storeMode: ctxStoreMode } = useStoreMode();
   const { sessionMode, isWholesaleSession } = useSessionMode();
   const { quoteCount } = useQuoteCart();
+  const { isStandalone } = useMobile();
 
   const effectiveStoreMode = ctxStoreMode || storeMode || 'WHOLESALE';
   const isWholesaleActive =
@@ -251,16 +253,19 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      {/* MOBILE HEADER (Native App Style, hidden on md+) */}
+      {/* MOBILE HEADER (Switches between website mobile view and native PWA app header) */}
       <MobileHeader
         showSearch={true}
+        searchValue={searchQuery}
+        onSearchChange={onSearchChange}
+        onSearchSubmit={handleSearchSubmit}
         onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
         onMenuClick={onOpenCatalog}
         onCartClick={isWholesaleActive && !isInstantWholesale ? undefined : onOpenCart}
       />
 
-      {/* Collapsible Mobile Search Input */}
-      {isMobileSearchOpen && (
+      {/* Collapsible Mobile Search Input (Only for Standalone PWA mode where search is an overlay icon) */}
+      {isStandalone && isMobileSearchOpen && (
         <div
           className="md:hidden fixed left-0 right-0 z-50 px-4 py-2.5 bg-slate-50 border-b border-slate-200 shadow-md animate-in slide-in-from-top-2 duration-150"
           style={{ top: 'calc(56px + env(safe-area-inset-top, 0px))' }}

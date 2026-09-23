@@ -26,7 +26,7 @@ export function MobileLayoutContainer({
     <main
       data-testid="main-content-container"
       data-display-mode={isStandalone ? 'standalone' : 'browser'}
-      className={`min-h-screen ${isStandalone ? 'pb-20' : 'pb-16'} md:pb-0 ${className}`}
+      className={`min-h-screen ${isStandalone ? 'pb-20' : 'pb-0'} md:pb-0 ${className}`}
     >
       {children}
     </main>

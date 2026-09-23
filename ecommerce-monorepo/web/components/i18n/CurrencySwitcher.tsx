@@ -19,6 +19,7 @@ export function CurrencySwitcher({
   onSelect,
 }: CurrencySwitcherProps) {
   const { currency, setCurrency, currencies, currentCurrency } = useCurrency()
+  const displayCode = typeof currency === 'string' ? currency : (currency as any)?.code || 'USD'
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -71,7 +72,7 @@ export function CurrencySwitcher({
         </div>
         <div className="space-y-1">
           {drawerCurrencies.map((c) => {
-            const isSelected = currency === c.code
+            const isSelected = displayCode === c.code
             return (
               <button
                 key={c.code}
@@ -123,8 +124,8 @@ export function CurrencySwitcher({
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white bg-slate-900/60 border border-slate-700/80 hover:border-slate-600 transition-colors cursor-pointer"
         >
           <DollarSign className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-bold">{currentCurrency.symbol}</span>
-          <span className="uppercase font-bold tracking-wider">{currency}</span>
+          <span className="font-bold">{currentCurrency?.symbol || '$'}</span>
+          <span className="uppercase font-bold tracking-wider">{displayCode}</span>
           <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
@@ -173,10 +174,10 @@ export function CurrencySwitcher({
         className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-slate-300 transition-colors font-semibold text-slate-700 cursor-pointer text-xs shadow-2xs group"
       >
         <span className="w-4 h-4 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
-          {currentCurrency.symbol || '$'}
+          {currentCurrency?.symbol || '$'}
         </span>
         <span className="font-extrabold text-[#00407a] tracking-tight">
-          {currency}
+          {displayCode}
         </span>
         <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -190,7 +191,7 @@ export function CurrencySwitcher({
             Select Currency
           </div>
           {displayCurrencies.map((c) => {
-            const isSelected = currency === c.code
+            const isSelected = displayCode === c.code
             return (
               <button
                 key={c.code}

@@ -347,7 +347,7 @@ export function InstallBanner({ forceVisible = false, className = '' }: InstallB
                 <div className="flex-1">
                   <p>{t.step2}</p>
                   <div className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-semibold mt-0.5">
-                    <PlusSquare className="w-3.5 h-3.5" /> Add to Home Screen
+                    <PlusSquare className="w-3.5 h-3.5" /> (Add to Home Screen)
                   </div>
                 </div>
               </div>

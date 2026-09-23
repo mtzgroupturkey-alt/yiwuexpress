@@ -93,25 +93,30 @@ export function MobileProvider({
       setIsAndroid(true)
     }
 
-    // Media query check for viewport width <= 768px
-    const mediaQuery = window.matchMedia('(max-width: 768px)')
-    
-    const updateIsMobile = () => {
-      // Mobile if viewport width <= 768px or user agent was identified as mobile/tablet
-      const isViewportMobile = mediaQuery.matches
-      const isUAMobile = initialIsMobile || /mobile|tablet|android|iphone|ipad|ipod/i.test(ua)
-      setIsMobile(isViewportMobile || isUAMobile)
-    }
+    // Media query check for viewport width <= 768px (safely guarded for JSDOM/SSR)
+    if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+      const mediaQuery = window.matchMedia('(max-width: 768px)')
+      
+      const updateIsMobile = () => {
+        // Mobile if viewport width <= 768px or user agent was identified as mobile/tablet
+        const isViewportMobile = mediaQuery.matches
+        const isUAMobile = initialIsMobile || /mobile|tablet|android|iphone|ipad|ipod/i.test(ua)
+        setIsMobile(isViewportMobile || isUAMobile)
+      }
 
-    updateIsMobile()
+      updateIsMobile()
 
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', updateIsMobile)
-      return () => mediaQuery.removeEventListener('change', updateIsMobile)
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', updateIsMobile)
+        return () => mediaQuery.removeEventListener('change', updateIsMobile)
+      } else if ((mediaQuery as any).addListener) {
+        // Fallback for older browsers
+        ;(mediaQuery as any).addListener(updateIsMobile)
+        return () => (mediaQuery as any).removeListener(updateIsMobile)
+      }
     } else {
-      // Fallback for older browsers
-      mediaQuery.addListener(updateIsMobile)
-      return () => mediaQuery.removeListener(updateIsMobile)
+      const isUAMobile = initialIsMobile || /mobile|tablet|android|iphone|ipad|ipod/i.test(ua)
+      setIsMobile(isUAMobile)
     }
   }, [initialIsMobile, initialIsIOS, initialIsAndroid])
 

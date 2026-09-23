@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useLocale } from 'next-intl'
-import { usePathname } from 'next/navigation'
 import { Globe, ChevronDown, Check } from 'lucide-react'
 import { switchLocale } from '@/lib/locale-navigation'
 
@@ -32,7 +31,6 @@ export function LanguageSwitcher({
   onSelect,
 }: LanguageSwitcherProps) {
   const currentLocale = useLocale()
-  const pathname = usePathname() || ''
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -59,7 +57,7 @@ export function LanguageSwitcher({
     if (onSelect) {
       onSelect(code)
     }
-    switchLocale(code, currentLocale, pathname)
+    switchLocale(code, currentLocale)
   }
 
   // 1. Mobile Drawer Radio List Variant (R2)

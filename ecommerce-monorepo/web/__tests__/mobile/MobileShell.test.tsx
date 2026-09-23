@@ -25,6 +25,7 @@ vi.mock('@/components/MobileProvider', () => ({
     isMobile: true,
     isIOS: false,
     isAndroid: false,
+    isStandalone: true,
     isDrawerOpen: false,
     isSearchOpen: false,
     closeDrawer: vi.fn(),
