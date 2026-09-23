@@ -159,53 +159,60 @@ export function MobileHeader({
     return (
       <header
         data-testid="mobile-header"
-        className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white dark:bg-[#0f172a] border-b border-gray-200/90 dark:border-slate-800 shadow-xs transition-colors ${className}`}
+        className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white/98 dark:bg-[#0f172a]/98 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.07)] transition-colors ${className}`}
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
-        {/* Row 1: Brand / Logo on left, language/currency, cart, menu on right */}
-        <div className="h-14 px-3.5 sm:px-4 flex items-center justify-between gap-2 max-w-lg mx-auto">
-          {/* Left: Back button (if on subpage) or Brand Logo */}
-          <div className="flex items-center gap-1.5 min-w-0 shrink">
+        {/* Row 1: Brand / Logo on left, language/currency, cart, menu on right (64px height) */}
+        <div className="h-16 px-3.5 sm:px-5 flex items-center justify-between gap-2.5 w-full max-w-4xl mx-auto">
+          {/* Left: Back button (if on subpage) and Brand Logo */}
+          <div className="flex items-center gap-2 min-w-0 shrink">
             {showBack ? (
               <button
                 type="button"
                 onClick={handleBackClick}
                 aria-label={locale === 'zh' ? '返回' : locale === 'ru' ? 'Назад' : 'Go back'}
                 data-testid="mobile-back-button"
-                className="w-10 h-10 -ml-1 flex items-center justify-center text-gray-700 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation shrink-0"
+                className="w-10 h-10 -ml-1 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/60 rounded-xl active:scale-95 transition-all touch-manipulation shrink-0 shadow-2xs"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5 stroke-[2.2]" />
               </button>
             ) : null}
 
             <LocaleLink
               href="/"
               aria-label={companyName}
-              className="flex items-center gap-2 select-none active:opacity-75 transition-opacity touch-manipulation min-w-0"
+              className="flex items-center gap-2.5 select-none active:opacity-80 transition-opacity touch-manipulation min-w-0"
             >
               {companyLogo ? (
                 <img
                   src={companyLogo}
                   alt={companyName}
-                  className="h-8 max-h-8 w-auto object-contain shrink-0"
+                  className="h-9 max-h-9 w-auto object-contain shrink-0"
                   loading="eager"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-lg bg-[#00407a] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#00407a] via-[#00529b] to-[#0066cc] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs ring-1 ring-white/20">
                   {companyName.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="text-[17px] font-black tracking-tight text-[#00407a] dark:text-white truncate">
-                {title || companyName}
-              </span>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[17px] font-black tracking-tight text-[#00407a] dark:text-white truncate leading-tight">
+                  {title || companyName}
+                </span>
+                {!title && (
+                  <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase leading-none hidden xs:inline-block">
+                    {settings?.siteTagline || 'Global Sourcing & Freight'}
+                  </span>
+                )}
+              </div>
             </LocaleLink>
           </div>
 
-          {/* Right: Discoverable Language & Currency, Cart, Menu */}
-          <div className="flex items-center gap-1 shrink-0">
+          {/* Right: Discoverable Language & Currency, Notifications, Cart, Menu */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* Standard Language & Currency selectors (Homepage only to keep subpage headers clean) */}
             {!showBack && !title && (
-              <div className="flex items-center gap-1 scale-90 origin-right">
+              <div className="hidden min-[400px]:flex items-center gap-1 scale-90 origin-right bg-slate-100/80 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
                 <LanguageSwitcher variant="header-dropdown" />
                 <CurrencySwitcher variant="header-dropdown" />
               </div>
@@ -218,10 +225,10 @@ export function MobileHeader({
                 onClick={onNotificationsClick}
                 aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
                 data-testid="mobile-notifications-trigger"
-                className="relative w-10 h-10 flex items-center justify-center text-gray-700 dark:text-slate-300 rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="relative w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all touch-manipulation shadow-2xs"
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0f172a]">
                   {notificationCount > 99 ? '99+' : notificationCount}
                 </span>
               </button>
@@ -238,17 +245,17 @@ export function MobileHeader({
                     : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина' : 'Cart'
                 }
                 data-testid="mobile-cart-trigger"
-                className="relative w-10 h-10 flex items-center justify-center text-gray-700 dark:text-slate-200 rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="relative w-10 h-10 flex items-center justify-center text-slate-800 dark:text-slate-100 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all touch-manipulation shadow-2xs"
               >
                 {isWholesale ? (
                   <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
                 ) : (
-                  <ShoppingCart className="w-5 h-5 text-gray-800 dark:text-white" />
+                  <ShoppingCart className="w-5 h-5 text-slate-800 dark:text-white" />
                 )}
                 {effectiveCartCount > 0 && (
                   <span
                     data-testid="mobile-cart-badge"
-                    className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F5A602] text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs"
+                    className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F5A602] text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0f172a]"
                   >
                     {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
                   </span>
@@ -257,13 +264,13 @@ export function MobileHeader({
             )}
 
             {/* Menu Hamburger Button */}
-            {!showBack && (
+            {(!showBack || !title) && (
               <button
                 type="button"
                 onClick={handleMenuClick}
                 aria-label={locale === 'zh' ? '打开菜单' : locale === 'ru' ? 'Открыть меню' : 'Menu'}
                 data-testid="mobile-menu-trigger"
-                className="w-10 h-10 flex items-center justify-center text-gray-800 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="w-10 h-10 flex items-center justify-center text-white bg-[#00407a] hover:bg-[#003366] dark:bg-blue-600 dark:hover:bg-blue-500 rounded-xl shadow-xs active:scale-95 transition-all touch-manipulation"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -271,10 +278,10 @@ export function MobileHeader({
           </div>
         </div>
 
-        {/* Row 2: Website Mobile Search Bar */}
+        {/* Row 2: Website Mobile Search Bar (56px height) */}
         {isSearchVisible && (
-          <div className="px-3.5 sm:px-4 pb-3 pt-1 max-w-lg mx-auto">
-            <form onSubmit={handleInputSubmit} className="flex items-center gap-2">
+          <div className="h-14 px-3.5 sm:px-5 flex items-center w-full max-w-4xl mx-auto pb-2.5 pt-0.5">
+            <form onSubmit={handleInputSubmit} className="flex items-center gap-2 w-full">
               <div className="relative flex-1">
                 <button
                   type="button"
@@ -290,24 +297,24 @@ export function MobileHeader({
                   value={localQuery}
                   onChange={handleInputChange}
                   placeholder={searchPlaceholder}
-                  className="w-full h-11 pl-10 pr-9 text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all"
+                  className="w-full h-10 pl-10 pr-9 text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs"
                 />
                 {localQuery ? (
                   <button
                     type="button"
                     onClick={handleClearInput}
                     aria-label="Clear search"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 ) : null}
               </div>
               <button
                 type="submit"
-                className="h-11 px-4 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-xl shrink-0 active:scale-95 transition-all shadow-2xs cursor-pointer"
+                className="h-10 px-4 bg-gradient-to-r from-[#F5A602] to-[#FFB72B] hover:from-[#E09500] hover:to-[#F5A602] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shrink-0 active:scale-95 transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
               >
-                {locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}
+                <span>{locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}</span>
               </button>
             </form>
           </div>

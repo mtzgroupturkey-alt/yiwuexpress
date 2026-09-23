@@ -39,7 +39,7 @@ export function MobileFilterChips({
       className={`flex items-center gap-2 overflow-x-auto no-scrollbar px-3 py-2 border-b border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md sticky z-20 ${
         isStandalone
           ? 'top-[calc(56px+env(safe-area-inset-top,0px))]'
-          : 'top-[calc(112px+env(safe-area-inset-top,0px))]'
+          : 'top-[calc(120px+env(safe-area-inset-top,0px))]'
       } ${className}`}
     >
       {/* 1. Filter Trigger Button */}

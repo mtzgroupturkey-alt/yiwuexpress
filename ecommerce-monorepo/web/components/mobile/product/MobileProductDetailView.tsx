@@ -11,6 +11,7 @@ import { MobileVariantChips, VariantOption } from './MobileVariantChips'
 import { MobileAttributeSelector, ConfigurableAttribute } from './MobileAttributeSelector'
 import { StickyBuyBar } from '../StickyBuyBar'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useMobile } from '@/components/MobileProvider'
 
 export interface MobileProductDetailViewProps {
   product: Product
@@ -58,6 +59,7 @@ export function MobileProductDetailView({
   isWholesale,
   isInstantWholesale = false,
 }: MobileProductDetailViewProps) {
+  const { isStandalone } = useMobile()
   const { isWholesaleSession } = useSessionMode()
   const [quantity, setQuantity] = useState(product.moq || 1)
   const [legacySelectedVariant, setLegacySelectedVariant] = useState('default')
@@ -115,7 +117,11 @@ export function MobileProductDetailView({
   return (
     <div
       data-testid="mobile-pdp"
-      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] pt-[calc(56px+env(safe-area-inset-top,0px))] pb-28 ${className}`}
+      className={`md:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-[#0b1120] ${
+        isStandalone
+          ? 'pt-[calc(56px+env(safe-area-inset-top,0px))]'
+          : 'pt-[calc(120px+env(safe-area-inset-top,0px))]'
+      } pb-28 ${className}`}
     >
       {/* 1. Mobile Header with Back Button */}
       <MobileHeader

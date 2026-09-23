@@ -276,7 +276,7 @@ export const Header: React.FC<HeaderProps> = ({
         className={`md:hidden w-full shrink-0 pointer-events-none ${
           isStandalone
             ? 'h-[calc(56px+env(safe-area-inset-top,0px))]'
-            : 'h-[calc(112px+env(safe-area-inset-top,0px))]'
+            : 'h-[calc(120px+env(safe-area-inset-top,0px))]'
         }`}
         aria-hidden="true"
       />
@@ -433,7 +433,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Global Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="flex-1 max-w-[660px] relative hidden md:block">
+        <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[180px] max-w-[660px] relative hidden md:block">
           <div className="flex items-stretch border-2 border-[#00407a] rounded-md overflow-hidden bg-white focus-within:ring-2 focus-within:ring-blue-200">
             {/* Scope selector */}
             <div className="relative">
