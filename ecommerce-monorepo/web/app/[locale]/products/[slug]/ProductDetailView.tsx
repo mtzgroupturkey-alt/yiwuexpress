@@ -1234,12 +1234,7 @@ export default function ProductDetailView({
   )
 
   return (
-    <SharedLayout
-      showHero={true}
-      pageTitle={localized.name}
-      pageDescription={localized.description?.substring(0, 150) || `High-quality ${localized.name}`}
-      breadcrumbs={breadcrumbs}
-    >
+    <>
       {/* Product JSON-LD Structured Data */}
       <script
         type="application/ld+json"
@@ -1293,7 +1288,14 @@ export default function ProductDetailView({
       </div>
 
       {/* DESKTOP PDP VIEW (100% byte-identical, hidden on mobile) */}
-      <div className="hidden md:block bg-[#F8FAFC] py-3 pb-24 lg:pb-8">
+      <div className="hidden md:block">
+        <SharedLayout
+          showHero={true}
+          pageTitle={localized.name}
+          pageDescription={localized.description?.substring(0, 150) || `High-quality ${localized.name}`}
+          breadcrumbs={breadcrumbs}
+        >
+          <div className="bg-[#F8FAFC] py-3 pb-24 lg:pb-8">
         <Container>
           {/* In-Page Clean Breadcrumb Trail */}
           <nav aria-label="Breadcrumb" className="mb-4">
@@ -2495,5 +2497,7 @@ export default function ProductDetailView({
       </Container>
     </div>
     </SharedLayout>
+    </div>
+    </>
   )
 }

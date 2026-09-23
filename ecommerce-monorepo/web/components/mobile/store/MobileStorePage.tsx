@@ -15,6 +15,7 @@ interface MobileStorePageProps {
   favoriteIds?: Set<string>
   onToggleFavorite?: (productId: string) => void
   initialCategory?: string | null
+  initialDepartment?: string | null
   initialSearch?: string
   className?: string
 }
@@ -27,6 +28,7 @@ export function MobileStorePage({
   favoriteIds,
   onToggleFavorite,
   initialCategory,
+  initialDepartment,
   initialSearch = '',
   className = '',
 }: MobileStorePageProps) {
@@ -35,17 +37,27 @@ export function MobileStorePage({
   const [sortOption, setSortOption] = useState<SortOptionId>('popular')
   const [filters, setFilters] = useState<FilterValues>({
     category: initialCategory || undefined,
+    department:
+      initialDepartment &&
+      initialDepartment !== 'All Departments' &&
+      initialDepartment !== 'all'
+        ? initialDepartment
+        : undefined,
   })
 
-  // Synchronize when initialCategory changes externally (e.g. navigation or URL update)
+  // Synchronize when initialCategory or initialDepartment changes externally
   React.useEffect(() => {
-    if (initialCategory !== undefined) {
-      setFilters((prev) => ({
-        ...prev,
-        category: initialCategory || undefined,
-      }))
-    }
-  }, [initialCategory])
+    setFilters((prev) => ({
+      ...prev,
+      category: initialCategory || undefined,
+      department:
+        initialDepartment &&
+        initialDepartment !== 'All Departments' &&
+        initialDepartment !== 'all'
+          ? initialDepartment
+          : undefined,
+    }))
+  }, [initialCategory, initialDepartment])
 
   // Filtering products
   const filteredProducts = useMemo(() => {
@@ -71,6 +83,16 @@ export function MobileStorePage({
           (p.department && p.department.toLowerCase().trim() === catLower) ||
           (p.categorySlug && p.categorySlug.toLowerCase().trim() === catLower) ||
           (p.category && p.category.toLowerCase().replace(/\s+/g, '-') === catLower)
+      )
+    }
+
+    // 2b. Department filter (when not 'All Departments')
+    if (filters.department && filters.department !== 'All Departments' && filters.department !== 'all') {
+      const deptLower = filters.department.toLowerCase().trim()
+      list = list.filter(
+        (p) =>
+          (p.department && p.department.toLowerCase().trim() === deptLower) ||
+          (p.category && p.category.toLowerCase().trim() === deptLower)
       )
     }
 
@@ -113,6 +135,7 @@ export function MobileStorePage({
   const activeFiltersCount = useMemo(() => {
     let count = 0
     if (filters.category) count++
+    if (filters.department && filters.department !== 'All Departments' && filters.department !== 'all') count++
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) count++
     if (filters.inStockOnly) count++
     if (filters.wholesaleOnly) count++
@@ -133,6 +156,12 @@ export function MobileStorePage({
       chips.push({
         id: 'category',
         label: foundCat?.name || filters.category,
+      })
+    }
+    if (filters.department && filters.department !== 'All Departments' && filters.department !== 'all') {
+      chips.push({
+        id: 'department',
+        label: filters.department,
       })
     }
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
@@ -157,6 +186,7 @@ export function MobileStorePage({
     setFilters((prev) => {
       const next = { ...prev }
       if (filterId === 'category') next.category = undefined
+      if (filterId === 'department') next.department = undefined
       if (filterId === 'price') {
         next.minPrice = undefined
         next.maxPrice = undefined

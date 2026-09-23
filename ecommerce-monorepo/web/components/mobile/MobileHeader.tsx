@@ -163,16 +163,16 @@ export function MobileHeader({
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         {/* Row 1: Brand / Logo on left, language/currency, cart, menu on right */}
-        <div className="h-13 px-3 flex items-center justify-between gap-2 max-w-lg mx-auto">
+        <div className="h-14 px-3.5 sm:px-4 flex items-center justify-between gap-2 max-w-lg mx-auto">
           {/* Left: Back button (if on subpage) or Brand Logo */}
-          <div className="flex items-center min-w-0 shrink">
+          <div className="flex items-center gap-1.5 min-w-0 shrink">
             {showBack ? (
               <button
                 type="button"
                 onClick={handleBackClick}
                 aria-label={locale === 'zh' ? '返回' : locale === 'ru' ? 'Назад' : 'Go back'}
                 data-testid="mobile-back-button"
-                className="min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-700 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="w-10 h-10 -ml-1 flex items-center justify-center text-gray-700 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -187,15 +187,15 @@ export function MobileHeader({
                 <img
                   src={companyLogo}
                   alt={companyName}
-                  className="h-7 max-h-7 w-auto object-contain shrink-0"
+                  className="h-8 max-h-8 w-auto object-contain shrink-0"
                   loading="eager"
                 />
               ) : (
-                <div className="w-7 h-7 rounded-md bg-[#00407a] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
+                <div className="w-8 h-8 rounded-lg bg-[#00407a] text-white flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
                   {companyName.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="text-base font-black tracking-tight text-[#00407a] dark:text-white truncate">
+              <span className="text-[17px] font-black tracking-tight text-[#00407a] dark:text-white truncate">
                 {title || companyName}
               </span>
             </LocaleLink>
@@ -218,7 +218,7 @@ export function MobileHeader({
                 onClick={onNotificationsClick}
                 aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
                 data-testid="mobile-notifications-trigger"
-                className="relative min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-700 dark:text-slate-300 rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="relative w-10 h-10 flex items-center justify-center text-gray-700 dark:text-slate-300 rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
               >
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-1.5 right-1.5 min-w-[14px] h-3.5 px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
@@ -238,7 +238,7 @@ export function MobileHeader({
                     : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина' : 'Cart'
                 }
                 data-testid="mobile-cart-trigger"
-                className="relative min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-700 dark:text-slate-200 rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="relative w-10 h-10 flex items-center justify-center text-gray-700 dark:text-slate-200 rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
               >
                 {isWholesale ? (
                   <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
@@ -248,7 +248,7 @@ export function MobileHeader({
                 {effectiveCartCount > 0 && (
                   <span
                     data-testid="mobile-cart-badge"
-                    className="absolute top-1.5 right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-[#F5A602] text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs"
+                    className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F5A602] text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs"
                   >
                     {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
                   </span>
@@ -263,7 +263,7 @@ export function MobileHeader({
                 onClick={handleMenuClick}
                 aria-label={locale === 'zh' ? '打开菜单' : locale === 'ru' ? 'Открыть меню' : 'Menu'}
                 data-testid="mobile-menu-trigger"
-                className="min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-800 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+                className="w-10 h-10 flex items-center justify-center text-gray-800 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -273,7 +273,7 @@ export function MobileHeader({
 
         {/* Row 2: Website Mobile Search Bar */}
         {isSearchVisible && (
-          <div className="px-3 pb-2.5 max-w-lg mx-auto">
+          <div className="px-3.5 sm:px-4 pb-3 pt-1 max-w-lg mx-auto">
             <form onSubmit={handleInputSubmit} className="flex items-center gap-2">
               <div className="relative flex-1">
                 <button
@@ -281,7 +281,7 @@ export function MobileHeader({
                   onClick={handleSearchAction}
                   data-testid="mobile-search-toggle"
                   aria-label="Search"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 touch-manipulation"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 touch-manipulation"
                 >
                   <Search className="w-4 h-4" />
                 </button>
@@ -290,22 +290,22 @@ export function MobileHeader({
                   value={localQuery}
                   onChange={handleInputChange}
                   placeholder={searchPlaceholder}
-                  className="w-full h-9 pl-9 pr-8 text-xs bg-slate-100 dark:bg-slate-800/80 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:border-[#00407a] dark:focus:border-blue-400 transition-colors"
+                  className="w-full h-11 pl-10 pr-9 text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all"
                 />
                 {localQuery ? (
                   <button
                     type="button"
                     onClick={handleClearInput}
                     aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 ) : null}
               </div>
               <button
                 type="submit"
-                className="h-9 px-3.5 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-xl shrink-0 active:scale-95 transition-transform"
+                className="h-11 px-4 bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-bold text-xs rounded-xl shrink-0 active:scale-95 transition-all shadow-2xs cursor-pointer"
               >
                 {locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}
               </button>

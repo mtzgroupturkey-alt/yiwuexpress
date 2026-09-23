@@ -251,17 +251,34 @@ export const Header: React.FC<HeaderProps> = ({
     window.location.href = targetPath;
   };
 
+  const isHomePage =
+    pathname === `/${currentLocale}` ||
+    pathname === `/${currentLocale}/` ||
+    pathname === '/' ||
+    !pathname;
+
   return (
     <>
       {/* MOBILE HEADER (Switches between website mobile view and native PWA app header) */}
       <MobileHeader
         showSearch={true}
+        showBack={!isHomePage}
         searchValue={searchQuery}
         onSearchChange={onSearchChange}
         onSearchSubmit={handleSearchSubmit}
         onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
         onMenuClick={onOpenCatalog}
         onCartClick={isWholesaleActive && !isInstantWholesale ? undefined : onOpenCart}
+      />
+
+      {/* In-flow layout spacer so following content naturally clears the fixed header on mobile */}
+      <div
+        className={`md:hidden w-full shrink-0 pointer-events-none ${
+          isStandalone
+            ? 'h-[calc(56px+env(safe-area-inset-top,0px))]'
+            : 'h-[calc(112px+env(safe-area-inset-top,0px))]'
+        }`}
+        aria-hidden="true"
       />
 
       {/* Collapsible Mobile Search Input (Only for Standalone PWA mode where search is an overlay icon) */}

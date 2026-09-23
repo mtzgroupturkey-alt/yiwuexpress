@@ -7,6 +7,7 @@ import { Check, RotateCcw, Star } from 'lucide-react'
 
 export interface FilterValues {
   category?: string
+  department?: string
   minPrice?: number | string
   maxPrice?: number | string
   inStockOnly?: boolean

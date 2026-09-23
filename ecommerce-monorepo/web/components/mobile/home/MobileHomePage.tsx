@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { Product, Category } from '@/app/[locale]/design-3/types'
-import { useMobile } from '@/components/MobileProvider'
 import { MobileHero } from './MobileHero'
 import { MobileCategoryRow } from './MobileCategoryRow'
 import { MobileFlashDeals } from './MobileFlashDeals'
@@ -36,16 +35,10 @@ export function MobileHomePage({
   onNavigateView,
   className = '',
 }: MobileHomePageProps) {
-  const { isStandalone } = useMobile()
-
   return (
     <div
       data-testid="mobile-home-page"
-      className={`md:hidden flex flex-col space-y-4 ${
-        isStandalone
-          ? 'pt-[calc(56px+env(safe-area-inset-top,0px))]'
-          : 'pt-[calc(104px+env(safe-area-inset-top,0px))]'
-      } pb-6 ${className}`}
+      className={`md:hidden flex flex-col space-y-4 pb-6 ${className}`}
     >
       {/* 1. Mobile Hero Carousel */}
       <MobileHero

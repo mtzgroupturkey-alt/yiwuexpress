@@ -113,6 +113,19 @@ export function Design3LayoutHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
 
+  // Synchronize search and department query parameters on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('search') || params.get('q') || '';
+        if (q) setSearchQuery(q);
+        const dept = params.get('department') || params.get('dept') || '';
+        if (dept) setSelectedDepartment(dept);
+      } catch {}
+    }
+  }, []);
+
   // Live Categories from DB / Admin Panel
   const { data: categoriesResponse } = useQuery({
     queryKey: ['categories', 'menu-header', locale],
