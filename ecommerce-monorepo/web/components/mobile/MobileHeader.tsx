@@ -112,7 +112,17 @@ export function MobileHeader({
     }
   }
 
-  const handleSearchAction = () => {
+  const handleSearchAction = (e?: React.MouseEvent) => {
+    if (localQuery.trim()) {
+      if (onSearchSubmit) {
+        onSearchSubmit(e as any)
+      } else {
+        router.push(`/${locale}/store?search=${encodeURIComponent(localQuery.trim())}`)
+      }
+      setIsSearchExpanded(false)
+      return
+    }
+
     setIsSearchExpanded(true)
     setTimeout(() => {
       inputRef.current?.focus()
@@ -326,49 +336,45 @@ export function MobileHeader({
             )}
 
             {/* Search Input Form (smoothly expands to 100% full width when active) */}
-            <form onSubmit={handleInputSubmit} className="flex-1 flex items-center gap-1.5 min-w-0 transition-all duration-200">
+            <form onSubmit={handleInputSubmit} className="flex-1 flex items-center gap-2 min-w-0 transition-all duration-200">
               <div className="relative flex-1 min-w-0">
                 <button
                   type="button"
                   onClick={handleSearchAction}
                   data-testid="mobile-search-toggle"
                   aria-label="Search"
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 touch-manipulation"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 touch-manipulation cursor-pointer"
                 >
                   <Search className="w-4 h-4" />
                 </button>
                 <input
                   ref={inputRef}
-                  type="text"
+                  type="search"
+                  enterKeyHint="search"
                   value={localQuery}
                   onChange={handleInputChange}
                   onFocus={() => setIsSearchExpanded(true)}
                   onKeyDown={handleKeyDown}
                   placeholder={searchPlaceholder}
-                  className="w-full h-10 pl-9 pr-8 text-xs sm:text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs"
+                  className="w-full h-10 pl-9 pr-8 text-xs sm:text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs [&::-webkit-search-cancel-button]:appearance-none cursor-pointer focus:cursor-text"
                 />
                 {localQuery ? (
                   <button
                     type="button"
                     onClick={handleClearInput}
                     aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 ) : null}
               </div>
-              <button
-                type="submit"
-                className="h-10 px-3 sm:px-4 bg-gradient-to-r from-[#F5A602] to-[#FFB72B] hover:from-[#E09500] hover:to-[#F5A602] text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shrink-0 active:scale-95 transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
-              >
-                <span>{locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}</span>
-              </button>
+
               {isSearchExpanded && (
                 <button
                   type="button"
                   onClick={handleCancelSearch}
-                  className="h-10 px-2 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl shrink-0 active:scale-95 transition-colors touch-manipulation"
+                  className="h-10 px-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 active:scale-95 transition-colors touch-manipulation cursor-pointer"
                 >
                   {locale === 'zh' ? '取消' : locale === 'ru' ? 'Отмена' : 'Cancel'}
                 </button>
