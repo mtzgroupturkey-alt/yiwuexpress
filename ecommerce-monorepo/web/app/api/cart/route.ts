@@ -27,78 +27,134 @@ export async function GET(request: Request) {
       })
     }
 
-    // Get or create cart
+    const cartInclude = {
+      items: {
+        include: {
+          product: {
+            select: {
+              id: true,
+              sku: true,
+              name: true,
+              slug: true,
+              price: true,
+              thumbnail: true,
+              stock: true,
+              weightKg: true,
+              isActive: true,
+            },
+          },
+          variant: {
+            select: {
+              id: true,
+              sku: true,
+              price: true,
+              stock: true,
+              images: true,
+              isActive: true,
+            },
+          },
+        },
+      },
+    }
+
+    // Get or create cart safely handling concurrency race conditions
     let cart = await prisma.cart.findUnique({
       where: { userId: user.id },
-      include: {
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                sku: true,
-                name: true,
-                slug: true,
-                price: true,
-                thumbnail: true,
-                stock: true,
-                weightKg: true,
-                isActive: true
-              }
-            }
-          }
-        }
-      }
+      include: cartInclude,
     })
 
     if (!cart) {
-      cart = await prisma.cart.create({
+      try {
+        cart = await prisma.cart.create({
+          data: {
+            userId: user.id,
+            mode: 'RETAIL',
+          },
+          include: cartInclude,
+        })
+      } catch {
+        // Concurrency safeguard: if a parallel request just created it, fetch it
+        cart = await prisma.cart.findUnique({
+          where: { userId: user.id },
+          include: cartInclude,
+        })
+      }
+    }
+
+    if (!cart) {
+      return NextResponse.json({
+        success: true,
+        authenticated: true,
         data: {
-          userId: user.id
+          cart: null,
+          items: [],
+          summary: {
+            itemCount: 0,
+            totalQuantity: 0,
+            subtotal: 0,
+            totalWeight: 0,
+          },
         },
-        include: {
-          items: {
-            include: {
-              product: {
-                select: {
-                  id: true,
-                  sku: true,
-                  name: true,
-                  slug: true,
-                  price: true,
-                  thumbnail: true,
-                  stock: true,
-                  weightKg: true,
-                  isActive: true
-                }
-              }
-            }
-          }
-        }
       })
     }
 
-    // Calculate totals
+    // Identify orphaned items where product was deleted from database
+    const orphanedItemIds = (cart.items || [])
+      .filter((item) => !item.product)
+      .map((item) => item.id)
+
+    if (orphanedItemIds.length > 0) {
+      prisma.cartItem
+        .deleteMany({ where: { id: { in: orphanedItemIds } } })
+        .catch((err) => console.warn('[Cart] Cleaned orphaned cart items warning:', err))
+    }
+
+    // Filter valid items with an existing active product
+    const validItems = (cart.items || []).filter(
+      (item) => item && item.product && item.product.isActive
+    )
+
+    // Calculate totals safely avoiding NaN or undefined crashes
     let subtotal = 0
     let totalWeight = 0
-    const validItems = cart.items.filter(item => item.product.isActive)
+    let totalQuantity = 0
 
     for (const item of validItems) {
-      subtotal += item.product.price * item.quantity
-      totalWeight += item.product.weightKg * item.quantity
+      const qty = typeof item.quantity === 'number' && item.quantity > 0 ? item.quantity : 1
+      const price =
+        typeof item.variant?.price === 'number' && Number.isFinite(item.variant.price)
+          ? item.variant.price
+          : typeof item.product?.price === 'number' && Number.isFinite(item.product.price)
+          ? item.product.price
+          : 0
+      const weight =
+        typeof item.product?.weightKg === 'number' && Number.isFinite(item.product.weightKg)
+          ? item.product.weightKg
+          : 0
+
+      subtotal += price * qty
+      totalWeight += weight * qty
+      totalQuantity += qty
     }
+
+    const safeSubtotal = Number.isFinite(subtotal) ? parseFloat(subtotal.toFixed(2)) : 0
+    const safeWeight = Number.isFinite(totalWeight) ? parseFloat(totalWeight.toFixed(2)) : 0
 
     return NextResponse.json({
       success: true,
+      authenticated: true,
       data: {
-        cart,
+        cart: {
+          ...cart,
+          items: validItems,
+        },
         summary: {
           itemCount: validItems.length,
-          totalQuantity: validItems.reduce((sum, item) => sum + item.quantity, 0),
-          subtotal: parseFloat(subtotal.toFixed(2)),
-          totalWeight: parseFloat(totalWeight.toFixed(2))
-        }
-      }
+          totalQuantity,
+          subtotal: safeSubtotal,
+          totalWeight: safeWeight,
+        },
+      },
     })
   } catch (error) {
     if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
@@ -106,7 +162,11 @@ export async function GET(request: Request) {
     }
     console.error('Error fetching cart:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch cart' },
+      {
+        success: false,
+        error: 'Failed to fetch cart',
+        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined,
+      },
       { status: 500 }
     )
   }
@@ -188,20 +248,35 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get or create cart
+    // Get or create cart safely
     let cart = await prisma.cart.findUnique({
       where: { userId: user.id }
     })
 
     if (!cart) {
-      cart = await prisma.cart.create({
-        data: { userId: user.id, mode: targetMode }
-      })
-    } else if (cart.mode !== targetMode) {
+      try {
+        cart = await prisma.cart.create({
+          data: { userId: user.id, mode: targetMode }
+        })
+      } catch {
+        cart = await prisma.cart.findUnique({
+          where: { userId: user.id }
+        })
+      }
+    }
+    
+    if (cart && cart.mode !== targetMode) {
       await prisma.cart.update({
         where: { id: cart.id },
         data: { mode: targetMode }
-      })
+      }).catch(() => {})
+    }
+
+    if (!cart) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to access cart' },
+        { status: 500 }
+      )
     }
 
     // Helper to compare options

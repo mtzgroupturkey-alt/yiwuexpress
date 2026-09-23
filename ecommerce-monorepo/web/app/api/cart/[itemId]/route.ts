@@ -50,7 +50,7 @@ export async function PUT(
     }
 
     // Check stock
-    if (cartItem.product.stock < quantity) {
+    if (cartItem.product && cartItem.product.stock < quantity) {
       return NextResponse.json(
         { success: false, error: 'Insufficient stock' },
         { status: 400 }

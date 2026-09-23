@@ -237,18 +237,20 @@ export default function CartPage() {
 
     const isEmpty = !cart || cart.items.length === 0
 
-    const mobileCartItems = (cart?.items || []).map((it) => ({
-      id: it.id,
-      productId: it.productId,
-      name: it.product.name,
-      slug: it.product.slug,
-      price: it.product.price,
-      image: it.product.thumbnail,
-      stock: it.product.stock,
-      quantity: it.quantity,
-      weightKg: it.product.weightKg,
-      isActive: it.product.isActive,
-    }))
+    const mobileCartItems = (cart?.items || [])
+      .filter((it: any) => it && it.product)
+      .map((it: any) => ({
+        id: it.id,
+        productId: it.productId,
+        name: it.product.name,
+        slug: it.product.slug,
+        price: it.product.price,
+        image: it.product.thumbnail,
+        stock: it.product.stock,
+        quantity: it.quantity,
+        weightKg: it.product.weightKg || 0,
+        isActive: it.product.isActive,
+      }))
 
     return (
       <>
@@ -325,9 +327,8 @@ export default function CartPage() {
                         <h2 className="text-xl font-bold mb-4">
                           {t('cartItems', { n: summary.itemCount })}
                         </h2>
-                        
                         <div className="space-y-0">
-                          {cart.items.map((item) => (
+                          {(cart.items || []).filter((item) => item && item.product).map((item) => (
                             <CartItem
                               key={item.id}
                               item={item}

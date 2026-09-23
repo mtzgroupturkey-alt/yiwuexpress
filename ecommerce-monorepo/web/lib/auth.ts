@@ -135,31 +135,36 @@ export async function getUserFromToken(token: string) {
   const payload = verifyToken(token)
   if (!payload) return null
 
-  return await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      phone: true,
-      country: true,
-      isActive: true,
-      isVerified: true,
-      userType: true,
-      verificationStatus: true,
-      companyName: true,
-      taxId: true,
-      supplierId: true,
-      supplierProfile: {
-        select: {
-          id: true,
-          companyName: true,
-          businessType: true,
+  try {
+    return await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+        country: true,
+        isActive: true,
+        isVerified: true,
+        userType: true,
+        verificationStatus: true,
+        companyName: true,
+        taxId: true,
+        supplierId: true,
+        supplierProfile: {
+          select: {
+            id: true,
+            companyName: true,
+            businessType: true,
+          },
         },
       },
-    },
-  })
+    })
+  } catch (error) {
+    console.error('[AUTH] Failed to fetch user from token:', error)
+    return null
+  }
 }
 
 /**
