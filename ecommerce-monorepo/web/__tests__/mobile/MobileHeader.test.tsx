@@ -206,4 +206,37 @@ describe('MobileHeader (components/mobile/MobileHeader.tsx)', () => {
     fireEvent.click(cartBtn)
     expect(onCartClick).not.toHaveBeenCalled()
   })
+
+  it('dynamically expands search bar on focus, showing cancel button and popular searches', () => {
+    render(<MobileHeader />)
+
+    const searchInput = screen.getByPlaceholderText(/search/i)
+    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+
+    // Focus search input
+    fireEvent.focus(searchInput)
+
+    // Cancel button and Popular Searches tray now visible
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
+    expect(screen.getByText('Popular Searches')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Electronics' })).toBeInTheDocument()
+
+    // Clicking Cancel collapses search
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
+    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+    expect(screen.queryByText('Popular Searches')).not.toBeInTheDocument()
+  })
+
+  it('clicking a popular search tag triggers navigation and closes expanded tray', () => {
+    render(<MobileHeader />)
+
+    const searchInput = screen.getByPlaceholderText(/search/i)
+    fireEvent.focus(searchInput)
+
+    const electronicsTag = screen.getByRole('button', { name: 'Electronics' })
+    fireEvent.click(electronicsTag)
+
+    expect(mockRouterPush).toHaveBeenCalledWith('/en/store?search=Electronics')
+    expect(screen.queryByText('Popular Searches')).not.toBeInTheDocument()
+  })
 })

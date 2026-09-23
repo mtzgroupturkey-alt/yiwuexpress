@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft, X } from 'lucide-react'
+import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft, X, TrendingUp } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useSettings } from '@/components/SettingsProvider'
 import { useMobile } from '@/components/MobileProvider'
@@ -14,6 +14,12 @@ import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher'
 import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher'
+
+const POPULAR_SEARCH_TAGS: Record<string, string[]> = {
+  en: ['Electronics', 'Kitchenware', 'Tools & Hardware', 'Industrial Parts', 'Home Decor', 'Smart Appliances'],
+  zh: ['电子数码', '厨用百货', '五金工具', '工业配件', '家居饰品', '智能家电'],
+  ru: ['Электроника', 'Посуда', 'Инструменты', 'Запчасти', 'Декор для дома', 'Бытовая техника'],
+}
 
 export interface MobileHeaderProps {
   title?: string
@@ -66,6 +72,8 @@ export function MobileHeader({
   const { isWholesaleSession } = useSessionMode()
 
   const [localQuery, setLocalQuery] = useState(searchValue || '')
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (searchValue !== undefined) {
@@ -82,6 +90,7 @@ export function MobileHeader({
   const companyLogo = settings?.companyLogo
 
   const isSearchVisible = showSearch !== undefined ? showSearch : showSearchToggle
+  const popularTags = POPULAR_SEARCH_TAGS[locale] || POPULAR_SEARCH_TAGS.en
 
   const handleMenuClick = () => {
     if (onMenuClick) {
@@ -104,6 +113,10 @@ export function MobileHeader({
   }
 
   const handleSearchAction = () => {
+    setIsSearchExpanded(true)
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 50)
     if (onSearchClick) {
       onSearchClick()
     } else if (toggleSearch) {
@@ -111,6 +124,27 @@ export function MobileHeader({
     } else {
       router.push(`/${locale}/store`)
     }
+  }
+
+  const handleCancelSearch = () => {
+    setIsSearchExpanded(false)
+    if (!searchValue) {
+      setLocalQuery('')
+      if (onSearchChange) onSearchChange('')
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      handleCancelSearch()
+    }
+  }
+
+  const handleTagClick = (tag: string) => {
+    setLocalQuery(tag)
+    if (onSearchChange) onSearchChange(tag)
+    setIsSearchExpanded(false)
+    router.push(`/${locale}/store?search=${encodeURIComponent(tag)}`)
   }
 
   const handleCartClick = (e: React.MouseEvent) => {
@@ -125,6 +159,7 @@ export function MobileHeader({
 
   const handleInputSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSearchExpanded(false)
     if (onSearchSubmit) {
       onSearchSubmit(e)
     } else if (localQuery.trim()) {
@@ -145,6 +180,7 @@ export function MobileHeader({
     if (onSearchChange) {
       onSearchChange('')
     }
+    inputRef.current?.focus()
   }
 
   const searchPlaceholder =
@@ -278,17 +314,19 @@ export function MobileHeader({
           </div>
         </div>
 
-        {/* Row 2: Language & Currency Switcher + Website Mobile Search Bar (56px height) */}
+        {/* Row 2: Language & Currency Switcher + Dynamically Expanding Mobile Search Bar (56px height) */}
         {isSearchVisible && (
           <div className="h-14 px-3.5 sm:px-5 flex items-center gap-2 w-full max-w-4xl mx-auto pb-2.5 pt-0.5">
-            {/* Language & Currency selectors in Row 2 */}
-            <div className="flex items-center gap-0.5 bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs shrink-0 scale-90 sm:scale-95 origin-left">
-              <LanguageSwitcher variant="header-dropdown" />
-              <CurrencySwitcher variant="header-dropdown" />
-            </div>
+            {/* Language & Currency selectors in Row 2 (smoothly hides when search expands) */}
+            {!isSearchExpanded && (
+              <div className="flex items-center gap-0.5 bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs shrink-0 scale-90 sm:scale-95 origin-left transition-all duration-200">
+                <LanguageSwitcher variant="header-dropdown" />
+                <CurrencySwitcher variant="header-dropdown" />
+              </div>
+            )}
 
-            {/* Search Input Form */}
-            <form onSubmit={handleInputSubmit} className="flex-1 flex items-center gap-1.5 min-w-0">
+            {/* Search Input Form (smoothly expands to 100% full width when active) */}
+            <form onSubmit={handleInputSubmit} className="flex-1 flex items-center gap-1.5 min-w-0 transition-all duration-200">
               <div className="relative flex-1 min-w-0">
                 <button
                   type="button"
@@ -300,9 +338,12 @@ export function MobileHeader({
                   <Search className="w-4 h-4" />
                 </button>
                 <input
+                  ref={inputRef}
                   type="text"
                   value={localQuery}
                   onChange={handleInputChange}
+                  onFocus={() => setIsSearchExpanded(true)}
+                  onKeyDown={handleKeyDown}
                   placeholder={searchPlaceholder}
                   className="w-full h-10 pl-9 pr-8 text-xs sm:text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs"
                 />
@@ -323,8 +364,53 @@ export function MobileHeader({
               >
                 <span>{locale === 'zh' ? '搜索' : locale === 'ru' ? 'Поиск' : 'Search'}</span>
               </button>
+              {isSearchExpanded && (
+                <button
+                  type="button"
+                  onClick={handleCancelSearch}
+                  className="h-10 px-2 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white rounded-xl shrink-0 active:scale-95 transition-colors touch-manipulation"
+                >
+                  {locale === 'zh' ? '取消' : locale === 'ru' ? 'Отмена' : 'Cancel'}
+                </button>
+              )}
             </form>
           </div>
+        )}
+
+        {/* Quick Search Tray (attached below Row 2 when expanded) */}
+        {isSearchVisible && isSearchExpanded && (
+          <div className="border-t border-slate-100 dark:border-slate-800/80 bg-white/98 dark:bg-[#0f172a]/98 px-3.5 sm:px-5 py-3 shadow-lg transition-all">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+                <span>
+                  {locale === 'zh' ? '热门搜索' : locale === 'ru' ? 'Популярные запросы' : 'Popular Searches'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {popularTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleTagClick(tag)}
+                    className="px-2.5 py-1 text-xs font-medium bg-slate-100/90 hover:bg-amber-500/10 text-slate-700 hover:text-amber-600 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-amber-400 rounded-lg border border-slate-200/60 dark:border-slate-700/60 transition-colors active:scale-95 touch-manipulation"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Backdrop for expanded search */}
+        {isSearchVisible && isSearchExpanded && (
+          <div
+            onClick={handleCancelSearch}
+            className="fixed inset-0 -z-10 bg-slate-900/40 backdrop-blur-xs cursor-pointer"
+            style={{ top: 'calc(120px + env(safe-area-inset-top, 0px))' }}
+            aria-hidden="true"
+          />
         )}
       </header>
     )
