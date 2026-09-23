@@ -13,17 +13,32 @@ export async function GET(request: Request) {
     const categorySlug = searchParams.get('category')
     const isActive = searchParams.get('isActive')
     const includeVariants = searchParams.get('includeVariants') === 'true'
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const skip = (page - 1) * limit
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const limitParam = searchParams.get('limit')
+    const isFetchAll = limitParam === 'all' || limitParam === '-1'
+    const limit = isFetchAll ? -1 : Math.max(1, parseInt(limitParam || '20', 10))
+    const skip = isFetchAll ? 0 : (page - 1) * limit
 
     const where: any = {}
 
-    if (search) {
+    if (search && search.trim().length > 0) {
+      const q = search.trim()
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { sku: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { name: { contains: q, mode: 'insensitive' } },
+        { sku: { contains: q, mode: 'insensitive' } },
+        { slug: { contains: q, mode: 'insensitive' } },
+        { description: { contains: q, mode: 'insensitive' } },
+        { category: { name: { contains: q, mode: 'insensitive' } } },
+        {
+          translations: {
+            some: {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' } },
+                { description: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
       ]
     }
 
@@ -64,7 +79,7 @@ export async function GET(request: Request) {
       where.isActive = isActive === 'true'
     }
 
-    const [products, total] = await Promise.all([
+    const [products, total, activeCount, featuredCount, lowStockCount] = await Promise.all([
       prisma.product.findMany({
         where,
         include: {
@@ -108,10 +123,12 @@ export async function GET(request: Request) {
         orderBy: {
           createdAt: 'desc'
         },
-        skip,
-        take: limit
+        ...(isFetchAll ? {} : { skip, take: limit })
       }),
-      prisma.product.count({ where })
+      prisma.product.count({ where }),
+      prisma.product.count({ where: { ...where, isActive: true } }),
+      prisma.product.count({ where: { ...where, isFeatured: true } }),
+      prisma.product.count({ where: { ...where, stock: { lt: 10 } } })
     ])
 
     return NextResponse.json({
@@ -119,9 +136,15 @@ export async function GET(request: Request) {
       data: products,
       pagination: {
         page,
-        limit,
+        limit: isFetchAll ? total : limit,
         total,
-        pages: Math.ceil(total / limit)
+        pages: isFetchAll ? 1 : Math.max(1, Math.ceil(total / limit))
+      },
+      metrics: {
+        total,
+        active: activeCount,
+        featured: featuredCount,
+        lowStock: lowStockCount
       }
     })
   } catch (error) {

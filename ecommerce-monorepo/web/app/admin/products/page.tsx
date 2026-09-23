@@ -147,15 +147,17 @@ export default function AdminProductsPage() {
   const [filtersLoaded, setFiltersLoaded] = useState(false)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [bulkProcessing, setBulkProcessing] = useState(false)
   const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(20)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [metrics, setMetrics] = useState({ total: 0, active: 0, featured: 0, lowStock: 0 })
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
-  const limit = 20
 
   const toggleSelectAll = () => {
     const currentIds = products.map(p => p.id)
@@ -218,7 +220,9 @@ export default function AdminProductsPage() {
           setDebouncedSearch(filters.search)
         }
         if (filters.categoryFilter) setCategoryFilter(filters.categoryFilter)
-        if (filters.page) setPage(filters.page)
+        if (filters.limit) setLimit(filters.limit)
+        // If restoring a search, ensure page starts at 1
+        if (filters.page && !filters.search) setPage(filters.page)
       } catch (error) {
         console.error('Error loading saved filters:', error)
       }
@@ -226,11 +230,27 @@ export default function AdminProductsPage() {
     setFiltersLoaded(true)
   }, [])
 
-  // Debounce search query by 350ms
+  // Handle live search input: updates query and immediately resets page to 1
+  const handleSearchChange = (val: string) => {
+    setSearch(val)
+    setPage(1)
+  }
+
+  // Handle category filter change: immediately resets page to 1
+  const handleCategoryChange = (val: string | null) => {
+    setCategoryFilter(val)
+    setPage(1)
+  }
+
+  // Debounce search query by 250ms for smooth live search across all products
   useEffect(() => {
+    if (search !== debouncedSearch) {
+      setIsSearching(true)
+    }
     const timer = setTimeout(() => {
       setDebouncedSearch(search)
-    }, 350)
+      setIsSearching(false)
+    }, 250)
     return () => clearTimeout(timer)
   }, [search])
 
@@ -250,10 +270,10 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     if (filtersLoaded) {
-      const filters = { search: debouncedSearch, categoryFilter, page }
+      const filters = { search: debouncedSearch, categoryFilter, page, limit }
       localStorage.setItem('adminProductsFilters', JSON.stringify(filters))
     }
-  }, [debouncedSearch, categoryFilter, page, filtersLoaded])
+  }, [debouncedSearch, categoryFilter, page, limit, filtersLoaded])
 
   useEffect(() => {
     fetchCategories()
@@ -263,7 +283,7 @@ export default function AdminProductsPage() {
     if (filtersLoaded) {
       fetchProducts()
     }
-  }, [page, debouncedSearch, categoryFilter, filtersLoaded])
+  }, [page, limit, debouncedSearch, categoryFilter, filtersLoaded])
   
   useEffect(() => {
     if (flatCategories.length > 0 && categoryFilter) {
@@ -298,10 +318,11 @@ export default function AdminProductsPage() {
         categorySlug = category?.slug || null
       }
 
+      const trimmedSearch = debouncedSearch.trim()
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        ...(debouncedSearch && { search: debouncedSearch }),
+        ...(trimmedSearch && { search: trimmedSearch }),
         ...(categorySlug && { category: categorySlug })
       })
 
@@ -312,6 +333,16 @@ export default function AdminProductsPage() {
         setProducts(data.data || [])
         setTotalPages(data.pagination?.pages || 1)
         setTotalCount(data.pagination?.total || data.data?.length || 0)
+        if (data.metrics) {
+          setMetrics(data.metrics)
+        } else {
+          setMetrics({
+            total: data.pagination?.total || data.data?.length || 0,
+            active: (data.data || []).filter((p: any) => p.isActive).length,
+            featured: (data.data || []).filter((p: any) => p.isFeatured).length,
+            lowStock: (data.data || []).filter((p: any) => p.stock < 10).length,
+          })
+        }
       }
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -420,10 +451,10 @@ export default function AdminProductsPage() {
     }
   }
 
-  // Summary counts
-  const activeCount = products.filter(p => p.isActive).length
-  const featuredCount = products.filter(p => p.isFeatured).length
-  const lowStockCount = products.filter(p => p.stock < 10).length
+  // Summary counts (from database metrics across all matching products)
+  const activeCount = metrics.active
+  const featuredCount = metrics.featured
+  const lowStockCount = metrics.lowStock
 
   return (
     <div className="w-full max-w-full min-w-0 space-y-6 pb-12">
@@ -498,21 +529,35 @@ export default function AdminProductsPage() {
       {/* Filter & Search Bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
         <div className="flex-1 w-full relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          {isSearching ? (
+            <RefreshCw className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
+          ) : (
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          )}
           <Input
             type="text"
             placeholder={dict.products.searchPlaceholder}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 h-10 bg-gray-50/50 border-gray-200 focus:bg-white rounded-xl text-xs"
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10 pr-9 h-10 bg-gray-50/50 border-gray-200 focus:bg-white rounded-xl text-xs"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => handleSearchChange('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+              title="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         <div className="w-full md:w-64">
           <CategoryDropdown
             categories={categories}
             value={categoryFilter}
-            onChange={setCategoryFilter}
+            onChange={handleCategoryChange}
             placeholder={dict.products.filterByCategory}
             searchPlaceholder={dict.products.searchPlaceholder}
             clearable
@@ -535,6 +580,40 @@ export default function AdminProductsPage() {
         </Button>
       </div>
 
+      {/* Active Search & Filter Indicators */}
+      {(debouncedSearch.trim() || categoryFilter) && (
+        <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
+          <span className="text-gray-500 font-medium">Active search:</span>
+          {debouncedSearch.trim() && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200/60">
+              <span>All products matching: &ldquo;{debouncedSearch.trim()}&rdquo;</span>
+              <span className="bg-blue-200/60 text-blue-800 rounded-full px-1.5 py-0.2 text-[10px]">{totalCount} found</span>
+              <button
+                type="button"
+                onClick={() => handleSearchChange('')}
+                className="hover:text-blue-900 transition-colors ml-0.5"
+                title="Clear search"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+          {categoryFilter && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold border border-amber-200/60">
+              <span>Category filtered</span>
+              <button
+                type="button"
+                onClick={() => handleCategoryChange(null)}
+                className="hover:text-amber-900 transition-colors ml-0.5"
+                title="Clear category filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Products Content */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100">
@@ -548,12 +627,32 @@ export default function AdminProductsPage() {
           </div>
           <h3 className="text-base font-bold text-gray-900 mb-1">{dict.common.noData}</h3>
           <p className="text-xs text-gray-500 mb-5 max-w-sm mx-auto">
-            {search || categoryFilter ? dict.common.noData : dict.products.subtitle}
+            {debouncedSearch.trim()
+              ? `No products found matching "${debouncedSearch.trim()}" across all products in the catalog.`
+              : categoryFilter
+              ? 'No products found in the selected category.'
+              : dict.products.subtitle}
           </p>
-          <Button onClick={() => router.push('/admin/products/new')} className="bg-[#1a3a5c] text-white text-xs font-bold rounded-xl">
-            <Plus size={14} className="mr-1.5" />
-            {dict.products.addProduct}
-          </Button>
+          <div className="flex items-center justify-center gap-2">
+            {(debouncedSearch.trim() || categoryFilter) && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch('')
+                  setCategoryFilter(null)
+                  setPage(1)
+                  localStorage.removeItem('adminProductsFilters')
+                }}
+                className="text-xs font-semibold rounded-xl"
+              >
+                {dict.common.reset}
+              </Button>
+            )}
+            <Button onClick={() => router.push('/admin/products/new')} className="bg-[#1a3a5c] text-white text-xs font-bold rounded-xl">
+              <Plus size={14} className="mr-1.5" />
+              {dict.products.addProduct}
+            </Button>
+          </div>
         </div>
       ) : (
         <>
@@ -811,34 +910,78 @@ export default function AdminProductsPage() {
             })}
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs">
-              <p className="text-xs text-gray-500 font-medium">
-                {dict.common.showing} <span className="font-bold text-gray-900">{page}</span> {dict.common.of} <span className="font-bold text-gray-900">{totalPages}</span>
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="rounded-xl text-xs font-semibold"
-                >
-                  <ChevronLeft size={14} className="mr-1" />
-                  {dict.common.previous}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="rounded-xl text-xs font-semibold"
-                >
-                  {dict.common.next}
-                  <ChevronRight size={14} className="ml-1" />
-                </Button>
+          {/* Pagination & Per-page View Controls */}
+          {totalCount > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 font-medium">
+                <span>
+                  {limit === -1 || totalCount <= limit
+                    ? `Showing all ${totalCount} products`
+                    : `Showing ${(page - 1) * limit + 1}–${Math.min(page * limit, totalCount)} of ${totalCount} products`}
+                </span>
+                <div className="flex items-center gap-1.5 border-l border-gray-200 pl-3">
+                  <span className="text-[11px] text-gray-400">Per page:</span>
+                  {[20, 50, 100].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        setLimit(size)
+                        setPage(1)
+                      }}
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-colors ${
+                        limit === size
+                          ? 'bg-[#1a3a5c] text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLimit(-1)
+                      setPage(1)
+                    }}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition-colors ${
+                      limit === -1
+                        ? 'bg-[#1a3a5c] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    All
+                  </button>
+                </div>
               </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400 mr-1">
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="rounded-xl text-xs font-semibold h-8 px-3"
+                  >
+                    <ChevronLeft size={14} className="mr-1" />
+                    {dict.common.previous}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="rounded-xl text-xs font-semibold h-8 px-3"
+                  >
+                    {dict.common.next}
+                    <ChevronRight size={14} className="ml-1" />
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </>
