@@ -28,26 +28,80 @@ const MIME_TYPES = {
   '.mkv': 'video/x-matroska',
 }
 
+function findUploadFile(relative) {
+  const candidates = [
+    path.join(process.cwd(), 'public', 'uploads', relative),
+    path.join(process.cwd(), 'web', 'public', 'uploads', relative),
+    path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
+    path.join('/var', 'www', 'dromkok', 'ecommerce-monorepo', 'web', 'public', 'uploads', relative),
+  ]
+  for (const c of candidates) {
+    try {
+      if (fs.existsSync(c) && fs.statSync(c).isFile()) {
+        return c
+      }
+    } catch {}
+  }
+
+  // Self-healing fallback
+  const lower = relative.toLowerCase()
+  if (lower.includes('logo')) {
+    const logoFallbacks = [
+      path.join(process.cwd(), 'public', 'logo.png'),
+      path.join(process.cwd(), 'web', 'public', 'logo.png'),
+      path.join(process.cwd(), 'public', 'uploads', 'general', '1789563604789-1787644810312-logo_pixian_ai.png'),
+      path.join(process.cwd(), 'web', 'public', 'uploads', 'general', '1789563604789-1787644810312-logo_pixian_ai.png'),
+      '/www/wwwroot/www.dromkok.com/web/public/logo.png',
+      '/www/wwwroot/www.dromkok.com/web/public/uploads/general/1789563604789-1787644810312-logo_pixian_ai.png',
+      path.join(process.cwd(), 'public', 'logo.svg'),
+      path.join(process.cwd(), 'web', 'public', 'logo.svg'),
+    ]
+    for (const lf of logoFallbacks) {
+      try {
+        if (fs.existsSync(lf) && fs.statSync(lf).isFile()) {
+          return lf
+        }
+      } catch {}
+    }
+  }
+
+  if (lower.includes('favicon')) {
+    const favFallbacks = [
+      path.join(process.cwd(), 'public', 'favicon.ico'),
+      path.join(process.cwd(), 'web', 'public', 'favicon.ico'),
+      path.join(process.cwd(), 'public', 'uploads', 'favicons', 'favicon-1789563607224.png'),
+      path.join(process.cwd(), 'web', 'public', 'uploads', 'favicons', 'favicon-1789563607224.png'),
+    ]
+    for (const ff of favFallbacks) {
+      try {
+        if (fs.existsSync(ff) && fs.statSync(ff).isFile()) {
+          return ff
+        }
+      } catch {}
+    }
+  }
+
+  return null
+}
+
 function serveUpload(req, res, pathname) {
   const relative = decodeURIComponent(pathname.replace(/^\/uploads\/?/, ''))
-  const filepath = path.join(UPLOADS_DIR, relative)
+  const foundFile = findUploadFile(relative)
 
-  // Prevent path traversal outside the uploads directory.
-  const normalized = path.resolve(filepath)
-  if (normalized !== UPLOADS_DIR && !normalized.startsWith(UPLOADS_DIR + path.sep)) {
-    res.statusCode = 403
-    res.end('forbidden')
+  if (!foundFile) {
+    res.statusCode = 404
+    res.end('not found')
     return
   }
 
-  fs.stat(normalized, (err, stats) => {
+  fs.stat(foundFile, (err, stats) => {
     if (err || !stats.isFile()) {
       res.statusCode = 404
       res.end('not found')
       return
     }
 
-    const ext = path.extname(normalized).toLowerCase()
+    const ext = path.extname(foundFile).toLowerCase()
     res.setHeader('Content-Type', MIME_TYPES[ext] || 'application/octet-stream')
     res.setHeader('Content-Length', stats.size)
     res.setHeader('Cache-Control', 'public, max-age=2592000')
@@ -59,7 +113,7 @@ function serveUpload(req, res, pathname) {
       return
     }
 
-    const stream = fs.createReadStream(normalized)
+    const stream = fs.createReadStream(foundFile)
     stream.on('error', () => {
       res.statusCode = 500
       res.end('internal server error')
