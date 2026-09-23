@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import {
   ChatRequestPayload,
@@ -17,6 +18,7 @@ import {
   createCategories,
   createAttributes,
   bulkTranslate,
+  createProducts,
 } from '@/lib/ai-assistant/tools'
 import { generateAssistantResponse } from '@/lib/ai-assistant/gateway'
 
@@ -182,6 +184,36 @@ export async function POST(request: NextRequest) {
               pendingAction: null,
             })
           }
+
+          if (pendingAction.type === 'createProducts') {
+            const products = pendingAction.payload.products || (pendingAction.payload as any) || []
+            executionResult = await createProducts(products, user.id, locale)
+
+            const successMessages: Record<AdminChatLocale, string> = {
+              en: `✅ **Successfully created ${executionResult.createdCount} products!**\n\n` +
+                executionResult.products.map((p: any) => `- **${p.name}** (SKU: \`${p.sku}\`, Price: $${p.price})`).join('\n') +
+                `\n\nProducts and their multilingual translations are now live in the catalog.`,
+              ru: `✅ **Успешно создано ${executionResult.createdCount} товаров!**\n\n` +
+                executionResult.products.map((p: any) => `- **${p.name}** (Артикул: \`${p.sku}\`, Цена: $${p.price})`).join('\n') +
+                `\n\nТовары и их многоязычные переводы добавлены в каталог.`,
+              zh: `✅ **已成功创建 ${executionResult.createdCount} 个商品！**\n\n` +
+                executionResult.products.map((p: any) => `- **${p.name}** (SKU: \`${p.sku}\`, 售价: $${p.price})`).join('\n') +
+                `\n\n商品及其多语言翻译现已正式录入商城系统。`,
+            }
+
+            return NextResponse.json({
+              success: true,
+              role: 'assistant',
+              content: successMessages[locale] || successMessages.en,
+              actionExecuted: {
+                type: 'createProducts',
+                status: 'SUCCESS',
+                summary: pendingAction.summary,
+                details: executionResult,
+              },
+              pendingAction: null,
+            })
+          }
         } catch (execError: any) {
           console.error('[AI Assistant Action Error]:', execError)
           return NextResponse.json({
@@ -257,7 +289,24 @@ export async function POST(request: NextRequest) {
       contextData += `\n[UNTRANSLATED CONTENT DATA]:\nUntranslated Products Count: ${untranslatedProds.totalUntranslated}\nSample Untranslated Products:\n${JSON.stringify(untranslatedProds.sampleItems, null, 2)}\nUntranslated Categories Count: ${untranslatedCats.totalUntranslated}\nSample Untranslated Categories:\n${JSON.stringify(untranslatedCats.sampleItems, null, 2)}\n`
     }
 
-    // 4. General Stats Context if context is still sparse
+    // 4. Product / Sample Creation Context
+    if (
+      lowerUserText.includes('product') ||
+      lowerUserText.includes('товар') ||
+      lowerUserText.includes('商品') ||
+      lowerUserText.includes('sample') ||
+      lowerUserText.includes('образец') ||
+      lowerUserText.includes('item')
+    ) {
+      const categories = await prisma.category.findMany({
+        where: { isActive: true },
+        select: { id: true, name: true, slug: true },
+        take: 30,
+      })
+      contextData += `\n[AVAILABLE CATEGORIES FOR PRODUCTS]:\n${JSON.stringify(categories.map((c: { name: string }) => c.name), null, 2)}\n`
+    }
+
+    // 5. General Stats Context if context is still sparse
     if (!contextData) {
       const stats = await getProductStats()
       contextData = `[CATALOG OVERVIEW STATS]:\nTotal Products: ${stats.totalProducts}\nActive Products: ${stats.activeProducts}\nCategorized: ${stats.categorizedProducts}\nUncategorized: ${stats.uncategorizedProducts}\nLow Stock: ${stats.lowStockProducts}\n`

@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { PendingAction, AdminChatLocale } from '@/lib/ai-assistant/types'
-import { createCategories, createAttributes, bulkTranslate } from '@/lib/ai-assistant/tools'
+import { createCategories, createAttributes, bulkTranslate, createProducts } from '@/lib/ai-assistant/tools'
 
 export async function POST(request: NextRequest) {
   let user: any
@@ -79,6 +79,24 @@ export async function POST(request: NextRequest) {
           translations.targetLocales || ['ru', 'zh'],
           user.id
         )
+        break
+      }
+
+      case 'createProducts': {
+        const payload = action.payload || {}
+        const products =
+          payload.products ||
+          (Array.isArray(payload) ? payload : null) ||
+          (action as any).products ||
+          []
+
+        if (!Array.isArray(products) || products.length === 0) {
+          return NextResponse.json(
+            { success: false, error: 'No products found in action payload.' },
+            { status: 400 }
+          )
+        }
+        result = await createProducts(products, user.id, locale)
         break
       }
 

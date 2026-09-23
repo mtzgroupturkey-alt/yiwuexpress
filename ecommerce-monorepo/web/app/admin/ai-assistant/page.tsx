@@ -131,14 +131,10 @@ export default function AiAssistantPage() {
         }),
       })
 
-      if (!response.ok) {
-        throw new Error(`Server returned status ${response.status}`)
-      }
+      const data = await response.json().catch(() => null)
 
-      const data = await response.json()
-
-      if (!data.success && data.error) {
-        throw new Error(data.error)
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || `Server returned status ${response.status}`)
       }
 
       const assistantMessage: ChatMessage = {
@@ -429,6 +425,46 @@ export default function AiAssistantPage() {
                         <p>Type: <strong>{msg.pendingAction.payload.translations.type}</strong></p>
                         <p>Items to translate: <strong>{msg.pendingAction.payload.translations.itemIds.length}</strong> items</p>
                         <p>Target Languages: <strong>{msg.pendingAction.payload.translations.targetLocales.join(', ')}</strong></p>
+                      </div>
+                    )}
+
+                    {/* Products preview list */}
+                    {msg.pendingAction.payload.products && (
+                      <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 max-h-56 overflow-y-auto space-y-2 text-xs text-slate-700">
+                        {msg.pendingAction.payload.products.map((p, i) => (
+                          <div key={i} className="flex items-start gap-2.5 py-1.5 border-b border-slate-100 last:border-0">
+                            {p.images && p.images[0] ? (
+                              <img
+                                src={p.images[0]}
+                                alt={p.name}
+                                className="w-10 h-10 object-cover rounded-md border border-slate-200 shrink-0 bg-slate-50"
+                                onError={(e) => {
+                                  // Fallback to placeholder if external URL is broken
+                                  ;(e.target as HTMLImageElement).src = '/images/placeholder.jpg'
+                                }}
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-2xs text-slate-400">
+                                No Pic
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-bold text-slate-900 truncate">{p.name}</span>
+                                <span className="font-semibold text-emerald-600 shrink-0">${p.price}</span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 mt-0.5 text-2xs text-slate-500">
+                                {p.categoryName && (
+                                  <Badge variant="outline" className="text-2xs py-0 h-4 border-slate-300">
+                                    {p.categoryName}
+                                  </Badge>
+                                )}
+                                {p.translations?.ru?.name && <span>RU: {p.translations.ru.name}</span>}
+                                {p.translations?.zh?.name && <span>ZH: {p.translations.zh.name}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 

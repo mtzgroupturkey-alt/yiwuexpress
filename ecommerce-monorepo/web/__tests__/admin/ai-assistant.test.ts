@@ -111,6 +111,63 @@ Here are the clothing attributes proposed.
       expect(result.cleanText).toBe('')
     })
 
+    it('extracts createProducts proposal with image URLs and translations', () => {
+      const rawText = `I have prepared 5 sample products for Cutlery & Knives. Do you confirm?
+
+\`\`\`action_proposal
+{
+  "type": "createProducts",
+  "summary": "Create 5 sample products for Cutlery & Knives",
+  "payload": {
+    "products": [
+      {
+        "name": "Chef Knife 8-Inch",
+        "slug": "chef-knife-8-inch",
+        "sku": "CK-001",
+        "categoryName": "Cutlery & Knives",
+        "price": 49.99,
+        "description": "High carbon stainless steel knife",
+        "images": ["https://images.unsplash.com/photo-1593618998160-e34014e67546"],
+        "translations": {
+          "en": { "name": "Chef Knife 8-Inch" },
+          "ru": { "name": "Поварской нож 20 см" },
+          "zh": { "name": "8英寸主厨刀" }
+        }
+      }
+    ]
+  }
+}
+\`\`\`
+`
+      const result = extractActionProposal(rawText)
+      expect(result.pendingAction?.type).toBe('createProducts')
+      expect(result.pendingAction?.payload.products?.[0].sku).toBe('CK-001')
+      expect(result.pendingAction?.payload.products?.[0].images?.[0]).toContain('unsplash')
+      expect(result.cleanText).toContain('Do you confirm?')
+      expect(result.cleanText).not.toContain('action_proposal')
+    })
+
+    it('recovers from unclosed action_proposal code blocks', () => {
+      const truncatedText = `Here is the proposal:
+\`\`\`action_proposal
+{
+  "type": "createProducts",
+  "summary": "Sample Products",
+  "payload": {
+    "products": [
+      {
+        "name": "Bread Knife",
+        "slug": "bread-knife",
+        "price": 25.0
+      }
+    ]
+  }
+}`
+      const result = extractActionProposal(truncatedText)
+      expect(result.pendingAction?.type).toBe('createProducts')
+      expect(result.pendingAction?.payload.products?.[0].name).toBe('Bread Knife')
+    })
+
     it('returns null pendingAction when no action_proposal is present', () => {
       const text = 'Here are some catalog statistics: You have 150 products and 12 categories.'
       const result = extractActionProposal(text)

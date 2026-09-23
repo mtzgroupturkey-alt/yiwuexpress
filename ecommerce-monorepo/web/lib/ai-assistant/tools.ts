@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import {
   PendingCategoryItem,
+  PendingProductItem,
   PendingAttributeItem,
   PendingTranslationItem,
   AdminChatLocale,
@@ -1059,3 +1060,177 @@ export async function getProductStats() {
     lowStockProducts: lowStock,
   }
 }
+
+/**
+ * 9. createProducts
+ * STRICT WRITE OPERATION: Creates new product items with category associations,
+ * images, pricing, and multilingual translations.
+ */
+export async function createProducts(
+  items: PendingProductItem[],
+  adminId: string,
+  locale: AdminChatLocale = 'en'
+) {
+  if (!items || items.length === 0) {
+    throw new Error('No products provided to create.')
+  }
+
+  const results: Array<{ id: string; name: string; sku: string; price: number; categoryName?: string }> = []
+
+  await prisma.$transaction(async (tx) => {
+    for (const item of items) {
+      if (!item || !item.name?.trim()) continue
+
+      const trimmedName = item.name.trim()
+
+      // Generate or normalize SKU
+      let sku = (item.sku || '').trim().toUpperCase()
+      if (!sku) {
+        const prefix = trimmedName.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase() || 'PRD'
+        sku = `${prefix}-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)}`
+      }
+
+      // Ensure SKU uniqueness
+      let skuCandidate = sku
+      let skuCounter = 1
+      while (await tx.product.findUnique({ where: { sku: skuCandidate } })) {
+        skuCandidate = `${sku}-${skuCounter}`
+        skuCounter++
+      }
+      sku = skuCandidate
+
+      // Generate slug and ensure uniqueness
+      let baseSlug = item.slug ? slugify(item.slug) : slugify(trimmedName)
+      let slugCandidate = baseSlug
+      let slugCounter = 1
+      while (await tx.product.findUnique({ where: { slug: slugCandidate } })) {
+        slugCandidate = `${baseSlug}-${slugCounter}`
+        slugCounter++
+      }
+      const finalSlug = slugCandidate
+
+      // Resolve Category
+      let categoryId: string | null = null
+      if (item.categoryId) {
+        const found = await tx.category.findUnique({ where: { id: item.categoryId } })
+        if (found) categoryId = found.id
+      }
+      if (!categoryId && item.categoryName) {
+        const catName = item.categoryName.trim()
+        let found = await tx.category.findFirst({
+          where: {
+            OR: [
+              { name: { equals: catName, mode: 'insensitive' } },
+              { slug: slugify(catName) },
+            ],
+          },
+        })
+        if (!found) {
+          // Auto-create category if it does not exist
+          found = await tx.category.create({
+            data: {
+              name: catName,
+              slug: slugify(catName),
+              isActive: true,
+              showInMenu: true,
+            },
+          })
+        }
+        categoryId = found.id
+      }
+
+      const price = typeof item.price === 'number' && !isNaN(item.price) ? item.price : 19.99
+      const images = Array.isArray(item.images) && item.images.length > 0 ? item.images : ['/images/placeholder.jpg']
+
+      const created = await tx.product.create({
+        data: {
+          name: trimmedName,
+          sku,
+          slug: finalSlug,
+          description: item.description?.trim() || null,
+          price,
+          compareAtPrice: item.compareAtPrice || null,
+          categoryId,
+          images,
+          thumbnail: images[0] || null,
+          stock: typeof item.stock === 'number' ? item.stock : 100,
+          weightKg: typeof item.weightKg === 'number' ? item.weightKg : 0.5,
+          isActive: true,
+          availableForRetail: true,
+          availableForWholesale: true,
+        },
+      })
+
+      // Translations
+      const translationsToCreate: Array<{ locale: string; name: string; description: string | null }> = [
+        {
+          locale: 'en',
+          name: item.translations?.en?.name?.trim() || trimmedName,
+          description: item.translations?.en?.description?.trim() || item.description?.trim() || null,
+        },
+      ]
+
+      if (item.translations?.ru?.name?.trim()) {
+        translationsToCreate.push({
+          locale: 'ru',
+          name: item.translations.ru.name.trim(),
+          description: item.translations.ru.description?.trim() || null,
+        })
+      }
+
+      if (item.translations?.zh?.name?.trim()) {
+        translationsToCreate.push({
+          locale: 'zh',
+          name: item.translations.zh.name.trim(),
+          description: item.translations.zh.description?.trim() || null,
+        })
+      }
+
+      for (const t of translationsToCreate) {
+        await tx.productTranslation.upsert({
+          where: {
+            productId_locale: {
+              productId: created.id,
+              locale: t.locale,
+            },
+          },
+          update: {
+            name: t.name,
+            description: t.description,
+          },
+          create: {
+            productId: created.id,
+            locale: t.locale,
+            name: t.name,
+            description: t.description,
+          },
+        })
+      }
+
+      results.push({
+        id: created.id,
+        name: created.name,
+        sku: created.sku,
+        price: created.price,
+        categoryName: item.categoryName,
+      })
+    }
+  })
+
+  // Log to audit
+  await logAiAction({
+    adminId,
+    actionType: 'createProducts',
+    summary: `Created ${results.length} products with category links, images, and translations`,
+    payload: items,
+    result: results,
+    status: 'SUCCESS',
+  })
+
+  return {
+    success: true,
+    createdCount: results.length,
+    products: results,
+  }
+}
+

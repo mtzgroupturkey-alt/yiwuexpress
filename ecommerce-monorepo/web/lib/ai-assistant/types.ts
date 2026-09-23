@@ -1,6 +1,6 @@
 export type AdminChatLocale = 'en' | 'ru' | 'zh'
 
-export type PendingActionType = 'createCategories' | 'createAttributes' | 'bulkTranslate'
+export type PendingActionType = 'createCategories' | 'createAttributes' | 'bulkTranslate' | 'createProducts'
 
 export interface PendingCategoryItem {
   name: string
@@ -9,6 +9,25 @@ export interface PendingCategoryItem {
   parentName?: string | null
   description?: string | null
   level?: number
+  translations?: {
+    en?: { name: string; description?: string }
+    ru?: { name: string; description?: string }
+    zh?: { name: string; description?: string }
+  }
+}
+
+export interface PendingProductItem {
+  name: string
+  slug?: string
+  sku?: string
+  price: number
+  compareAtPrice?: number
+  categoryName?: string
+  categoryId?: string
+  description?: string
+  images?: string[]
+  weightKg?: number
+  stock?: number
   translations?: {
     en?: { name: string; description?: string }
     ru?: { name: string; description?: string }
@@ -54,6 +73,7 @@ export interface PendingAction {
     categories?: PendingCategoryItem[]
     attributes?: PendingAttributeItem[]
     translations?: PendingTranslationItem
+    products?: PendingProductItem[]
   }
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'EXECUTED' | 'FAILED'
   createdAt: number
