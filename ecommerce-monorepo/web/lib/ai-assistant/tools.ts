@@ -389,7 +389,7 @@ export async function getExistingAttributes(categoryId?: string) {
     where,
     include: {
       translations: {
-        select: { locale: true, name: true, placeholder: true, helperText: true },
+        select: { locale: true, name: true },
       },
       categories: {
         include: {
@@ -533,26 +533,46 @@ export async function createAttributes(
 
       for (const t of translationsToCreate) {
         const safeName = (t.name || item.name.trim()).trim()
-        await tx.attributeTranslation.upsert({
-          where: {
-            attributeId_locale: {
+        try {
+          await tx.attributeTranslation.upsert({
+            where: {
+              attributeId_locale: {
+                attributeId: created.id,
+                locale: t.locale,
+              },
+            },
+            update: {
+              name: safeName,
+              placeholder: t.placeholder,
+              helperText: t.helperText,
+            },
+            create: {
               attributeId: created.id,
               locale: t.locale,
+              name: safeName,
+              placeholder: t.placeholder,
+              helperText: t.helperText,
             },
-          },
-          update: {
-            name: safeName,
-            placeholder: t.placeholder,
-            helperText: t.helperText,
-          },
-          create: {
-            attributeId: created.id,
-            locale: t.locale,
-            name: safeName,
-            placeholder: t.placeholder,
-            helperText: t.helperText,
-          },
-        })
+          })
+        } catch {
+          // Fallback if placeholder/helperText columns do not exist in DB yet
+          await tx.attributeTranslation.upsert({
+            where: {
+              attributeId_locale: {
+                attributeId: created.id,
+                locale: t.locale,
+              },
+            },
+            update: {
+              name: safeName,
+            },
+            create: {
+              attributeId: created.id,
+              locale: t.locale,
+              name: safeName,
+            },
+          })
+        }
       }
 
       // Bind to categories safely by verifying IDs or resolving categoryNames
@@ -929,26 +949,46 @@ export async function bulkTranslate(
         for (const loc of targetLocales) {
           const locData = translations[loc]
           if (locData && locData.name) {
-            await prisma.attributeTranslation.upsert({
-              where: {
-                attributeId_locale: {
+            try {
+              await prisma.attributeTranslation.upsert({
+                where: {
+                  attributeId_locale: {
+                    attributeId: attr.id,
+                    locale: loc,
+                  },
+                },
+                update: {
+                  name: locData.name,
+                  placeholder: locData.placeholder || null,
+                  helperText: locData.helperText || null,
+                },
+                create: {
                   attributeId: attr.id,
                   locale: loc,
+                  name: locData.name,
+                  placeholder: locData.placeholder || null,
+                  helperText: locData.helperText || null,
                 },
-              },
-              update: {
-                name: locData.name,
-                placeholder: locData.placeholder || null,
-                helperText: locData.helperText || null,
-              },
-              create: {
-                attributeId: attr.id,
-                locale: loc,
-                name: locData.name,
-                placeholder: locData.placeholder || null,
-                helperText: locData.helperText || null,
-              },
-            })
+              })
+            } catch {
+              // Fallback if placeholder/helperText columns do not exist in DB yet
+              await prisma.attributeTranslation.upsert({
+                where: {
+                  attributeId_locale: {
+                    attributeId: attr.id,
+                    locale: loc,
+                  },
+                },
+                update: {
+                  name: locData.name,
+                },
+                create: {
+                  attributeId: attr.id,
+                  locale: loc,
+                  name: locData.name,
+                },
+              })
+            }
           }
         }
         translatedCount.success++

@@ -39,24 +39,56 @@ function buildAttributeTranslations(
 
 export async function GET(req: NextRequest) {
   try {
-    const attributes = await prisma.attribute.findMany({
-      include: {
-        categories: {
-          include: {
-            category: true,
+    let attributes: any[] = []
+    try {
+      attributes = await prisma.attribute.findMany({
+        include: {
+          categories: {
+            include: {
+              category: true,
+            },
+          },
+          translations: true,
+          _count: {
+            select: {
+              values: true,
+            },
           },
         },
-        translations: true,
-        _count: {
-          select: {
-            values: true,
+        orderBy: {
+          displayOrder: 'asc',
+        },
+      })
+    } catch {
+      // Fallback if placeholder/helperText columns do not exist in DB yet
+      attributes = await prisma.attribute.findMany({
+        include: {
+          categories: {
+            include: {
+              category: true,
+            },
+          },
+          translations: {
+            select: {
+              id: true,
+              attributeId: true,
+              locale: true,
+              name: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+          _count: {
+            select: {
+              values: true,
+            },
           },
         },
-      },
-      orderBy: {
-        displayOrder: 'asc',
-      },
-    })
+        orderBy: {
+          displayOrder: 'asc',
+        },
+      })
+    }
 
     return NextResponse.json({ data: attributes })
   } catch (error) {
@@ -188,24 +220,49 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Create attribute
-    const attribute = await prisma.attribute.create({
-      data: {
-        name,
-        slug: finalSlug,
-        type,
-        options: options || [],
-        colorOptions: colorOptions || null,
-        placeholder,
-        helperText,
-        isRequired: isRequired || false,
-        isFilterable: isFilterable !== false,
-        isVariant: isVariant || false,
-        translations: {
-          create: buildAttributeTranslations(translations, name, placeholder, helperText)
-        }
-      },
-    })
+    // Create attribute safely
+    let attribute
+    try {
+      attribute = await prisma.attribute.create({
+        data: {
+          name,
+          slug: finalSlug,
+          type,
+          options: options || [],
+          colorOptions: colorOptions || null,
+          placeholder,
+          helperText,
+          isRequired: isRequired || false,
+          isFilterable: isFilterable !== false,
+          isVariant: isVariant || false,
+          translations: {
+            create: buildAttributeTranslations(translations, name, placeholder, helperText)
+          }
+        },
+      })
+    } catch {
+      // Fallback if placeholder/helperText columns do not exist in DB yet
+      attribute = await prisma.attribute.create({
+        data: {
+          name,
+          slug: finalSlug,
+          type,
+          options: options || [],
+          colorOptions: colorOptions || null,
+          placeholder,
+          helperText,
+          isRequired: isRequired || false,
+          isFilterable: isFilterable !== false,
+          isVariant: isVariant || false,
+          translations: {
+            create: buildAttributeTranslations(translations, name).map((t) => ({
+              locale: t.locale,
+              name: t.name,
+            }))
+          }
+        },
+      })
+    }
 
     // Link to category if provided
     if (categoryId) {

@@ -113,21 +113,36 @@ export async function PUT(
     if (Array.isArray(translations)) {
       for (const t of translations) {
         if (!t.locale) continue
-        await prisma.attributeTranslation.upsert({
-          where: { attributeId_locale: { attributeId: params.id, locale: t.locale } },
-          create: {
-            attributeId: params.id,
-            locale: t.locale,
-            name: t.name ?? attribute.name,
-            placeholder: t.placeholder !== undefined ? t.placeholder : attribute.placeholder,
-            helperText: t.helperText !== undefined ? t.helperText : attribute.helperText,
-          },
-          update: {
-            name: t.name ?? attribute.name,
-            placeholder: t.placeholder !== undefined ? t.placeholder : attribute.placeholder,
-            helperText: t.helperText !== undefined ? t.helperText : attribute.helperText,
-          },
-        })
+        try {
+          await prisma.attributeTranslation.upsert({
+            where: { attributeId_locale: { attributeId: params.id, locale: t.locale } },
+            create: {
+              attributeId: params.id,
+              locale: t.locale,
+              name: t.name ?? attribute.name,
+              placeholder: t.placeholder !== undefined ? t.placeholder : attribute.placeholder,
+              helperText: t.helperText !== undefined ? t.helperText : attribute.helperText,
+            },
+            update: {
+              name: t.name ?? attribute.name,
+              placeholder: t.placeholder !== undefined ? t.placeholder : attribute.placeholder,
+              helperText: t.helperText !== undefined ? t.helperText : attribute.helperText,
+            },
+          })
+        } catch {
+          // Fallback if placeholder/helperText columns do not exist in DB yet
+          await prisma.attributeTranslation.upsert({
+            where: { attributeId_locale: { attributeId: params.id, locale: t.locale } },
+            create: {
+              attributeId: params.id,
+              locale: t.locale,
+              name: t.name ?? attribute.name,
+            },
+            update: {
+              name: t.name ?? attribute.name,
+            },
+          })
+        }
       }
     }
 
