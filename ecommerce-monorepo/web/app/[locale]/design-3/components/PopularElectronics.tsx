@@ -37,21 +37,83 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
   const { tElectronics, tFlash } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
 
-  const FILTER_TABS = [
-    { id: 'all', label: tElectronics('tabs.all'), filterVal: 'All Popular' },
-    { id: 'vacuums', label: tElectronics('tabs.vacuums'), filterVal: 'Robot Vacuums' },
-    { id: 'grills', label: tElectronics('tabs.grills'), filterVal: 'Air Fryers & Grills' },
-    { id: 'coffee', label: tElectronics('tabs.coffee'), filterVal: 'Coffee Machines' },
-    { id: 'tvs', label: tElectronics('tabs.tvs'), filterVal: 'Smart TVs' },
-  ];
+  const ALL_CANDIDATE_TABS = React.useMemo(() => [
+    {
+      id: 'vacuums',
+      label: tElectronics('tabs.vacuums'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('vacuum') || slug.includes('robot-vacuums');
+      }
+    },
+    {
+      id: 'grills',
+      label: tElectronics('tabs.grills'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('grill') || cat.includes('fryer') || name.includes('fryer') || name.includes('grill') || (slug.includes('smart-appliances') && (name.includes('fryer') || name.includes('grill')));
+      }
+    },
+    {
+      id: 'coffee',
+      label: tElectronics('tabs.coffee'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('coffee') || slug.includes('coffee-machines') || name.includes('coffee') || name.includes('espresso');
+      }
+    },
+    {
+      id: 'tvs',
+      label: tElectronics('tabs.tvs'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('tv') || slug.includes('smart-tvs');
+      }
+    },
+    {
+      id: 'smartphones',
+      label: tElectronics('tabs.smartphones'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('phone') || slug.includes('smartphones') || name.includes('phone') || name.includes('smartphone');
+      }
+    },
+    {
+      id: 'laptops',
+      label: tElectronics('tabs.laptops'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('laptop') || slug.includes('laptops') || name.includes('laptop') || name.includes('tablet');
+      }
+    },
+  ], [tElectronics]);
+
+  const categoryTabs = React.useMemo(() => {
+    const activeCandidates = ALL_CANDIDATE_TABS.filter((tab) => products.some((p) => tab.match(p)));
+    return [
+      { id: 'all', label: tElectronics('tabs.all'), match: () => true },
+      ...activeCandidates,
+    ];
+  }, [ALL_CANDIDATE_TABS, products, tElectronics]);
 
   const [activeFilter, setActiveFilter] = useState('all');
 
-  const activeTabObj = FILTER_TABS.find((t) => t.id === activeFilter) || FILTER_TABS[0];
+  const currentFilter = categoryTabs.some((t) => t.id === activeFilter) ? activeFilter : 'all';
+  const activeTabObj = categoryTabs.find((t) => t.id === currentFilter) || categoryTabs[0];
 
   const filteredProducts = activeTabObj.id === 'all'
     ? products
-    : products.filter((p) => (p.category || '').toLowerCase() === activeTabObj.filterVal.toLowerCase());
+    : products.filter(activeTabObj.match);
 
   return (
     <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
@@ -68,8 +130,8 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
 
         {/* Filter Pills with Sliding Layout Pill */}
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar border border-slate-200/60">
-          {FILTER_TABS.map((tab) => {
-            const isActive = activeFilter === tab.id;
+          {categoryTabs.map((tab) => {
+            const isActive = currentFilter === tab.id;
             return (
               <button
                 key={tab.id}
@@ -106,7 +168,7 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
       {/* Grid with smooth crossfade */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeFilter}
+          key={currentFilter}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

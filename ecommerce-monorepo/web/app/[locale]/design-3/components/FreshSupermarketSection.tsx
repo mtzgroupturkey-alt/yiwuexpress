@@ -32,18 +32,88 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
 }) => {
   const { tKitchen } = useStorefrontTranslation();
 
-  const CATEGORY_TABS = [
-    { id: 'all', label: tKitchen('tabs.all') },
-    { id: 'fresh-produce', label: tKitchen('tabs.cookware') },
-    { id: 'dairy-eggs', label: tKitchen('tabs.tableware') },
-    { id: 'beverages', label: tKitchen('tabs.beverages') },
-  ];
+  const ALL_CANDIDATE_TABS = React.useMemo(() => [
+    {
+      id: 'cookware',
+      label: tKitchen('tabs.cookware'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('cookware') || cat.includes('pot') || cat.includes('pan') || slug.includes('pots-pans') || slug.includes('cookware');
+      }
+    },
+    {
+      id: 'bakeware',
+      label: tKitchen('tabs.bakeware'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('bakeware') || slug.includes('bakeware');
+      }
+    },
+    {
+      id: 'cutlery',
+      label: tKitchen('tabs.cutlery'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('cutlery') || cat.includes('knife') || cat.includes('knives') || slug.includes('cutlery');
+      }
+    },
+    {
+      id: 'utensils',
+      label: tKitchen('tabs.utensils'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('utensil') || cat.includes('whisk') || slug.includes('kitchen-utensils');
+      }
+    },
+    {
+      id: 'appliances',
+      label: tKitchen('tabs.appliances'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return (cat.includes('appliance') && !cat.includes('smart')) || slug.includes('small-appliances');
+      }
+    },
+    {
+      id: 'tableware',
+      label: tKitchen('tabs.tableware'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('tableware') || cat.includes('glass') || cat.includes('dinnerware') || slug.includes('tableware');
+      }
+    },
+    {
+      id: 'beverages',
+      label: tKitchen('tabs.beverages'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        return cat.includes('beverage') || cat.includes('tea') || cat.includes('coffee') || slug.includes('beverages');
+      }
+    },
+  ], [tKitchen]);
+
+  const categoryTabs = React.useMemo(() => {
+    const activeCandidates = ALL_CANDIDATE_TABS.filter((tab) => products.some((p) => tab.match(p)));
+    return [
+      { id: 'all', label: tKitchen('tabs.all'), match: () => true },
+      ...activeCandidates,
+    ];
+  }, [ALL_CANDIDATE_TABS, products, tKitchen]);
 
   const [activeTab, setActiveTab] = useState('all');
 
-  const filteredProducts = activeTab === 'all'
+  const currentTab = categoryTabs.some((t) => t.id === activeTab) ? activeTab : 'all';
+  const selectedTabObj = categoryTabs.find((t) => t.id === currentTab) || categoryTabs[0];
+
+  const filteredProducts = selectedTabObj.id === 'all'
     ? products
-    : products.filter((p) => p.category === activeTab);
+    : products.filter(selectedTabObj.match);
 
   // Take top 6 items
   const displayProducts = filteredProducts.slice(0, 6);
@@ -69,8 +139,8 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
 
         {/* Filter Pills with sliding pill */}
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar border border-slate-200/60">
-          {CATEGORY_TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
+          {categoryTabs.map((tab) => {
+            const isActive = currentTab === tab.id;
             return (
               <button
                 key={tab.id}

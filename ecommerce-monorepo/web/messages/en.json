@@ -1582,7 +1582,9 @@
         "vacuums": "Robot Vacuums",
         "grills": "Air Fryers & Grills",
         "coffee": "Coffee Machines",
-        "tvs": "Smart TVs"
+        "tvs": "Smart TVs",
+        "smartphones": "Smartphones",
+        "laptops": "Laptops & PCs"
       },
       "viewAll": "View all in category"
     },
@@ -1593,6 +1595,10 @@
       "tabs": {
         "all": "All Kitchen & Dining",
         "cookware": "Cookware & Pans",
+        "bakeware": "Bakeware",
+        "cutlery": "Cutlery & Knives",
+        "utensils": "Kitchen Utensils",
+        "appliances": "Small Appliances",
         "tableware": "Tableware & Glass",
         "beverages": "Coffee & Tea Ware"
       },
@@ -1604,9 +1610,10 @@
       "subtitle": "Most popular furniture, lighting, and cozy living room decor chosen by our customers",
       "tabs": {
         "all": "All Top Sellers",
+        "furniture": "Furniture & Living",
         "sofas": "Living Room & Sofas",
         "lighting": "Designer Lighting",
-        "decor": "Vases & Accents"
+        "decor": "Home Decor & Accents"
       },
       "viewAll": "View all Best Sellers"
     },

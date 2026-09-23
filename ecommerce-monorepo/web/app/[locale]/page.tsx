@@ -123,25 +123,60 @@ export default function Home() {
 
   const activeBestSellers = useMemo(() => {
     if (dbProducts.length === 0) return [];
-    return dbProducts.slice(0, 12);
+    return dbProducts.filter((p) => {
+      const dept = (p.department || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const deptSlug = (p.departmentSlug || '').toLowerCase();
+      const catSlug = (p.categorySlug || '').toLowerCase();
+      return (
+        dept.includes('furniture') || dept.includes('home') || dept.includes('living') ||
+        cat.includes('furniture') || cat.includes('home') || cat.includes('decor') ||
+        cat.includes('sofa') || cat.includes('chair') || cat.includes('table') ||
+        cat.includes('bed') || cat.includes('lighting') || cat.includes('lamp') ||
+        cat.includes('frame') || deptSlug.includes('furniture') || deptSlug.includes('home-garden')
+      );
+    });
   }, [dbProducts]);
 
   const activeKitchenProducts = useMemo(() => {
     if (dbProducts.length === 0) return [];
-    const filtered = dbProducts.filter(p => 
-      (p.department && /kitchen|dining|cookware|food|supermarket/i.test(p.department)) ||
-      (p.category && /kitchen|dining|cookware|food|beverage|produce/i.test(p.category))
-    );
-    return filtered.length >= 3 ? filtered : dbProducts.slice(0, 8);
+    return dbProducts.filter((p) => {
+      const dept = (p.department || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const deptSlug = (p.departmentSlug || '').toLowerCase();
+      const catSlug = (p.categorySlug || '').toLowerCase();
+      return (
+        dept.includes('cookware') || dept.includes('dining') || dept.includes('kitchen') ||
+        cat.includes('cookware') || cat.includes('dining') || cat.includes('kitchen') ||
+        cat.includes('pots') || cat.includes('pans') || cat.includes('bakeware') ||
+        cat.includes('cutlery') || cat.includes('whisk') || cat.includes('utensils') ||
+        deptSlug.includes('cookware') || deptSlug.includes('kitchen') ||
+        catSlug.includes('pots-pans') || catSlug.includes('bakeware') ||
+        catSlug.includes('cutlery') || catSlug.includes('kitchen-utensils') ||
+        catSlug.includes('small-appliances')
+      );
+    });
   }, [dbProducts]);
 
   const activeElectronicsProducts = useMemo(() => {
     if (dbProducts.length === 0) return [];
-    const filtered = dbProducts.filter(p => 
-      (p.department && /electronic|appliance|tech|phone/i.test(p.department)) ||
-      (p.category && /electronic|appliance|tech|vacuum|grill|tv/i.test(p.category))
-    );
-    return filtered.length >= 3 ? filtered : dbProducts.slice(0, 8);
+    return dbProducts.filter((p) => {
+      const dept = (p.department || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const deptSlug = (p.departmentSlug || '').toLowerCase();
+      const catSlug = (p.categorySlug || '').toLowerCase();
+      const name = (p.name || '').toLowerCase();
+      return (
+        dept.includes('electronic') || dept.includes('appliance') || deptSlug.includes('electronics') ||
+        cat.includes('electronic') || cat.includes('appliance') || cat.includes('vacuum') ||
+        cat.includes('grill') || cat.includes('tv') || cat.includes('phone') ||
+        cat.includes('laptop') || cat.includes('coffee') ||
+        catSlug.includes('smart-tvs') || catSlug.includes('smartphones') ||
+        catSlug.includes('robot-vacuums') || catSlug.includes('smart-appliances') ||
+        catSlug.includes('coffee-machines') || catSlug.includes('laptops') ||
+        name.includes('headphone') || name.includes('earphone') || name.includes('tablet')
+      );
+    });
   }, [dbProducts]);
 
   const headerNavCategories = useMemo(() => {

@@ -1599,7 +1599,9 @@
         "vacuums": "扫地机器人",
         "grills": "空气炸锅与烤箱",
         "coffee": "意式咖啡机",
-        "tvs": "智能电视"
+        "tvs": "智能电视",
+        "smartphones": "智能手机",
+        "laptops": "笔记本与电脑"
       },
       "viewAll": "查看本类全部商品"
     },
@@ -1610,6 +1612,10 @@
       "tabs": {
         "all": "全部餐厨好物",
         "cookware": "锅具与炒锅",
+        "bakeware": "烘焙用具",
+        "cutlery": "刀叉餐具",
+        "utensils": "厨房小工具",
+        "appliances": "厨房小家电",
         "tableware": "餐具与玻璃器皿",
         "beverages": "茶具与咖啡器具"
       },
@@ -1621,9 +1627,10 @@
       "subtitle": "精选高口碑客厅家具、设计师吊灯与高颜值软装",
       "tabs": {
         "all": "全部热销榜",
+        "furniture": "家具与生活",
         "sofas": "客厅家具与沙发",
         "lighting": "设计师灯饰",
-        "decor": "花瓶与艺术摆件"
+        "decor": "家居装饰与摆件"
       },
       "viewAll": "查看全部热销商品"
     },

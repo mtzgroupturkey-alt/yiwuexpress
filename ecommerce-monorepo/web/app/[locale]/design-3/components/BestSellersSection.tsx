@@ -31,18 +31,66 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
 }) => {
   const { tBestSellers } = useStorefrontTranslation();
 
-  const DEPT_TABS = [
-    { id: 'all', label: tBestSellers('tabs.all') },
-    { id: 'Electronics & Phones', label: tBestSellers('tabs.sofas') },
-    { id: 'Home & Kitchen', label: tBestSellers('tabs.lighting') },
-    { id: 'Household & Cleaning', label: tBestSellers('tabs.decor') },
-  ];
+  const ALL_CANDIDATE_TABS = React.useMemo(() => [
+    {
+      id: 'furniture',
+      label: tBestSellers('tabs.furniture'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const dept = (p.department || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('furniture') || dept.includes('furniture') || slug.includes('furniture') ||
+          cat.includes('chair') || cat.includes('table') || cat.includes('bed') || name.includes('chair') || name.includes('table') || name.includes('bed');
+      }
+    },
+    {
+      id: 'sofas',
+      label: tBestSellers('tabs.sofas'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('sofa') || name.includes('sofa') || name.includes('couch');
+      }
+    },
+    {
+      id: 'lighting',
+      label: tBestSellers('tabs.lighting'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('lighting') || cat.includes('lamp') || name.includes('lamp') || name.includes('light');
+      }
+    },
+    {
+      id: 'decor',
+      label: tBestSellers('tabs.decor'),
+      match: (p: Product) => {
+        const cat = (p.category || '').toLowerCase();
+        const dept = (p.department || '').toLowerCase();
+        const slug = (p.categorySlug || '').toLowerCase();
+        const name = (p.name || '').toLowerCase();
+        return cat.includes('decor') || cat.includes('frame') || dept.includes('garden') || slug.includes('home-garden') || name.includes('frame') || cat.includes('vase');
+      }
+    },
+  ], [tBestSellers]);
+
+  const categoryTabs = React.useMemo(() => {
+    const activeCandidates = ALL_CANDIDATE_TABS.filter((tab) => products.some((p) => tab.match(p)));
+    return [
+      { id: 'all', label: tBestSellers('tabs.all'), match: () => true },
+      ...activeCandidates,
+    ];
+  }, [ALL_CANDIDATE_TABS, products, tBestSellers]);
 
   const [activeTab, setActiveTab] = useState('all');
 
-  const filteredProducts = activeTab === 'all'
+  const currentTab = categoryTabs.some((t) => t.id === activeTab) ? activeTab : 'all';
+  const selectedTabObj = categoryTabs.find((t) => t.id === currentTab) || categoryTabs[0];
+
+  const filteredProducts = selectedTabObj.id === 'all'
     ? products
-    : products.filter((p) => p.department === activeTab);
+    : products.filter(selectedTabObj.match);
 
   // Take top 6 items
   const displayProducts = filteredProducts.slice(0, 6);
@@ -68,8 +116,8 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
 
         {/* Tab Pills */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-          {DEPT_TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
+          {categoryTabs.map((tab) => {
+            const isActive = currentTab === tab.id;
             return (
               <button
                 key={tab.id}
