@@ -39,7 +39,15 @@ export function getClientDisplayMode(): DisplayMode {
     }
   }
 
-  // 3. Fallback check for Android WebApp context
+  // 3. Check explicit URL query param (e.g. ?pwa=1 or ?display=standalone) for testing/QA
+  try {
+    const search = window.location?.search
+    if (search && (search.includes('pwa=1') || search.includes('display=standalone'))) {
+      return 'standalone'
+    }
+  } catch {}
+
+  // 4. Fallback check for Android WebApp context
   if (document.referrer.startsWith('android-app://')) {
     return 'standalone'
   }
