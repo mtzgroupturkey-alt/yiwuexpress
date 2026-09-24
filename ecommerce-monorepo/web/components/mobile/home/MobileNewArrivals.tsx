@@ -41,6 +41,8 @@ export function MobileNewArrivals({
       return
     }
 
+    if (typeof window === 'undefined') return
+
     let isMounted = true
     const fetchNewArrivals = async () => {
       try {

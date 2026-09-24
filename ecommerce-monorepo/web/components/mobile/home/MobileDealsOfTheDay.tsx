@@ -41,6 +41,8 @@ export function MobileDealsOfTheDay({
       return
     }
 
+    if (typeof window === 'undefined') return
+
     let isMounted = true
     const fetchDeals = async () => {
       try {

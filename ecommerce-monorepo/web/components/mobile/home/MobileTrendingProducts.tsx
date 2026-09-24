@@ -41,6 +41,8 @@ export function MobileTrendingProducts({
       return
     }
 
+    if (typeof window === 'undefined') return
+
     let isMounted = true
     const fetchTrending = async () => {
       try {

@@ -203,6 +203,28 @@ export default function Home() {
     });
   }, [dbProducts]);
 
+  const activeNewArrivals = useMemo(() => {
+    if (dbProducts.length === 0) return [];
+    const news = dbProducts.filter((p) => p.tagBadge?.type === 'promo' || (p as any).isNewArrival);
+    return news.length >= 6 ? news : dbProducts.slice(0, 10);
+  }, [dbProducts]);
+
+  const activeTrending = useMemo(() => {
+    if (dbProducts.length === 0) return [];
+    return dbProducts.slice(0, 10);
+  }, [dbProducts]);
+
+  const activeDealsOfTheDay = useMemo(() => {
+    if (dbProducts.length === 0) return [];
+    const deals = dbProducts.filter((p) => p.oldPrice && p.oldPrice > p.price);
+    return deals.length >= 4 ? deals : dbProducts.slice(4, 14);
+  }, [dbProducts]);
+
+  const activeRecommended = useMemo(() => {
+    if (dbProducts.length === 0) return [];
+    return dbProducts.slice(8, 18);
+  }, [dbProducts]);
+
   const headerNavCategories = useMemo(() => {
     // Only display categories where showInMenu is true in the header ribbon, sorted by menuOrder
     const parentCats = dbCategories
@@ -685,6 +707,10 @@ export default function Home() {
                 flashDealsEndDate={flashCampaignData?.endDate}
                 flashDealsTitle={flashCampaignData?.title}
                 bestSellers={activeBestSellers}
+                newArrivals={activeNewArrivals}
+                trendingProducts={activeTrending}
+                dealsOfTheDay={activeDealsOfTheDay}
+                recommendedProducts={activeRecommended}
                 onAddToCart={(p, qty) => handleAddToCart(p, qty || 1)}
                 onSelectProduct={(product) => {
                   setSelectedProductForPDP(product);

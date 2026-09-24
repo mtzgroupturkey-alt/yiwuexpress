@@ -41,6 +41,8 @@ export function MobileRecommendedForYou({
       return
     }
 
+    if (typeof window === 'undefined') return
+
     let isMounted = true
     const fetchRecommended = async () => {
       try {
