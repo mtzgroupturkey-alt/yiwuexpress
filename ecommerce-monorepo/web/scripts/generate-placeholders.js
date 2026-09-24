@@ -39,17 +39,35 @@ const images = {
 // Generate product placeholder URLs (we'll use a single generic image for all products)
 const productPlaceholder = { width: 800, height: 800, text: 'Product Image', bg: 'f8f9fa', color: '666666' };
 
+const sharp = require('sharp');
+
 function downloadImage(url, filepath) {
   return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(filepath);
     https.get(url, (response) => {
-      response.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        resolve();
+      const chunks = [];
+      response.on('data', chunk => chunks.push(chunk));
+      response.on('end', async () => {
+        try {
+          const buf = Buffer.concat(chunks);
+          const ext = path.extname(filepath).toLowerCase();
+          if (ext === '.jpg' || ext === '.jpeg') {
+            const isSvg = buf.slice(0, 50).toString('utf8').includes('<svg');
+            if (isSvg) {
+              const jpegBuf = await sharp(buf).jpeg({ quality: 90 }).toBuffer();
+              fs.writeFileSync(filepath, jpegBuf);
+            } else {
+              fs.writeFileSync(filepath, buf);
+            }
+          } else {
+            fs.writeFileSync(filepath, buf);
+          }
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
       });
     }).on('error', (err) => {
-      fs.unlink(filepath, () => {}); // Delete the file on error
+      fs.unlink(filepath, () => {});
       reject(err);
     });
   });

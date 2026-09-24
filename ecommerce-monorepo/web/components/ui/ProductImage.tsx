@@ -27,6 +27,8 @@ export interface ProductImageProps {
 }
 
 export const DEFAULT_PRODUCT_FALLBACK = DEFAULT_PLACEHOLDER;
+export const INLINE_FALLBACK_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f8fafc'/%3E%3Cpath d='M160 180a20 20 0 100-40 20 20 0 000 40zm80 70H160l40-50 25 31 15-18 40 37z' fill='%23cbd5e1'/%3E%3Ctext x='200' y='290' text-anchor='middle' fill='%2394a3b8' font-family='system-ui, -apple-system, sans-serif' font-size='16' font-weight='500'%3EProduct%3C/text%3E%3C/svg%3E";
 
 /**
  * Robust ProductImage component that handles loading states, 404s,
@@ -74,8 +76,10 @@ export function ProductImage({
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (imgSrc !== normalizedFallback && normalizedFallback) {
       setImgSrc(normalizedFallback);
-    } else if (imgSrc !== DEFAULT_PLACEHOLDER) {
+    } else if (imgSrc !== DEFAULT_PLACEHOLDER && DEFAULT_PLACEHOLDER) {
       setImgSrc(DEFAULT_PLACEHOLDER);
+    } else if (imgSrc !== INLINE_FALLBACK_SVG) {
+      setImgSrc(INLINE_FALLBACK_SVG);
     }
     setIsLoaded(true);
     onError?.(e);

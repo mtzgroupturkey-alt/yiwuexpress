@@ -102,7 +102,27 @@ function serveUpload(req, res, pathname) {
     }
 
     const ext = path.extname(foundFile).toLowerCase()
-    res.setHeader('Content-Type', MIME_TYPES[ext] || 'application/octet-stream')
+    let contentType = MIME_TYPES[ext] || 'application/octet-stream'
+    try {
+      const fd = fs.openSync(foundFile, 'r')
+      const headerBuf = Buffer.alloc(100)
+      const bytesRead = fs.readSync(fd, headerBuf, 0, 100, 0)
+      fs.closeSync(fd)
+      if (bytesRead > 0) {
+        const headText = headerBuf.toString('utf8').trim().toLowerCase()
+        if (headText.startsWith('<svg') || headText.startsWith('<?xml')) {
+          contentType = 'image/svg+xml; charset=utf-8'
+        } else if (bytesRead >= 3 && headerBuf[0] === 0xff && headerBuf[1] === 0xd8 && headerBuf[2] === 0xff) {
+          contentType = 'image/jpeg'
+        } else if (bytesRead >= 8 && headerBuf[0] === 0x89 && headerBuf[1] === 0x50 && headerBuf[2] === 0x4e && headerBuf[3] === 0x47) {
+          contentType = 'image/png'
+        } else if (bytesRead >= 12 && headerBuf.slice(0, 4).toString('ascii') === 'RIFF' && headerBuf.slice(8, 12).toString('ascii') === 'WEBP') {
+          contentType = 'image/webp'
+        }
+      }
+    } catch {}
+
+    res.setHeader('Content-Type', contentType)
     res.setHeader('Content-Length', stats.size)
     res.setHeader('Cache-Control', 'public, max-age=2592000')
     res.setHeader('Access-Control-Allow-Origin', '*')

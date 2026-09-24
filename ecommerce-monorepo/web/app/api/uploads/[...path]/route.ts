@@ -166,17 +166,17 @@ export async function GET(
       } else {
         // Product image fallback: find an existing product image or placeholder
         const productFallbacks = [
-          path.join(cwd, 'public', 'images', 'products', 'placeholder.jpg'),
           path.join(cwd, 'public', 'images', 'product-placeholder.webp'),
+          path.join(cwd, 'public', 'images', 'products', 'placeholder.jpg'),
           path.join(cwd, 'public', 'images', 'placeholder.png'),
-          path.join(cwd, 'web', 'public', 'images', 'products', 'placeholder.jpg'),
           path.join(cwd, 'web', 'public', 'images', 'product-placeholder.webp'),
-          path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'products', 'placeholder.jpg'),
+          path.join(cwd, 'web', 'public', 'images', 'products', 'placeholder.jpg'),
           path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'product-placeholder.webp'),
-          '/www/wwwroot/www.dromkok.com/web/public/images/products/placeholder.jpg',
+          path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'products', 'placeholder.jpg'),
           '/www/wwwroot/www.dromkok.com/web/public/images/product-placeholder.webp',
-          '/www/wwwroot/dromkok.com/web/public/images/products/placeholder.jpg',
+          '/www/wwwroot/www.dromkok.com/web/public/images/products/placeholder.jpg',
           '/www/wwwroot/dromkok.com/web/public/images/product-placeholder.webp',
+          '/www/wwwroot/dromkok.com/web/public/images/products/placeholder.jpg',
         ];
         foundFile = await findExistingFile(productFallbacks);
       }
@@ -198,7 +198,21 @@ export async function GET(
     }
 
     const fileBuffer = await fs.readFile(foundFile);
-    const mimeType = getMimeType(foundFile);
+    let mimeType = getMimeType(foundFile);
+
+    // Bulletproof Content-Type Sniffing:
+    // If the file is actually SVG text, ALWAYS serve as image/svg+xml regardless of file extension,
+    // preventing Chromium/WebKit JPEG decoder errors with X-Content-Type-Options: nosniff.
+    const headText = fileBuffer.slice(0, 100).toString('utf8').trim().toLowerCase();
+    if (headText.startsWith('<svg') || headText.startsWith('<?xml')) {
+      mimeType = 'image/svg+xml; charset=utf-8';
+    } else if (fileBuffer.length >= 3 && fileBuffer[0] === 0xff && fileBuffer[1] === 0xd8 && fileBuffer[2] === 0xff) {
+      mimeType = 'image/jpeg';
+    } else if (fileBuffer.length >= 8 && fileBuffer[0] === 0x89 && fileBuffer[1] === 0x50 && fileBuffer[2] === 0x4e && fileBuffer[3] === 0x47) {
+      mimeType = 'image/png';
+    } else if (fileBuffer.length >= 12 && fileBuffer.slice(0, 4).toString('ascii') === 'RIFF' && fileBuffer.slice(8, 12).toString('ascii') === 'WEBP') {
+      mimeType = 'image/webp';
+    }
 
     return new NextResponse(fileBuffer, {
       status: 200,
