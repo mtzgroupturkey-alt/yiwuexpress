@@ -179,6 +179,14 @@ model SystemSettings {
   freeShippingThreshold Float?  @default(35.00)
   announcementTicker    String?
 
+  // Seasonal Discounts & Flash Home Deals Section Settings
+  flashSaleEnabled              Boolean   @default(false)
+  flashSaleStartDate            DateTime?
+  flashSaleEndDate              DateTime?
+  flashSaleTitle                String?   @default("Seasonal Discounts & Flash Home Deals")
+  flashSaleSubtitle             String?   @default("Special prices on furniture, kitchenware, and smart living appliances")
+  flashSaleBadgeText            String?   @default("LIMITED QUANTITY")
+
   // Multi-Warehouse Routing & Channels
   defaultSalesWarehouseId       String?  @default("cmu149zqd0007w4gois6udmjc")
   defaultProcurementWarehouseId String?  @default("cmu12i65n0000w43wy8bb90uz")

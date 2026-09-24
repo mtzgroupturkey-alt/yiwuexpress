@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, it, expect } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MobileGallery } from '@/components/mobile/product/MobileGallery'
 
 describe('MobileGallery (components/mobile/product/MobileGallery.tsx)', () => {
@@ -31,7 +31,7 @@ describe('MobileGallery (components/mobile/product/MobileGallery.tsx)', () => {
     expect(secondDot).toBeInTheDocument()
   })
 
-  it('toggles fullscreen lightbox when maximize button is clicked', () => {
+  it('toggles fullscreen lightbox when maximize button is clicked', async () => {
     render(
       <MobileGallery
         images={images}
@@ -47,6 +47,8 @@ describe('MobileGallery (components/mobile/product/MobileGallery.tsx)', () => {
     expect(closeBtn).toBeInTheDocument()
 
     fireEvent.click(closeBtn)
-    expect(screen.queryByRole('button', { name: /close fullscreen view/i })).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /close fullscreen view/i })).not.toBeInTheDocument()
+    })
   })
 })

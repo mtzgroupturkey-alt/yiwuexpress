@@ -17,6 +17,8 @@ interface MobileFlashDealsProps {
   onAddToCart?: (product: Product, quantity?: number) => void
   onSelectProduct?: (product: Product) => void
   onViewAll?: () => void
+  endDate?: string | null
+  title?: string
   className?: string
 }
 
@@ -26,6 +28,8 @@ export function MobileFlashDeals({
   onAddToCart,
   onSelectProduct,
   onViewAll,
+  endDate,
+  title,
   className = '',
 }: MobileFlashDealsProps) {
   const router = useRouter()
@@ -34,24 +38,48 @@ export function MobileFlashDeals({
   const { isWholesaleSession } = useSessionMode()
   const { isStandalone } = useMobile()
 
-  // Countdown timer state (e.g. 06:45:12)
-  const [timeLeft, setTimeLeft] = useState({ hours: 6, minutes: 42, seconds: 18 })
+  const [isExpired, setIsExpired] = useState(false)
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 }
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: 59, seconds: 59 }
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 }
-        }
-        return { hours: 12, minutes: 0, seconds: 0 }
-      })
-    }, 1000)
+    if (!endDate) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 }
+          if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 }
+          if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 }
+          return { hours: 12, minutes: 0, seconds: 0 }
+        })
+      }, 1000)
+      return () => clearInterval(timer)
+    }
+
+    const checkExpiration = () => {
+      const targetTime = new Date(endDate).getTime()
+      const now = Date.now()
+      const diff = targetTime - now
+
+      if (diff <= 0) {
+        setIsExpired(true)
+        return
+      }
+
+      setIsExpired(false)
+      const totalSeconds = Math.floor(diff / 1000)
+      const hours = Math.floor(totalSeconds / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      const seconds = totalSeconds % 60
+      setTimeLeft({ hours, minutes, seconds })
+    }
+
+    checkExpiration()
+    const timer = setInterval(checkExpiration, 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [endDate])
+
+  if (isExpired) {
+    return null
+  }
 
   const formatDigit = (num: number) => num.toString().padStart(2, '0')
 
@@ -83,11 +111,11 @@ export function MobileFlashDeals({
             <Zap className="w-4 h-4 fill-current" />
           </div>
           <h3 className="text-sm font-black text-gray-900 dark:text-white tracking-tight">
-            {locale === 'zh'
+            {title || (locale === 'zh'
               ? '限时抢购'
               : locale === 'ru'
               ? 'Горящие скидки'
-              : 'Flash Deals'}
+              : 'Flash Deals')}
           </h3>
 
           {/* Countdown timer pill */}

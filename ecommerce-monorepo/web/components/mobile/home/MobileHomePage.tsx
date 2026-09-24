@@ -14,6 +14,8 @@ export interface MobileHomePageProps {
   products: Product[]
   categories: Category[]
   flashDeals: Product[]
+  flashDealsEndDate?: string | null
+  flashDealsTitle?: string
   bestSellers: Product[]
   onAddToCart?: (product: Product, quantity?: number) => void
   onSelectProduct?: (product: Product) => void
@@ -27,6 +29,8 @@ export function MobileHomePage({
   products,
   categories,
   flashDeals,
+  flashDealsEndDate,
+  flashDealsTitle,
   bestSellers,
   onAddToCart,
   onSelectProduct,
@@ -59,7 +63,9 @@ export function MobileHomePage({
 
       {/* 3. Mobile Flash Deals */}
       <MobileFlashDeals
-        deals={flashDeals}
+        deals={flashDeals || []}
+        endDate={flashDealsEndDate}
+        title={flashDealsTitle}
         onAddToCart={onAddToCart}
         onSelectProduct={onSelectProduct}
         onViewAll={() => onNavigateView?.('shop', { filter: 'deals' })}

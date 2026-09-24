@@ -57,6 +57,7 @@ export const adminZh: AdminDictionary = {
     featuredProducts: '推荐商品',
     newArrivals: '新品专区',
     flashSales: '限时秒杀',
+    flashDeals: '限时秒杀与季节促销',
     breadcrumb: '页面横幅背景',
     company: '公司企业信息',
     contactLocations: '联系地址与分支',

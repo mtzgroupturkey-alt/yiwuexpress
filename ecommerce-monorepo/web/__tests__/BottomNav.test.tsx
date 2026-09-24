@@ -138,17 +138,17 @@ describe('BottomNav (components/mobile/BottomNav.tsx)', () => {
     render(<BottomNav />)
 
     const moreBtn = screen.getByRole('button', { name: /more/i })
-    expect(screen.queryByText('Global Trade Platform')).not.toBeInTheDocument()
+    expect(screen.queryByText('Global Trade')).not.toBeInTheDocument()
 
     // Open drawer
     fireEvent.click(moreBtn)
-    expect(screen.getByText('Global Trade Platform')).toBeInTheDocument()
+    expect(screen.getByText('Global Trade')).toBeInTheDocument()
     expect(screen.getByText('Track Cargo')).toBeInTheDocument()
     expect(screen.getByText('Freight Calculator')).toBeInTheDocument()
 
     // Close drawer
     const closeBtn = screen.getByRole('button', { name: /close menu/i })
     fireEvent.click(closeBtn)
-    expect(screen.queryByText('Global Trade Platform')).not.toBeInTheDocument()
+    expect(screen.queryByText('Global Trade')).not.toBeInTheDocument()
   })
 })

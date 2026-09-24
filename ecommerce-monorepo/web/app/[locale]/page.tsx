@@ -81,6 +81,18 @@ export default function Home() {
     refetchOnWindowFocus: true,
   });
 
+  // Live Seasonal Discounts & Flash Home Deals Campaign Query
+  const { data: flashCampaignData, isLoading: isFlashCampaignLoading } = useQuery({
+    queryKey: ['flash-sales-campaign', locale],
+    queryFn: async () => {
+      const res = await fetch(`/api/products/flash-sales?locale=${locale}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000, // Background revalidation every minute so timing transitions seamlessly
+  });
+
   const dbProducts: Product[] = useMemo(() => {
     const rawList = productsData?.data || [];
     if (!Array.isArray(rawList) || rawList.length === 0) return [];
@@ -115,11 +127,23 @@ export default function Home() {
     return combined;
   }, [dbCategories]);
 
-  const activeFlashDeals = useMemo(() => {
-    if (dbProducts.length === 0) return [];
-    const discounted = dbProducts.filter((p) => p.oldPrice && p.oldPrice > p.price);
-    return discounted.length >= 4 ? discounted.slice(0, 6) : dbProducts.slice(0, 6);
-  }, [dbProducts]);
+  // Seasonal Discounts & Flash Home Deals: Only active when campaign is enabled & within schedule
+  const activeFlashDeals: Product[] = useMemo(() => {
+    if (!flashCampaignData?.active || !Array.isArray(flashCampaignData.data) || flashCampaignData.data.length === 0) {
+      return [];
+    }
+    return flashCampaignData.data.map((item: any) => ({
+      ...mapDbProductToDesign3(item),
+      price: typeof item.dealPrice === 'number' ? item.dealPrice : item.price,
+      oldPrice: typeof item.oldPrice === 'number' ? item.oldPrice : item.compareAtPrice || null,
+      flashSalePrice: item.dealPrice ?? item.flashSalePrice ?? null,
+      flashSaleEnd: flashCampaignData.endDate,
+    }));
+  }, [flashCampaignData]);
+
+  const isFlashSectionActive = useMemo(() => {
+    return Boolean(flashCampaignData?.active && activeFlashDeals.length > 0);
+  }, [flashCampaignData?.active, activeFlashDeals.length]);
 
   const activeBestSellers = useMemo(() => {
     if (dbProducts.length === 0) return [];
@@ -657,7 +681,9 @@ export default function Home() {
               <MobileHomePage
                 products={dbProducts}
                 categories={activeCategories}
-                flashDeals={activeFlashDeals}
+                flashDeals={isFlashSectionActive ? activeFlashDeals : []}
+                flashDealsEndDate={flashCampaignData?.endDate}
+                flashDealsTitle={flashCampaignData?.title}
                 bestSellers={activeBestSellers}
                 onAddToCart={(p, qty) => handleAddToCart(p, qty || 1)}
                 onSelectProduct={(product) => {
@@ -785,29 +811,38 @@ export default function Home() {
               />
             </MotionReveal>
 
-            {/* 4. Flash Deals of the Day */}
-            <MotionReveal direction="up">
-              <div id="flash-deals-section">
-                <FlashDeals
-                  deals={
-                    selectedCategory
-                      ? activeFlashDeals.filter((d) => d.category === selectedCategory)
-                      : activeFlashDeals
-                  }
-                  isLoading={isProductsLoading || dbProducts.length === 0}
-                  onAddToCart={handleAddToCart}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  cartQuantities={cartQuantities}
-                  favoriteIds={favoriteIds}
-                  onToggleFavorite={toggleWishlist}
-                  onSelectProduct={(product) => {
-                    setSelectedProductForPDP(product);
-                    handleNavigateView('product', { product });
-                  }}
-                  onViewAllDeals={() => handleNavigateView('shop')}
-                />
-              </div>
-            </MotionReveal>
+            {/* 4. Seasonal Discounts & Flash Home Deals (Only visible when active & within schedule) */}
+            {isFlashSectionActive && (
+              <MotionReveal direction="up">
+                <div id="flash-deals-section">
+                  <FlashDeals
+                    deals={
+                      selectedCategory
+                        ? activeFlashDeals.filter((d) => d.category === selectedCategory)
+                        : activeFlashDeals
+                    }
+                    isLoading={isFlashCampaignLoading}
+                    endDate={flashCampaignData?.endDate}
+                    title={flashCampaignData?.title}
+                    subtitle={flashCampaignData?.subtitle}
+                    badgeText={flashCampaignData?.badgeText}
+                    onExpire={() => {
+                      queryClient.invalidateQueries({ queryKey: ['flash-sales-campaign'] });
+                    }}
+                    onAddToCart={handleAddToCart}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    cartQuantities={cartQuantities}
+                    favoriteIds={favoriteIds}
+                    onToggleFavorite={toggleWishlist}
+                    onSelectProduct={(product) => {
+                      setSelectedProductForPDP(product);
+                      handleNavigateView('product', { product });
+                    }}
+                    onViewAllDeals={() => handleNavigateView('shop')}
+                  />
+                </div>
+              </MotionReveal>
+            )}
 
             {/* 5. Four Trust / Value Proposition Cards */}
             <MotionReveal direction="up">

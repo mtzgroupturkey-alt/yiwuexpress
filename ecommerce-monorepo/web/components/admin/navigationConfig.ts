@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
   MessageSquare, Building2, User, FolderTree, Tag, Star,
   PieChart, ArrowUpCircle, ArrowDownCircle, TrendingUp, Image as ImageIcon,
-  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, LucideIcon
+  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon
 } from 'lucide-react'
 
 export interface NavItem {
@@ -128,6 +128,7 @@ export const navigationConfig: NavGroup[] = [
     items: [
       { label: 'Hero Slider', translationKey: 'heroSlider', href: '/admin/settings/hero-slider', icon: ImageIcon },
       { label: 'Featured Products', translationKey: 'featuredProducts', href: '/admin/settings/featured-products', icon: Star },
+      { label: 'Flash & Seasonal Deals', translationKey: 'flashDeals', href: '/admin/settings/flash-sales', icon: Zap },
       { label: 'Push Notifications', translationKey: 'notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Content Pages', translationKey: 'contentPages', href: '/admin/content/pages', icon: FileText },
       { label: 'Testimonials', translationKey: 'testimonials', href: '/admin/testimonials', icon: Star },

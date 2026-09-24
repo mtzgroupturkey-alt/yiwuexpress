@@ -1,24 +1,71 @@
 export const dynamic = 'force-dynamic';
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
-import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
-import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth';
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer';
+import { getLocalField, localizeEntity } from '@/lib/utils/localize';
 
 export async function GET(req: NextRequest) {
   try {
-    const now = new Date()
+    const locale = req.nextUrl.searchParams.get('locale') || 'en';
+    const now = new Date();
 
-    // Get active flash sale products
+    // 1. Fetch Campaign Settings from SystemSettings singleton
+    const settings = await prisma.systemSettings.findUnique({
+      where: { singletonKey: 'SINGLETON' },
+      select: {
+        flashSaleEnabled: true,
+        flashSaleStartDate: true,
+        flashSaleEndDate: true,
+        flashSaleTitle: true,
+        flashSaleSubtitle: true,
+        flashSaleBadgeText: true,
+      },
+    });
+
+    const isEnabled = settings?.flashSaleEnabled ?? false;
+    const startDate = settings?.flashSaleStartDate ? new Date(settings.flashSaleStartDate) : null;
+    const endDate = settings?.flashSaleEndDate ? new Date(settings.flashSaleEndDate) : null;
+
+    // Check if section is master-disabled
+    if (!isEnabled) {
+      return NextResponse.json({
+        success: true,
+        active: false,
+        reason: 'disabled',
+        data: [],
+      });
+    }
+
+    // Check scheduled start time
+    if (startDate && now < startDate) {
+      return NextResponse.json({
+        success: true,
+        active: false,
+        reason: 'scheduled',
+        startDate: startDate.toISOString(),
+        endDate: endDate ? endDate.toISOString() : null,
+        data: [],
+      });
+    }
+
+    // Check expiration end time
+    if (endDate && now > endDate) {
+      return NextResponse.json({
+        success: true,
+        active: false,
+        reason: 'expired',
+        startDate: startDate ? startDate.toISOString() : null,
+        endDate: endDate.toISOString(),
+        data: [],
+      });
+    }
+
+    // 2. Fetch Active Flash Sale Products
     const products = await prisma.product.findMany({
       where: {
         isFlashSale: true,
         isActive: true,
-        flashSaleStart: {
-          lte: now,
-        },
-        flashSaleEnd: {
-          gte: now,
-        },
         OR: [
           { flashSaleStock: null },
           { flashSaleStock: { gt: 0 } },
@@ -31,48 +78,103 @@ export async function GET(req: NextRequest) {
             id: true,
             name: true,
             slug: true,
+            translations: {
+              where: { locale: { in: [locale, 'en'] } },
+              select: { locale: true, name: true },
+            },
           },
         },
+        translations: {
+          where: { locale: { in: [locale, 'en'] } },
+          select: { locale: true, name: true, description: true },
+        },
       },
-    })
+    });
 
-    // Check caller wholesale access permissions
-    const currentUser = await getAuthUser(req)
-    const canViewWholesale = isApprovedWholesaleUser(currentUser)
-    const isAdmin = currentUser?.role === 'ADMIN'
+    if (products.length === 0) {
+      return NextResponse.json({
+        success: true,
+        active: false,
+        reason: 'no_products',
+        data: [],
+      });
+    }
 
-    // Calculate additional metadata for each product
-    const enrichedProducts = products.map((product) => {
-      const discount = product.flashSalePrice
-        ? Math.round(((product.price - product.flashSalePrice) / product.price) * 100)
-        : 0
+    // 3. Check caller wholesale access permissions
+    const currentUser = await getAuthUser(req);
+    const canViewWholesale = isApprovedWholesaleUser(currentUser);
+    const isAdmin = currentUser?.role === 'ADMIN';
 
-      const timeRemaining = product.flashSaleEnd
-        ? new Date(product.flashSaleEnd).getTime() - now.getTime()
-        : 0
+    // 4. Localize and enrich product data
+    const endsInMs = endDate ? Math.max(0, endDate.getTime() - now.getTime()) : null;
 
-      const itemWithMeta = {
-        ...product,
-        discount,
-        timeRemaining,
-        hasLimitedStock: product.flashSaleStock !== null,
-        stockRemaining: product.flashSaleStock,
-      }
+    const enrichedProducts = products.map((product: any) => {
+      const { name, description } = localizeEntity(
+        product.translations,
+        locale,
+        { name: product.name, description: product.description }
+      );
 
-      return sanitizeProductForClient(itemWithMeta, canViewWholesale, isAdmin)
-    })
+      const categoryName = product.category
+        ? getLocalField(product.category.translations, locale, 'name', product.category.name)
+        : '';
+
+      const effectivePrice =
+        typeof product.flashSalePrice === 'number' && product.flashSalePrice > 0
+          ? product.flashSalePrice
+          : product.price;
+
+      const effectiveOldPrice =
+        product.compareAtPrice && product.compareAtPrice > effectivePrice
+          ? product.compareAtPrice
+          : product.price > effectivePrice
+          ? product.price
+          : null;
+
+      const discount = effectiveOldPrice
+        ? Math.round(((effectiveOldPrice - effectivePrice) / effectiveOldPrice) * 100)
+        : 0;
+
+      const sanitized = sanitizeProductForClient(
+        {
+          ...product,
+          name,
+          description,
+          categoryName,
+          dealPrice: effectivePrice,
+          oldPrice: effectiveOldPrice,
+          discount,
+          timeRemaining: endsInMs,
+          hasLimitedStock: product.flashSaleStock !== null,
+          stockRemaining: product.flashSaleStock,
+        },
+        canViewWholesale,
+        isAdmin
+      );
+
+      return sanitized;
+    });
 
     return NextResponse.json({
       success: true,
-      data: enrichedProducts,
+      active: true,
+      title: settings?.flashSaleTitle || 'Seasonal Discounts & Flash Home Deals',
+      subtitle:
+        settings?.flashSaleSubtitle ||
+        'Special prices on furniture, kitchenware, and smart living appliances',
+      badgeText: settings?.flashSaleBadgeText || 'LIMITED QUANTITY',
+      startDate: startDate ? startDate.toISOString() : null,
+      endDate: endDate ? endDate.toISOString() : null,
+      endsInMs,
+      now: now.toISOString(),
       count: enrichedProducts.length,
-      timestamp: now.toISOString(),
-    })
+      data: enrichedProducts,
+    });
   } catch (error) {
-    console.error('Error fetching flash sale products:', error)
+    console.error('Error fetching public flash sale products:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch flash sale products' },
       { status: 500 }
-    )
+    );
   }
 }

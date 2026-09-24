@@ -55,6 +55,7 @@ export const adminEn = {
     featuredProducts: 'Featured Products',
     newArrivals: 'New Arrivals',
     flashSales: 'Flash Sales',
+    flashDeals: 'Flash & Seasonal Deals',
     breadcrumb: 'Breadcrumb Backgrounds',
     company: 'Company Info',
     contactLocations: 'Contact Locations',
