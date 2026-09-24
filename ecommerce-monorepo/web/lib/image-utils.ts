@@ -93,40 +93,66 @@ export function normalizeProductImageUrl(src?: string | null, category?: string 
   // 2. Strip localhost / loopback domains so mobile phones don't try connecting to localhost
   if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(trimmed)) {
     const withoutOrigin = trimmed.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, '')
-    return normalizeProductImageUrl(withoutOrigin)
+    return normalizeProductImageUrl(withoutOrigin, category, name)
   }
 
-  // 3. Absolute HTTP/HTTPS URLs
+  // 3. Absolute URLs on dromkok.com or www.dromkok.com
+  if (/^https?:\/\/([^/]+\.)?dromkok\.com/i.test(trimmed)) {
+    const pathOnly = trimmed.replace(/^https?:\/\/([^/]+\.)?dromkok\.com/i, '')
+    return normalizeProductImageUrl(pathOnly, category, name)
+  }
+
+  // 4. Other absolute HTTP/HTTPS URLs (external CDNs, Unsplash, Google images, etc.)
   if (/^https?:\/\//i.test(trimmed)) {
-    // If it points to dromkok.com, strip origin or force HTTPS
-    if (/^http:\/\/([^/]+\.)?dromkok\.com/i.test(trimmed)) {
+    if (trimmed.startsWith('http://')) {
       return trimmed.replace(/^http:\/\//i, 'https://')
     }
     return trimmed
   }
 
-  // 4. Starts with /uploads/ or /images/
-  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('/images/')) {
+  // 5. Already routed through /api/uploads/
+  if (trimmed.startsWith('/api/uploads/')) {
     return trimmed
   }
-
-  // 5. Starts with uploads/ or images/ (missing leading slash)
-  if (trimmed.startsWith('uploads/') || trimmed.startsWith('images/')) {
+  if (trimmed.startsWith('api/uploads/')) {
     return `/${trimmed}`
   }
 
-  // 6. Leading slash with other path
+  // 6. Direct uploads path: rewrite to /api/uploads/... so Next.js route handler serves it
+  // and avoids Nginx static file 404 interception on production
+  if (trimmed.startsWith('/uploads/')) {
+    return `/api${trimmed}`
+  }
+  if (trimmed.startsWith('uploads/')) {
+    return `/api/${trimmed}`
+  }
+
+  // 7. Static public/images/ assets
+  if (trimmed.startsWith('/images/')) {
+    return trimmed
+  }
+  if (trimmed.startsWith('images/')) {
+    return `/${trimmed}`
+  }
+
+  // 8. Other leading slash path (e.g. /favicon.ico, /logo.png)
   if (trimmed.startsWith('/')) {
     return trimmed
   }
 
-  // 7. Bare filename or relative path (e.g., '1670674373.jpg', 'products/xyz.jpg')
-  if (trimmed.startsWith('products/')) {
-    return `/uploads/${trimmed}`
+  // 9. Subdirectory paths under uploads (products/, general/, hero/, favicons/, etc.)
+  if (
+    trimmed.startsWith('products/') ||
+    trimmed.startsWith('general/') ||
+    trimmed.startsWith('hero/') ||
+    trimmed.startsWith('favicons/') ||
+    trimmed.startsWith('breadcrumb/')
+  ) {
+    return `/api/uploads/${trimmed}`
   }
 
-  // Default bare file to /uploads/products/
-  return `/uploads/products/${trimmed}`
+  // 10. Bare filename (e.g. '1670674373.jpg', 'product-123.png') -> default to products upload folder
+  return `/api/uploads/products/${trimmed}`
 }
 
 /**

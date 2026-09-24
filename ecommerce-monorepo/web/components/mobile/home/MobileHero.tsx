@@ -30,8 +30,8 @@ const LOCAL_HERO_FALLBACKS = [
   '/images/hero/hero-1.jpg',
   '/images/hero/hero-2.jpg',
   '/images/hero/hero-3.jpg',
-  '/uploads/general/1783111746070-3d4329c4824b0db3e33a8ebc287f8486.jpg',
-  '/uploads/general/1783111760596-3d1db3241362aaa0526d244d94eb6a0a.jpg',
+  '/api/uploads/general/1783111746070-3d4329c4824b0db3e33a8ebc287f8486.jpg',
+  '/api/uploads/general/1783111760596-3d1db3241362aaa0526d244d94eb6a0a.jpg',
 ]
 
 export function MobileHero({

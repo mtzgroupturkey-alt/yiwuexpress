@@ -25,11 +25,12 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
   }
 
   // 1b. Normalize thumbnail & images
+  const catName = safe.category?.name || safe.categoryName || safe.category
   if (safe.thumbnail) {
-    safe.thumbnail = normalizeProductImageUrl(safe.thumbnail)
+    safe.thumbnail = normalizeProductImageUrl(safe.thumbnail, catName, safe.name)
   }
   if (Array.isArray(safe.images) && safe.images.length > 0) {
-    safe.images = safe.images.map((img: string) => normalizeProductImageUrl(img))
+    safe.images = safe.images.map((img: string) => normalizeProductImageUrl(img, catName, safe.name))
   } else if (safe.thumbnail) {
     safe.images = [safe.thumbnail]
   }

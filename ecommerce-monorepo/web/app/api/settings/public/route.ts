@@ -113,7 +113,11 @@ export async function GET(request: NextRequest) {
       })
       if (!exists) {
         resolvedLogo = '/logo.png'
+      } else {
+        resolvedLogo = `/api${resolvedLogo}`
       }
+    } else if (resolvedLogo.startsWith('uploads/')) {
+      resolvedLogo = `/api/${resolvedLogo}`
     }
 
     let resolvedFavicon = publicSettings.companyFavicon || '/favicon.svg'
@@ -133,7 +137,11 @@ export async function GET(request: NextRequest) {
       })
       if (!exists) {
         resolvedFavicon = '/favicon.ico'
+      } else {
+        resolvedFavicon = `/api${resolvedFavicon}`
       }
+    } else if (resolvedFavicon.startsWith('uploads/')) {
+      resolvedFavicon = `/api/${resolvedFavicon}`
     }
 
     return NextResponse.json({

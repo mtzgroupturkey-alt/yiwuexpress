@@ -121,7 +121,7 @@ export function mapDbCategoryToDesign3(dbCat: any): Category {
     slug: dbCat.slug,
     itemCount,
     icon: iconName || 'ShoppingBag',
-    image: dbCat.image || null,
+    image: dbCat.image ? normalizeProductImageUrl(dbCat.image, dbCat.name) : null,
     parentId: dbCat.parentId || null,
     level: typeof dbCat.level === 'number' ? dbCat.level : (dbCat.parentId ? 2 : 1),
     isFeatured: Boolean(dbCat.isFeatured),
