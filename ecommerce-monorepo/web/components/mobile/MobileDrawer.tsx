@@ -136,7 +136,8 @@ export function MobileDrawer({
     handleClose()
   }
 
-  const companyName = settings?.companyName || 'Global Trade'
+  const rawName = settings?.companyName || 'Dromkok'
+  const companyName = rawName.toLowerCase() === 'dromkok' ? 'Dromkok' : rawName
 
   return (
     <AnimatePresence>

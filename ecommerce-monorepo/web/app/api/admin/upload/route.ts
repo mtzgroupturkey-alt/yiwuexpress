@@ -114,11 +114,15 @@ export async function POST(request: NextRequest) {
       filename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`
     }
 
-    // Write file to all applicable target locations
+    // Write file to all applicable target locations (both timestamped and clean original name)
+    const cleanName = file.name.replace(/\s+/g, '_')
     for (const dir of targetDirs) {
       try {
         await mkdir(dir, { recursive: true })
         await writeFile(path.join(dir, filename), buffer)
+        if (cleanName && cleanName !== filename) {
+          await writeFile(path.join(dir, cleanName), buffer)
+        }
       } catch {
         // Silently skip non-existent production paths when running locally
       }

@@ -173,11 +173,16 @@ export async function GET(
     const fileBuffer = await fs.readFile(foundFile)
     const mimeType = getMimeType(foundFile)
 
+    const isFallback = foundFile.includes('product-placeholder') || foundFile.includes('placeholder')
+    const cacheHeader = isFallback
+      ? 'public, max-age=60, stale-while-revalidate=300'
+      : 'public, max-age=31536000, immutable'
+
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
         'Content-Type': mimeType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': cacheHeader,
         'Content-Length': fileBuffer.length.toString(),
         'X-Media-Served-By': 'dromkok-uploads-handler',
       },

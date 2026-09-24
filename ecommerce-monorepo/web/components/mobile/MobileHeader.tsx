@@ -86,7 +86,8 @@ export function MobileHeader({
 
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)
-  const companyName = settings?.companyName || 'Global Trade'
+  const rawName = settings?.companyName || 'Dromkok'
+  const companyName = rawName.toLowerCase() === 'dromkok' ? 'Dromkok' : rawName
   const [logoSrc, setLogoSrc] = useState<string | null>(settings?.companyLogo ?? null)
   const [logoFailed, setLogoFailed] = useState(false)
 

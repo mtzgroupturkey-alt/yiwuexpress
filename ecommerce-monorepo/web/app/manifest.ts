@@ -3,21 +3,108 @@ import { getSystemSettings, resolveCompanyName } from '@/lib/company'
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
   const settings = await getSystemSettings()
-  const companyName = resolveCompanyName(settings?.companyName)
+  let companyName = resolveCompanyName(settings?.companyName)
+  if (companyName.toLowerCase() === 'dromkok') {
+    companyName = 'Dromkok'
+  }
+
+  const description =
+    settings?.companyDescription ||
+    `${companyName} - Global Trade & Logistics Platform from China`
 
   return {
-    name: `${companyName} Admin Panel`,
+    name: `${companyName} - E-Commerce & Freight Platform`,
     short_name: companyName,
-    description: `Administrative panel for ${companyName} logistics services`,
-    start_url: '/admin',
+    description,
+    start_url: '/en',
+    scope: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#1a3a5c',
+    orientation: 'portrait',
+    background_color: '#00407a',
+    theme_color: '#00407a',
     icons: [
       {
-        src: settings?.companyFavicon || '/favicon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        src: '/icons/icon-72.png',
+        sizes: '72x72',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-96.png',
+        sizes: '96x96',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-128.png',
+        sizes: '128x128',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-144.png',
+        sizes: '144x144',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-152.png',
+        sizes: '152x152',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-384.png',
+        sizes: '384x384',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icons/maskable-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+      {
+        src: '/icons/apple-touch-icon.png',
+        sizes: '180x180',
+        type: 'image/png',
+        purpose: 'any',
+      },
+    ],
+    shortcuts: [
+      {
+        name: 'Catalog',
+        short_name: 'Catalog',
+        description: 'Browse wholesale products',
+        url: '/en/store',
+        icons: [{ src: '/icons/icon-96.png', sizes: '96x96' }],
+      },
+      {
+        name: 'Shopping Cart',
+        short_name: 'Cart',
+        description: 'View shopping cart and checkout',
+        url: '/en/cart',
+        icons: [{ src: '/icons/icon-96.png', sizes: '96x96' }],
+      },
+      {
+        name: 'Freight Quotes',
+        short_name: 'Quote',
+        description: 'Submit RFQ and calculate freight',
+        url: '/en/calculator',
+        icons: [{ src: '/icons/icon-96.png', sizes: '96x96' }],
       },
     ],
   }

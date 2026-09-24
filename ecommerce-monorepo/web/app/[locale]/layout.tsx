@@ -34,10 +34,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const locale = params.locale || 'en'
   const settings = await getSystemSettings(locale)
-  const companyName = settings?.companyName || (await getCompanyName(locale))
+  let companyName = settings?.companyName || (await getCompanyName(locale))
+  if (companyName.toLowerCase() === 'dromkok') {
+    companyName = 'Dromkok'
+  }
   const siteTagline = await getSiteTagline(locale)
   const companyDescription = await getCompanyDescription(locale)
-  const companyFavicon = settings?.companyFavicon || '/favicon.svg'
+  const companyFavicon = settings?.companyFavicon || '/favicon.png'
 
   return {
     title: {
@@ -59,7 +62,7 @@ export async function generateMetadata({
     appleWebApp: {
       capable: true,
       statusBarStyle: 'black-translucent',
-      title: companyName || 'Global Trade',
+      title: companyName || 'Dromkok',
     },
     openGraph: {
       type: 'website',
@@ -106,9 +109,12 @@ export default async function LocaleLayout({
   }
 
   const serverSettings = await getServerSettings(locale)
-  const companyName = serverSettings.companyName || (await getCompanyName(locale))
+  let companyName = serverSettings.companyName || (await getCompanyName(locale))
+  if (companyName.toLowerCase() === 'dromkok') {
+    companyName = 'Dromkok'
+  }
   const companyLogo = serverSettings.companyLogo || '/logo.png'
-  const companyFavicon = serverSettings.companyFavicon || '/favicon.svg'
+  const companyFavicon = serverSettings.companyFavicon || '/favicon.png'
   const messages = await getMessages()
 
   const cookieStore = cookies()
@@ -142,7 +148,8 @@ export default async function LocaleLayout({
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content={companyName || 'GlobalTrade'} />
+      <meta name="apple-mobile-web-app-title" content={companyName || 'Dromkok'} />
+      <meta name="application-name" content={companyName || 'Dromkok'} />
       {companyLogo && (
         <link rel="preload" as="image" href={companyLogo} />
       )}

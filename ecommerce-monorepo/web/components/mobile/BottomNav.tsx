@@ -285,17 +285,17 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
                     </div>
                   ) : (
                     <div className="w-8 h-8 rounded-lg bg-[#00407a] dark:bg-primary-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                      {(settings?.companyName || 'Global Trade')
+                      {((settings?.companyName && settings.companyName.toLowerCase() === 'dromkok' ? 'Dromkok' : settings?.companyName) || 'Dromkok')
                         .split(' ')
                         .map((w: string) => w[0])
                         .join('')
                         .slice(0, 2)
-                        .toUpperCase() || 'GT'}
+                        .toUpperCase() || 'DK'}
                     </div>
                   )}
                   <div>
                     <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                      {settings?.companyName || 'Global Trade'}
+                      {(settings?.companyName && settings.companyName.toLowerCase() === 'dromkok' ? 'Dromkok' : settings?.companyName) || 'Dromkok'}
                     </h3>
                     <p className="text-[11px] text-gray-500 dark:text-slate-400">
                       {settings?.siteTagline || (locale === 'zh' ? '全球采购与供应链' : locale === 'ru' ? 'Международная торговля' : 'Global Trade Platform')}

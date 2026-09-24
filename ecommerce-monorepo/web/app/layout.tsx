@@ -44,6 +44,10 @@ export default async function RootLayout({
   const headerList = headers()
   const lang = headerList.get('x-locale') || 'en'
   const settings = await getSystemSettings(lang)
+  let companyName = settings?.companyName || (await getCompanyName(lang))
+  if (companyName.toLowerCase() === 'dromkok') {
+    companyName = 'Dromkok'
+  }
   const faviconUrl = settings?.companyFavicon || '/favicon.svg'
 
   return (
@@ -57,7 +61,8 @@ export default async function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="GlobalTrade" />
+        <meta name="apple-mobile-web-app-title" content={companyName} />
+        <meta name="application-name" content={companyName} />
       </head>
       <body className={inter.className}>{children}</body>
     </html>

@@ -18,7 +18,8 @@ export function InstallWelcomeModal({ onInstallClick, onDismiss }: InstallWelcom
   const locale = useLocale()
   const { settings } = useSettings()
   const { isStandalone } = useMobile()
-  const companyName = settings?.companyName || 'Global Trade'
+  const rawName = settings?.companyName || 'Dromkok'
+  const companyName = rawName.toLowerCase() === 'dromkok' ? 'Dromkok' : rawName
   const companyLogo = settings?.companyLogo || '/logo.png'
 
   const [isOpen, setIsOpen] = useState(false)

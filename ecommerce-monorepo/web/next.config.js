@@ -12,13 +12,58 @@ const withPWA = require('next-pwa')({
   },
   runtimeCaching: [
     {
-      urlPattern: /^https:\/\/media\.dromkok\.com\/.*/i,
-      handler: 'CacheFirst',
+      urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif|ico)$/i,
+      handler: 'StaleWhileRevalidate',
       options: {
-        cacheName: 'images',
+        cacheName: 'static-image-assets',
         expiration: {
-          maxEntries: 200,
+          maxEntries: 300,
           maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+      },
+    },
+    {
+      urlPattern: /^\/uploads\/.*/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'uploaded-media',
+        expiration: {
+          maxEntries: 500,
+          maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'unsplash-images',
+        expiration: {
+          maxEntries: 300,
+          maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+      },
+    },
+    {
+      urlPattern: /^\/_next\/image\?.*/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'next-image-cache',
+        expiration: {
+          maxEntries: 300,
+          maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+      },
+    },
+    {
+      urlPattern: /^\/api\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        networkTimeoutSeconds: 6,
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 60,
         },
       },
     },

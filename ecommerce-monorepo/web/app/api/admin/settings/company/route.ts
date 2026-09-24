@@ -1,6 +1,61 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import fs from 'fs'
+import path from 'path'
+
+function updateDiskManifest(name?: string, desc?: string) {
+  try {
+    const companyName = name?.trim() || 'Dromkok'
+    const description = desc?.trim() || `${companyName} - Global Trade & Logistics Platform from China`
+
+    const manifestData = {
+      name: `${companyName} - E-Commerce & Freight Platform`,
+      short_name: companyName,
+      description,
+      start_url: '/en',
+      scope: '/',
+      display: 'standalone',
+      orientation: 'portrait',
+      background_color: '#00407a',
+      theme_color: '#00407a',
+      icons: [
+        { src: '/icons/icon-72.png', sizes: '72x72', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-128.png', sizes: '128x128', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-144.png', sizes: '144x144', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-152.png', sizes: '152x152', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-384.png', sizes: '384x384', type: 'image/png', purpose: 'any' },
+        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: '/icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        { src: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
+      ],
+      shortcuts: [
+        { name: 'Catalog', short_name: 'Catalog', description: 'Browse wholesale products', url: '/en/store', icons: [{ src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png' }] },
+        { name: 'Shopping Cart', short_name: 'Cart', description: 'View shopping cart and checkout', url: '/en/cart', icons: [{ src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png' }] },
+        { name: 'Freight Quotes', short_name: 'Quote', description: 'Submit RFQ and calculate freight', url: '/en/calculator', icons: [{ src: '/icons/icon-96.png', sizes: '96x96', type: 'image/png' }] },
+      ],
+    }
+
+    const targetPaths = [
+      path.join(process.cwd(), 'public', 'manifest.json'),
+      path.join(process.cwd(), 'web', 'public', 'manifest.json'),
+      '/www/wwwroot/www.dromkok.com/web/public/manifest.json',
+      '/www/wwwroot/www.dromkok.com/public/manifest.json',
+    ]
+
+    for (const p of targetPaths) {
+      try {
+        if (fs.existsSync(path.dirname(p))) {
+          fs.writeFileSync(p, JSON.stringify(manifestData, null, 2), 'utf8')
+        }
+      } catch {}
+    }
+  } catch (err) {
+    console.error('[company/route] Failed to sync manifest.json to disk:', err)
+  }
+}
 
 // Translations are accepted as: translations: Array<{ locale, key, value }>
 // (matching the unique [systemSettingId, locale, key] constraint).
@@ -246,6 +301,10 @@ export async function PUT(request: Request) {
         }
       }
 
+      if (body.companyName) {
+        updateDiskManifest(body.companyName, body.companyDescription)
+      }
+
       return NextResponse.json({
         success: true,
         settings: { ...(settings || existing), translations },
@@ -301,6 +360,8 @@ export async function PUT(request: Request) {
       } catch (err) {
         console.error('Failed to load company translations:', err)
       }
+
+      updateDiskManifest(body.companyName, body.companyDescription)
 
       return NextResponse.json({
         success: true,

@@ -68,7 +68,7 @@ export function ProductImage({
   const safeAlt = alt?.trim() ? alt : 'Product image';
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    if (finalSrc !== fallbackSrc) {
+    if (!error && finalSrc !== normalizedFallback) {
       setError(true);
     }
     onError?.(e);
@@ -82,6 +82,7 @@ export function ProductImage({
   if (fill) {
     return (
       <Img
+        key={finalSrc}
         src={finalSrc}
         alt={safeAlt}
         fill
@@ -101,6 +102,7 @@ export function ProductImage({
 
   return (
     <Img
+      key={finalSrc}
       src={finalSrc}
       alt={safeAlt}
       width={width || 500}

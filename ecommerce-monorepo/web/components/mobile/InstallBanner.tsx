@@ -24,7 +24,8 @@ export function InstallBanner({ forceVisible = false, className = '' }: InstallB
   const { settings } = useSettings()
   const { isStandalone, isIOS } = useMobile()
 
-  const companyName = settings?.companyName || 'Global Trade'
+  const rawName = settings?.companyName || 'Dromkok'
+  const companyName = rawName.toLowerCase() === 'dromkok' ? 'Dromkok' : rawName
   const companyLogo = settings?.companyLogo || '/logo.png'
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
