@@ -1,7 +1,10 @@
+import { normalizeProductImageUrl } from '@/lib/image-utils'
+
 /**
  * Sanitizes product objects returned by public/storefront APIs,
  * ensuring wholesale pricing, bulk tier discounts, and supplier cost metrics
  * are never leaked to unauthenticated visitors or unverified retail customers.
+ * Also normalizes image paths so uploaded photos load reliably across devices.
  */
 export function sanitizeProductForClient<T extends Record<string, any>>(
   product: T,
@@ -19,6 +22,16 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
     delete safe.profitMargin
     delete safe.suppliers
     delete safe.supplierId
+  }
+
+  // 1b. Normalize thumbnail & images
+  if (safe.thumbnail) {
+    safe.thumbnail = normalizeProductImageUrl(safe.thumbnail)
+  }
+  if (Array.isArray(safe.images) && safe.images.length > 0) {
+    safe.images = safe.images.map((img: string) => normalizeProductImageUrl(img))
+  } else if (safe.thumbnail) {
+    safe.images = [safe.thumbnail]
   }
 
   // 2. Gate wholesale price & tiered quantity discounts

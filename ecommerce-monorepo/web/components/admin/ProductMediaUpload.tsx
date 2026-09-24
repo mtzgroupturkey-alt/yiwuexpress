@@ -120,7 +120,7 @@ export function ProductMediaUpload({ media, onChange, maxItems = 15 }: ProductMe
 
         const data = await response.json()
 
-        if (data.success && data.url) {
+        if ((data.success || data.url) && data.url) {
           uploadedItems.push({
             url: data.url,
             type

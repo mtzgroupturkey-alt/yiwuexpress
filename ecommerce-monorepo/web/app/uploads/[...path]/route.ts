@@ -62,11 +62,54 @@ export async function GET(
       path.join(cwd, 'web', 'public', 'uploads'),
       path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'uploads'),
       '/www/wwwroot/www.dromkok.com/web/public/uploads',
+      '/www/wwwroot/www.dromkok.com/public/uploads',
+      '/www/wwwroot/www.dromkok.com/uploads',
       '/var/www/dromkok/ecommerce-monorepo/web/public/uploads',
+      path.join(cwd, 'public'),
+      path.join(cwd, 'web', 'public'),
+      '/www/wwwroot/www.dromkok.com/web/public',
     ]
 
-    const candidateFiles = candidateDirs.map((dir) => path.join(dir, ...sanitizedSegments))
+    // Construct multiple candidate file paths (direct path, subfolders products/general)
+    const candidateFiles: string[] = []
+    for (const dir of candidateDirs) {
+      candidateFiles.push(path.join(dir, ...sanitizedSegments))
+      if (sanitizedSegments.length === 1) {
+        candidateFiles.push(path.join(dir, 'products', fileName))
+        candidateFiles.push(path.join(dir, 'general', fileName))
+        candidateFiles.push(path.join(dir, 'hero', fileName))
+      } else {
+        // Also check directly under dir without subfolder or in sibling subfolder
+        candidateFiles.push(path.join(dir, fileName))
+        candidateFiles.push(path.join(dir, 'general', fileName))
+        candidateFiles.push(path.join(dir, 'products', fileName))
+      }
+    }
+
     let foundFile = await findExistingFile(candidateFiles)
+
+    // Prefix match: Check if file was saved as `${timestamp}-${fileName}`
+    if (!foundFile && fileName) {
+      for (const dir of candidateDirs) {
+        try {
+          const subdirs = ['', 'products', 'general']
+          for (const sub of subdirs) {
+            const searchDir = sub ? path.join(dir, sub) : dir
+            try {
+              const entries = await fs.readdir(searchDir)
+              const matched = entries.find(
+                (e) => e.toLowerCase() === fileName || e.toLowerCase().endsWith(`-${fileName}`)
+              )
+              if (matched) {
+                foundFile = path.join(searchDir, matched)
+                break
+              }
+            } catch {}
+          }
+          if (foundFile) break
+        } catch {}
+      }
+    }
 
     // Self-healing fallback if requested file is missing from disk
     if (!foundFile) {
@@ -105,6 +148,21 @@ export async function GET(
           '/www/wwwroot/www.dromkok.com/web/public/images/hero/hero-1.jpg',
         ]
         foundFile = await findExistingFile(heroCandidates)
+      }
+
+      // 4. Product image fallback: ensure products never display broken images
+      if (!foundFile) {
+        const productFallbackCandidates = [
+          path.join(cwd, 'public', 'images', 'product-placeholder.webp'),
+          path.join(cwd, 'web', 'public', 'images', 'product-placeholder.webp'),
+          path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'product-placeholder.webp'),
+          '/www/wwwroot/www.dromkok.com/web/public/images/product-placeholder.webp',
+          path.join(cwd, 'public', 'images', 'product-placeholder.svg'),
+          path.join(cwd, 'web', 'public', 'images', 'product-placeholder.svg'),
+          path.join(cwd, 'public', 'images', 'placeholder.png'),
+          path.join(cwd, 'web', 'public', 'images', 'placeholder.png'),
+        ]
+        foundFile = await findExistingFile(productFallbackCandidates)
       }
     }
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { Star, Plus, Heart, Package, ClipboardList, Check } from 'lucide-react'
@@ -113,20 +114,14 @@ export function MobileProductCard({
           </button>
         )}
 
-        {product.image ? (
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 50vw, 200px"
-            className="object-contain p-2"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300">
-            <Package className="w-10 h-10" />
-          </div>
-        )}
+        <ProductImage
+          src={product.image}
+          alt={product.name}
+          fill
+          sizes="(max-width: 768px) 50vw, 200px"
+          className="object-contain p-2"
+          loading="lazy"
+        />
       </div>
 
       {/* Details */}

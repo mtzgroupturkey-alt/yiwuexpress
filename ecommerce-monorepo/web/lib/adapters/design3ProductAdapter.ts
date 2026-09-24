@@ -1,4 +1,5 @@
 import { Product, Category } from '@/app/[locale]/design-3/types';
+import { normalizeProductImageUrl } from '@/lib/image-utils';
 
 export function mapDbProductToDesign3(dbItem: any): Product {
   const price = typeof dbItem.price === 'number' ? dbItem.price : parseFloat(dbItem.price || '0');
@@ -19,9 +20,9 @@ export function mapDbProductToDesign3(dbItem: any): Product {
   const departmentId = dbItem.category?.parent?.id || dbItem.category?.parentId || undefined;
   const departmentSlug = dbItem.category?.parent?.slug || undefined;
 
-  const image = dbItem.thumbnail || 
-    (Array.isArray(dbItem.images) && dbItem.images.length > 0 ? dbItem.images[0] : null) || 
-    'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=600&auto=format&fit=crop&q=80';
+  const rawImage = dbItem.thumbnail || 
+    (Array.isArray(dbItem.images) && dbItem.images.length > 0 ? dbItem.images[0] : null);
+  const image = normalizeProductImageUrl(rawImage);
 
   const stock = typeof dbItem.stock === 'number' ? dbItem.stock : 10;
 
@@ -57,7 +58,9 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     claimedPercent: dbItem.isFlashSale ? Math.floor(Math.random() * 40) + 50 : undefined,
     stockLeft: stock,
     image: image,
-    images: Array.isArray(dbItem.images) ? dbItem.images : [image],
+    images: Array.isArray(dbItem.images) && dbItem.images.length > 0
+      ? dbItem.images.map((img: string) => normalizeProductImageUrl(img))
+      : [image],
     inStock: stock > 0,
     isExpressDelivery: Boolean(dbItem.isFeatured || stock > 15),
     description: dbItem.description || '',

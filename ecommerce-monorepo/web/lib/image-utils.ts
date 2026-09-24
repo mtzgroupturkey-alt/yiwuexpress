@@ -21,28 +21,72 @@ export function getFallbackSrc(src?: string | null): string {
 }
 
 /**
- * Get the full URL for an uploaded image
- * Handles both absolute URLs and relative paths
+ * Normalizes any product image URL to a reliable root-relative or absolute HTTPS URL.
+ * Handles:
+ * - Empty / null / undefined -> DEFAULT_PLACEHOLDER
+ * - Data URLs (data:image/...) -> returns as-is
+ * - Localhost URLs (http://localhost:3001/uploads/..., http://localhost:3005/...) -> strips origin to root-relative /uploads/...
+ * - Insecure HTTP URLs on dromkok.com -> upgrades to https://
+ * - Paths missing leading slash (uploads/... or images/...) -> adds leading slash
+ * - Bare filenames (1670674373.jpg) -> /uploads/products/1670674373.jpg
+ * - Root-relative /uploads/... and /images/... -> returns as-is
+ */
+export function normalizeProductImageUrl(src?: string | null): string {
+  if (!src || typeof src !== 'string') return DEFAULT_PLACEHOLDER
+  const trimmed = src.trim()
+  if (!trimmed) return DEFAULT_PLACEHOLDER
+
+  // 1. Base64 data URLs
+  if (trimmed.startsWith('data:image/')) {
+    return trimmed
+  }
+
+  // 2. Strip localhost / loopback domains so mobile phones don't try connecting to localhost
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(trimmed)) {
+    const withoutOrigin = trimmed.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, '')
+    return normalizeProductImageUrl(withoutOrigin)
+  }
+
+  // 3. Absolute HTTP/HTTPS URLs
+  if (/^https?:\/\//i.test(trimmed)) {
+    // If it points to dromkok.com, strip origin or force HTTPS
+    if (/^http:\/\/([^/]+\.)?dromkok\.com/i.test(trimmed)) {
+      return trimmed.replace(/^http:\/\//i, 'https://')
+    }
+    return trimmed
+  }
+
+  // 4. Starts with /uploads/ or /images/
+  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('/images/')) {
+    return trimmed
+  }
+
+  // 5. Starts with uploads/ or images/ (missing leading slash)
+  if (trimmed.startsWith('uploads/') || trimmed.startsWith('images/')) {
+    return `/${trimmed}`
+  }
+
+  // 6. Leading slash with other path
+  if (trimmed.startsWith('/')) {
+    return trimmed
+  }
+
+  // 7. Bare filename or relative path (e.g., '1670674373.jpg', 'products/xyz.jpg')
+  if (trimmed.startsWith('products/')) {
+    return `/uploads/${trimmed}`
+  }
+
+  // Default bare file to /uploads/products/
+  return `/uploads/products/${trimmed}`
+}
+
+/**
+ * Get the full URL for an uploaded image.
+ * Uses root-relative URLs so assets load reliably across localhost and production.
  */
 export function getImageUrl(path: string | null | undefined): string {
-  if (!path) return '/images/placeholder.png'
-  
-  // If already a full URL, return as is
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
-  }
-  
-  // If starts with /uploads, construct full URL
-  if (path.startsWith('/uploads')) {
-    return `${BASE_URL}${path}`
-  }
-  
-  // If no leading slash, add it
-  if (!path.startsWith('/')) {
-    return `${UPLOAD_URL}/${path}`
-  }
-  
-  return `${BASE_URL}${path}`
+  if (!path) return DEFAULT_PLACEHOLDER
+  return normalizeProductImageUrl(path)
 }
 
 /**

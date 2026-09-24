@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ 
+      success: true,
       url: `/uploads/${subDir}/${filename}`,
       message: `${uploadType === 'favicon' ? 'Favicon' : 'File'} uploaded successfully` 
     })

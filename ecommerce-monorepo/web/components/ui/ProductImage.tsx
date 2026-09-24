@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { normalizeProductImageUrl, DEFAULT_PLACEHOLDER } from '@/lib/image-utils';
 
 export interface ProductImageProps {
   src?: string | null;
@@ -22,13 +23,14 @@ export interface ProductImageProps {
   onError?: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void;
 }
 
-export const DEFAULT_PRODUCT_FALLBACK = '/images/product-placeholder.webp';
+export const DEFAULT_PRODUCT_FALLBACK = DEFAULT_PLACEHOLDER;
 
 const Img = (typeof Image === 'function' ? Image : (Image as any)?.default || Image) as typeof Image;
 
 /**
  * Robust ProductImage component that handles loading states, 404s,
  * missing images, and external image failures with a graceful fallback.
+ * Automatically normalizes bare filenames, localhost URLs, and relative paths.
  * Automatically resets error state when `src` prop changes.
  */
 export function ProductImage({
@@ -42,23 +44,27 @@ export function ProductImage({
   priority,
   fallbackSrc = DEFAULT_PRODUCT_FALLBACK,
   quality,
-  unoptimized,
+  unoptimized = true,
   loading,
   style,
   onClick,
   onLoad,
   onError,
 }: ProductImageProps) {
-  const [error, setError] = useState(!src);
+  const normalizedOriginal = src ? normalizeProductImageUrl(src) : '';
+  const normalizedFallback = normalizeProductImageUrl(fallbackSrc || DEFAULT_PRODUCT_FALLBACK);
+
+  const [error, setError] = useState(!normalizedOriginal || normalizedOriginal === normalizedFallback);
   const [loaded, setLoaded] = useState(false);
 
   // Sync state if src changes (e.g., variant switch, carousel slide)
   useEffect(() => {
-    setError(!src);
+    const fresh = src ? normalizeProductImageUrl(src) : '';
+    setError(!fresh || fresh === normalizedFallback);
     setLoaded(false);
-  }, [src]);
+  }, [src, normalizedFallback]);
 
-  const finalSrc = !src || error ? fallbackSrc : src;
+  const finalSrc = error || !normalizedOriginal ? normalizedFallback : normalizedOriginal;
   const safeAlt = alt?.trim() ? alt : 'Product image';
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {

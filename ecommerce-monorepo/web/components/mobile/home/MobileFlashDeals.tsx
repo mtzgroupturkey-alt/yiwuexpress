@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { Zap, Clock, Plus, Check, ChevronRight, ShoppingCart, FileText } from 'lucide-react'
@@ -135,20 +136,14 @@ export function MobileFlashDeals({
                         -{discountPercent}%
                       </span>
                     )}
-                    {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        sizes="156px"
-                        className="object-contain p-2"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Zap className="w-8 h-8" />
-                      </div>
-                    )}
+                    <ProductImage
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      sizes="156px"
+                      className="object-contain p-2"
+                      loading="lazy"
+                    />
                   </div>
 
                   {/* Product Info */}
@@ -234,20 +229,14 @@ export function MobileFlashDeals({
                         -{discountPercent}%
                       </span>
                     )}
-                    {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 200px"
-                        className="object-contain p-2"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Zap className="w-8 h-8" />
-                      </div>
-                    )}
+                    <ProductImage
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 200px"
+                      className="object-contain p-2"
+                      loading="lazy"
+                    />
                   </div>
 
                   {/* Product Info */}

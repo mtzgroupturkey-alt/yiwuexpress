@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Package, ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react'
+import { normalizeProductImageUrl } from '@/lib/image-utils'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 interface MobileGalleryProps {
   images?: string[]
@@ -22,7 +24,10 @@ export function MobileGallery({
   inStock = true,
   className = '',
 }: MobileGalleryProps) {
-  const images = propImages && propImages.length > 0 ? propImages : [mainImage]
+  const rawList = propImages && propImages.length > 0 ? propImages : [mainImage]
+  const images = rawList
+    .map((src) => normalizeProductImageUrl(src))
+    .filter(Boolean)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -71,7 +76,7 @@ export function MobileGallery({
       {/* Main Swipeable Image Container */}
       <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900/60 flex items-center justify-center">
         {images[activeIndex] ? (
-          <Image
+          <ProductImage
             src={images[activeIndex]}
             alt={`${productName} image ${activeIndex + 1}`}
             fill
@@ -143,7 +148,7 @@ export function MobileGallery({
             <X className="w-6 h-6" />
           </button>
           <div className="relative w-full max-w-lg aspect-square">
-            <Image
+            <ProductImage
               src={images[activeIndex]}
               alt={productName}
               fill

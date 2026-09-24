@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Trash2, Package, AlertCircle } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { MobileQuantityStepper } from '../product/MobileQuantityStepper'
+import { ProductImage } from '@/components/ui/ProductImage'
 
 export interface MobileCartItemData {
   id: string
@@ -52,7 +53,7 @@ export function MobileCartItem({
         {/* Product Image */}
         <div className="relative w-20 h-20 rounded-xl bg-gray-50 dark:bg-slate-900 overflow-hidden shrink-0 border border-gray-100 dark:border-slate-800 flex items-center justify-center">
           {item.image ? (
-            <Image
+            <ProductImage
               src={item.image}
               alt={item.name}
               fill
