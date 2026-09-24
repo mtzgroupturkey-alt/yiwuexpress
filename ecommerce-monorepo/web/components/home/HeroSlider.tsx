@@ -250,6 +250,11 @@ export function HeroSlider() {
             <img
               src={currentSlide.imageUrl || '/images/hero/hero-1.jpg'}
               alt={currentSlide.title}
+              width={1920}
+              height={800}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
               onError={(e) => {
                 const target = e.currentTarget as HTMLImageElement
                 if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {

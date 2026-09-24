@@ -7,6 +7,7 @@ import { useCurrency } from '@/hooks/useCurrency'
 import { LocaleLink } from '@/components/LocaleLink'
 import ProductCard from './ProductCard'
 import Image from 'next/image'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
 import { useStoreMode } from '@/contexts/StoreModeContext'
@@ -192,12 +193,13 @@ export default function ProductGrid({
             {/* Product Image */}
             <LocaleLink href={`/products/${product.slug}`} className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded overflow-hidden bg-gray-100">
               {product.thumbnail && !imageErrors.has(product.id) ? (
-                <Image
+                <ProductImage
                   src={product.thumbnail}
                   alt={product.name}
                   fill
                   sizes="(max-width: 640px) 80px, 128px"
                   className="object-cover"
+                  loading="lazy"
                   onError={() => handleImageError(product.id)}
                 />
               ) : (

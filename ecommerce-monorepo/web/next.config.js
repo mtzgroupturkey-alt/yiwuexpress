@@ -82,6 +82,7 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    formats: ['image/avif', 'image/webp'],
     // User-uploaded files land in public/uploads AFTER build. Next.js can only
     // optimize public files that existed at build time, so it returns 400
     // ("isn't a valid image") for uploads. Since virtually all content images

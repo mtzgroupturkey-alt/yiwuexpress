@@ -17,6 +17,7 @@ export interface ProductImageProps {
   quality?: number;
   unoptimized?: boolean;
   loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'auto' | 'sync';
   style?: React.CSSProperties;
   onClick?: (event: React.MouseEvent<HTMLImageElement>) => void;
   onLoad?: (event: React.SyntheticEvent<HTMLImageElement, Event>) => void;
@@ -27,11 +28,16 @@ export const DEFAULT_PRODUCT_FALLBACK = DEFAULT_PLACEHOLDER;
 
 const Img = (typeof Image === 'function' ? Image : (Image as any)?.default || Image) as typeof Image;
 
+// Lightweight SVG Low Quality Image Placeholder (LQIP) to prevent jarring flashes
+const SHIMMER_BLUR_DATA_URL =
+  'data:image/svg+xml;charset=utf-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f1f5f9"/%3E%3C/svg%3E';
+
 /**
  * Robust ProductImage component that handles loading states, 404s,
  * missing images, and external image failures with a graceful fallback.
  * Automatically normalizes bare filenames, localhost URLs, and relative paths.
- * Automatically resets error state when `src` prop changes.
+ * Enforces native lazy loading, async decoding, layout shift prevention,
+ * and smooth blur-up/fade transition on real mobile devices.
  */
 export function ProductImage({
   src,
@@ -41,11 +47,12 @@ export function ProductImage({
   fill,
   className = '',
   sizes,
-  priority,
+  priority = false,
   fallbackSrc = DEFAULT_PRODUCT_FALLBACK,
   quality,
   unoptimized = true,
   loading,
+  decoding = 'async',
   style,
   onClick,
   onLoad,
@@ -55,17 +62,18 @@ export function ProductImage({
   const normalizedFallback = normalizeProductImageUrl(fallbackSrc || DEFAULT_PRODUCT_FALLBACK);
 
   const [error, setError] = useState(!normalizedOriginal || normalizedOriginal === normalizedFallback);
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(Boolean(priority));
 
   // Sync state if src changes (e.g., variant switch, carousel slide)
   useEffect(() => {
     const fresh = src ? normalizeProductImageUrl(src) : '';
     setError(!fresh || fresh === normalizedFallback);
-    setLoaded(false);
-  }, [src, normalizedFallback]);
+    setLoaded(Boolean(priority));
+  }, [src, normalizedFallback, priority]);
 
   const finalSrc = error || !normalizedOriginal ? normalizedFallback : normalizedOriginal;
   const safeAlt = alt?.trim() ? alt : 'Product image';
+  const effectiveLoading = priority ? 'eager' : (loading || 'lazy');
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (!error && finalSrc !== normalizedFallback) {
@@ -79,6 +87,8 @@ export function ProductImage({
     onLoad?.(e);
   };
 
+  const transitionClass = `transition-opacity duration-300 ease-out ${loaded ? 'opacity-100' : 'opacity-85'} ${className}`;
+
   if (fill) {
     return (
       <Img
@@ -86,12 +96,15 @@ export function ProductImage({
         src={finalSrc}
         alt={safeAlt}
         fill
-        sizes={sizes}
-        className={className}
+        sizes={sizes || '(max-width: 768px) 50vw, 33vw'}
+        className={transitionClass}
         priority={priority}
         quality={quality}
         unoptimized={unoptimized}
-        loading={loading}
+        loading={effectiveLoading}
+        decoding={decoding}
+        placeholder="blur"
+        blurDataURL={SHIMMER_BLUR_DATA_URL}
         style={style}
         onClick={onClick}
         onError={handleError}
@@ -100,20 +113,30 @@ export function ProductImage({
     );
   }
 
+  const explicitWidth = width || 500;
+  const explicitHeight = height || 500;
+  const combinedStyle: React.CSSProperties = {
+    aspectRatio: `${explicitWidth} / ${explicitHeight}`,
+    ...style,
+  };
+
   return (
     <Img
       key={finalSrc}
       src={finalSrc}
       alt={safeAlt}
-      width={width || 500}
-      height={height || 500}
+      width={explicitWidth}
+      height={explicitHeight}
       sizes={sizes}
-      className={className}
+      className={transitionClass}
       priority={priority}
       quality={quality}
       unoptimized={unoptimized}
-      loading={loading}
-      style={style}
+      loading={effectiveLoading}
+      decoding={decoding}
+      placeholder="blur"
+      blurDataURL={SHIMMER_BLUR_DATA_URL}
+      style={combinedStyle}
       onClick={onClick}
       onError={handleError}
       onLoad={handleLoad}

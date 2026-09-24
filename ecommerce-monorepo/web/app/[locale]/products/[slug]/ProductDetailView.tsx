@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart } from 'lucide-react'
 import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
+import { ProductImage } from '@/components/ui/ProductImage'
 import { NewsletterBar } from '@/app/[locale]/design-3/components/NewsletterBar'
 import { MotionReveal } from '@/components/motion/MotionReveal'
 import { mapDbProductToDesign3 } from '@/lib/adapters/design3ProductAdapter'
@@ -532,6 +533,9 @@ export default function ProductDetailView({
   const { favoriteIds, toggleWishlist } = useWishlist()
   const [cartQuantities, setCartQuantities] = useState<Record<string, number>>({})
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([])
+  const [relatedPage, setRelatedPage] = useState(1)
+  const [hasMoreRelated, setHasMoreRelated] = useState(true)
+  const [loadingMoreRelated, setLoadingMoreRelated] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [adding, setAdding] = useState(false)
   const [isSpecificationsExpanded, setIsSpecificationsExpanded] = useState(false)
@@ -658,20 +662,53 @@ export default function ProductDetailView({
 
   useEffect(() => {
     if (slug) {
+      setRelatedPage(1)
+      setHasMoreRelated(true)
       fetchRelatedProducts()
     }
   }, [slug])
 
   const fetchRelatedProducts = async () => {
     try {
-      const response = await fetch(`/api/products/${slug}/related?limit=4&locale=${encodeURIComponent(locale)}`)
+      const response = await fetch(`/api/products/${slug}/related?limit=8&page=1&locale=${encodeURIComponent(locale)}`)
       const data = await response.json()
 
-      if (data.success) {
+      if (data.success && Array.isArray(data.data)) {
         setRelatedProducts(data.data)
+        if (data.data.length < 8 || data.pagination?.hasMore === false) {
+          setHasMoreRelated(false)
+        }
       }
     } catch (error) {
       console.error('Error fetching related products:', error)
+    }
+  }
+
+  const loadMoreRelatedProducts = async () => {
+    if (loadingMoreRelated || !hasMoreRelated) return
+    setLoadingMoreRelated(true)
+    try {
+      const nextPage = relatedPage + 1
+      const response = await fetch(`/api/products/${slug}/related?limit=8&page=${nextPage}&locale=${encodeURIComponent(locale)}`)
+      const data = await response.json()
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setRelatedProducts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id))
+          const newItems = data.data.filter((p: any) => !existingIds.has(p.id))
+          return [...prev, ...newItems]
+        })
+        setRelatedPage(nextPage)
+        if (data.data.length < 8 || data.pagination?.hasMore === false) {
+          setHasMoreRelated(false)
+        }
+      } else {
+        setHasMoreRelated(false)
+      }
+    } catch (error) {
+      console.error('Error fetching more related products:', error)
+      setHasMoreRelated(false)
+    } finally {
+      setLoadingMoreRelated(false)
     }
   }
 
@@ -923,8 +960,15 @@ export default function ProductDetailView({
       <div className="flex items-center gap-2.5">
         {/* Item 1 */}
         <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex-1 min-w-0">
-          <div className="w-11 h-11 bg-white rounded-lg p-0.5 border border-slate-200 shrink-0 flex items-center justify-center">
-            <img src={currentImages[0]} alt={localized.name} className="max-h-full max-w-full object-contain" />
+          <div className="relative w-11 h-11 bg-white rounded-lg p-0.5 border border-slate-200 shrink-0 flex items-center justify-center overflow-hidden">
+            <ProductImage
+              src={currentImages[0]}
+              alt={localized.name}
+              fill
+              sizes="44px"
+              className="object-contain p-0.5"
+              loading="lazy"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-800 truncate">{localized.name}</p>
@@ -936,8 +980,15 @@ export default function ProductDetailView({
 
         {/* Item 2 */}
         <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200/80 flex-1 min-w-0">
-          <div className="w-11 h-11 bg-white rounded-lg p-0.5 border border-slate-200 shrink-0 flex items-center justify-center">
-            <img src={(bundleItem as any).image || currentImages[1] || currentImages[0]} alt={bundleItem.name} className="max-h-full max-w-full object-contain" />
+          <div className="relative w-11 h-11 bg-white rounded-lg p-0.5 border border-slate-200 shrink-0 flex items-center justify-center overflow-hidden">
+            <ProductImage
+              src={(bundleItem as any).image || currentImages[1] || currentImages[0]}
+              alt={bundleItem.name}
+              fill
+              sizes="44px"
+              className="object-contain p-0.5"
+              loading="lazy"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-800 truncate">{bundleItem.name}</p>
@@ -1262,6 +1313,9 @@ export default function ProductDetailView({
         <MobileProductDetailView
           product={mapDbProductToDesign3(product)}
           relatedProducts={relatedProducts.map(mapDbProductToDesign3)}
+          loadMoreRelated={loadMoreRelatedProducts}
+          hasMoreRelated={hasMoreRelated}
+          loadingMoreRelated={loadingMoreRelated}
           onAddToCart={(_p, q) => {
             setQuantity(q);
             handleAddToCart();
@@ -2468,6 +2522,25 @@ export default function ProductDetailView({
                 )
               })}
             </div>
+            {hasMoreRelated && (
+              <div className="mt-6 pt-4 border-t border-slate-100 flex justify-center">
+                <Button
+                  variant="outline"
+                  disabled={loadingMoreRelated}
+                  onClick={loadMoreRelatedProducts}
+                  className="px-6 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 transition-all text-xs sm:text-sm shadow-xs active:scale-95"
+                >
+                  {loadingMoreRelated ? (
+                    <span className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#00407a]" />
+                      Loading more products...
+                    </span>
+                  ) : (
+                    <span>Load More Similar Products</span>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

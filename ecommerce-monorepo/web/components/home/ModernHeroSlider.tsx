@@ -356,6 +356,11 @@ export function ModernHeroSlider() {
                 <img
                   src={slide.imageUrl || '/images/hero/hero-1.jpg'}
                   alt={slide.title}
+                  width={1920}
+                  height={1080}
+                  loading={slideIndex === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  fetchPriority={slideIndex === 0 ? 'high' : 'low'}
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement
                     if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
@@ -363,11 +368,15 @@ export function ModernHeroSlider() {
                     }
                   }}
                   className="hidden md:block w-full h-full object-cover"
-                  loading="lazy"
                 />
                 <img
                   src={slide.mobileImageUrl || '/images/hero/hero-1.jpg'}
                   alt={slide.title}
+                  width={800}
+                  height={800}
+                  loading={slideIndex === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  fetchPriority={slideIndex === 0 ? 'high' : 'low'}
                   onError={(e) => {
                     const target = e.currentTarget as HTMLImageElement
                     if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
@@ -375,13 +384,17 @@ export function ModernHeroSlider() {
                     }
                   }}
                   className="md:hidden w-full h-full object-cover"
-                  loading="lazy"
                 />
               </>
             ) : (
               <img
                 src={slide.imageUrl || '/images/hero/hero-1.jpg'}
                 alt={slide.title}
+                width={1920}
+                height={1080}
+                loading={slideIndex === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                fetchPriority={slideIndex === 0 ? 'high' : 'low'}
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement
                   if (target.src && !target.src.endsWith('/images/hero/hero-1.jpg')) {
@@ -389,7 +402,6 @@ export function ModernHeroSlider() {
                   }
                 }}
                 className="w-full h-full object-cover"
-                loading="lazy"
               />
             )}
             <div
@@ -501,8 +513,11 @@ export function ModernHeroSlider() {
                     <img
                       src={slide.productImageUrl}
                       alt={slide.title}
+                      width={384}
+                      height={384}
                       className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-contain drop-shadow-2xl"
                       loading="lazy"
+                      decoding="async"
                     />
                     {/* Glow Effect */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#c9a84c]/30 via-transparent to-transparent blur-3xl -z-10" />

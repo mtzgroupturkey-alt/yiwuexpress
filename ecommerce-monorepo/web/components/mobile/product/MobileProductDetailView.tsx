@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Product } from '@/app/[locale]/design-3/types'
 import { MobileHeader } from '../MobileHeader'
 import { MobileGallery } from './MobileGallery'
@@ -9,6 +9,7 @@ import { MobileTrustBadges } from './MobileTrustBadges'
 import { MobileTabs } from './MobileTabs'
 import { MobileVariantChips, VariantOption } from './MobileVariantChips'
 import { MobileAttributeSelector, ConfigurableAttribute } from './MobileAttributeSelector'
+import { MobileProductCard } from '../store/MobileProductCard'
 import { StickyBuyBar } from '../StickyBuyBar'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useMobile } from '@/components/MobileProvider'
@@ -16,6 +17,9 @@ import { useMobile } from '@/components/MobileProvider'
 export interface MobileProductDetailViewProps {
   product: Product
   relatedProducts?: Product[]
+  loadMoreRelated?: () => void
+  hasMoreRelated?: boolean
+  loadingMoreRelated?: boolean
   onAddToCart?: (product: Product, quantity: number) => void
   onRequestQuote?: (product: Product, quantity: number) => void
   onSelectProduct?: (product: Product) => void
@@ -58,6 +62,9 @@ export function MobileProductDetailView({
   allImages,
   isWholesale,
   isInstantWholesale = false,
+  loadMoreRelated,
+  hasMoreRelated = false,
+  loadingMoreRelated = false,
 }: MobileProductDetailViewProps) {
   const { isStandalone } = useMobile()
   const { isWholesaleSession } = useSessionMode()
@@ -65,6 +72,26 @@ export function MobileProductDetailView({
   const [legacySelectedVariant, setLegacySelectedVariant] = useState('default')
   const [internalSelectedOptions, setInternalSelectedOptions] = useState<Record<string, string>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const relatedSentinelRef = useRef<HTMLDivElement | null>(null)
+
+  // Automatic infinite scroll when user approaches the bottom of related products
+  useEffect(() => {
+    if (!hasMoreRelated || !loadMoreRelated || typeof IntersectionObserver === 'undefined') return
+    const sentinel = relatedSentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && !loadingMoreRelated) {
+          loadMoreRelated()
+        }
+      },
+      { rootMargin: '250px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMoreRelated, loadMoreRelated, loadingMoreRelated])
 
   const activeSelectedOptions = selectedOptions ?? internalSelectedOptions
   const handleOptionSelect = (key: string, val: string) => {
@@ -194,6 +221,56 @@ export function MobileProductDetailView({
 
         {/* Tabs: Overview, Specs, Shipping, Reviews */}
         <MobileTabs product={product} />
+
+        {/* Related Products / Infinite Scroll Section */}
+        {relatedProducts && relatedProducts.length > 0 && (
+          <section className="pt-2 pb-6 space-y-3" aria-label="Related Products">
+            <div className="flex items-center justify-between px-0.5 pt-2 border-t border-gray-200/80 dark:border-slate-800">
+              <div>
+                <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
+                  You May Also Like
+                </h3>
+                <p className="text-[11px] text-gray-500 dark:text-slate-400">
+                  Recommended products from verified suppliers
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {relatedProducts.map((relProduct) => (
+                <MobileProductCard
+                  key={relProduct.id}
+                  product={relProduct}
+                  onAddToCart={onAddToCart ? (p) => onAddToCart(p, 1) : undefined}
+                  onSelectProduct={onSelectProduct}
+                />
+              ))}
+            </div>
+
+            {/* Infinite Scroll Sentinel & Loading Indicator */}
+            {hasMoreRelated && (
+              <div
+                ref={relatedSentinelRef}
+                className="py-4 flex flex-col items-center justify-center text-xs text-gray-400 gap-1.5 min-h-[48px]"
+              >
+                {loadingMoreRelated ? (
+                  <div className="flex items-center gap-2 text-primary-600 font-semibold text-xs py-2">
+                    <span className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                    <span>Loading more items...</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => loadMoreRelated?.()}
+                    className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-bold text-gray-700 dark:text-slate-200 active:scale-95 transition-transform"
+                  >
+                    Load More Similar Items
+                  </button>
+                )}
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       {/* 4. Sticky Buy Bar (Always accessible for 1-tap checkout/inquiry) */}

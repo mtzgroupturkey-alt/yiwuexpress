@@ -294,6 +294,10 @@ export function MobileHero({
                     src={slide.image || slide.imageUrl}
                     alt={slide.title}
                     loading={idx === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                    fetchPriority={idx === 0 ? 'high' : 'low'}
+                    width={800}
+                    height={400}
                     onError={(e) => {
                       const target = e.currentTarget as HTMLImageElement
                       const fallback = LOCAL_HERO_FALLBACKS[idx % LOCAL_HERO_FALLBACKS.length]
@@ -423,6 +427,10 @@ export function MobileHero({
                 src={slide.image || slide.imageUrl}
                 alt={slide.title}
                 loading={idx === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                fetchPriority={idx === 0 ? 'high' : 'low'}
+                width={800}
+                height={500}
                 onError={(e) => {
                   const target = e.currentTarget as HTMLImageElement
                   const fallback = LOCAL_HERO_FALLBACKS[idx % LOCAL_HERO_FALLBACKS.length]

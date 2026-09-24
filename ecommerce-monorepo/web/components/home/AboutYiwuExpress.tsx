@@ -148,6 +148,10 @@ export function AboutYiwuExpress() {
                 <img 
                   src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80" 
                   alt="China International Trade Market" 
+                  width={800}
+                  height={500}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 

@@ -251,6 +251,10 @@ export function ModernProductCard({
           <img
             src={imageError ? '/images/product-placeholder.webp' : primaryImage}
             alt={product.name}
+            width={400}
+            height={400}
+            loading="lazy"
+            decoding="async"
             className={cn(
               'w-full h-full object-cover transition-opacity duration-300',
               imageLoaded ? 'opacity-100' : 'opacity-0'

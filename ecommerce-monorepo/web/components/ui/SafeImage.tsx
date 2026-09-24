@@ -30,6 +30,8 @@ export function SafeImage({
 
   return (
     <Image
+      loading={props.priority ? undefined : (props.loading || 'lazy')}
+      decoding="async"
       {...props}
       src={currentSrc}
       alt={alt}
@@ -62,6 +64,8 @@ export function SafeImg({
   src,
   fallbackSrc = DEFAULT_PLACEHOLDER,
   alt = '',
+  loading = 'lazy',
+  decoding = 'async',
   onError,
   ...props
 }: SafeImgProps) {
@@ -70,6 +74,8 @@ export function SafeImg({
 
   return (
     <img
+      loading={loading}
+      decoding={decoding}
       {...props}
       src={currentSrc}
       alt={alt}

@@ -16,7 +16,9 @@ export async function GET(
   try {
     const { slug } = params
     const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '4')
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+    const limit = Math.max(1, Math.min(24, parseInt(searchParams.get('limit') || '4', 10)))
+    const skip = searchParams.get('skip') ? Math.max(0, parseInt(searchParams.get('skip') || '0', 10)) : (page - 1) * limit
     const locale = searchParams.get('locale') || 'en'
 
     // First, get the current product to find related products
@@ -46,6 +48,7 @@ export async function GET(
           isActive: true,
         },
         take: limit,
+        skip: skip,
         orderBy: {
           createdAt: 'desc',
         },
@@ -89,6 +92,7 @@ export async function GET(
           isActive: true,
         },
         take: limit,
+        skip: skip,
         orderBy: {
           createdAt: 'desc',
         },
@@ -147,7 +151,7 @@ export async function GET(
         name: localized.name,
         description: localized.description,
         price: parseFloat(product.price.toString()),
-        image: product.thumbnail || (product.images?.[0] as string) || '/images/placeholder.jpg',
+        image: product.thumbnail || (product.images?.[0] as string) || '/images/product-placeholder.webp',
         category: product.category ? localizeCategory(product.category, locale).name : undefined,
         stock: product.stock,
         minOrder: product.minOrderQty,
@@ -167,6 +171,11 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: safeProducts,
+      pagination: {
+        page,
+        limit,
+        hasMore: relatedProducts.length === limit,
+      },
     })
   } catch (error) {
     console.error('Error fetching related products:', error)

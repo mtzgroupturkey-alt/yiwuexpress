@@ -186,6 +186,10 @@ export function ProductImageGallery({ images, productName, badgeText, className 
               alt={`${productName} - Image ${safeIndex + 1}`}
               className="object-contain w-full h-full p-4 sm:p-6 transition-transform duration-300 group-hover:scale-105"
               loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              width={600}
+              height={600}
               onError={() => handleImageError(safeIndex)}
             />
 
@@ -277,6 +281,9 @@ export function ProductImageGallery({ images, productName, badgeText, className 
                     alt={`${productName} thumbnail ${index + 1}`}
                     className="object-contain w-full h-full"
                     loading="lazy"
+                    decoding="async"
+                    width={72}
+                    height={72}
                     onError={() => handleImageError(index)}
                   />
                   {index === safeIndex && (
@@ -415,6 +422,7 @@ export function ProductImageGallery({ images, productName, badgeText, className 
                 }}
                 className="max-h-[75vh] max-w-[85vw] object-contain select-none pointer-events-auto shadow-2xl"
                 draggable={false}
+                decoding="async"
                 onError={() => handleImageError(safeIndex)}
               />
             </div>
@@ -475,6 +483,9 @@ export function ProductImageGallery({ images, productName, badgeText, className 
                         alt={`Photo thumbnail ${index + 1}`}
                         className="object-contain w-full h-full p-1 bg-white rounded-md"
                         loading="lazy"
+                        decoding="async"
+                        width={56}
+                        height={56}
                         onError={() => handleImageError(index)}
                       />
                     </button>
