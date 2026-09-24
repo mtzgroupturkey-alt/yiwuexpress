@@ -18,6 +18,7 @@ interface MobileBestsellersGridProps {
   onToggleFavorite?: (productId: string) => void
   favoriteIds?: Set<string>
   onViewAll?: () => void
+  limit?: number
   className?: string
 }
 
@@ -29,6 +30,7 @@ export function MobileBestsellersGrid({
   onToggleFavorite,
   favoriteIds,
   onViewAll,
+  limit = 8,
   className = '',
 }: MobileBestsellersGridProps) {
   const router = useRouter()
@@ -94,7 +96,7 @@ export function MobileBestsellersGrid({
       {/* 2-Column Product Grid */}
       <div className="grid grid-cols-2 gap-2.5">
         {products && products.length > 0 ? (
-          products.slice(0, 8).map((product) => {
+          products.slice(0, limit).map((product) => {
             const isFav = favoriteIds ? favoriteIds.has(product.id) : false
 
             return (

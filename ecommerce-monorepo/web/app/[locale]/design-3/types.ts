@@ -81,6 +81,7 @@ export interface Category {
   itemCount: number;
   icon: string;
   image?: string | null;
+  description?: string | null;
   slug: string;
   parentId?: string | null;
   level?: number;
