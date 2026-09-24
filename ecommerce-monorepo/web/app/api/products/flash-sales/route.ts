@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const settings = await prisma.systemSettings.findUnique({
       where: { singletonKey: 'SINGLETON' },
       select: {
+        id: true,
         flashSaleEnabled: true,
         flashSaleStartDate: true,
         flashSaleEndDate: true,
@@ -155,14 +156,61 @@ export async function GET(req: NextRequest) {
       return sanitized;
     });
 
+    // 5. Localize Section Title, Subtitle, and Badge Text
+    let localizedTitle = settings?.flashSaleTitle || 'Seasonal Discounts & Flash Home Deals';
+    let localizedSubtitle =
+      settings?.flashSaleSubtitle ||
+      'Special prices on furniture, kitchenware, and smart living appliances';
+    let localizedBadgeText = settings?.flashSaleBadgeText || 'LIMITED QUANTITY';
+
+    if (settings?.id && locale !== 'en') {
+      try {
+        const translations = await prisma.systemSettingTranslation.findMany({
+          where: {
+            systemSettingId: settings.id,
+            locale,
+            key: { in: ['flashSaleTitle', 'flashSaleSubtitle', 'flashSaleBadgeText'] },
+          },
+        });
+        for (const row of translations) {
+          if (row.key === 'flashSaleTitle' && row.value?.trim()) localizedTitle = row.value.trim();
+          if (row.key === 'flashSaleSubtitle' && row.value?.trim()) localizedSubtitle = row.value.trim();
+          if (row.key === 'flashSaleBadgeText' && row.value?.trim()) localizedBadgeText = row.value.trim();
+        }
+      } catch (err) {
+        console.error('Error fetching flash sale translations:', err);
+      }
+
+      // If translation wasn't explicitly saved yet, apply language fallbacks
+      if (locale === 'ru') {
+        if (localizedTitle === 'Seasonal Discounts & Flash Home Deals') {
+          localizedTitle = 'Сезонные скидки и горячие предложения для дома';
+        }
+        if (localizedSubtitle.includes('Special prices on furniture')) {
+          localizedSubtitle = 'Специальные цены на мебель, посуду и технику для умного дома';
+        }
+        if (localizedBadgeText === 'LIMITED QUANTITY') {
+          localizedBadgeText = 'ОГРАНИЧЕННОЕ КОЛИЧЕСТВО';
+        }
+      } else if (locale === 'zh') {
+        if (localizedTitle === 'Seasonal Discounts & Flash Home Deals') {
+          localizedTitle = '限时特惠与精选家居折扣';
+        }
+        if (localizedSubtitle.includes('Special prices on furniture')) {
+          localizedSubtitle = '家具、厨具及智能生活家居精选特惠好物';
+        }
+        if (localizedBadgeText === 'LIMITED QUANTITY') {
+          localizedBadgeText = '限量特惠';
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       active: true,
-      title: settings?.flashSaleTitle || 'Seasonal Discounts & Flash Home Deals',
-      subtitle:
-        settings?.flashSaleSubtitle ||
-        'Special prices on furniture, kitchenware, and smart living appliances',
-      badgeText: settings?.flashSaleBadgeText || 'LIMITED QUANTITY',
+      title: localizedTitle,
+      subtitle: localizedSubtitle,
+      badgeText: localizedBadgeText,
       startDate: startDate ? startDate.toISOString() : null,
       endDate: endDate ? endDate.toISOString() : null,
       endsInMs,

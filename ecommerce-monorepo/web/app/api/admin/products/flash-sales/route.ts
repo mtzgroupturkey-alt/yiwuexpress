@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     const settings = await prisma.systemSettings.findUnique({
       where: { singletonKey: 'SINGLETON' },
       select: {
+        id: true,
         flashSaleEnabled: true,
         flashSaleStartDate: true,
         flashSaleEndDate: true,
@@ -21,6 +22,26 @@ export async function GET(req: NextRequest) {
         flashSaleBadgeText: true,
       },
     });
+
+    // Fetch existing translations from system_setting_translations
+    let translations: Array<{ locale: string; key: string; value: string }> = [];
+    if (settings?.id) {
+      try {
+        translations = await prisma.systemSettingTranslation.findMany({
+          where: {
+            systemSettingId: settings.id,
+            key: { in: ['flashSaleTitle', 'flashSaleSubtitle', 'flashSaleBadgeText'] },
+          },
+          select: {
+            locale: true,
+            key: true,
+            value: true,
+          },
+        });
+      } catch (err) {
+        console.error('Failed to load flash sale translations:', err);
+      }
+    }
 
     const products = await prisma.product.findMany({
       where: { isFlashSale: true },
@@ -62,6 +83,7 @@ export async function GET(req: NextRequest) {
           'Special prices on furniture, kitchenware, and smart living appliances',
         badgeText: settings?.flashSaleBadgeText || 'LIMITED QUANTITY',
       },
+      translations,
       status,
       serverTime: now.toISOString(),
       data: products,
@@ -88,12 +110,13 @@ export async function PUT(req: NextRequest) {
     await requireRole(req, ['ADMIN']);
 
     const body = await req.json();
-    const { settings, products } = body;
+    const { settings, products, translations } = body;
 
     let parsedStartDate: Date | null | undefined = undefined;
     let parsedEndDate: Date | null | undefined = undefined;
 
     // 1. Update Campaign Settings
+    let updatedSettings: any = null;
     if (settings) {
       if (settings.startDate !== undefined) {
         parsedStartDate = settings.startDate ? new Date(settings.startDate) : null;
@@ -102,7 +125,7 @@ export async function PUT(req: NextRequest) {
         parsedEndDate = settings.endDate ? new Date(settings.endDate) : null;
       }
 
-      await prisma.systemSettings.upsert({
+      updatedSettings = await prisma.systemSettings.upsert({
         where: { singletonKey: 'SINGLETON' },
         update: {
           ...(settings.enabled !== undefined ? { flashSaleEnabled: Boolean(settings.enabled) } : {}),
@@ -125,6 +148,34 @@ export async function PUT(req: NextRequest) {
           flashSaleBadgeText: settings.badgeText || 'LIMITED QUANTITY',
         },
       });
+
+      // 1b. Save translations if provided
+      if (Array.isArray(translations) && updatedSettings?.id) {
+        const validRows = translations.filter(
+          (t: any) => t && t.locale && t.key && typeof t.value === 'string' && t.value.trim().length > 0
+        );
+
+        for (const row of validRows) {
+          await prisma.systemSettingTranslation.upsert({
+            where: {
+              systemSettingId_locale_key: {
+                systemSettingId: updatedSettings.id,
+                locale: row.locale,
+                key: row.key,
+              },
+            },
+            create: {
+              systemSettingId: updatedSettings.id,
+              locale: row.locale,
+              key: row.key,
+              value: row.value.trim(),
+            },
+            update: {
+              value: row.value.trim(),
+            },
+          });
+        }
+      }
     }
 
     // 2. Update Product Selection & Ordering

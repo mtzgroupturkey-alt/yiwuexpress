@@ -58,12 +58,22 @@ interface CampaignSettings {
   badgeText: string;
 }
 
+type TranslationLocale = 'en' | 'ru' | 'zh';
+
+interface LocaleTextValues {
+  title: string;
+  subtitle: string;
+  badgeText: string;
+}
+
 export default function SeasonalFlashDealsSettings() {
   const router = useRouter();
   const { dict } = useAdminLocale();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [activeLocaleTab, setActiveLocaleTab] = useState<TranslationLocale>('en');
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   // Campaign Settings
@@ -74,6 +84,25 @@ export default function SeasonalFlashDealsSettings() {
     title: 'Seasonal Discounts & Flash Home Deals',
     subtitle: 'Special prices on furniture, kitchenware, and smart living appliances',
     badgeText: 'LIMITED QUANTITY',
+  });
+
+  // Multilingual Text Translations
+  const [textTranslations, setTextTranslations] = useState<Record<TranslationLocale, LocaleTextValues>>({
+    en: {
+      title: 'Seasonal Discounts & Flash Home Deals',
+      subtitle: 'Special prices on furniture, kitchenware, and smart living appliances',
+      badgeText: 'LIMITED QUANTITY',
+    },
+    ru: {
+      title: 'Сезонные скидки и горячие предложения для дома',
+      subtitle: 'Специальные цены на мебель, посуду и технику для умного дома',
+      badgeText: 'ОГРАНИЧЕННОЕ КОЛИЧЕСТВО',
+    },
+    zh: {
+      title: '限时特惠与精选家居折扣',
+      subtitle: '家具、厨具及智能生活家居精选特惠好物',
+      badgeText: '限量特惠',
+    },
   });
 
   // Selected Products for Deal
@@ -105,14 +134,44 @@ export default function SeasonalFlashDealsSettings() {
 
       if (data.success) {
         if (data.settings) {
+          const enTitle = data.settings.title || 'Seasonal Discounts & Flash Home Deals';
+          const enSubtitle = data.settings.subtitle || 'Special prices on furniture, kitchenware, and smart living appliances';
+          const enBadge = data.settings.badgeText || 'LIMITED QUANTITY';
+
           setSettings({
             enabled: Boolean(data.settings.enabled),
             startDate: data.settings.startDate ? toLocalISOString(new Date(data.settings.startDate)) : '',
             endDate: data.settings.endDate ? toLocalISOString(new Date(data.settings.endDate)) : '',
-            title: data.settings.title || 'Seasonal Discounts & Flash Home Deals',
-            subtitle: data.settings.subtitle || 'Special prices on furniture, kitchenware, and smart living appliances',
-            badgeText: data.settings.badgeText || 'LIMITED QUANTITY',
+            title: enTitle,
+            subtitle: enSubtitle,
+            badgeText: enBadge,
           });
+
+          const loadedTranslations: Record<TranslationLocale, LocaleTextValues> = {
+            en: { title: enTitle, subtitle: enSubtitle, badgeText: enBadge },
+            ru: {
+              title: 'Сезонные скидки и горячие предложения для дома',
+              subtitle: 'Специальные цены на мебель, посуду и технику для умного дома',
+              badgeText: 'ОГРАНИЧЕННОЕ КОЛИЧЕСТВО',
+            },
+            zh: {
+              title: '限时特惠与精选家居折扣',
+              subtitle: '家具、厨具及智能生活家居精选特惠好物',
+              badgeText: '限量特惠',
+            },
+          };
+
+          if (Array.isArray(data.translations)) {
+            for (const t of data.translations) {
+              if (t.locale === 'ru' || t.locale === 'zh' || t.locale === 'en') {
+                const loc = t.locale as TranslationLocale;
+                if (t.key === 'flashSaleTitle' && t.value) loadedTranslations[loc].title = t.value;
+                if (t.key === 'flashSaleSubtitle' && t.value) loadedTranslations[loc].subtitle = t.value;
+                if (t.key === 'flashSaleBadgeText' && t.value) loadedTranslations[loc].badgeText = t.value;
+              }
+            }
+          }
+          setTextTranslations(loadedTranslations);
         }
         setDealProducts(data.data || []);
       }
@@ -275,19 +334,101 @@ export default function SeasonalFlashDealsSettings() {
     setDealProducts(updated);
   };
 
+  // Auto-Translate Text Inputs to all other languages
+  const handleAutoTranslate = async () => {
+    setIsTranslating(true);
+    try {
+      const currentValues = textTranslations[activeLocaleTab];
+      const hasCurrentContent = Boolean(
+        currentValues.title.trim() || currentValues.subtitle.trim() || currentValues.badgeText.trim()
+      );
+      const sourceLocale: TranslationLocale = hasCurrentContent ? activeLocaleTab : 'en';
+      const sourceValues = textTranslations[sourceLocale];
+
+      const targetLocales: TranslationLocale[] = (['en', 'ru', 'zh'] as TranslationLocale[]).filter(
+        (l) => l !== sourceLocale
+      );
+
+      const res = await fetch('/api/admin/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            title: sourceValues.title,
+            subtitle: sourceValues.subtitle,
+            badgeText: sourceValues.badgeText,
+          },
+          targetLocales,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data?.error || 'Translation request failed', 'error');
+        return;
+      }
+
+      const incoming: Record<string, Record<string, string>> = data.translations || {};
+
+      setTextTranslations((prev) => {
+        const next = { ...prev };
+        for (const loc of targetLocales) {
+          if (incoming[loc]) {
+            next[loc] = {
+              title: incoming[loc].title || prev[loc].title,
+              subtitle: incoming[loc].subtitle || prev[loc].subtitle,
+              badgeText: incoming[loc].badgeText || prev[loc].badgeText,
+            };
+          }
+        }
+        return next;
+      });
+
+      // If English was in targets, sync top-level settings
+      if (incoming.en) {
+        setSettings((prev) => ({
+          ...prev,
+          title: incoming.en.title || prev.title,
+          subtitle: incoming.en.subtitle || prev.subtitle,
+          badgeText: incoming.en.badgeText || prev.badgeText,
+        }));
+      }
+
+      showToast('Successfully translated to all languages! Click Save to apply.', 'success');
+    } catch (err) {
+      console.error('Auto-translate error:', err);
+      showToast('Failed to translate texts. Please try again.', 'error');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   // Save All Changes
   const handleSaveAll = async () => {
     setSaving(true);
     try {
+      const apiTranslations: Array<{ locale: string; key: string; value: string }> = [];
+      (['en', 'ru', 'zh'] as TranslationLocale[]).forEach((loc) => {
+        const row = textTranslations[loc];
+        if (row.title) apiTranslations.push({ locale: loc, key: 'flashSaleTitle', value: row.title.trim() });
+        if (row.subtitle) apiTranslations.push({ locale: loc, key: 'flashSaleSubtitle', value: row.subtitle.trim() });
+        if (row.badgeText) apiTranslations.push({ locale: loc, key: 'flashSaleBadgeText', value: row.badgeText.trim() });
+      });
+
+      const resolvedTitle = (textTranslations.en.title || settings.title).trim();
+      const resolvedSubtitle = (textTranslations.en.subtitle || settings.subtitle).trim();
+      const resolvedBadgeText = (textTranslations.en.badgeText || settings.badgeText).trim();
+
       const payload = {
         settings: {
           enabled: settings.enabled,
           startDate: settings.startDate ? new Date(settings.startDate).toISOString() : null,
           endDate: settings.endDate ? new Date(settings.endDate).toISOString() : null,
-          title: settings.title.trim(),
-          subtitle: settings.subtitle.trim(),
-          badgeText: settings.badgeText.trim(),
+          title: resolvedTitle,
+          subtitle: resolvedSubtitle,
+          badgeText: resolvedBadgeText,
         },
+        translations: apiTranslations,
         products: dealProducts.map((p, index) => ({
           id: p.id,
           flashSalePrice: p.flashSalePrice,
@@ -571,38 +712,184 @@ export default function SeasonalFlashDealsSettings() {
               </CardContent>
             </Card>
 
-            {/* Banner Labels Card */}
+            {/* Banner Labels & Multi-Language Translations Card */}
             <Card className="border-slate-200/80 shadow-xs">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-bold text-slate-900">Banner Text & Branding</CardTitle>
-                <CardDescription className="text-xs">
-                  Customize the heading, subtitle, and promotional badge text.
-                </CardDescription>
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-base font-bold text-slate-900">
+                      Banner Text & Translations
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Enter promotion texts in any language and click Translate to auto-fill all languages.
+                    </CardDescription>
+                  </div>
+                  {/* Translate Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAutoTranslate}
+                    disabled={isTranslating}
+                    className="bg-blue-50/70 border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 text-xs font-bold gap-1.5 rounded-xl h-8 shadow-2xs shrink-0 cursor-pointer"
+                  >
+                    {isTranslating ? (
+                      <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    )}
+                    <span>{isTranslating ? 'Translating...' : 'Translate to All'}</span>
+                  </Button>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Section Title</label>
-                  <Input
-                    value={settings.title}
-                    onChange={(e) => setSettings({ ...settings, title: e.target.value })}
-                    className="h-9 text-xs rounded-xl"
-                  />
+              <CardContent className="space-y-4">
+                {/* Language Selector Tabs */}
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100/80 rounded-xl border border-slate-200/60">
+                  {(
+                    [
+                      { code: 'en', label: 'English', flag: '🇬🇧' },
+                      { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+                      { code: 'zh', label: '中文', flag: '🇨🇳' },
+                    ] as const
+                  ).map((item) => {
+                    const isSelected = activeLocaleTab === item.code;
+                    const hasValues = Boolean(
+                      textTranslations[item.code].title?.trim() &&
+                      textTranslations[item.code].subtitle?.trim()
+                    );
+
+                    return (
+                      <button
+                        key={item.code}
+                        type="button"
+                        onClick={() => setActiveLocaleTab(item.code)}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                        }`}
+                      >
+                        <span className="text-sm">{item.flag}</span>
+                        <span>{item.label}</span>
+                        {hasValues && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Completed" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Subtitle</label>
-                  <Input
-                    value={settings.subtitle}
-                    onChange={(e) => setSettings({ ...settings, subtitle: e.target.value })}
-                    className="h-9 text-xs rounded-xl"
-                  />
+
+                {/* Input Fields for Active Language */}
+                <div className="space-y-3 pt-1">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Section Title ({activeLocaleTab.toUpperCase()})
+                      </label>
+                      <span className="text-[10px] text-slate-400">
+                        {activeLocaleTab === 'en'
+                          ? 'Main headline'
+                          : `Headline in ${activeLocaleTab === 'ru' ? 'Russian' : 'Chinese'}`}
+                      </span>
+                    </div>
+                    <Input
+                      value={textTranslations[activeLocaleTab].title}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTextTranslations((prev) => ({
+                          ...prev,
+                          [activeLocaleTab]: { ...prev[activeLocaleTab], title: val },
+                        }));
+                        if (activeLocaleTab === 'en') {
+                          setSettings((prev) => ({ ...prev, title: val }));
+                        }
+                      }}
+                      placeholder={
+                        activeLocaleTab === 'ru'
+                          ? 'Сезонные скидки и горячие предложения для дома'
+                          : activeLocaleTab === 'zh'
+                          ? '限时特惠与精选家居折扣'
+                          : 'Seasonal Discounts & Flash Home Deals'
+                      }
+                      className="h-9 text-xs rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Subtitle ({activeLocaleTab.toUpperCase()})
+                      </label>
+                      <span className="text-[10px] text-slate-400">Supporting promo text</span>
+                    </div>
+                    <Input
+                      value={textTranslations[activeLocaleTab].subtitle}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTextTranslations((prev) => ({
+                          ...prev,
+                          [activeLocaleTab]: { ...prev[activeLocaleTab], subtitle: val },
+                        }));
+                        if (activeLocaleTab === 'en') {
+                          setSettings((prev) => ({ ...prev, subtitle: val }));
+                        }
+                      }}
+                      placeholder={
+                        activeLocaleTab === 'ru'
+                          ? 'Специальные цены на мебель, посуду и технику для умного дома'
+                          : activeLocaleTab === 'zh'
+                          ? '家具、厨具及智能生活家居精选特惠好物'
+                          : 'Special prices on furniture, kitchenware, and smart living appliances'
+                      }
+                      className="h-9 text-xs rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Badge Text ({activeLocaleTab.toUpperCase()})
+                      </label>
+                      <span className="text-[10px] text-slate-400">Pill badge label</span>
+                    </div>
+                    <Input
+                      value={textTranslations[activeLocaleTab].badgeText}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTextTranslations((prev) => ({
+                          ...prev,
+                          [activeLocaleTab]: { ...prev[activeLocaleTab], badgeText: val },
+                        }));
+                        if (activeLocaleTab === 'en') {
+                          setSettings((prev) => ({ ...prev, badgeText: val }));
+                        }
+                      }}
+                      placeholder={
+                        activeLocaleTab === 'ru'
+                          ? 'ОГРАНИЧЕННОЕ КОЛИЧЕСТВО'
+                          : activeLocaleTab === 'zh'
+                          ? '限量特惠'
+                          : 'LIMITED QUANTITY'
+                      }
+                      className="h-9 text-xs rounded-xl uppercase font-mono font-bold"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Badge Text</label>
-                  <Input
-                    value={settings.badgeText}
-                    onChange={(e) => setSettings({ ...settings, badgeText: e.target.value })}
-                    className="h-9 text-xs rounded-xl"
-                  />
+
+                {/* Helpful translation action helper */}
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    Fill text in any tab &amp; click <strong>Translate to All</strong>.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslate}
+                    disabled={isTranslating}
+                    className="text-blue-600 hover:text-blue-800 font-bold hover:underline shrink-0 ml-2 cursor-pointer"
+                  >
+                    Auto-Fill &rarr;
+                  </button>
                 </div>
               </CardContent>
             </Card>
