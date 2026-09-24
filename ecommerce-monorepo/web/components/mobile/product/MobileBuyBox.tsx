@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { ShoppingCart, FileText, ShieldCheck, Truck, MessageSquare } from 'lucide-react'
+import { ShoppingCart, FileText, ShieldCheck, Truck, MessageSquare, Loader2 } from 'lucide-react'
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useLocale } from 'next-intl'
@@ -109,18 +109,20 @@ export function MobileBuyBox({
           onClick={onAddToCart}
           disabled={isAdding || (stock !== undefined && stock <= 0)}
           aria-label={isWholesaleActive && !isInstantWholesale ? 'Request Wholesale Quote (RFQ)' : 'Add to Shopping Cart'}
-          className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50 cursor-pointer"
+          className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg tap-spring active:scale-[0.97] transition-all touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50 cursor-pointer"
         >
-          {isWholesaleActive && !isInstantWholesale ? (
+          {isAdding ? (
+            <Loader2 className="w-5 h-5 animate-spin text-white" />
+          ) : isWholesaleActive && !isInstantWholesale ? (
             <>
-              <FileText className="w-5 h-5" />
+              <FileText className="w-5 h-5 transition-transform group-hover:scale-110" />
               <span>
                 {locale === 'zh' ? '加入询价清单' : locale === 'ru' ? 'Запросить расчет цен' : 'Request Wholesale Quote (RFQ)'}
               </span>
             </>
           ) : (
             <>
-              <ShoppingCart className="w-5 h-5" />
+              <ShoppingCart className="w-5 h-5 transition-transform group-hover:scale-110" />
               <span>
                 {locale === 'zh' ? '立即加入购物车' : locale === 'ru' ? 'Добавить в корзину' : 'Add to Shopping Cart'}
               </span>
@@ -132,7 +134,7 @@ export function MobileBuyBox({
           <button
             type="button"
             onClick={onInquireSupplier}
-            className="w-full min-h-[46px] px-4 rounded-2xl bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 active:scale-98 transition-transform touch-manipulation"
+            className="w-full min-h-[46px] px-4 rounded-2xl bg-gray-100 hover:bg-gray-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-gray-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 tap-spring active:scale-[0.97] transition-all touch-manipulation cursor-pointer"
           >
             <MessageSquare className="w-4 h-4 text-primary-600 dark:text-primary-400" />
             <span>

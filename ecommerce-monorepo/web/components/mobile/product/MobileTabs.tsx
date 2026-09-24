@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Product } from '@/app/[locale]/design-3/types'
 import { Star, ShieldCheck, Truck, FileText, CheckCircle2 } from 'lucide-react'
 import { useLocale } from 'next-intl'
@@ -26,8 +27,8 @@ export function MobileTabs({ product, className = '' }: MobileTabsProps) {
       data-testid="mobile-tabs"
       className={`rounded-3xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 overflow-hidden shadow-xs ${className}`}
     >
-      {/* Tab Navigation */}
-      <div className="flex border-b border-gray-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
+      {/* Tab Navigation with Animated Indicator */}
+      <div className="flex border-b border-gray-200 dark:border-slate-800 overflow-x-auto no-scrollbar relative">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id
           return (
@@ -35,20 +36,35 @@ export function MobileTabs({ product, className = '' }: MobileTabsProps) {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 min-h-[46px] px-3 py-2.5 text-xs font-bold whitespace-nowrap border-b-2 transition-colors text-center ${
+              className={`flex-1 min-h-[46px] px-3 py-2.5 text-xs font-bold whitespace-nowrap transition-colors text-center relative tap-spring ${
                 isActive
-                  ? 'border-primary-600 text-primary-600 dark:text-primary-400'
-                  : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-900'
+                  ? 'text-primary-600 dark:text-primary-400'
+                  : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
-              {tab.label}
+              <span className="relative z-10">{tab.label}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="mobileActiveTabIndicator"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400"
+                  transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                />
+              )}
             </button>
           )
         })}
       </div>
 
-      {/* Tab Body */}
-      <div className="p-4 text-xs text-gray-700 dark:text-slate-300 leading-relaxed">
+      {/* Tab Body with Smooth Transition */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+          className="p-4 text-xs text-gray-700 dark:text-slate-300 leading-relaxed"
+        >
         {activeTab === 'overview' && (
           <div className="space-y-3">
             <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -174,7 +190,8 @@ export function MobileTabs({ product, className = '' }: MobileTabsProps) {
             </p>
           </div>
         )}
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   )
 }

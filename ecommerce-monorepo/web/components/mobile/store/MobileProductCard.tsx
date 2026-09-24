@@ -73,8 +73,12 @@ export function MobileProductCard({
     }
   }
 
+  const [favPopping, setFavPopping] = useState(false)
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setFavPopping(true)
+    setTimeout(() => setFavPopping(false), 350)
     if (onToggleFavorite) {
       onToggleFavorite(product.id)
     }
@@ -89,13 +93,13 @@ export function MobileProductCard({
     <div
       data-testid="mobile-product-card"
       onClick={handleCardClick}
-      className={`rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 shadow-xs overflow-hidden flex flex-col justify-between cursor-pointer active:scale-98 transition-transform touch-manipulation ${className}`}
+      className={`group rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:border-blue-500/20 dark:hover:border-blue-400/20 overflow-hidden flex flex-col justify-between cursor-pointer tap-spring active:scale-[0.97] transition-all duration-200 touch-manipulation ${className}`}
     >
       {/* Thumbnail + Badges + Favorite Button */}
-      <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 p-2">
+      <div className="relative w-full aspect-square bg-gray-50/80 dark:bg-slate-900/80 p-2 overflow-hidden">
         {discountPercent && (
-          <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded-md bg-red-600 text-white font-black text-[10px] shadow-xs">
-            -{discountPercent}%
+          <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-[10px] shadow-xs tracking-tight flex items-center gap-0.5">
+            <span>-{discountPercent}%</span>
           </span>
         )}
 
@@ -104,26 +108,28 @@ export function MobileProductCard({
             type="button"
             onClick={handleFavoriteClick}
             aria-label="Toggle wishlist"
-            className="absolute top-2 right-2 z-10 min-w-[36px] min-h-[36px] rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs flex items-center justify-center text-gray-400 hover:text-rose-500 active:scale-90 transition-transform shadow-xs"
+            className="absolute top-2 right-2 z-10 min-w-[36px] min-h-[36px] rounded-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-md flex items-center justify-center text-gray-400 hover:text-rose-500 active:scale-75 transition-all duration-150 shadow-xs"
           >
             <Heart
-              className={`w-4 h-4 ${
-                isFavorite ? 'fill-rose-500 text-rose-500' : ''
-              }`}
+              className={`w-4 h-4 transition-all duration-200 ${
+                favPopping ? 'animate-heart-pop' : ''
+              } ${isFavorite ? 'fill-rose-500 text-rose-500 scale-105' : 'hover:scale-110'}`}
             />
           </button>
         )}
 
-        <ProductImage
-          src={product.image}
-          alt={product.name}
-          category={product.category}
-          productName={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 200px"
-          className="object-contain p-2"
-          loading="lazy"
-        />
+        <div className="w-full h-full relative transition-transform duration-300 ease-out group-hover:scale-105">
+          <ProductImage
+            src={product.image}
+            alt={product.name}
+            category={product.category}
+            productName={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, 200px"
+            className="object-contain p-2"
+            loading="lazy"
+          />
+        </div>
       </div>
 
       {/* Details */}
@@ -134,7 +140,7 @@ export function MobileProductCard({
               {product.brand}
             </p>
           )}
-          <h4 className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
+          <h4 className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
             {product.name}
           </h4>
 
@@ -176,9 +182,9 @@ export function MobileProductCard({
             onClick={handleActionClick}
             aria-label={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
             title={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
-            className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-90 transition-all touch-manipulation cursor-pointer ${
+            className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-85 transition-all duration-150 touch-manipulation cursor-pointer ${
               justAdded
-                ? 'bg-emerald-600'
+                ? 'bg-emerald-600 shadow-emerald-500/30 shadow-md scale-105'
                 : isRfqMode
                 ? 'bg-[#00407a] hover:bg-[#003366]'
                 : 'bg-primary-600 hover:bg-primary-700'
@@ -187,9 +193,9 @@ export function MobileProductCard({
             {justAdded ? (
               <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
             ) : isRfqMode ? (
-              <ClipboardList className="w-4 h-4" />
+              <ClipboardList className="w-4 h-4 transition-transform group-hover:scale-110" />
             ) : (
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 transition-transform group-hover:scale-110" />
             )}
           </button>
         </div>

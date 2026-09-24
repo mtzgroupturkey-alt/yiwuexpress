@@ -74,17 +74,39 @@ export function MobileGallery({
       </button>
 
       {/* Main Swipeable Image Container */}
-      <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900/60 flex items-center justify-center">
+      <div className="relative w-full aspect-square bg-gray-50/80 dark:bg-slate-900/60 flex items-center justify-center overflow-hidden">
         {images[activeIndex] ? (
-          <ProductImage
-            src={images[activeIndex]}
-            alt={`${productName} image ${activeIndex + 1}`}
-            productName={productName}
-            fill
-            sizes="100vw"
-            className="object-contain p-4 select-none"
-            priority={activeIndex === 0}
-          />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeIndex}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              drag={images.length > 1 ? 'x' : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                const threshold = 40
+                if (info.offset.x < -threshold) {
+                  handleNext()
+                } else if (info.offset.x > threshold) {
+                  handlePrev()
+                }
+              }}
+              className="w-full h-full relative cursor-grab active:cursor-grabbing"
+            >
+              <ProductImage
+                src={images[activeIndex]}
+                alt={`${productName} image ${activeIndex + 1}`}
+                productName={productName}
+                fill
+                sizes="100vw"
+                className="object-contain p-4 select-none"
+                priority={activeIndex === 0}
+              />
+            </motion.div>
+          </AnimatePresence>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
             <Package className="w-16 h-16" />
@@ -98,7 +120,7 @@ export function MobileGallery({
               type="button"
               onClick={handlePrev}
               aria-label="Previous Image"
-              className="absolute left-2 top-1/2 -translate-y-1/2 min-w-[36px] min-h-[36px] rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-xs flex items-center justify-center text-gray-700 dark:text-slate-300 shadow-xs active:scale-90 transition-transform"
+              className="absolute left-2 top-1/2 -translate-y-1/2 min-w-[36px] min-h-[36px] rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xs flex items-center justify-center text-gray-700 dark:text-slate-300 shadow-xs active:scale-90 transition-transform tap-spring"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -106,7 +128,7 @@ export function MobileGallery({
               type="button"
               onClick={handleNext}
               aria-label="Next Image"
-              className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[36px] min-h-[36px] rounded-full bg-white/70 dark:bg-slate-800/70 backdrop-blur-xs flex items-center justify-center text-gray-700 dark:text-slate-300 shadow-xs active:scale-90 transition-transform"
+              className="absolute right-2 top-1/2 -translate-y-1/2 min-w-[36px] min-h-[36px] rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-xs flex items-center justify-center text-gray-700 dark:text-slate-300 shadow-xs active:scale-90 transition-transform tap-spring"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -123,13 +145,13 @@ export function MobileGallery({
               type="button"
               onClick={() => setActiveIndex(idx)}
               aria-label={`Go to slide ${idx + 1}`}
-              className="min-h-[24px] min-w-[24px] flex items-center justify-center"
+              className="min-h-[24px] min-w-[24px] flex items-center justify-center tap-spring"
             >
               <span
-                className={`block rounded-full transition-all duration-200 ${
+                className={`block rounded-full transition-all duration-300 ${
                   activeIndex === idx
-                    ? 'w-5 h-1.5 bg-primary-600 dark:bg-primary-400'
-                    : 'w-1.5 h-1.5 bg-gray-300 dark:bg-slate-700'
+                    ? 'w-6 h-1.5 bg-primary-600 dark:bg-primary-400 shadow-xs'
+                    : 'w-1.5 h-1.5 bg-gray-300 dark:bg-slate-700 hover:bg-gray-400'
                 }`}
               />
             </button>
@@ -138,26 +160,41 @@ export function MobileGallery({
       )}
 
       {/* Fullscreen Lightbox Modal */}
-      {isFullscreen && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-4">
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(false)}
-            aria-label="Close fullscreen view"
-            className="absolute top-4 right-4 min-w-[48px] min-h-[48px] flex items-center justify-center text-white bg-white/20 rounded-full"
+      <AnimatePresence>
+        {isFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4"
           >
-            <X className="w-6 h-6" />
-          </button>
-          <div className="relative w-full max-w-lg aspect-square">
-            <ProductImage
-              src={images[activeIndex]}
-              alt={productName}
-              fill
-              className="object-contain"
-            />
-          </div>
-        </div>
-      )}
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(false)}
+              aria-label="Close fullscreen view"
+              className="absolute top-4 right-4 min-w-[48px] min-h-[48px] flex items-center justify-center text-white bg-white/10 hover:bg-white/20 active:scale-90 rounded-full transition-all"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg aspect-square"
+            >
+              <ProductImage
+                src={images[activeIndex]}
+                alt={productName}
+                productName={productName}
+                fill
+                className="object-contain"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }

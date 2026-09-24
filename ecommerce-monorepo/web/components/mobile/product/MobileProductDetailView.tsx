@@ -11,6 +11,7 @@ import { MobileVariantChips, VariantOption } from './MobileVariantChips'
 import { MobileAttributeSelector, ConfigurableAttribute } from './MobileAttributeSelector'
 import { MobileProductCard } from '../store/MobileProductCard'
 import { StickyBuyBar } from '../StickyBuyBar'
+import { ProductCardSkeleton } from '../Skeleton'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useMobile } from '@/components/MobileProvider'
 
@@ -238,12 +239,17 @@ export function MobileProductDetailView({
 
             <div className="grid grid-cols-2 gap-2.5">
               {relatedProducts.map((relProduct, idx) => (
-                <MobileProductCard
+                <div
                   key={`${relProduct.id}-${idx}`}
-                  product={relProduct}
-                  onAddToCart={onAddToCart ? (p) => onAddToCart(p, 1) : undefined}
-                  onSelectProduct={onSelectProduct}
-                />
+                  style={{ animationDelay: `${Math.min(idx % 10, 6) * 45}ms` }}
+                  className="animate-card-rise"
+                >
+                  <MobileProductCard
+                    product={relProduct}
+                    onAddToCart={onAddToCart ? (p) => onAddToCart(p, 1) : undefined}
+                    onSelectProduct={onSelectProduct}
+                  />
+                </div>
               ))}
             </div>
 
@@ -251,12 +257,18 @@ export function MobileProductDetailView({
             {hasMoreRelated && (
               <div
                 ref={relatedSentinelRef}
-                className="py-4 flex flex-col items-center justify-center text-xs text-gray-400 gap-1.5 min-h-[56px]"
+                className="py-2 flex flex-col items-center justify-center text-xs text-gray-400 gap-3 min-h-[56px]"
               >
                 {loadingMoreRelated ? (
-                  <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold text-xs py-2">
-                    <span className="w-4 h-4 border-2 border-primary-600 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
-                    <span>Loading more recommendations...</span>
+                  <div className="w-full space-y-2">
+                    <div className="grid grid-cols-2 gap-2.5 w-full">
+                      <ProductCardSkeleton />
+                      <ProductCardSkeleton />
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-primary-600 dark:text-primary-400 font-semibold text-xs py-1">
+                      <span className="w-3.5 h-3.5 border-2 border-primary-600 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
+                      <span>Loading recommendations...</span>
+                    </div>
                   </div>
                 ) : (
                   <div className="h-4 w-full flex items-center justify-center">

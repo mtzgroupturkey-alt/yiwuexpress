@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingCart, FileText, Plus, Minus, Loader2 } from 'lucide-react'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useLocale } from 'next-intl'
+import { useMobile } from '@/components/MobileProvider'
 
 export interface StickyBuyBarProps {
   isVisible: boolean
@@ -39,10 +40,15 @@ export function StickyBuyBar({
 }: StickyBuyBarProps) {
   const { formatPrice } = useCurrency()
   const locale = useLocale()
+  const { isStandalone } = useMobile()
 
   const buttonText = isWholesale && !isInstantWholesale
     ? (locale === 'zh' ? '立即询价' : locale === 'ru' ? 'Запросить расчет' : 'Request Quote')
     : (locale === 'zh' ? '加入购物车' : locale === 'ru' ? 'В корзину' : 'Add to Cart')
+
+  const bottomOffset = isStandalone
+    ? 'calc(64px + env(safe-area-inset-bottom, 0px))'
+    : 'env(safe-area-inset-bottom, 0px)'
 
   return (
     <AnimatePresence>
@@ -51,10 +57,10 @@ export function StickyBuyBar({
           initial={{ y: '100%', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
-          transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-          className="md:hidden fixed left-0 right-0 z-30 bg-white/98 dark:bg-[#0f172a]/98 backdrop-blur-lg border-t border-slate-200/90 dark:border-slate-800 shadow-[0_-4px_25px_rgba(0,0,0,0.12)] px-3 py-2"
+          transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+          className="md:hidden fixed left-0 right-0 z-30 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl border-t border-slate-200/90 dark:border-slate-800 shadow-[0_-6px_25px_rgba(0,0,0,0.1)] px-3 py-2 transition-all"
           style={{
-            bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+            bottom: bottomOffset,
           }}
           role="region"
           aria-label="Sticky product purchase bar"

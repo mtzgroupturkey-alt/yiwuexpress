@@ -124,7 +124,11 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
             <div className="relative flex items-center justify-center w-6 h-6">
               <Home className="w-6 h-6 transition-transform group-active:scale-90" />
               {isHomeActive && !isDrawerOpen && (
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c]" />
+                <motion.span
+                  layoutId="bottomNavActiveDot"
+                  className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c] shadow-[0_0_6px_#c9a84c]"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
               )}
             </div>
             <span className="text-[10px] leading-tight mt-1 tracking-tight">
@@ -136,7 +140,7 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
           <LocaleLink
             href="/store"
             aria-label={labels.search}
-            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative ${
+            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative tap-spring ${
               isSearchActive && !isDrawerOpen
                 ? 'text-[#1a3a5c] dark:text-[#c9a84c] font-semibold'
                 : 'text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white'
@@ -145,7 +149,11 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
             <div className="relative flex items-center justify-center w-6 h-6">
               <Search className="w-6 h-6 transition-transform group-active:scale-90" />
               {isSearchActive && !isDrawerOpen && (
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c]" />
+                <motion.span
+                  layoutId="bottomNavActiveDot"
+                  className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c] shadow-[0_0_6px_#c9a84c]"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
               )}
             </div>
             <span className="text-[10px] leading-tight mt-1 tracking-tight">
@@ -157,7 +165,7 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
           <LocaleLink
             href={cartHref}
             aria-label={labels.cart}
-            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative ${
+            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative tap-spring ${
               isCartActive && !isDrawerOpen
                 ? 'text-[#1a3a5c] dark:text-[#c9a84c] font-semibold'
                 : 'text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white'
@@ -170,12 +178,22 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
                 <ShoppingCart className="w-6 h-6 transition-transform group-active:scale-90" />
               )}
               {effectiveCartCount > 0 && (
-                <span className="absolute -top-1 -right-2.5 min-w-[18px] h-[18px] px-1 bg-[#c9a84c] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md animate-pulse">
+                <motion.span
+                  key={effectiveCartCount}
+                  initial={{ scale: 0.6 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', damping: 15 }}
+                  className="absolute -top-1 -right-2.5 min-w-[18px] h-[18px] px-1 bg-[#c9a84c] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md"
+                >
                   {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
-                </span>
+                </motion.span>
               )}
               {isCartActive && !isDrawerOpen && (
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c]" />
+                <motion.span
+                  layoutId="bottomNavActiveDot"
+                  className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c] shadow-[0_0_6px_#c9a84c]"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
               )}
             </div>
             <span className="text-[10px] leading-tight mt-1 tracking-tight">
@@ -187,7 +205,7 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
           <LocaleLink
             href="/wishlist"
             aria-label={labels.wishlist}
-            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative ${
+            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative tap-spring ${
               isWishlistActive && !isDrawerOpen
                 ? 'text-[#1a3a5c] dark:text-[#c9a84c] font-semibold'
                 : 'text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white'
@@ -196,12 +214,22 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
             <div className="relative flex items-center justify-center w-6 h-6">
               <Heart className="w-6 h-6 transition-transform group-active:scale-90" />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-2 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md">
+                <motion.span
+                  key={wishlistCount}
+                  initial={{ scale: 0.6 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', damping: 15 }}
+                  className="absolute -top-1 -right-2 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-md"
+                >
                   {wishlistCount > 99 ? '99+' : wishlistCount}
-                </span>
+                </motion.span>
               )}
               {isWishlistActive && !isDrawerOpen && (
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c]" />
+                <motion.span
+                  layoutId="bottomNavActiveDot"
+                  className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c] shadow-[0_0_6px_#c9a84c]"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
               )}
             </div>
             <span className="text-[10px] leading-tight mt-1 tracking-tight">
@@ -215,7 +243,7 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
             onClick={() => setIsDrawerOpen(!isDrawerOpen)}
             aria-label={labels.more}
             aria-expanded={isDrawerOpen}
-            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative ${
+            className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative tap-spring ${
               isDrawerOpen
                 ? 'text-[#1a3a5c] dark:text-[#c9a84c] font-semibold'
                 : 'text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white'
@@ -228,7 +256,11 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
                 <Menu className="w-6 h-6 transition-transform group-active:scale-90" />
               )}
               {isDrawerOpen && (
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c]" />
+                <motion.span
+                  layoutId="bottomNavActiveDot"
+                  className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-[#c9a84c] shadow-[0_0_6px_#c9a84c]"
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
               )}
             </div>
             <span className="text-[10px] leading-tight mt-1 tracking-tight">
