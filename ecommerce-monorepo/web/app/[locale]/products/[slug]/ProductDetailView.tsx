@@ -675,9 +675,7 @@ export default function ProductDetailView({
 
       if (data.success && Array.isArray(data.data)) {
         setRelatedProducts(data.data)
-        if (data.data.length < 8 || data.pagination?.hasMore === false) {
-          setHasMoreRelated(false)
-        }
+        setHasMoreRelated(Boolean(data.pagination?.hasMore ?? (data.data.length > 0)))
       }
     } catch (error) {
       console.error('Error fetching related products:', error)
@@ -692,15 +690,9 @@ export default function ProductDetailView({
       const response = await fetch(`/api/products/${slug}/related?limit=8&page=${nextPage}&locale=${encodeURIComponent(locale)}`)
       const data = await response.json()
       if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-        setRelatedProducts((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id))
-          const newItems = data.data.filter((p: any) => !existingIds.has(p.id))
-          return [...prev, ...newItems]
-        })
+        setRelatedProducts((prev) => [...prev, ...data.data])
         setRelatedPage(nextPage)
-        if (data.data.length < 8 || data.pagination?.hasMore === false) {
-          setHasMoreRelated(false)
-        }
+        setHasMoreRelated(Boolean(data.pagination?.hasMore ?? true))
       } else {
         setHasMoreRelated(false)
       }
@@ -2502,11 +2494,11 @@ export default function ProductDetailView({
               )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {relatedProducts.map((relatedProduct) => {
+              {relatedProducts.map((relatedProduct, idx) => {
                 const design3Product = mapDbProductToDesign3(relatedProduct)
                 return (
                   <UnifiedProductCard
-                    key={relatedProduct.id}
+                    key={`${relatedProduct.id}-${idx}`}
                     product={design3Product}
                     onAddToCart={handleRelatedAddToCart}
                     onUpdateQuantity={handleRelatedUpdateQuantity}

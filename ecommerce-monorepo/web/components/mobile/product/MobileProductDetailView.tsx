@@ -86,7 +86,7 @@ export function MobileProductDetailView({
           loadMoreRelated()
         }
       },
-      { rootMargin: '250px' }
+      { rootMargin: '350px' }
     )
 
     observer.observe(sentinel)
@@ -237,9 +237,9 @@ export function MobileProductDetailView({
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              {relatedProducts.map((relProduct) => (
+              {relatedProducts.map((relProduct, idx) => (
                 <MobileProductCard
-                  key={relProduct.id}
+                  key={`${relProduct.id}-${idx}`}
                   product={relProduct}
                   onAddToCart={onAddToCart ? (p) => onAddToCart(p, 1) : undefined}
                   onSelectProduct={onSelectProduct}
@@ -251,21 +251,17 @@ export function MobileProductDetailView({
             {hasMoreRelated && (
               <div
                 ref={relatedSentinelRef}
-                className="py-4 flex flex-col items-center justify-center text-xs text-gray-400 gap-1.5 min-h-[48px]"
+                className="py-4 flex flex-col items-center justify-center text-xs text-gray-400 gap-1.5 min-h-[56px]"
               >
                 {loadingMoreRelated ? (
-                  <div className="flex items-center gap-2 text-primary-600 font-semibold text-xs py-2">
-                    <span className="w-4 h-4 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
-                    <span>Loading more items...</span>
+                  <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold text-xs py-2">
+                    <span className="w-4 h-4 border-2 border-primary-600 dark:border-primary-400 border-t-transparent rounded-full animate-spin" />
+                    <span>Loading more recommendations...</span>
                   </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => loadMoreRelated?.()}
-                    className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-xs font-bold text-gray-700 dark:text-slate-200 active:scale-95 transition-transform"
-                  >
-                    Load More Similar Items
-                  </button>
+                  <div className="h-4 w-full flex items-center justify-center">
+                    <span className="inline-block w-8 h-1 rounded-full bg-gray-200 dark:bg-slate-700/60" />
+                  </div>
                 )}
               </div>
             )}

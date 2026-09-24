@@ -37,95 +37,161 @@ export async function GET(
       )
     }
 
-    let relatedProducts: any[] = []
-
-    // Try to get products from the same category first
-    if (currentProduct.categoryId) {
-      relatedProducts = await prisma.product.findMany({
-        where: {
-          categoryId: currentProduct.categoryId,
-          id: { not: currentProduct.id }, // Exclude current product
-          isActive: true,
+    // Product select projection
+    const productSelect = withTranslations({
+      id: true,
+      sku: true,
+      name: true,
+      slug: true,
+      description: true,
+      price: true,
+      compareAtPrice: true,
+      thumbnail: true,
+      images: true,
+      stock: true,
+      minOrderQty: true,
+      wholesalePrice: true,
+      attributeValues: {
+        include: {
+          attribute: true,
         },
-        take: limit,
-        skip: skip,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: withTranslations({
+      },
+      category: {
+        select: {
           id: true,
-          sku: true,
           name: true,
           slug: true,
-          description: true,
-          price: true,
-          compareAtPrice: true,
-          thumbnail: true,
-          images: true,
-          stock: true,
-          minOrderQty: true,
-          wholesalePrice: true,
-          attributeValues: {
-            include: {
-              attribute: true
-            }
+          translations: {
+            select: { locale: true, name: true },
           },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              translations: {
-                select: { locale: true, name: true }
-              },
-            },
-          },
-        }),
-      })
-    }
+        },
+      },
+    })
 
-    // If no related products found, get random products as fallback
-    if (relatedProducts.length === 0) {
-      relatedProducts = await prisma.product.findMany({
-        where: {
+    // Count active products in the same category (excluding current product)
+    const categoryCount = currentProduct.categoryId
+      ? await prisma.product.count({
+          where: {
+            categoryId: currentProduct.categoryId,
+            id: { not: currentProduct.id },
+            isActive: true,
+          },
+        })
+      : 0
+
+    // Count active products outside this category (excluding current product)
+    const otherWhere = currentProduct.categoryId
+      ? {
+          categoryId: { not: currentProduct.categoryId },
           id: { not: currentProduct.id },
           isActive: true,
-        },
-        take: limit,
-        skip: skip,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: withTranslations({
-          id: true,
-          sku: true,
-          name: true,
-          slug: true,
-          description: true,
-          price: true,
-          compareAtPrice: true,
-          thumbnail: true,
-          images: true,
-          stock: true,
-          minOrderQty: true,
-          wholesalePrice: true,
-          attributeValues: {
-            include: {
-              attribute: true
-            }
+        }
+      : {
+          id: { not: currentProduct.id },
+          isActive: true,
+        }
+
+    const otherCount = await prisma.product.count({
+      where: otherWhere,
+    })
+
+    const totalCatalogCount = categoryCount + otherCount
+    let relatedProducts: any[] = []
+
+    if (totalCatalogCount > 0) {
+      const offset = skip
+
+      if (offset < categoryCount) {
+        // 1. Fetch from current category first
+        const takeFromCategory = Math.min(limit, categoryCount - offset)
+        const catItems = await prisma.product.findMany({
+          where: {
+            categoryId: currentProduct.categoryId!,
+            id: { not: currentProduct.id },
+            isActive: true,
           },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              translations: {
-                select: { locale: true, name: true }
-              },
+          take: takeFromCategory,
+          skip: offset,
+          orderBy: { createdAt: 'desc' },
+          select: productSelect,
+        })
+        relatedProducts.push(...catItems)
+
+        // If category had fewer items than requested limit, backfill from other products
+        const remainingNeeded = limit - relatedProducts.length
+        if (remainingNeeded > 0 && otherCount > 0) {
+          const otherItems = await prisma.product.findMany({
+            where: otherWhere,
+            take: Math.min(remainingNeeded, otherCount),
+            skip: 0,
+            orderBy: { createdAt: 'desc' },
+            select: productSelect,
+          })
+          relatedProducts.push(...otherItems)
+        }
+      } else {
+        // 2. Category products exhausted - infinite scroll from other products with cyclic wrap
+        const otherOffset = offset - categoryCount
+
+        if (otherCount > 0) {
+          const wrappedSkip = otherOffset % otherCount
+          const firstChunkTake = Math.min(limit, otherCount - wrappedSkip)
+
+          const firstChunk = await prisma.product.findMany({
+            where: otherWhere,
+            take: firstChunkTake,
+            skip: wrappedSkip,
+            orderBy: { createdAt: 'desc' },
+            select: productSelect,
+          })
+          relatedProducts.push(...firstChunk)
+
+          const remainingNeeded = limit - relatedProducts.length
+          if (remainingNeeded > 0) {
+            const wrapItems = await prisma.product.findMany({
+              where: otherWhere,
+              take: Math.min(remainingNeeded, otherCount),
+              skip: 0,
+              orderBy: { createdAt: 'desc' },
+              select: productSelect,
+            })
+            relatedProducts.push(...wrapItems)
+          }
+        } else if (categoryCount > 0) {
+          // If all catalog products belong to the same category, cycle within category
+          const wrappedSkip = offset % categoryCount
+          const firstChunkTake = Math.min(limit, categoryCount - wrappedSkip)
+
+          const firstChunk = await prisma.product.findMany({
+            where: {
+              categoryId: currentProduct.categoryId!,
+              id: { not: currentProduct.id },
+              isActive: true,
             },
-          },
-        }),
-      })
+            take: firstChunkTake,
+            skip: wrappedSkip,
+            orderBy: { createdAt: 'desc' },
+            select: productSelect,
+          })
+          relatedProducts.push(...firstChunk)
+
+          const remainingNeeded = limit - relatedProducts.length
+          if (remainingNeeded > 0) {
+            const wrapItems = await prisma.product.findMany({
+              where: {
+                categoryId: currentProduct.categoryId!,
+                id: { not: currentProduct.id },
+                isActive: true,
+              },
+              take: Math.min(remainingNeeded, categoryCount),
+              skip: 0,
+              orderBy: { createdAt: 'desc' },
+              select: productSelect,
+            })
+            relatedProducts.push(...wrapItems)
+          }
+        }
+      }
     }
 
     // Transform products for display
@@ -147,14 +213,19 @@ export async function GET(
 
       return {
         id: product.id,
+        sku: product.sku,
         slug: product.slug,
         name: localized.name,
         description: localized.description,
         price: parseFloat(product.price.toString()),
+        compareAtPrice: product.compareAtPrice ? parseFloat(product.compareAtPrice.toString()) : undefined,
         image: product.thumbnail || (product.images?.[0] as string) || '/images/product-placeholder.webp',
+        thumbnail: product.thumbnail,
+        images: product.images || [],
         category: product.category ? localizeCategory(product.category, locale).name : undefined,
         stock: product.stock,
         minOrder: product.minOrderQty,
+        minOrderQty: product.minOrderQty,
         wholesalePrice: product.wholesalePrice ? parseFloat(product.wholesalePrice.toString()) : undefined,
         colors: extractColors(attributes, locale),
       }
@@ -174,7 +245,8 @@ export async function GET(
       pagination: {
         page,
         limit,
-        hasMore: relatedProducts.length === limit,
+        total: totalCatalogCount,
+        hasMore: totalCatalogCount > 0 && relatedProducts.length > 0,
       },
     })
   } catch (error) {
