@@ -192,21 +192,16 @@ export default function ProductGrid({
           <div key={product.id} className="flex gap-3 sm:gap-4 bg-white rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-100">
             {/* Product Image */}
             <LocaleLink href={`/products/${product.slug}`} className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded overflow-hidden bg-gray-100">
-              {product.thumbnail && !imageErrors.has(product.id) ? (
-                <ProductImage
-                  src={product.thumbnail}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 640px) 80px, 128px"
-                  className="object-cover"
-                  loading="lazy"
-                  onError={() => handleImageError(product.id)}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                  <ShoppingCart className="w-8 h-8 sm:w-12 sm:h-12 text-gray-300" />
-                </div>
-              )}
+              <ProductImage
+                src={product.thumbnail}
+                alt={product.name}
+                category={product.category?.name}
+                productName={product.name}
+                fill
+                sizes="(max-width: 640px) 80px, 128px"
+                className="object-cover"
+                loading="lazy"
+              />
               {product.isNew && (
                 <span className="absolute top-1 left-1 bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded shadow-xs uppercase tracking-wider">
                   {tBadge('NEW')}

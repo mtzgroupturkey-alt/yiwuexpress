@@ -26,7 +26,7 @@ export function MobileGallery({
 }: MobileGalleryProps) {
   const rawList = propImages && propImages.length > 0 ? propImages : [mainImage]
   const images = rawList
-    .map((src) => normalizeProductImageUrl(src))
+    .map((src) => normalizeProductImageUrl(src, undefined, productName))
     .filter(Boolean)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -79,6 +79,7 @@ export function MobileGallery({
           <ProductImage
             src={images[activeIndex]}
             alt={`${productName} image ${activeIndex + 1}`}
+            productName={productName}
             fill
             sizes="100vw"
             className="object-contain p-4 select-none"

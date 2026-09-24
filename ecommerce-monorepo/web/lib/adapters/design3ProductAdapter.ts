@@ -22,7 +22,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
 
   const rawImage = dbItem.thumbnail || 
     (Array.isArray(dbItem.images) && dbItem.images.length > 0 ? dbItem.images[0] : null);
-  const image = normalizeProductImageUrl(rawImage);
+  const image = normalizeProductImageUrl(rawImage, categoryName, dbItem.name);
 
   const stock = typeof dbItem.stock === 'number' ? dbItem.stock : 10;
 
@@ -59,7 +59,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     stockLeft: stock,
     image: image,
     images: Array.isArray(dbItem.images) && dbItem.images.length > 0
-      ? dbItem.images.map((img: string) => normalizeProductImageUrl(img))
+      ? dbItem.images.map((img: string) => normalizeProductImageUrl(img, categoryName, dbItem.name))
       : [image],
     inStock: stock > 0,
     isExpressDelivery: Boolean(dbItem.isFeatured || stock > 15),

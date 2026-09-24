@@ -123,6 +123,8 @@ export function MobileBestsellersGrid({
                   <ProductImage
                     src={product.image}
                     alt={product.name}
+                    category={product.category}
+                    productName={product.name}
                     fill
                     sizes="(max-width: 768px) 50vw, 200px"
                     className="object-contain p-2"

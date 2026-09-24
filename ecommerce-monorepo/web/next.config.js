@@ -12,24 +12,44 @@ const withPWA = require('next-pwa')({
   },
   runtimeCaching: [
     {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif|ico)$/i,
+      urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif|ico|avif)(?:\?.*)?$/i,
       handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'static-image-assets',
         expiration: {
-          maxEntries: 300,
+          maxEntries: 500,
           maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
         },
       },
     },
     {
-      urlPattern: /^\/uploads\/.*/i,
+      urlPattern: /\/uploads\/.*\.(?:png|jpg|jpeg|svg|webp|gif|ico|avif)(?:\?.*)?$/i,
       handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'uploaded-media',
         expiration: {
           maxEntries: 500,
           maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
+      },
+    },
+    {
+      urlPattern: /\/api\/uploads\/.*/i,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'api-uploads-cache',
+        expiration: {
+          maxEntries: 500,
+          maxAgeSeconds: 30 * 24 * 60 * 60,
+        },
+        cacheableResponse: {
+          statuses: [0, 200],
         },
       },
     },
@@ -42,10 +62,13 @@ const withPWA = require('next-pwa')({
           maxEntries: 300,
           maxAgeSeconds: 30 * 24 * 60 * 60,
         },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
       },
     },
     {
-      urlPattern: /^\/_next\/image\?.*/i,
+      urlPattern: /\/_next\/image\?.*/i,
       handler: 'StaleWhileRevalidate',
       options: {
         cacheName: 'next-image-cache',
@@ -53,10 +76,13 @@ const withPWA = require('next-pwa')({
           maxEntries: 300,
           maxAgeSeconds: 30 * 24 * 60 * 60,
         },
+        cacheableResponse: {
+          statuses: [0, 200],
+        },
       },
     },
     {
-      urlPattern: /^\/api\/.*/i,
+      urlPattern: /\/api\/(?!uploads\/).*/i,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'api-cache',
@@ -144,10 +170,30 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [
+        {
+          source: '/uploads/:path*',
+          destination: '/api/uploads/:path*',
+        },
+      ],
+      fallback: [],
+    };
+  },
   // Add CORS headers and security headers to all routes
   async headers() {
     const allowedOrigin = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://dromkok.com';
     return [
+      {
+        source: '/api/uploads/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,HEAD,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Accept, Content-Type, Range' },
+        ],
+      },
       {
         source: '/api/:path*',
         headers: [
@@ -161,8 +207,8 @@ const nextConfig = {
         source: '/uploads/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS' },
-          { key: 'Access-Control-Allow-Headers', value: 'Accept, Content-Type' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,HEAD,OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Accept, Content-Type, Range' },
         ],
       },
       {

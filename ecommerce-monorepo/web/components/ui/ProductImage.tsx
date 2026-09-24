@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { normalizeProductImageUrl, DEFAULT_PLACEHOLDER } from '@/lib/image-utils';
+import { normalizeProductImageUrl, getCategoryFallbackImage, DEFAULT_PLACEHOLDER } from '@/lib/image-utils';
 
 export interface ProductImageProps {
   src?: string | null;
   alt: string;
+  category?: string | null;
+  productName?: string | null;
   width?: number;
   height?: number;
   fill?: boolean;
@@ -42,13 +44,15 @@ const SHIMMER_BLUR_DATA_URL =
 export function ProductImage({
   src,
   alt = 'Product image',
+  category,
+  productName,
   width,
   height,
   fill,
   className = '',
   sizes,
   priority = false,
-  fallbackSrc = DEFAULT_PRODUCT_FALLBACK,
+  fallbackSrc,
   quality,
   unoptimized = true,
   loading,
@@ -58,27 +62,29 @@ export function ProductImage({
   onLoad,
   onError,
 }: ProductImageProps) {
-  const normalizedOriginal = src ? normalizeProductImageUrl(src) : '';
-  const normalizedFallback = normalizeProductImageUrl(fallbackSrc || DEFAULT_PRODUCT_FALLBACK);
+  const safeAlt = alt?.trim() ? alt : (productName?.trim() || 'Product image');
+  const dynamicFallback = fallbackSrc || getCategoryFallbackImage(category, productName || safeAlt);
+  const normalizedFallback = normalizeProductImageUrl(dynamicFallback);
+  const normalizedOriginal = src ? normalizeProductImageUrl(src, category, productName || safeAlt) : '';
 
   const [error, setError] = useState(!normalizedOriginal || normalizedOriginal === normalizedFallback);
   const [loaded, setLoaded] = useState(Boolean(priority));
 
   // Sync state if src changes (e.g., variant switch, carousel slide)
   useEffect(() => {
-    const fresh = src ? normalizeProductImageUrl(src) : '';
+    const fresh = src ? normalizeProductImageUrl(src, category, productName || safeAlt) : '';
     setError(!fresh || fresh === normalizedFallback);
     setLoaded(Boolean(priority));
-  }, [src, normalizedFallback, priority]);
+  }, [src, normalizedFallback, priority, category, productName, safeAlt]);
 
   const finalSrc = error || !normalizedOriginal ? normalizedFallback : normalizedOriginal;
-  const safeAlt = alt?.trim() ? alt : 'Product image';
   const effectiveLoading = priority ? 'eager' : (loading || 'lazy');
 
   const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    if (!error && finalSrc !== normalizedFallback) {
+    if (!error) {
       setError(true);
     }
+    setLoaded(true);
     onError?.(e);
   };
 
@@ -88,11 +94,12 @@ export function ProductImage({
   };
 
   const transitionClass = `transition-opacity duration-300 ease-out ${loaded ? 'opacity-100' : 'opacity-85'} ${className}`;
+  const stableKey = src || 'default-img';
 
   if (fill) {
     return (
       <Img
-        key={finalSrc}
+        key={stableKey}
         src={finalSrc}
         alt={safeAlt}
         fill
@@ -122,7 +129,7 @@ export function ProductImage({
 
   return (
     <Img
-      key={finalSrc}
+      key={stableKey}
       src={finalSrc}
       alt={safeAlt}
       width={explicitWidth}

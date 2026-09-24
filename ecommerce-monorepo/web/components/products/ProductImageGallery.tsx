@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, ZoomIn, ZoomOut } from 'lucide-react'
+import { getCategoryFallbackImage } from '@/lib/image-utils'
 
 interface ProductImageGalleryProps {
   images: string[]
@@ -26,7 +27,8 @@ export function ProductImageGallery({ images, productName, badgeText, className 
   const lightboxThumbnailsRef = useRef<HTMLDivElement>(null)
 
   const rawImages = images && images.length > 0 ? images.filter(Boolean) : []
-  const displayImages = rawImages.length > 0 ? rawImages : ['/images/product-placeholder.webp']
+  const fallbackImg = getCategoryFallbackImage(undefined, productName) || '/images/product-placeholder.webp'
+  const displayImages = rawImages.length > 0 ? rawImages : [fallbackImg]
 
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set())
 
@@ -44,9 +46,9 @@ export function ProductImageGallery({ images, productName, badgeText, className 
 
   const getImageSrc = (index: number) => {
     if (failedIndices.has(index)) {
-      return '/images/product-placeholder.webp'
+      return fallbackImg
     }
-    return displayImages[index] || '/images/product-placeholder.webp'
+    return displayImages[index] || fallbackImg
   }
 
   // Keep index within bounds if image count changes (e.g. variant switch)

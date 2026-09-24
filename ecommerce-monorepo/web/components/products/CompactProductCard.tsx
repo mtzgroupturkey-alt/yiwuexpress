@@ -21,6 +21,7 @@ export function CompactProductCard({ product, locale = 'en' }: CompactProductCar
         <ProductImage
           src={primaryImage}
           alt={product.name || 'Product image'}
+          productName={product.name}
           fill
           sizes="64px"
           className="object-cover group-hover:scale-105 transition-transform duration-300"
