@@ -71,3 +71,17 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(Promise.all([trackPromise, navigationPromise]));
 });
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(
+    self.registration.pushManager.subscribe(event.oldSubscription.options)
+      .then((subscription) => {
+        return fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(subscription),
+        })
+      })
+  )
+})
+

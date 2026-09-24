@@ -20,6 +20,7 @@ import { MobileLayoutContainer } from '@/components/mobile/MobileLayoutContainer
 import { BottomNav } from '@/components/mobile/BottomNav'
 import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 import { LocaleCurrencyAutoDetect } from '@/components/i18n/LocaleCurrencyAutoDetect'
+import { PushNotificationPrompt } from '@/components/pwa/PushNotificationPrompt'
 
 export const dynamic = 'force-dynamic'
 
@@ -223,6 +224,7 @@ export default async function LocaleLayout({
                           {children}
                         </MobileLayoutContainer>
                         <InstallPrompt />
+                        <PushNotificationPrompt />
                         <BottomNav />
                         <BackToTop />
                       </MobileProvider>
