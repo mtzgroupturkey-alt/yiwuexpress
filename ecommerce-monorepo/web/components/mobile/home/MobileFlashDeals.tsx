@@ -144,7 +144,7 @@ export function MobileFlashDeals({
                       fill
                       sizes="156px"
                       className="object-contain p-2"
-                      loading="lazy"
+                      loading="eager"
                     />
                   </div>
 
@@ -239,7 +239,7 @@ export function MobileFlashDeals({
                       fill
                       sizes="(max-width: 768px) 50vw, 200px"
                       className="object-contain p-2"
-                      loading="lazy"
+                      loading="eager"
                     />
                   </div>
 

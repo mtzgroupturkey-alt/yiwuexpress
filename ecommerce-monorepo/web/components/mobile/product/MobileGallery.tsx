@@ -94,7 +94,7 @@ export function MobileGallery({
                   handlePrev()
                 }
               }}
-              className="w-full h-full relative cursor-grab active:cursor-grabbing"
+              className="absolute inset-0 flex items-center justify-center cursor-grab active:cursor-grabbing"
             >
               <ProductImage
                 src={images[activeIndex]}
@@ -104,6 +104,7 @@ export function MobileGallery({
                 sizes="100vw"
                 className="object-contain p-4 select-none"
                 priority={activeIndex === 0}
+                loading="eager"
               />
             </motion.div>
           </AnimatePresence>

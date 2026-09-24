@@ -145,7 +145,7 @@ function renderCategoryVisual(cat: Category, imageUrl?: string | null) {
         src={imageUrl}
         alt={cat.name}
         className="w-full h-full object-cover rounded-full"
-        loading="lazy"
+        loading="eager"
       />
     )
   }

@@ -128,7 +128,7 @@ export function MobileBestsellersGrid({
                     fill
                     sizes="(max-width: 768px) 50vw, 200px"
                     className="object-contain p-2"
-                    loading="lazy"
+                    loading="eager"
                   />
                 </div>
 

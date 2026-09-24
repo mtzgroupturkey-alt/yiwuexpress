@@ -96,7 +96,7 @@ export function MobileProductCard({
       className={`group rounded-2xl bg-white dark:bg-[#0f172a] border border-gray-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:border-blue-500/20 dark:hover:border-blue-400/20 overflow-hidden flex flex-col justify-between cursor-pointer tap-spring active:scale-[0.97] transition-all duration-200 touch-manipulation ${className}`}
     >
       {/* Thumbnail + Badges + Favorite Button */}
-      <div className="relative w-full aspect-square bg-gray-50/80 dark:bg-slate-900/80 p-2 overflow-hidden">
+      <div className="relative w-full aspect-square bg-gray-50/80 dark:bg-slate-900/80 overflow-hidden">
         {discountPercent && (
           <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-[10px] shadow-xs tracking-tight flex items-center gap-0.5">
             <span>-{discountPercent}%</span>
@@ -118,7 +118,7 @@ export function MobileProductCard({
           </button>
         )}
 
-        <div className="w-full h-full relative transition-transform duration-300 ease-out group-hover:scale-105">
+        <div className="absolute inset-0 p-2 transition-transform duration-300 ease-out group-hover:scale-105 flex items-center justify-center">
           <ProductImage
             src={product.image}
             alt={product.name}
@@ -127,7 +127,7 @@ export function MobileProductCard({
             fill
             sizes="(max-width: 768px) 50vw, 200px"
             className="object-contain p-2"
-            loading="lazy"
+            loading="eager"
           />
         </div>
       </div>
