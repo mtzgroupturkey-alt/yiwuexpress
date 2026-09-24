@@ -150,17 +150,35 @@ export default function CompanyInfoPage() {
         }
         setError('')
 
+        // Extract translations by locale
+        const byLocale: Record<string, any> = {}
         if (data.settings?.translations) {
-          const byLocale: Record<string, any> = {}
           for (const t of data.settings.translations as Array<{ locale: string; key: string; value: string | null }>) {
             // Include ALL locales (en, ru, zh)
             byLocale[t.locale] = byLocale[t.locale] || { locale: t.locale }
             if (t.key === 'companyName') byLocale[t.locale].companyName = t.value || ''
+            if (t.key === 'siteTagline') byLocale[t.locale].siteTagline = t.value || ''
             if (t.key === 'companyDescription') byLocale[t.locale].companyDescription = t.value || ''
             if (t.key === 'companyAddress') byLocale[t.locale].companyAddress = t.value || ''
           }
-          setTranslations(translationsArrayToInitial(Object.values(byLocale)))
         }
+
+        // Guarantee that 'en' row in LocalizedFieldsForm is seeded from base settings if missing or empty
+        byLocale['en'] = byLocale['en'] || { locale: 'en' }
+        if (!byLocale['en'].companyName && data.settings?.companyName) {
+          byLocale['en'].companyName = data.settings.companyName
+        }
+        if (!byLocale['en'].siteTagline && data.settings?.siteTagline) {
+          byLocale['en'].siteTagline = data.settings.siteTagline
+        }
+        if (!byLocale['en'].companyDescription && data.settings?.companyDescription) {
+          byLocale['en'].companyDescription = data.settings.companyDescription
+        }
+        if (!byLocale['en'].companyAddress && data.settings?.companyAddress) {
+          byLocale['en'].companyAddress = data.settings.companyAddress
+        }
+
+        setTranslations(translationsArrayToInitial(Object.values(byLocale)))
       } else {
         setError(data.error || 'Failed to load settings')
       }
@@ -168,6 +186,21 @@ export default function CompanyInfoPage() {
       setError('Network error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleTranslationsChange = (newTranslations: TranslationRow[]) => {
+    setTranslations(newTranslations)
+    // Synchronize English fields from LocalizedFieldsForm immediately to top-level settings
+    const enRow = newTranslations.find((t) => t.locale === 'en')
+    if (enRow) {
+      setSettings((prev) => ({
+        ...prev,
+        ...(enRow.companyName !== undefined ? { companyName: enRow.companyName } : {}),
+        ...(enRow.siteTagline !== undefined ? { siteTagline: enRow.siteTagline } : {}),
+        ...(enRow.companyDescription !== undefined ? { companyDescription: enRow.companyDescription } : {}),
+        ...(enRow.companyAddress !== undefined ? { companyAddress: enRow.companyAddress } : {}),
+      }))
     }
   }
 
@@ -179,20 +212,52 @@ export default function CompanyInfoPage() {
     setSuccess('')
 
     try {
+      // Resolve values ensuring English tab and top settings are in sync
+      const enTranslation = translations.find((t) => t.locale === 'en')
+      const resolvedSiteTagline = (settings.siteTagline || enTranslation?.siteTagline || '').trim()
+      const resolvedCompanyName = (settings.companyName || enTranslation?.companyName || 'Global Trade').trim()
+      const resolvedCompanyDescription = (settings.companyDescription || enTranslation?.companyDescription || '').trim()
+      const resolvedCompanyAddress = (settings.companyAddress || enTranslation?.companyAddress || '').trim()
+
+      const payloadSettings = {
+        ...settings,
+        companyName: resolvedCompanyName,
+        siteTagline: resolvedSiteTagline,
+        companyDescription: resolvedCompanyDescription,
+        companyAddress: resolvedCompanyAddress,
+      }
+
       // Transform translations from LocalizedFieldsForm format to API format
-      // From: [{ locale: 'ru', companyName: '...', companyDescription: '...', companyAddress: '...' }]
-      // To: [{ locale: 'ru', key: 'companyName', value: '...' }, { locale: 'ru', key: 'companyDescription', value: '...' }, ...]
       const apiTranslations: Array<{ locale: string; key: string; value: string }> = []
+
+      // Explicitly include resolved 'en' localized fields
+      if (resolvedCompanyName) apiTranslations.push({ locale: 'en', key: 'companyName', value: resolvedCompanyName })
+      if (resolvedSiteTagline) apiTranslations.push({ locale: 'en', key: 'siteTagline', value: resolvedSiteTagline })
+      if (resolvedCompanyDescription) apiTranslations.push({ locale: 'en', key: 'companyDescription', value: resolvedCompanyDescription })
+      if (resolvedCompanyAddress) apiTranslations.push({ locale: 'en', key: 'companyAddress', value: resolvedCompanyAddress })
+
       for (const row of translations) {
-        // Process ALL locales (en, ru, zh) - don't skip any
-        for (const [key, value] of Object.entries(row)) {
-          if (key === 'locale') continue // Skip the locale property itself
-          if (value && value.toString().trim().length > 0) {
-            apiTranslations.push({
-              locale: row.locale,
-              key,
-              value: value.toString().trim()
-            })
+        if (row.locale === 'en') {
+          for (const [key, value] of Object.entries(row)) {
+            if (key === 'locale' || ['companyName', 'siteTagline', 'companyDescription', 'companyAddress'].includes(key)) continue
+            if (value && value.toString().trim().length > 0) {
+              apiTranslations.push({
+                locale: 'en',
+                key,
+                value: value.toString().trim()
+              })
+            }
+          }
+        } else {
+          for (const [key, value] of Object.entries(row)) {
+            if (key === 'locale') continue
+            if (value && value.toString().trim().length > 0) {
+              apiTranslations.push({
+                locale: row.locale,
+                key,
+                value: value.toString().trim()
+              })
+            }
           }
         }
       }
@@ -203,7 +268,7 @@ export default function CompanyInfoPage() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ ...settings, translations: apiTranslations }),
+        body: JSON.stringify({ ...payloadSettings, translations: apiTranslations }),
       })
 
       const data = await response.json()
@@ -225,6 +290,17 @@ export default function CompanyInfoPage() {
 
   const handleInputChange = (field: keyof CompanySettings, value: string | number) => {
     setSettings(prev => ({ ...prev, [field]: value }))
+    // If one of the localized fields is edited from the general inputs, keep English tab in sync
+    if (typeof value === 'string' && ['companyName', 'siteTagline', 'companyDescription', 'companyAddress'].includes(field)) {
+      setTranslations((prev) => {
+        const hasEn = prev.some((r) => r.locale === 'en')
+        if (hasEn) {
+          return prev.map((r) => r.locale === 'en' ? { ...r, [field]: value } : r)
+        } else {
+          return [...prev, { locale: 'en', [field]: value }]
+        }
+      })
+    }
   }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -465,7 +541,7 @@ export default function CompanyInfoPage() {
                   { key: 'companyAddress', label: 'Company Address', textarea: true },
                 ]}
                 initialValues={translations}
-                onChange={setTranslations}
+                onChange={handleTranslationsChange}
               />
             </div>
           </div>

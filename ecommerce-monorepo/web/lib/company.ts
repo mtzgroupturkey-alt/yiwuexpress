@@ -66,6 +66,12 @@ export const getSystemSettings = safeCache(
         settings.companyName,
         locale
       )
+      const localizedTagline = localizeSystemSetting(
+        settings.translations,
+        'siteTagline',
+        settings.siteTagline,
+        locale
+      )
       const localizedDescription = localizeSystemSetting(
         settings.translations,
         'companyDescription',
@@ -88,6 +94,7 @@ export const getSystemSettings = safeCache(
         ...settings,
         companyLogo: resolvedLogo,
         companyName: localizedName || settings.companyName,
+        siteTagline: localizedTagline || settings.siteTagline,
         companyDescription: localizedDescription || settings.companyDescription,
         companyAddress: localizedAddress || settings.companyAddress,
       } as SystemSettings

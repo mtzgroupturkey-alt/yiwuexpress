@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
 
     // Expand-and-Contract read-path localization for company-facing copy.
     const localizedName = localizeSystemSetting(effectiveSettings.translations, 'companyName', effectiveSettings.companyName, locale)
+    const localizedTagline = localizeSystemSetting(effectiveSettings.translations, 'siteTagline', effectiveSettings.siteTagline, locale)
     const localizedDescription = localizeSystemSetting(effectiveSettings.translations, 'companyDescription', effectiveSettings.companyDescription, locale)
 
     const { translations, ...publicSettings } = effectiveSettings
@@ -141,6 +142,7 @@ export async function GET(request: NextRequest) {
         companyLogo: resolvedLogo,
         companyFavicon: resolvedFavicon,
         companyName: localizedName,
+        siteTagline: localizedTagline || publicSettings.siteTagline,
         companyDescription: localizedDescription,
       }
     })

@@ -212,6 +212,11 @@ export async function PUT(request: Request) {
 
     const freeShippingThreshold = body.freeShippingThreshold !== undefined ? (parseFloat(body.freeShippingThreshold) || 0) : undefined
 
+    const enSiteTagline = body.translations?.find?.((t: any) => t && t.locale === 'en' && t.key === 'siteTagline')?.value
+    const resolvedSiteTagline = (body.siteTagline !== undefined && body.siteTagline !== null && body.siteTagline !== '')
+      ? body.siteTagline
+      : (enSiteTagline !== undefined ? enSiteTagline : (body.siteTagline ?? null))
+
     if (existing) {
       let settings: any = null
       try {
@@ -219,7 +224,7 @@ export async function PUT(request: Request) {
           where: { id: existing.id },
           data: {
             companyName: body.companyName,
-            siteTagline: body.siteTagline,
+            siteTagline: resolvedSiteTagline,
             companyAddress: body.companyAddress,
             companyPhone: body.companyPhone,
             companyEmail: body.companyEmail,
@@ -253,6 +258,7 @@ export async function PUT(request: Request) {
             where: { id: existing.id },
             data: {
               companyName: body.companyName,
+              siteTagline: resolvedSiteTagline,
               companyAddress: body.companyAddress,
               companyPhone: body.companyPhone,
               companyEmail: body.companyEmail,
@@ -277,13 +283,15 @@ export async function PUT(request: Request) {
             },
           })
         } catch {
-          settings = { ...existing, ...body }
+          settings = { ...existing, ...body, siteTagline: resolvedSiteTagline }
         }
       }
 
-      if (settings?.id && body.translations && Array.isArray(body.translations)) {
+      const targetSettingId = settings?.id || existing?.id
+
+      if (targetSettingId && body.translations && Array.isArray(body.translations)) {
         try {
-          const upserts = buildSystemSettingTranslationUpserts(settings.id, body.translations)
+          const upserts = buildSystemSettingTranslationUpserts(targetSettingId, body.translations)
           if (upserts.length) await prisma.$transaction(upserts)
         } catch (err) {
           console.error('Failed to upsert company translations:', err)
@@ -291,10 +299,10 @@ export async function PUT(request: Request) {
       }
 
       let translations: any[] = []
-      if (settings?.id) {
+      if (targetSettingId) {
         try {
           translations = await prisma.systemSettingTranslation.findMany({
-            where: { systemSettingId: settings.id },
+            where: { systemSettingId: targetSettingId },
           })
         } catch (err) {
           console.error('Failed to load company translations:', err)
@@ -315,7 +323,7 @@ export async function PUT(request: Request) {
       const settings = await prisma.systemSettings.create({
         data: {
           companyName: body.companyName || 'Global Trade',
-          siteTagline: body.siteTagline,
+          siteTagline: resolvedSiteTagline,
           companyAddress: body.companyAddress,
           companyPhone: body.companyPhone,
           companyEmail: body.companyEmail,
