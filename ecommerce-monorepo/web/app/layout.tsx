@@ -19,9 +19,19 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description: 'International trade and logistics platform.',
     icons: {
-      icon: faviconUrl,
+      icon: [
+        { url: faviconUrl, type: 'image/png' },
+        { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+        { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      ],
       shortcut: faviconUrl,
-      apple: faviconUrl,
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+        { url: '/icons/apple-touch-icon-180x180.png', sizes: '180x180', type: 'image/png' },
+        { url: '/icons/apple-touch-icon-167x167.png', sizes: '167x167', type: 'image/png' },
+        { url: '/icons/apple-touch-icon-152x152.png', sizes: '152x152', type: 'image/png' },
+        { url: '/icons/apple-touch-icon-120x120.png', sizes: '120x120', type: 'image/png' },
+      ],
     },
   }
 }
@@ -54,8 +64,16 @@ export default async function RootLayout({
     <html lang={lang}>
       <head>
         <link rel="icon" href={faviconUrl} />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="shortcut icon" href={faviconUrl} />
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167x167.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon-precomposed" sizes="180x180" href="/apple-touch-icon-precomposed.png" />
+        <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#00407a" />
         <meta name="mobile-web-app-capable" content="yes" />
