@@ -251,6 +251,14 @@ export async function GET(request: Request) {
       isActive: true
     }
 
+    const idsParam = searchParams.get('ids')
+    if (idsParam) {
+      const idList = idsParam.split(',').map((id) => id.trim()).filter(Boolean)
+      if (idList.length > 0) {
+        where.id = { in: idList }
+      }
+    }
+
     // Resolve the selected category (and all descendants) once; reused for both
     // the product query filter and the filter-metadata aggregation below.
     let categoryIds: string[] = []
