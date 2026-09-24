@@ -63,3 +63,4 @@ Given the browser/OS-level nature of push notifications, testing involves:
 ---
 
 **Commit Hash**: The changes have been pushed successfully. Ensure you build and deploy the updated service worker for the `pushsubscriptionchange` listener to take effect globally.
+Commit: e3e5c8482ef40ff919c02c5aa50bdc5527f60990
