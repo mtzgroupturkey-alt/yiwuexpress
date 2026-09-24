@@ -102,7 +102,6 @@ export function ProductImage({
         alt={safeAlt}
         loading={effectiveLoading}
         decoding={decoding}
-        {...({ fetchpriority: priority ? 'high' : 'auto' } as any)}
         className={`absolute inset-0 w-full h-full ${objectFitClass} transition-opacity duration-200 ${
           isLoaded ? 'opacity-100' : 'opacity-90'
         } ${className}`}
@@ -130,7 +129,6 @@ export function ProductImage({
       height={explicitHeight}
       loading={effectiveLoading}
       decoding={decoding}
-      {...({ fetchpriority: priority ? 'high' : 'auto' } as any)}
       className={`w-full h-auto ${objectFitClass} transition-opacity duration-200 ${
         isLoaded ? 'opacity-100' : 'opacity-90'
       } ${className}`}
