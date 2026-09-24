@@ -28,8 +28,42 @@ import {
   Sparkles,
   Percent,
 } from 'lucide-react';
-import Image from 'next/image';
 import { useAdminLocale } from '../../contexts/AdminLocaleContext';
+import { normalizeProductImageUrl, DEFAULT_PLACEHOLDER } from '@/lib/image-utils';
+
+const DEFAULT_PRODUCT_IMAGE = DEFAULT_PLACEHOLDER || '/images/product-placeholder.webp';
+const INLINE_FALLBACK_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f1f5f9'/%3E%3Cpath d='M160 180a20 20 0 100-40 20 20 0 000 40zm80 70H160l40-50 25 31 15-18 40 37z' fill='%23cbd5e1'/%3E%3Ctext x='200' y='290' text-anchor='middle' fill='%2394a3b8' font-family='system-ui, sans-serif' font-size='16' font-weight='500'%3ENo Photo%3C/text%3E%3C/svg%3E";
+
+function AdminProductPhoto({
+  src,
+  alt,
+  className = '',
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+}) {
+  const resolved = src ? normalizeProductImageUrl(src) : DEFAULT_PRODUCT_IMAGE;
+  const [imgSrc, setImgSrc] = useState<string>(resolved);
+
+  useEffect(() => {
+    setImgSrc(src ? normalizeProductImageUrl(src) : DEFAULT_PRODUCT_IMAGE);
+  }, [src]);
+
+  return (
+    <img
+      src={imgSrc}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className={`w-full h-full object-cover ${className}`}
+      onError={() => {
+        setImgSrc((current) => (current !== DEFAULT_PRODUCT_IMAGE ? DEFAULT_PRODUCT_IMAGE : INLINE_FALLBACK_SVG));
+      }}
+    />
+  );
+}
 
 interface DealProduct {
   id: string;
@@ -975,19 +1009,10 @@ export default function SeasonalFlashDealsSettings() {
 
                             {/* Image */}
                             <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                              {product.thumbnail ? (
-                                <Image
-                                  src={product.thumbnail}
-                                  alt={product.name}
-                                  fill
-                                  sizes="56px"
-                                  className="object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                  <Package className="w-6 h-6" />
-                                </div>
-                              )}
+                              <AdminProductPhoto
+                                src={product.thumbnail || (product as any).image}
+                                alt={product.name}
+                              />
                             </div>
 
                             {/* Text */}
@@ -1139,19 +1164,10 @@ export default function SeasonalFlashDealsSettings() {
                         </div>
 
                         <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
-                          {product.image ? (
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              sizes="44px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400">
-                              <Package className="w-5 h-5" />
-                            </div>
-                          )}
+                          <AdminProductPhoto
+                            src={product.image || product.thumbnail}
+                            alt={product.name}
+                          />
                         </div>
 
                         <div className="min-w-0">
