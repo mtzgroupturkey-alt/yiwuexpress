@@ -1,7 +1,7 @@
 {
-  "name": "Dromkok - E-Commerce & Freight Platform",
-  "short_name": "Dromkok",
-  "description": "Dromkok - Global Trade & Logistics Platform from China",
+  "name": "dromkok - E-Commerce & Freight Platform",
+  "short_name": "dromkok",
+  "description": "Leading logistics and trade services provider connecting China to the world.",
   "start_url": "/en",
   "scope": "/",
   "display": "standalone",
@@ -76,21 +76,39 @@
       "short_name": "Catalog",
       "description": "Browse wholesale products",
       "url": "/en/store",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Shopping Cart",
       "short_name": "Cart",
       "description": "View shopping cart and checkout",
       "url": "/en/cart",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Freight Quotes",
       "short_name": "Quote",
       "description": "Submit RFQ and calculate freight",
       "url": "/en/calculator",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
