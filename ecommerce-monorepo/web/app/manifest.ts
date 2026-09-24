@@ -8,12 +8,15 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     companyName = 'Dromkok'
   }
 
+  const siteTagline = settings?.siteTagline?.trim() || ''
+  const fullName = siteTagline ? `${companyName} - ${siteTagline}` : companyName
+
   const description =
     settings?.companyDescription ||
-    `${companyName} - Global Trade & Logistics Platform from China`
+    fullName
 
   return {
-    name: `${companyName} - E-Commerce & Freight Platform`,
+    name: fullName,
     short_name: companyName,
     description,
     start_url: '/en',

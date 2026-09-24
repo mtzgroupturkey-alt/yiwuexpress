@@ -206,7 +206,9 @@ export default function Footer() {
               )}
               <div>
                 <span className="text-xl font-extrabold text-white tracking-tight">{companyName}</span>
-                <span className="block text-xs font-bold text-blue-400">{siteTagline || 'CIS & International Trade'}</span>
+                {siteTagline ? (
+                  <span className="block text-xs font-bold text-blue-400">{siteTagline}</span>
+                ) : null}
               </div>
             </div>
 

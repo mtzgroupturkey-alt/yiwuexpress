@@ -263,9 +263,9 @@ export function MobileHeader({
                 <span className="text-[17px] sm:text-lg font-black tracking-tight text-[#00407a] dark:text-white truncate leading-tight">
                   {title || companyName}
                 </span>
-                {!title && (
+                {!title && settings?.siteTagline && (
                   <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider uppercase leading-none hidden min-[360px]:inline-block mt-0.5">
-                    {settings?.siteTagline || 'Global Sourcing & Freight'}
+                    {settings.siteTagline}
                   </span>
                 )}
               </div>

@@ -14,10 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
     getSiteTagline(),
   ])
   const faviconUrl = settings?.companyFavicon || '/favicon.svg'
-  const title = tagline ? `${companyName} | ${tagline}` : companyName
+  const title = tagline ? `${companyName} - ${tagline}` : companyName
   return {
     title,
-    description: 'International trade and logistics platform.',
+    description: settings?.companyDescription || title,
     icons: {
       icon: [
         { url: faviconUrl, type: 'image/png' },

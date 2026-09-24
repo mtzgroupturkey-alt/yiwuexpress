@@ -297,9 +297,11 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
                     <h3 className="font-bold text-sm text-gray-900 dark:text-white">
                       {(settings?.companyName && settings.companyName.toLowerCase() === 'dromkok' ? 'Dromkok' : settings?.companyName) || 'Dromkok'}
                     </h3>
-                    <p className="text-[11px] text-gray-500 dark:text-slate-400">
-                      {settings?.siteTagline || (locale === 'zh' ? '全球采购与供应链' : locale === 'ru' ? 'Международная торговля' : 'Global Trade Platform')}
-                    </p>
+                    {settings?.siteTagline ? (
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">
+                        {settings.siteTagline}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
                 <button

@@ -42,16 +42,14 @@ export async function generateMetadata({
   const companyDescription = await getCompanyDescription(locale)
   const companyFavicon = settings?.companyFavicon || '/favicon.png'
 
+  const fullTitle = siteTagline ? `${companyName} - ${siteTagline}` : companyName
+
   return {
     title: {
       template: `%s | ${companyName}`,
-      default: siteTagline
-        ? `${companyName} - ${siteTagline}`
-        : `${companyName} - Premium Global E-Commerce & Freight Solutions`,
+      default: fullTitle,
     },
-    description:
-      companyDescription ||
-      `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
+    description: companyDescription || fullTitle,
     metadataBase: new URL('https://dromkok.com'),
     manifest: '/manifest.json',
     icons: {
@@ -77,21 +75,21 @@ export async function generateMetadata({
     openGraph: {
       type: 'website',
       siteName: companyName,
-      title: `${companyName} - Global Trade & Logistics Platform`,
-      description: `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
+      title: fullTitle,
+      description: companyDescription || fullTitle,
       images: [
         {
           url: settings?.companyLogo || '/og-image.png',
           width: 1200,
           height: 630,
-          alt: `${companyName} Platform`,
+          alt: `${companyName}`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${companyName} - Global Trade & Logistics Platform`,
-      description: `Source wholesale products, request freight quotes, and track cargo globally from China with ${companyName}.`,
+      title: fullTitle,
+      description: companyDescription || fullTitle,
       images: [settings?.companyLogo || '/og-image.png'],
     },
   }

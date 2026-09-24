@@ -431,9 +431,11 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-2xl font-black tracking-tight text-[#00407a] font-['Inter'] leading-none">
                 {companyName}
               </span>
-              <span className="text-[9px] font-bold text-amber-600 tracking-wider uppercase mt-0.5">
-                {settings?.siteTagline || tHeader('globalTagline')}
-              </span>
+              {settings?.siteTagline ? (
+                <span className="text-[9px] font-bold text-amber-600 tracking-wider uppercase mt-0.5">
+                  {settings.siteTagline}
+                </span>
+              ) : null}
             </div>
           </Link>
         </div>

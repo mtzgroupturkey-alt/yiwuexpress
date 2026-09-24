@@ -88,7 +88,7 @@ export function TwoRowNavbar() {
   const companyName = company?.name || settings?.companyName || 'Global Trade'
   const companyLogo = company?.logo || settings?.companyLogo || '/logo.png'
   const companyLogoHeight = company?.logoHeight || settings?.companyLogoHeight || 36
-  const siteTagline = settings?.siteTagline || 'Global Trade & Logistics Platform'
+  const siteTagline = settings?.siteTagline?.trim() || ''
   const [logoFailed, setLogoFailed] = useState(false)
 
   useEffect(() => {
@@ -254,9 +254,11 @@ export function TwoRowNavbar() {
                 <span className="text-xl md:text-2xl font-black text-[#0055A4] tracking-tight font-['Outfit',sans-serif] leading-tight group-hover:text-[#003d75] transition-colors">
                   {companyName}
                 </span>
-                <span className="text-[11px] text-gray-500 font-medium hidden sm:block">
-                  {siteTagline}
-                </span>
+                {siteTagline ? (
+                  <span className="text-[11px] text-gray-500 font-medium hidden sm:block">
+                    {siteTagline}
+                  </span>
+                ) : null}
               </div>
             </LocaleLink>
 

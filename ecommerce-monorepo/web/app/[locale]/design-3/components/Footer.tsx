@@ -181,10 +181,11 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
             </div>
 
-            {/* Tagline / Mission */}
-            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              {settings?.siteTagline || tFooter('taglineDefault')}
-            </p>
+            {settings?.siteTagline ? (
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                {settings.siteTagline}
+              </p>
+            ) : null}
 
             {/* Direct Contact Snippets */}
             <div className="space-y-2 text-xs pt-1">

@@ -4,13 +4,15 @@ import { prisma } from '@/lib/db'
 import fs from 'fs'
 import path from 'path'
 
-function updateDiskManifest(name?: string, desc?: string) {
+function updateDiskManifest(name?: string, tagline?: string, desc?: string) {
   try {
     const companyName = name?.trim() || 'Dromkok'
-    const description = desc?.trim() || `${companyName} - Global Trade & Logistics Platform from China`
+    const siteTagline = tagline?.trim() || ''
+    const fullName = siteTagline ? `${companyName} - ${siteTagline}` : companyName
+    const description = desc?.trim() || fullName
 
     const manifestData = {
-      name: `${companyName} - E-Commerce & Freight Platform`,
+      name: fullName,
       short_name: companyName,
       description,
       start_url: '/en',
@@ -310,7 +312,7 @@ export async function PUT(request: Request) {
       }
 
       if (body.companyName) {
-        updateDiskManifest(body.companyName, body.companyDescription)
+        updateDiskManifest(body.companyName, resolvedSiteTagline, body.companyDescription)
       }
 
       return NextResponse.json({
@@ -369,7 +371,7 @@ export async function PUT(request: Request) {
         console.error('Failed to load company translations:', err)
       }
 
-      updateDiskManifest(body.companyName, body.companyDescription)
+      updateDiskManifest(body.companyName, resolvedSiteTagline, body.companyDescription)
 
       return NextResponse.json({
         success: true,
