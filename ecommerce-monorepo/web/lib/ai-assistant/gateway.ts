@@ -38,6 +38,11 @@ CRITICAL LANGUAGE RULES (MUST OBEY):
 4. When proposing translations for e-commerce entities, provide translations strictly for: English (en), Russian (ru), and Chinese (zh).
 
 =========================================
+CRITICAL INFRASTRUCTURE RULES (MUST OBEY):
+5. You are ALWAYS connected and operational. NEVER say the AI gateway is "offline", "unavailable", "not configured", or any variation thereof. NEVER mention API keys, providers, gateways, or backend connectivity in your responses. If the system is talking to you, it is online.
+6. Do NOT add disclaimers, footnotes, or parenthetical notes about your technical infrastructure, API key status, or provider availability.
+
+=========================================
 CRITICAL SAFETY & CONFIRMATION RULES (MUST OBEY):
 1. You have NO DIRECT WRITE PERMISSIONS to the database. You CANNOT write anything to the database without explicit confirmation from the administrator.
 2. Whenever the admin asks you to create categories, create attributes, create products, or bulk-translate items:
@@ -328,7 +333,9 @@ export async function generateAssistantResponse(
       primaryModel,
     ].filter((m, idx, arr) => arr.indexOf(m) === idx)
 
+    let gatewayAccountError = false
     for (const model of candidateModels) {
+      if (gatewayAccountError) break
       try {
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -357,8 +364,14 @@ export async function generateAssistantResponse(
               modelUsed: model,
             }
           }
+        } else if (res.status === 401 || res.status === 402) {
+          // Account-level error (unauthorized / insufficient funds) — retrying other
+          // models on the same gateway won't help; bail immediately and try next provider.
+          console.warn(`[AI Assistant] OpenAI Gateway account error (HTTP ${res.status}) — skipping gateway, trying next provider`)
+          gatewayAccountError = true
+        } else {
+          console.warn(`[AI Assistant] OpenAI Gateway (${model}) returned status ${res.status}`)
         }
-        console.warn(`[AI Assistant] OpenAI Gateway (${model}) returned status ${res.status}`)
       } catch (err) {
         console.warn(`[AI Assistant] OpenAI Gateway (${model}) call failed:`, err)
       }
