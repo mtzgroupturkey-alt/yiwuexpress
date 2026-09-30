@@ -1,5 +1,11 @@
 export const dynamic = 'force-dynamic'
 
+import dns from 'dns'
+// Fix IPv6 fetch failures on Linux hosts
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first')
+}
+
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'

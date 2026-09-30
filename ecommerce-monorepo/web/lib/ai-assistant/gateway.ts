@@ -1,3 +1,8 @@
+import dns from 'dns'
+// Fix IPv6 fetch failures on Linux hosts — must run before any fetch() call
+if (typeof dns.setDefaultResultOrder === 'function') {
+  dns.setDefaultResultOrder('ipv4first')
+}
 import { getApiKeys, ApiKeys } from '@/lib/api-keys'
 import { AdminChatLocale, PendingAction } from './types'
 
