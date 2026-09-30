@@ -380,14 +380,17 @@ export async function generateAssistantResponse(
 
   // Provider 2: OpenRouter Fallback
   if (apiKeys.openrouterApiKey) {
-    try {
-      const models = [
-        'google/gemma-4-26b-a4b-it:free',
-        'qwen/qwen3.8-27b:free',
-        'nvidia/nemotron-3.5-lightning:free',
-        'openrouter/auto',
-      ]
-      for (const model of models) {
+    // Order: best capability first (verified working as of 2026-09-30)
+    const models = [
+      'nvidia/nemotron-3-super-120b-a12b:free',   // 120B — best for complex tasks
+      'nvidia/nemotron-3.5-lightning:free',         // fast, reliable
+      'qwen/qwen3.8-27b:free',                     // good multilingual
+      'google/gemma-4-31b-it:free',                // good instruction following
+      'google/gemma-4-26b-a4b-it:free',            // backup
+      'openrouter/free',                           // last resort: any free model
+    ]
+    for (const model of models) {
+      try {
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -400,24 +403,30 @@ export async function generateAssistantResponse(
             model,
             messages: fullMessages,
             temperature: 0.3,
+            max_tokens: 4000,
           }),
-          signal: AbortSignal.timeout(30_000),
+          signal: AbortSignal.timeout(25_000),
         })
 
         if (res.ok) {
           const json = await res.json()
           const rawContent = json?.choices?.[0]?.message?.content || ''
-          const { cleanText, pendingAction } = extractActionProposal(rawContent)
-          return {
-            content: cleanText || rawContent,
-            pendingAction,
-            providerUsed: 'OpenRouter',
-            modelUsed: model,
+          if (rawContent && rawContent.trim()) {
+            const { cleanText, pendingAction } = extractActionProposal(rawContent)
+            return {
+              content: cleanText || rawContent,
+              pendingAction,
+              providerUsed: 'OpenRouter',
+              modelUsed: model,
+            }
           }
+          console.warn(`[AI Assistant] OpenRouter (${model}) returned OK but empty content`)
+        } else {
+          console.warn(`[AI Assistant] OpenRouter (${model}) returned status ${res.status}`)
         }
+      } catch (err) {
+        console.warn(`[AI Assistant] OpenRouter (${model}) failed:`, err)
       }
-    } catch (err) {
-      console.warn('[AI Assistant] OpenRouter fallback failed:', err)
     }
   }
 

@@ -20,10 +20,12 @@ const LOCALE_NAMES: Record<TargetLocale, string> = {
 const OPENROUTER_MODELS = process.env.OPENROUTER_MODEL 
   ? [process.env.OPENROUTER_MODEL] 
   : [
-      'google/gemma-4-26b-a4b-it:free',
-      'qwen/qwen3.8-27b:free',
+      'nvidia/nemotron-3-super-120b-a12b:free',
       'nvidia/nemotron-3.5-lightning:free',
-      'openrouter/auto',
+      'qwen/qwen3.8-27b:free',
+      'google/gemma-4-31b-it:free',
+      'google/gemma-4-26b-a4b-it:free',
+      'openrouter/free',
     ]
 const HTTP_REFERER = process.env.OPENROUTER_REFERER || 'http://localhost:3001'
 const GEMINI_MODELS = process.env.GEMINI_MODEL 
