@@ -313,6 +313,18 @@ console.log(completion.choices[0].message.content);`
                     Response latency: {testResult.latencyMs}ms {testResult.model ? `• Model: ${testResult.model}` : ''}
                   </p>
                 )}
+                {testResult.error && (testResult.error.includes('402') || testResult.error.toLowerCase().includes('wallet') || testResult.error.includes('insufficient_quota')) && (
+                  <div className="mt-2.5 pt-2.5 border-t border-red-200/80 text-[11px] text-red-800 space-y-1">
+                    <p className="font-semibold flex items-center gap-1">
+                      <span>💡</span>
+                      <span>How to resolve this:</span>
+                    </p>
+                    <ul className="list-disc list-inside space-y-0.5 opacity-95 pl-1">
+                      <li>Your gateway account wallet balance is exhausted ($-0.05). Log into your gateway portal (e.g. at <strong>gcat.ir</strong> or your provider dashboard) and deposit funds into your wallet to reactivate this key.</li>
+                      <li>Alternatively, click <strong>OpenRouter</strong> or <strong>Official OpenAI</strong> in the presets above and enter a valid API key.</li>
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           )}

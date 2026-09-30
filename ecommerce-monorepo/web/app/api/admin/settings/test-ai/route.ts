@@ -56,11 +56,29 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text().catch(() => '');
+      let parsedErrorMsg = '';
+      try {
+        const errJson = JSON.parse(errorText);
+        parsedErrorMsg = errJson?.error?.message || errJson?.message || '';
+      } catch {}
+
+      let userFriendlyError = '';
+      if (response.status === 402 || errorText.includes('insufficient_quota') || errorText.includes('wallet balance')) {
+        userFriendlyError = `Gateway returned 402 (Payment Required): ${parsedErrorMsg || 'Insufficient wallet balance'}. Please deposit funds into your wallet at your provider portal, or switch to OpenRouter / Gemini.`;
+      } else if (response.status === 401) {
+        userFriendlyError = `Invalid API Key (HTTP 401 Unauthorized): ${parsedErrorMsg || 'Please verify and re-enter your key.'}`;
+      } else if (response.status === 404) {
+        userFriendlyError = `Model or endpoint not found (HTTP 404): ${parsedErrorMsg || `Please check if "${targetModel}" is supported.`}`;
+      } else {
+        userFriendlyError = `Gateway returned status ${response.status} (${response.statusText}): ${parsedErrorMsg || errorText.slice(0, 300)}`;
+      }
+
       return NextResponse.json({
         success: false,
         status: response.status,
         latencyMs,
-        error: `Gateway returned status ${response.status} (${response.statusText}): ${errorText.slice(0, 300)}`,
+        error: userFriendlyError,
+        rawError: errorText,
       });
     }
 

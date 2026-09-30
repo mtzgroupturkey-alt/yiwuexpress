@@ -368,7 +368,12 @@ export async function generateAssistantResponse(
   // Provider 2: OpenRouter Fallback
   if (apiKeys.openrouterApiKey) {
     try {
-      const models = ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemini-2.0-flash-exp:free', 'openrouter/free']
+      const models = [
+        'google/gemma-4-26b-a4b-it:free',
+        'qwen/qwen3.8-27b:free',
+        'nvidia/nemotron-3.5-lightning:free',
+        'openrouter/auto',
+      ]
       for (const model of models) {
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
