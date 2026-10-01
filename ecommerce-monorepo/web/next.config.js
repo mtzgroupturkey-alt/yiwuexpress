@@ -107,6 +107,11 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Enables instrumentation.ts which sets dns.setDefaultResultOrder('ipv4first')
+    // at server startup — critical for outbound fetch() on Ubuntu 24.04 (Linux IPv6 default).
+    instrumentationHook: true,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     // User-uploaded files land in public/uploads AFTER build. Next.js can only

@@ -106,7 +106,22 @@ npm install --cache /tmp/.npm-cache --production=false
 
 echo "🔧 Prisma Client generation & schema deploy..."
 npx prisma generate
-npx prisma db push --accept-data-loss || npx prisma migrate deploy || true
+
+# Run migrate deploy first, then db push as safety net
+npx prisma migrate deploy || echo "⚠️  migrate deploy warnings (continuing)"
+npx prisma db push --accept-data-loss || echo "⚠️  db push warnings (continuing)"
+
+# Explicit safe patch for known missing columns (idempotent - safe to re-run)
+echo "🔧 Applying safe schema patches for cart mode columns..."
+node -e "
+const { PrismaClient } = require('@prisma/client');
+const p = new PrismaClient();
+Promise.all([
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"carts\\\" ADD COLUMN IF NOT EXISTS \\\"mode\\\" TEXT NOT NULL DEFAULT 'RETAIL'\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"cart_items\\\" ADD COLUMN IF NOT EXISTS \\\"mode\\\" TEXT NOT NULL DEFAULT 'RETAIL'\"),
+]).then(() => { console.log('✅ Cart mode columns OK'); process.exit(0); })
+  .catch(e => { console.log('Schema patch note:', e.message); process.exit(0); });
+" || true
 
 # 5. Clean Next.js build
 echo "🏗️ Performing clean Next.js production build..."
