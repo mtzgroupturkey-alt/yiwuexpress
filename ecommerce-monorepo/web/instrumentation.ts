@@ -26,12 +26,31 @@ export async function register() {
       const { PrismaClient } = await import('@prisma/client')
       const prisma = new PrismaClient()
       await Promise.all([
-        // Cart mode column — added to schema but missing in initial migration SQL
+        // Cart and order columns
         prisma.$executeRawUnsafe(
           `ALTER TABLE "carts" ADD COLUMN IF NOT EXISTS "mode" TEXT NOT NULL DEFAULT 'RETAIL'`
         ),
         prisma.$executeRawUnsafe(
           `ALTER TABLE "cart_items" ADD COLUMN IF NOT EXISTS "mode" TEXT NOT NULL DEFAULT 'RETAIL'`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "cart_items" ADD COLUMN IF NOT EXISTS "selectedOptions" JSONB`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "order_items" ADD COLUMN IF NOT EXISTS "selectedOptions" JSONB`
+        ),
+        // System settings columns
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "openrouterApiKey" TEXT`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "geminiApiKey" TEXT`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "primaryAiProvider" TEXT DEFAULT 'openai'`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "storeMode" TEXT DEFAULT 'WHOLESALE'`
         ),
       ])
       await prisma.$disconnect()

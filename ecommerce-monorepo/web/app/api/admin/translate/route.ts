@@ -6,7 +6,7 @@ if (typeof dns.setDefaultResultOrder === 'function') {
 }
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
-import { getApiKeys } from '@/lib/api-keys'
+import { getApiKeys, getDefaultOpenRouterFallbackKey } from '@/lib/api-keys'
 
 const TARGET_LOCALES = ['en', 'ru', 'zh'] as const
 type TargetLocale = (typeof TARGET_LOCALES)[number]
@@ -173,7 +173,7 @@ async function callOpenAICompatible(
 async function callOpenRouter(
   ctx: ProviderContext,
 ): Promise<ProviderResult> {
-  const apiKey = ctx.apiKey
+  const apiKey = (ctx.apiKey || getDefaultOpenRouterFallbackKey()).trim()
   if (!apiKey) {
     return { ok: false, error: 'OPENROUTER_API_KEY missing', retryable: true }
   }

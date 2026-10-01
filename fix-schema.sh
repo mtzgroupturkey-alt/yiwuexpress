@@ -36,16 +36,22 @@ echo "📦 Running prisma migrate deploy..."
 npx prisma migrate deploy || echo "⚠️  Some migrations may have already been applied"
 
 # Apply safe explicit column patches
-echo "🔧 Patching carts and cart_items mode columns..."
+echo "🔧 Patching carts, cart_items, and system_settings columns..."
 node -e "
 const { PrismaClient } = require('@prisma/client');
 const p = new PrismaClient();
 Promise.all([
   p.\$executeRawUnsafe(\"ALTER TABLE \\\"carts\\\" ADD COLUMN IF NOT EXISTS \\\"mode\\\" TEXT NOT NULL DEFAULT 'RETAIL'\"),
   p.\$executeRawUnsafe(\"ALTER TABLE \\\"cart_items\\\" ADD COLUMN IF NOT EXISTS \\\"mode\\\" TEXT NOT NULL DEFAULT 'RETAIL'\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"cart_items\\\" ADD COLUMN IF NOT EXISTS \\\"selectedOptions\" JSONB\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"order_items\\\" ADD COLUMN IF NOT EXISTS \\\"selectedOptions\" JSONB\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"system_settings\\\" ADD COLUMN IF NOT EXISTS \\\"openrouterApiKey\" TEXT\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"system_settings\\\" ADD COLUMN IF NOT EXISTS \\\"geminiApiKey\" TEXT\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"system_settings\\\" ADD COLUMN IF NOT EXISTS \\\"primaryAiProvider\" TEXT DEFAULT 'openai'\"),
+  p.\$executeRawUnsafe(\"ALTER TABLE \\\"system_settings\\\" ADD COLUMN IF NOT EXISTS \\\"storeMode\" TEXT DEFAULT 'WHOLESALE'\"),
 ]).then(() => {
-  console.log('✅ carts.mode OK');
-  console.log('✅ cart_items.mode OK');
+  console.log('✅ carts and cart_items columns OK');
+  console.log('✅ system_settings columns OK');
   process.exit(0);
 }).catch(e => {
   console.log('Note:', e.message);

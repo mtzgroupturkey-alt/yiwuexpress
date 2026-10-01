@@ -3,7 +3,7 @@ import dns from 'dns'
 if (typeof dns.setDefaultResultOrder === 'function') {
   dns.setDefaultResultOrder('ipv4first')
 }
-import { getApiKeys, ApiKeys } from '@/lib/api-keys'
+import { getApiKeys, ApiKeys, getDefaultOpenRouterFallbackKey } from '@/lib/api-keys'
 import { AdminChatLocale, PendingAction } from './types'
 
 export interface AssistantCallParams {
@@ -312,6 +312,14 @@ export function extractActionProposal(text: string): {
 export async function generateAssistantResponse(
   params: AssistantCallParams
 ): Promise<AssistantResponse> {
+  // Enforce IPv4 DNS resolution on Linux at runtime before any network call
+  try {
+    const dns = await import('dns')
+    if (typeof dns.setDefaultResultOrder === 'function') {
+      dns.setDefaultResultOrder('ipv4first')
+    }
+  } catch {}
+
   const { messages, locale, contextData } = params
   const apiKeys = await getApiKeys()
   const systemPrompt = buildSystemPrompt(locale, contextData)
@@ -383,8 +391,13 @@ export async function generateAssistantResponse(
     }
   }
 
-  // Provider 2: OpenRouter Fallback
-  if (apiKeys.openrouterApiKey) {
+  // Provider 2: OpenRouter Fallback (Always available via configured key or built-in free tier key)
+  const openrouterKey = (
+    apiKeys.openrouterApiKey ||
+    getDefaultOpenRouterFallbackKey()
+  ).trim()
+
+  if (openrouterKey) {
     // Order: best capability first (verified working as of 2026-09-30)
     const models = [
       'nvidia/nemotron-3-super-120b-a12b:free',   // 120B — best for complex tasks
@@ -399,7 +412,7 @@ export async function generateAssistantResponse(
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${apiKeys.openrouterApiKey.trim()}`,
+            Authorization: `Bearer ${openrouterKey}`,
             'Content-Type': 'application/json',
             'HTTP-Referer': 'https://dromkok.com',
             'X-Title': 'Dromkok Admin AI Assistant',

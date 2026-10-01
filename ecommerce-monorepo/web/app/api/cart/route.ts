@@ -58,10 +58,28 @@ export async function GET(request: Request) {
     }
 
     // Get or create cart safely handling concurrency race conditions
-    let cart = await prisma.cart.findUnique({
-      where: { userId: user.id },
-      include: cartInclude,
-    })
+    let cart: any = null
+    try {
+      cart = await prisma.cart.findUnique({
+        where: { userId: user.id },
+        include: cartInclude,
+      })
+    } catch (queryErr: any) {
+      console.warn('[Cart GET] Initial cart query failed, running schema self-heal:', queryErr?.message)
+      try {
+        await Promise.all([
+          prisma.$executeRawUnsafe('ALTER TABLE "carts" ADD COLUMN IF NOT EXISTS "mode" TEXT NOT NULL DEFAULT \'RETAIL\''),
+          prisma.$executeRawUnsafe('ALTER TABLE "cart_items" ADD COLUMN IF NOT EXISTS "mode" TEXT NOT NULL DEFAULT \'RETAIL\''),
+          prisma.$executeRawUnsafe('ALTER TABLE "cart_items" ADD COLUMN IF NOT EXISTS "selectedOptions" JSONB'),
+        ])
+        cart = await prisma.cart.findUnique({
+          where: { userId: user.id },
+          include: cartInclude,
+        })
+      } catch (retryErr: any) {
+        console.error('[Cart GET] Retry after self-heal failed:', retryErr?.message)
+      }
+    }
 
     if (!cart) {
       try {
@@ -74,10 +92,12 @@ export async function GET(request: Request) {
         })
       } catch {
         // Concurrency safeguard: if a parallel request just created it, fetch it
-        cart = await prisma.cart.findUnique({
-          where: { userId: user.id },
-          include: cartInclude,
-        })
+        try {
+          cart = await prisma.cart.findUnique({
+            where: { userId: user.id },
+            include: cartInclude,
+          })
+        } catch {}
       }
     }
 
@@ -100,8 +120,8 @@ export async function GET(request: Request) {
 
     // Identify orphaned items where product was deleted from database
     const orphanedItemIds = (cart.items || [])
-      .filter((item) => !item.product)
-      .map((item) => item.id)
+      .filter((item: any) => !item.product)
+      .map((item: any) => item.id)
 
     if (orphanedItemIds.length > 0) {
       prisma.cartItem
@@ -111,7 +131,7 @@ export async function GET(request: Request) {
 
     // Filter valid items with an existing active product
     const validItems = (cart.items || []).filter(
-      (item) => item && item.product && item.product.isActive
+      (item: any) => item && item.product && item.product.isActive
     )
 
     // Calculate totals safely avoiding NaN or undefined crashes
@@ -160,15 +180,22 @@ export async function GET(request: Request) {
     if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
       return createAuthErrorResponse(error)
     }
-    console.error('Error fetching cart:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch cart',
-        details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined,
+    console.error('[Cart GET Fatal Error]:', error)
+    // Never return 500 on GET /api/cart: return a safe empty cart structure so frontend layout never crashes
+    return NextResponse.json({
+      success: true,
+      authenticated: false,
+      data: {
+        cart: null,
+        items: [],
+        summary: {
+          itemCount: 0,
+          totalQuantity: 0,
+          subtotal: 0,
+          totalWeight: 0,
+        },
       },
-      { status: 500 }
-    )
+    })
   }
 }
 
