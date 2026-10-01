@@ -334,18 +334,46 @@ export async function generateAssistantResponse(
 
   const providerErrors: string[] = []
 
-  // Provider 1: OpenAI-Compatible Gateway (Primary from SystemSettings, e.g. G-CAT)
+  // Provider 1: OpenAI-Compatible Gateway (Primary from SystemSettings)
   if (apiKeys.openaiApiKey) {
+    const rawKey = apiKeys.openaiApiKey.trim()
     const baseUrl = (apiKeys.openaiBaseUrl || 'https://llm.gcat.ir/v1').trim().replace(/\/+$/, '')
     const endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`
     const primaryModel = apiKeys.openaiModel || 'auto/best-chat'
 
-    const candidateModels = [
-      'agy/gemini-3.7-flash-low',
-      'agy/gemini-3.5-flash-lite',
-      'agy/gemini-3-flash',
-      primaryModel,
-    ].filter((m, idx, arr) => arr.indexOf(m) === idx)
+    const isOpenRouter = baseUrl.includes('openrouter.ai') || rawKey.startsWith('sk-or-')
+    const isDeepSeek = baseUrl.includes('deepseek')
+    const isQwen = baseUrl.includes('dashscope') || baseUrl.includes('aliyuncs')
+
+    // Intelligently select candidate models based on provider so models don't 404
+    const candidateModels: string[] = isOpenRouter
+      ? [
+          primaryModel && !primaryModel.startsWith('auto/') ? primaryModel : 'nvidia/nemotron-3-super-120b-a12b:free',
+          'nvidia/nemotron-3-super-120b-a12b:free',
+          'nvidia/nemotron-3.5-lightning:free',
+          'qwen/qwen3.8-27b:free',
+          'openrouter/free',
+        ].filter((m, idx, arr) => arr.indexOf(m) === idx)
+      : isDeepSeek
+      ? ['deepseek-chat', primaryModel].filter((m, idx, arr) => arr.indexOf(m) === idx)
+      : isQwen
+      ? ['qwen-plus', primaryModel].filter((m, idx, arr) => arr.indexOf(m) === idx)
+      : [
+          'agy/gemini-3.7-flash-low',
+          'agy/gemini-3.5-flash-lite',
+          'agy/gemini-3-flash',
+          primaryModel,
+        ].filter((m, idx, arr) => arr.indexOf(m) === idx)
+
+    const requestHeaders: Record<string, string> = {
+      Authorization: `Bearer ${rawKey}`,
+      'Content-Type': 'application/json',
+    }
+
+    if (isOpenRouter) {
+      requestHeaders['HTTP-Referer'] = 'https://dromkok.com'
+      requestHeaders['X-Title'] = 'Dromkok Admin AI Assistant'
+    }
 
     let gatewayAccountError = false
     for (const model of candidateModels) {
@@ -353,10 +381,7 @@ export async function generateAssistantResponse(
       try {
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKeys.openaiApiKey.trim()}`,
-            'Content-Type': 'application/json',
-          },
+          headers: requestHeaders,
           body: JSON.stringify({
             model,
             messages: fullMessages,
@@ -539,36 +564,54 @@ export async function generateAssistantResponse(
 
   // Provider 5: Google Gemini Direct Fallback
   if (apiKeys.geminiApiKey) {
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKeys.geminiApiKey.trim()}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: fullMessages.map((m) => ({
-              role: m.role === 'assistant' ? 'model' : 'user',
-              parts: [{ text: `${m.role === 'system' ? '[SYSTEM INSTRUCTION]\n' : ''}${m.content}` }],
-            })),
-            generationConfig: { temperature: 0.3 },
-          }),
-          signal: AbortSignal.timeout(25_000),
-        }
-      )
+    const geminiKey = apiKeys.geminiApiKey.trim()
+    const geminiModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']
+    for (const gModel of geminiModels) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${gModel}:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: fullMessages.map((m) => ({
+                role: m.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: `${m.role === 'system' ? '[SYSTEM INSTRUCTION]\n' : ''}${m.content}` }],
+              })),
+              generationConfig: { temperature: 0.3 },
+            }),
+            signal: AbortSignal.timeout(20_000),
+          }
+        )
 
-      if (res.ok) {
-        const json = await res.json()
-        const rawContent = json?.candidates?.[0]?.content?.parts?.[0]?.text || ''
-        const { cleanText, pendingAction } = extractActionProposal(rawContent)
-        return {
-          content: cleanText || rawContent,
-          pendingAction,
-          providerUsed: 'Google Gemini',
-          modelUsed: 'gemini-2.5-flash',
+        if (res.ok) {
+          const json = await res.json()
+          const rawContent = json?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+          if (rawContent && rawContent.trim()) {
+            const { cleanText, pendingAction } = extractActionProposal(rawContent)
+            return {
+              content: cleanText || rawContent,
+              pendingAction,
+              providerUsed: 'Google Gemini',
+              modelUsed: gModel,
+            }
+          }
+        } else {
+          providerErrors.push(`Gemini (${gModel}) returned HTTP ${res.status}`)
+        }
+      } catch (err: any) {
+        console.warn(`[AI Assistant] Gemini (${gModel}) failed:`, err?.message)
+        const isNetworkBlocked =
+          err?.name === 'TimeoutError' ||
+          err?.code === 'ENOTFOUND' ||
+          err?.code === 'ECONNRESET' ||
+          err?.code === 'ETIMEDOUT' ||
+          err?.message?.includes('fetch failed')
+        if (isNetworkBlocked) {
+          providerErrors.push(`Gemini: Connection blocked or unreachable from server network region`)
+          break
         }
       }
-    } catch (err: any) {
-      providerErrors.push(`Gemini error: ${err?.message}`)
     }
   }
 
