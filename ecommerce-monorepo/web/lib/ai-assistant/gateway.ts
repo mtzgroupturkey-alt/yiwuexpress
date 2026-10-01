@@ -332,13 +332,14 @@ export async function generateAssistantResponse(
     })),
   ]
 
-  // Provider 1: OpenAI-Compatible Gateway (Primary from SystemSettings)
+  const providerErrors: string[] = []
+
+  // Provider 1: OpenAI-Compatible Gateway (Primary from SystemSettings, e.g. G-CAT)
   if (apiKeys.openaiApiKey) {
     const baseUrl = (apiKeys.openaiBaseUrl || 'https://llm.gcat.ir/v1').trim().replace(/\/+$/, '')
     const endpoint = baseUrl.endsWith('/chat/completions') ? baseUrl : `${baseUrl}/chat/completions`
     const primaryModel = apiKeys.openaiModel || 'auto/best-chat'
 
-    // Candidate models on this gateway: use high-speed models first for snappy UX
     const candidateModels = [
       'agy/gemini-3.7-flash-low',
       'agy/gemini-3.5-flash-lite',
@@ -362,7 +363,7 @@ export async function generateAssistantResponse(
             temperature: 0.2,
             max_tokens: 4000,
           }),
-          signal: AbortSignal.timeout(35_000),
+          signal: AbortSignal.timeout(20_000),
         })
 
         if (res.ok) {
@@ -378,34 +379,113 @@ export async function generateAssistantResponse(
             }
           }
         } else if (res.status === 401 || res.status === 402) {
-          // Account-level error (unauthorized / insufficient funds) — retrying other
-          // models on the same gateway won't help; bail immediately and try next provider.
-          console.warn(`[AI Assistant] OpenAI Gateway account error (HTTP ${res.status}) — skipping gateway, trying next provider`)
+          const errBody = await res.text().catch(() => '')
+          const reason = res.status === 402
+            ? 'HTTP 402: Insufficient wallet balance on G-CAT gateway. Please top up funds at https://gcat.ir/portal/dashboard/wallet'
+            : `HTTP 401: Unauthorized API key for gateway (${baseUrl})`
+          console.warn(`[AI Assistant] OpenAI Gateway account error: ${reason}`)
+          providerErrors.push(reason)
           gatewayAccountError = true
         } else {
           console.warn(`[AI Assistant] OpenAI Gateway (${model}) returned status ${res.status}`)
         }
-      } catch (err) {
-        console.warn(`[AI Assistant] OpenAI Gateway (${model}) call failed:`, err)
+      } catch (err: any) {
+        console.warn(`[AI Assistant] OpenAI Gateway (${model}) call failed:`, err?.message)
+        providerErrors.push(`Gateway network error (${baseUrl}): ${err?.message || 'Connection failed'}`)
+        break
       }
     }
   }
 
-  // Provider 2: OpenRouter Fallback (Always available via configured key or built-in free tier key)
+  // Provider 2: DeepSeek Direct (Excellent for Mainland China production hosts)
+  if (apiKeys.deepseekApiKey) {
+    try {
+      const res = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKeys.deepseekApiKey.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: fullMessages,
+          temperature: 0.3,
+          max_tokens: 4000,
+        }),
+        signal: AbortSignal.timeout(25_000),
+      })
+
+      if (res.ok) {
+        const json = await res.json()
+        const rawContent = json?.choices?.[0]?.message?.content || ''
+        if (rawContent && rawContent.trim()) {
+          const { cleanText, pendingAction } = extractActionProposal(rawContent)
+          return {
+            content: cleanText || rawContent,
+            pendingAction,
+            providerUsed: 'DeepSeek',
+            modelUsed: 'deepseek-chat',
+          }
+        }
+      } else {
+        providerErrors.push(`DeepSeek API returned HTTP ${res.status}`)
+      }
+    } catch (err: any) {
+      providerErrors.push(`DeepSeek error: ${err?.message}`)
+    }
+  }
+
+  // Provider 3: Alibaba Qwen / DashScope (Domestic Aliyun endpoint, fast in Mainland China)
+  if (apiKeys.qwenApiKey) {
+    try {
+      const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKeys.qwenApiKey.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'qwen-plus',
+          messages: fullMessages,
+          temperature: 0.3,
+          max_tokens: 4000,
+        }),
+        signal: AbortSignal.timeout(25_000),
+      })
+
+      if (res.ok) {
+        const json = await res.json()
+        const rawContent = json?.choices?.[0]?.message?.content || ''
+        if (rawContent && rawContent.trim()) {
+          const { cleanText, pendingAction } = extractActionProposal(rawContent)
+          return {
+            content: cleanText || rawContent,
+            pendingAction,
+            providerUsed: 'Alibaba Qwen',
+            modelUsed: 'qwen-plus',
+          }
+        }
+      } else {
+        providerErrors.push(`Alibaba Qwen returned HTTP ${res.status}`)
+      }
+    } catch (err: any) {
+      providerErrors.push(`Alibaba Qwen error: ${err?.message}`)
+    }
+  }
+
+  // Provider 4: OpenRouter Fallback
   const openrouterKey = (
     apiKeys.openrouterApiKey ||
     getDefaultOpenRouterFallbackKey()
   ).trim()
 
   if (openrouterKey) {
-    // Order: best capability first (verified working as of 2026-09-30)
     const models = [
-      'nvidia/nemotron-3-super-120b-a12b:free',   // 120B — best for complex tasks
-      'nvidia/nemotron-3.5-lightning:free',         // fast, reliable
-      'qwen/qwen3.8-27b:free',                     // good multilingual
-      'google/gemma-4-31b-it:free',                // good instruction following
-      'google/gemma-4-26b-a4b-it:free',            // backup
-      'openrouter/free',                           // last resort: any free model
+      'nvidia/nemotron-3-super-120b-a12b:free',
+      'nvidia/nemotron-3.5-lightning:free',
+      'qwen/qwen3.8-27b:free',
+      'google/gemma-4-31b-it:free',
+      'openrouter/free',
     ]
     for (const model of models) {
       try {
@@ -423,7 +503,7 @@ export async function generateAssistantResponse(
             temperature: 0.3,
             max_tokens: 4000,
           }),
-          signal: AbortSignal.timeout(25_000),
+          signal: AbortSignal.timeout(20_000),
         })
 
         if (res.ok) {
@@ -438,17 +518,26 @@ export async function generateAssistantResponse(
               modelUsed: model,
             }
           }
-          console.warn(`[AI Assistant] OpenRouter (${model}) returned OK but empty content`)
         } else {
           console.warn(`[AI Assistant] OpenRouter (${model}) returned status ${res.status}`)
         }
-      } catch (err) {
-        console.warn(`[AI Assistant] OpenRouter (${model}) failed:`, err)
+      } catch (err: any) {
+        console.warn(`[AI Assistant] OpenRouter (${model}) failed:`, err?.message)
+        const isNetworkBlocked =
+          err?.name === 'TimeoutError' ||
+          err?.code === 'ENOTFOUND' ||
+          err?.code === 'ECONNRESET' ||
+          err?.code === 'ETIMEDOUT' ||
+          err?.message?.includes('fetch failed')
+        if (isNetworkBlocked) {
+          providerErrors.push(`OpenRouter: Connection blocked or unreachable from server network region`)
+          break
+        }
       }
     }
   }
 
-  // Provider 3: Google Gemini Direct Fallback
+  // Provider 5: Google Gemini Direct Fallback
   if (apiKeys.geminiApiKey) {
     try {
       const res = await fetch(
@@ -463,7 +552,7 @@ export async function generateAssistantResponse(
             })),
             generationConfig: { temperature: 0.3 },
           }),
-          signal: AbortSignal.timeout(30_000),
+          signal: AbortSignal.timeout(25_000),
         }
       )
 
@@ -478,12 +567,50 @@ export async function generateAssistantResponse(
           modelUsed: 'gemini-2.5-flash',
         }
       }
-    } catch (err) {
-      console.warn('[AI Assistant] Gemini direct fallback failed:', err)
+    } catch (err: any) {
+      providerErrors.push(`Gemini error: ${err?.message}`)
     }
   }
 
-  throw new Error(
-    'No reachable AI Gateway provider found. Please verify your AI API Key in Admin > Settings > System.'
-  )
+  // Provider 6: Moonshot / Kimi AI
+  if (apiKeys.kimiApiKey) {
+    try {
+      const res = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKeys.kimiApiKey.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'moonshot-v1-8k',
+          messages: fullMessages,
+          temperature: 0.3,
+          max_tokens: 4000,
+        }),
+        signal: AbortSignal.timeout(25_000),
+      })
+
+      if (res.ok) {
+        const json = await res.json()
+        const rawContent = json?.choices?.[0]?.message?.content || ''
+        if (rawContent && rawContent.trim()) {
+          const { cleanText, pendingAction } = extractActionProposal(rawContent)
+          return {
+            content: cleanText || rawContent,
+            pendingAction,
+            providerUsed: 'Moonshot Kimi',
+            modelUsed: 'moonshot-v1-8k',
+          }
+        }
+      }
+    } catch (err: any) {
+      providerErrors.push(`Moonshot Kimi error: ${err?.message}`)
+    }
+  }
+
+  const errorSummary = providerErrors.length > 0
+    ? `AI Gateway error details:\n• ${providerErrors.join('\n• ')}\n\n💡 Solution: If using G-CAT, top up your wallet at https://gcat.ir/portal/dashboard/wallet. For China-hosted servers, configure a domestic provider (DeepSeek / Alibaba Qwen) in Admin > Settings > System.`
+    : 'No reachable AI Gateway provider found. Please verify your AI API Key in Admin > Settings > System.'
+
+  throw new Error(errorSummary)
 }
