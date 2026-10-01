@@ -5,8 +5,26 @@ import { prisma } from '@/lib/db';
 // GET system settings
 export async function GET() {
   try {
-    let settings = await prisma.systemSettings.findFirst();
-    
+    let settings: any = null;
+    try {
+      settings = await prisma.systemSettings.findFirst();
+    } catch (queryErr: any) {
+      console.warn('[System Settings GET] Query failed, running schema self-heal:', queryErr?.message);
+      try {
+        await Promise.all([
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "openrouterApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "geminiApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "deepseekApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "qwenApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "kimiApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "cerebrasApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "primaryAiProvider" TEXT DEFAULT \'openai\''),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "storeMode" TEXT DEFAULT \'WHOLESALE\''),
+        ]);
+        settings = await prisma.systemSettings.findFirst();
+      } catch {}
+    }
+
     // Create default settings if none exist
     if (!settings) {
       settings = await prisma.systemSettings.create({
@@ -34,32 +52,70 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
+    // Sanitize body: remove primary key and relations so Prisma update never rejects
+    const { id, createdAt, updatedAt, translations, ...cleanData } = body;
+
     // Get existing settings or create new
-    let settings = await prisma.systemSettings.findFirst();
-    
-    if (settings) {
-      // Update existing
-      settings = await prisma.systemSettings.update({
-        where: { id: settings.id },
-        data: body,
-      });
-    } else {
-      // Create new
-      settings = await prisma.systemSettings.create({
-        data: body,
-      });
+    let settings: any = null;
+    try {
+      settings = await prisma.systemSettings.findFirst();
+    } catch {
+      // Ignore if table has column drift
+    }
+
+    let result: any = null;
+    try {
+      if (settings) {
+        result = await prisma.systemSettings.update({
+          where: { id: settings.id },
+          data: cleanData,
+        });
+      } else {
+        result = await prisma.systemSettings.create({
+          data: cleanData,
+        });
+      }
+    } catch (saveErr: any) {
+      console.warn('[System Settings PUT] Save failed, applying schema patch and retrying:', saveErr?.message);
+      // Auto-heal missing columns on production PostgreSQL
+      try {
+        await Promise.all([
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "openrouterApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "geminiApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "deepseekApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "qwenApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "kimiApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "cerebrasApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "primaryAiProvider" TEXT DEFAULT \'openai\''),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "storeMode" TEXT DEFAULT \'WHOLESALE\''),
+        ]);
+
+        if (settings) {
+          result = await prisma.systemSettings.update({
+            where: { id: settings.id },
+            data: cleanData,
+          });
+        } else {
+          result = await prisma.systemSettings.create({
+            data: cleanData,
+          });
+        }
+      } catch (retryErr: any) {
+        console.error('[System Settings PUT] Retry after self-heal failed:', retryErr?.message);
+        throw retryErr;
+      }
     }
 
     return NextResponse.json({
       success: true,
-      data: settings,
+      data: result,
       message: 'System settings updated successfully',
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating system settings:', error);
     return NextResponse.json(
-      { error: 'Failed to update system settings' },
+      { error: error?.message || 'Failed to update system settings' },
       { status: 500 }
     );
   }
