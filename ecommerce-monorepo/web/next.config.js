@@ -82,11 +82,17 @@ const withPWA = require('next-pwa')({
       },
     },
     {
-      urlPattern: /\/api\/(?!uploads\/).*/i,
+      // PUBLIC read-only API routes only — short timeout is fine here.
+      // IMPORTANT: /api/admin/*, /api/cart, /api/auth/* are deliberately
+      // EXCLUDED from SW caching. They must always go directly to the network:
+      //   - /api/admin/ai-assistant/* takes 10-30s (AI inference) — SW timeout kills it
+      //   - /api/cart needs live DB data and returns 500 if SW serves stale
+      //   - /api/auth/* must never be served from cache (security)
+      urlPattern: /\/api\/(?!admin\/|cart|auth\/).*/i,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'api-cache',
-        networkTimeoutSeconds: 6,
+        networkTimeoutSeconds: 15,
         expiration: {
           maxEntries: 100,
           maxAgeSeconds: 60,
