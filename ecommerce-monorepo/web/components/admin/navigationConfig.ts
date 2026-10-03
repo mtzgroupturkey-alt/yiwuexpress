@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
   MessageSquare, Building2, User, FolderTree, Tag, Star,
   PieChart, ArrowUpCircle, ArrowDownCircle, TrendingUp, Image as ImageIcon,
-  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon, Wrench
+  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon
 } from 'lucide-react'
 
 export interface NavItem {
@@ -150,15 +150,6 @@ export const navigationConfig: NavGroup[] = [
       { label: 'Roles & Permissions', translationKey: 'usersPermissions', href: '/admin/settings/permissions', icon: Shield },
       { label: 'System', translationKey: 'system', href: '/admin/settings/system', icon: Settings },
       { label: 'Deployment', translationKey: 'deployment', href: '/admin/deployment', icon: Server },
-      { label: 'Image Migration', translationKey: 'imageMigration', href: '/admin/tools/images', icon: ImageIcon },
-    ]
-  },
-  {
-    id: 'tools',
-    label: 'Tools',
-    translationKey: 'tools',
-    icon: Wrench,
-    items: [
       { label: 'Image Migration', translationKey: 'imageMigration', href: '/admin/tools/images', icon: ImageIcon },
     ]
   },
