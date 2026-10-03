@@ -362,14 +362,39 @@ console.log(completion.choices[0].message.content);`
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 <span className="text-[11px] text-gray-400 font-medium">Presets:</span>
                 {[
-                  { label: 'G-CAT Gateway (Default)', url: 'https://llm.gcat.ir/v1' },
-                  { label: 'Official OpenAI', url: 'https://api.openai.com/v1' },
-                  { label: 'OpenRouter', url: 'https://openrouter.ai/api/v1' },
+                  {
+                    label: 'Alibaba Model Studio (Free Quota)',
+                    url: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+                    model: 'qwen-max',
+                  },
+                  {
+                    label: 'G-CAT Gateway',
+                    url: 'https://llm.gcat.ir/v1',
+                    model: 'auto/best-chat',
+                  },
+                  {
+                    label: 'OpenRouter',
+                    url: 'https://openrouter.ai/api/v1',
+                    model: 'nvidia/nemotron-3-super-120b-a12b:free',
+                  },
+                  {
+                    label: 'DeepSeek Direct',
+                    url: 'https://api.deepseek.com/v1',
+                    model: 'deepseek-chat',
+                  },
+                  {
+                    label: 'Alibaba DashScope (China)',
+                    url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+                    model: 'qwen-plus',
+                  },
                 ].map((p) => (
                   <button
                     key={p.url}
                     type="button"
-                    onClick={() => handleChange('openaiBaseUrl', p.url)}
+                    onClick={() => {
+                      handleChange('openaiBaseUrl', p.url)
+                      if (p.model) handleChange('openaiModel', p.model)
+                    }}
                     className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer ${
                       settings.openaiBaseUrl === p.url
                         ? 'bg-blue-50 text-[#1a3a5c] border-blue-200 font-bold'
@@ -380,6 +405,45 @@ console.log(completion.choices[0].message.content);`
                   </button>
                 ))}
               </div>
+
+              {/* Alibaba Cloud Model Studio Free Quota Guidance Banner */}
+              {(settings.openaiBaseUrl?.includes('aliyuncs') || settings.openaiBaseUrl?.includes('dashscope')) && (
+                <div className="mt-2 p-3 bg-amber-50/90 border border-amber-200 rounded-xl space-y-1.5 text-xs text-amber-950">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="flex items-center gap-1.5 text-[#1a3a5c]">
+                      <Sparkles size={14} className="text-amber-600" />
+                      <span>Alibaba Cloud Model Studio (DashScope Free Quota)</span>
+                    </span>
+                    <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-mono">
+                      Region: Singapore (ap-southeast-1)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    Uses OpenAI-compatible endpoint <code className="bg-amber-100/80 px-1 py-0.5 rounded font-mono text-[10px]">https://dashscope-intl.aliyuncs.com/compatible-mode/v1</code>.
+                    Your 90-day free trial quota is active on <strong className="font-semibold text-emerald-800">qwen-max</strong> and <strong className="font-semibold text-emerald-800">qwen-flash</strong>.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] pt-1 border-t border-amber-200/70">
+                    <a
+                      href="https://modelstudio.console.alibabacloud.com/ap-southeast-1/api-key"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
+                    >
+                      <span>🔑 Copy / Create API Key</span>
+                      <Globe size={11} />
+                    </a>
+                    <a
+                      href="https://modelstudio.console.alibabacloud.com/ap-southeast-1/costing-balance/free-quota"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline"
+                    >
+                      <span>📊 Check Free Quota Balance</span>
+                      <Globe size={11} />
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* API Key Field */}
@@ -393,7 +457,7 @@ console.log(completion.choices[0].message.content);`
                   type={showKeys.openai ? 'text' : 'password'}
                   value={settings.openaiApiKey || ''}
                   onChange={(e) => handleChange('openaiApiKey', e.target.value)}
-                  placeholder="Enter your API Key..."
+                  placeholder="Enter your API Key (e.g. sk-ws-... or sk-...)"
                   className="w-full px-4 py-2.5 pr-10 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent"
                 />
                 <button
@@ -414,35 +478,40 @@ console.log(completion.choices[0].message.content);`
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-bold text-gray-700">
                   Model Name
-                  <span className="ml-1.5 text-[10px] text-emerald-600 font-medium">(Gateway Auto Models)</span>
+                  <span className="ml-1.5 text-[10px] text-emerald-600 font-medium">
+                    {settings.openaiBaseUrl?.includes('aliyuncs') ? '(Model Studio Free Quota Models)' : '(Gateway Auto Models)'}
+                  </span>
                 </label>
-                <span className="text-[10px] font-mono text-gray-400">Selected: {settings.openaiModel || 'auto/best-chat'}</span>
+                <span className="text-[10px] font-mono text-gray-400">Selected: {settings.openaiModel || 'qwen-max'}</span>
               </div>
 
               {/* Quick Dropdown Select */}
               <div className="relative">
                 <select
-                  value={settings.openaiModel || 'auto/best-chat'}
+                  value={settings.openaiModel || (settings.openaiBaseUrl?.includes('aliyuncs') ? 'qwen-max' : 'auto/best-chat')}
                   onChange={(e) => handleChange('openaiModel', e.target.value)}
                   className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-white cursor-pointer"
                 >
-                  <optgroup label="Auto Models (From Your Gateway Portal)">
+                  <optgroup label="Alibaba Cloud Model Studio (Free Quota Eligible)">
+                    <option value="qwen-max">qwen-max (★ Flagship Best Quality - Active Free Quota)</option>
+                    <option value="qwen-flash">qwen-flash (⚡ Ultra Fast & Efficient - Active Free Quota)</option>
+                    <option value="qwen-plus">qwen-plus (Balanced Reasoning)</option>
+                    <option value="qwen-turbo">qwen-turbo (Fast Speed)</option>
+                  </optgroup>
+                  <optgroup label="Auto Models (From G-CAT Gateway)">
                     <option value="auto/best-chat">auto/best-chat (★ Recommended for Translation & Chat)</option>
                     <option value="auto/best-fast">auto/best-fast (⚡ Fastest Translation)</option>
                     <option value="auto/pro-chat">auto/pro-chat (💎 Pro Multi-Language Quality)</option>
                     <option value="auto/best-coding">auto/best-coding (Best Coding)</option>
                     <option value="auto/best-reasoning">auto/best-reasoning (Deep Reasoning)</option>
                     <option value="auto/best-vision">auto/best-vision (Vision & Images)</option>
-                    <option value="auto/best-coding-fast">auto/best-coding-fast (Fast Coding)</option>
-                    <option value="auto/pro-coding">auto/pro-coding (Pro Coding)</option>
-                    <option value="auto/pro-reasoning">auto/pro-reasoning (Pro Reasoning)</option>
-                    <option value="auto/pro-vision">auto/pro-vision (Pro Vision)</option>
                   </optgroup>
-                  <optgroup label="Direct Provider Models (If configured on gateway)">
+                  <optgroup label="Direct Provider Models">
+                    <option value="deepseek-chat">deepseek-chat</option>
+                    <option value="nvidia/nemotron-3-super-120b-a12b:free">nvidia/nemotron-3-super-120b-a12b:free (OpenRouter)</option>
                     <option value="gpt-4o">gpt-4o</option>
                     <option value="gpt-4o-mini">gpt-4o-mini</option>
                     <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
-                    <option value="deepseek-chat">deepseek-chat</option>
                   </optgroup>
                 </select>
               </div>
@@ -453,7 +522,7 @@ console.log(completion.choices[0].message.content);`
                   type="text"
                   value={settings.openaiModel || ''}
                   onChange={(e) => handleChange('openaiModel', e.target.value)}
-                  placeholder="Or type custom model (e.g. auto/best-chat)"
+                  placeholder="Or type custom model (e.g. qwen-max, auto/best-chat)"
                   className="flex-1 px-3 py-1.5 font-mono text-xs border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#1a3a5c] bg-slate-50/50"
                 />
               </div>
@@ -461,13 +530,21 @@ console.log(completion.choices[0].message.content);`
               {/* Quick Model Presets Pills */}
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 <span className="text-[10px] text-gray-400 font-medium">Quick Picks:</span>
-                {[
-                  { label: 'auto/best-chat', badge: '★ Translation' },
-                  { label: 'auto/best-fast', badge: '⚡ Fast' },
-                  { label: 'auto/pro-chat', badge: '💎 Pro' },
-                  { label: 'auto/best-coding', badge: 'Code' },
-                  { label: 'auto/best-reasoning', badge: 'Reason' },
-                ].map((m) => (
+                {(settings.openaiBaseUrl?.includes('aliyuncs') || settings.openaiBaseUrl?.includes('dashscope')
+                  ? [
+                      { label: 'qwen-max', badge: '★ Flagship' },
+                      { label: 'qwen-flash', badge: '⚡ Ultra-Fast' },
+                      { label: 'qwen-plus', badge: 'Balanced' },
+                      { label: 'qwen-turbo', badge: 'Turbo' },
+                    ]
+                  : [
+                      { label: 'auto/best-chat', badge: '★ Translation' },
+                      { label: 'auto/best-fast', badge: '⚡ Fast' },
+                      { label: 'auto/pro-chat', badge: '💎 Pro' },
+                      { label: 'deepseek-chat', badge: 'DeepSeek' },
+                      { label: 'qwen-max', badge: 'Qwen' },
+                    ]
+                ).map((m) => (
                   <button
                     key={m.label}
                     type="button"
@@ -633,15 +710,15 @@ console.log(completion.choices[0].message.content);`
                 {/* Alibaba Qwen */}
                 <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-700">Alibaba Qwen API Key</label>
-                    <a href="https://dashscope.aliyun.com" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">aliyun.com</a>
+                    <label className="text-xs font-bold text-gray-700">Alibaba Qwen (Model Studio / DashScope)</label>
+                    <a href="https://modelstudio.console.alibabacloud.com/ap-southeast-1/api-key" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">Model Studio (ap-southeast-1)</a>
                   </div>
                   <div className="relative">
                     <input
                       type={showKeys.qwen ? 'text' : 'password'}
                       value={settings.qwenApiKey || ''}
                       onChange={(e) => handleChange('qwenApiKey', e.target.value)}
-                      placeholder="sk-..."
+                      placeholder="sk-ws-... or sk-..."
                       className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
                     />
                     <button

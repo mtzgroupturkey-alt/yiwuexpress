@@ -343,7 +343,7 @@ export async function generateAssistantResponse(
 
     const isOpenRouter = baseUrl.includes('openrouter.ai') || rawKey.startsWith('sk-or-')
     const isDeepSeek = baseUrl.includes('deepseek')
-    const isQwen = baseUrl.includes('dashscope') || baseUrl.includes('aliyuncs')
+    const isQwen = baseUrl.includes('dashscope') || baseUrl.includes('aliyuncs') || baseUrl.includes('modelstudio') || rawKey.startsWith('sk-ws-')
 
     // Intelligently select candidate models based on provider so models don't 404
     const candidateModels: string[] = isOpenRouter
@@ -357,7 +357,13 @@ export async function generateAssistantResponse(
       : isDeepSeek
       ? ['deepseek-chat', primaryModel].filter((m, idx, arr) => arr.indexOf(m) === idx)
       : isQwen
-      ? ['qwen-plus', primaryModel].filter((m, idx, arr) => arr.indexOf(m) === idx)
+      ? [
+          primaryModel && !primaryModel.startsWith('auto/') ? primaryModel : 'qwen-max',
+          'qwen-max',
+          'qwen-flash',
+          'qwen-plus',
+          'qwen-turbo',
+        ].filter((m, idx, arr) => arr.indexOf(m) === idx)
       : [
           'agy/gemini-3.7-flash-low',
           'agy/gemini-3.5-flash-lite',
@@ -399,23 +405,27 @@ export async function generateAssistantResponse(
             return {
               content: cleanText || rawContent,
               pendingAction,
-              providerUsed: 'OpenAI-Compatible Gateway',
+              providerUsed: isQwen ? 'Alibaba Model Studio' : 'OpenAI-Compatible Gateway',
               modelUsed: model,
             }
           }
         } else if (res.status === 401 || res.status === 402) {
           const errBody = await res.text().catch(() => '')
           const reason = res.status === 402
-            ? 'HTTP 402: Insufficient wallet balance on G-CAT gateway. Please top up funds at https://gcat.ir/portal/dashboard/wallet'
+            ? 'HTTP 402: Insufficient wallet balance on gateway. Please top up funds at your portal'
             : `HTTP 401: Unauthorized API key for gateway (${baseUrl})`
-          console.warn(`[AI Assistant] OpenAI Gateway account error: ${reason}`)
+          console.warn(`[AI Assistant] Gateway account error: ${reason}`)
           providerErrors.push(reason)
           gatewayAccountError = true
+        } else if (res.status === 403) {
+          // Free quota exhausted on this specific model; try next model in candidateModels
+          console.warn(`[AI Assistant] Gateway model (${model}) returned 403 (quota exhausted or access denied), trying next candidate`)
+          continue
         } else {
-          console.warn(`[AI Assistant] OpenAI Gateway (${model}) returned status ${res.status}`)
+          console.warn(`[AI Assistant] Gateway (${model}) returned status ${res.status}`)
         }
       } catch (err: any) {
-        console.warn(`[AI Assistant] OpenAI Gateway (${model}) call failed:`, err?.message)
+        console.warn(`[AI Assistant] Gateway (${model}) call failed:`, err?.message)
         providerErrors.push(`Gateway network error (${baseUrl}): ${err?.message || 'Connection failed'}`)
         break
       }
@@ -460,41 +470,62 @@ export async function generateAssistantResponse(
     }
   }
 
-  // Provider 3: Alibaba Qwen / DashScope (Domestic Aliyun endpoint, fast in Mainland China)
+  // Provider 3: Alibaba Qwen / Model Studio / DashScope (Tries Singapore Intl & China Mainland)
   if (apiKeys.qwenApiKey) {
-    try {
-      const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKeys.qwenApiKey.trim()}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'qwen-plus',
-          messages: fullMessages,
-          temperature: 0.3,
-          max_tokens: 4000,
-        }),
-        signal: AbortSignal.timeout(25_000),
-      })
+    const qwenKey = apiKeys.qwenApiKey.trim()
+    const endpoints = [
+      'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions', // Alibaba Cloud Model Studio (Singapore / ap-southeast-1)
+      'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',      // Alibaba Cloud DashScope (China Mainland)
+    ]
+    const qwenModels = ['qwen-max', 'qwen-flash', 'qwen-plus', 'qwen-turbo']
 
-      if (res.ok) {
-        const json = await res.json()
-        const rawContent = json?.choices?.[0]?.message?.content || ''
-        if (rawContent && rawContent.trim()) {
-          const { cleanText, pendingAction } = extractActionProposal(rawContent)
-          return {
-            content: cleanText || rawContent,
-            pendingAction,
-            providerUsed: 'Alibaba Qwen',
-            modelUsed: 'qwen-plus',
+    let qwenHandled = false
+    for (const ep of endpoints) {
+      if (qwenHandled) break
+      for (const model of qwenModels) {
+        try {
+          const res = await fetch(ep, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${qwenKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model,
+              messages: fullMessages,
+              temperature: 0.3,
+              max_tokens: 4000,
+            }),
+            signal: AbortSignal.timeout(25_000),
+          })
+
+          if (res.ok) {
+            const json = await res.json()
+            const rawContent = json?.choices?.[0]?.message?.content || ''
+            if (rawContent && rawContent.trim()) {
+              const { cleanText, pendingAction } = extractActionProposal(rawContent)
+              qwenHandled = true
+              return {
+                content: cleanText || rawContent,
+                pendingAction,
+                providerUsed: 'Alibaba Qwen (Model Studio)',
+                modelUsed: model,
+              }
+            }
+          } else if (res.status === 401) {
+            // Region mismatch for this endpoint, try next endpoint
+            break
+          } else if (res.status === 403 || res.status === 404) {
+            // Model quota exhausted on this model, continue to next model
+            continue
+          } else {
+            console.warn(`[AI Assistant] Qwen (${model} on ${ep}) returned status ${res.status}`)
           }
+        } catch (err: any) {
+          console.warn(`[AI Assistant] Qwen (${model} on ${ep}) failed:`, err?.message)
+          break
         }
-      } else {
-        providerErrors.push(`Alibaba Qwen returned HTTP ${res.status}`)
       }
-    } catch (err: any) {
-      providerErrors.push(`Alibaba Qwen error: ${err?.message}`)
     }
   }
 

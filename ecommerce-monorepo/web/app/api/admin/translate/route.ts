@@ -332,54 +332,76 @@ async function callQwen(
     `Target Locales: [${ctx.targetLocales.join(', ')}]\n` +
     `Data to translate: ${JSON.stringify(ctx.trimmedFields)}`
 
-  let res: Response
-  try {
-    res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'qwen-plus',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content:
-              'Target Locales: [ru, zh]\n' +
-              'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
+  const endpoints = [
+    'https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions',
+    'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  ]
+  const models = ['qwen-max', 'qwen-flash', 'qwen-plus']
+
+  let lastError = ''
+  for (const ep of endpoints) {
+    for (const model of models) {
+      try {
+        const res = await fetch(ep, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-          { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.2,
-      }),
-      signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
-    })
-  } catch (err) {
-    return {
-      ok: false,
-      retryable: true,
-      error: `Qwen network error: ${err instanceof Error ? err.message : 'unknown'}`,
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              {
+                role: 'user',
+                content:
+                  'Target Locales: [ru, zh]\n' +
+                  'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
+              },
+              { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature: 0.2,
+          }),
+          signal: AbortSignal.timeout(DEFAULT_TIMEOUT_MS),
+        })
+
+        if (res.status === 429) {
+          lastError = 'Qwen rate limited (429).'
+          continue
+        }
+        if (res.status === 401) {
+          // Region mismatch for this endpoint, try next endpoint
+          break
+        }
+        if (res.status === 403 || res.status === 404) {
+          // Quota exhausted on this model, try next model
+          lastError = `Model ${model} quota exhausted (${res.status})`
+          continue
+        }
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '')
+          lastError = `Qwen error (${res.status}): ${errText.slice(0, 150)}`
+          continue
+        }
+
+        const json = await res.json().catch(() => null)
+        const rawText: string = json?.choices?.[0]?.message?.content ?? ''
+        if (rawText) {
+          return finalizeFromRaw(rawText, ctx, `Qwen (${model})`)
+        }
+      } catch (err: any) {
+        lastError = `Qwen network error: ${err?.message}`
+        break
+      }
     }
   }
 
-  if (res.status === 429) {
-    return { ok: false, retryable: true, error: 'Qwen rate limited (429).' }
+  return {
+    ok: false,
+    retryable: true,
+    error: `Qwen failed: ${lastError}`,
   }
-  if (!res.ok) {
-    const errText = await res.text().catch(() => '')
-    return {
-      ok: false,
-      retryable: false,
-      error: `Qwen provider error (${res.status}). ${errText.slice(0, 300)}`,
-    }
-  }
-
-  const json = await res.json().catch(() => null)
-  const rawText: string = json?.choices?.[0]?.message?.content ?? ''
-  return finalizeFromRaw(rawText, ctx, 'Qwen')
 }
 
 // ---------------------------------------------------------------------------
