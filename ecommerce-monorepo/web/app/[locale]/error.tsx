@@ -16,6 +16,21 @@ export default function ErrorBoundary({
 
   useEffect(() => {
     console.error('Unhandled application error:', error)
+
+    const isChunkError =
+      error?.name === 'ChunkLoadError' ||
+      error?.message?.includes('Loading chunk') ||
+      error?.message?.includes('ChunkLoadError') ||
+      error?.message?.includes('Failed to fetch')
+
+    if (isChunkError && typeof window !== 'undefined') {
+      const lastReload = sessionStorage.getItem('chunk_reload_retry')
+      const now = Date.now()
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem('chunk_reload_retry', now.toString())
+        window.location.reload()
+      }
+    }
   }, [error])
 
   return (
