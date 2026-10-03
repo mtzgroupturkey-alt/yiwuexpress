@@ -76,14 +76,14 @@ export async function GET(request: NextRequest) {
         type: 'warn',
       });
       steps.push({
-        label: '🔴 DROP all tables + recreate schema',
-        detail: 'prisma migrate reset --force will drop all tables and recreate from schema.',
+        label: '🔴 Replace Online Catalog with Local Master',
+        detail: 'TRUNCATE CASCADE on categories & products, then imports all 122 categories, 6,743 products, and 20,229 trilingual translations.',
         type: 'danger',
       });
       steps.push({
-        label: '🔴 Run seed script',
-        detail: 'npm run db:seed — populates fresh sample data.',
-        type: 'danger',
+        label: '🔄 Rebuild Next.js & Restart PM2',
+        detail: 'Builds production bundle and restarts live PM2 service on dromkok.com.',
+        type: 'safe',
       });
     }
 

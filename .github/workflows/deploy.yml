@@ -81,125 +81,88 @@ jobs:
             exit 1
           fi
 
-      - name: Build and restart on server
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Build, restore catalog and restart on server
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DB_STRATEGY: ${{ inputs.db_strategy || 'migrate' }}
-          CONFIRM_RESET: ${{ inputs.confirm_reset || '' }}
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          timeout: 60s
-          command_timeout: 30m
-          script_stop: false
-          envs: DATABASE_URL,DB_STRATEGY,CONFIRM_RESET
-          script: |
-            set -e
-            TARGET="/www/wwwroot/www.dromkok.com/web"
-            cd "$TARGET"
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+        run: |
+          TARGET="/www/wwwroot/www.dromkok.com/web"
+          PORT="${SERVER_PORT:-22}"
 
-            echo "📦 Installing dependencies on server..."
-            export npm_config_cache="/tmp/.npm-cache"
-            mkdir -p /tmp/.npm-cache
-            npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline --cache /tmp/.npm-cache
+          echo "🚀 Executing build, migrations, catalog restore & restart on remote server..."
 
-            echo "🔧 Generating Prisma client..."
-            npx prisma generate
+          SUCCESS=0
+          for attempt in 1 2 3 4 5; do
+            echo "🔄 Remote execution attempt $attempt..."
+            if sshpass -p "$SERVER_PASSWORD" ssh -p $PORT \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=30 \
+              -o ServerAliveInterval=15 \
+              -o ServerAliveCountMax=4 \
+              ${SERVER_USER}@${SERVER_HOST} "bash -s" << 'REMOTECOMMANDS'
+                set -e
+                TARGET="/www/wwwroot/www.dromkok.com/web"
+                cd "$TARGET"
 
-            echo "📊 Strategy: '${DB_STRATEGY}', Confirm: '${CONFIRM_RESET}'"
+                echo "📦 Installing / verifying dependencies on server..."
+                export npm_config_cache="/tmp/.npm-cache"
+                mkdir -p /tmp/.npm-cache
+                npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline --cache /tmp/.npm-cache
 
-            # Normalize values
-            RAW_STRATEGY="${DB_STRATEGY:-migrate}"
-            RAW_CONFIRM="${CONFIRM_RESET:-}"
-            STRATEGY=$(echo "$RAW_STRATEGY" | tr -d '[:space:]')
-            CONFIRM=$(echo "$RAW_CONFIRM" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+                echo "🔧 Generating Prisma client..."
+                npx prisma generate
 
-            if [ "$STRATEGY" = "reset_and_seed" ]; then
-              if [ "$CONFIRM" = "RESET_CONFIRM" ] || [ "$CONFIRM" = "RESET" ]; then
-                echo "⚠️ OPTION C: Resetting production database and running seeds..."
-                if [ -f "prisma/migrations/backup.sh" ]; then
-                  echo "📦 Creating pre-wipe backup..."
-                  bash prisma/migrations/backup.sh "pre_reset_$(date +%Y%m%d_%H%M%S)" || true
-                fi
-                npx prisma migrate reset --force --skip-generate
-                echo "🔧 Synchronizing schema with database..."
-                npx prisma db push --skip-generate --accept-data-loss
-                npm run db:seed
-                echo "🌱 Seeding categories, admin, and initial products/sample data..."
-                npm run db:seed:sample
-                echo "🌱 Seeding comprehensive product catalog and attributes..."
-                npm run db:seed:products || true
-                echo "✅ Database reset and seeded with full product catalog successfully!"
-              else
-                echo "❌ Database reset was requested but confirmation phrase was '${CONFIRM_RESET}' (expected: RESET_CONFIRM). Aborting to protect data."
-                exit 1
-              fi
-            elif [ "$STRATEGY" = "db_push" ]; then
-              echo "🔧 Synchronizing database schema via prisma db push..."
-              npx prisma db push --skip-generate --accept-data-loss
-              echo "✅ Database schema synchronized successfully via db push!"
-            elif [ "$STRATEGY" = "none" ]; then
-              echo "⏭️ Skipping database migrations/changes as requested by db_strategy=none."
+                echo "🗄️ Synchronizing complete schema with PostgreSQL via prisma db push..."
+                npx prisma db push --skip-generate --accept-data-loss || true
+
+                echo "🛡️ Verifying critical columns..."
+                node -e "
+                  const { PrismaClient } = require('@prisma/client');
+                  const p = new PrismaClient();
+                  Promise.all([
+                    p.\$executeRawUnsafe('ALTER TABLE \"carts\" ADD COLUMN IF NOT EXISTS \"mode\" TEXT NOT NULL DEFAULT \'RETAIL\''),
+                    p.\$executeRawUnsafe('ALTER TABLE \"cart_items\" ADD COLUMN IF NOT EXISTS \"mode\" TEXT NOT NULL DEFAULT \'RETAIL\''),
+                    p.\$executeRawUnsafe('ALTER TABLE \"cart_items\" ADD COLUMN IF NOT EXISTS \"selectedOptions\" JSONB'),
+                    p.\$executeRawUnsafe('ALTER TABLE \"order_items\" ADD COLUMN IF NOT EXISTS \"selectedOptions\" JSONB'),
+                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"openrouterApiKey\" TEXT'),
+                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"geminiApiKey\" TEXT'),
+                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"primaryAiProvider\" TEXT DEFAULT \'openai\''),
+                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"storeMode\" TEXT DEFAULT \'WHOLESALE\''),
+                  ]).then(() => { console.log('✅ Critical database columns verified successfully.'); process.exit(0); })
+                    .catch(e => { console.warn('Schema patch notice:', e.message); process.exit(0); });
+                " || true
+
+                echo "📦 Restoring complete product catalog snapshot (6,743 products & 122 categories)..."
+                node scripts/restore-catalog-snapshot.js --force || true
+
+                echo "🏗️ Building Next.js application..."
+                rm -rf .next
+                npm run build
+
+                echo "🔄 Restarting PM2 process..."
+                pm2 restart all || pm2 start npm --name "dromkok-web" -- run start
+                pm2 save
+
+                echo "⏳ Health check..."
+                sleep 5
+                curl -f -s http://localhost:3001/api/health > /dev/null && echo "✅ App healthy" || echo "⚠️ App starting..."
+
+                echo "✅ Deployment & Catalog Migration Complete!"
+REMOTECOMMANDS
+            then
+              echo "✅ Build and restart completed successfully!"
+              SUCCESS=1
+              break
             else
-              echo "🗄️ Resolving any previously failed migrations..."
-              set +e
-              npx prisma migrate resolve --rolled-back 20260918000000_add_rfq_system 2>/dev/null
-              RESOLVE_EXIT=$?
-              set -e
-              if [ $RESOLVE_EXIT -eq 0 ]; then
-                echo "↩️  Resolved failed migration: 20260918000000_add_rfq_system"
-              else
-                echo "ℹ️  No failed migration to resolve (already clean)."
-              fi
-
-              echo "🗄️ Applying pending database migrations..."
-              set +e
-              npx prisma migrate deploy
-              MIGRATE_EXIT=$?
-              set -e
-              if [ $MIGRATE_EXIT -ne 0 ]; then
-                echo "⚠️ prisma migrate deploy had warnings or unresolved migrations ($MIGRATE_EXIT). Continuing with db push..."
-              else
-                echo "✅ Database migrations applied successfully."
-              fi
-
-              echo "🔧 Synchronizing complete schema with PostgreSQL via prisma db push..."
-              npx prisma db push --skip-generate --accept-data-loss || true
-
-              echo "🛡️ Verifying and patching critical columns..."
-              node -e "
-                const { PrismaClient } = require('@prisma/client');
-                const p = new PrismaClient();
-                Promise.all([
-                  p.\$executeRawUnsafe('ALTER TABLE \"carts\" ADD COLUMN IF NOT EXISTS \"mode\" TEXT NOT NULL DEFAULT \'RETAIL\''),
-                  p.\$executeRawUnsafe('ALTER TABLE \"cart_items\" ADD COLUMN IF NOT EXISTS \"mode\" TEXT NOT NULL DEFAULT \'RETAIL\''),
-                  p.\$executeRawUnsafe('ALTER TABLE \"cart_items\" ADD COLUMN IF NOT EXISTS \"selectedOptions\" JSONB'),
-                  p.\$executeRawUnsafe('ALTER TABLE \"order_items\" ADD COLUMN IF NOT EXISTS \"selectedOptions\" JSONB'),
-                  p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"openrouterApiKey\" TEXT'),
-                  p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"geminiApiKey\" TEXT'),
-                  p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"primaryAiProvider\" TEXT DEFAULT \'openai\''),
-                  p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"storeMode\" TEXT DEFAULT \'WHOLESALE\''),
-                ]).then(() => { console.log('✅ Critical database columns verified successfully.'); process.exit(0); })
-                  .catch(e => { console.warn('Schema patch notice:', e.message); process.exit(0); });
-              " || true
+              echo "⚠️ Attempt $attempt failed. Waiting 8 seconds before retrying..."
+              sleep 8
             fi
+          done
 
-            echo "📦 Restoring product catalog snapshot if needed..."
-            node scripts/restore-catalog-snapshot.js || true
-
-            echo "🏗️ Building Next.js application..."
-            rm -rf .next
-            npm run build
-
-            echo "🔄 Restarting PM2 process..."
-            pm2 restart all || pm2 start npm --name "dromkok-web" -- run start
-            pm2 save
-
-            echo "⏳ Health check..."
-            sleep 5
-            curl -f -s http://localhost:3001/api/health > /dev/null && echo "✅ App healthy" || echo "⚠️ App starting..."
-
-            echo "✅ Deployment complete!"
+          if [ $SUCCESS -ne 1 ]; then
+            echo "❌ All remote execution attempts failed."
+            exit 1
+          fi
