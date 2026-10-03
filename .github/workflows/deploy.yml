@@ -187,6 +187,9 @@ jobs:
               " || true
             fi
 
+            echo "📦 Restoring product catalog snapshot if needed..."
+            node scripts/restore-catalog-snapshot.js || true
+
             echo "🏗️ Building Next.js application..."
             rm -rf .next
             npm run build

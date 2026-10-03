@@ -108,6 +108,7 @@ export default function DeploymentPage() {
     '003_backfill_category_translations',
     '004_sync_category_levels',
     '005_ensure_system_settings',
+    '006_restore_catalog_snapshot',
   ]);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
@@ -768,6 +769,7 @@ export default function DeploymentPage() {
                             { id: '003_backfill_category_translations', label: 'Backfill Category Translations (idempotent)' },
                             { id: '004_sync_category_levels', label: 'Sync Category Levels (idempotent)' },
                             { id: '005_ensure_system_settings', label: 'Ensure System Settings Row (idempotent)' },
+                            { id: '006_restore_catalog_snapshot', label: 'Sync Full Catalog Snapshot (6,743 products & 122 categories)' },
                           ].map((script) => (
                             <label key={script.id} className="flex items-center gap-2 cursor-pointer">
                               <input

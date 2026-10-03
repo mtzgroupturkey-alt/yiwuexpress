@@ -51,6 +51,15 @@ export const MIGRATION_SCRIPTS: MigrationScriptMeta[] = [
     estimatedRows: '1 row',
     file: '005_ensure_system_settings',
   },
+  {
+    id: '006_restore_catalog_snapshot',
+    name: 'Sync Full Catalog Snapshot (6,743 products & 122 categories)',
+    description: 'Imports the complete Scandinavian catalog snapshot with all categories, products, and trilingual translations (EN, RU, ZH).',
+    isIdempotent: true,
+    estimatedDurationSeconds: 15,
+    estimatedRows: '6,743 products, 122 categories, 20,229 translations',
+    file: '006_restore_catalog_snapshot',
+  },
 ];
 
 export function getScriptById(id: string): MigrationScriptMeta | undefined {
