@@ -130,9 +130,11 @@ export async function saveToStorage(buffer: Buffer, filename: string): Promise<s
 
   if (storageType === 'r2' && process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
     try {
-      // Dynamic import of S3 client if installed
+      // Dynamic import with webpackIgnore so webpack does not bundle or fail if not installed
+      const s3PackageName = '@aws-sdk/client-s3';
       // @ts-ignore
-      const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
+      const s3Module = await import(/* webpackIgnore: true */ s3PackageName);
+      const { S3Client, PutObjectCommand } = s3Module;
       const s3Client = new S3Client({
         region: 'auto',
         endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
