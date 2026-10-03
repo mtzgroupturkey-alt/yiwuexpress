@@ -37,14 +37,21 @@ export async function POST(request: NextRequest) {
     const isFreeModel = targetModel.includes('flash') || targetModel.includes(':free') || targetModel === 'qwen-max' || targetModel === 'qwen-flash';
     const freeStatus = isFreeModel ? 'Free Model' : 'Standard Tier';
 
+    const isOpenRouter = cleanBaseUrl.includes('openrouter.ai');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey.trim()}`,
+    };
+    if (isOpenRouter) {
+      headers['HTTP-Referer'] = 'https://dromkok.com';
+      headers['X-Title'] = 'Dromkok Admin Settings Tester';
+    }
+
     const startTime = Date.now();
 
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey.trim()}`,
-      },
+      headers,
       body: JSON.stringify({
         model: targetModel,
         messages: [

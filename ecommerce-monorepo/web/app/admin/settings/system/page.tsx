@@ -5,10 +5,13 @@ import {
   Cog, Key, Loader2, Save, Eye, EyeOff, Globe,
   Check, Copy, Sparkles, Server, Zap, RefreshCw,
   ChevronDown, ChevronUp, AlertCircle, CheckCircle2,
-  Terminal, Code2, ShieldAlert
+  Terminal, Code2, ShieldAlert, Cpu, CheckCheck,
+  Star, ExternalLink
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
+
+export type AIProviderId = 'zai' | 'qwen' | 'openai' | 'openrouter' | 'gemini' | 'deepseek'
 
 interface SystemSettings {
   id?: string
@@ -36,12 +39,168 @@ interface SystemSettings {
   maintenanceMode?: boolean
 }
 
+interface TestResult {
+  success: boolean
+  latencyMs?: number
+  message?: string
+  error?: string
+  model?: string
+  isFree?: boolean
+  freeStatus?: string
+}
+
+interface ProviderMeta {
+  id: AIProviderId
+  name: string
+  shortLabel: string
+  tagline: string
+  badge: string
+  badgeType: 'free' | 'quota' | 'standard'
+  portalUrl: string
+  portalLabel: string
+  keyField: keyof SystemSettings
+  baseUrlField?: keyof SystemSettings
+  modelField?: keyof SystemSettings
+  defaultBaseUrl: string
+  baseUrlOptions?: { label: string; value: string }[]
+  defaultModel: string
+  models: { label: string; value: string; badge?: string }[]
+}
+
+const PROVIDERS: ProviderMeta[] = [
+  {
+    id: 'zai',
+    name: 'Z.ai (Zhipu GLM)',
+    shortLabel: 'Z.ai GLM',
+    tagline: '100% Free Flash Chat & Vision models with zero per-token charge',
+    badge: '100% Free Flash Tier',
+    badgeType: 'free',
+    portalUrl: 'https://z.ai',
+    portalLabel: 'Get API Key at z.ai',
+    keyField: 'zaiApiKey',
+    baseUrlField: 'zaiBaseUrl',
+    modelField: 'zaiModel',
+    defaultBaseUrl: 'https://api.z.ai/api/paas/v4',
+    baseUrlOptions: [
+      { label: 'International — https://api.z.ai/api/paas/v4', value: 'https://api.z.ai/api/paas/v4' },
+      { label: 'China Mainland — https://open.bigmodel.cn/api/paas/v4', value: 'https://open.bigmodel.cn/api/paas/v4' },
+    ],
+    defaultModel: 'glm-4.7-flash',
+    models: [
+      { label: 'glm-4.7-flash', value: 'glm-4.7-flash', badge: '★ Flagship Free' },
+      { label: 'glm-4.5-flash', value: 'glm-4.5-flash', badge: '⚡ Fast Free' },
+      { label: 'glm-4.6v-flash', value: 'glm-4.6v-flash', badge: '👁️ Vision Free' },
+    ],
+  },
+  {
+    id: 'qwen',
+    name: 'Alibaba Model Studio (Qwen)',
+    shortLabel: 'Alibaba Qwen',
+    tagline: 'Alibaba Cloud Model Studio / DashScope with active 90-day free quota',
+    badge: 'Active Free Quota',
+    badgeType: 'quota',
+    portalUrl: 'https://modelstudio.console.alibabacloud.com/ap-southeast-1/api-key',
+    portalLabel: 'Model Studio Console (ap-southeast-1)',
+    keyField: 'qwenApiKey',
+    defaultBaseUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+    baseUrlOptions: [
+      { label: 'Singapore / Intl (ap-southeast-1) — https://dashscope-intl.aliyuncs.com/compatible-mode/v1', value: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1' },
+      { label: 'China Mainland — https://dashscope.aliyuncs.com/compatible-mode/v1', value: 'https://dashscope.aliyuncs.com/compatible-mode/v1' },
+    ],
+    defaultModel: 'qwen-max',
+    models: [
+      { label: 'qwen-max', value: 'qwen-max', badge: '★ Flagship Free Quota' },
+      { label: 'qwen-flash', value: 'qwen-flash', badge: '⚡ Ultra Fast Free Quota' },
+      { label: 'qwen-plus', value: 'qwen-plus', badge: 'Balanced' },
+      { label: 'qwen-turbo', value: 'qwen-turbo', badge: 'Fast Speed' },
+    ],
+  },
+  {
+    id: 'openai',
+    name: 'Custom Gateway (G-CAT / OpenAI)',
+    shortLabel: 'OpenAI Gateway',
+    tagline: 'Universal OpenAI-compatible API gateway (e.g. G-CAT, OpenAI, custom proxy)',
+    badge: 'OpenAI Compatible',
+    badgeType: 'standard',
+    portalUrl: 'https://gcat.ir',
+    portalLabel: 'Gateway Portal',
+    keyField: 'openaiApiKey',
+    baseUrlField: 'openaiBaseUrl',
+    modelField: 'openaiModel',
+    defaultBaseUrl: 'https://llm.gcat.ir/v1',
+    defaultModel: 'auto/best-chat',
+    models: [
+      { label: 'auto/best-chat', value: 'auto/best-chat', badge: '★ Translation' },
+      { label: 'auto/best-fast', value: 'auto/best-fast', badge: '⚡ Fast' },
+      { label: 'auto/pro-chat', value: 'auto/pro-chat', badge: '💎 Pro' },
+      { label: 'gpt-4o', value: 'gpt-4o', badge: 'OpenAI' },
+      { label: 'gpt-4o-mini', value: 'gpt-4o-mini', badge: 'Fast' },
+      { label: 'claude-3-5-sonnet', value: 'claude-3-5-sonnet', badge: 'Anthropic' },
+    ],
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    shortLabel: 'OpenRouter',
+    tagline: 'Global multi-model router with open-source and flagship models',
+    badge: 'Free & Paid Models',
+    badgeType: 'free',
+    portalUrl: 'https://openrouter.ai',
+    portalLabel: 'openrouter.ai/keys',
+    keyField: 'openrouterApiKey',
+    defaultBaseUrl: 'https://openrouter.ai/api/v1',
+    defaultModel: 'nvidia/nemotron-3-super-120b-a12b:free',
+    models: [
+      { label: 'nvidia/nemotron-3-super-120b-a12b:free', value: 'nvidia/nemotron-3-super-120b-a12b:free', badge: 'Free' },
+      { label: 'nvidia/nemotron-3.5-lightning:free', value: 'nvidia/nemotron-3.5-lightning:free', badge: 'Fast Free' },
+      { label: 'meta-llama/llama-3.3-70b-instruct:free', value: 'meta-llama/llama-3.3-70b-instruct:free', badge: 'Llama Free' },
+      { label: 'qwen/qwen3.8-27b:free', value: 'qwen/qwen3.8-27b:free', badge: 'Qwen Free' },
+      { label: 'openrouter/free', value: 'openrouter/free', badge: 'Auto Free' },
+    ],
+  },
+  {
+    id: 'gemini',
+    name: 'Google Gemini',
+    shortLabel: 'Gemini',
+    tagline: 'Google AI Studio with high rate limits and fast multi-language processing',
+    badge: 'Google AI Studio',
+    badgeType: 'free',
+    portalUrl: 'https://aistudio.google.com/app/apikey',
+    portalLabel: 'Google AI Studio Console',
+    keyField: 'geminiApiKey',
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    defaultModel: 'gemini-2.0-flash',
+    models: [
+      { label: 'gemini-2.0-flash', value: 'gemini-2.0-flash', badge: '★ Flagship Fast' },
+      { label: 'gemini-1.5-flash', value: 'gemini-1.5-flash', badge: 'Flash' },
+      { label: 'gemini-1.5-pro', value: 'gemini-1.5-pro', badge: 'Pro' },
+    ],
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek Direct',
+    shortLabel: 'DeepSeek',
+    tagline: 'Direct DeepSeek API endpoint with high performance and low cost',
+    badge: 'DeepSeek V3',
+    badgeType: 'standard',
+    portalUrl: 'https://platform.deepseek.com',
+    portalLabel: 'platform.deepseek.com',
+    keyField: 'deepseekApiKey',
+    defaultBaseUrl: 'https://api.deepseek.com/v1',
+    defaultModel: 'deepseek-chat',
+    models: [
+      { label: 'deepseek-chat', value: 'deepseek-chat', badge: '★ DeepSeek-V3' },
+      { label: 'deepseek-reasoner', value: 'deepseek-reasoner', badge: 'DeepSeek-R1' },
+    ],
+  },
+]
+
 export default function SystemSettingsPage() {
   const { dict, locale } = useAdminLocale()
   const [settings, setSettings] = useState<SystemSettings>({
     openaiBaseUrl: 'https://llm.gcat.ir/v1',
     openaiModel: 'auto/best-chat',
-    primaryAiProvider: 'openai',
+    primaryAiProvider: 'zai',
     zaiBaseUrl: 'https://api.z.ai/api/paas/v4',
     zaiModel: 'glm-4.7-flash',
   })
@@ -51,19 +210,41 @@ export default function SystemSettingsPage() {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [activeSnippetTab, setActiveSnippetTab] = useState<'curl' | 'python' | 'node'>('curl')
 
-  // Live Connection Tester state
-  const [testingAi, setTestingAi] = useState(false)
-  const [testResult, setTestResult] = useState<{
-    success: boolean
-    latencyMs?: number
-    message?: string
-    error?: string
-    model?: string
-    isFree?: boolean
-    freeStatus?: string
-  } | null>(null)
+  // Selected Provider Tab for focused configuration
+  const [activeProviderTab, setActiveProviderTab] = useState<AIProviderId>('zai')
 
-  const [showKeys, setShowKeys] = useState({
+  // Provider-specific model selections for those not stored directly in settings schema
+  const [providerModels, setProviderModels] = useState<Record<AIProviderId, string>>({
+    zai: 'glm-4.7-flash',
+    qwen: 'qwen-max',
+    openai: 'auto/best-chat',
+    openrouter: 'nvidia/nemotron-3-super-120b-a12b:free',
+    gemini: 'gemini-2.0-flash',
+    deepseek: 'deepseek-chat',
+  })
+
+  // Provider-specific custom base URLs
+  const [providerBaseUrls, setProviderBaseUrls] = useState<Record<AIProviderId, string>>({
+    zai: 'https://api.z.ai/api/paas/v4',
+    qwen: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+    openai: 'https://llm.gcat.ir/v1',
+    openrouter: 'https://openrouter.ai/api/v1',
+    gemini: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    deepseek: 'https://api.deepseek.com/v1',
+  })
+
+  // Independent Test Result for EACH provider
+  const [testingProvider, setTestingProvider] = useState<AIProviderId | null>(null)
+  const [testResults, setTestResults] = useState<Record<AIProviderId, TestResult | null>>({
+    zai: null,
+    qwen: null,
+    openai: null,
+    openrouter: null,
+    gemini: null,
+    deepseek: null,
+  })
+
+  const [showKeys, setShowKeys] = useState<Record<string, boolean>>({
     openai: false,
     zai: false,
     openrouter: false,
@@ -87,10 +268,26 @@ export default function SystemSettingsPage() {
         ...data,
         openaiBaseUrl: data.openaiBaseUrl || 'https://llm.gcat.ir/v1',
         openaiModel: data.openaiModel || 'auto/best-chat',
-        primaryAiProvider: data.primaryAiProvider || 'openai',
+        primaryAiProvider: data.primaryAiProvider || 'zai',
         zaiBaseUrl: data.zaiBaseUrl || 'https://api.z.ai/api/paas/v4',
         zaiModel: data.zaiModel || 'glm-4.7-flash',
       })
+
+      if (data.primaryAiProvider) {
+        setActiveProviderTab(data.primaryAiProvider as AIProviderId)
+      }
+
+      setProviderModels(prev => ({
+        ...prev,
+        zai: data.zaiModel || 'glm-4.7-flash',
+        openai: data.openaiModel || 'auto/best-chat',
+      }))
+
+      setProviderBaseUrls(prev => ({
+        ...prev,
+        zai: data.zaiBaseUrl || 'https://api.z.ai/api/paas/v4',
+        openai: data.openaiBaseUrl || 'https://llm.gcat.ir/v1',
+      }))
     } catch (error) {
       console.error('Error fetching settings:', error)
       toast.error('Failed to load settings')
@@ -104,18 +301,29 @@ export default function SystemSettingsPage() {
     setSaving(true)
 
     try {
-      // Auto-synchronize Z.ai credentials if Z.ai is the selected gateway
-      const isZai =
-        settings.openaiBaseUrl?.includes('z.ai') ||
-        settings.openaiBaseUrl?.includes('bigmodel') ||
-        settings.primaryAiProvider === 'zai'
+      const isZai = settings.primaryAiProvider === 'zai'
+      const isQwen = settings.primaryAiProvider === 'qwen'
 
       const payload = {
         ...settings,
-        primaryAiProvider: isZai ? 'zai' : (settings.primaryAiProvider || 'openai'),
-        zaiApiKey: isZai ? (settings.openaiApiKey || settings.zaiApiKey) : settings.zaiApiKey,
-        zaiBaseUrl: isZai ? (settings.openaiBaseUrl || settings.zaiBaseUrl) : settings.zaiBaseUrl,
-        zaiModel: isZai ? (settings.openaiModel || settings.zaiModel) : settings.zaiModel,
+        zaiModel: providerModels.zai,
+        zaiBaseUrl: providerBaseUrls.zai,
+        // If Z.ai or Qwen is selected as primary, keep openaiBaseUrl / model synchronized for backwards compatibility
+        openaiBaseUrl: isZai
+          ? (providerBaseUrls.zai || 'https://api.z.ai/api/paas/v4')
+          : isQwen
+          ? (providerBaseUrls.qwen || 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1')
+          : (providerBaseUrls.openai || settings.openaiBaseUrl),
+        openaiModel: isZai
+          ? providerModels.zai
+          : isQwen
+          ? providerModels.qwen
+          : providerModels.openai,
+        openaiApiKey: isZai
+          ? (settings.zaiApiKey || settings.openaiApiKey)
+          : isQwen
+          ? (settings.qwenApiKey || settings.openaiApiKey)
+          : settings.openaiApiKey,
       }
 
       const response = await fetch('/api/admin/settings/system', {
@@ -146,7 +354,7 @@ export default function SystemSettingsPage() {
     setSettings(prev => ({ ...prev, [field]: value }))
   }
 
-  const toggleShowKey = (key: keyof typeof showKeys) => {
+  const toggleShowKey = (key: string) => {
     setShowKeys(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
@@ -157,80 +365,96 @@ export default function SystemSettingsPage() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
-  const handleTestConnection = async () => {
-    if (!settings.openaiApiKey || !settings.openaiApiKey.trim()) {
-      toast.error('Please enter an API Key to test the connection')
+  const handleTestProvider = async (providerId: AIProviderId) => {
+    const meta = PROVIDERS.find(p => p.id === providerId)!
+    const apiKey = (settings[meta.keyField] as string) || ''
+
+    if (!apiKey || !apiKey.trim()) {
+      toast.error(`Please enter an API Key for ${meta.name} first`)
       return
     }
 
-    setTestingAi(true)
-    setTestResult(null)
+    const baseUrl = providerBaseUrls[providerId] || meta.defaultBaseUrl
+    const model = providerModels[providerId] || meta.defaultModel
+
+    setTestingProvider(providerId)
+    setTestResults(prev => ({ ...prev, [providerId]: null }))
 
     try {
       const response = await fetch('/api/admin/settings/test-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          apiKey: settings.openaiApiKey,
-          baseUrl: settings.openaiBaseUrl || 'https://llm.gcat.ir/v1',
-          model: settings.openaiModel || 'gpt-4o',
+          apiKey,
+          baseUrl,
+          model,
         }),
       })
 
       const data = await response.json()
 
       if (data.success) {
-        setTestResult({
-          success: true,
-          latencyMs: data.latencyMs,
-          message: data.message || `Connected in ${data.latencyMs}ms!`,
-          model: data.model,
-          isFree: data.isFree,
-          freeStatus: data.freeStatus,
-        })
-        toast.success(`Connected successfully (${data.latencyMs}ms)!`)
+        setTestResults(prev => ({
+          ...prev,
+          [providerId]: {
+            success: true,
+            latencyMs: data.latencyMs,
+            message: data.message || `Connected in ${data.latencyMs}ms!`,
+            model: data.model,
+            isFree: data.isFree,
+            freeStatus: data.freeStatus,
+          },
+        }))
+        toast.success(`${meta.shortLabel} connected successfully (${data.latencyMs}ms)!`)
       } else {
-        setTestResult({
-          success: false,
-          error: data.error || 'Connection failed',
-          latencyMs: data.latencyMs,
-        })
-        toast.error(data.error || 'Connection failed')
+        setTestResults(prev => ({
+          ...prev,
+          [providerId]: {
+            success: false,
+            error: data.error || 'Connection failed',
+            latencyMs: data.latencyMs,
+          },
+        }))
+        toast.error(data.error || `${meta.shortLabel} connection failed`)
       }
     } catch (err: any) {
-      setTestResult({
-        success: false,
-        error: err.message || 'Network request failed',
-      })
-      toast.error('Failed to test connection')
+      setTestResults(prev => ({
+        ...prev,
+        [providerId]: {
+          success: false,
+          error: err.message || 'Network request failed',
+        },
+      }))
+      toast.error(`Failed to test ${meta.shortLabel}`)
     } finally {
-      setTestingAi(false)
+      setTestingProvider(null)
     }
   }
 
-  const currentBaseUrl = settings.openaiBaseUrl || 'https://llm.gcat.ir/v1'
-  const currentModel = settings.openaiModel || 'gpt-4o'
-  const displayKey = settings.openaiApiKey ? (showKeys.openai ? settings.openaiApiKey : 'YOUR_API_KEY') : 'YOUR_API_KEY'
-  const isZaiActive = currentBaseUrl.includes('z.ai') || currentBaseUrl.includes('bigmodel')
-  const greeting = isZaiActive ? 'Hello Z.ai GLM!' : 'Hello Gateway!'
+  const activeMeta = PROVIDERS.find(p => p.id === activeProviderTab)!
+  const currentKeyVal = (settings[activeMeta.keyField] as string) || ''
+  const currentEndpoint = providerBaseUrls[activeProviderTab] || activeMeta.defaultBaseUrl
+  const currentSelectedModel = providerModels[activeProviderTab] || activeMeta.defaultModel
+  const displayKey = currentKeyVal ? (showKeys[activeMeta.id] ? currentKeyVal : 'YOUR_API_KEY') : 'YOUR_API_KEY'
+  const isPrimary = settings.primaryAiProvider === activeMeta.id
 
   const codeSnippets = {
-    curl: `curl ${currentBaseUrl}/chat/completions \\
+    curl: `curl ${currentEndpoint}/chat/completions \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer ${displayKey}" \\
   -d '{
-    "model": "${currentModel}",
-    "messages": [{"role": "user", "content": "${greeting}"}]
+    "model": "${currentSelectedModel}",
+    "messages": [{"role": "user", "content": "Hello ${activeMeta.shortLabel}!"}]
   }'`,
     python: `from openai import OpenAI
 
 client = OpenAI(
     api_key="${displayKey}",
-    base_url="${currentBaseUrl}"
+    base_url="${currentEndpoint}"
 )
 
 response = client.chat.completions.create(
-    model="${currentModel}",
+    model="${currentSelectedModel}",
     messages=[{"role": "user", "content": "Translate to Russian & Chinese"}]
 )
 print(response.choices[0].message.content)`,
@@ -238,11 +462,11 @@ print(response.choices[0].message.content)`,
 
 const openai = new OpenAI({
   apiKey: "${displayKey}",
-  baseURL: "${currentBaseUrl}",
+  baseURL: "${currentEndpoint}",
 });
 
 const completion = await openai.chat.completions.create({
-  model: "${currentModel}",
+  model: "${currentSelectedModel}",
   messages: [{ role: "user", content: "Translate to Russian & Chinese" }],
 });
 
@@ -265,53 +489,176 @@ console.log(completion.choices[0].message.content);`
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 mb-1">
             <span>Portal</span>
             <span>&gt;</span>
-            <span className="text-[#1a3a5c]">API Keys & Gateway</span>
+            <span className="text-[#1a3a5c]">AI Providers & Gateway</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-            API Keys &amp; Endpoint
+            AI Providers &amp; Gateway Settings
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Manage your personal gateway credentials, custom base URL, and AI translation models.
+            Configure each AI provider with its own API key, choose models, and test each model separately.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            OpenAI Compatible
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">Active Primary</span>
+            <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {PROVIDERS.find(p => p.id === settings.primaryAiProvider)?.name || settings.primaryAiProvider}
+            </span>
+          </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Primary Card: OpenAI-Compatible Gateway */}
+        {/* Provider Cards Switcher Grid */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Cpu size={18} className="text-[#1a3a5c]" />
+                <span>Supported AI Providers</span>
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Select any provider below to enter its specific API key, change endpoints, and test its models.
+              </p>
+            </div>
+            <span className="text-xs text-gray-400 font-medium hidden sm:inline">
+              6 Independent Engines
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+            {PROVIDERS.map((p) => {
+              const hasKey = Boolean(settings[p.keyField] && (settings[p.keyField] as string).trim())
+              const isSelected = activeProviderTab === p.id
+              const isCurrentPrimary = settings.primaryAiProvider === p.id
+              const testRes = testResults[p.id]
+
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setActiveProviderTab(p.id)}
+                  className={`text-left p-4 rounded-2xl border transition-all cursor-pointer relative group flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-[#1a3a5c] bg-blue-50/50 shadow-md ring-2 ring-[#1a3a5c]/20'
+                      : 'border-gray-200/90 bg-white hover:border-gray-300 hover:bg-gray-50/60'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${hasKey ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                      <h3 className="font-bold text-sm text-gray-900 group-hover:text-[#1a3a5c]">
+                        {p.shortLabel}
+                      </h3>
+                    </div>
+
+                    {isCurrentPrimary && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
+                        <Star size={10} className="fill-emerald-600 text-emerald-600" />
+                        Primary
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-gray-500 line-clamp-2 mt-1.5 leading-relaxed">
+                    {p.tagline}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-100/80 text-[10px]">
+                    <span className={`font-semibold px-2 py-0.5 rounded-md ${
+                      p.badgeType === 'free'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : p.badgeType === 'quota'
+                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {p.badge}
+                    </span>
+
+                    {testRes && (
+                      <span className={`font-bold flex items-center gap-1 ${
+                        testRes.success ? 'text-emerald-600' : 'text-red-500'
+                      }`}>
+                        {testRes.success ? (
+                          <>
+                            <CheckCheck size={12} />
+                            <span>{testRes.latencyMs}ms</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle size={12} />
+                            <span>Failed</span>
+                          </>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Focused Provider Workspace Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                <Globe size={20} />
+          {/* Header of Active Provider Workspace */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-gray-100">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold shrink-0">
+                <Sparkles size={24} />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <span>API Base URL &amp; Endpoint</span>
-                </h2>
-                <p className="text-xs text-gray-500">
-                  OpenAI-compatible gateway endpoint for any client, SDK, or automatic translation tool
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-black text-gray-900">
+                    {activeMeta.name}
+                  </h2>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                    activeMeta.badgeType === 'free'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                      : activeMeta.badgeType === 'quota'
+                      ? 'bg-amber-50 text-amber-900 border-amber-300'
+                      : 'bg-blue-50 text-blue-900 border-blue-200'
+                  }`}>
+                    {activeMeta.badge}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                  {activeMeta.tagline}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Set As Primary Button */}
               <button
                 type="button"
-                onClick={handleTestConnection}
-                disabled={testingAi}
+                onClick={() => {
+                  handleChange('primaryAiProvider', activeMeta.id)
+                  toast.success(`${activeMeta.shortLabel} set as primary AI provider! Click Save Settings to persist.`)
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isPrimary
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                }`}
+              >
+                <Star size={14} className={isPrimary ? 'fill-emerald-600 text-emerald-600' : 'text-gray-400'} />
+                <span>{isPrimary ? 'Active Primary Provider' : 'Set as Primary'}</span>
+              </button>
+
+              {/* Dedicated Test Connection Button */}
+              <button
+                type="button"
+                onClick={() => handleTestProvider(activeMeta.id)}
+                disabled={testingProvider === activeMeta.id}
                 className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
               >
-                {testingAi ? (
+                {testingProvider === activeMeta.id ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    <span>Testing Gateway...</span>
+                    <span>Testing {activeMeta.shortLabel}...</span>
                   </>
                 ) : (
                   <>
@@ -323,14 +670,14 @@ console.log(completion.choices[0].message.content);`
             </div>
           </div>
 
-          {/* Test Result Toast/Banner */}
-          {testResult && (
+          {/* Test Result Toast/Banner for this Provider */}
+          {testResults[activeMeta.id] && (
             <div className={`p-4 rounded-2xl text-xs flex items-start gap-3 border ${
-              testResult.success
-                ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
-                : 'bg-red-50/80 border-red-200 text-red-900'
+              testResults[activeMeta.id]?.success
+                ? 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
+                : 'bg-red-50/90 border-red-200 text-red-950'
             }`}>
-              {testResult.success ? (
+              {testResults[activeMeta.id]?.success ? (
                 <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
               ) : (
                 <AlertCircle size={18} className="text-red-600 shrink-0 mt-0.5" />
@@ -338,332 +685,185 @@ console.log(completion.choices[0].message.content);`
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-bold">
-                    {testResult.success ? 'Gateway Connection Successful!' : 'Connection Verification Failed'}
+                    {testResults[activeMeta.id]?.success
+                      ? `${activeMeta.shortLabel} Connection Successful!`
+                      : `${activeMeta.shortLabel} Verification Failed`}
                   </p>
-                  {testResult.success && testResult.freeStatus && (
+                  {testResults[activeMeta.id]?.freeStatus && (
                     <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[10px]">
-                      {testResult.freeStatus}
+                      {testResults[activeMeta.id]?.freeStatus}
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 opacity-90">
-                  {testResult.success ? testResult.message : testResult.error}
+                <p className="mt-1 opacity-90 whitespace-pre-line leading-relaxed">
+                  {testResults[activeMeta.id]?.success
+                    ? testResults[activeMeta.id]?.message
+                    : testResults[activeMeta.id]?.error}
                 </p>
-                {testResult.latencyMs !== undefined && (
+                {testResults[activeMeta.id]?.latencyMs !== undefined && (
                   <p className="mt-1 text-[11px] font-mono opacity-80">
-                    Response latency: {testResult.latencyMs}ms {testResult.model ? `• Model: ${testResult.model}` : ''}
+                    Response latency: {testResults[activeMeta.id]?.latencyMs}ms • Tested Model: {testResults[activeMeta.id]?.model}
                   </p>
-                )}
-                {testResult.error && (testResult.error.includes('402') || testResult.error.toLowerCase().includes('wallet') || testResult.error.includes('insufficient_quota')) && (
-                  <div className="mt-2.5 pt-2.5 border-t border-red-200/80 text-[11px] text-red-800 space-y-1">
-                    <p className="font-semibold flex items-center gap-1">
-                      <span>💡</span>
-                      <span>How to resolve this:</span>
-                    </p>
-                    <ul className="list-disc list-inside space-y-0.5 opacity-95 pl-1">
-                      <li>Your gateway account wallet balance is exhausted ($-0.05). Log into your gateway portal (e.g. at <strong>gcat.ir</strong> or your provider dashboard) and deposit funds into your wallet to reactivate this key.</li>
-                      <li>Alternatively, click <strong>OpenRouter</strong> or <strong>Official OpenAI</strong> in the presets above and enter a valid API key.</li>
-                    </ul>
-                  </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Fields Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Base URL Field */}
-            <div className="space-y-2 md:col-span-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                  <span>API Base URL</span>
-                  <span className="text-[10px] text-gray-400 font-normal">(Endpoint root for /chat/completions)</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => handleCopy(settings.openaiBaseUrl || 'https://llm.gcat.ir/v1', 'baseUrl')}
-                  className="text-xs text-[#1a3a5c] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-                >
-                  {copiedField === 'baseUrl' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                  <span>{copiedField === 'baseUrl' ? 'Copied' : 'Copy'}</span>
-                </button>
-              </div>
-
-              <div className="relative">
-                <input
-                  type="text"
-                  value={settings.openaiBaseUrl || ''}
-                  onChange={(e) => handleChange('openaiBaseUrl', e.target.value)}
-                  placeholder="https://llm.gcat.ir/v1"
-                  className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-slate-50/50"
-                />
-              </div>
-
-              {/* Quick Base URL Presets */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="text-[11px] text-gray-400 font-medium">Presets:</span>
-                {[
-                  {
-                    label: 'Z.ai (GLM Free Flash)',
-                    url: 'https://api.z.ai/api/paas/v4',
-                    model: 'glm-4.7-flash',
-                  },
-                  {
-                    label: 'Alibaba Model Studio (Free Quota)',
-                    url: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
-                    model: 'qwen-max',
-                  },
-                  {
-                    label: 'G-CAT Gateway',
-                    url: 'https://llm.gcat.ir/v1',
-                    model: 'auto/best-chat',
-                  },
-                  {
-                    label: 'OpenRouter',
-                    url: 'https://openrouter.ai/api/v1',
-                    model: 'nvidia/nemotron-3-super-120b-a12b:free',
-                  },
-                  {
-                    label: 'DeepSeek Direct',
-                    url: 'https://api.deepseek.com/v1',
-                    model: 'deepseek-chat',
-                  },
-                  {
-                    label: 'Z.ai / BigModel (China)',
-                    url: 'https://open.bigmodel.cn/api/paas/v4',
-                    model: 'glm-4.7-flash',
-                  },
-                ].map((p) => (
-                  <button
-                    key={p.url}
-                    type="button"
-                    onClick={() => {
-                      handleChange('openaiBaseUrl', p.url)
-                      if (p.model) handleChange('openaiModel', p.model)
-                    }}
-                    className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border transition-colors cursor-pointer ${
-                      settings.openaiBaseUrl === p.url
-                        ? 'bg-blue-50 text-[#1a3a5c] border-blue-200 font-bold'
-                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Z.ai (GLM) Free Flash Models Guidance Banner */}
-              {(settings.openaiBaseUrl?.includes('z.ai') || settings.openaiBaseUrl?.includes('bigmodel')) && (
-                <div className="mt-2 p-3 bg-indigo-50/90 border border-indigo-200 rounded-xl space-y-1.5 text-xs text-indigo-950">
-                  <div className="flex items-center justify-between font-bold">
-                    <span className="flex items-center gap-1.5 text-[#1a3a5c]">
-                      <Sparkles size={14} className="text-indigo-600" />
-                      <span>Z.ai (Zhipu GLM) — 100% Free Flash Models</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Free models only
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-indigo-900 leading-relaxed">
-                    Uses OpenAI-compatible endpoint <code className="bg-indigo-100/80 px-1 py-0.5 rounded font-mono text-[10px]">{settings.openaiBaseUrl}</code>.
-                    Flagship models <strong className="font-semibold text-emerald-800">glm-4.7-flash</strong>, <strong className="font-semibold text-emerald-800">glm-4.5-flash</strong>, and <strong className="font-semibold text-emerald-800">glm-4.6v-flash</strong> are 100% free with zero token charges.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] pt-1 border-t border-indigo-200/70">
-                    <a
-                      href="https://z.ai"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
-                    >
-                      <span>🔑 Get API Key at z.ai</span>
-                      <Globe size={11} />
-                    </a>
-                    <span className="text-[11px] text-indigo-700">
-                      ⚡ Note: The free Flash tier allows 1 concurrent request. Please avoid rapid double-clicks.
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Alibaba Cloud Model Studio Free Quota Guidance Banner */}
-              {(settings.openaiBaseUrl?.includes('aliyuncs') || settings.openaiBaseUrl?.includes('dashscope')) && (
-                <div className="mt-2 p-3 bg-amber-50/90 border border-amber-200 rounded-xl space-y-1.5 text-xs text-amber-950">
-                  <div className="flex items-center justify-between font-bold">
-                    <span className="flex items-center gap-1.5 text-[#1a3a5c]">
-                      <Sparkles size={14} className="text-amber-600" />
-                      <span>Alibaba Cloud Model Studio (DashScope Free Quota)</span>
-                    </span>
-                    <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-mono">
-                      Region: Singapore (ap-southeast-1)
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-amber-800 leading-relaxed">
-                    Uses OpenAI-compatible endpoint <code className="bg-amber-100/80 px-1 py-0.5 rounded font-mono text-[10px]">https://dashscope-intl.aliyuncs.com/compatible-mode/v1</code>.
-                    Your 90-day free trial quota is active on <strong className="font-semibold text-emerald-800">qwen-max</strong> and <strong className="font-semibold text-emerald-800">qwen-flash</strong>.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] pt-1 border-t border-amber-200/70">
-                    <a
-                      href="https://modelstudio.console.alibabacloud.com/ap-southeast-1/api-key"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:underline"
-                    >
-                      <span>🔑 Copy / Create API Key</span>
-                      <Globe size={11} />
-                    </a>
-                    <a
-                      href="https://modelstudio.console.alibabacloud.com/ap-southeast-1/costing-balance/free-quota"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:underline"
-                    >
-                      <span>📊 Check Free Quota Balance</span>
-                      <Globe size={11} />
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* API Key Field */}
+          {/* Dedicated Provider Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1. API Key Field for this provider */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-gray-700">
-                API Key
-                <span className="ml-1.5 text-[10px] text-emerald-600 font-medium">(Used for auto-translation)</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-gray-800">
+                  {activeMeta.shortLabel} API Key
+                  <span className="ml-1.5 text-[10px] text-indigo-600 font-medium">({activeMeta.keyField})</span>
+                </label>
+                <a
+                  href={activeMeta.portalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-600 hover:underline flex items-center gap-0.5 font-semibold"
+                >
+                  <span>{activeMeta.portalLabel}</span>
+                  <ExternalLink size={10} />
+                </a>
+              </div>
+
               <div className="relative">
                 <input
-                  type={showKeys.openai ? 'text' : 'password'}
-                  value={settings.openaiApiKey || ''}
-                  onChange={(e) => handleChange('openaiApiKey', e.target.value)}
-                  placeholder="Enter your API Key (e.g. sk-ws-... or sk-...)"
-                  className="w-full px-4 py-2.5 pr-10 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent"
+                  type={showKeys[activeMeta.id] ? 'text' : 'password'}
+                  value={(settings[activeMeta.keyField] as string) || ''}
+                  onChange={(e) => handleChange(activeMeta.keyField, e.target.value)}
+                  placeholder={`Paste your personal ${activeMeta.shortLabel} API key here`}
+                  className="w-full px-4 py-2.5 pr-10 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-slate-50/50"
                 />
                 <button
                   type="button"
-                  onClick={() => toggleShowKey('openai')}
+                  onClick={() => toggleShowKey(activeMeta.id)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
-                  {showKeys.openai ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showKeys[activeMeta.id] ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
               <p className="text-[11px] text-gray-400">
-                Paste your personal token or gateway key from your portal.
+                This key is stored separately for {activeMeta.shortLabel} and will not be overwritten by other providers.
               </p>
             </div>
 
-            {/* Model Name Field */}
+            {/* 2. Endpoint / Base URL Field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-gray-700">
-                  Model Name
-                  <span className="ml-1.5 text-[10px] text-emerald-600 font-medium">
-                    {settings.openaiBaseUrl?.includes('z.ai') || settings.openaiBaseUrl?.includes('bigmodel')
-                      ? '(Z.ai 100% Free Flash Models)'
-                      : settings.openaiBaseUrl?.includes('aliyuncs')
-                      ? '(Model Studio Free Quota Models)'
-                      : '(Gateway Auto Models)'}
-                  </span>
+                <label className="block text-xs font-bold text-gray-800">
+                  Base URL / Endpoint
+                  <span className="ml-1.5 text-[10px] text-gray-400 font-normal">(/chat/completions)</span>
                 </label>
-                <span className="text-[10px] font-mono text-gray-400">Selected: {settings.openaiModel || 'glm-4.7-flash'}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(currentEndpoint, `url-${activeMeta.id}`)}
+                  className="text-[11px] text-[#1a3a5c] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                >
+                  {copiedField === `url-${activeMeta.id}` ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                  <span>{copiedField === `url-${activeMeta.id}` ? 'Copied' : 'Copy'}</span>
+                </button>
               </div>
 
-              {/* Quick Dropdown Select */}
-              <div className="relative">
+              {activeMeta.baseUrlOptions ? (
                 <select
-                  value={settings.openaiModel || (settings.openaiBaseUrl?.includes('z.ai') ? 'glm-4.7-flash' : settings.openaiBaseUrl?.includes('aliyuncs') ? 'qwen-max' : 'auto/best-chat')}
-                  onChange={(e) => handleChange('openaiModel', e.target.value)}
+                  value={currentEndpoint}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setProviderBaseUrls(prev => ({ ...prev, [activeMeta.id]: val }))
+                    if (activeMeta.baseUrlField) handleChange(activeMeta.baseUrlField, val)
+                  }}
                   className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-white cursor-pointer"
                 >
-                  <optgroup label="Z.ai / Zhipu GLM (100% Free Flash Models)">
-                    <option value="glm-4.7-flash">glm-4.7-flash (★ Flagship Chat - Free Flash Tier)</option>
-                    <option value="glm-4.5-flash">glm-4.5-flash (⚡ Fast Chat - Free Flash Tier)</option>
-                    <option value="glm-4.6v-flash">glm-4.6v-flash (👁️ Vision &amp; Multimodal - Free Flash Tier)</option>
-                  </optgroup>
-                  <optgroup label="Alibaba Cloud Model Studio (Free Quota Eligible)">
-                    <option value="qwen-max">qwen-max (★ Flagship Best Quality - Active Free Quota)</option>
-                    <option value="qwen-flash">qwen-flash (⚡ Ultra Fast & Efficient - Active Free Quota)</option>
-                    <option value="qwen-plus">qwen-plus (Balanced Reasoning)</option>
-                    <option value="qwen-turbo">qwen-turbo (Fast Speed)</option>
-                  </optgroup>
-                  <optgroup label="Auto Models (From G-CAT Gateway)">
-                    <option value="auto/best-chat">auto/best-chat (★ Recommended for Translation & Chat)</option>
-                    <option value="auto/best-fast">auto/best-fast (⚡ Fastest Translation)</option>
-                    <option value="auto/pro-chat">auto/pro-chat (💎 Pro Multi-Language Quality)</option>
-                    <option value="auto/best-coding">auto/best-coding (Best Coding)</option>
-                    <option value="auto/best-reasoning">auto/best-reasoning (Deep Reasoning)</option>
-                    <option value="auto/best-vision">auto/best-vision (Vision & Images)</option>
-                  </optgroup>
-                  <optgroup label="Direct Provider Models">
-                    <option value="deepseek-chat">deepseek-chat</option>
-                    <option value="nvidia/nemotron-3-super-120b-a12b:free">nvidia/nemotron-3-super-120b-a12b:free (OpenRouter)</option>
-                    <option value="gpt-4o">gpt-4o</option>
-                    <option value="gpt-4o-mini">gpt-4o-mini</option>
-                    <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
-                  </optgroup>
+                  {activeMeta.baseUrlOptions.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
                 </select>
-              </div>
-
-              {/* Custom Input for any other model */}
-              <div className="flex items-center gap-2 pt-1">
+              ) : (
                 <input
                   type="text"
-                  value={settings.openaiModel || ''}
-                  onChange={(e) => handleChange('openaiModel', e.target.value)}
-                  placeholder="Or type custom model (e.g. glm-4.7-flash, qwen-max, auto/best-chat)"
-                  className="flex-1 px-3 py-1.5 font-mono text-xs border border-gray-200 rounded-lg focus:ring-1 focus:ring-[#1a3a5c] bg-slate-50/50"
+                  value={currentEndpoint}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setProviderBaseUrls(prev => ({ ...prev, [activeMeta.id]: val }))
+                    if (activeMeta.baseUrlField) handleChange(activeMeta.baseUrlField, val)
+                  }}
+                  className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-slate-50/50"
                 />
+              )}
+              <p className="text-[11px] text-gray-400">
+                Default: <code className="text-slate-600 font-mono text-[10px]">{activeMeta.defaultBaseUrl}</code>
+              </p>
+            </div>
+
+            {/* 3. Model Selector for this provider */}
+            <div className="space-y-2 md:col-span-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-gray-800">
+                  Model Selection for {activeMeta.shortLabel}
+                </label>
+                <span className="text-[10px] font-mono text-gray-500">
+                  Active Model: <strong className="text-indigo-900">{currentSelectedModel}</strong>
+                </span>
               </div>
 
-              {/* Quick Model Presets Pills */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                <span className="text-[10px] text-gray-400 font-medium">Quick Picks:</span>
-                {(settings.openaiBaseUrl?.includes('z.ai') || settings.openaiBaseUrl?.includes('bigmodel')
-                  ? [
-                      { label: 'glm-4.7-flash', badge: '★ Flagship Free' },
-                      { label: 'glm-4.5-flash', badge: '⚡ Fast Free' },
-                      { label: 'glm-4.6v-flash', badge: '👁️ Vision Free' },
-                    ]
-                  : settings.openaiBaseUrl?.includes('aliyuncs') || settings.openaiBaseUrl?.includes('dashscope')
-                  ? [
-                      { label: 'qwen-max', badge: '★ Flagship' },
-                      { label: 'qwen-flash', badge: '⚡ Ultra-Fast' },
-                      { label: 'qwen-plus', badge: 'Balanced' },
-                      { label: 'qwen-turbo', badge: 'Turbo' },
-                    ]
-                  : [
-                      { label: 'auto/best-chat', badge: '★ Translation' },
-                      { label: 'auto/best-fast', badge: '⚡ Fast' },
-                      { label: 'auto/pro-chat', badge: '💎 Pro' },
-                      { label: 'deepseek-chat', badge: 'DeepSeek' },
-                      { label: 'qwen-max', badge: 'Qwen' },
-                    ]
-                ).map((m) => (
-                  <button
-                    key={m.label}
-                    type="button"
-                    onClick={() => handleChange('openaiModel', m.label)}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-mono border transition-colors cursor-pointer flex items-center gap-1 ${
-                      settings.openaiModel === m.label
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold shadow-2xs'
-                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span>{m.label}</span>
-                    <span className="text-[9px] opacity-75 font-sans">({m.badge})</span>
-                  </button>
-                ))}
+              {/* Quick Pick Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] text-gray-400 font-medium">Quick Picks:</span>
+                {activeMeta.models.map((m) => {
+                  const isSelected = currentSelectedModel === m.value
+                  return (
+                    <button
+                      key={m.value}
+                      type="button"
+                      onClick={() => {
+                        setProviderModels(prev => ({ ...prev, [activeMeta.id]: m.value }))
+                        if (activeMeta.modelField) handleChange(activeMeta.modelField, m.value)
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-[#1a3a5c] text-white border-[#1a3a5c] font-bold shadow-sm'
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span>{m.value}</span>
+                      {m.badge && (
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-sans ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {m.badge}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Custom Model Input */}
+              <div className="pt-1">
+                <input
+                  type="text"
+                  value={currentSelectedModel}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setProviderModels(prev => ({ ...prev, [activeMeta.id]: val }))
+                    if (activeMeta.modelField) handleChange(activeMeta.modelField, val)
+                  }}
+                  placeholder={`Type custom ${activeMeta.shortLabel} model name (e.g. ${activeMeta.defaultModel})`}
+                  className="w-full px-4 py-2 font-mono text-xs border border-gray-200 rounded-xl focus:ring-1 focus:ring-[#1a3a5c] bg-slate-50/40"
+                />
               </div>
             </div>
           </div>
 
-          {/* Quick Integration Examples (Matching screenshot tabs) */}
+          {/* Quick Integration Examples for this selected Provider */}
           <div className="pt-4 border-t border-gray-100 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
                 <Code2 size={14} className="text-[#1a3a5c]" />
-                <span>Quick Integration Examples</span>
+                <span>Quick Code Examples for {activeMeta.shortLabel}</span>
               </p>
 
               <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
@@ -711,10 +911,10 @@ console.log(completion.choices[0].message.content);`
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-[#1a3a5c] transition-colors">
-                  Alternative / Fallback AI Providers (Optional)
+                  Additional Fallback AI Providers (Optional)
                 </h3>
                 <p className="text-xs text-gray-400">
-                  Z.ai (GLM), OpenRouter, Google Gemini, DeepSeek, Alibaba Qwen, Moonshot Kimi, Cerebras
+                  Moonshot Kimi, Cerebras, and legacy cascade keys
                 </p>
               </div>
             </div>
@@ -726,133 +926,10 @@ console.log(completion.choices[0].message.content);`
           {showFallbacks && (
             <div className="pt-4 border-t border-gray-100 space-y-4">
               <p className="text-xs text-gray-500">
-                If the primary OpenAI gateway is unavailable or rate-limited, the translation engine will automatically cascade through these configured fallbacks.
+                If the primary provider is unavailable or hits rate limits, the translation and assistant cascade can automatically fallback through these configured options.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Z.ai (GLM) */}
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <label className="text-xs font-bold text-gray-700">Z.ai (GLM) API Key</label>
-                      <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">Free Flash</span>
-                    </div>
-                    <a href="https://z.ai" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">z.ai</a>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showKeys.zai ? 'text' : 'password'}
-                      value={settings.zaiApiKey || ''}
-                      onChange={(e) => handleChange('zaiApiKey', e.target.value)}
-                      placeholder="Enter Z.ai PaaS token"
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowKey('zai')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      {showKeys.zai ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* OpenRouter */}
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-700">OpenRouter API Key</label>
-                    <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">openrouter.ai</a>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showKeys.openrouter ? 'text' : 'password'}
-                      value={settings.openrouterApiKey || ''}
-                      onChange={(e) => handleChange('openrouterApiKey', e.target.value)}
-                      placeholder="sk-or-v1-..."
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowKey('openrouter')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      {showKeys.openrouter ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Gemini */}
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-700">Google Gemini API Key</label>
-                    <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">AI Studio</a>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showKeys.gemini ? 'text' : 'password'}
-                      value={settings.geminiApiKey || ''}
-                      onChange={(e) => handleChange('geminiApiKey', e.target.value)}
-                      placeholder="AIza..."
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowKey('gemini')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      {showKeys.gemini ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* DeepSeek */}
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-700">DeepSeek API Key</label>
-                    <a href="https://platform.deepseek.com" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">deepseek.com</a>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showKeys.deepseek ? 'text' : 'password'}
-                      value={settings.deepseekApiKey || ''}
-                      onChange={(e) => handleChange('deepseekApiKey', e.target.value)}
-                      placeholder="sk-..."
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowKey('deepseek')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      {showKeys.deepseek ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Alibaba Qwen */}
-                <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-gray-700">Alibaba Qwen (Model Studio / DashScope)</label>
-                    <a href="https://modelstudio.console.alibabacloud.com/ap-southeast-1/api-key" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">Model Studio (ap-southeast-1)</a>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type={showKeys.qwen ? 'text' : 'password'}
-                      value={settings.qwenApiKey || ''}
-                      onChange={(e) => handleChange('qwenApiKey', e.target.value)}
-                      placeholder="sk-ws-... or sk-..."
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShowKey('qwen')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
-                    >
-                      {showKeys.qwen ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
                 {/* Kimi */}
                 <div className="p-3.5 rounded-2xl bg-gray-50/70 border border-gray-200/80 space-y-1.5">
                   <div className="flex items-center justify-between">
@@ -865,7 +942,7 @@ console.log(completion.choices[0].message.content);`
                       value={settings.kimiApiKey || ''}
                       onChange={(e) => handleChange('kimiApiKey', e.target.value)}
                       placeholder="sk-..."
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
+                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white font-mono"
                     />
                     <button
                       type="button"
@@ -889,7 +966,7 @@ console.log(completion.choices[0].message.content);`
                       value={settings.cerebrasApiKey || ''}
                       onChange={(e) => handleChange('cerebrasApiKey', e.target.value)}
                       placeholder="csk-..."
-                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white"
+                      className="w-full px-3 py-1.5 pr-8 text-xs border border-gray-300 rounded-lg bg-white font-mono"
                     />
                     <button
                       type="button"
@@ -924,7 +1001,7 @@ console.log(completion.choices[0].message.content);`
             {saving ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                <span>Saving Settings...</span>
+                <span>Saving All Settings...</span>
               </>
             ) : (
               <>
