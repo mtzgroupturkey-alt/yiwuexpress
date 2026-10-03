@@ -164,7 +164,36 @@ export default function Home() {
 
   const activeKitchenProducts = useMemo(() => {
     if (dbProducts.length === 0) return [];
-    return dbProducts.filter((p) => {
+
+    const pinnedIds = (settings?.kitchenSectionPinnedProductIds || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    const categoryIds = (settings?.kitchenSectionCategoryIds || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+
+    // 1. Pinned products first
+    const pinned: typeof dbProducts = [];
+    pinnedIds.forEach((id) => {
+      const match = dbProducts.find((p) => p.id === id);
+      if (match) pinned.push(match);
+    });
+
+    // 2. Candidate products matching categories or keywords
+    const remaining = dbProducts.filter((p) => !pinned.some((pin) => pin.id === p.id));
+    const matched = remaining.filter((p) => {
+      // If admin selected specific categories in settings, filter by them
+      if (categoryIds.length > 0) {
+        return (
+          (p.categoryId && categoryIds.includes(p.categoryId)) ||
+          categoryIds.includes(p.category || '') ||
+          categoryIds.includes(p.categorySlug || '')
+        );
+      }
+
+      // Default auto-keyword matching for kitchenware & dining
       const dept = (p.department || '').toLowerCase();
       const cat = (p.category || '').toLowerCase();
       const deptSlug = (p.departmentSlug || '').toLowerCase();
@@ -181,7 +210,9 @@ export default function Home() {
         catSlug.includes('cutlery') || catSlug.includes('kitchen-utensils')
       );
     });
-  }, [dbProducts]);
+
+    return [...pinned, ...matched];
+  }, [dbProducts, settings?.kitchenSectionPinnedProductIds, settings?.kitchenSectionCategoryIds]);
 
   const activeElectronicsProducts = useMemo(() => {
     if (dbProducts.length === 0) return [];
@@ -874,22 +905,29 @@ export default function Home() {
             </MotionReveal>
 
             {/* 6. Kitchenware, Cookware & Dining Essentials Grid */}
-            <MotionReveal direction="up">
-              <FreshSupermarketSection
-                products={activeKitchenProducts}
-                isLoading={isProductsLoading || dbProducts.length === 0}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-                cartQuantities={cartQuantities}
-                favoriteIds={favoriteIds}
-                onToggleFavorite={toggleWishlist}
-                onSelectProduct={(product) => {
-                  setSelectedProductForPDP(product);
-                  handleNavigateView('product', { product });
-                }}
-                onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchen & Dining' })}
-              />
-            </MotionReveal>
+            {settings?.kitchenSectionEnabled !== false && (
+              <MotionReveal direction="up">
+                <FreshSupermarketSection
+                  title={settings?.kitchenSectionTitle || undefined}
+                  subtitle={settings?.kitchenSectionSubtitle || undefined}
+                  badgeText={settings?.kitchenSectionBadge || undefined}
+                  viewAllText={settings?.kitchenSectionViewAllLabel || undefined}
+                  maxProducts={settings?.kitchenSectionMaxProducts || 6}
+                  products={activeKitchenProducts}
+                  isLoading={isProductsLoading || dbProducts.length === 0}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  cartQuantities={cartQuantities}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={toggleWishlist}
+                  onSelectProduct={(product) => {
+                    setSelectedProductForPDP(product);
+                    handleNavigateView('product', { product });
+                  }}
+                  onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchen & Dining' })}
+                />
+              </MotionReveal>
+            )}
 
             {/* 7. Popular in Lighting & Home Smart */}
             <MotionReveal direction="up">

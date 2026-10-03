@@ -455,19 +455,26 @@ export function Design3Storefront() {
             <TrustFeatures />
 
             {/* 6. Kitchenware, Cookware & Dining Essentials Grid */}
-            <FreshSupermarketSection
-              products={GROCERY_CATALOG_PRODUCTS}
-              onAddToCart={handleAddToCart}
-              onUpdateQuantity={handleUpdateQuantity}
-              cartQuantities={cartQuantities}
-              favoriteIds={favoriteIds}
-              onToggleFavorite={handleToggleFavorite}
-              onSelectProduct={(product) => {
-                setSelectedProductForPDP(product);
-                handleNavigateView('product', { product });
-              }}
-              onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchenware & Dining' })}
-            />
+            {settings?.kitchenSectionEnabled !== false && (
+              <FreshSupermarketSection
+                title={settings?.kitchenSectionTitle || undefined}
+                subtitle={settings?.kitchenSectionSubtitle || undefined}
+                badgeText={settings?.kitchenSectionBadge || undefined}
+                viewAllText={settings?.kitchenSectionViewAllLabel || undefined}
+                maxProducts={settings?.kitchenSectionMaxProducts || 6}
+                products={GROCERY_CATALOG_PRODUCTS}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+                cartQuantities={cartQuantities}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={handleToggleFavorite}
+                onSelectProduct={(product) => {
+                  setSelectedProductForPDP(product);
+                  handleNavigateView('product', { product });
+                }}
+                onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchenware & Dining' })}
+              />
+            )}
 
             {/* 7. Popular in Electronics & Appliances */}
             <PopularElectronics

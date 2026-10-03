@@ -56,6 +56,7 @@ export const adminEn = {
     newArrivals: 'New Arrivals',
     flashSales: 'Flash Sales',
     flashDeals: 'Flash & Seasonal Deals',
+    kitchenSection: 'Kitchen & Dining Block',
     breadcrumb: 'Breadcrumb Backgrounds',
     company: 'Company Info',
     contactLocations: 'Contact Locations',

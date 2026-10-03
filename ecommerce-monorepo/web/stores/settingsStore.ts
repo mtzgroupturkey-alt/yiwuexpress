@@ -34,6 +34,14 @@ export interface CompanySettings {
   instagramUrl?: string
   whatsappNumber?: string
   wechatId?: string
+  kitchenSectionEnabled?: boolean
+  kitchenSectionTitle?: string | null
+  kitchenSectionSubtitle?: string | null
+  kitchenSectionBadge?: string | null
+  kitchenSectionViewAllLabel?: string | null
+  kitchenSectionCategoryIds?: string | null
+  kitchenSectionPinnedProductIds?: string | null
+  kitchenSectionMaxProducts?: number
 }
 
 export interface SettingsState {
@@ -62,6 +70,14 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   retailEnabled: true,
   storeHours: '08:00 – 23:00',
   freeShippingThreshold: 35.0,
+  kitchenSectionEnabled: true,
+  kitchenSectionTitle: 'Kitchenware, Cookware & Dining Essentials',
+  kitchenSectionSubtitle: 'Granite frying pans, chef cutlery sets, porcelain dinner sets, and Italian espresso barware',
+  kitchenSectionBadge: 'KITCHEN & DINING',
+  kitchenSectionViewAllLabel: 'View all Kitchen & Dining',
+  kitchenSectionCategoryIds: null,
+  kitchenSectionPinnedProductIds: null,
+  kitchenSectionMaxProducts: 12,
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({

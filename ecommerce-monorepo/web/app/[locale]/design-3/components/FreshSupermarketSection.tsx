@@ -17,6 +17,11 @@ interface FreshSupermarketSectionProps {
   onSelectProduct: (product: Product) => void;
   onViewAllFresh?: () => void;
   isLoading?: boolean;
+  title?: string;
+  subtitle?: string;
+  badgeText?: string;
+  viewAllText?: string;
+  maxProducts?: number;
 }
 
 export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = ({
@@ -29,6 +34,11 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
   onSelectProduct,
   onViewAllFresh,
   isLoading = false,
+  title,
+  subtitle,
+  badgeText,
+  viewAllText,
+  maxProducts = 6,
 }) => {
   const { tKitchen } = useStorefrontTranslation();
 
@@ -106,8 +116,8 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
     ? products
     : products.filter(selectedTabObj.match);
 
-  // Take top 6 items
-  const displayProducts = filteredProducts.slice(0, 6);
+  // Take top items according to maxProducts
+  const displayProducts = filteredProducts.slice(0, maxProducts || 6);
 
   return (
     <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
@@ -117,14 +127,14 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-              {tKitchen('badge')}
+              {badgeText || tKitchen('badge')}
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <span>{tKitchen('title')}</span>
+            <span>{title || tKitchen('title')}</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            {tKitchen('subtitle')}
+            {subtitle || tKitchen('subtitle')}
           </p>
         </div>
 
@@ -158,7 +168,7 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
               onClick={onViewAllFresh}
               className="text-xs font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 px-3 py-1.5 transition-colors cursor-pointer whitespace-nowrap ml-1"
             >
-              <span>{tKitchen('viewAll')}</span>
+              <span>{viewAllText || tKitchen('viewAll')}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </motion.button>
           )}

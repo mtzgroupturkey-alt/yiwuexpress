@@ -45,6 +45,14 @@ export async function GET(request: NextRequest) {
         storeHours: true,
         freeShippingThreshold: true,
         announcementTicker: true,
+        kitchenSectionEnabled: true,
+        kitchenSectionTitle: true,
+        kitchenSectionSubtitle: true,
+        kitchenSectionBadge: true,
+        kitchenSectionViewAllLabel: true,
+        kitchenSectionCategoryIds: true,
+        kitchenSectionPinnedProductIds: true,
+        kitchenSectionMaxProducts: true,
         translations: {
           where: { locale: { in: [locale, 'en'] } },
           select: { locale: true, key: true, value: true }
@@ -84,6 +92,14 @@ export async function GET(request: NextRequest) {
       storeHours: '08:00 – 23:00',
       freeShippingThreshold: 35.00,
       announcementTicker: null,
+      kitchenSectionEnabled: true,
+      kitchenSectionTitle: 'Kitchenware, Cookware & Dining Essentials',
+      kitchenSectionSubtitle: 'Granite frying pans, chef cutlery sets, porcelain dinner sets, and Italian espresso barware',
+      kitchenSectionBadge: 'KITCHEN & DINING',
+      kitchenSectionViewAllLabel: 'View all Kitchen & Dining',
+      kitchenSectionCategoryIds: null,
+      kitchenSectionPinnedProductIds: null,
+      kitchenSectionMaxProducts: 12,
       translations: []
     }
 
