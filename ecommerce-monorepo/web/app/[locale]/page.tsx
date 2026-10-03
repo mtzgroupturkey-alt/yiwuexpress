@@ -105,6 +105,18 @@ export default function Home() {
     refetchOnWindowFocus: true,
   });
 
+  // Dedicated Popular in Electronics & Appliances Section Query
+  const { data: electronicsSectionData, isLoading: isElectronicsSectionLoading } = useQuery({
+    queryKey: ['electronics-section-products', locale, settings?.electronicsSectionPinnedProductIds, settings?.electronicsSectionCategoryIds],
+    queryFn: async () => {
+      const res = await fetch(`/api/products/electronics-section?locale=${locale}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
   const dbProducts: Product[] = useMemo(() => {
     const rawList = productsData?.data || [];
     if (!Array.isArray(rawList) || rawList.length === 0) return [];
@@ -177,7 +189,7 @@ export default function Home() {
   const activeKitchenProducts = useMemo(() => {
     // 1. Prioritize dedicated kitchen section API response
     if (kitchenSectionData?.data && Array.isArray(kitchenSectionData.data) && kitchenSectionData.data.length > 0) {
-      return kitchenSectionData.data.map(mapDbProductToDesign3);
+      return kitchenSectionData.data;
     }
 
     // 2. Fallback to slicing from general dbProducts if query is still loading or returned empty
@@ -234,6 +246,12 @@ export default function Home() {
   }, [kitchenSectionData, dbProducts, settings?.kitchenSectionPinnedProductIds, settings?.kitchenSectionCategoryIds]);
 
   const activeElectronicsProducts = useMemo(() => {
+    // 1. Prioritize dedicated electronics section API response
+    if (electronicsSectionData?.data && Array.isArray(electronicsSectionData.data) && electronicsSectionData.data.length > 0) {
+      return electronicsSectionData.data.map(mapDbProductToDesign3);
+    }
+
+    // 2. Fallback to slicing from general dbProducts if query is still loading or returned empty
     if (dbProducts.length === 0) return [];
     return dbProducts.filter((p) => {
       const dept = (p.department || '').toLowerCase();
@@ -249,7 +267,7 @@ export default function Home() {
         name.includes('lamp') || name.includes('light') || name.includes('bulb') || name.includes('led')
       );
     });
-  }, [dbProducts]);
+  }, [electronicsSectionData, dbProducts]);
 
   const activeNewArrivals = useMemo(() => {
     if (dbProducts.length === 0) return [];
@@ -948,21 +966,28 @@ export default function Home() {
               </MotionReveal>
             )}
 
-            {/* 7. Popular in Lighting & Home Smart */}
-            <MotionReveal direction="up">
-              <PopularElectronics
-                products={activeElectronicsProducts}
-                isLoading={isProductsLoading || dbProducts.length === 0}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-                cartQuantities={cartQuantities}
-                onSelectProduct={(product) => {
-                  setSelectedProductForPDP(product);
-                  handleNavigateView('product', { product });
-                }}
-                onViewAllElectronics={() => handleNavigateView('shop', { department: 'Lighting & Home Smart' })}
-              />
-            </MotionReveal>
+            {/* 7. Popular in Electronics & Appliances */}
+            {settings?.electronicsSectionEnabled !== false && electronicsSectionData?.enabled !== false && (
+              <MotionReveal direction="up">
+                <PopularElectronics
+                  title={electronicsSectionData?.title || settings?.electronicsSectionTitle || undefined}
+                  subtitle={electronicsSectionData?.subtitle || settings?.electronicsSectionSubtitle || undefined}
+                  badgeText={electronicsSectionData?.badgeText || settings?.electronicsSectionBadge || undefined}
+                  viewAllText={electronicsSectionData?.viewAllText || settings?.electronicsSectionViewAllLabel || undefined}
+                  maxProducts={electronicsSectionData?.maxProducts || settings?.electronicsSectionMaxProducts || 8}
+                  products={activeElectronicsProducts}
+                  isLoading={isElectronicsSectionLoading && activeElectronicsProducts.length === 0}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  cartQuantities={cartQuantities}
+                  onSelectProduct={(product) => {
+                    setSelectedProductForPDP(product);
+                    handleNavigateView('product', { product });
+                  }}
+                  onViewAllElectronics={() => handleNavigateView('shop', { department: 'Lighting & Home Smart' })}
+                />
+              </MotionReveal>
+            )}
 
             {/* 8. Top Rated Best Sellers Across Departments */}
             <MotionReveal direction="up">

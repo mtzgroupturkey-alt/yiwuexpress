@@ -57,6 +57,7 @@ export const adminEn = {
     flashSales: 'Flash Sales',
     flashDeals: 'Flash & Seasonal Deals',
     kitchenSection: 'Kitchen & Dining Block',
+    electronicsSection: 'Electronics & Appliances Block',
     breadcrumb: 'Breadcrumb Backgrounds',
     company: 'Company Info',
     contactLocations: 'Contact Locations',

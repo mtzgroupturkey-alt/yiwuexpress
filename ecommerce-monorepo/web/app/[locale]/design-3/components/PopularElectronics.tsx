@@ -20,6 +20,11 @@ interface PopularElectronicsProps {
   onViewAllElectronics?: () => void;
   enableMotion?: boolean;
   isLoading?: boolean;
+  title?: string;
+  subtitle?: string;
+  badgeText?: string;
+  viewAllText?: string;
+  maxProducts?: number;
 }
 
 export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
@@ -33,6 +38,11 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
   onViewAll,
   onViewAllElectronics = onViewAll,
   isLoading = false,
+  title,
+  subtitle,
+  badgeText,
+  viewAllText,
+  maxProducts = 8,
 }) => {
   const { tElectronics, tFlash } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
@@ -79,9 +89,24 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
 
   const categoryTabs = React.useMemo(() => {
     const activeCandidates = ALL_CANDIDATE_TABS.filter((tab) => products.some((p) => tab.match(p)));
+    if (activeCandidates.length > 0) {
+      return [
+        { id: 'all', label: tElectronics('tabs.all') || 'All Popular', match: () => true },
+        ...activeCandidates,
+      ];
+    }
+
+    // Dynamic fallback tabs from categories present in products
+    const uniqueCategories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
+    const dynamicTabs = uniqueCategories.slice(0, 5).map((catName) => ({
+      id: catName.toLowerCase().replace(/\s+/g, '-'),
+      label: catName,
+      match: (p: Product) => (p.category || '').toLowerCase() === catName.toLowerCase(),
+    }));
+
     return [
-      { id: 'all', label: tElectronics('tabs.all'), match: () => true },
-      ...activeCandidates,
+      { id: 'all', label: tElectronics('tabs.all') || 'All Popular', match: () => true },
+      ...dynamicTabs,
     ];
   }, [ALL_CANDIDATE_TABS, products, tElectronics]);
 
@@ -94,16 +119,26 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
     ? products
     : products.filter(activeTabObj.match);
 
+  const displayProducts = filteredProducts.slice(0, maxProducts || 8);
+
   return (
     <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
       {/* Header & Filter Pills */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 gap-3">
         <div>
+          {badgeText && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-[11px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                {badgeText}
+              </span>
+            </div>
+          )}
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            {tElectronics('title')}
+            {title || tElectronics('title')}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            {tElectronics('subtitle')}
+            {subtitle || tElectronics('subtitle')}
           </p>
         </div>
 
@@ -137,7 +172,7 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
               onClick={onViewAllElectronics}
               className="text-xs font-bold text-[#00407a] hover:text-[#003366] flex items-center gap-1 px-3 py-1.5 transition-colors cursor-pointer whitespace-nowrap ml-1"
             >
-              <span>{tElectronics('viewAll')}</span>
+              <span>{viewAllText || tElectronics('viewAll')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </motion.button>
           )}
@@ -154,12 +189,16 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
           transition={{ duration: 0.25 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
         >
-          {isLoading || filteredProducts.length === 0 ? (
-            Array.from({ length: 4 }).map((_, i) => (
+          {isLoading ? (
+            Array.from({ length: maxProducts || 8 }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))
+          ) : displayProducts.length === 0 ? (
+            <div className="col-span-full py-12 text-center text-slate-500 text-sm">
+              No products found in this category.
+            </div>
           ) : (
-            filteredProducts.slice(0, 4).map((product) => (
+            displayProducts.map((product) => (
               <UnifiedProductCard
                 key={product.id}
                 product={product}

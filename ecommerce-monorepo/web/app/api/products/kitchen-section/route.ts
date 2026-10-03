@@ -16,6 +16,10 @@ export async function GET(request: NextRequest) {
     const settings = await prisma.systemSettings.findFirst({
       select: {
         kitchenSectionEnabled: true,
+        kitchenSectionTitle: true,
+        kitchenSectionSubtitle: true,
+        kitchenSectionBadge: true,
+        kitchenSectionViewAllLabel: true,
         kitchenSectionPinnedProductIds: true,
         kitchenSectionCategoryIds: true,
         kitchenSectionMaxProducts: true,
@@ -91,25 +95,38 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 4. Fetch candidate products from DB
+    // 4. Fetch candidate products from DB with diversity across kitchen categories
     const excludeIds = pinnedProducts.map((p) => p.id);
     let matchedProducts: any[] = [];
 
     if (targetCategoryIds.length > 0) {
-      matchedProducts = await prisma.product.findMany({
-        where: {
-          id: { notIn: excludeIds },
-          categoryId: { in: targetCategoryIds },
-          isActive: true,
-        },
-        include: {
-          category: {
-            include: { parent: true },
+      const perCategory = Math.max(2, Math.ceil((effectiveLimit * 2) / targetCategoryIds.length));
+      const queries = targetCategoryIds.map((catId) =>
+        prisma.product.findMany({
+          where: {
+            id: { notIn: excludeIds },
+            categoryId: catId,
+            isActive: true,
           },
-        },
-        take: effectiveLimit * 2,
-        orderBy: { updatedAt: 'desc' },
-      });
+          include: {
+            category: {
+              include: { parent: true },
+            },
+          },
+          take: perCategory,
+          orderBy: { isFeatured: 'desc' },
+        })
+      );
+      const batches = await Promise.all(queries);
+      const seen = new Set<string>();
+      for (const batch of batches) {
+        for (const prod of batch) {
+          if (!seen.has(prod.id)) {
+            seen.add(prod.id);
+            matchedProducts.push(prod);
+          }
+        }
+      }
     }
 
     // Fallback search by keywords if categories returned nothing
@@ -151,6 +168,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       enabled: true,
+      title: settings?.kitchenSectionTitle || undefined,
+      subtitle: settings?.kitchenSectionSubtitle || undefined,
+      badgeText: settings?.kitchenSectionBadge || undefined,
+      viewAllText: settings?.kitchenSectionViewAllLabel || undefined,
+      maxProducts: effectiveLimit,
       data: mapped,
     });
   } catch (error) {

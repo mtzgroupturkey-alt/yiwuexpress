@@ -42,6 +42,14 @@ export interface CompanySettings {
   kitchenSectionCategoryIds?: string | null
   kitchenSectionPinnedProductIds?: string | null
   kitchenSectionMaxProducts?: number
+  electronicsSectionEnabled?: boolean
+  electronicsSectionTitle?: string | null
+  electronicsSectionSubtitle?: string | null
+  electronicsSectionBadge?: string | null
+  electronicsSectionViewAllLabel?: string | null
+  electronicsSectionCategoryIds?: string | null
+  electronicsSectionPinnedProductIds?: string | null
+  electronicsSectionMaxProducts?: number
 }
 
 export interface SettingsState {
@@ -78,6 +86,14 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   kitchenSectionCategoryIds: null,
   kitchenSectionPinnedProductIds: null,
   kitchenSectionMaxProducts: 12,
+  electronicsSectionEnabled: true,
+  electronicsSectionTitle: 'Popular in Electronics & Appliances',
+  electronicsSectionSubtitle: 'Official manufacturer equipment with factory guarantee',
+  electronicsSectionBadge: 'ELECTRONICS & APPLIANCES',
+  electronicsSectionViewAllLabel: 'View all in category',
+  electronicsSectionCategoryIds: null,
+  electronicsSectionPinnedProductIds: null,
+  electronicsSectionMaxProducts: 8,
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({

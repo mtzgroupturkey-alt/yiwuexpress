@@ -53,6 +53,14 @@ export async function GET(request: NextRequest) {
         kitchenSectionCategoryIds: true,
         kitchenSectionPinnedProductIds: true,
         kitchenSectionMaxProducts: true,
+        electronicsSectionEnabled: true,
+        electronicsSectionTitle: true,
+        electronicsSectionSubtitle: true,
+        electronicsSectionBadge: true,
+        electronicsSectionViewAllLabel: true,
+        electronicsSectionCategoryIds: true,
+        electronicsSectionPinnedProductIds: true,
+        electronicsSectionMaxProducts: true,
         translations: {
           where: { locale: { in: [locale, 'en'] } },
           select: { locale: true, key: true, value: true }
@@ -100,6 +108,14 @@ export async function GET(request: NextRequest) {
       kitchenSectionCategoryIds: null,
       kitchenSectionPinnedProductIds: null,
       kitchenSectionMaxProducts: 12,
+      electronicsSectionEnabled: true,
+      electronicsSectionTitle: 'Popular in Electronics & Appliances',
+      electronicsSectionSubtitle: 'Official manufacturer equipment with factory guarantee',
+      electronicsSectionBadge: 'ELECTRONICS & APPLIANCES',
+      electronicsSectionViewAllLabel: 'View all in category',
+      electronicsSectionCategoryIds: null,
+      electronicsSectionPinnedProductIds: null,
+      electronicsSectionMaxProducts: 8,
       translations: []
     }
 

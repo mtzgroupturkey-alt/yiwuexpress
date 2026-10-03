@@ -59,6 +59,7 @@ export const adminRu: AdminDictionary = {
     flashSales: 'Распродажи',
     flashDeals: 'Горящие скидки и акции',
     kitchenSection: 'Блок кухни и столовой',
+    electronicsSection: 'Блок электроники и техники',
     breadcrumb: 'Фоны навигации',
     company: 'О компании',
     contactLocations: 'Контакты и офисы',

@@ -200,6 +200,19 @@ model SystemSettings {
   // Max products to display (default 12)
   kitchenSectionMaxProducts     Int       @default(12)
 
+  // Popular in Electronics & Appliances Homepage Section Settings
+  electronicsSectionEnabled         Boolean   @default(true)
+  electronicsSectionTitle           String?   @default("Popular in Electronics & Appliances")
+  electronicsSectionSubtitle        String?   @default("Official manufacturer equipment with factory guarantee")
+  electronicsSectionBadge           String?   @default("ELECTRONICS & APPLIANCES")
+  electronicsSectionViewAllLabel    String?   @default("View all in category")
+  // Comma-separated category DB IDs or slugs to filter this section
+  electronicsSectionCategoryIds     String?
+  // Comma-separated product DB IDs to always show first (pinned products)
+  electronicsSectionPinnedProductIds String?
+  // Max products to display (default 8)
+  electronicsSectionMaxProducts     Int       @default(8)
+
   // Multi-Warehouse Routing & Channels
   defaultSalesWarehouseId       String?  @default("cmu149zqd0007w4gois6udmjc")
   defaultProcurementWarehouseId String?  @default("cmu12i65n0000w43wy8bb90uz")

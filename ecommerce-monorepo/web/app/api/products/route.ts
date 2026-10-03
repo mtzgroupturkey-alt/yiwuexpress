@@ -441,7 +441,7 @@ export async function GET(request: Request) {
         orderBy = [{ createdAt: 'desc' }]
         break
       case 'popularity':
-        orderBy = [{ reviewCount: 'desc' }, { rating: 'desc' }]
+        orderBy = [{ reviewCount: 'desc' }, { createdAt: 'desc' }]
         break
       case 'name-asc':
         orderBy = [{ name: 'asc' }]
