@@ -187,6 +187,19 @@ model SystemSettings {
   flashSaleSubtitle             String?   @default("Special prices on furniture, kitchenware, and smart living appliances")
   flashSaleBadgeText            String?   @default("LIMITED QUANTITY")
 
+  // Kitchen & Dining Homepage Section Settings
+  kitchenSectionEnabled         Boolean   @default(true)
+  kitchenSectionTitle           String?   @default("Kitchenware, Cookware & Dining Essentials")
+  kitchenSectionSubtitle        String?   @default("Granite frying pans, chef cutlery sets, porcelain dinner sets, and Italian espresso barware")
+  kitchenSectionBadge           String?   @default("KITCHEN & DINING")
+  kitchenSectionViewAllLabel    String?   @default("View all Kitchen & Dining")
+  // Comma-separated category DB IDs or slugs to pin to this section (empty = all kitchen/dining from DB)
+  kitchenSectionCategoryIds     String?
+  // Comma-separated product DB IDs to always show first (pinned products)
+  kitchenSectionPinnedProductIds String?
+  // Max products to display (default 12)
+  kitchenSectionMaxProducts     Int       @default(12)
+
   // Multi-Warehouse Routing & Channels
   defaultSalesWarehouseId       String?  @default("cmu149zqd0007w4gois6udmjc")
   defaultProcurementWarehouseId String?  @default("cmu12i65n0000w43wy8bb90uz")
@@ -483,6 +496,7 @@ model Product {
   stockTransferItems    StockTransferItem[]
   returnSupplierItems   ReturnToSupplierItem[]
   productQuoteItems     ProductQuoteItem[]
+  imageCandidates       ImageSearchCandidate[]
 
   @@map("products")
 }
@@ -2396,4 +2410,45 @@ model ImageMigrationJob {
 
   @@map("image_migration_jobs")
 }
+
+model ImageSearchCandidate {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  source      String    // "unsplash" | "pexels" | "pixabay" | "manual" | "external"
+  sourceUrl   String    // the high-res image URL
+  thumbnail   String?   // small preview URL
+  title       String?   // description from source
+  author      String?   // photographer name
+  license     String?   // "CC0" | "free" | "unknown" | "copyrighted"
+
+  status      String    @default("PENDING")
+  // PENDING | APPROVED | REJECTED | ASSIGNED
+
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([productId])
+  @@index([status])
+  @@map("image_search_candidates")
+}
+
+model ImageSearchLog {
+  id              String    @id @default(cuid())
+  productId       String?
+  candidateId     String?
+  source          String?
+  action          String    // "search" | "approve" | "reject" | "upload"
+  adminUser       String?
+  details         Json?
+  confirmedRights Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  @@index([productId])
+  @@index([action])
+  @@map("image_search_logs")
+}
+
 

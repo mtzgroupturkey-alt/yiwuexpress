@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
   MessageSquare, Building2, User, FolderTree, Tag, Star,
   PieChart, ArrowUpCircle, ArrowDownCircle, TrendingUp, Image as ImageIcon,
-  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon
+  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon, Search
 } from 'lucide-react'
 
 export interface NavItem {
@@ -151,6 +151,7 @@ export const navigationConfig: NavGroup[] = [
       { label: 'System', translationKey: 'system', href: '/admin/settings/system', icon: Settings },
       { label: 'Deployment', translationKey: 'deployment', href: '/admin/deployment', icon: Server },
       { label: 'Image Migration', translationKey: 'imageMigration', href: '/admin/tools/images', icon: ImageIcon },
+      { label: 'Image Finder', translationKey: 'imageFinder', href: '/admin/tools/image-finder', icon: Search },
     ]
   },
 ]
