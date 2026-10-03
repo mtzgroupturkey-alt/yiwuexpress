@@ -44,8 +44,15 @@ echo "=== 6b. Ensuring Admin Credentials ==="
 node scripts/setup-admin.js || true
 
 echo "=== 7. Building Fresh Next.js Production Bundle ==="
-rm -rf .next
+mkdir -p /tmp/next-static-backup
+if [ -d ".next/static" ]; then
+  cp -rn .next/static/* /tmp/next-static-backup/ 2>/dev/null || true
+fi
 npm run build
+if [ -d "/tmp/next-static-backup" ]; then
+  cp -rn /tmp/next-static-backup/* .next/static/ 2>/dev/null || true
+  rm -rf /tmp/next-static-backup
+fi
 
 echo "=== 8. Restarting PM2 Application ==="
 pm2 restart all || pm2 restart dromkok-web || pm2 start npm --name "dromkok-web" -- run start

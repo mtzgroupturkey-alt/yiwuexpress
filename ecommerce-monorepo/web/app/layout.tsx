@@ -81,6 +81,34 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content={companyName} />
         <meta name="application-name" content={companyName} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              function handleChunkError(msg) {
+                if (typeof msg !== 'string') return;
+                if (msg.indexOf('Loading chunk') !== -1 || msg.indexOf('ChunkLoadError') !== -1 || msg.indexOf('Refused to execute script') !== -1) {
+                  var k = '_chunk_reload_retry';
+                  var now = Date.now();
+                  var last = parseInt(sessionStorage.getItem(k) || '0', 10);
+                  if (now - last > 8000) {
+                    sessionStorage.setItem(k, now);
+                    window.location.reload();
+                  }
+                }
+              }
+              window.addEventListener('error', function(e) {
+                if (e && e.message) handleChunkError(e.message);
+              }, true);
+              window.addEventListener('unhandledrejection', function(e) {
+                if (e && e.reason) {
+                  var reason = e.reason;
+                  var msg = reason.message || (typeof reason === 'string' ? reason : '');
+                  handleChunkError(msg);
+                }
+              });
+            })();`,
+          }}
+        />
       </head>
       <body className={inter.className}>{children}</body>
     </html>
