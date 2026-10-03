@@ -124,14 +124,19 @@ export default function SystemSettingsPage() {
         body: JSON.stringify(payload),
       })
 
-      if (!response.ok) throw new Error('Failed to save settings')
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => null)
+        throw new Error(errJson?.error || `Server responded with status ${response.status}`)
+      }
       
       const result = await response.json()
       toast.success('System settings saved successfully!')
-      setSettings(result.data)
-    } catch (error) {
+      if (result.data) {
+        setSettings(prev => ({ ...prev, ...result.data }))
+      }
+    } catch (error: any) {
       console.error('Error saving settings:', error)
-      toast.error('Failed to save settings')
+      toast.error(error.message || 'Failed to save settings')
     } finally {
       setSaving(false)
     }
