@@ -224,78 +224,150 @@ function getCuratedFallbackCandidates(query: string, source: 'unsplash'): Candid
   ];
 }
 
-// 4. Target Website Search (e.g., ikea.com, amazon.com, supplier sites)
+// 4. Target Website Search (Multi-engine: High-Reliability Bing Image Scraper + DuckDuckGo fallback)
 export async function searchTargetWebsite(query: string, targetSite: string): Promise<CandidateResult[]> {
   try {
     let cleanDomain = targetSite.trim().toLowerCase();
     cleanDomain = cleanDomain.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0].split('?')[0];
     if (!cleanDomain) return [];
 
+    const brandName = cleanDomain.replace(/\.[a-z.]+$/i, ''); // e.g. "ikea", "amazon", "wayfair"
     const cleanQuery = query.replace(/[^\w\s\u00C0-\u024F\u4E00-\u9FFF-]/gi, ' ').trim();
     if (!cleanQuery) return [];
 
-    const siteQuery = `site:${cleanDomain} ${cleanQuery}`;
+    // Engine 1: Bing Image Search with Domain Keywords (High Reliability, No 403 blocks)
+    try {
+      const searchKeywords = `${cleanDomain} ${cleanQuery}`;
+      const url = `https://www.bing.com/images/search?q=${encodeURIComponent(searchKeywords)}&form=HDRSC2&first=1`;
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        cache: 'no-store',
+      });
 
-    // Obtain token (vqd) from DuckDuckGo
-    const tokenUrl = `https://duckduckgo.com/?q=${encodeURIComponent(siteQuery)}`;
-    const tokenRes = await fetch(tokenUrl, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-      next: { revalidate: 1800 },
-    });
+      if (res.ok) {
+        const html = await res.text();
+        const re = /class="iusc"[^>]*m="([^"]+)"/g;
+        let match;
+        const candidates: CandidateResult[] = [];
+        const domainLower = cleanDomain.toLowerCase();
+        const brandLower = brandName.toLowerCase();
 
-    if (!tokenRes.ok) {
-      console.warn(`[ImageSearch] Failed to fetch search token for ${cleanDomain}: HTTP ${tokenRes.status}`);
-      return [];
+        while ((match = re.exec(html)) !== null) {
+          try {
+            const decoded = match[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+            const data = JSON.parse(decoded);
+            if (data.murl) {
+              const cleanTitle = (data.t || `${cleanQuery} on ${cleanDomain}`)
+                .replace(/&#\d+;/g, '')
+                .replace(/&amp;/g, '&')
+                .replace(/<[^>]+>/g, '')
+                .trim();
+
+              candidates.push({
+                source: 'external',
+                sourceUrl: data.murl,
+                thumbnail: data.turl || data.murl,
+                title: cleanTitle,
+                author: cleanDomain,
+                license: 'copyrighted',
+                isCompetitor: true,
+                status: 'PENDING',
+                productPageUrl: data.purl || '',
+                targetSite: cleanDomain,
+              });
+            }
+          } catch {
+            // ignore item parse error
+          }
+        }
+
+        if (candidates.length > 0) {
+          // Sort items: prioritize those directly hosted or originating from cleanDomain or matching brand
+          candidates.sort((a, b) => {
+            const aMatch =
+              (a.sourceUrl?.toLowerCase().includes(domainLower) ||
+              a.productPageUrl?.toLowerCase().includes(domainLower) ||
+              a.sourceUrl?.toLowerCase().includes(brandLower) ||
+              a.productPageUrl?.toLowerCase().includes(brandLower))
+                ? 1
+                : 0;
+            const bMatch =
+              (b.sourceUrl?.toLowerCase().includes(domainLower) ||
+              b.productPageUrl?.toLowerCase().includes(domainLower) ||
+              b.sourceUrl?.toLowerCase().includes(brandLower) ||
+              b.productPageUrl?.toLowerCase().includes(brandLower))
+                ? 1
+                : 0;
+            return bMatch - aMatch;
+          });
+
+          return candidates.slice(0, 36);
+        }
+      }
+    } catch (bingErr: any) {
+      console.warn(`[ImageSearch] Bing search failed for ${cleanDomain}:`, bingErr.message);
     }
 
-    const html = await tokenRes.text();
-    const vqdMatch = html.match(/vqd=[\x22\x27]?([0-9-]+)/);
-    const vqd = vqdMatch ? vqdMatch[1] : null;
+    // Engine 2: DuckDuckGo Fallback
+    try {
+      const siteQuery = `site:${cleanDomain} ${cleanQuery}`;
+      const tokenUrl = `https://duckduckgo.com/?q=${encodeURIComponent(siteQuery)}`;
+      const tokenRes = await fetch(tokenUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        cache: 'no-store',
+      });
 
-    if (!vqd) {
-      console.warn(`[ImageSearch] Could not extract vqd token for domain ${cleanDomain}`);
-      return [];
+      if (tokenRes.ok) {
+        const tokenHtml = await tokenRes.text();
+        const vqdMatch = tokenHtml.match(/vqd=[\x22\x27]?([0-9-]+)/);
+        if (vqdMatch && vqdMatch[1]) {
+          const vqd = vqdMatch[1];
+          const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(siteQuery)}&vqd=${encodeURIComponent(vqd)}`;
+          const imgRes = await fetch(imgUrl, {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              Accept: 'application/json, text/javascript, */*; q=0.01',
+              Referer: 'https://duckduckgo.com/',
+            },
+            cache: 'no-store',
+          });
+
+          if (imgRes.ok) {
+            const data = await imgRes.json().catch(() => null);
+            if (data && Array.isArray(data.results) && data.results.length > 0) {
+              return data.results.slice(0, 36).map((r: any) => ({
+                source: 'external',
+                sourceUrl: r.image,
+                thumbnail: r.thumbnail || r.image,
+                title: r.title || `${cleanQuery} on ${cleanDomain}`,
+                author: cleanDomain,
+                license: 'copyrighted',
+                isCompetitor: true,
+                status: 'PENDING',
+                width: r.width,
+                height: r.height,
+                productPageUrl: r.url,
+                targetSite: cleanDomain,
+              }));
+            }
+          }
+        }
+      }
+    } catch (ddgErr: any) {
+      console.warn(`[ImageSearch] DuckDuckGo fallback failed:`, ddgErr.message);
     }
 
-    // Fetch images from DuckDuckGo image JSON API
-    const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(siteQuery)}&vqd=${encodeURIComponent(vqd)}`;
-    const imgRes = await fetch(imgUrl, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        Accept: 'application/json, text/javascript, */*; q=0.01',
-        Referer: 'https://duckduckgo.com/',
-      },
-    });
-
-    if (!imgRes.ok) {
-      console.warn(`[ImageSearch] Failed to fetch image results for ${cleanDomain}: HTTP ${imgRes.status}`);
-      return [];
-    }
-
-    const data = await imgRes.json();
-    const results: any[] = data.results || [];
-    const isCompetitor = isCompetitorUrl(cleanDomain) || true;
-
-    return results.slice(0, 36).map((r) => ({
-      source: 'external',
-      sourceUrl: r.image,
-      thumbnail: r.thumbnail || r.image,
-      title: r.title || `${cleanQuery} on ${cleanDomain}`,
-      author: cleanDomain,
-      license: 'copyrighted',
-      isCompetitor: true,
-      status: 'PENDING',
-      width: r.width,
-      height: r.height,
-      productPageUrl: r.url,
-      targetSite: cleanDomain,
-    }));
+    return [];
   } catch (err: any) {
     console.error(`[ImageSearch] Target website search failed for ${targetSite}:`, err.message);
     return [];

@@ -256,22 +256,16 @@ export default function ImageFinderPage() {
     const initialQuery = suggestions[0] || clean || raw;
     setSearchQuery(initialQuery);
 
-    const initialCandidates = product.imageCandidates || [];
-    setCandidates(initialCandidates);
-    if (initialCandidates.length > 0) {
-      setSelectedCandidateKeys(new Set([initialCandidates[0].id || initialCandidates[0].sourceUrl]));
-    } else {
-      setSelectedCandidateKeys(new Set());
-    }
+    // Reset candidates so we always fetch fresh images for the active search domain
+    setCandidates([]);
+    setSelectedCandidateKeys(new Set());
     setConfirmRights(false);
     setCustomUrl('');
 
-    // If no existing candidates, run auto search immediately
-    if (initialCandidates.length === 0) {
-      setTimeout(() => {
-        executeSearch(product.id, initialQuery, 'target_site', activeTargetSite);
-      }, 50);
-    }
+    // Trigger fresh search on the active target site
+    setTimeout(() => {
+      executeSearch(product.id, initialQuery, 'target_site', activeTargetSite);
+    }, 50);
   };
 
   // Run search
@@ -282,6 +276,8 @@ export default function ImageFinderPage() {
     targetSiteStr: string
   ) => {
     setSearching(true);
+    setCandidates([]); // Clear previous candidates immediately so loading indicator is clear
+    setSelectedCandidateKeys(new Set());
     try {
       const activeSources = Object.entries(sources)
         .filter(([_, active]) => active)
@@ -979,7 +975,14 @@ export default function ImageFinderPage() {
                       <span className="text-xs text-gray-500 font-medium">Search Domain:</span>
                       <select
                         value={modalTargetSite}
-                        onChange={(e) => setModalTargetSite(e.target.value)}
+                        onChange={(e) => {
+                          const newSite = e.target.value;
+                          setModalTargetSite(newSite);
+                          setActiveTargetSite(newSite);
+                          if (activeProduct) {
+                            executeSearch(activeProduct.id, searchQuery, 'target_site', newSite);
+                          }
+                        }}
                         className="h-8 text-xs bg-white border border-gray-300 rounded-md px-2 font-medium text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                       >
                         {targetSites.map((site) => (
