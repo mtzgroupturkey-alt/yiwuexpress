@@ -12,7 +12,8 @@ echo "Working directory: $(pwd)"
 echo "=== 2. Updating Node Dependencies ==="
 export npm_config_cache="/tmp/.npm-cache"
 mkdir -p /tmp/.npm-cache
-npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline --cache /tmp/.npm-cache
+rm -rf /tmp/.npm-cache/* 2>/dev/null || true
+npm install --legacy-peer-deps --no-audit --no-fund || true
 
 echo "=== 3. Generating Prisma Client ==="
 npx prisma generate
