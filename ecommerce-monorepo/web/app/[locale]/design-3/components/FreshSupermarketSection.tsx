@@ -101,9 +101,24 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
 
   const categoryTabs = React.useMemo(() => {
     const activeCandidates = ALL_CANDIDATE_TABS.filter((tab) => products.some((p) => tab.match(p)));
+    if (activeCandidates.length > 0) {
+      return [
+        { id: 'all', label: tKitchen('tabs.all'), match: () => true },
+        ...activeCandidates,
+      ];
+    }
+
+    // Dynamic fallback tabs if standard candidate keywords didn't match (e.g. Dining Chairs, Dining Tables, etc.)
+    const uniqueCategories = Array.from(new Set(products.map((p) => p.category).filter(Boolean))) as string[];
+    const dynamicTabs = uniqueCategories.slice(0, 5).map((catName) => ({
+      id: catName.toLowerCase().replace(/\s+/g, '-'),
+      label: catName,
+      match: (p: Product) => (p.category || '').toLowerCase() === catName.toLowerCase(),
+    }));
+
     return [
       { id: 'all', label: tKitchen('tabs.all'), match: () => true },
-      ...activeCandidates,
+      ...dynamicTabs,
     ];
   }, [ALL_CANDIDATE_TABS, products, tKitchen]);
 
@@ -175,7 +190,7 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
         </div>
       </div>
 
-      {/* Grid of 6 items with crossfade */}
+      {/* Grid of items with crossfade */}
       <AnimatePresence mode="wait">
         <motion.div 
           key={activeTab}
@@ -185,10 +200,14 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
           transition={{ duration: 0.25 }}
           className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4"
         >
-          {isLoading || displayProducts.length === 0 ? (
-            Array.from({ length: 6 }).map((_, i) => (
+          {isLoading ? (
+            Array.from({ length: maxProducts || 6 }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))
+          ) : displayProducts.length === 0 ? (
+            <div className="col-span-full py-12 text-center text-slate-500 text-sm">
+              No products found in this category.
+            </div>
           ) : (
             displayProducts.map((product) => (
               <UnifiedProductCard

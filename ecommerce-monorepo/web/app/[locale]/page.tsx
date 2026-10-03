@@ -93,6 +93,18 @@ export default function Home() {
     refetchInterval: 60 * 1000, // Background revalidation every minute so timing transitions seamlessly
   });
 
+  // Dedicated Kitchenware & Dining Section Query
+  const { data: kitchenSectionData, isLoading: isKitchenSectionLoading } = useQuery({
+    queryKey: ['kitchen-section-products', locale, settings?.kitchenSectionPinnedProductIds, settings?.kitchenSectionCategoryIds],
+    queryFn: async () => {
+      const res = await fetch(`/api/products/kitchen-section?locale=${locale}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
   const dbProducts: Product[] = useMemo(() => {
     const rawList = productsData?.data || [];
     if (!Array.isArray(rawList) || rawList.length === 0) return [];
@@ -163,6 +175,12 @@ export default function Home() {
   }, [dbProducts]);
 
   const activeKitchenProducts = useMemo(() => {
+    // 1. Prioritize dedicated kitchen section API response
+    if (kitchenSectionData?.data && Array.isArray(kitchenSectionData.data) && kitchenSectionData.data.length > 0) {
+      return kitchenSectionData.data.map(mapDbProductToDesign3);
+    }
+
+    // 2. Fallback to slicing from general dbProducts if query is still loading or returned empty
     if (dbProducts.length === 0) return [];
 
     const pinnedIds = (settings?.kitchenSectionPinnedProductIds || '')
@@ -174,20 +192,21 @@ export default function Home() {
       .map((id) => id.trim())
       .filter(Boolean);
 
-    // 1. Pinned products first
+    // Pinned products first
     const pinned: typeof dbProducts = [];
     pinnedIds.forEach((id) => {
       const match = dbProducts.find((p) => p.id === id);
       if (match) pinned.push(match);
     });
 
-    // 2. Candidate products matching categories or keywords
+    // Candidate products matching categories or keywords
     const remaining = dbProducts.filter((p) => !pinned.some((pin) => pin.id === p.id));
     const matched = remaining.filter((p) => {
       // If admin selected specific categories in settings, filter by them
       if (categoryIds.length > 0) {
         return (
           (p.categoryId && categoryIds.includes(p.categoryId)) ||
+          (p.departmentId && categoryIds.includes(p.departmentId)) ||
           categoryIds.includes(p.category || '') ||
           categoryIds.includes(p.categorySlug || '')
         );
@@ -212,7 +231,7 @@ export default function Home() {
     });
 
     return [...pinned, ...matched];
-  }, [dbProducts, settings?.kitchenSectionPinnedProductIds, settings?.kitchenSectionCategoryIds]);
+  }, [kitchenSectionData, dbProducts, settings?.kitchenSectionPinnedProductIds, settings?.kitchenSectionCategoryIds]);
 
   const activeElectronicsProducts = useMemo(() => {
     if (dbProducts.length === 0) return [];
@@ -905,16 +924,16 @@ export default function Home() {
             </MotionReveal>
 
             {/* 6. Kitchenware, Cookware & Dining Essentials Grid */}
-            {settings?.kitchenSectionEnabled !== false && (
+            {settings?.kitchenSectionEnabled !== false && kitchenSectionData?.enabled !== false && (
               <MotionReveal direction="up">
                 <FreshSupermarketSection
-                  title={settings?.kitchenSectionTitle || undefined}
-                  subtitle={settings?.kitchenSectionSubtitle || undefined}
-                  badgeText={settings?.kitchenSectionBadge || undefined}
-                  viewAllText={settings?.kitchenSectionViewAllLabel || undefined}
-                  maxProducts={settings?.kitchenSectionMaxProducts || 6}
+                  title={kitchenSectionData?.title || settings?.kitchenSectionTitle || undefined}
+                  subtitle={kitchenSectionData?.subtitle || settings?.kitchenSectionSubtitle || undefined}
+                  badgeText={kitchenSectionData?.badgeText || settings?.kitchenSectionBadge || undefined}
+                  viewAllText={kitchenSectionData?.viewAllText || settings?.kitchenSectionViewAllLabel || undefined}
+                  maxProducts={kitchenSectionData?.maxProducts || settings?.kitchenSectionMaxProducts || 12}
                   products={activeKitchenProducts}
-                  isLoading={isProductsLoading || dbProducts.length === 0}
+                  isLoading={isKitchenSectionLoading && activeKitchenProducts.length === 0}
                   onAddToCart={handleAddToCart}
                   onUpdateQuantity={handleUpdateQuantity}
                   cartQuantities={cartQuantities}
