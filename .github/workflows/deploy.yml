@@ -88,7 +88,6 @@ jobs:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
         run: |
-          TARGET="/www/wwwroot/www.dromkok.com/web"
           PORT="${SERVER_PORT:-22}"
 
           echo "🚀 Executing build, migrations, catalog restore & restart on remote server..."
@@ -102,62 +101,12 @@ jobs:
               -o ConnectTimeout=30 \
               -o ServerAliveInterval=15 \
               -o ServerAliveCountMax=4 \
-              ${SERVER_USER}@${SERVER_HOST} "bash -s" << 'REMOTECOMMANDS'
-                set -e
-                TARGET="/www/wwwroot/www.dromkok.com/web"
-                cd "$TARGET"
-
-                echo "📦 Installing / verifying dependencies on server..."
-                export npm_config_cache="/tmp/.npm-cache"
-                mkdir -p /tmp/.npm-cache
-                npm install --legacy-peer-deps --no-audit --no-fund --prefer-offline --cache /tmp/.npm-cache
-
-                echo "🔧 Generating Prisma client..."
-                npx prisma generate
-
-                echo "🗄️ Synchronizing complete schema with PostgreSQL via prisma db push..."
-                npx prisma db push --skip-generate --accept-data-loss || true
-
-                echo "🛡️ Verifying critical columns..."
-                node -e "
-                  const { PrismaClient } = require('@prisma/client');
-                  const p = new PrismaClient();
-                  Promise.all([
-                    p.\$executeRawUnsafe('ALTER TABLE \"carts\" ADD COLUMN IF NOT EXISTS \"mode\" TEXT NOT NULL DEFAULT \'RETAIL\''),
-                    p.\$executeRawUnsafe('ALTER TABLE \"cart_items\" ADD COLUMN IF NOT EXISTS \"mode\" TEXT NOT NULL DEFAULT \'RETAIL\''),
-                    p.\$executeRawUnsafe('ALTER TABLE \"cart_items\" ADD COLUMN IF NOT EXISTS \"selectedOptions\" JSONB'),
-                    p.\$executeRawUnsafe('ALTER TABLE \"order_items\" ADD COLUMN IF NOT EXISTS \"selectedOptions\" JSONB'),
-                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"openrouterApiKey\" TEXT'),
-                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"geminiApiKey\" TEXT'),
-                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"primaryAiProvider\" TEXT DEFAULT \'openai\''),
-                    p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"storeMode\" TEXT DEFAULT \'WHOLESALE\''),
-                  ]).then(() => { console.log('✅ Critical database columns verified successfully.'); process.exit(0); })
-                    .catch(e => { console.warn('Schema patch notice:', e.message); process.exit(0); });
-                " || true
-
-                echo "📦 Restoring complete product catalog snapshot (6,743 products & 122 categories)..."
-                node scripts/restore-catalog-snapshot.js --force || true
-
-                echo "🏗️ Building Next.js application..."
-                rm -rf .next
-                npm run build
-
-                echo "🔄 Restarting PM2 process..."
-                pm2 restart all || pm2 start npm --name "dromkok-web" -- run start
-                pm2 save
-
-                echo "⏳ Health check..."
-                sleep 5
-                curl -f -s http://localhost:3001/api/health > /dev/null && echo "✅ App healthy" || echo "⚠️ App starting..."
-
-                echo "✅ Deployment & Catalog Migration Complete!"
-REMOTECOMMANDS
-            then
-              echo "✅ Build and restart completed successfully!"
+              ${SERVER_USER}@${SERVER_HOST} "bash /www/wwwroot/www.dromkok.com/web/scripts/deploy-production.sh"; then
+              echo "✅ Build, catalog restore and PM2 restart completed successfully!"
               SUCCESS=1
               break
             else
-              echo "⚠️ Attempt $attempt failed. Waiting 8 seconds before retrying..."
+              echo "⚠️ Remote attempt $attempt failed. Waiting 8 seconds before retrying..."
               sleep 8
             fi
           done
