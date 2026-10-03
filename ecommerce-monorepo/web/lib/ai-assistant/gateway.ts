@@ -51,20 +51,20 @@ CRITICAL INFRASTRUCTURE RULES (MUST OBEY):
 =========================================
 CRITICAL SAFETY & CONFIRMATION RULES (MUST OBEY):
 1. You have NO DIRECT WRITE PERMISSIONS to the database. You CANNOT write anything to the database without explicit confirmation from the administrator.
-2. Whenever the admin asks you to create categories, create attributes, create products, or bulk-translate items:
-   a. You MUST provide a clear, concise summary (1-2 sentences) of what you propose to create, followed by the confirmation question.
-   b. DO NOT write out lengthy product descriptions, exhaustive tables, or repetitive translation dumps in the chat prose text. The admin UI automatically renders a rich, visual interactive preview card (with thumbnail photos, badges, price, and translation chips) directly from your action_proposal JSON!
+2. Whenever the admin asks you to create/update categories, configure attributes, create/update products, manage hero sliders, or bulk-translate items:
+   a. You MUST provide a clear, concise summary (1-2 sentences) of what you propose to do, followed by the confirmation question.
+   b. DO NOT write out lengthy product descriptions, exhaustive tables, or repetitive translation dumps in the chat prose text. The admin UI automatically renders a rich, visual interactive preview card directly from your action_proposal JSON!
    c. Put all entity details, translations (en, ru, zh), images, prices, and hierarchies strictly inside the \`\`\`action_proposal code block.
-   d. Never tell the user "I have created..." or "Successfully added..." until the user has actually confirmed and the operation was executed.
+   d. Never tell the user "I have created..." or "Successfully updated..." until the user has actually confirmed and the operation was executed.
    e. Formulate your confirmation question in ${activeLangName}:
-      - If English: "Do you confirm creating these items? Please reply with **yes** or **confirm** to proceed, or click Confirm & Apply."
-      - If Russian: "Вы подтверждаете создание этих элементов? Пожалуйста, ответьте **да** или **подтверждаю** для продолжения."
-      - If Chinese: "您确认创建这些项目吗？请回复 **确认** 或 **yes** 以继续。"
+      - If English: "Do you confirm this action? Please reply with **yes**, **confirm**, or **ai assistant do it** to proceed, or click Confirm & Apply."
+      - If Russian: "Вы подтверждаете это действие? Пожалуйста, ответьте **да**, **подтверждаю** или нажмите «Применить»."
+      - If Chinese: "您确认此项操作吗？请回复 **确认**、**执行** 或点击“确认并应用”以继续。"
 
 3. When proposing an action that requires confirmation, you MUST append a machine-readable JSON block inside \`\`\`action_proposal code block:
 \`\`\`action_proposal
 {
-  "type": "createCategories" | "createAttributes" | "createProducts" | "bulkTranslate",
+  "type": "createCategories" | "updateCategories" | "createAttributes" | "createProducts" | "updateProducts" | "createSliders" | "updateSliders" | "bulkTranslate",
   "summary": "Brief description of the action",
   "payload": {
     // For createCategories:
@@ -267,14 +267,14 @@ export function extractActionProposal(text: string): {
     cleanText = text.replace(explicitRegex, '').trim()
   } else {
     // 2. Try generic code block containing action type
-    const genericCodeRegex = /```(?:json)?\s*(\{[\s\S]*?"type"\s*:\s*"(?:createCategories|createAttributes|createProducts|bulkTranslate)"[\s\S]*?\})\s*(?:```|$)/i
+    const genericCodeRegex = /```(?:json)?\s*(\{[\s\S]*?"type"\s*:\s*"(?:createCategories|updateCategories|createAttributes|createProducts|updateProducts|createSliders|updateSliders|bulkTranslate)"[\s\S]*?\})\s*(?:```|$)/i
     const genericMatch = text.match(genericCodeRegex)
     if (genericMatch && genericMatch[1]) {
       rawJson = genericMatch[1].trim()
       cleanText = text.replace(genericCodeRegex, '').trim()
     } else {
       // 3. Try raw JSON object in text
-      const rawJsonRegex = /(\{[\s\S]*?"type"\s*:\s*"(?:createCategories|createAttributes|createProducts|bulkTranslate)"[\s\S]*?"payload"\s*:\s*\{[\s\S]*?\})/i
+      const rawJsonRegex = /(\{[\s\S]*?"type"\s*:\s*"(?:createCategories|updateCategories|createAttributes|createProducts|updateProducts|createSliders|updateSliders|bulkTranslate)"[\s\S]*?"payload"\s*:\s*\{[\s\S]*?\})/i
       const rawMatch = text.match(rawJsonRegex)
       if (rawMatch && rawMatch[1]) {
         rawJson = rawMatch[1].trim()

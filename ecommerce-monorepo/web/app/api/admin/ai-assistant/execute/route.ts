@@ -3,7 +3,16 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { PendingAction, AdminChatLocale } from '@/lib/ai-assistant/types'
-import { createCategories, createAttributes, bulkTranslate, createProducts } from '@/lib/ai-assistant/tools'
+import {
+  createCategories,
+  updateCategories,
+  createAttributes,
+  bulkTranslate,
+  createProducts,
+  updateProducts,
+  createSliders,
+  updateSliders,
+} from '@/lib/ai-assistant/tools'
 
 export async function POST(request: NextRequest) {
   let user: any
@@ -45,6 +54,24 @@ export async function POST(request: NextRequest) {
         break
       }
 
+      case 'updateCategories': {
+        const payload = action.payload || {}
+        const categories =
+          payload.categoryUpdates ||
+          payload.categories ||
+          (Array.isArray(payload) ? payload : null) ||
+          []
+
+        if (!Array.isArray(categories) || categories.length === 0) {
+          return NextResponse.json(
+            { success: false, error: 'No categories found for update in action payload.' },
+            { status: 400 }
+          )
+        }
+        result = await updateCategories(categories, user.id, locale)
+        break
+      }
+
       case 'createAttributes': {
         const payload = action.payload || {}
         const attributes =
@@ -67,16 +94,11 @@ export async function POST(request: NextRequest) {
         const payload = action.payload || {}
         const translations = payload.translations || (action as any).translations || payload
 
-        if (!translations || !translations.itemIds || !Array.isArray(translations.itemIds) || translations.itemIds.length === 0) {
-          return NextResponse.json(
-            { success: false, error: 'No translation items found in action payload.' },
-            { status: 400 }
-          )
-        }
+        const itemIds = translations?.itemIds || []
         result = await bulkTranslate(
-          translations.type,
-          translations.itemIds,
-          translations.targetLocales || ['ru', 'zh'],
+          translations?.type || 'categories',
+          itemIds,
+          translations?.targetLocales || ['ru', 'zh'],
           user.id
         )
         break
@@ -97,6 +119,58 @@ export async function POST(request: NextRequest) {
           )
         }
         result = await createProducts(products, user.id, locale)
+        break
+      }
+
+      case 'updateProducts': {
+        const payload = action.payload || {}
+        const products =
+          payload.productUpdates ||
+          payload.products ||
+          (Array.isArray(payload) ? payload : null) ||
+          []
+
+        if (!Array.isArray(products) || products.length === 0) {
+          return NextResponse.json(
+            { success: false, error: 'No products found for update in action payload.' },
+            { status: 400 }
+          )
+        }
+        result = await updateProducts(products, user.id, locale)
+        break
+      }
+
+      case 'createSliders': {
+        const payload = action.payload || {}
+        const sliders =
+          payload.sliders ||
+          (Array.isArray(payload) ? payload : null) ||
+          []
+
+        if (!Array.isArray(sliders) || sliders.length === 0) {
+          return NextResponse.json(
+            { success: false, error: 'No sliders found in action payload.' },
+            { status: 400 }
+          )
+        }
+        result = await createSliders(sliders, user.id, locale)
+        break
+      }
+
+      case 'updateSliders': {
+        const payload = action.payload || {}
+        const sliders =
+          payload.sliders ||
+          (Array.isArray(payload) ? payload : null) ||
+          []
+
+        if (!Array.isArray(sliders) || sliders.length === 0) {
+          return NextResponse.json(
+            { success: false, error: 'No sliders found for update in action payload.' },
+            { status: 400 }
+          )
+        }
+        result = await updateSliders(sliders, user.id, locale)
         break
       }
 

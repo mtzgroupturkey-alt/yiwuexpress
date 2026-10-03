@@ -22,9 +22,14 @@ import {
   getProductStats,
   searchProducts,
   createCategories,
+  updateCategories,
   createAttributes,
   bulkTranslate,
   createProducts,
+  updateProducts,
+  getExistingSliders,
+  createSliders,
+  updateSliders,
 } from '@/lib/ai-assistant/tools'
 import { generateAssistantResponse } from '@/lib/ai-assistant/gateway'
 
@@ -33,9 +38,9 @@ const CONFIRMATION_WORDS = new Set([
   // English
   'yes', 'confirm', 'ok', 'okay', 'sure', 'proceed', 'approve', 'y', 'yep', 'yeah', 'do it',
   // Russian
-  'да', 'подтверждаю', 'ок', 'согласен', 'согласна', 'применить', 'подтвердить', 'давай',
+  'да', 'подтверждаю', 'ок', 'согласен', 'согласна', 'применить', 'подтвердить', 'давай', 'сделай',
   // Chinese
-  '确认', '好的', '可以', '是的', '同意', '执行', '确定', '对',
+  '确认', '好的', '可以', '是的', '同意', '执行', '确定', '对', '做吧',
 ])
 
 const REJECTION_WORDS = new Set([
@@ -48,15 +53,39 @@ const REJECTION_WORDS = new Set([
 ])
 
 function isConfirmation(text: string): boolean {
-  const normalized = text.toLowerCase().trim().replace(/[.,!?;:]/g, '')
+  const normalized = text.toLowerCase().trim().replace(/[.,!?;:'"“”]/g, '')
   if (CONFIRMATION_WORDS.has(normalized)) return true
-  // Also check if text starts with confirmation word
+
+  // Support user addressing assistant (e.g. "ai assistant do it", "ai assisstand do it")
+  const affirmativePhrases = [
+    'do it',
+    'assisstand do it',
+    'assistant do it',
+    'ai do it',
+    'please do it',
+    'yes do it',
+    'go ahead',
+    'proceed',
+    'apply',
+    'confirm and apply',
+    'сделай',
+    'выполни',
+    'примени',
+    'подтверждаю',
+    'давай',
+    '执行',
+    '确认',
+    '做吧',
+    '好的',
+  ]
+  if (affirmativePhrases.some((p) => normalized.includes(p))) return true
+
   const firstWord = normalized.split(/\s+/)[0]
   return CONFIRMATION_WORDS.has(firstWord)
 }
 
 function isRejection(text: string): boolean {
-  const normalized = text.toLowerCase().trim().replace(/[.,!?;:]/g, '')
+  const normalized = text.toLowerCase().trim().replace(/[.,!?;:'"“”]/g, '')
   if (REJECTION_WORDS.has(normalized)) return true
   const firstWord = normalized.split(/\s+/)[0]
   return REJECTION_WORDS.has(firstWord)
@@ -220,6 +249,134 @@ export async function POST(request: NextRequest) {
               pendingAction: null,
             })
           }
+
+          if (pendingAction.type === 'updateCategories') {
+            const categories =
+              pendingAction.payload.categoryUpdates ||
+              pendingAction.payload.categories ||
+              (pendingAction.payload as any) ||
+              []
+            executionResult = await updateCategories(categories, user.id, locale)
+
+            const successMessages: Record<AdminChatLocale, string> = {
+              en: `✅ **Successfully updated ${executionResult.updatedCount} categories!**\n\n` +
+                executionResult.categories.map((c: any) => `- **${c.name}** (slug: \`${c.slug}\`, level: ${c.level})`).join('\n') +
+                `\n\nDatabase and category hierarchies have been updated.`,
+              ru: `✅ **Успешно обновлено ${executionResult.updatedCount} категорий!**\n\n` +
+                executionResult.categories.map((c: any) => `- **${c.name}** (slug: \`${c.slug}\`, уровень: ${c.level})`).join('\n') +
+                `\n\nБаза данных и структура категорий обновлены.`,
+              zh: `✅ **已成功更新 ${executionResult.updatedCount} 个分类！**\n\n` +
+                executionResult.categories.map((c: any) => `- **${c.name}** (slug: \`${c.slug}\`, 层级: ${c.level})`).join('\n') +
+                `\n\n分类层级结构已在数据库中生效。`,
+            }
+
+            return NextResponse.json({
+              success: true,
+              role: 'assistant',
+              content: successMessages[locale] || successMessages.en,
+              actionExecuted: {
+                type: 'updateCategories',
+                status: 'SUCCESS',
+                summary: pendingAction.summary,
+                details: executionResult,
+              },
+              pendingAction: null,
+            })
+          }
+
+          if (pendingAction.type === 'updateProducts') {
+            const products =
+              pendingAction.payload.productUpdates ||
+              pendingAction.payload.products ||
+              (pendingAction.payload as any) ||
+              []
+            executionResult = await updateProducts(products, user.id, locale)
+
+            const successMessages: Record<AdminChatLocale, string> = {
+              en: `✅ **Successfully updated ${executionResult.updatedCount} products!**\n\n` +
+                executionResult.products.map((p: any) => `- **${p.name}** (SKU: \`${p.sku}\`, Price: $${p.price})`).join('\n') +
+                `\n\nCatalog records and specifications have been updated.`,
+              ru: `✅ **Успешно обновлено ${executionResult.updatedCount} товаров!**\n\n` +
+                executionResult.products.map((p: any) => `- **${p.name}** (Артикул: \`${p.sku}\`, Цена: $${p.price})`).join('\n') +
+                `\n\nХарактеристики и цены товаров обновлены.`,
+              zh: `✅ **已成功更新 ${executionResult.updatedCount} 个商品！**\n\n` +
+                executionResult.products.map((p: any) => `- **${p.name}** (SKU: \`${p.sku}\`, 售价: $${p.price})`).join('\n') +
+                `\n\n商品信息与规格参数已更新。`,
+            }
+
+            return NextResponse.json({
+              success: true,
+              role: 'assistant',
+              content: successMessages[locale] || successMessages.en,
+              actionExecuted: {
+                type: 'updateProducts',
+                status: 'SUCCESS',
+                summary: pendingAction.summary,
+                details: executionResult,
+              },
+              pendingAction: null,
+            })
+          }
+
+          if (pendingAction.type === 'createSliders') {
+            const sliders = pendingAction.payload.sliders || (pendingAction.payload as any) || []
+            executionResult = await createSliders(sliders, user.id, locale)
+
+            const successMessages: Record<AdminChatLocale, string> = {
+              en: `✅ **Successfully created ${executionResult.createdCount} hero slides with translations!**\n\n` +
+                executionResult.sliders.map((s: any) => `- **${s.title}** (Link: \`${s.ctaLink}\`)`).join('\n') +
+                `\n\nSlides are now active on the storefront.`,
+              ru: `✅ **Успешно создано ${executionResult.createdCount} слайдов с переводами!**\n\n` +
+                executionResult.sliders.map((s: any) => `- **${s.title}** (Ссылка: \`${s.ctaLink}\`)`).join('\n') +
+                `\n\nСлайды теперь активны на главной странице витрины.`,
+              zh: `✅ **已成功创建 ${executionResult.createdCount} 个轮播图横幅及多语言翻译！**\n\n` +
+                executionResult.sliders.map((s: any) => `- **${s.title}** (链接: \`${s.ctaLink}\`)`).join('\n') +
+                `\n\n横幅已在商城首页展示。`,
+            }
+
+            return NextResponse.json({
+              success: true,
+              role: 'assistant',
+              content: successMessages[locale] || successMessages.en,
+              actionExecuted: {
+                type: 'createSliders',
+                status: 'SUCCESS',
+                summary: pendingAction.summary,
+                details: executionResult,
+              },
+              pendingAction: null,
+            })
+          }
+
+          if (pendingAction.type === 'updateSliders') {
+            const sliders = pendingAction.payload.sliders || (pendingAction.payload as any) || []
+            executionResult = await updateSliders(sliders, user.id, locale)
+
+            const successMessages: Record<AdminChatLocale, string> = {
+              en: `✅ **Successfully updated ${executionResult.updatedCount} hero slides!**\n\n` +
+                executionResult.sliders.map((s: any) => `- **${s.title}** (Link: \`${s.ctaLink}\`)`).join('\n') +
+                `\n\nChanges are now live on the storefront.`,
+              ru: `✅ **Успешно обновлено ${executionResult.updatedCount} слайдов!**\n\n` +
+                executionResult.sliders.map((s: any) => `- **${s.title}** (Ссылка: \`${s.ctaLink}\`)`).join('\n') +
+                `\n\nИзменения применены на витрине.`,
+              zh: `✅ **已成功更新 ${executionResult.updatedCount} 个轮播图横幅！**\n\n` +
+                executionResult.sliders.map((s: any) => `- **${s.title}** (链接: \`${s.ctaLink}\`)`).join('\n') +
+                `\n\n首页横幅已更新。`,
+            }
+
+            return NextResponse.json({
+              success: true,
+              role: 'assistant',
+              content: successMessages[locale] || successMessages.en,
+              actionExecuted: {
+                type: 'updateSliders',
+                status: 'SUCCESS',
+                summary: pendingAction.summary,
+                details: executionResult,
+              },
+              pendingAction: null,
+            })
+          }
         } catch (execError: any) {
           console.error('[AI Assistant Action Error]:', execError)
           return NextResponse.json({
@@ -247,10 +404,68 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
+    // DIRECT COMMAND / INTENT INTERCEPTION FOR TRANSLATING MISSING CATEGORIES
+    // =========================================================================
+    const lowerUserText = userText.toLowerCase()
+    const isCategoryTranslationDirectCmd =
+      (lowerUserText.includes('categor') || lowerUserText.includes('категор') || lowerUserText.includes('分类')) &&
+      (lowerUserText.includes('miss') || lowerUserText.includes('пропущ') || lowerUserText.includes('неперевед') || lowerUserText.includes('未翻译') || lowerUserText.includes('translat') || lowerUserText.includes('перевод') || lowerUserText.includes('翻译')) &&
+      (isConfirmation(userText) || lowerUserText.includes('correct') || lowerUserText.includes('fix') || lowerUserText.includes('сделай') || lowerUserText.includes('исправ') || lowerUserText.includes('执行') || lowerUserText.includes('修复'))
+
+    const isDirectConfirmationWithoutPending =
+      !pendingAction &&
+      isConfirmation(userText) &&
+      messages.length > 1 &&
+      messages.slice(-3).some((m) => {
+        const text = m.content.toLowerCase()
+        return (
+          text.includes('categor') ||
+          text.includes('категор') ||
+          text.includes('translat') ||
+          text.includes('перевод') ||
+          text.includes('missed')
+        )
+      })
+
+    if (isCategoryTranslationDirectCmd || isDirectConfirmationWithoutPending) {
+      try {
+        const executionResult = await bulkTranslate('categories', [], ['ru', 'zh'], user.id)
+        const successMessages: Record<AdminChatLocale, string> = {
+          en: `✅ **Successfully updated missing category translations!**\n\n` +
+            `- **${executionResult.translatedCount.success}** categories were translated into Russian (RU) and Chinese (ZH).\n` +
+            `- All category translations have been saved to the database.\n\n` +
+            `Storefront menus and filters now display complete multilingual category names.`,
+          ru: `✅ **Пропущенные переводы категорий успешно добавлены!**\n\n` +
+            `- **${executionResult.translatedCount.success}** категорий переведено на русский (RU) и китайский (ZH).\n` +
+            `- Все переводы сохранены в базу данных.\n\n` +
+            `Меню и фильтры каталога теперь отображаются на всех поддерживаемых языках.`,
+          zh: `✅ **已成功补充所有缺失的分类多语言翻译！**\n\n` +
+            `- 共为 **${executionResult.translatedCount.success}** 个分类生成俄语 (RU) 和中文 (ZH) 翻译。\n` +
+            `- 数据已正式写入数据库。\n\n` +
+            `商城前台菜单与分类筛选现已支持完整多语言显示。`,
+        }
+
+        return NextResponse.json({
+          success: true,
+          role: 'assistant',
+          content: successMessages[locale] || successMessages.en,
+          actionExecuted: {
+            type: 'bulkTranslate',
+            status: 'SUCCESS',
+            summary: 'Translate all missing categories to Russian and Chinese',
+            details: executionResult,
+          },
+          pendingAction: null,
+        })
+      } catch (err: any) {
+        console.error('[Direct Category Translation Error]:', err)
+      }
+    }
+
+    // =========================================================================
     // INTENT & CONTEXT ENRICHMENT: Run read tools to supply real catalog data
     // =========================================================================
     let contextData = ''
-    const lowerUserText = userText.toLowerCase()
 
     // 1. Category Context
     if (
@@ -264,7 +479,8 @@ export async function POST(request: NextRequest) {
     ) {
       const missing = await getMissingCategories(userText)
       const tree = await getCategoryTree()
-      contextData += `\n[CATEGORY TAXONOMY DATA]:\nTotal Existing: ${missing.totalExistingCategories}\nUncategorized Products: ${missing.uncategorizedProductsCount}\nExisting Categories Sample:\n${JSON.stringify(missing.existingCategoriesSample.slice(0, 15), null, 2)}\nSuggested Missing Branches:\n${JSON.stringify(missing.suggestions, null, 2)}\n`
+      const untranslatedCats = await getUntranslatedContent('categories', 150)
+      contextData += `\n[CATEGORY TAXONOMY DATA]:\nTotal Existing: ${missing.totalExistingCategories}\nUncategorized Products: ${missing.uncategorizedProductsCount}\nExisting Categories Sample:\n${JSON.stringify(missing.existingCategoriesSample.slice(0, 15), null, 2)}\nUntranslated Categories Total: ${untranslatedCats.totalUntranslated}\nSample Untranslated Categories:\n${JSON.stringify(untranslatedCats.sampleItems.slice(0, 30), null, 2)}\nSuggested Missing Branches:\n${JSON.stringify(missing.suggestions, null, 2)}\n`
     }
 
     // 2. Attribute Context
@@ -286,16 +502,33 @@ export async function POST(request: NextRequest) {
       lowerUserText.includes('翻译') ||
       lowerUserText.includes('untranslated') ||
       lowerUserText.includes('непереведен') ||
-      lowerUserText.includes('未翻译')
+      lowerUserText.includes('未翻译') ||
+      lowerUserText.includes('missed') ||
+      lowerUserText.includes('пропущ')
     ) {
-      const [untranslatedProds, untranslatedCats] = await Promise.all([
+      const [untranslatedProds, untranslatedCats, untranslatedSlides] = await Promise.all([
         getUntranslatedContent('products', 10),
-        getUntranslatedContent('categories', 10),
+        getUntranslatedContent('categories', 150),
+        getUntranslatedContent('sliders', 10),
       ])
-      contextData += `\n[UNTRANSLATED CONTENT DATA]:\nUntranslated Products Count: ${untranslatedProds.totalUntranslated}\nSample Untranslated Products:\n${JSON.stringify(untranslatedProds.sampleItems, null, 2)}\nUntranslated Categories Count: ${untranslatedCats.totalUntranslated}\nSample Untranslated Categories:\n${JSON.stringify(untranslatedCats.sampleItems, null, 2)}\n`
+      contextData += `\n[UNTRANSLATED CONTENT DATA]:\nUntranslated Products Count: ${untranslatedProds.totalUntranslated}\nUntranslated Categories Count: ${untranslatedCats.totalUntranslated}\nSample Untranslated Categories (IDs & Names):\n${JSON.stringify(untranslatedCats.sampleItems.map(c => ({ id: c.id, name: c.name })), null, 2)}\nUntranslated Hero Sliders Count: ${untranslatedSlides.totalUntranslated}\n`
     }
 
-    // 4. Product / Sample Creation Context
+    // 4. Hero Slider / Banner Context
+    if (
+      lowerUserText.includes('slider') ||
+      lowerUserText.includes('slide') ||
+      lowerUserText.includes('banner') ||
+      lowerUserText.includes('слайдер') ||
+      lowerUserText.includes('баннер') ||
+      lowerUserText.includes('轮播') ||
+      lowerUserText.includes('幻灯片')
+    ) {
+      const sliders = await getExistingSliders()
+      contextData += `\n[HERO SLIDERS DATA]:\nTotal Slides: ${sliders.total}\nExisting Slides:\n${JSON.stringify(sliders.slides, null, 2)}\n`
+    }
+
+    // 5. Product Context
     if (
       lowerUserText.includes('product') ||
       lowerUserText.includes('товар') ||

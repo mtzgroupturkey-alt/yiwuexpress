@@ -1353,6 +1353,8 @@ export const adminEn = {
     statusExecuted: 'Executed',
     statusCancelled: 'Cancelled',
     quickPrompts: {
+      translateCategories: 'Translate all missing categories to Russian and Chinese',
+      sliders: 'Review and update hero sliders & homepage banners',
       tools: 'Add missing categories for tools & auto parts',
       attributes: 'Create attributes for clothing: Size, Color, Material, Season',
       translate: 'Translate untranslated product names & descriptions to Russian and Chinese',

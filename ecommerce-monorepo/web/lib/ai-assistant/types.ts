@@ -1,6 +1,14 @@
 export type AdminChatLocale = 'en' | 'ru' | 'zh'
 
-export type PendingActionType = 'createCategories' | 'createAttributes' | 'bulkTranslate' | 'createProducts'
+export type PendingActionType =
+  | 'createCategories'
+  | 'updateCategories'
+  | 'createAttributes'
+  | 'bulkTranslate'
+  | 'createProducts'
+  | 'updateProducts'
+  | 'createSliders'
+  | 'updateSliders'
 
 export interface PendingCategoryItem {
   name: string
@@ -9,6 +17,25 @@ export interface PendingCategoryItem {
   parentName?: string | null
   description?: string | null
   level?: number
+  translations?: {
+    en?: { name: string; description?: string }
+    ru?: { name: string; description?: string }
+    zh?: { name: string; description?: string }
+  }
+}
+
+export interface PendingCategoryUpdateItem {
+  id?: string
+  name: string
+  newName?: string
+  slug?: string
+  parentId?: string | null
+  parentName?: string | null
+  description?: string | null
+  isActive?: boolean
+  isFeatured?: boolean
+  showInMenu?: boolean
+  displayOrder?: number
   translations?: {
     en?: { name: string; description?: string }
     ru?: { name: string; description?: string }
@@ -35,6 +62,53 @@ export interface PendingProductItem {
   }
 }
 
+export interface PendingProductUpdateItem {
+  id?: string
+  sku?: string
+  name?: string
+  newName?: string
+  price?: number
+  compareAtPrice?: number
+  categoryName?: string
+  categoryId?: string
+  description?: string
+  stock?: number
+  isActive?: boolean
+  isFeatured?: boolean
+  isNewArrival?: boolean
+  isFlashSale?: boolean
+  translations?: {
+    en?: { name: string; description?: string }
+    ru?: { name: string; description?: string }
+    zh?: { name: string; description?: string }
+  }
+}
+
+export interface PendingSliderItem {
+  id?: string
+  title: string
+  subtitle?: string | null
+  description?: string | null
+  imageUrl: string
+  mobileImageUrl?: string | null
+  productImageUrl?: string | null
+  badgeText?: string | null
+  badgeColor?: string | null
+  ctaText: string
+  ctaLink: string
+  secondaryCtaText?: string | null
+  secondaryCtaLink?: string | null
+  alignment?: 'left' | 'center' | 'right'
+  displayOrder?: number
+  isActive?: boolean
+  slideDuration?: number
+  translations?: {
+    en?: { title: string; subtitle?: string; description?: string; ctaText?: string; badgeText?: string }
+    ru?: { title: string; subtitle?: string; description?: string; ctaText?: string; badgeText?: string }
+    zh?: { title: string; subtitle?: string; description?: string; ctaText?: string; badgeText?: string }
+  }
+}
+
 export interface PendingAttributeItem {
   name: string
   slug?: string
@@ -55,7 +129,7 @@ export interface PendingAttributeItem {
 }
 
 export interface PendingTranslationItem {
-  type: 'products' | 'categories' | 'attributes'
+  type: 'products' | 'categories' | 'attributes' | 'sliders'
   itemIds: string[]
   targetLocales: ('ru' | 'zh')[]
   previewItems?: Array<{
@@ -71,9 +145,12 @@ export interface PendingAction {
   summary: string
   payload: {
     categories?: PendingCategoryItem[]
+    categoryUpdates?: PendingCategoryUpdateItem[]
     attributes?: PendingAttributeItem[]
     translations?: PendingTranslationItem
     products?: PendingProductItem[]
+    productUpdates?: PendingProductUpdateItem[]
+    sliders?: PendingSliderItem[]
   }
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'EXECUTED' | 'FAILED'
   createdAt: number

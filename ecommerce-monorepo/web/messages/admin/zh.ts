@@ -1355,6 +1355,8 @@ export const adminZh: AdminDictionary = {
     statusExecuted: '已执行',
     statusCancelled: '已取消',
     quickPrompts: {
+      translateCategories: '一键将所有缺失分类翻译为俄语与中文',
+      sliders: '查看并更新首页轮播大图横幅',
       tools: '补充五金工具与汽配的缺失分类',
       attributes: '为服装类目创建常用属性：尺码、颜色、面料、季节',
       translate: '将未翻译的商品名称及描述翻译为俄语与中文',

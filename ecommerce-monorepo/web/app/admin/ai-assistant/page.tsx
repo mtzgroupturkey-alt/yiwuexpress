@@ -49,6 +49,8 @@ export default function AiAssistantPage() {
     statusExecuted: 'Executed',
     statusCancelled: 'Cancelled',
     quickPrompts: {
+      translateCategories: 'Translate all missing categories to Russian and Chinese',
+      sliders: 'Review and update hero sliders & homepage banners',
       tools: 'Add missing categories for tools & auto parts',
       attributes: 'Create attributes for clothing: Size, Color, Material, Season',
       translate: 'Translate untranslated product names & descriptions to Russian and Chinese',
@@ -305,6 +307,28 @@ export default function AiAssistantPage() {
             {/* Quick Action Suggestion Chips */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left pt-2">
               <button
+                onClick={() => handleSendMessage(t.quickPrompts.translateCategories)}
+                className="p-3 rounded-lg border-2 border-emerald-300 bg-emerald-50/60 hover:border-emerald-500 hover:bg-emerald-100/50 transition-all text-xs text-emerald-900 font-bold flex items-center justify-between group shadow-2xs sm:col-span-2"
+              >
+                <span className="flex items-center gap-2">
+                  <Languages className="w-4 h-4 text-emerald-700" />
+                  ✨ {t.quickPrompts.translateCategories}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+
+              <button
+                onClick={() => handleSendMessage(t.quickPrompts.sliders)}
+                className="p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/40 transition-all text-xs text-slate-700 font-medium flex items-center justify-between group shadow-2xs"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  {t.quickPrompts.sliders}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5" />
+              </button>
+
+              <button
                 onClick={() => handleSendMessage(t.quickPrompts.tools)}
                 className="p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/40 transition-all text-xs text-slate-700 font-medium flex items-center justify-between group shadow-2xs"
               >
@@ -324,17 +348,6 @@ export default function AiAssistantPage() {
                   {t.quickPrompts.attributes}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-600 transition-transform group-hover:translate-x-0.5" />
-              </button>
-
-              <button
-                onClick={() => handleSendMessage(t.quickPrompts.translate)}
-                className="p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/40 transition-all text-xs text-slate-700 font-medium flex items-center justify-between group shadow-2xs"
-              >
-                <span className="flex items-center gap-2">
-                  <Languages className="w-4 h-4 text-emerald-600" />
-                  {t.quickPrompts.translate}
-                </span>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 transition-transform group-hover:translate-x-0.5" />
               </button>
 
               <button
@@ -406,6 +419,29 @@ export default function AiAssistantPage() {
                       </div>
                     )}
 
+                    {/* Category updates preview list */}
+                    {msg.pendingAction.payload.categoryUpdates && (
+                      <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 max-h-48 overflow-y-auto space-y-1.5 text-xs text-slate-700">
+                        {msg.pendingAction.payload.categoryUpdates.map((c, i) => (
+                          <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between py-1 border-b border-slate-100 last:border-0 gap-1">
+                            <div>
+                              <span className="font-bold text-slate-900">{c.name}</span>
+                              {c.newName && <span className="text-emerald-600 font-semibold ml-1.5">→ {c.newName}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 text-2xs text-slate-500">
+                              {c.translations?.ru?.name && <span>RU: {c.translations.ru.name}</span>}
+                              {c.translations?.zh?.name && <span>ZH: {c.translations.zh.name}</span>}
+                              {c.isActive !== undefined && (
+                                <Badge variant="outline" className={`text-2xs ${c.isActive ? 'text-green-600' : 'text-slate-400'}`}>
+                                  {c.isActive ? 'Active' : 'Hidden'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Attributes preview list */}
                     {msg.pendingAction.payload.attributes && (
                       <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 max-h-48 overflow-y-auto space-y-1.5 text-xs text-slate-700">
@@ -426,7 +462,14 @@ export default function AiAssistantPage() {
                     {msg.pendingAction.payload.translations && (
                       <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 space-y-1 text-xs text-slate-700">
                         <p>Type: <strong>{msg.pendingAction.payload.translations.type}</strong></p>
-                        <p>Items to translate: <strong>{msg.pendingAction.payload.translations.itemIds.length}</strong> items</p>
+                        <p>
+                          Items to translate:{' '}
+                          <strong>
+                            {msg.pendingAction.payload.translations.itemIds.length > 0
+                              ? `${msg.pendingAction.payload.translations.itemIds.length} items`
+                              : 'All untranslated items (complete bulk sync)'}
+                          </strong>
+                        </p>
                         <p>Target Languages: <strong>{msg.pendingAction.payload.translations.targetLocales.join(', ')}</strong></p>
                       </div>
                     )}
@@ -442,7 +485,6 @@ export default function AiAssistantPage() {
                                 alt={p.name}
                                 className="w-10 h-10 object-cover rounded-md border border-slate-200 shrink-0 bg-slate-50"
                                 onError={(e) => {
-                                  // Fallback to placeholder if external URL is broken
                                   ;(e.target as HTMLImageElement).src = '/images/placeholder.jpg'
                                 }}
                               />
@@ -464,6 +506,63 @@ export default function AiAssistantPage() {
                                 )}
                                 {p.translations?.ru?.name && <span>RU: {p.translations.ru.name}</span>}
                                 {p.translations?.zh?.name && <span>ZH: {p.translations.zh.name}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Product updates preview list */}
+                    {msg.pendingAction.payload.productUpdates && (
+                      <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 max-h-56 overflow-y-auto space-y-2 text-xs text-slate-700">
+                        {msg.pendingAction.payload.productUpdates.map((p, i) => (
+                          <div key={i} className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0 text-xs">
+                            <div className="min-w-0">
+                              <span className="font-bold text-slate-900">{p.name || p.sku || `Product #${i + 1}`}</span>
+                              {p.sku && <span className="text-slate-400 text-2xs ml-1 font-mono">({p.sku})</span>}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {p.price !== undefined && <span className="font-semibold text-emerald-600">${p.price}</span>}
+                              {p.stock !== undefined && <Badge variant="outline" className="text-2xs">Stock: {p.stock}</Badge>}
+                              {p.isFeatured !== undefined && (
+                                <Badge variant="outline" className="text-2xs text-amber-600 border-amber-200">Featured</Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Sliders preview list */}
+                    {msg.pendingAction.payload.sliders && (
+                      <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 max-h-56 overflow-y-auto space-y-2 text-xs text-slate-700">
+                        {msg.pendingAction.payload.sliders.map((s, i) => (
+                          <div key={i} className="flex items-start gap-2.5 py-1.5 border-b border-slate-100 last:border-0">
+                            {s.imageUrl ? (
+                              <img
+                                src={s.imageUrl}
+                                alt={s.title}
+                                className="w-14 h-9 object-cover rounded-md border border-slate-200 shrink-0 bg-slate-50"
+                                onError={(e) => {
+                                  ;(e.target as HTMLImageElement).src = '/images/placeholder.jpg'
+                                }}
+                              />
+                            ) : (
+                              <div className="w-14 h-9 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-2xs text-slate-400">
+                                Banner
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-bold text-slate-900 truncate">{s.title}</span>
+                                {s.badgeText && (
+                                  <Badge className="bg-indigo-100 text-indigo-700 text-2xs py-0 h-4">{s.badgeText}</Badge>
+                                )}
+                              </div>
+                              {s.subtitle && <p className="text-2xs text-slate-500 truncate">{s.subtitle}</p>}
+                              <div className="flex items-center gap-2 mt-0.5 text-2xs text-slate-400">
+                                <span>CTA: {s.ctaText} → {s.ctaLink}</span>
                               </div>
                             </div>
                           </div>
