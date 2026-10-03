@@ -68,7 +68,11 @@ export async function POST(request: NextRequest) {
 
       let userFriendlyError = '';
       if (isZai) {
-        userFriendlyError = `Z.ai returned HTTP ${response.status}${parsedErrorMsg ? ` (${parsedErrorMsg})` : ''}\nCheck your API key in Admin > Settings > System\nFree models: glm-4.7-flash, glm-4.5-flash`;
+        if (response.status === 429) {
+          userFriendlyError = `Z.ai returned HTTP 429 (Temporary Overload / Rate Limit): The free Flash tier has a concurrency limit. Please wait 2-3 seconds and test again.\nFree models: glm-4.7-flash, glm-4.5-flash`;
+        } else {
+          userFriendlyError = `Z.ai returned HTTP ${response.status}${parsedErrorMsg ? ` (${parsedErrorMsg})` : ''}\nCheck your API key in Admin > Settings > System\nFree models: glm-4.7-flash, glm-4.5-flash`;
+        }
       } else if (response.status === 402 || errorText.includes('insufficient_quota') || errorText.includes('wallet balance')) {
         userFriendlyError = `Gateway returned 402 (Payment Required): ${parsedErrorMsg || 'Insufficient wallet balance'}. Please deposit funds into your wallet at your provider portal, or switch to OpenRouter / Gemini.`;
       } else if (response.status === 401) {
