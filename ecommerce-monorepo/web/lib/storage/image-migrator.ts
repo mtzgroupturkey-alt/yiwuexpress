@@ -106,7 +106,9 @@ export async function downloadExternalImage(url: string): Promise<Buffer> {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    const error: any = new Error(`HTTP ${response.status} ${response.statusText}`);
+    error.status = response.status;
+    throw error;
   }
 
   const arrayBuffer = await response.arrayBuffer();

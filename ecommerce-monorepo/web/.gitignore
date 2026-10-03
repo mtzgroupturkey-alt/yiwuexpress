@@ -75,3 +75,6 @@ temp/
 
 # Environment
 .env.*.local
+
+# Migrated dynamic product images
+public/uploads/products/prod-*

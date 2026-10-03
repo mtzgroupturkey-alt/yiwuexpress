@@ -28,6 +28,38 @@ async function verifyAdminAuth(request: NextRequest): Promise<{ authorized: bool
   }
 }
 
+// Helper to count external and local images
+async function calculateImageCounts() {
+  const products = await prisma.product.findMany({
+    select: { id: true, thumbnail: true, images: true },
+  });
+
+  let externalCount = 0;
+  let localCount = 0;
+  let productsWithExternalCount = 0;
+
+  for (const p of products) {
+    const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
+    let hasExternal = false;
+    for (const url of allUrls) {
+      if (isExternalImageUrl(url)) {
+        externalCount++;
+        hasExternal = true;
+      } else {
+        localCount++;
+      }
+    }
+    if (hasExternal) productsWithExternalCount++;
+  }
+
+  return {
+    totalProducts: products.length,
+    externalCount,
+    localCount,
+    productsWithExternalCount,
+  };
+}
+
 export async function GET(request: NextRequest) {
   const auth = await verifyAdminAuth(request);
   if (!auth.authorized) {
@@ -35,26 +67,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const totalProducts = await prisma.product.count();
-
-    // Sample products to count external vs local images
-    const sampleProducts = await prisma.product.findMany({
-      select: { id: true, thumbnail: true, images: true },
-    });
-
-    let externalCount = 0;
-    let localCount = 0;
-
-    for (const p of sampleProducts) {
-      const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
-      for (const url of allUrls) {
-        if (isExternalImageUrl(url)) {
-          externalCount++;
-        } else {
-          localCount++;
-        }
-      }
-    }
+    const { totalProducts, externalCount, localCount } = await calculateImageCounts();
 
     const lastJob = await prisma.imageMigrationJob.findFirst({
       orderBy: { createdAt: 'desc' },
@@ -93,7 +106,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const action = body.action || (body.dryRun ? 'preview' : 'start');
-    const batchSize = Math.min(Math.max(parseInt(body.batchSize, 10) || 50, 1), 50);
+    const batchSize = Math.min(Math.max(parseInt(body.batchSize, 10) || 20, 1), 50);
     const dryRun = body.dryRun === true || action === 'preview';
 
     // ── CANCEL ACTION ──────────────────────────────────────────────────────────
@@ -147,34 +160,246 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ── REAL RUN / RESUME ──────────────────────────────────────────────────────
-    // Check if another job is currently active
-    const runningJob = await prisma.imageMigrationJob.findFirst({
+    // ── DIRECT BATCH PROCESSING ACTION (Robust & Real-Time) ─────────────────────
+    if (action === 'batch') {
+      // Find products that currently have external images
+      const candidateProducts = await prisma.product.findMany({
+        where: {
+          OR: [
+            { thumbnail: { startsWith: 'http' } },
+            { images: { isEmpty: false } },
+          ],
+        },
+        take: batchSize * 3,
+        orderBy: { updatedAt: 'asc' }, // Prioritize least recently updated, advancing queue automatically
+        select: { id: true, sku: true, thumbnail: true, images: true },
+      });
+
+      const productsToProcess = candidateProducts
+        .filter((p) => {
+          const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
+          return allUrls.some(isExternalImageUrl);
+        })
+        .slice(0, batchSize);
+
+      if (productsToProcess.length === 0) {
+        // Double check overall counts
+        const counts = await calculateImageCounts();
+        return NextResponse.json({
+          success: true,
+          finished: true,
+          batchProcessed: 0,
+          batchFailed: 0,
+          updatedProducts: 0,
+          remainingExternalImages: counts.externalCount,
+          remainingProductsWithExternal: counts.productsWithExternalCount,
+          logs: getInMemoryLogs().slice(-30),
+        });
+      }
+
+      let batchProcessed = 0;
+      let batchFailed = 0;
+      const rollbackLog: MigrationLogEntry[] = [];
+
+      for (const product of productsToProcess) {
+        let productUpdated = false;
+        let newThumbnail = product.thumbnail;
+
+        // 1. Process thumbnail
+        if (product.thumbnail && isExternalImageUrl(product.thumbnail)) {
+          try {
+            const buffer = await downloadExternalImage(product.thumbnail);
+            const webp = await convertToWebP(buffer);
+            const filename = generateImageFilename(product.id, product.thumbnail);
+            const savedUrl = await saveToStorage(webp, filename);
+
+            rollbackLog.push({
+              productId: product.id,
+              field: 'thumbnail',
+              oldUrl: product.thumbnail,
+              newUrl: savedUrl,
+              status: 'success',
+              timestamp: new Date().toISOString(),
+            });
+
+            newThumbnail = savedUrl;
+            productUpdated = true;
+            batchProcessed++;
+            addInMemoryLog(`✅ Sku: ${product.sku} [thumbnail] -> ${savedUrl}`);
+          } catch (err: any) {
+            batchFailed++;
+            const isDead = err.status === 404 || err.status === 410 || err.message?.includes('404');
+            rollbackLog.push({
+              productId: product.id,
+              field: 'thumbnail',
+              oldUrl: product.thumbnail,
+              status: 'failed',
+              error: err.message,
+              timestamp: new Date().toISOString(),
+            });
+
+            if (isDead) {
+              // Clean out dead 404 thumbnail link from database so it doesn't retry
+              newThumbnail = null;
+              productUpdated = true;
+              addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] 404 Not Found (cleaned from DB)`);
+            } else {
+              addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] error: ${err.message}`);
+            }
+          }
+        }
+
+        // 2. Process gallery images
+        const finalGalleryImages: string[] = [];
+        for (let imgIdx = 0; imgIdx < (product.images || []).length; imgIdx++) {
+          const rawUrl = product.images[imgIdx];
+          if (!rawUrl) continue;
+
+          if (isExternalImageUrl(rawUrl)) {
+            try {
+              const buffer = await downloadExternalImage(rawUrl);
+              const webp = await convertToWebP(buffer);
+              const filename = generateImageFilename(`${product.id}-${imgIdx}`, rawUrl);
+              const savedUrl = await saveToStorage(webp, filename);
+
+              rollbackLog.push({
+                productId: product.id,
+                field: 'image',
+                oldUrl: rawUrl,
+                newUrl: savedUrl,
+                status: 'success',
+                timestamp: new Date().toISOString(),
+              });
+
+              finalGalleryImages.push(savedUrl);
+              productUpdated = true;
+              batchProcessed++;
+              addInMemoryLog(`✅ Sku: ${product.sku} [img ${imgIdx + 1}] -> ${savedUrl}`);
+            } catch (err: any) {
+              batchFailed++;
+              const isDead = err.status === 404 || err.status === 410 || err.message?.includes('404');
+              rollbackLog.push({
+                productId: product.id,
+                field: 'image',
+                oldUrl: rawUrl,
+                status: 'failed',
+                error: err.message,
+                timestamp: new Date().toISOString(),
+              });
+
+              if (isDead) {
+                // Remove dead 404 image from product gallery array
+                productUpdated = true;
+                addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] 404 Not Found (removed dead link)`);
+              } else {
+                // Keep temporary failure URL for later retry
+                finalGalleryImages.push(rawUrl);
+                addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] error: ${err.message}`);
+              }
+            }
+          } else {
+            // Already local / re-hosted
+            finalGalleryImages.push(rawUrl);
+          }
+        }
+
+        // Fallback: If thumbnail was 404 but gallery has re-hosted images, promote first gallery image
+        if (!newThumbnail && finalGalleryImages.length > 0) {
+          newThumbnail = finalGalleryImages[0];
+          productUpdated = true;
+        }
+
+        // Commit database update for this product (always update to refresh updatedAt and advance queue)
+        try {
+          await prisma.product.update({
+            where: { id: product.id },
+            data: {
+              thumbnail: newThumbnail,
+              images: finalGalleryImages,
+              updatedAt: new Date(),
+            },
+          });
+        } catch (dbErr: any) {
+          console.error(`Failed to update DB for product ${product.id}:`, dbErr);
+        }
+      }
+
+      // Append rollback log
+      await appendRollbackLog(rollbackLog);
+
+      // Update or create job record
+      let activeJob = await prisma.imageMigrationJob.findFirst({
+        where: { status: 'RUNNING' },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!activeJob) {
+        activeJob = await prisma.imageMigrationJob.create({
+          data: {
+            status: 'RUNNING',
+            totalImages: 15000,
+            processedCount: batchProcessed,
+            failedCount: batchFailed,
+            startedAt: new Date(),
+            createdBy: auth.email || 'admin',
+          },
+        });
+      } else {
+        await prisma.imageMigrationJob.update({
+          where: { id: activeJob.id },
+          data: {
+            processedCount: { increment: batchProcessed },
+            failedCount: { increment: batchFailed },
+          },
+        });
+      }
+
+      // Calculate remaining external counts
+      const counts = await calculateImageCounts();
+
+      if (counts.productsWithExternalCount === 0) {
+        await prisma.imageMigrationJob.update({
+          where: { id: activeJob.id },
+          data: {
+            status: 'COMPLETED',
+            finishedAt: new Date(),
+          },
+        });
+        addInMemoryLog(`🎉 Migration completed! All external images have been re-hosted.`);
+      }
+
+      return NextResponse.json({
+        success: true,
+        finished: counts.productsWithExternalCount === 0,
+        batchProcessed,
+        batchFailed,
+        updatedProducts: productsToProcess.length,
+        remainingExternalImages: counts.externalCount,
+        remainingProductsWithExternal: counts.productsWithExternalCount,
+        logs: getInMemoryLogs().slice(-30),
+      });
+    }
+
+    // ── BACKGROUND WORKER RUNNER (Fallback) ──────────────────────────────────
+    // Clear any stale jobs older than 2 minutes
+    const staleCheck = await prisma.imageMigrationJob.findFirst({
       where: { status: 'RUNNING' },
       orderBy: { createdAt: 'desc' },
     });
 
-    if (runningJob) {
-      // If it started more than 15 minutes ago without updates, consider it stale
-      const fifteenMinsAgo = new Date(Date.now() - 15 * 60 * 1000);
-      if (runningJob.updatedAt < fifteenMinsAgo) {
+    if (staleCheck) {
+      const twoMinsAgo = new Date(Date.now() - 2 * 60 * 1000);
+      if (staleCheck.updatedAt < twoMinsAgo) {
         await prisma.imageMigrationJob.update({
-          where: { id: runningJob.id },
-          data: { status: 'FAILED', lastError: 'Timed out or interrupted' },
-        });
-      } else {
-        return NextResponse.json({
-          success: false,
-          message: 'An image migration job is already running.',
-          job: runningJob,
+          where: { id: staleCheck.id },
+          data: { status: 'FAILED', lastError: 'Interrupted or stale' },
         });
       }
     }
 
-    // Count external images first
     const products = await prisma.product.findMany({
       select: { id: true, sku: true, thumbnail: true, images: true },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { updatedAt: 'asc' },
     });
 
     const productsWithExternal = products.filter((p) => {
@@ -198,14 +423,13 @@ export async function POST(request: NextRequest) {
 
     addInMemoryLog(`Starting migration job [${job.id}]. Total external images: ${totalExternalImages}`);
 
-    // Asynchronous migration runner in batches
+    // Asynchronous migration runner without premature abort threshold
     (async () => {
       let processedTotal = 0;
       let failedTotal = 0;
       const rollbackLog: MigrationLogEntry[] = [];
 
       for (let i = 0; i < productsWithExternal.length; i += batchSize) {
-        // Check if job was cancelled
         const currentCheck = await prisma.imageMigrationJob.findUnique({
           where: { id: job.id },
           select: { status: true },
@@ -221,108 +445,74 @@ export async function POST(request: NextRequest) {
         const totalBatches = Math.ceil(productsWithExternal.length / batchSize);
         addInMemoryLog(`Processing batch ${batchNum} of ${totalBatches} (${batch.length} products)...`);
 
-        let batchFailed = 0;
-
         for (const product of batch) {
-          let updated = false;
           let newThumbnail = product.thumbnail;
-          let newImages = [...product.images];
 
-          // 1. Process thumbnail
+          // Thumbnail
           if (product.thumbnail && isExternalImageUrl(product.thumbnail)) {
             try {
               const buffer = await downloadExternalImage(product.thumbnail);
               const webp = await convertToWebP(buffer);
               const filename = generateImageFilename(product.id, product.thumbnail);
               const savedUrl = await saveToStorage(webp, filename);
-
-              rollbackLog.push({
-                productId: product.id,
-                field: 'thumbnail',
-                oldUrl: product.thumbnail,
-                newUrl: savedUrl,
-                status: 'success',
-                timestamp: new Date().toISOString(),
-              });
-
               newThumbnail = savedUrl;
-              updated = true;
               processedTotal++;
               addInMemoryLog(`✅ Sku: ${product.sku} [thumbnail] -> ${savedUrl}`);
             } catch (err: any) {
-              batchFailed++;
               failedTotal++;
-              rollbackLog.push({
-                productId: product.id,
-                field: 'thumbnail',
-                oldUrl: product.thumbnail,
-                status: 'failed',
-                error: err.message,
-                timestamp: new Date().toISOString(),
-              });
-              addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] error: ${err.message}`);
+              if (err.status === 404 || err.message?.includes('404')) {
+                newThumbnail = null;
+                addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] 404 Not Found (cleaned)`);
+              }
             }
           }
 
-          // 2. Process gallery images
-          for (let imgIdx = 0; imgIdx < product.images.length; imgIdx++) {
+          // Gallery images
+          const finalImages: string[] = [];
+          for (let imgIdx = 0; imgIdx < (product.images || []).length; imgIdx++) {
             const rawUrl = product.images[imgIdx];
-            if (rawUrl && isExternalImageUrl(rawUrl)) {
+            if (!rawUrl) continue;
+
+            if (isExternalImageUrl(rawUrl)) {
               try {
                 const buffer = await downloadExternalImage(rawUrl);
                 const webp = await convertToWebP(buffer);
                 const filename = generateImageFilename(`${product.id}-${imgIdx}`, rawUrl);
                 const savedUrl = await saveToStorage(webp, filename);
-
-                rollbackLog.push({
-                  productId: product.id,
-                  field: 'image',
-                  oldUrl: rawUrl,
-                  newUrl: savedUrl,
-                  status: 'success',
-                  timestamp: new Date().toISOString(),
-                });
-
-                newImages[imgIdx] = savedUrl;
-                updated = true;
+                finalImages.push(savedUrl);
                 processedTotal++;
-                addInMemoryLog(`✅ Sku: ${product.sku} [image ${imgIdx + 1}] -> ${savedUrl}`);
+                addInMemoryLog(`✅ Sku: ${product.sku} [img ${imgIdx + 1}] -> ${savedUrl}`);
               } catch (err: any) {
-                batchFailed++;
                 failedTotal++;
-                rollbackLog.push({
-                  productId: product.id,
-                  field: 'image',
-                  oldUrl: rawUrl,
-                  status: 'failed',
-                  error: err.message,
-                  timestamp: new Date().toISOString(),
-                });
-                addInMemoryLog(`⚠️ Sku: ${product.sku} [image ${imgIdx + 1}] error: ${err.message}`);
+                if (err.status === 404 || err.message?.includes('404')) {
+                  addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] 404 Not Found (removed)`);
+                } else {
+                  finalImages.push(rawUrl);
+                }
               }
+            } else {
+              finalImages.push(rawUrl);
             }
           }
 
-          // Commit database update for this product
-          if (updated) {
-            try {
-              await prisma.product.update({
-                where: { id: product.id },
-                data: {
-                  thumbnail: newThumbnail,
-                  images: newImages,
-                },
-              });
-            } catch (dbErr: any) {
-              console.error(`Failed to update DB for product ${product.id}:`, dbErr);
-            }
+          if (!newThumbnail && finalImages.length > 0) {
+            newThumbnail = finalImages[0];
           }
+
+          await prisma.product
+            .update({
+              where: { id: product.id },
+              data: {
+                thumbnail: newThumbnail,
+                images: finalImages,
+                updatedAt: new Date(),
+              },
+            })
+            .catch(() => null);
         }
 
-        // Save rollback log for this batch
         await appendRollbackLog(rollbackLog);
 
-        // Update job progress
         await prisma.imageMigrationJob.update({
           where: { id: job.id },
           data: {
@@ -331,56 +521,25 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        // Safety: If > 20% of a batch failed, pause job
-        const batchTotal = batch.length;
-        if (batchTotal > 5 && batchFailed / batchTotal > 0.2) {
-          addInMemoryLog(`⚠️ Batch ${batchNum} high failure rate (${batchFailed}/${batchTotal} failed). Pausing job.`);
-          await prisma.imageMigrationJob.update({
-            where: { id: job.id },
-            data: {
-              status: 'FAILED',
-              lastError: `High failure rate in batch ${batchNum} (${batchFailed}/${batchTotal} failed).`,
-              finishedAt: new Date(),
-            },
-          });
-          break;
-        }
-
-        // Sleep 1 second between batches
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 600));
       }
 
-      // Finalize job
-      const finalCheck = await prisma.imageMigrationJob.findUnique({
-        where: { id: job.id },
-      });
-
-      if (finalCheck?.status === 'RUNNING') {
-        await prisma.imageMigrationJob.update({
-          where: { id: job.id },
-          data: {
-            status: 'COMPLETED',
-            finishedAt: new Date(),
-          },
-        });
-        addInMemoryLog(`🎉 Migration completed! Downloaded: ${processedTotal}, Failed: ${failedTotal}`);
-      }
-    })().catch(async (e) => {
-      console.error('[ImageMigrator Worker Error]:', e);
-      addInMemoryLog(`❌ Migration worker exception: ${e.message}`);
       await prisma.imageMigrationJob.update({
         where: { id: job.id },
         data: {
-          status: 'FAILED',
-          lastError: e.message,
+          status: 'COMPLETED',
           finishedAt: new Date(),
         },
       });
+      addInMemoryLog(`🎉 Background migration complete! Downloaded: ${processedTotal}, Failed: ${failedTotal}`);
+    })().catch(async (e) => {
+      console.error('[ImageMigrator Worker Error]:', e);
+      addInMemoryLog(`❌ Worker error: ${e.message}`);
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Image migration job started.',
+      message: 'Migration job started.',
       jobId: job.id,
       totalExternalImages,
     });

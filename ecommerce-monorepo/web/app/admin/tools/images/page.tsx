@@ -59,7 +59,9 @@ export default function ImageMigrationPage() {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [copiedLog, setCopiedLog] = useState(false);
 
-  const logsEndRef = useRef<HTMLDivElement | null>(null);
+  const [isClientRunning, setIsClientRunning] = useState(false);
+  const isClientRunningRef = useRef(false);
+  const logsEndRef = useRef<HTMLDivElement>(null);
 
   const fetchStats = async () => {
     try {
@@ -114,32 +116,82 @@ export default function ImageMigrationPage() {
   };
 
   const handleStartMigration = async (action: 'start' | 'resume') => {
+    isClientRunningRef.current = true;
+    setIsClientRunning(true);
     setActionLoading(true);
-    try {
-      const res = await fetch('/api/admin/images/migrate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          batchSize,
-          dryRun: false,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success(action === 'resume' ? 'Resuming image migration...' : 'Image migration started!');
-        fetchStats();
-      } else {
-        toast.error(data.message || data.error || 'Failed to start migration');
+
+    toast.success(action === 'resume' ? 'Resuming image migration...' : 'Live image migration started!');
+
+    let consecutiveErrors = 0;
+    while (isClientRunningRef.current) {
+      try {
+        const res = await fetch('/api/admin/images/migrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'batch',
+            batchSize: Math.min(Math.max(batchSize, 5), 50),
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          consecutiveErrors++;
+          if (consecutiveErrors >= 3) {
+            toast.error(data.error || 'Batch migration stopped due to consecutive server errors.');
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+
+        consecutiveErrors = 0;
+
+        // Update live stats immediately in state
+        setStats((prev: any) => ({
+          ...prev,
+          external: data.remainingExternalImages,
+          local: (prev?.local ?? 0) + data.batchProcessed,
+          lastRunDownloaded: (prev?.lastRunDownloaded ?? 0) + data.batchProcessed,
+          lastRunFailed: (prev?.lastRunFailed ?? 0) + data.batchFailed,
+          lastRunStatus: data.finished ? 'completed' : 'running',
+          currentJob: {
+            status: 'RUNNING',
+            processedCount: (prev?.currentJob?.processedCount ?? 0) + data.batchProcessed,
+            failedCount: (prev?.currentJob?.failedCount ?? 0) + data.batchFailed,
+            totalImages:
+              prev?.currentJob?.totalImages ||
+              data.remainingExternalImages + (prev?.currentJob?.processedCount ?? 0),
+          },
+          logs: data.logs || prev?.logs || [],
+        }));
+
+        if (data.finished || data.remainingProductsWithExternal === 0) {
+          toast.success('🎉 Image migration finished! All external images have been re-hosted.');
+          break;
+        }
+
+        // Delay between batches
+        await new Promise((r) => setTimeout(r, 400));
+      } catch (err: any) {
+        consecutiveErrors++;
+        if (consecutiveErrors >= 3) {
+          toast.error('Network communication issue. Pausing migration.');
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 1500));
       }
-    } catch {
-      toast.error('Failed to communicate with migration API');
-    } finally {
-      setActionLoading(false);
     }
+
+    isClientRunningRef.current = false;
+    setIsClientRunning(false);
+    setActionLoading(false);
+    fetchStats();
   };
 
   const handleCancel = async () => {
+    isClientRunningRef.current = false;
+    setIsClientRunning(false);
     setActionLoading(true);
     try {
       const res = await fetch('/api/admin/images/migrate', {
@@ -148,12 +200,8 @@ export default function ImageMigrationPage() {
         body: JSON.stringify({ action: 'cancel' }),
       });
       const data = await res.json();
-      if (res.ok && data.success) {
-        toast.success('Migration job cancelled.');
-        fetchStats();
-      } else {
-        toast.error(data.message || 'Failed to cancel job');
-      }
+      toast.success('Migration paused. You can resume anytime.');
+      fetchStats();
     } catch {
       toast.error('Network error while cancelling');
     } finally {
@@ -193,7 +241,7 @@ export default function ImageMigrationPage() {
     }
   };
 
-  const isRunning = stats?.currentJob?.status === 'RUNNING';
+  const isRunning = isClientRunning || stats?.currentJob?.status === 'RUNNING';
   const totalInJob = stats?.currentJob?.totalImages || stats?.external || 1;
   const processedInJob = stats?.currentJob?.processedCount || 0;
   const failedInJob = stats?.currentJob?.failedCount || 0;
