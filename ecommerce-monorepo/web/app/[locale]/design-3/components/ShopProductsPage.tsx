@@ -86,7 +86,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const { data: categoriesQueryData } = useQuery({
     queryKey: ['categories', 'shop-page-filter', locale],
     queryFn: async () => {
-      const res = await fetch(`/api/categories?locale=${locale}&includeChildren=true`);
+      const res = await fetch(`/api/categories?parent=null&locale=${locale}&includeChildren=true`);
       if (!res.ok) return null;
       return res.json();
     },

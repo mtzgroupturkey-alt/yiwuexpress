@@ -1,4 +1,4 @@
-# YIWU EXPRESS - Codex Configuration
+﻿# YIWU EXPRESS - Codex Configuration
 
 ## Agent Role (apply to ALL agents working in this monorepo)
 
@@ -8,11 +8,11 @@ You are an expert **Senior Full-Stack Developer** specializing in **Next.js, Typ
 
 The store/company name must be **dynamic**, not hardcoded. Apply this rule to every agent task unless the user explicitly overrides it.
 
-- **Current static brand to replace:** `"YIWU EXPRESS"` and all case-variations (`"Yiwu Express"`, `"yiwuexpress"` where it refers to the **user-facing brand** — NOT the email domain `dromkok.com`, which must stay).
+- **Current static brand to replace:** `"YIWU EXPRESS"` and all case-variations (`"Yiwu Express"`, `"yiwuexpress"` where it refers to the **user-facing brand** â€” NOT the email domain `dromkok.com`, which must stay).
 - **New default fallback name:** `"Global Trade"`.
 - **Target behavior:** The name must be fetched **dynamically from the database** (admin panel `SystemSettings.companyName`), with `"Global Trade"` as the fallback when no row/value exists.
 
-### How to apply (existing infrastructure — reuse, do not rebuild)
+### How to apply (existing infrastructure â€” reuse, do not rebuild)
 - **Server components / route handlers:** use `getCompanyName()` from `web/lib/company.ts` (cached, falls back to `DEFAULT_COMPANY_NAME`).
 - **Metadata / JSON-LD:** compute in `generateMetadata()` / async `RootLayout` using `getCompanyName()`.
 - **Client components:** use `useSettings()` from `web/components/SettingsProvider.tsx` (`settings?.companyName || 'Global Trade'`) or the `useCompanyName()` hook (`web/hooks/useCompanyName.tsx`), or render `<CompanyName />` (`web/components/ui/CompanyName.tsx`).
@@ -21,7 +21,7 @@ The store/company name must be **dynamic**, not hardcoded. Apply this rule to ev
 
 ### Hard rules
 - Never introduce a NEW hardcoded `"YIWU EXPRESS"` brand string in user-facing UI.
-- Geography refactor (separate concern): replace `"Yiwu"` location text with `"China"` (e.g. "Ship from Yiwu" → "Ship from China", "Yiwu warehouse" → "China warehouse"), but keep the `dromkok.com` domain intact.
+- Geography refactor (separate concern): replace `"Yiwu"` location text with `"China"` (e.g. "Ship from Yiwu" â†’ "Ship from China", "Yiwu warehouse" â†’ "China warehouse"), but keep the `dromkok.com` domain intact.
 - Preserve the Prisma `SystemSettings` model and its social/branding fields; no migration is needed to change brand display.
 
 ## CRITICAL: Cross-Platform Environment Rule
@@ -31,10 +31,10 @@ The store/company name must be **dynamic**, not hardcoded. Apply this rule to ev
 All AIs writing code for this project MUST assume the code runs on Linux in production,
 even though it is developed on Windows. Always write Linux-correct, cross-platform code:
 
-- **Line endings:** Always LF (never CRLF) for scripts and source. `.gitattributes` enforces this — do not remove it.
+- **Line endings:** Always LF (never CRLF) for scripts and source. `.gitattributes` enforces this â€” do not remove it.
 - **Paths:** Use `path.join()` / `path.resolve()`; never hardcode `\` or `C:\...` paths in app code.
 - **Shell scripts (`.sh`):** Must use `#!/bin/bash`, LF endings, and be executable (`chmod +x`). Write bash syntax, not PowerShell.
-- **File-system case sensitivity:** Linux is case-sensitive. Import paths must match file names exactly (e.g. `Pagination` ≠ `pagination`).
+- **File-system case sensitivity:** Linux is case-sensitive. Import paths must match file names exactly (e.g. `Pagination` â‰  `pagination`).
 - **Prisma:** Keep `binaryTargets = ["native", "debian-openssl-3.0.x"]` so the Linux engine is generated.
 - **Env vars / commands:** Assume a Linux shell (bash) at runtime; avoid Windows-only commands (`rmdir /s`, `netstat -ano`, `findstr`) in code that runs on the server.
 - **Node:** Target the version in `.nvmrc`.
@@ -55,6 +55,32 @@ Use /browse from gstack for all web browsing. Never use mcp__claude-in-chrome__*
 
 Available skills: /office-hours, /plan-ceo-review, /plan-eng-review, /plan-design-review, /design-consultation, /design-shotgun, /design-html, /review, /ship, /land-and-deploy, /canary, /benchmark, /browse, /open-gstack-browser, /qa, /qa-only, /design-review, /setup-browser-cookies, /setup-deploy, /setup-gbrain, /sync-gbrain, /retro, /investigate, /document-release, /document-generate, /codex, /cso, /autoplan, /pair-agent, /careful, /freeze, /guard, /unfreeze, /gstack-upgrade, /learn, /ios-qa, /ios-fix, /ios-design-review, /ios-clean, /ios-sync, /make-pdf, /diagram, /spec.
 
+## Group Shortcuts (`/g <group>`)
+
+Use these clean shortcuts to instantly activate specialized domain personas, skills, and quality bars from `.agents/groups.json`:
+
+| Shortcut | Domain & Persona | What It Covers |
+|---|---|---|
+| **`/g ui`** | Frontend & UI/UX Designer | Tailwind CSS, responsive design, animations, accessibility (WCAG), component styling, `ui-ux-pro-max` |
+| **`/g backend`** | Backend Architect | Next.js API route handlers, business logic, validation, error handling, clean architecture |
+| **`/g db`** | Database & Prisma Architect | Prisma schemas, PostgreSQL indexing, query optimization, zero-downtime migrations |
+| **`/g mobile`** | Mobile Developer | React Native, Expo 52, React Native Paper, iOS/Android consistency |
+| **`/g ecommerce`** | E-Commerce Specialist | Orders, checkout, Stripe/PayPal, supplier catalogs, inventory lifecycle |
+| **`/g logistics`** | Logistics & Supply Chain | Customs compliance, carrier management, freight rates, shipment exceptions, reverse logistics |
+| **`/g finance`** | Finance, CFO, Accounting & Ops | All-in-one financial ops: CFO strategy, unit economics, bookkeeping, Odoo reconciliation, VAT/tariffs |
+| **`/g security`** | Security Architect | OWASP Top 10, penetration testing, prompt defense, auth & secret protection |
+| **`/g devops`** | DevOps & CI/CD | Linux Ubuntu 24.04, PM2/Nginx, LF endings, build pipelines, deployment, Docker |
+| **`/g qa`** | QA & Code Reviewer | Automated testing (Playwright/Jest), code review, diff simplification, benchmarks |
+| **`/g marketing`** | Growth & SEO Strategist | SEO/AEO optimization, China channels (Douyin, Baidu, WeChat), conversions |
+| **`/g fullstack`** | Fullstack Monorepo Lead | Cross-domain coordination across web, mobile, database, logistics, and business layers |
+
+When a prompt contains `/g <group>`, the agent immediately adopts that domain persona and executes with its specialized standards.
+
+## Execution Mode Shortcuts
+
+- **`/plan`** (CLI: `agy-plan` or `agyp`): Switch to **Planning Mode**. Creates an `implementation_plan.md` and waits for approval before editing code.
+- **`/auto`** (CLI: `agy-auto` or `agya`): Switch to **Auto-Approved / Direct Mode** (`--dangerously-skip-permissions`). Directly applies code changes without pausing for approvals.
+
 ## Skill Routing
 
 When starting work on a feature:
@@ -62,7 +88,7 @@ When starting work on a feature:
 - For product/feature planning: `/plan-ceo-review` 
 - For technical architecture: `/plan-eng-review`
 - For UI/UX work: `/plan-design-review`
-- Use `/autoplan` to run CEO → design → eng review automatically
+- Use `/autoplan` to run CEO â†’ design â†’ eng review automatically
 
 Before shipping:
 - Run `/review` on any branch with changes

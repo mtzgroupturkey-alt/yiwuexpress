@@ -48,7 +48,7 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
       match: (p: Product) => {
         const cat = (p.category || '').toLowerCase();
         const slug = (p.categorySlug || '').toLowerCase();
-        return cat.includes('bakeware') || slug.includes('bakeware');
+        return cat.includes('bakeware') || cat.includes('baking') || cat.includes('oven') || slug.includes('bakeware');
       }
     },
     {
@@ -70,21 +70,12 @@ export const FreshSupermarketSection: React.FC<FreshSupermarketSectionProps> = (
       }
     },
     {
-      id: 'appliances',
-      label: tKitchen('tabs.appliances'),
-      match: (p: Product) => {
-        const cat = (p.category || '').toLowerCase();
-        const slug = (p.categorySlug || '').toLowerCase();
-        return (cat.includes('appliance') && !cat.includes('smart')) || slug.includes('small-appliances');
-      }
-    },
-    {
       id: 'tableware',
       label: tKitchen('tabs.tableware'),
       match: (p: Product) => {
         const cat = (p.category || '').toLowerCase();
         const slug = (p.categorySlug || '').toLowerCase();
-        return cat.includes('tableware') || cat.includes('glass') || cat.includes('dinnerware') || slug.includes('tableware');
+        return cat.includes('tableware') || cat.includes('glass') || cat.includes('dinnerware') || cat.includes('plate') || cat.includes('bowl') || cat.includes('mug') || slug.includes('tableware');
       }
     },
     {

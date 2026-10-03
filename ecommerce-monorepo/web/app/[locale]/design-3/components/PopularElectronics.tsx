@@ -39,61 +39,40 @@ export const PopularElectronics: React.FC<PopularElectronicsProps> = ({
 
   const ALL_CANDIDATE_TABS = React.useMemo(() => [
     {
-      id: 'vacuums',
-      label: tElectronics('tabs.vacuums'),
-      match: (p: Product) => {
-        const cat = (p.category || '').toLowerCase();
-        const slug = (p.categorySlug || '').toLowerCase();
-        return cat.includes('vacuum') || slug.includes('robot-vacuums');
-      }
-    },
-    {
-      id: 'grills',
-      label: tElectronics('tabs.grills'),
+      id: 'smart-lighting',
+      label: 'Smart Lighting',
       match: (p: Product) => {
         const cat = (p.category || '').toLowerCase();
         const slug = (p.categorySlug || '').toLowerCase();
         const name = (p.name || '').toLowerCase();
-        return cat.includes('grill') || cat.includes('fryer') || name.includes('fryer') || name.includes('grill') || (slug.includes('smart-appliances') && (name.includes('fryer') || name.includes('grill')));
+        return cat.includes('smart') || cat.includes('bulb') || cat.includes('strip') || name.includes('smart') || name.includes('bulb') || name.includes('rgb');
       }
     },
     {
-      id: 'coffee',
-      label: tElectronics('tabs.coffee'),
+      id: 'ceiling',
+      label: 'Ceiling Lights',
       match: (p: Product) => {
         const cat = (p.category || '').toLowerCase();
-        const slug = (p.categorySlug || '').toLowerCase();
         const name = (p.name || '').toLowerCase();
-        return cat.includes('coffee') || slug.includes('coffee-machines') || name.includes('coffee') || name.includes('espresso');
+        return cat.includes('ceiling') || name.includes('ceiling') || name.includes('flush');
       }
     },
     {
-      id: 'tvs',
-      label: tElectronics('tabs.tvs'),
+      id: 'lamps',
+      label: 'Floor & Table Lamps',
       match: (p: Product) => {
         const cat = (p.category || '').toLowerCase();
-        const slug = (p.categorySlug || '').toLowerCase();
-        return cat.includes('tv') || slug.includes('smart-tvs');
-      }
-    },
-    {
-      id: 'smartphones',
-      label: tElectronics('tabs.smartphones'),
-      match: (p: Product) => {
-        const cat = (p.category || '').toLowerCase();
-        const slug = (p.categorySlug || '').toLowerCase();
         const name = (p.name || '').toLowerCase();
-        return cat.includes('phone') || slug.includes('smartphones') || name.includes('phone') || name.includes('smartphone');
+        return cat.includes('floor') || cat.includes('table') || cat.includes('work') || name.includes('lamp');
       }
     },
     {
-      id: 'laptops',
-      label: tElectronics('tabs.laptops'),
+      id: 'sensors',
+      label: 'Sensors & Hubs',
       match: (p: Product) => {
         const cat = (p.category || '').toLowerCase();
-        const slug = (p.categorySlug || '').toLowerCase();
         const name = (p.name || '').toLowerCase();
-        return cat.includes('laptop') || slug.includes('laptops') || name.includes('laptop') || name.includes('tablet');
+        return cat.includes('sensor') || cat.includes('controller') || name.includes('sensor');
       }
     },
   ], [tElectronics]);

@@ -77,18 +77,18 @@ const DEFAULT_SIDE_TOP: SideBannerItem = {
   description: 'Non-stick granite frying pans, premium stainless steel cutlery, and porcelain tableware.',
   subtag: 'From $24.50',
   btnText: 'Explore Kitchenware',
-  btnLink: '/store?department=Kitchenware & Dining',
+  btnLink: '/store?department=Kitchen & Dining',
   overlayColor: 'emerald',
 };
 
 const DEFAULT_SIDE_BOTTOM: SideBannerItem = {
   id: 'default-side-bottom',
-  tag: 'SMART LIVING HUB',
-  headline: 'Robotic Vacuums & Air Purifiers',
-  description: 'Official 2-year warranty with zero hassle replacement guarantee.',
-  subtag: 'Up to -35%',
-  btnText: 'Discover Appliances',
-  btnLink: '/store?department=Furniture & Living',
+  tag: 'SMART LIGHTING & LAMPS',
+  headline: 'Smart LED Bulbs & Designer Lamps',
+  description: 'Dimmable warm ambient lamps, RGBIC strips, and motion sensor hubs.',
+  subtag: 'From $19.99',
+  btnText: 'Discover Lighting',
+  btnLink: '/store?department=Lighting & Home Smart',
   overlayColor: 'blue',
 };
 

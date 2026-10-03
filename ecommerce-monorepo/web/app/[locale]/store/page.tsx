@@ -71,7 +71,7 @@ function StoreCatalogInner() {
   const { data: categoriesData } = useQuery({
     queryKey: ['categories', 'store-catalog', locale],
     queryFn: async () => {
-      const res = await fetch(`/api/categories?locale=${locale}&includeChildren=true`);
+      const res = await fetch(`/api/categories?parent=null&locale=${locale}&includeChildren=true`);
       if (!res.ok) return null;
       return res.json();
     },

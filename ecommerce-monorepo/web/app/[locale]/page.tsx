@@ -73,7 +73,7 @@ export default function Home() {
   const { data: categoriesData, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ['categories', 'design3-home', locale],
     queryFn: async () => {
-      const res = await fetch(`/api/categories?locale=${locale}&includeChildren=true`);
+      const res = await fetch(`/api/categories?parent=null&locale=${locale}&includeChildren=true`);
       if (!res.ok) return null;
       return res.json();
     },
@@ -172,12 +172,13 @@ export default function Home() {
       return (
         dept.includes('cookware') || dept.includes('dining') || dept.includes('kitchen') ||
         cat.includes('cookware') || cat.includes('dining') || cat.includes('kitchen') ||
-        cat.includes('pots') || cat.includes('pans') || cat.includes('bakeware') ||
-        cat.includes('cutlery') || cat.includes('whisk') || cat.includes('utensils') ||
+        cat.includes('pot') || cat.includes('pan') || cat.includes('bakeware') ||
+        cat.includes('cutlery') || cat.includes('whisk') || cat.includes('utensil') ||
+        cat.includes('plate') || cat.includes('bowl') || cat.includes('mug') ||
+        cat.includes('cup') || cat.includes('glass') || cat.includes('jar') ||
         deptSlug.includes('cookware') || deptSlug.includes('kitchen') ||
         catSlug.includes('pots-pans') || catSlug.includes('bakeware') ||
-        catSlug.includes('cutlery') || catSlug.includes('kitchen-utensils') ||
-        catSlug.includes('small-appliances')
+        catSlug.includes('cutlery') || catSlug.includes('kitchen-utensils')
       );
     });
   }, [dbProducts]);
@@ -191,14 +192,11 @@ export default function Home() {
       const catSlug = (p.categorySlug || '').toLowerCase();
       const name = (p.name || '').toLowerCase();
       return (
-        dept.includes('electronic') || dept.includes('appliance') || deptSlug.includes('electronics') ||
-        cat.includes('electronic') || cat.includes('appliance') || cat.includes('vacuum') ||
-        cat.includes('grill') || cat.includes('tv') || cat.includes('phone') ||
-        cat.includes('laptop') || cat.includes('coffee') ||
-        catSlug.includes('smart-tvs') || catSlug.includes('smartphones') ||
-        catSlug.includes('robot-vacuums') || catSlug.includes('smart-appliances') ||
-        catSlug.includes('coffee-machines') || catSlug.includes('laptops') ||
-        name.includes('headphone') || name.includes('earphone') || name.includes('tablet')
+        dept.includes('light') || dept.includes('smart') || deptSlug.includes('lighting') ||
+        cat.includes('light') || cat.includes('lamp') || cat.includes('bulb') ||
+        cat.includes('strip') || cat.includes('sensor') || cat.includes('lantern') ||
+        catSlug.includes('smart-lighting') || catSlug.includes('lamps') ||
+        name.includes('lamp') || name.includes('light') || name.includes('bulb') || name.includes('led')
       );
     });
   }, [dbProducts]);
@@ -819,10 +817,10 @@ export default function Home() {
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
               onExploreBakery={() => {
-                handleNavigateView('shop', { department: 'Kitchenware & Dining' });
+                handleNavigateView('shop', { department: 'Kitchen & Dining' });
               }}
               onExploreTech={() => {
-                handleNavigateView('shop', { department: 'Furniture & Living' });
+                handleNavigateView('shop', { department: 'Lighting & Home Smart' });
               }}
             />
 
@@ -889,11 +887,11 @@ export default function Home() {
                   setSelectedProductForPDP(product);
                   handleNavigateView('product', { product });
                 }}
-                onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchenware & Dining' })}
+                onViewAllFresh={() => handleNavigateView('shop', { department: 'Kitchen & Dining' })}
               />
             </MotionReveal>
 
-            {/* 7. Popular in Electronics & Appliances */}
+            {/* 7. Popular in Lighting & Home Smart */}
             <MotionReveal direction="up">
               <PopularElectronics
                 products={activeElectronicsProducts}
@@ -905,7 +903,7 @@ export default function Home() {
                   setSelectedProductForPDP(product);
                   handleNavigateView('product', { product });
                 }}
-                onViewAllElectronics={() => handleNavigateView('shop', { department: 'Electronics & Phones' })}
+                onViewAllElectronics={() => handleNavigateView('shop', { department: 'Lighting & Home Smart' })}
               />
             </MotionReveal>
 
