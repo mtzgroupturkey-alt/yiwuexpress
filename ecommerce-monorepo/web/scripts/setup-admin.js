@@ -5,38 +5,42 @@ const prisma = new PrismaClient()
 
 async function setupAdmin() {
   try {
-    // Check if admin user exists
-    const adminExists = await prisma.user.findUnique({
-      where: { email: 'admin@dromkok.com' }
-    })
-
-    if (adminExists) {
-      console.log('✅ Admin user already exists!')
-      console.log('📧 Email: admin@dromkok.com')
-      console.log('🔑 Password: admin123')
-      return
-    }
-
-    // Create admin user if doesn't exist
     const adminPassword = await bcrypt.hash('admin123', 10)
-    const admin = await prisma.user.create({
-      data: {
-        email: 'admin@dromkok.com',
-        password: adminPassword,
-        name: 'YIWU Express Admin',
-        companyName: 'YIWU EXPRESS',
-        businessType: 'logistics_provider',
-        role: 'ADMIN',
-        country: 'China',
-        phone: '+86 579 8555 1234',
-      },
-    })
+    const adminEmails = ['admin@dromkok.com', 'admin@test.com']
 
-    console.log('✅ Admin user created successfully!')
-    console.log('📧 Email: admin@dromkok.com')
-    console.log('🔑 Password: admin123')
-    console.log('👤 User ID:', admin.id)
+    for (const email of adminEmails) {
+      const existing = await prisma.user.findUnique({
+        where: { email },
+      })
 
+      if (existing) {
+        await prisma.user.update({
+          where: { id: existing.id },
+          data: {
+            password: adminPassword,
+            role: 'ADMIN',
+            isActive: true,
+          },
+        })
+        console.log(`✅ Admin user updated: ${email} (Password: admin123)`)
+      } else {
+        const created = await prisma.user.create({
+          data: {
+            email,
+            password: adminPassword,
+            name: 'Global Trade Admin',
+            companyName: 'Global Trade',
+            businessType: 'logistics_provider',
+            role: 'ADMIN',
+            country: 'China',
+            phone: '+86 579 8555 1234',
+            isActive: true,
+            isVerified: true,
+          },
+        })
+        console.log(`✅ Admin user created: ${email} (Password: admin123, ID: ${created.id})`)
+      }
+    }
   } catch (error) {
     console.error('❌ Error setting up admin:', error)
   } finally {

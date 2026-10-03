@@ -102,7 +102,17 @@ export function normalizeProductImageUrl(src?: string | null, category?: string 
     return normalizeProductImageUrl(pathOnly, category, name)
   }
 
-  // 4. Other absolute HTTP/HTTPS URLs (external CDNs, Unsplash, Google images, etc.)
+  // 4. Proxy external IKEA images to avoid ERR_CONNECTION_RESET, ERR_NAME_NOT_RESOLVED, and CDN hotlink blocking
+  if (/^https?:\/\/([^/]+\.)?ikea\.(com|cn)/i.test(trimmed)) {
+    return `/api/proxy/image?url=${encodeURIComponent(trimmed)}`
+  }
+
+  // 5. Already routed through /api/proxy/image
+  if (trimmed.startsWith('/api/proxy/image') || trimmed.startsWith('api/proxy/image')) {
+    return trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+  }
+
+  // 6. Other absolute HTTP/HTTPS URLs (external CDNs, Unsplash, Google images, etc.)
   if (/^https?:\/\//i.test(trimmed)) {
     if (trimmed.startsWith('http://')) {
       return trimmed.replace(/^http:\/\//i, 'https://')
@@ -110,7 +120,7 @@ export function normalizeProductImageUrl(src?: string | null, category?: string 
     return trimmed
   }
 
-  // 5. Already routed through /api/uploads/
+  // 7. Already routed through /api/uploads/
   if (trimmed.startsWith('/api/uploads/')) {
     return trimmed
   }

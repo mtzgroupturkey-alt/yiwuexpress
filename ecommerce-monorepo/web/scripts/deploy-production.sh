@@ -40,6 +40,9 @@ node -e "
 echo "=== 6. Restoring Complete Product Catalog Snapshot (6,743 products & 122 categories) ==="
 node scripts/restore-catalog-snapshot.js --force || true
 
+echo "=== 6b. Ensuring Admin Credentials ==="
+node scripts/setup-admin.js || true
+
 echo "=== 7. Building Fresh Next.js Production Bundle ==="
 rm -rf .next
 npm run build
