@@ -2381,3 +2381,19 @@ model PushDelivery {
   @@map("push_deliveries")
 }
 
+model ImageMigrationJob {
+  id             String    @id @default(cuid())
+  status         String    @default("PENDING") // PENDING | RUNNING | COMPLETED | FAILED | CANCELLED
+  totalImages    Int       @default(0)
+  processedCount Int       @default(0)
+  failedCount    Int       @default(0)
+  lastError      String?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("image_migration_jobs")
+}
+

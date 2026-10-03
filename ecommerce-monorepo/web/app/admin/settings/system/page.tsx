@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   Cog, Key, Loader2, Save, Eye, EyeOff, Globe,
   Check, Copy, Sparkles, Server, Zap, RefreshCw,
   ChevronDown, ChevronUp, AlertCircle, CheckCircle2,
   Terminal, Code2, ShieldAlert, Cpu, CheckCheck,
-  Star, ExternalLink
+  Star, ExternalLink, Download
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
@@ -254,9 +255,28 @@ export default function SystemSettingsPage() {
     kimi: false,
     cerebras: false,
   })
+  const [imageStats, setImageStats] = useState<{
+    external: number;
+    local: number;
+    lastRunAt: string | null;
+    lastRunStatus: string;
+  } | null>(null)
 
   useEffect(() => {
     fetchSettings()
+    fetch('/api/admin/images/migrate')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && typeof d.external === 'number') {
+          setImageStats({
+            external: d.external,
+            local: d.local,
+            lastRunAt: d.lastRunAt,
+            lastRunStatus: d.lastRunStatus,
+          })
+        }
+      })
+      .catch(() => {})
   }, [])
 
   const fetchSettings = async () => {
@@ -980,6 +1000,71 @@ console.log(completion.choices[0].message.content);`
               </div>
             </div>
           )}
+        </div>
+
+        {/* Product Images Migration Section */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <Download size={16} className="text-primary-600" />
+                Product Image Migration
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Download external product images, convert to WebP, and re-host locally or to Cloudflare R2.
+              </p>
+            </div>
+            <Link
+              href="/admin/tools/images"
+              className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1"
+            >
+              Open Full Tool <ExternalLink size={12} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+              <span className="text-gray-400 block font-medium">External URLs remaining</span>
+              <span className="text-lg font-bold text-amber-600">
+                {imageStats ? imageStats.external.toLocaleString() : '...'}
+              </span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+              <span className="text-gray-400 block font-medium">Local / Re-hosted URLs</span>
+              <span className="text-lg font-bold text-green-600">
+                {imageStats ? imageStats.local.toLocaleString() : '...'}
+              </span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+              <span className="text-gray-400 block font-medium">Last run</span>
+              <span className="text-xs font-semibold text-gray-700 block mt-1">
+                {imageStats?.lastRunAt ? new Date(imageStats.lastRunAt).toLocaleDateString() : 'Never'}
+              </span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+              <span className="text-gray-400 block font-medium">Progress</span>
+              <span className="text-xs font-semibold uppercase text-gray-700 block mt-1">
+                {imageStats?.lastRunStatus || '—'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <Link
+              href="/admin/tools/images"
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Eye size={14} />
+              Preview
+            </Link>
+            <Link
+              href="/admin/tools/images"
+              className="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+            >
+              <Download size={14} />
+              Download & Re-host Images
+            </Link>
+          </div>
         </div>
 
         {/* Save Bar */}

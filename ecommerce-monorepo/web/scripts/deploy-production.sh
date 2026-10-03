@@ -33,7 +33,8 @@ node -e "
     p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"geminiApiKey\" TEXT'),
     p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"primaryAiProvider\" TEXT DEFAULT \'openai\''),
     p.\$executeRawUnsafe('ALTER TABLE \"system_settings\" ADD COLUMN IF NOT EXISTS \"storeMode\" TEXT DEFAULT \'WHOLESALE\''),
-  ]).then(() => { console.log('✅ Critical database columns verified.'); process.exit(0); })
+    p.\$executeRawUnsafe('CREATE TABLE IF NOT EXISTS \"image_migration_jobs\" (\"id\" TEXT PRIMARY KEY, \"status\" TEXT NOT NULL DEFAULT \'PENDING\', \"totalImages\" INTEGER NOT NULL DEFAULT 0, \"processedCount\" INTEGER NOT NULL DEFAULT 0, \"failedCount\" INTEGER NOT NULL DEFAULT 0, \"lastError\" TEXT, \"startedAt\" TIMESTAMP(3), \"finishedAt\" TIMESTAMP(3), \"createdBy\" TEXT, \"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, \"updatedAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)'),
+  ]).then(() => { console.log('✅ Critical database columns and tables verified.'); process.exit(0); })
     .catch(e => { console.warn('Schema patch note:', e.message); process.exit(0); });
 " || true
 
