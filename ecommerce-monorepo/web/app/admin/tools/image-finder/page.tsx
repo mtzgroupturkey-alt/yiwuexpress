@@ -19,6 +19,13 @@ import {
   ChevronRight,
   Info,
   Layers,
+  Globe,
+  Trash2,
+  Plus,
+  CheckSquare,
+  Square,
+  ArrowRight,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,15 +33,19 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 interface Candidate {
-  id: string;
-  source: 'unsplash' | 'pexels' | 'pixabay' | 'manual' | 'external';
+  id?: string;
+  source: 'unsplash' | 'pexels' | 'pixabay' | 'manual' | 'external' | string;
   sourceUrl: string;
   thumbnail: string;
   title: string;
   author: string;
-  license: 'CC0' | 'free' | 'unknown' | 'copyrighted';
+  license: 'CC0' | 'free' | 'unknown' | 'copyrighted' | string;
   isCompetitor?: boolean;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ASSIGNED';
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ASSIGNED' | string;
+  width?: number;
+  height?: number;
+  productPageUrl?: string;
+  targetSite?: string;
 }
 
 interface ProductItem {
@@ -62,6 +73,17 @@ export default function ImageFinderPage() {
     hasPixabayKey: false,
   });
 
+  // Target Websites Management State
+  const [targetSites, setTargetSites] = useState<string[]>([
+    'ikea.com',
+    'amazon.com',
+    'wayfair.com',
+    'aliexpress.com',
+    'target.com',
+  ]);
+  const [activeTargetSite, setActiveTargetSite] = useState<string>('ikea.com');
+  const [newSiteInput, setNewSiteInput] = useState<string>('');
+
   // Filters
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(15);
@@ -75,6 +97,9 @@ export default function ImageFinderPage() {
   // Active Search Modal state
   const [activeProduct, setActiveProduct] = useState<ProductItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<'target_site' | 'stock' | 'direct'>('target_site');
+  const [modalTargetSite, setModalTargetSite] = useState<string>('ikea.com');
+  const [querySuggestions, setQuerySuggestions] = useState<string[]>([]);
   const [sources, setSources] = useState({
     unsplash: true,
     pexels: true,
@@ -83,9 +108,11 @@ export default function ImageFinderPage() {
   const [customUrl, setCustomUrl] = useState('');
   const [searching, setSearching] = useState(false);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+
+  // Multi-Selection state
+  const [selectedCandidateKeys, setSelectedCandidateKeys] = useState<Set<string>>(new Set());
+  const [assignmentMode, setAssignmentMode] = useState<'thumbnail' | 'gallery' | 'replace'>('thumbnail');
   const [confirmRights, setConfirmRights] = useState(false);
-  const [asThumbnail, setAsThumbnail] = useState(true);
   const [assigning, setAssigning] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -93,6 +120,67 @@ export default function ImageFinderPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTargetProductId, setUploadTargetProductId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Load saved target websites from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('yiwu_image_finder_target_sites');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTargetSites(parsed);
+          setActiveTargetSite(parsed[0]);
+        }
+      }
+    } catch {
+      // ignore storage error
+    }
+  }, []);
+
+  const saveTargetSitesToStorage = (sites: string[]) => {
+    setTargetSites(sites);
+    try {
+      localStorage.setItem('yiwu_image_finder_target_sites', JSON.stringify(sites));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleAddTargetSite = () => {
+    if (!newSiteInput.trim()) return;
+    let clean = newSiteInput.trim().toLowerCase();
+    clean = clean.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0].split('?')[0];
+    if (!clean) return;
+
+    if (!targetSites.includes(clean)) {
+      const updated = [clean, ...targetSites];
+      saveTargetSitesToStorage(updated);
+      setActiveTargetSite(clean);
+      setModalTargetSite(clean);
+      showToast('success', `Added "${clean}" to saved target websites`);
+    } else {
+      setActiveTargetSite(clean);
+      setModalTargetSite(clean);
+    }
+    setNewSiteInput('');
+  };
+
+  const handleRemoveTargetSite = (siteToRemove: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = targetSites.filter((s) => s !== siteToRemove);
+    if (updated.length === 0) {
+      showToast('error', 'Must keep at least one target website');
+      return;
+    }
+    saveTargetSitesToStorage(updated);
+    if (activeTargetSite === siteToRemove) {
+      setActiveTargetSite(updated[0]);
+    }
+    if (modalTargetSite === siteToRemove) {
+      setModalTargetSite(updated[0]);
+    }
+    showToast('success', `Removed "${siteToRemove}"`);
+  };
 
   // Debounce search input
   useEffect(() => {
@@ -143,46 +231,96 @@ export default function ImageFinderPage() {
   // Open modal for a product
   const handleOpenSearchModal = (product: ProductItem) => {
     setActiveProduct(product);
-    // Suggest clean query by stripping code prefixes like NDK or brand names
-    const cleanName = product.name
-      .replace(/^[\w\-]+ - /i, '')
-      .replace(/ - [A-Z0-9]+$/i, '')
-      .trim();
-    setSearchQuery(cleanName);
-    setCandidates(product.imageCandidates || []);
-    setSelectedCandidate(null);
+    setModalTargetSite(activeTargetSite);
+    setSearchMode('target_site');
+
+    // Extract query suggestions (model name, category + model, cleaned title)
+    const raw = product.name;
+    const clean = raw.replace(/^[\w\-]+ - /i, '').replace(/ - [A-Z0-9]+$/i, '').trim();
+
+    // Extract capitalized words or model names like APTITLIG or KALLAX
+    const tokens = raw.split(/[\s\-/,]+/).filter((w) => w.length >= 3);
+    const upperTokens = tokens.filter((w) => /^[A-Z0-9]{3,}$/.test(w));
+    const model = upperTokens[upperTokens.length - 1] || '';
+
+    const suggestions: string[] = [];
+    if (model && model.length >= 3) suggestions.push(model);
+    if (clean && !suggestions.includes(clean)) suggestions.push(clean);
+    if (product.category?.name && model) {
+      const catModel = `${product.category.name} ${model}`;
+      if (!suggestions.includes(catModel)) suggestions.push(catModel);
+    }
+    if (raw && !suggestions.includes(raw)) suggestions.push(raw);
+
+    setQuerySuggestions(suggestions);
+    const initialQuery = suggestions[0] || clean || raw;
+    setSearchQuery(initialQuery);
+
+    const initialCandidates = product.imageCandidates || [];
+    setCandidates(initialCandidates);
+    if (initialCandidates.length > 0) {
+      setSelectedCandidateKeys(new Set([initialCandidates[0].id || initialCandidates[0].sourceUrl]));
+    } else {
+      setSelectedCandidateKeys(new Set());
+    }
     setConfirmRights(false);
     setCustomUrl('');
+
+    // If no existing candidates, run auto search immediately
+    if (initialCandidates.length === 0) {
+      setTimeout(() => {
+        executeSearch(product.id, initialQuery, 'target_site', activeTargetSite);
+      }, 50);
+    }
   };
 
   // Run search
-  const handlePerformSearch = async () => {
-    if (!activeProduct) return;
+  const executeSearch = async (
+    productId: string,
+    queryStr: string,
+    mode: 'target_site' | 'stock' | 'direct',
+    targetSiteStr: string
+  ) => {
     setSearching(true);
     try {
       const activeSources = Object.entries(sources)
         .filter(([_, active]) => active)
         .map(([name]) => name);
 
+      const payload: any = {
+        productId,
+        query: queryStr,
+      };
+
+      if (mode === 'target_site') {
+        payload.targetSite = targetSiteStr;
+      } else if (mode === 'stock') {
+        payload.sources = activeSources;
+      } else if (mode === 'direct' && customUrl) {
+        payload.customUrl = customUrl.trim();
+      }
+
       const res = await fetch('/api/admin/images/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: activeProduct.id,
-          query: searchQuery,
-          sources: activeSources,
-          customUrl: customUrl ? customUrl.trim() : undefined,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
 
-      setCandidates(data.candidates || []);
-      if (data.candidates && data.candidates.length > 0) {
-        setSelectedCandidate(data.candidates[0]);
+      const found = data.candidates || [];
+      setCandidates(found);
+      if (found.length > 0) {
+        const firstKey = found[0].id || found[0].sourceUrl;
+        setSelectedCandidateKeys(new Set([firstKey]));
+      } else {
+        setSelectedCandidateKeys(new Set());
       }
-      showToast('success', `Found ${data.candidates?.length || 0} candidate images`);
+      showToast(
+        'success',
+        `Found ${found.length} images on ${mode === 'target_site' ? targetSiteStr : 'selected sources'}`
+      );
     } catch (err: any) {
       showToast('error', err.message || 'Search failed');
     } finally {
@@ -190,12 +328,53 @@ export default function ImageFinderPage() {
     }
   };
 
-  // Assign approved candidate
-  const handleAssignCandidate = async () => {
-    if (!activeProduct || !selectedCandidate) return;
+  const handlePerformSearch = () => {
+    if (!activeProduct) return;
+    executeSearch(activeProduct.id, searchQuery, searchMode, modalTargetSite);
+  };
 
-    if ((selectedCandidate.isCompetitor || selectedCandidate.license === 'copyrighted') && !confirmRights) {
-      showToast('error', 'Please confirm the copyright rights checkbox before assigning.');
+  // Toggle selection for a candidate card
+  const toggleSelectCandidate = (c: Candidate) => {
+    const key = c.id || c.sourceUrl;
+    setSelectedCandidateKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const selectAllCandidates = () => {
+    const allKeys = new Set(candidates.map((c) => c.id || c.sourceUrl));
+    setSelectedCandidateKeys(allKeys);
+  };
+
+  const clearSelection = () => {
+    setSelectedCandidateKeys(new Set());
+  };
+
+  // Check if any selected candidate is external or competitor
+  const selectedCandidatesList = candidates.filter((c) =>
+    selectedCandidateKeys.has(c.id || c.sourceUrl)
+  );
+
+  const hasCopyrightConcern = selectedCandidatesList.some(
+    (c) =>
+      c.isCompetitor ||
+      c.license === 'copyrighted' ||
+      c.source === 'external' ||
+      (c.sourceUrl && (c.sourceUrl.includes('ikea.com') || c.sourceUrl.includes('amazon.com')))
+  );
+
+  // Assign approved candidates
+  const handleAssignCandidates = async () => {
+    if (!activeProduct || selectedCandidateKeys.size === 0) return;
+
+    if (hasCopyrightConcern && !confirmRights) {
+      showToast('error', 'Please confirm the copyright rights checkbox before applying images.');
       return;
     }
 
@@ -205,17 +384,19 @@ export default function ImageFinderPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          candidateId: selectedCandidate.id,
           productId: activeProduct.id,
-          confirmRights,
-          asThumbnail,
+          candidateIds: selectedCandidatesList.map((c) => c.id).filter(Boolean),
+          candidates: selectedCandidatesList,
+          mode: assignmentMode,
+          confirmRights: true,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Assignment failed');
 
-      showToast('success', 'Image successfully assigned and converted to WebP!');
+      const count = data.assignedCount || selectedCandidatesList.length;
+      showToast('success', `Successfully saved & converted ${count} image(s) to WebP for product!`);
       setActiveProduct(null);
       fetchProducts();
     } catch (err: any) {
@@ -226,7 +407,8 @@ export default function ImageFinderPage() {
   };
 
   // Reject candidate
-  const handleRejectCandidate = async (candidateId: string) => {
+  const handleRejectCandidate = async (candidateId?: string) => {
+    if (!candidateId) return;
     try {
       const res = await fetch('/api/admin/images/reject', {
         method: 'POST',
@@ -236,10 +418,12 @@ export default function ImageFinderPage() {
       if (!res.ok) throw new Error('Failed to reject candidate');
 
       setCandidates((prev) => prev.filter((c) => c.id !== candidateId));
-      if (selectedCandidate?.id === candidateId) {
-        setSelectedCandidate(null);
-      }
-      showToast('success', 'Candidate rejected');
+      setSelectedCandidateKeys((prev) => {
+        const next = new Set(prev);
+        next.delete(candidateId);
+        return next;
+      });
+      showToast('success', 'Candidate removed');
     } catch (err: any) {
       showToast('error', err.message);
     }
@@ -256,8 +440,8 @@ export default function ImageFinderPage() {
     if (!files || files.length === 0 || !uploadTargetProductId) return;
 
     const file = files[0];
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('error', 'File size exceeds 5MB limit');
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('error', 'File size exceeds 8MB limit');
       return;
     }
 
@@ -335,13 +519,13 @@ export default function ImageFinderPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Image Finder</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Image Finder & Target Matcher</h1>
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              Safe & Legal Sourcing
+              Target Site & Legal Workflow
             </Badge>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            Search approved royalty-free sources (Unsplash, Pexels, Pixabay) to replace missing or hotlinked product images.
+            Search matching products on target sites (e.g., <strong>ikea.com</strong>) or stock libraries, review photos, and safely convert to local WebP storage.
           </p>
         </div>
 
@@ -359,29 +543,89 @@ export default function ImageFinderPage() {
         </div>
       </div>
 
-      {/* Safety and Legal Banner */}
-      <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-900 flex flex-col md:flex-row items-start md:items-center gap-3">
-        <ShieldAlert className="w-6 h-6 text-blue-600 shrink-0 mt-0.5 md:mt-0" />
-        <div className="flex-1">
-          <strong className="font-semibold">Legal & Copyright Safe Workflow:</strong> Images are sourced exclusively
-          from free royalty-free collections (Unsplash, Pexels, Pixabay) or your device. No automatic scraping of
-          competitor websites is permitted without explicit manual approval.
-        </div>
-        <div className="flex items-center gap-2 shrink-0 text-xs">
-          <span className={`px-2 py-0.5 rounded-full ${stats.hasUnsplashKey ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'}`}>
-            Unsplash {stats.hasUnsplashKey ? '● Connected' : '○ Free Demo'}
-          </span>
-          <span className={`px-2 py-0.5 rounded-full ${stats.hasPexelsKey ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-700'}`}>
-            Pexels {stats.hasPexelsKey ? '● Connected' : '○ Standby'}
-          </span>
-        </div>
-      </div>
+      {/* TARGET WEBSITES MANAGER CARD */}
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white shadow-xs">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-bold text-gray-900">Target Websites for Product Matching</span>
+                <Badge variant="secondary" className="text-[11px] bg-blue-100 text-blue-800">
+                  Active: {activeTargetSite}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-600">
+                Click a website to set it as active, or add any custom supplier/competitor website domain to search product names on it.
+              </p>
+            </div>
+
+            {/* Add Website Input */}
+            <div className="flex items-center gap-2 w-full lg:w-auto">
+              <Input
+                placeholder="e.g. ikea.com, wayfair.com, amazon.com"
+                value={newSiteInput}
+                onChange={(e) => setNewSiteInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleAddTargetSite();
+                }}
+                className="h-8 text-xs bg-white w-full sm:w-64"
+              />
+              <Button
+                size="sm"
+                onClick={handleAddTargetSite}
+                disabled={!newSiteInput.trim()}
+                className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white shrink-0 gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Save Website
+              </Button>
+            </div>
+          </div>
+
+          {/* Target Sites List Pills */}
+          <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-blue-100/80">
+            <span className="text-xs font-semibold text-gray-500 mr-1">Saved Sites:</span>
+            {targetSites.map((site) => {
+              const isActive = activeTargetSite === site;
+              return (
+                <div
+                  key={site}
+                  onClick={() => {
+                    setActiveTargetSite(site);
+                    setModalTargetSite(site);
+                    showToast('success', `Active search website set to ${site}`);
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-all border ${
+                    isActive
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-300'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50/50'
+                  }`}
+                >
+                  <Globe className={`w-3 h-3 ${isActive ? 'text-white' : 'text-blue-500'}`} />
+                  <span>{site}</span>
+                  {isActive && <Check className="w-3 h-3 ml-0.5 stroke-[3]" />}
+                  <button
+                    onClick={(e) => handleRemoveTargetSite(site, e)}
+                    className={`ml-1 p-0.5 rounded-full hover:bg-black/10 transition-colors ${
+                      isActive ? 'text-blue-200 hover:text-white' : 'text-gray-400 hover:text-rose-600'
+                    }`}
+                    title={`Remove ${site}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="shadow-xs border-gray-200">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold text-gray-500">Products Needing Images</CardDescription>
+            <CardDescription className="text-xs uppercase font-bold text-gray-500">Filtered Products</CardDescription>
             <CardTitle className="text-2xl font-black text-amber-600">{totalCount.toLocaleString()}</CardTitle>
           </CardHeader>
           <CardContent className="text-xs text-gray-500">In current filtered search view</CardContent>
@@ -474,25 +718,25 @@ export default function ImageFinderPage() {
         </CardContent>
       </Card>
 
-      {/* Product List */}
+      {/* Products Table */}
       <Card className="shadow-xs border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-700 uppercase tracking-wider">
-              <tr>
-                <th className="py-3.5 px-4">Preview</th>
-                <th className="py-3.5 px-4">Product Details</th>
-                <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4">Current Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+          <table className="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold uppercase text-gray-500 tracking-wider">
+                <th className="py-3 px-4 w-16">Image</th>
+                <th className="py-3 px-4">Product & SKU</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Image Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-gray-400">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-blue-600" />
-                    Loading product catalog...
+                  <td colSpan={5} className="py-12 text-center text-gray-500">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-600 mb-2" />
+                    Loading products...
                   </td>
                 </tr>
               ) : products.length === 0 ? (
@@ -503,7 +747,9 @@ export default function ImageFinderPage() {
                 </tr>
               ) : (
                 products.map((p) => {
-                  const hasExternal = (p.thumbnail && p.thumbnail.includes('ikea.com')) || (p.images || []).some(img => img.includes('ikea.com'));
+                  const hasExternal =
+                    (p.thumbnail && p.thumbnail.includes('ikea.com')) ||
+                    (p.images || []).some((img) => img.includes('ikea.com'));
                   const isMissing = !p.thumbnail || p.images.length === 0;
 
                   return (
@@ -535,7 +781,7 @@ export default function ImageFinderPage() {
                         <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
                           <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-[11px]">{p.sku}</span>
                           <span>•</span>
-                          <span>\${p.price.toFixed(2)}</span>
+                          <span>${p.price.toFixed(2)}</span>
                           <span>•</span>
                           <span className="text-gray-400">{p.images?.length || 0} images</span>
                         </div>
@@ -569,7 +815,7 @@ export default function ImageFinderPage() {
                         )}
                         {p.imageCandidates && p.imageCandidates.length > 0 && (
                           <div className="text-[11px] text-blue-600 font-medium mt-1">
-                            {p.imageCandidates.length} candidate(s) stored
+                            {p.imageCandidates.length} candidate(s) cached
                           </div>
                         )}
                       </td>
@@ -584,7 +830,7 @@ export default function ImageFinderPage() {
                             className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 h-8 text-xs shadow-xs"
                           >
                             <Search className="w-3.5 h-3.5" />
-                            Search Images
+                            Search on {activeTargetSite}
                           </Button>
 
                           <Button
@@ -641,177 +887,316 @@ export default function ImageFinderPage() {
         </div>
       </Card>
 
-      {/* SEARCH AND REVIEW MODAL */}
+      {/* COMPREHENSIVE SEARCH AND MULTI-IMAGE REVIEW MODAL */}
       {activeProduct && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in-50 zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[94vh] flex flex-col overflow-hidden border border-gray-200 animate-in fade-in-50 zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="p-5 border-b border-gray-200 flex items-start justify-between bg-gray-50">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-gray-900">Find Images for Product</h2>
-                  <Badge variant="outline" className="text-xs bg-white">
-                    SKU: {activeProduct.sku}
-                  </Badge>
+            <div className="p-4 sm:p-5 border-b border-gray-200 flex items-start justify-between bg-gradient-to-r from-gray-50 to-blue-50/30">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-lg bg-white border border-gray-200 overflow-hidden flex items-center justify-center shrink-0">
+                  {activeProduct.thumbnail ? (
+                    <img src={activeProduct.thumbnail} alt={activeProduct.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <ImageIcon className="w-6 h-6 text-gray-300" />
+                  )}
                 </div>
-                <p className="text-xs text-gray-600 mt-1 line-clamp-1">{activeProduct.name}</p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900">{activeProduct.name}</h2>
+                    <Badge variant="outline" className="text-xs bg-white">
+                      SKU: {activeProduct.sku}
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-gray-500 flex items-center gap-2 mt-0.5">
+                    <span>Category: <strong>{activeProduct.category?.name || 'General'}</strong></span>
+                    <span>•</span>
+                    <span>Price: <strong>${activeProduct.price.toFixed(2)}</strong></span>
+                    <span>•</span>
+                    <span>Current Gallery: {activeProduct.images?.length || 0} images</span>
+                  </div>
+                </div>
               </div>
 
               <button
                 onClick={() => setActiveProduct(null)}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200 transition-colors"
+                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              {/* Search Query & Source Controls */}
-              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-3">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search query (e.g. birch wood coffee table)"
-                      className="bg-white"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handlePerformSearch();
-                      }}
-                    />
-                  </div>
-                  <Button
-                    onClick={handlePerformSearch}
-                    disabled={searching}
-                    className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 gap-2"
-                  >
-                    <Search className={`w-4 h-4 ${searching ? 'animate-spin' : ''}`} />
-                    {searching ? 'Searching...' : 'Search Online'}
-                  </Button>
-                </div>
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+              {/* Search Configuration Section */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                {/* Mode Selector Tabs */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setSearchMode('target_site')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
+                        searchMode === 'target_site'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      Target Website ({modalTargetSite})
+                    </button>
 
-                {/* Source Selection Checkboxes */}
-                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-700 pt-1">
-                  <div className="flex items-center gap-4">
-                    <span className="font-semibold text-gray-600">Approved Sources:</span>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sources.unsplash}
-                        onChange={(e) => setSources({ ...sources, unsplash: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                      <span>Unsplash</span>
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setSearchMode('stock')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
+                        searchMode === 'stock'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Free Stock (Unsplash, Pexels)
+                    </button>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sources.pexels}
-                        onChange={(e) => setSources({ ...sources, pexels: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                      <span>Pexels</span>
-                    </label>
-
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sources.pixabay}
-                        onChange={(e) => setSources({ ...sources, pixabay: e.target.checked })}
-                        className="rounded text-blue-600 focus:ring-blue-500"
-                      />
-                      <span>Pixabay</span>
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setSearchMode('direct')}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all ${
+                        searchMode === 'direct'
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Direct Image URL
+                    </button>
                   </div>
 
-                  <span className="text-[11px] text-gray-500">Max 12 results per source</span>
-                </div>
-
-                {/* Direct Image URL input */}
-                <div className="pt-2 border-t border-blue-100 flex items-center gap-2">
-                  <Input
-                    placeholder="Or paste direct image URL (Manufacturer or partner website)..."
-                    value={customUrl}
-                    onChange={(e) => setCustomUrl(e.target.value)}
-                    className="text-xs bg-white h-8"
-                  />
-                  {customUrl && (
-                    <Button size="sm" variant="secondary" onClick={handlePerformSearch} className="h-8 text-xs shrink-0">
-                      Add URL
-                    </Button>
+                  {/* Target Site Dropdown (if in target_site mode) */}
+                  {searchMode === 'target_site' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 font-medium">Search Domain:</span>
+                      <select
+                        value={modalTargetSite}
+                        onChange={(e) => setModalTargetSite(e.target.value)}
+                        className="h-8 text-xs bg-white border border-gray-300 rounded-md px-2 font-medium text-gray-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                      >
+                        {targetSites.map((site) => (
+                          <option key={site} value={site}>
+                            {site}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
                 </div>
+
+                {/* Search Bar & Button */}
+                {searchMode !== 'direct' ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="relative flex-1">
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                        <Input
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search keyword (e.g. APTITLIG or Cutting board APTITLIG)"
+                          className="pl-9 bg-white text-sm"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handlePerformSearch();
+                          }}
+                        />
+                      </div>
+                      <Button
+                        onClick={handlePerformSearch}
+                        disabled={searching || !searchQuery.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 gap-2 font-semibold"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${searching ? 'animate-spin' : ''}`} />
+                        {searching
+                          ? 'Searching...'
+                          : searchMode === 'target_site'
+                          ? `Search on ${modalTargetSite}`
+                          : 'Search Stock Photos'}
+                      </Button>
+                    </div>
+
+                    {/* Quick Search Suggestions Pills */}
+                    {querySuggestions.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+                        <span className="text-gray-500 font-medium">Query suggestions:</span>
+                        {querySuggestions.map((sug, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setSearchQuery(sug);
+                              executeSearch(activeProduct.id, sug, searchMode, modalTargetSite);
+                            }}
+                            className={`px-2 py-0.5 rounded-md border text-[11px] transition-colors ${
+                              searchQuery === sug
+                                ? 'bg-blue-100 text-blue-800 border-blue-300 font-semibold'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+                            }`}
+                          >
+                            {sug}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Direct URL Mode */
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      placeholder="Paste direct high-resolution image URL (https://...)..."
+                      value={customUrl}
+                      onChange={(e) => setCustomUrl(e.target.value)}
+                      className="bg-white text-xs flex-1"
+                    />
+                    <Button
+                      onClick={handlePerformSearch}
+                      disabled={!customUrl.trim() || searching}
+                      className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 text-xs"
+                    >
+                      Fetch & Add Candidate
+                    </Button>
+                  </div>
+                )}
               </div>
 
-              {/* Candidates Grid */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-gray-900">
-                    Candidate Images ({candidates.length})
-                  </h3>
-                  <span className="text-xs text-gray-500">Click an image to preview and assign</span>
+              {/* CANDIDATES GALLERY & SELECTION */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-gray-900">
+                      Product Photos Found ({candidates.length})
+                    </h3>
+                    {selectedCandidateKeys.size > 0 && (
+                      <Badge className="bg-emerald-600 text-white text-xs">
+                        {selectedCandidateKeys.size} Selected
+                      </Badge>
+                    )}
+                  </div>
+
+                  {candidates.length > 0 && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={selectAllCandidates}
+                        className="h-7 text-xs gap-1 text-gray-700"
+                      >
+                        <CheckSquare className="w-3.5 h-3.5" />
+                        Select All
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={clearSelection}
+                        className="h-7 text-xs text-gray-500 hover:text-gray-800"
+                      >
+                        Clear Selection
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
-                {candidates.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                {/* Candidate Cards Grid */}
+                {searching ? (
+                  <div className="py-16 text-center border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                    <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-gray-700">
+                      Searching matching images on {modalTargetSite}...
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Retrieving product photos and dimensions</p>
+                  </div>
+                ) : candidates.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
                     <ImageIcon className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm text-gray-600 font-medium">No candidates yet</p>
+                    <p className="text-sm text-gray-600 font-medium">No candidate images found</p>
                     <p className="text-xs text-gray-400 mt-1">
-                      Click "Search Online" above to retrieve photos from free stock sources.
+                      Try searching with one of the suggestion pills or adjust the query.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[280px] overflow-y-auto p-1">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[380px] overflow-y-auto p-1">
                     {candidates.map((c, idx) => {
-                      const isSelected = selectedCandidate?.id === c.id || (selectedCandidate?.sourceUrl === c.sourceUrl);
-                      const isComp = c.isCompetitor || c.license === 'copyrighted';
+                      const key = c.id || c.sourceUrl;
+                      const isSelected = selectedCandidateKeys.has(key);
+                      const isComp =
+                        c.isCompetitor ||
+                        c.license === 'copyrighted' ||
+                        c.source === 'external' ||
+                        (c.sourceUrl && c.sourceUrl.includes('ikea.com'));
 
                       return (
                         <div
-                          key={c.id || idx}
-                          onClick={() => {
-                            setSelectedCandidate(c);
-                            if (isComp) setConfirmRights(false);
-                          }}
-                          className={`group relative rounded-xl border-2 overflow-hidden cursor-pointer transition-all bg-gray-100 aspect-square flex flex-col justify-between ${
+                          key={key || idx}
+                          onClick={() => toggleSelectCandidate(c)}
+                          className={`group relative rounded-xl border-2 overflow-hidden cursor-pointer transition-all bg-gray-100 aspect-square flex flex-col justify-between select-none ${
                             isSelected
-                              ? 'border-blue-600 ring-2 ring-blue-500/30 shadow-md'
-                              : 'border-transparent hover:border-gray-300'
+                              ? 'border-emerald-600 ring-2 ring-emerald-500/30 shadow-md'
+                              : 'border-gray-200 hover:border-blue-400'
                           }`}
                         >
                           <img
                             src={c.thumbnail || c.sourceUrl}
                             alt={c.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            loading="lazy"
                           />
 
-                          {/* Top Badges */}
+                          {/* Top Badges & Select Indicator */}
                           <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-none">
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white backdrop-blur-xs">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-black/70 text-white backdrop-blur-xs">
                               {c.source}
                             </span>
 
-                            {isComp && (
-                              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-600 text-white flex items-center gap-0.5">
-                                <AlertTriangle className="w-2.5 h-2.5" /> Copyright
-                              </span>
-                            )}
+                            <div
+                              className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
+                                isSelected
+                                  ? 'bg-emerald-600 text-white shadow-sm'
+                                  : 'bg-white/80 border border-gray-300 text-gray-400'
+                              }`}
+                            >
+                              {isSelected ? <Check className="w-4 h-4 stroke-[3]" /> : null}
+                            </div>
                           </div>
 
-                          {/* Selected Checkmark */}
-                          {isSelected && (
-                            <div className="absolute inset-0 bg-blue-600/15 flex items-center justify-center pointer-events-none">
-                              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg">
-                                <Check className="w-5 h-5 stroke-[3]" />
-                              </div>
+                          {/* Image Resolution Tag */}
+                          {c.width && c.height && (
+                            <div className="absolute top-8 left-1.5 pointer-events-none">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-black/60 text-emerald-300 backdrop-blur-xs">
+                                {c.width}×{c.height}
+                              </span>
                             </div>
                           )}
 
-                          {/* Bottom Author Tag */}
-                          <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white text-[10px] truncate">
-                            {c.author || 'Photographer'}
+                          {/* Selected Overlay border highlight */}
+                          {isSelected && (
+                            <div className="absolute inset-0 bg-emerald-600/10 pointer-events-none" />
+                          )}
+
+                          {/* Bottom info bar */}
+                          <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black/90 via-black/60 to-transparent text-white text-[11px] space-y-0.5">
+                            <p className="font-semibold line-clamp-1 leading-tight">{c.title}</p>
+                            <div className="flex items-center justify-between text-[10px] text-gray-300">
+                              <span className="truncate">{c.author || 'Product image'}</span>
+                              {c.productPageUrl && (
+                                <a
+                                  href={c.productPageUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-blue-300 hover:text-white flex items-center gap-0.5 shrink-0"
+                                  title="View on source website"
+                                >
+                                  View <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+                            </div>
                           </div>
                         </div>
                       );
@@ -820,98 +1205,105 @@ export default function ImageFinderPage() {
                 )}
               </div>
 
-              {/* Selected Candidate Review Details */}
-              {selectedCandidate && (
-                <div className="border border-gray-200 rounded-xl p-4 bg-gray-50/70 space-y-3">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="font-bold text-sm text-gray-900">{selectedCandidate.title}</h4>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Source: <strong className="capitalize">{selectedCandidate.source}</strong> • Creator: {selectedCandidate.author} • License: {selectedCandidate.license}
+              {/* ASSIGNMENT OPTIONS & COPYRIGHT CONFIRMATION */}
+              {selectedCandidateKeys.size > 0 && (
+                <div className="border border-blue-200 rounded-xl p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <div className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
+                        Assignment Mode for {selectedCandidateKeys.size} Selected Photo(s)
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Choose how the selected photos should be applied to <strong>{activeProduct.name}</strong>.
                       </p>
                     </div>
 
-                    <a
-                      href={selectedCandidate.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline flex items-center gap-1 shrink-0"
-                    >
-                      View Full Image <ExternalLink className="w-3 h-3" />
-                    </a>
+                    {/* Mode Selector */}
+                    <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-gray-200">
+                      <button
+                        type="button"
+                        onClick={() => setAssignmentMode('thumbnail')}
+                        className={`px-3 py-1 text-xs rounded-md font-semibold transition-all ${
+                          assignmentMode === 'thumbnail'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Main Thumbnail + Gallery
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAssignmentMode('gallery')}
+                        className={`px-3 py-1 text-xs rounded-md font-semibold transition-all ${
+                          assignmentMode === 'gallery'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Add to Gallery Only
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAssignmentMode('replace')}
+                        className={`px-3 py-1 text-xs rounded-md font-semibold transition-all ${
+                          assignmentMode === 'replace'
+                            ? 'bg-rose-600 text-white shadow-xs'
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        Replace All Images
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Competitor / Copyright Warning Box */}
-                  {(selectedCandidate.isCompetitor || selectedCandidate.license === 'copyrighted') && (
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-2">
+                  {/* Copyright Warning Box (Mandatory Safety Rule) */}
+                  {hasCopyrightConcern && (
+                    <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 space-y-2">
                       <div className="flex items-center gap-2 font-bold text-amber-800">
-                        <AlertTriangle className="w-4 h-4 text-amber-600" />
-                        Potential Copyright Warning
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                        Copyright & Legal Notice
                       </div>
-                      <p>
-                        This image comes from a commercial competitor or external source. You are responsible for ensuring
-                        you have legal rights or permission to use it for this product.
+                      <p className="leading-relaxed">
+                        ⚠️ One or more selected images originate from external commercial websites (e.g. <strong>{modalTargetSite}</strong>).
+                        You are responsible for ensuring you have the legal right or permission to use these images for your product catalog.
                       </p>
+
+                      <label className="flex items-center gap-2 cursor-pointer pt-1 font-semibold text-gray-900">
+                        <input
+                          type="checkbox"
+                          checked={confirmRights}
+                          onChange={(e) => setConfirmRights(e.target.checked)}
+                          className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                        />
+                        <span>I confirm that I have the legal right or permission to use these images.</span>
+                      </label>
                     </div>
                   )}
-
-                  {/* Confirmation Checkbox */}
-                  <div className="pt-2 border-t border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-800">
-                      <input
-                        type="checkbox"
-                        checked={confirmRights}
-                        onChange={(e) => setConfirmRights(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
-                      />
-                      <span className="font-medium">
-                        I confirm that I have the legal right or permission to use this image.
-                      </span>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-800">
-                      <input
-                        type="checkbox"
-                        checked={asThumbnail}
-                        onChange={(e) => setAsThumbnail(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
-                      />
-                      <span>Set as primary thumbnail</span>
-                    </label>
-                  </div>
                 </div>
               )}
             </div>
 
             {/* Modal Footer */}
             <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
-              <Button variant="ghost" onClick={() => setActiveProduct(null)}>
+              <Button variant="ghost" size="sm" onClick={() => setActiveProduct(null)}>
                 Cancel
               </Button>
 
               <div className="flex items-center gap-2">
-                {selectedCandidate && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRejectCandidate(selectedCandidate.id)}
-                    className="text-gray-600 text-xs"
-                  >
-                    Reject Candidate
-                  </Button>
-                )}
-
                 <Button
-                  onClick={handleAssignCandidate}
+                  onClick={handleAssignCandidates}
                   disabled={
-                    !selectedCandidate ||
+                    selectedCandidateKeys.size === 0 ||
                     assigning ||
-                    ((selectedCandidate.isCompetitor || selectedCandidate.license === 'copyrighted') && !confirmRights)
+                    (hasCopyrightConcern && !confirmRights)
                   }
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-semibold text-xs"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 font-semibold text-xs shadow-sm h-9 px-4"
                 >
                   <CheckCircle2 className={`w-4 h-4 ${assigning ? 'animate-spin' : ''}`} />
-                  {assigning ? 'Downloading & Assigning...' : 'Assign Image to Product'}
+                  {assigning
+                    ? 'Downloading & Converting to WebP...'
+                    : `Apply ${selectedCandidateKeys.size} Image${selectedCandidateKeys.size > 1 ? 's' : ''} to Product`}
                 </Button>
               </div>
             </div>

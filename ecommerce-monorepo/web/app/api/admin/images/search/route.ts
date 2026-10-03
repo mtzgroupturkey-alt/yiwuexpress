@@ -7,6 +7,7 @@ import {
   searchUnsplash,
   searchPexels,
   searchPixabay,
+  searchTargetWebsite,
   isCompetitorUrl,
   checkRateLimit,
   CandidateResult,
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { productId, query, sources = ['unsplash'], customUrl } = body;
+    const { productId, query, sources = ['unsplash'], targetSite, customUrl } = body;
 
     if (!productId) {
       return NextResponse.json({ error: 'productId is required' }, { status: 400 });
@@ -58,14 +59,21 @@ export async function POST(request: NextRequest) {
     // Search requested sources in parallel
     const searchTasks: Promise<CandidateResult[]>[] = [];
 
-    if (sources.includes('unsplash')) {
-      searchTasks.push(searchUnsplash(searchQuery));
+    // If targetSite is specified, search the target website
+    if (targetSite && typeof targetSite === 'string' && targetSite.trim()) {
+      searchTasks.push(searchTargetWebsite(searchQuery, targetSite.trim()));
     }
-    if (sources.includes('pexels')) {
-      searchTasks.push(searchPexels(searchQuery));
-    }
-    if (sources.includes('pixabay')) {
-      searchTasks.push(searchPixabay(searchQuery));
+
+    if (Array.isArray(sources)) {
+      if (sources.includes('unsplash')) {
+        searchTasks.push(searchUnsplash(searchQuery));
+      }
+      if (sources.includes('pexels')) {
+        searchTasks.push(searchPexels(searchQuery));
+      }
+      if (sources.includes('pixabay')) {
+        searchTasks.push(searchPixabay(searchQuery));
+      }
     }
 
     const results = await Promise.all(searchTasks);

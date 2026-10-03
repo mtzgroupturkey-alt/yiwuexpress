@@ -11,6 +11,10 @@ export interface CandidateResult {
   license: 'CC0' | 'free' | 'unknown' | 'copyrighted';
   isCompetitor?: boolean;
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ASSIGNED';
+  width?: number;
+  height?: number;
+  productPageUrl?: string;
+  targetSite?: string;
 }
 
 const COMPETITOR_DOMAINS = [
@@ -220,7 +224,85 @@ function getCuratedFallbackCandidates(query: string, source: 'unsplash'): Candid
   ];
 }
 
-// 4. Download, optimize to WebP, and assign to product
+// 4. Target Website Search (e.g., ikea.com, amazon.com, supplier sites)
+export async function searchTargetWebsite(query: string, targetSite: string): Promise<CandidateResult[]> {
+  try {
+    let cleanDomain = targetSite.trim().toLowerCase();
+    cleanDomain = cleanDomain.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0].split('?')[0];
+    if (!cleanDomain) return [];
+
+    const cleanQuery = query.replace(/[^\w\s\u00C0-\u024F\u4E00-\u9FFF-]/gi, ' ').trim();
+    if (!cleanQuery) return [];
+
+    const siteQuery = `site:${cleanDomain} ${cleanQuery}`;
+
+    // Obtain token (vqd) from DuckDuckGo
+    const tokenUrl = `https://duckduckgo.com/?q=${encodeURIComponent(siteQuery)}`;
+    const tokenRes = await fetch(tokenUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      next: { revalidate: 1800 },
+    });
+
+    if (!tokenRes.ok) {
+      console.warn(`[ImageSearch] Failed to fetch search token for ${cleanDomain}: HTTP ${tokenRes.status}`);
+      return [];
+    }
+
+    const html = await tokenRes.text();
+    const vqdMatch = html.match(/vqd=[\x22\x27]?([0-9-]+)/);
+    const vqd = vqdMatch ? vqdMatch[1] : null;
+
+    if (!vqd) {
+      console.warn(`[ImageSearch] Could not extract vqd token for domain ${cleanDomain}`);
+      return [];
+    }
+
+    // Fetch images from DuckDuckGo image JSON API
+    const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(siteQuery)}&vqd=${encodeURIComponent(vqd)}`;
+    const imgRes = await fetch(imgUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        Accept: 'application/json, text/javascript, */*; q=0.01',
+        Referer: 'https://duckduckgo.com/',
+      },
+    });
+
+    if (!imgRes.ok) {
+      console.warn(`[ImageSearch] Failed to fetch image results for ${cleanDomain}: HTTP ${imgRes.status}`);
+      return [];
+    }
+
+    const data = await imgRes.json();
+    const results: any[] = data.results || [];
+    const isCompetitor = isCompetitorUrl(cleanDomain) || true;
+
+    return results.slice(0, 36).map((r) => ({
+      source: 'external',
+      sourceUrl: r.image,
+      thumbnail: r.thumbnail || r.image,
+      title: r.title || `${cleanQuery} on ${cleanDomain}`,
+      author: cleanDomain,
+      license: 'copyrighted',
+      isCompetitor: true,
+      status: 'PENDING',
+      width: r.width,
+      height: r.height,
+      productPageUrl: r.url,
+      targetSite: cleanDomain,
+    }));
+  } catch (err: any) {
+    console.error(`[ImageSearch] Target website search failed for ${targetSite}:`, err.message);
+    return [];
+  }
+}
+
+// 5. Download, optimize to WebP, and assign to product
 export async function downloadAndAssignCandidate(params: {
   candidateId?: string;
   productId: string;
@@ -324,3 +406,144 @@ export async function downloadAndAssignCandidate(params: {
 
   return { success: true, newUrl };
 }
+
+// 6. Download and assign multiple candidates to product
+export async function downloadAndAssignMultipleCandidates(params: {
+  candidates: Array<{
+    candidateId?: string;
+    sourceUrl: string;
+    source: string;
+    author?: string;
+    license?: string;
+  }>;
+  productId: string;
+  confirmRights: boolean;
+  mode: 'thumbnail' | 'gallery' | 'replace';
+  adminEmail: string;
+}): Promise<{ success: boolean; newUrls: string[]; errors: string[] }> {
+  const { candidates, productId, confirmRights, mode = 'thumbnail', adminEmail } = params;
+
+  if (!candidates || candidates.length === 0) {
+    throw new Error('No candidates provided for assignment');
+  }
+
+  // Fetch product
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { id: true, sku: true, thumbnail: true, images: true },
+  });
+
+  if (!product) {
+    throw new Error(`Product not found [${productId}]`);
+  }
+
+  const newUrls: string[] = [];
+  const errors: string[] = [];
+
+  for (const c of candidates) {
+    try {
+      const isCompetitor = isCompetitorUrl(c.sourceUrl);
+      if ((isCompetitor || c.license === 'copyrighted') && !confirmRights) {
+        throw new Error('Copyright confirmation is required before downloading this image.');
+      }
+
+      // Download
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 20000);
+      const res = await fetch(c.sourceUrl, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        },
+      });
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        errors.push(`Failed to download ${c.sourceUrl}: HTTP ${res.status}`);
+        continue;
+      }
+
+      const arrayBuffer = await res.arrayBuffer();
+      const rawBuffer = Buffer.from(arrayBuffer);
+      const webpBuffer = await convertToWebP(rawBuffer);
+      const filename = generateImageFilename(product.sku || 'prod', c.sourceUrl);
+      const newUrl = await saveToStorage(webpBuffer, filename);
+      newUrls.push(newUrl);
+
+      // Update candidate status
+      if (c.candidateId) {
+        await prisma.imageSearchCandidate
+          .update({
+            where: { id: c.candidateId },
+            data: {
+              status: 'ASSIGNED',
+              reviewedBy: adminEmail,
+              reviewedAt: new Date(),
+            },
+          })
+          .catch(() => null);
+      }
+
+      // Record audit log
+      await prisma.imageSearchLog
+        .create({
+          data: {
+            productId,
+            candidateId: c.candidateId || null,
+            source: c.source,
+            action: 'approve_multi',
+            adminUser: adminEmail,
+            confirmedRights: confirmRights,
+            details: {
+              sourceUrl: c.sourceUrl,
+              newUrl,
+              mode,
+              author: c.author || null,
+              license: c.license || (isCompetitor ? 'copyrighted' : 'free'),
+              isCompetitor,
+              timestamp: new Date().toISOString(),
+            },
+          },
+        })
+        .catch(() => null);
+    } catch (err: any) {
+      errors.push(err.message || `Error processing ${c.sourceUrl}`);
+    }
+  }
+
+  if (newUrls.length === 0) {
+    throw new Error(`Failed to assign any images. Errors: ${errors.join('; ')}`);
+  }
+
+  // Update product database record based on mode
+  const existingImages = product.images || [];
+  let updatedImages: string[] = [];
+  let newThumbnail = product.thumbnail;
+
+  if (mode === 'replace') {
+    newThumbnail = newUrls[0];
+    updatedImages = newUrls;
+  } else if (mode === 'gallery') {
+    if (!newThumbnail) newThumbnail = newUrls[0];
+    const set = new Set([...existingImages, ...newUrls]);
+    updatedImages = Array.from(set);
+  } else {
+    // 'thumbnail' mode: 1st is thumbnail and added to images
+    newThumbnail = newUrls[0];
+    const filteredOld = existingImages.filter((u) => !newUrls.includes(u) && !u.includes('ikea.com'));
+    updatedImages = [...newUrls, ...filteredOld];
+  }
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: {
+      thumbnail: newThumbnail,
+      images: updatedImages,
+    },
+  });
+
+  return { success: true, newUrls, errors };
+}
+

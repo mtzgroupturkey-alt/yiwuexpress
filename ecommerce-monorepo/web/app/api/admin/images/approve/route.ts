@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import {
   downloadAndAssignCandidate,
+  downloadAndAssignMultipleCandidates,
   checkRateLimit,
   isCompetitorUrl,
 } from '@/lib/storage/image-search-service';
@@ -34,15 +35,54 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { candidateId, productId, confirmRights = false, asThumbnail = true } = body;
+    const {
+      candidateId,
+      candidateIds,
+      candidates: rawCandidates,
+      productId,
+      mode = 'thumbnail', // 'thumbnail' | 'gallery' | 'replace'
+      confirmRights = false,
+      asThumbnail = true,
+    } = body;
 
-    let targetProductId = productId;
-    let sourceUrl = '';
-    let source = 'unknown';
-    let author = '';
-    let license = 'free';
+    // Collect list of items to process
+    let itemsToProcess: Array<{
+      candidateId?: string;
+      productId: string;
+      sourceUrl: string;
+      source: string;
+      author?: string;
+      license?: string;
+    }> = [];
 
-    if (candidateId) {
+    // Case 1: multiple candidateIds provided
+    if (Array.isArray(candidateIds) && candidateIds.length > 0) {
+      const dbCandidates = await prisma.imageSearchCandidate.findMany({
+        where: { id: { in: candidateIds } },
+      });
+
+      itemsToProcess = dbCandidates.map((c) => ({
+        candidateId: c.id,
+        productId: productId || c.productId,
+        sourceUrl: c.sourceUrl,
+        source: c.source,
+        author: c.author || '',
+        license: c.license || 'free',
+      }));
+    }
+    // Case 2: raw candidate objects provided
+    else if (Array.isArray(rawCandidates) && rawCandidates.length > 0) {
+      itemsToProcess = rawCandidates.map((c) => ({
+        candidateId: c.candidateId || c.id,
+        productId: productId || c.productId,
+        sourceUrl: c.sourceUrl,
+        source: c.source || 'external',
+        author: c.author || '',
+        license: c.license || 'unknown',
+      }));
+    }
+    // Case 3: single candidateId provided
+    else if (candidateId) {
       const candidate = await prisma.imageSearchCandidate.findUnique({
         where: { id: candidateId },
       });
@@ -51,26 +91,47 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Candidate image not found' }, { status: 404 });
       }
 
-      targetProductId = candidate.productId;
-      sourceUrl = candidate.sourceUrl;
-      source = candidate.source;
-      author = candidate.author || '';
-      license = candidate.license || 'free';
-    } else if (body.sourceUrl && body.productId) {
-      targetProductId = body.productId;
-      sourceUrl = body.sourceUrl;
-      source = body.source || 'manual';
-      author = body.author || 'Manual';
-      license = body.license || 'unknown';
+      itemsToProcess = [
+        {
+          candidateId: candidate.id,
+          productId: productId || candidate.productId,
+          sourceUrl: candidate.sourceUrl,
+          source: candidate.source,
+          author: candidate.author || '',
+          license: candidate.license || 'free',
+        },
+      ];
+    }
+    // Case 4: direct sourceUrl & productId
+    else if (body.sourceUrl && productId) {
+      itemsToProcess = [
+        {
+          productId,
+          sourceUrl: body.sourceUrl,
+          source: body.source || 'manual',
+          author: body.author || 'Manual',
+          license: body.license || 'unknown',
+        },
+      ];
     } else {
       return NextResponse.json(
-        { error: 'Either candidateId or (productId and sourceUrl) is required' },
+        { error: 'Either candidateId, candidateIds, or (productId and sourceUrl) is required' },
         { status: 400 }
       );
     }
 
-    const isCompetitor = isCompetitorUrl(sourceUrl);
-    if ((isCompetitor || license === 'copyrighted') && !confirmRights) {
+    if (itemsToProcess.length === 0) {
+      return NextResponse.json({ error: 'No valid images found to process' }, { status: 400 });
+    }
+
+    const targetProductId = itemsToProcess[0].productId;
+
+    // Legal safety check across all items
+    const hasCompetitorOrCopyrighted = itemsToProcess.some(
+      (item) => isCompetitorUrl(item.sourceUrl) || item.license === 'copyrighted'
+    );
+
+    if (hasCompetitorOrCopyrighted && !confirmRights) {
       return NextResponse.json(
         {
           error:
@@ -81,15 +142,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Process multi or single assignment
+    if (itemsToProcess.length > 1) {
+      const multiResult = await downloadAndAssignMultipleCandidates({
+        candidates: itemsToProcess,
+        productId: targetProductId,
+        confirmRights: Boolean(confirmRights),
+        mode: mode as 'thumbnail' | 'gallery' | 'replace',
+        adminEmail: admin.email || 'admin',
+      });
+
+      return NextResponse.json({
+        success: true,
+        newUrls: multiResult.newUrls,
+        assignedCount: multiResult.newUrls.length,
+        errors: multiResult.errors,
+        rateRemaining: rate.remaining,
+      });
+    }
+
+    // Single image assignment
+    const single = itemsToProcess[0];
     const result = await downloadAndAssignCandidate({
-      candidateId,
+      candidateId: single.candidateId,
       productId: targetProductId,
-      sourceUrl,
-      source,
-      author,
-      license,
+      sourceUrl: single.sourceUrl,
+      source: single.source,
+      author: single.author,
+      license: single.license,
       confirmRights: Boolean(confirmRights),
-      asThumbnail: Boolean(asThumbnail),
+      asThumbnail: mode === 'gallery' ? false : Boolean(asThumbnail),
       adminEmail: admin.email || 'admin',
     });
 
