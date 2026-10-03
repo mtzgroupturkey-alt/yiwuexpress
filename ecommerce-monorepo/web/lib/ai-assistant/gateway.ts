@@ -4,6 +4,7 @@ if (typeof dns.setDefaultResultOrder === 'function') {
   dns.setDefaultResultOrder('ipv4first')
 }
 import { getApiKeys, ApiKeys, getDefaultOpenRouterFallbackKey } from '@/lib/api-keys'
+import { callZaiChatCompletion, formatZaiErrorMessage } from '@/lib/ai/providers/zai'
 import { AdminChatLocale, PendingAction } from './types'
 
 export interface AssistantCallParams {
@@ -334,6 +335,54 @@ export async function generateAssistantResponse(
 
   const providerErrors: string[] = []
 
+  // Helper to call Z.ai (GLM) provider adapter
+  const tryZai = async (): Promise<AssistantResponse | null> => {
+    if (!apiKeys.zaiApiKey) return null
+    const zaiKey = apiKeys.zaiApiKey.trim()
+    const baseUrl = apiKeys.zaiBaseUrl || 'https://api.z.ai/api/paas/v4'
+    const modelsToTry = [
+      apiKeys.zaiModel && apiKeys.zaiModel.trim() ? apiKeys.zaiModel.trim() : 'glm-4.7-flash',
+      'glm-4.7-flash',
+      'glm-4.5-flash',
+    ].filter((m, idx, arr) => arr.indexOf(m) === idx)
+
+    for (const model of modelsToTry) {
+      try {
+        const result = await callZaiChatCompletion({
+          apiKey: zaiKey,
+          baseUrl,
+          model,
+          messages: fullMessages as any,
+          temperature: 0.2,
+          max_tokens: 4000,
+          timeoutMs: 25_000,
+        })
+        if (result.content && result.content.trim()) {
+          const { cleanText, pendingAction } = extractActionProposal(result.content)
+          return {
+            content: cleanText || result.content,
+            pendingAction,
+            providerUsed: 'Z.ai (GLM)',
+            modelUsed: model,
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[AI Assistant] Z.ai (${model}) call failed:`, err?.message)
+        const errMsg = err?.message || formatZaiErrorMessage(500, 'Connection failed')
+        if (!providerErrors.includes(errMsg)) {
+          providerErrors.push(errMsg)
+        }
+      }
+    }
+    return null
+  }
+
+  // If Z.ai is configured as the primary provider, invoke it first
+  if (apiKeys.primaryAiProvider === 'zai') {
+    const zaiResponse = await tryZai()
+    if (zaiResponse) return zaiResponse
+  }
+
   // Provider 1: OpenAI-Compatible Gateway (Primary from SystemSettings)
   if (apiKeys.openaiApiKey) {
     const rawKey = apiKeys.openaiApiKey.trim()
@@ -344,6 +393,7 @@ export async function generateAssistantResponse(
     const isOpenRouter = baseUrl.includes('openrouter.ai') || rawKey.startsWith('sk-or-')
     const isDeepSeek = baseUrl.includes('deepseek')
     const isQwen = baseUrl.includes('dashscope') || baseUrl.includes('aliyuncs') || baseUrl.includes('modelstudio') || rawKey.startsWith('sk-ws-')
+    const isZai = baseUrl.includes('z.ai') || baseUrl.includes('bigmodel.cn')
 
     // Intelligently select candidate models based on provider so models don't 404
     const candidateModels: string[] = isOpenRouter
@@ -363,6 +413,12 @@ export async function generateAssistantResponse(
           'qwen-flash',
           'qwen-plus',
           'qwen-turbo',
+        ].filter((m, idx, arr) => arr.indexOf(m) === idx)
+      : isZai
+      ? [
+          primaryModel && !primaryModel.startsWith('auto/') ? primaryModel : 'glm-4.7-flash',
+          'glm-4.7-flash',
+          'glm-4.5-flash',
         ].filter((m, idx, arr) => arr.indexOf(m) === idx)
       : [
           'agy/gemini-3.7-flash-low',
@@ -405,7 +461,7 @@ export async function generateAssistantResponse(
             return {
               content: cleanText || rawContent,
               pendingAction,
-              providerUsed: isQwen ? 'Alibaba Model Studio' : 'OpenAI-Compatible Gateway',
+              providerUsed: isZai ? 'Z.ai (GLM)' : isQwen ? 'Alibaba Model Studio' : 'OpenAI-Compatible Gateway',
               modelUsed: model,
             }
           }
@@ -529,7 +585,13 @@ export async function generateAssistantResponse(
     }
   }
 
-  // Provider 4: OpenRouter Fallback
+  // Provider 4: Z.ai Direct (GLM Flash) Fallback
+  if (apiKeys.primaryAiProvider !== 'zai' && apiKeys.zaiApiKey) {
+    const zaiFallback = await tryZai()
+    if (zaiFallback) return zaiFallback
+  }
+
+  // Provider 5: OpenRouter Fallback
   const openrouterKey = (
     apiKeys.openrouterApiKey ||
     getDefaultOpenRouterFallbackKey()
@@ -682,9 +744,14 @@ export async function generateAssistantResponse(
     }
   }
 
+  const zaiError = providerErrors.find((e) => e.startsWith('Z.ai returned HTTP') || e.includes('Z.ai'))
+  if (zaiError && (apiKeys.primaryAiProvider === 'zai' || !apiKeys.openaiApiKey)) {
+    throw new Error(zaiError)
+  }
+
   const errorSummary = providerErrors.length > 0
-    ? `AI Gateway error details:\n• ${providerErrors.join('\n• ')}\n\n💡 Solution: If using G-CAT, top up your wallet at https://gcat.ir/portal/dashboard/wallet. For China-hosted servers, configure a domestic provider (DeepSeek / Alibaba Qwen) in Admin > Settings > System.`
-    : 'No reachable AI Gateway provider found. Please verify your AI API Key in Admin > Settings > System.'
+    ? `AI service unavailable. Please configure a working provider in Admin > Settings.\n\n${providerErrors.join('\n\n')}`
+    : 'AI service unavailable. Please configure a working provider in Admin > Settings.'
 
   throw new Error(errorSummary)
 }

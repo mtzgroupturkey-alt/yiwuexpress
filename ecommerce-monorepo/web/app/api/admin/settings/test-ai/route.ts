@@ -33,6 +33,10 @@ export async function POST(request: NextRequest) {
       ? model.trim()
       : 'auto/best-chat';
 
+    const isZai = cleanBaseUrl.includes('z.ai') || cleanBaseUrl.includes('bigmodel.cn');
+    const isFreeModel = targetModel.includes('flash') || targetModel.includes(':free') || targetModel === 'qwen-max' || targetModel === 'qwen-flash';
+    const freeStatus = isFreeModel ? 'Free Model' : 'Standard Tier';
+
     const startTime = Date.now();
 
     const response = await fetch(endpoint, {
@@ -44,7 +48,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: targetModel,
         messages: [
-          { role: 'user', content: 'Test connection from Yiwu Express. Respond with "Connection Successful".' }
+          { role: 'user', content: 'hello' }
         ],
         max_tokens: 25,
         temperature: 0.1,
@@ -63,7 +67,9 @@ export async function POST(request: NextRequest) {
       } catch {}
 
       let userFriendlyError = '';
-      if (response.status === 402 || errorText.includes('insufficient_quota') || errorText.includes('wallet balance')) {
+      if (isZai) {
+        userFriendlyError = `Z.ai returned HTTP ${response.status}${parsedErrorMsg ? ` (${parsedErrorMsg})` : ''}\nCheck your API key in Admin > Settings > System\nFree models: glm-4.7-flash, glm-4.5-flash`;
+      } else if (response.status === 402 || errorText.includes('insufficient_quota') || errorText.includes('wallet balance')) {
         userFriendlyError = `Gateway returned 402 (Payment Required): ${parsedErrorMsg || 'Insufficient wallet balance'}. Please deposit funds into your wallet at your provider portal, or switch to OpenRouter / Gemini.`;
       } else if (response.status === 401) {
         userFriendlyError = `Invalid API Key (HTTP 401 Unauthorized): ${parsedErrorMsg || 'Please verify and re-enter your key.'}`;
@@ -90,8 +96,10 @@ export async function POST(request: NextRequest) {
       status: response.status,
       latencyMs,
       model: targetModel,
+      isFree: isFreeModel,
+      freeStatus,
       reply: replyText,
-      message: `Gateway connection verified in ${latencyMs}ms with model "${targetModel}".`,
+      message: `Connection verified in ${latencyMs}ms with model "${targetModel}" (${freeStatus}).`,
     });
   } catch (error: any) {
     console.error('Error testing AI connection:', error);

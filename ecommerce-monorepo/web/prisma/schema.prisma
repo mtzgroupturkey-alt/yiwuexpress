@@ -224,6 +224,11 @@ model SystemSettings {
   kimiApiKey        String?
   cerebrasApiKey    String?
 
+  // Z.ai (Zhipu GLM) Provider Settings
+  zaiApiKey         String?
+  zaiBaseUrl        String? @default("https://api.z.ai/api/paas/v4")
+  zaiModel          String? @default("glm-4.7-flash")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

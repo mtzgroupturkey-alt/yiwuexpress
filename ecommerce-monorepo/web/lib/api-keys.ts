@@ -11,6 +11,9 @@ export interface ApiKeys {
   qwenApiKey?: string | null;
   kimiApiKey?: string | null;
   cerebrasApiKey?: string | null;
+  zaiApiKey?: string | null;
+  zaiBaseUrl?: string | null;
+  zaiModel?: string | null;
 }
 
 export function getDefaultOpenRouterFallbackKey(): string {
@@ -27,7 +30,7 @@ export async function getApiKeys(): Promise<ApiKeys> {
     // Try to get from database first with safe field selection
     let settings: any = null;
     try {
-      settings = await prisma.systemSettings.findFirst({
+      settings = await (prisma.systemSettings as any).findFirst({
         select: {
           openaiApiKey: true,
           openaiBaseUrl: true,
@@ -39,11 +42,14 @@ export async function getApiKeys(): Promise<ApiKeys> {
           qwenApiKey: true,
           kimiApiKey: true,
           cerebrasApiKey: true,
+          zaiApiKey: true,
+          zaiBaseUrl: true,
+          zaiModel: true,
         },
       });
     } catch (columnErr) {
       // Fallback if some newer provider columns are missing in DB
-      settings = await prisma.systemSettings.findFirst({
+      settings = await (prisma.systemSettings as any).findFirst({
         select: {
           openaiApiKey: true,
           openaiBaseUrl: true,
@@ -64,6 +70,9 @@ export async function getApiKeys(): Promise<ApiKeys> {
         qwenApiKey: settings.qwenApiKey || process.env.QWEN_API_KEY,
         kimiApiKey: settings.kimiApiKey || process.env.KIMI_API_KEY,
         cerebrasApiKey: settings.cerebrasApiKey || process.env.CEREBRAS_API_KEY,
+        zaiApiKey: settings.zaiApiKey || process.env.ZAI_API_KEY,
+        zaiBaseUrl: settings.zaiBaseUrl || process.env.ZAI_BASE_URL || 'https://api.z.ai/api/paas/v4',
+        zaiModel: settings.zaiModel || process.env.ZAI_MODEL || 'glm-4.7-flash',
       };
     }
   } catch (error) {
@@ -82,5 +91,8 @@ export async function getApiKeys(): Promise<ApiKeys> {
     qwenApiKey: process.env.QWEN_API_KEY,
     kimiApiKey: process.env.KIMI_API_KEY,
     cerebrasApiKey: process.env.CEREBRAS_API_KEY,
+    zaiApiKey: process.env.ZAI_API_KEY,
+    zaiBaseUrl: process.env.ZAI_BASE_URL || 'https://api.z.ai/api/paas/v4',
+    zaiModel: process.env.ZAI_MODEL || 'glm-4.7-flash',
   };
 }

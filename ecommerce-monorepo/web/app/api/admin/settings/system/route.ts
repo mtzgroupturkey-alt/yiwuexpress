@@ -18,6 +18,9 @@ export async function GET() {
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "qwenApiKey" TEXT'),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "kimiApiKey" TEXT'),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "cerebrasApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiBaseUrl" TEXT DEFAULT \'https://api.z.ai/api/paas/v4\''),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiModel" TEXT DEFAULT \'glm-4.7-flash\''),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "primaryAiProvider" TEXT DEFAULT \'openai\''),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "storeMode" TEXT DEFAULT \'WHOLESALE\''),
         ]);
@@ -87,6 +90,9 @@ export async function PUT(request: NextRequest) {
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "qwenApiKey" TEXT'),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "kimiApiKey" TEXT'),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "cerebrasApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiApiKey" TEXT'),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiBaseUrl" TEXT DEFAULT \'https://api.z.ai/api/paas/v4\''),
+          prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiModel" TEXT DEFAULT \'glm-4.7-flash\''),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "primaryAiProvider" TEXT DEFAULT \'openai\''),
           prisma.$executeRawUnsafe('ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "storeMode" TEXT DEFAULT \'WHOLESALE\''),
         ]);

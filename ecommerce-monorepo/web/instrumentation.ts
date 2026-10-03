@@ -52,6 +52,15 @@ export async function register() {
         prisma.$executeRawUnsafe(
           `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "storeMode" TEXT DEFAULT 'WHOLESALE'`
         ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiApiKey" TEXT`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiBaseUrl" TEXT DEFAULT 'https://api.z.ai/api/paas/v4'`
+        ),
+        prisma.$executeRawUnsafe(
+          `ALTER TABLE "system_settings" ADD COLUMN IF NOT EXISTS "zaiModel" TEXT DEFAULT 'glm-4.7-flash'`
+        ),
       ])
       await prisma.$disconnect()
       console.log('[Startup] DB schema patches applied successfully.')

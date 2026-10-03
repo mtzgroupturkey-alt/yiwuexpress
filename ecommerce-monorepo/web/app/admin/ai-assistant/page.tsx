@@ -154,14 +154,17 @@ export default function AiAssistantPage() {
       }
     } catch (err: any) {
       console.error('[AI Assistant Chat UI Error]:', err)
+      const errorText = err.message || 'Failed to process request. Please check AI Gateway settings.'
       const errorMessage: ChatMessage = {
         id: `msg_${Date.now()}_err`,
         role: 'assistant',
-        content: `⚠️ **Error**: ${err.message || 'Failed to process request. Please check AI Gateway settings.'}`,
+        content: errorText.startsWith('Z.ai returned HTTP')
+          ? errorText
+          : `⚠️ **Error**: ${errorText}`,
         timestamp: Date.now(),
       }
       setMessages((prev) => [...prev, errorMessage])
-      toast.error(err.message || 'Failed to communicate with AI Assistant.')
+      toast.error(errorText.startsWith('Z.ai') ? 'Z.ai service error' : errorText)
     } finally {
       setIsLoading(false)
     }

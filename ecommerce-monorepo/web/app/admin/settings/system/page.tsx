@@ -17,6 +17,10 @@ interface SystemSettings {
   openaiBaseUrl?: string
   openaiModel?: string
   primaryAiProvider?: string
+  // Z.ai (GLM)
+  zaiApiKey?: string
+  zaiBaseUrl?: string
+  zaiModel?: string
   // Fallbacks
   openrouterApiKey?: string
   geminiApiKey?: string
@@ -38,6 +42,8 @@ export default function SystemSettingsPage() {
     openaiBaseUrl: 'https://llm.gcat.ir/v1',
     openaiModel: 'auto/best-chat',
     primaryAiProvider: 'openai',
+    zaiBaseUrl: 'https://api.z.ai/api/paas/v4',
+    zaiModel: 'glm-4.7-flash',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -55,8 +61,21 @@ export default function SystemSettingsPage() {
     model?: string
   } | null>(null)
 
+  // Z.ai Dedicated Connection Tester state
+  const [testingZai, setTestingZai] = useState(false)
+  const [zaiTestResult, setZaiTestResult] = useState<{
+    success: boolean
+    latencyMs?: number
+    message?: string
+    error?: string
+    model?: string
+    isFree?: boolean
+    freeStatus?: string
+  } | null>(null)
+
   const [showKeys, setShowKeys] = useState({
     openai: false,
+    zai: false,
     openrouter: false,
     gemini: false,
     deepseek: false,
@@ -79,6 +98,8 @@ export default function SystemSettingsPage() {
         openaiBaseUrl: data.openaiBaseUrl || 'https://llm.gcat.ir/v1',
         openaiModel: data.openaiModel || 'auto/best-chat',
         primaryAiProvider: data.primaryAiProvider || 'openai',
+        zaiBaseUrl: data.zaiBaseUrl || 'https://api.z.ai/api/paas/v4',
+        zaiModel: data.zaiModel || 'glm-4.7-flash',
       })
     } catch (error) {
       console.error('Error fetching settings:', error)
@@ -173,6 +194,57 @@ export default function SystemSettingsPage() {
       toast.error('Failed to test connection')
     } finally {
       setTestingAi(false)
+    }
+  }
+
+  const handleTestZaiConnection = async () => {
+    if (!settings.zaiApiKey || !settings.zaiApiKey.trim()) {
+      toast.error('Please enter a Z.ai API Key to test the connection')
+      return
+    }
+
+    setTestingZai(true)
+    setZaiTestResult(null)
+
+    try {
+      const response = await fetch('/api/admin/settings/test-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: settings.zaiApiKey,
+          baseUrl: settings.zaiBaseUrl || 'https://api.z.ai/api/paas/v4',
+          model: settings.zaiModel || 'glm-4.7-flash',
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setZaiTestResult({
+          success: true,
+          latencyMs: data.latencyMs,
+          message: data.message || `Connected in ${data.latencyMs}ms!`,
+          model: data.model,
+          isFree: true,
+          freeStatus: data.freeStatus || 'Free Model (Flash Tier)',
+        })
+        toast.success(`Z.ai connected successfully (${data.latencyMs}ms)!`)
+      } else {
+        setZaiTestResult({
+          success: false,
+          error: data.error || 'Connection failed',
+          latencyMs: data.latencyMs,
+        })
+        toast.error(data.error || 'Failed to connect to Z.ai')
+      }
+    } catch (err: any) {
+      setZaiTestResult({
+        success: false,
+        error: err.message || 'Network request failed',
+      })
+      toast.error('Failed to test Z.ai connection')
+    } finally {
+      setTestingZai(false)
     }
   }
 
@@ -363,6 +435,11 @@ console.log(completion.choices[0].message.content);`
                 <span className="text-[11px] text-gray-400 font-medium">Presets:</span>
                 {[
                   {
+                    label: 'Z.ai (GLM Free Flash)',
+                    url: 'https://api.z.ai/api/paas/v4',
+                    model: 'glm-4.7-flash',
+                  },
+                  {
                     label: 'Alibaba Model Studio (Free Quota)',
                     url: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
                     model: 'qwen-max',
@@ -383,9 +460,9 @@ console.log(completion.choices[0].message.content);`
                     model: 'deepseek-chat',
                   },
                   {
-                    label: 'Alibaba DashScope (China)',
-                    url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-                    model: 'qwen-plus',
+                    label: 'Z.ai / BigModel (China)',
+                    url: 'https://open.bigmodel.cn/api/paas/v4',
+                    model: 'glm-4.7-flash',
                   },
                 ].map((p) => (
                   <button
@@ -492,6 +569,11 @@ console.log(completion.choices[0].message.content);`
                   onChange={(e) => handleChange('openaiModel', e.target.value)}
                   className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-white cursor-pointer"
                 >
+                  <optgroup label="Z.ai / Zhipu GLM (100% Free Flash Models)">
+                    <option value="glm-4.7-flash">glm-4.7-flash (★ Flagship Chat - Free Flash Tier)</option>
+                    <option value="glm-4.5-flash">glm-4.5-flash (⚡ Fast Chat - Free Flash Tier)</option>
+                    <option value="glm-4.6v-flash">glm-4.6v-flash (👁️ Vision &amp; Multimodal - Free Flash Tier)</option>
+                  </optgroup>
                   <optgroup label="Alibaba Cloud Model Studio (Free Quota Eligible)">
                     <option value="qwen-max">qwen-max (★ Flagship Best Quality - Active Free Quota)</option>
                     <option value="qwen-flash">qwen-flash (⚡ Ultra Fast & Efficient - Active Free Quota)</option>
@@ -603,6 +685,204 @@ console.log(completion.choices[0].message.content);`
           </div>
         </div>
 
+        {/* Dedicated Section: Z.ai (GLM) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900">
+                    Z.ai (GLM)
+                  </h2>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Free models only
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Zhipu AI (GLM) OpenAI-compatible provider with 100% free Flash chat &amp; vision models
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleTestZaiConnection}
+                disabled={testingZai}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                {testingZai ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Testing Z.ai...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap size={14} />
+                    <span>Test Connection</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Test Result Toast/Banner for Z.ai */}
+          {zaiTestResult && (
+            <div className={`p-4 rounded-2xl text-xs flex items-start gap-3 border ${
+              zaiTestResult.success
+                ? 'bg-emerald-50/80 border-emerald-200 text-emerald-900'
+                : 'bg-red-50/80 border-red-200 text-red-900'
+            }`}>
+              {zaiTestResult.success ? (
+                <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle size={18} className="text-red-600 shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-bold">
+                    {zaiTestResult.success ? 'Z.ai Connection Successful!' : 'Z.ai Connection Verification Failed'}
+                  </p>
+                  {zaiTestResult.success && zaiTestResult.freeStatus && (
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-semibold text-[10px]">
+                      {zaiTestResult.freeStatus}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-0.5 opacity-90 whitespace-pre-line">
+                  {zaiTestResult.success ? zaiTestResult.message : zaiTestResult.error}
+                </p>
+                {zaiTestResult.latencyMs !== undefined && (
+                  <p className="mt-1 text-[11px] font-mono opacity-80">
+                    Response latency: {zaiTestResult.latencyMs}ms {zaiTestResult.model ? `• Model: ${zaiTestResult.model}` : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* API Key */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-gray-700">
+                  API Key
+                  <span className="ml-1.5 text-[10px] text-indigo-600 font-medium">(Z.ai PaaS Token)</span>
+                </label>
+                <a
+                  href="https://z.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] text-blue-600 hover:underline flex items-center gap-0.5"
+                >
+                  <span>Get key at z.ai</span>
+                  <Globe size={11} />
+                </a>
+              </div>
+              <div className="relative">
+                <input
+                  type={showKeys.zai ? 'text' : 'password'}
+                  value={settings.zaiApiKey || ''}
+                  onChange={(e) => handleChange('zaiApiKey', e.target.value)}
+                  placeholder="Enter your Z.ai / BigModel API key"
+                  className="w-full px-4 py-2.5 pr-10 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-slate-50/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => toggleShowKey('zai')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                >
+                  {showKeys.zai ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <p className="text-[11px] text-gray-400">
+                Leave empty until key is obtained. Flash tier models are 100% free with valid account key.
+              </p>
+            </div>
+
+            {/* Base URL Dropdown */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-gray-700">
+                Base URL
+                <span className="ml-1.5 text-[10px] text-gray-400 font-normal">(Region Endpoint)</span>
+              </label>
+              <select
+                value={settings.zaiBaseUrl || 'https://api.z.ai/api/paas/v4'}
+                onChange={(e) => handleChange('zaiBaseUrl', e.target.value)}
+                className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-white cursor-pointer"
+              >
+                <option value="https://api.z.ai/api/paas/v4">
+                  International — https://api.z.ai/api/paas/v4
+                </option>
+                <option value="https://open.bigmodel.cn/api/paas/v4">
+                  China (Mainland) — https://open.bigmodel.cn/api/paas/v4
+                </option>
+              </select>
+              <p className="text-[11px] text-gray-400">
+                Select International for global servers or China for low-latency inside Mainland China.
+              </p>
+            </div>
+
+            {/* Default Model Dropdown */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-gray-700">
+                  Default Model
+                  <span className="ml-1.5 text-[10px] text-emerald-600 font-semibold">(Free Flash Models)</span>
+                </label>
+                <span className="text-[10px] font-mono text-gray-400">Selected: {settings.zaiModel || 'glm-4.7-flash'}</span>
+              </div>
+              <select
+                value={settings.zaiModel || 'glm-4.7-flash'}
+                onChange={(e) => handleChange('zaiModel', e.target.value)}
+                className="w-full px-4 py-2.5 font-mono text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1a3a5c] focus:border-transparent bg-white cursor-pointer"
+              >
+                <option value="glm-4.7-flash">glm-4.7-flash (★ Recommended Default Chat - Free)</option>
+                <option value="glm-4.5-flash">glm-4.5-flash (⚡ Fast Chat - Free)</option>
+                <option value="glm-4.6v-flash">glm-4.6v-flash (👁️ Vision &amp; Multimodal - Free)</option>
+              </select>
+              <p className="text-[11px] text-gray-400">
+                All listed models belong to the free Flash tier with no per-token charges.
+              </p>
+            </div>
+
+            {/* Priority Mode Selector */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-gray-700">
+                Provider Priority
+              </label>
+              <div className="flex flex-col gap-2 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                  <input
+                    type="radio"
+                    name="primaryAiProvider"
+                    value="zai"
+                    checked={settings.primaryAiProvider === 'zai'}
+                    onChange={() => handleChange('primaryAiProvider', 'zai')}
+                    className="text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                  />
+                  <span className="font-semibold text-indigo-950">Primary Provider (route assistant &amp; translations to Z.ai first)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-700">
+                  <input
+                    type="radio"
+                    name="primaryAiProvider"
+                    value="openai"
+                    checked={settings.primaryAiProvider !== 'zai'}
+                    onChange={() => handleChange('primaryAiProvider', 'openai')}
+                    className="text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                  />
+                  <span>Secondary Fallback (route to primary gateway first, then cascade to Z.ai)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Secondary / Fallback Providers (Collapsible) */}
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
           <button
@@ -619,7 +899,7 @@ console.log(completion.choices[0].message.content);`
                   Alternative / Fallback AI Providers (Optional)
                 </h3>
                 <p className="text-xs text-gray-400">
-                  OpenRouter, Google Gemini, DeepSeek, Alibaba Qwen, Moonshot Kimi, Cerebras
+                  Z.ai (GLM), OpenRouter, Google Gemini, DeepSeek, Alibaba Qwen, Moonshot Kimi, Cerebras
                 </p>
               </div>
             </div>

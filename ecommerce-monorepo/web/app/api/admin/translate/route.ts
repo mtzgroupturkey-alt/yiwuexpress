@@ -7,6 +7,7 @@ if (typeof dns.setDefaultResultOrder === 'function') {
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { getApiKeys, getDefaultOpenRouterFallbackKey } from '@/lib/api-keys'
+import { callZaiChatCompletion } from '@/lib/ai/providers/zai'
 
 const TARGET_LOCALES = ['en', 'ru', 'zh'] as const
 type TargetLocale = (typeof TARGET_LOCALES)[number]
@@ -95,6 +96,10 @@ interface ProviderContext {
   qwenApiKey?: string | null
   kimiApiKey?: string | null
   cerebrasApiKey?: string | null
+  zaiApiKey?: string | null
+  zaiBaseUrl?: string | null
+  zaiModel?: string | null
+  primaryAiProvider?: string | null
 }
 
 const DEFAULT_TIMEOUT_MS = 25_000
@@ -163,6 +168,55 @@ async function callOpenAICompatible(
       ok: false,
       retryable: true,
       error: `OpenAI Gateway network error: ${err instanceof Error ? err.message : 'unknown'}`,
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Z.ai (GLM) Provider — Free Flash Tier
+// ---------------------------------------------------------------------------
+async function callZai(
+  ctx: ProviderContext,
+): Promise<ProviderResult> {
+  const apiKey = ctx.zaiApiKey
+  if (!apiKey) {
+    return { ok: false, error: 'ZAI_API_KEY missing', retryable: true }
+  }
+
+  const model = (ctx.zaiModel || 'glm-4.7-flash').trim()
+  const baseUrl = (ctx.zaiBaseUrl || 'https://api.z.ai/api/paas/v4').trim()
+
+  const userPrompt =
+    `Target Locales: [${ctx.targetLocales.join(', ')}]\n` +
+    `Data to translate: ${JSON.stringify(ctx.trimmedFields)}`
+
+  try {
+    const res = await callZaiChatCompletion({
+      apiKey,
+      baseUrl,
+      model,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content:
+            'Target Locales: [ru, zh]\n' +
+            'Data to translate: {"name": "Heavy Duty Shipping Box", "description": "Double-walled corrugated cardboard box for international cargo."}',
+        },
+        { role: 'assistant', content: JSON.stringify(FEW_SHOT_EXAMPLE) },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+      max_tokens: 4000,
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+    })
+
+    return finalizeFromRaw(res.content, ctx, `Z.ai GLM (${model})`)
+  } catch (err: any) {
+    return {
+      ok: false,
+      retryable: true,
+      error: `Z.ai GLM error on ${model}: ${err?.message || 'unknown'}`,
     }
   }
 }
@@ -710,6 +764,7 @@ export async function POST(request: NextRequest) {
   const apiKeys = await getApiKeys()
   const hasAnyKey = Boolean(
     apiKeys.openaiApiKey ||
+    apiKeys.zaiApiKey ||
     apiKeys.openrouterApiKey ||
     apiKeys.geminiApiKey ||
     apiKeys.deepseekApiKey ||
@@ -761,6 +816,10 @@ export async function POST(request: NextRequest) {
     openaiApiKey: apiKeys.openaiApiKey,
     openaiBaseUrl: apiKeys.openaiBaseUrl,
     openaiModel: apiKeys.openaiModel,
+    zaiApiKey: apiKeys.zaiApiKey,
+    zaiBaseUrl: apiKeys.zaiBaseUrl,
+    zaiModel: apiKeys.zaiModel,
+    primaryAiProvider: apiKeys.primaryAiProvider,
     apiKey: apiKeys.openrouterApiKey,
     geminiApiKey: apiKeys.geminiApiKey,
     deepseekApiKey: apiKeys.deepseekApiKey,
@@ -778,12 +837,28 @@ export async function POST(request: NextRequest) {
   ): Promise<{ ok: boolean; translations?: Record<string, Record<string, string>>; error?: string }> {
     const errors: string[] = []
 
+    // If Z.ai is primary provider, execute it first
+    if (ctx.primaryAiProvider === 'zai' && ctx.zaiApiKey) {
+      const zaiRes = await callZai(ctx)
+      if (zaiRes.ok && zaiRes.translations) return { ok: true, translations: zaiRes.translations }
+      errors.push(`Z.ai GLM: ${zaiRes.error}`)
+      console.warn('[Translate] Primary Z.ai failed.', zaiRes.error)
+    }
+
     // Tier 0: Custom OpenAI-compatible Gateway / OpenAI (if configured)
     if (ctx.openaiApiKey) {
       const tier0 = await callOpenAICompatible(ctx)
       if (tier0.ok && tier0.translations) return { ok: true, translations: tier0.translations }
       errors.push(`OpenAI Gateway: ${tier0.error}`)
       console.warn('[Translate] OpenAI Gateway failed.', tier0.error)
+    }
+
+    // Z.ai direct fallback if not already primary
+    if (ctx.primaryAiProvider !== 'zai' && ctx.zaiApiKey) {
+      const zaiRes = await callZai(ctx)
+      if (zaiRes.ok && zaiRes.translations) return { ok: true, translations: zaiRes.translations }
+      errors.push(`Z.ai GLM: ${zaiRes.error}`)
+      console.warn('[Translate] Z.ai fallback failed.', zaiRes.error)
     }
 
     const tier1 = await callOpenRouter(ctx)
