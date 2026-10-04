@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { LocaleLink } from '@/components/LocaleLink'
-import { Home, Search, ShoppingCart, ClipboardList, Heart, Menu, X, ChevronRight, User, Package, HelpCircle, Phone, Globe, ShieldCheck } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Home, Search, ShoppingCart, ClipboardList, Heart, Menu, X } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useMobile } from '@/components/MobileProvider'
 import { useCart } from '@/components/CartContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
@@ -13,21 +13,15 @@ import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
-import { useSettings } from '@/components/SettingsProvider'
 
 export interface BottomNavProps {
   forceVisible?: boolean
 }
 
 export function BottomNav({ forceVisible }: BottomNavProps = {}) {
-  const { isMobile, isStandalone } = useMobile()
+  const { isMobile, isStandalone, isDrawerOpen, toggleDrawer, openDrawer } = useMobile()
   const pathname = usePathname() || ''
   const locale = useLocale()
-  const { settings } = useSettings()
-  const companyLogo = settings?.companyLogo || '/logo.png'
-
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [logoFailed, setLogoFailed] = useState(false)
 
   // Cart & Wholesale context
   const { cartCount } = useCart()
@@ -36,23 +30,6 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
   const { wishlistCount } = useWishlist()
   const { storeMode } = useStoreMode()
   const { isWholesaleSession } = useSessionMode()
-
-  // Close drawer on path change
-  useEffect(() => {
-    setIsDrawerOpen(false)
-  }, [pathname])
-
-  // Prevent background scroll when drawer is open
-  useEffect(() => {
-    if (isDrawerOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [isDrawerOpen])
 
   // Normalise path by removing locale prefix: e.g. /en/checkout -> /checkout
   const cleanPath = pathname.replace(/^\/(en|ru|zh)(\/|$)/, '/') || '/'
@@ -240,9 +217,12 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
           {/* 5. MORE (Opens Drawer) */}
           <button
             type="button"
-            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            onClick={() => {
+              if (toggleDrawer) toggleDrawer()
+              else if (openDrawer) openDrawer()
+            }}
             aria-label={labels.more}
-            aria-expanded={isDrawerOpen}
+            aria-expanded={Boolean(isDrawerOpen)}
             className={`group flex flex-col items-center justify-center min-h-[44px] h-full py-1 transition-colors relative tap-spring ${
               isDrawerOpen
                 ? 'text-[#1a3a5c] dark:text-[#c9a84c] font-semibold'
@@ -269,191 +249,6 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
           </button>
         </div>
       </nav>
-
-      {/* =========================================================================
-          MORE NAVIGATION DRAWER (Slide up from bottom on mobile)
-          ========================================================================= */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <div className="md:hidden fixed inset-0 z-40 flex flex-col justify-end">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs"
-            />
-
-            {/* Sheet Container */}
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="relative z-50 w-full max-h-[80vh] bg-white dark:bg-[#0f172a] rounded-t-3xl shadow-2xl flex flex-col overflow-hidden border-t border-gray-100 dark:border-slate-800"
-              style={{
-                paddingBottom: 'calc(68px + env(safe-area-inset-bottom, 0px))',
-              }}
-            >
-              {/* Drag Handle Indicator */}
-              <div className="flex justify-center pt-3 pb-1">
-                <div className="w-12 h-1.5 bg-gray-300 dark:bg-slate-700 rounded-full" />
-              </div>
-
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-100 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  {!logoFailed ? (
-                    <div className="flex items-center justify-center shrink-0">
-                      <img
-                        src={companyLogo}
-                        alt={`${settings?.companyName || 'Company'} Logo`}
-                        onError={() => setLogoFailed(true)}
-                        className="h-8 max-h-8 w-auto max-w-[120px] object-contain shrink-0"
-                        loading="eager"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-8 h-8 rounded-lg bg-[#00407a] dark:bg-primary-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                      {((settings?.companyName && settings.companyName.toLowerCase() === 'dromkok' ? 'Dromkok' : settings?.companyName) || 'Dromkok')
-                        .split(' ')
-                        .map((w: string) => w[0])
-                        .join('')
-                        .slice(0, 2)
-                        .toUpperCase() || 'DK'}
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                      {(settings?.companyName && settings.companyName.toLowerCase() === 'dromkok' ? 'Dromkok' : settings?.companyName) || 'Dromkok'}
-                    </h3>
-                    {settings?.siteTagline ? (
-                      <p className="text-[11px] text-gray-500 dark:text-slate-400">
-                        {settings.siteTagline}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Drawer Content */}
-              <div className="overflow-y-auto px-6 py-4 space-y-4 divide-y divide-gray-100 dark:divide-slate-800 text-sm">
-                {/* Account & Profile section */}
-                <div className="space-y-1 pt-1">
-                  <LocaleLink
-                    href="/profile"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <User className="w-4 h-4 text-[#c9a84c]" />
-                      <span>{locale === 'zh' ? '个人中心' : locale === 'ru' ? 'Профиль' : 'My Account'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                  <LocaleLink
-                    href="/orders"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Package className="w-4 h-4 text-[#c9a84c]" />
-                      <span>{locale === 'zh' ? '我的订单' : locale === 'ru' ? 'Мои заказы' : 'My Orders'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                </div>
-
-                {/* Sourcing & Logistics Services */}
-                <div className="space-y-1 pt-3">
-                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">
-                    {locale === 'zh' ? '服务与工具' : locale === 'ru' ? 'Услуги и инструменты' : 'Services & Tools'}
-                  </h4>
-                  <LocaleLink
-                    href="/track"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Package className="w-4 h-4 text-blue-600" />
-                      <span>{locale === 'zh' ? '物流追踪' : locale === 'ru' ? 'Отследить груз' : 'Track Cargo'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                  <LocaleLink
-                    href="/calculator"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                      <span>{locale === 'zh' ? '运费计算器' : locale === 'ru' ? 'Калькулятор доставки' : 'Freight Calculator'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                  <LocaleLink
-                    href="/services"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Globe className="w-4 h-4 text-purple-600" />
-                      <span>{locale === 'zh' ? '全套服务' : locale === 'ru' ? 'Все услуги' : 'All Services'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                </div>
-
-                {/* About & Support */}
-                <div className="space-y-1 pt-3">
-                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">
-                    {locale === 'zh' ? '关于与客服' : locale === 'ru' ? 'О компании и поддержка' : 'Company & Support'}
-                  </h4>
-                  <LocaleLink
-                    href="/about"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <span>{locale === 'zh' ? '关于我们' : locale === 'ru' ? 'О нас' : 'About Us'}</span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                  <LocaleLink
-                    href="/contact"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Phone className="w-4 h-4 text-[#c9a84c]" />
-                      <span>{locale === 'zh' ? '联系我们' : locale === 'ru' ? 'Связаться с нами' : 'Contact Us'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                  <LocaleLink
-                    href="/faq"
-                    onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <HelpCircle className="w-4 h-4 text-gray-500" />
-                      <span>{locale === 'zh' ? '常见问题' : locale === 'ru' ? 'Частые вопросы' : 'FAQ'}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </LocaleLink>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </>
   )
 }
