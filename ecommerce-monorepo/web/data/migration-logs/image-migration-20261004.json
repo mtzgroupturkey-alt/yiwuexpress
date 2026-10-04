@@ -1,0 +1,1418 @@
+[
+  {
+    "productId": "cmusb2o7a006zw4l0y4k1ljib",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-y4k1ljib-a572c5625c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:07.036Z"
+  },
+  {
+    "productId": "cmusb2o7a006zw4l0y4k1ljib",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-k1ljib-0-a572c5625c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:07.752Z"
+  },
+  {
+    "productId": "cmusb2o7a006zw4l0y4k1ljib",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-k1ljib-1-8aef3866cb.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:08.374Z"
+  },
+  {
+    "productId": "cmusb2o7d0074w4l0cl7m1rhy",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-cl7m1rhy-a572c5625c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:09.221Z"
+  },
+  {
+    "productId": "cmusb2o7d0074w4l0cl7m1rhy",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-7m1rhy-0-a572c5625c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:10.164Z"
+  },
+  {
+    "productId": "cmusb2o7d0074w4l0cl7m1rhy",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-7m1rhy-1-8aef3866cb.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:10.728Z"
+  },
+  {
+    "productId": "cmusb2o7f0079w4l0rkszcfv7",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-rkszcfv7-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:11.312Z"
+  },
+  {
+    "productId": "cmusb2o7f0079w4l0rkszcfv7",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-szcfv7-0-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:11.711Z"
+  },
+  {
+    "productId": "cmusb2o7f0079w4l0rkszcfv7",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-szcfv7-1-f21b995581.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:12.153Z"
+  },
+  {
+    "productId": "cmusb2o7i007ew4l0923ycdmt",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-923ycdmt-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:12.604Z"
+  },
+  {
+    "productId": "cmusb2o7i007ew4l0923ycdmt",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-3ycdmt-0-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:13.111Z"
+  },
+  {
+    "productId": "cmusb2o7i007ew4l0923ycdmt",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-3ycdmt-1-f21b995581.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:13.526Z"
+  },
+  {
+    "productId": "cmusb2o7k007jw4l0b28mlnso",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-b28mlnso-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:13.932Z"
+  },
+  {
+    "productId": "cmusb2o7k007jw4l0b28mlnso",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-8mlnso-0-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:14.616Z"
+  },
+  {
+    "productId": "cmusb2o7k007jw4l0b28mlnso",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-8mlnso-1-f21b995581.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:15.062Z"
+  },
+  {
+    "productId": "cmusb2o7n007ow4l0caypj88d",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-caypj88d-9a7c7a7af0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:15.533Z"
+  },
+  {
+    "productId": "cmusb2o7n007ow4l0caypj88d",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-ypj88d-0-9a7c7a7af0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:16.035Z"
+  },
+  {
+    "productId": "cmusb2o7n007ow4l0caypj88d",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-ypj88d-1-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:16.467Z"
+  },
+  {
+    "productId": "cmusb2o7q007tw4l00potbq72",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-0potbq72-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:16.894Z"
+  },
+  {
+    "productId": "cmusb2o7q007tw4l00potbq72",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-otbq72-0-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:17.325Z"
+  },
+  {
+    "productId": "cmusb2o7q007tw4l00potbq72",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-otbq72-1-8aef3866cb.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:17.909Z"
+  },
+  {
+    "productId": "cmusb2o7s007yw4l0wfoa3zkn",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-wfoa3zkn-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:18.463Z"
+  },
+  {
+    "productId": "cmusb2o7s007yw4l0wfoa3zkn",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-oa3zkn-0-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:19.138Z"
+  },
+  {
+    "productId": "cmusb2o7s007yw4l0wfoa3zkn",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-oa3zkn-1-f21b995581.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:19.576Z"
+  },
+  {
+    "productId": "cmusb2o7v0083w4l0zf8uiqyr",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-zf8uiqyr-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:20.072Z"
+  },
+  {
+    "productId": "cmusb2o7v0083w4l0zf8uiqyr",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-8uiqyr-0-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:20.618Z"
+  },
+  {
+    "productId": "cmusb2o7v0083w4l0zf8uiqyr",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-8uiqyr-1-b75782bb70.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:21.901Z"
+  },
+  {
+    "productId": "cmusb2o7x0088w4l0nssk8b5u",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-nssk8b5u-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:22.364Z"
+  },
+  {
+    "productId": "cmusb2o7x0088w4l0nssk8b5u",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-sk8b5u-0-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:22.818Z"
+  },
+  {
+    "productId": "cmusb2o7x0088w4l0nssk8b5u",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-sk8b5u-1-b75782bb70.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:23.469Z"
+  },
+  {
+    "productId": "cmusb2o7z008dw4l0h6vqa2zz",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-h6vqa2zz-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:24.094Z"
+  },
+  {
+    "productId": "cmusb2o7z008dw4l0h6vqa2zz",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-vqa2zz-0-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:24.655Z"
+  },
+  {
+    "productId": "cmusb2o7z008dw4l0h6vqa2zz",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-vqa2zz-1-b75782bb70.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:25.570Z"
+  },
+  {
+    "productId": "cmusb2o82008iw4l0yk2qoysj",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-yk2qoysj-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:26.176Z"
+  },
+  {
+    "productId": "cmusb2o82008iw4l0yk2qoysj",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-2qoysj-0-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:26.655Z"
+  },
+  {
+    "productId": "cmusb2o82008iw4l0yk2qoysj",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-2qoysj-1-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:27.117Z"
+  },
+  {
+    "productId": "cmusb2o85008nw4l0fqluz4p1",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-fqluz4p1-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:27.724Z"
+  },
+  {
+    "productId": "cmusb2o85008nw4l0fqluz4p1",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-luz4p1-0-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:28.266Z"
+  },
+  {
+    "productId": "cmusb2o85008nw4l0fqluz4p1",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-luz4p1-1-b75782bb70.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:29.187Z"
+  },
+  {
+    "productId": "cmusb2o87008sw4l0t1661cnh",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-t1661cnh-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:29.822Z"
+  },
+  {
+    "productId": "cmusb2o87008sw4l0t1661cnh",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-661cnh-0-1ae22b8616.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:30.344Z"
+  },
+  {
+    "productId": "cmusb2o87008sw4l0t1661cnh",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-661cnh-1-b75782bb70.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:30.868Z"
+  },
+  {
+    "productId": "cmusb2o89008xw4l0zqanrh1j",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-zqanrh1j-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:31.245Z"
+  },
+  {
+    "productId": "cmusb2o89008xw4l0zqanrh1j",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-anrh1j-0-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:31.640Z"
+  },
+  {
+    "productId": "cmusb2o89008xw4l0zqanrh1j",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1540518614846-7ede433c4ef4?w=1000&auto=format&fit=crop",
+    "status": "failed",
+    "error": "HTTP 404 Not Found",
+    "timestamp": "2026-10-04T01:02:32.569Z"
+  },
+  {
+    "productId": "cmusb2o8c0092w4l0eooozz2x",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-eooozz2x-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:33.111Z"
+  },
+  {
+    "productId": "cmusb2o8c0092w4l0eooozz2x",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-oozz2x-0-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:33.947Z"
+  },
+  {
+    "productId": "cmusb2o8c0092w4l0eooozz2x",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-oozz2x-1-3d39f944ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:34.645Z"
+  },
+  {
+    "productId": "cmusb2o8e0097w4l0jdfwb0sh",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-jdfwb0sh-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:35.061Z"
+  },
+  {
+    "productId": "cmusb2o8e0097w4l0jdfwb0sh",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-fwb0sh-0-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:35.444Z"
+  },
+  {
+    "productId": "cmusb2o8e0097w4l0jdfwb0sh",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1503602642458-232111445657?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-fwb0sh-1-f66cb2b4ae.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:36.033Z"
+  },
+  {
+    "productId": "cmusb2o8g009cw4l0gq3656t5",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-gq3656t5-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:36.485Z"
+  },
+  {
+    "productId": "cmusb2o8g009cw4l0gq3656t5",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-3656t5-0-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:36.863Z"
+  },
+  {
+    "productId": "cmusb2o8g009cw4l0gq3656t5",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-3656t5-1-6aaed355a6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:37.441Z"
+  },
+  {
+    "productId": "cmusb2o8i009hw4l06rinp0ai",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-6rinp0ai-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:37.809Z"
+  },
+  {
+    "productId": "cmusb2o8i009hw4l06rinp0ai",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-inp0ai-0-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:38.185Z"
+  },
+  {
+    "productId": "cmusb2o8i009hw4l06rinp0ai",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-inp0ai-1-954eacd009.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:38.668Z"
+  },
+  {
+    "productId": "cmusb2o8l009mw4l02n5eer2z",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-2n5eer2z-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:39.042Z"
+  },
+  {
+    "productId": "cmusb2o8l009mw4l02n5eer2z",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-5eer2z-0-f6f26346ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:39.415Z"
+  },
+  {
+    "productId": "cmusb2o8l009mw4l02n5eer2z",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-5eer2z-1-363f924657.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:39.811Z"
+  },
+  {
+    "productId": "cmusb2o8p009rw4l0lsjuynoy",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-lsjuynoy-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:40.343Z"
+  },
+  {
+    "productId": "cmusb2o8p009rw4l0lsjuynoy",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-juynoy-0-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:40.846Z"
+  },
+  {
+    "productId": "cmusb2o8p009rw4l0lsjuynoy",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1503602642458-232111445657?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-juynoy-1-f66cb2b4ae.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:41.661Z"
+  },
+  {
+    "productId": "cmusb2o8r009ww4l0vodocl3k",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-vodocl3k-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:42.270Z"
+  },
+  {
+    "productId": "cmusb2o8r009ww4l0vodocl3k",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-docl3k-0-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:43.237Z"
+  },
+  {
+    "productId": "cmusb2o8r009ww4l0vodocl3k",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-docl3k-1-8aef3866cb.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:44.303Z"
+  },
+  {
+    "productId": "cmusb2o8u00a1w4l0r3svthes",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-r3svthes-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:45.254Z"
+  },
+  {
+    "productId": "cmusb2o8u00a1w4l0r3svthes",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-svthes-0-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:45.805Z"
+  },
+  {
+    "productId": "cmusb2o8u00a1w4l0r3svthes",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1503602642458-232111445657?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-svthes-1-f66cb2b4ae.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:46.313Z"
+  },
+  {
+    "productId": "cmusb2o8w00a6w4l0vrgi8s4f",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-vrgi8s4f-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:46.850Z"
+  },
+  {
+    "productId": "cmusb2o8w00a6w4l0vrgi8s4f",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-gi8s4f-0-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:47.535Z"
+  },
+  {
+    "productId": "cmusb2o8w00a6w4l0vrgi8s4f",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1503602642458-232111445657?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-gi8s4f-1-f66cb2b4ae.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:47.968Z"
+  },
+  {
+    "productId": "cmusb2o8z00abw4l09qd2w7mr",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-9qd2w7mr-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:48.505Z"
+  },
+  {
+    "productId": "cmusb2o8z00abw4l09qd2w7mr",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-d2w7mr-0-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:49.038Z"
+  },
+  {
+    "productId": "cmusb2o8z00abw4l09qd2w7mr",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-d2w7mr-1-ff538f8552.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:49.563Z"
+  },
+  {
+    "productId": "cmusb2o9200agw4l0jvc5fo9o",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-jvc5fo9o-a8744e3988.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:49.960Z"
+  },
+  {
+    "productId": "cmusb2o9200agw4l0jvc5fo9o",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-c5fo9o-0-a8744e3988.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:50.394Z"
+  },
+  {
+    "productId": "cmusb2o9200agw4l0jvc5fo9o",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-c5fo9o-1-29b6f6628c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:50.939Z"
+  },
+  {
+    "productId": "cmusb93ct0001w498osd3680i",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-osd3680i-4598154a67.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:51.321Z"
+  },
+  {
+    "productId": "cmusb93ct0001w498osd3680i",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-d3680i-0-4598154a67.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:51.711Z"
+  },
+  {
+    "productId": "cmusb93ct0001w498osd3680i",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-d3680i-1-8aef3866cb.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:52.185Z"
+  },
+  {
+    "productId": "cmusb93dc0006w498brnwzhcm",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-brnwzhcm-dec242f7df.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:52.836Z"
+  },
+  {
+    "productId": "cmusb93dc0006w498brnwzhcm",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1532372320572-cda25653a26d?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-nwzhcm-0-dec242f7df.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:53.821Z"
+  },
+  {
+    "productId": "cmusb93dc0006w498brnwzhcm",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-nwzhcm-1-3d39f944ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:55.254Z"
+  },
+  {
+    "productId": "cmusb93dg000bw498xcdglk3c",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-xcdglk3c-bcd06819c0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:57.117Z"
+  },
+  {
+    "productId": "cmusb93dg000bw498xcdglk3c",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-dglk3c-0-bcd06819c0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:58.285Z"
+  },
+  {
+    "productId": "cmusb93dg000bw498xcdglk3c",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1530018607912-eff2daa1bac4?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-dglk3c-1-1e015da007.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:02:59.367Z"
+  },
+  {
+    "productId": "cmusb93dk000gw498f8msjqmr",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-f8msjqmr-7bc0b6edb3.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:00.506Z"
+  },
+  {
+    "productId": "cmusb93dk000gw498f8msjqmr",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-msjqmr-0-7bc0b6edb3.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:01.208Z"
+  },
+  {
+    "productId": "cmusb93dk000gw498f8msjqmr",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-msjqmr-1-954eacd009.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:01.845Z"
+  },
+  {
+    "productId": "cmusb93dn000lw498lbkh6xcs",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-lbkh6xcs-6aaed355a6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:02.475Z"
+  },
+  {
+    "productId": "cmusb93dn000lw498lbkh6xcs",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-kh6xcs-0-6aaed355a6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:03.051Z"
+  },
+  {
+    "productId": "cmusb93dn000lw498lbkh6xcs",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1540518614846-7ede433c4ef4?w=1000&auto=format&fit=crop",
+    "status": "failed",
+    "error": "HTTP 404 Not Found",
+    "timestamp": "2026-10-04T01:03:03.354Z"
+  },
+  {
+    "productId": "cmusb93dq000qw498ysd4q7rw",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-ysd4q7rw-3d39f944ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:04.168Z"
+  },
+  {
+    "productId": "cmusb93dq000qw498ysd4q7rw",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-d4q7rw-0-3d39f944ba.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:04.819Z"
+  },
+  {
+    "productId": "cmusb93dq000qw498ysd4q7rw",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-d4q7rw-1-e37b669176.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:05.351Z"
+  },
+  {
+    "productId": "cmusb93dt000vw498b2nynmg4",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1556909075-f3e0c4afb96d?w=1000&auto=format&fit=crop",
+    "status": "failed",
+    "error": "HTTP 404 Not Found",
+    "timestamp": "2026-10-04T01:03:06.272Z"
+  },
+  {
+    "productId": "cmusb93dt000vw498b2nynmg4",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1556909075-f3e0c4afb96d?w=1000&auto=format&fit=crop",
+    "status": "failed",
+    "error": "HTTP 404 Not Found",
+    "timestamp": "2026-10-04T01:03:07.626Z"
+  },
+  {
+    "productId": "cmusb93dt000vw498b2nynmg4",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-nynmg4-1-3f1bd916ad.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:08.020Z"
+  },
+  {
+    "productId": "cmusb93dw0010w498tkb5ojri",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-tkb5ojri-2255d0c0e5.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:08.804Z"
+  },
+  {
+    "productId": "cmusb93dw0010w498tkb5ojri",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-b5ojri-0-2255d0c0e5.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:09.751Z"
+  },
+  {
+    "productId": "cmusb93dw0010w498tkb5ojri",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-b5ojri-1-7e35cfd386.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:10.310Z"
+  },
+  {
+    "productId": "cmusb93dz0015w498ey9enlw5",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-ey9enlw5-a8744e3988.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:10.754Z"
+  },
+  {
+    "productId": "cmusb93dz0015w498ey9enlw5",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-9enlw5-0-a8744e3988.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:11.194Z"
+  },
+  {
+    "productId": "cmusb93dz0015w498ey9enlw5",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-9enlw5-1-e5b1606eec.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:11.571Z"
+  },
+  {
+    "productId": "cmusb93e3001aw498390bklcz",
+    "field": "thumbnail",
+    "oldUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-390bklcz-a572c5625c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:12.020Z"
+  },
+  {
+    "productId": "cmusb93e3001aw498390bklcz",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-0bklcz-0-a572c5625c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:12.503Z"
+  },
+  {
+    "productId": "cmusb93e3001aw498390bklcz",
+    "field": "image",
+    "oldUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1000&auto=format&fit=crop",
+    "newUrl": "/uploads/products/prod-0bklcz-1-8aef3866cb.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:12.963Z"
+  },
+  {
+    "productId": "cmusbic0a0006w4ggpq9s9chy",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-4-seat-with-chaise-tresund-light-beige__1577809_pe1033546_s5.jpg",
+    "newUrl": "/uploads/products/prod-pq9s9chy-33a4f40eea.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:15.251Z"
+  },
+  {
+    "productId": "cmusbic0a0006w4ggpq9s9chy",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-4-seat-with-chaise-tresund-light-beige__1577809_pe1033546_s5.jpg",
+    "newUrl": "/uploads/products/prod-9s9chy-0-33a4f40eea.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:16.583Z"
+  },
+  {
+    "productId": "cmusbic0a0006w4ggpq9s9chy",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-4-seat-with-chaise-tresund-light-beige__1125140_pe875381_s5.jpg",
+    "newUrl": "/uploads/products/prod-9s9chy-1-f599426065.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:18.319Z"
+  },
+  {
+    "productId": "cmusbic0a0006w4ggpq9s9chy",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-4-seat-with-chaise-tresund-light-beige__1124219_pe875083_s5.jpg",
+    "newUrl": "/uploads/products/prod-9s9chy-2-7527f5a07c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:19.632Z"
+  },
+  {
+    "productId": "cmusbic0a0006w4ggpq9s9chy",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-4-seat-with-chaise-tresund-light-beige__1124122_pe875026_s5.jpg",
+    "newUrl": "/uploads/products/prod-9s9chy-3-7da150233d.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:20.751Z"
+  },
+  {
+    "productId": "cmusbic0i000bw4ggrrvtoe74",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-5-seat-corner-tibbleby-beige-gray__1577296_pe1033072_s5.jpg",
+    "newUrl": "/uploads/products/prod-rrvtoe74-39f035742e.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:21.508Z"
+  },
+  {
+    "productId": "cmusbic0i000bw4ggrrvtoe74",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-5-seat-corner-tibbleby-beige-gray__1577296_pe1033072_s5.jpg",
+    "newUrl": "/uploads/products/prod-vtoe74-0-39f035742e.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:22.352Z"
+  },
+  {
+    "productId": "cmusbic0i000bw4ggrrvtoe74",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-5-seat-corner-tibbleby-beige-gray__1056105_pe848242_s5.jpg",
+    "newUrl": "/uploads/products/prod-vtoe74-1-1b420e43d9.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:23.117Z"
+  },
+  {
+    "productId": "cmusbic0i000bw4ggrrvtoe74",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-5-seat-corner-tibbleby-beige-gray__1056140_pe848272_s5.jpg",
+    "newUrl": "/uploads/products/prod-vtoe74-2-7486224772.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:23.974Z"
+  },
+  {
+    "productId": "cmusbic0i000bw4ggrrvtoe74",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kivik-sectional-5-seat-corner-tibbleby-beige-gray__1056136_pe848268_s5.jpg",
+    "newUrl": "/uploads/products/prod-vtoe74-3-7fe4c232e5.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:24.714Z"
+  },
+  {
+    "productId": "cmusbic0p000gw4gg4d5atqun",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/mannarp-sectional-4-seat-with-chaise-gunnared-beige__1578540_pe1034179_s5.jpg",
+    "newUrl": "/uploads/products/prod-4d5atqun-fad7b25cd6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:25.250Z"
+  },
+  {
+    "productId": "cmusbic0p000gw4gg4d5atqun",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/mannarp-sectional-4-seat-with-chaise-gunnared-beige__1578540_pe1034179_s5.jpg",
+    "newUrl": "/uploads/products/prod-5atqun-0-fad7b25cd6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:26.356Z"
+  },
+  {
+    "productId": "cmusbic0p000gw4gg4d5atqun",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/mannarp-sectional-4-seat-with-chaise-gunnared-beige__1498061_pe1006152_s5.jpg",
+    "newUrl": "/uploads/products/prod-5atqun-1-f712f73477.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:28.194Z"
+  },
+  {
+    "productId": "cmusbic0p000gw4gg4d5atqun",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/mannarp-sectional-4-seat-with-chaise-gunnared-beige__1500937_pe1007210_s5.jpg",
+    "newUrl": "/uploads/products/prod-5atqun-2-1e86b4ddc8.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:29.079Z"
+  },
+  {
+    "productId": "cmusbic0p000gw4gg4d5atqun",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/mannarp-sectional-4-seat-with-chaise-gunnared-beige__1530783_pe1015464_s5.jpg",
+    "newUrl": "/uploads/products/prod-5atqun-3-7e7af0bb82.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:30.083Z"
+  },
+  {
+    "productId": "cmusbicgq000lw4gg3zyb3xs3",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__57540_pe163122_s5.jpg",
+    "newUrl": "/uploads/products/prod-3zyb3xs3-878c2dbd9e.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:30.577Z"
+  },
+  {
+    "productId": "cmusbicgq000lw4gg3zyb3xs3",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__57540_pe163122_s5.jpg",
+    "newUrl": "/uploads/products/prod-yb3xs3-0-878c2dbd9e.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:31.059Z"
+  },
+  {
+    "productId": "cmusbicgq000lw4gg3zyb3xs3",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__0835835_pe601383_s5.jpg",
+    "newUrl": "/uploads/products/prod-yb3xs3-1-723ef994a0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:31.766Z"
+  },
+  {
+    "productId": "cmusbicgq000lw4gg3zyb3xs3",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__0258017_pe401973_s5.jpg",
+    "newUrl": "/uploads/products/prod-yb3xs3-2-490925cd4d.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:32.351Z"
+  },
+  {
+    "productId": "cmusbicgq000lw4gg3zyb3xs3",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__1083778_pe859098_s5.jpg",
+    "newUrl": "/uploads/products/prod-yb3xs3-3-e2ece2812c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:33.087Z"
+  },
+  {
+    "productId": "cmusbicgy000qw4gg045tz84s",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__57537_pe163119_s5.jpg",
+    "newUrl": "/uploads/products/prod-045tz84s-045d2de95f.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:33.623Z"
+  },
+  {
+    "productId": "cmusbicgy000qw4gg045tz84s",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__57537_pe163119_s5.jpg",
+    "newUrl": "/uploads/products/prod-5tz84s-0-045d2de95f.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:34.151Z"
+  },
+  {
+    "productId": "cmusbicgy000qw4gg045tz84s",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__0836233_pe601379_s5.jpg",
+    "newUrl": "/uploads/products/prod-5tz84s-1-5e223cdb9b.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:34.912Z"
+  },
+  {
+    "productId": "cmusbicgy000qw4gg045tz84s",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__0258008_pe401976_s5.jpg",
+    "newUrl": "/uploads/products/prod-5tz84s-2-2b66507835.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:35.408Z"
+  },
+  {
+    "productId": "cmusbicgy000qw4gg045tz84s",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__1083778_pe859098_s5.jpg",
+    "newUrl": "/uploads/products/prod-5tz84s-3-e2ece2812c.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:36.152Z"
+  },
+  {
+    "productId": "cmusbich4000vw4gg5os40ptd",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/stockholm-coffee-table-walnut-veneer__0181245_pe332924_s5.jpg",
+    "newUrl": "/uploads/products/prod-5os40ptd-e12047ba44.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:36.654Z"
+  },
+  {
+    "productId": "cmusbich4000vw4gg5os40ptd",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/stockholm-coffee-table-walnut-veneer__0181245_pe332924_s5.jpg",
+    "newUrl": "/uploads/products/prod-s40ptd-0-e12047ba44.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:37.120Z"
+  },
+  {
+    "productId": "cmusbich4000vw4gg5os40ptd",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/stockholm-coffee-table-walnut-veneer__0212281_pe339545_s5.jpg",
+    "newUrl": "/uploads/products/prod-s40ptd-1-3ff25879c1.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:38.205Z"
+  },
+  {
+    "productId": "cmusbich4000vw4gg5os40ptd",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/stockholm-coffee-table-walnut-veneer__0212279_pe359382_s5.jpg",
+    "newUrl": "/uploads/products/prod-s40ptd-2-3a55232dbd.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:38.861Z"
+  },
+  {
+    "productId": "cmusbich4000vw4gg5os40ptd",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/stockholm-coffee-table-walnut-veneer__0212280_pe339535_s5.jpg",
+    "newUrl": "/uploads/products/prod-s40ptd-3-ff4cf187f1.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:39.563Z"
+  },
+  {
+    "productId": "cmusbich80010w4ggl2syw6p1",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ugglerum-coffee-table-walnut-veneer__1489735_pe1003955_s5.jpg",
+    "newUrl": "/uploads/products/prod-l2syw6p1-51722e21b6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:40.241Z"
+  },
+  {
+    "productId": "cmusbich80010w4ggl2syw6p1",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ugglerum-coffee-table-walnut-veneer__1489735_pe1003955_s5.jpg",
+    "newUrl": "/uploads/products/prod-syw6p1-0-51722e21b6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:40.790Z"
+  },
+  {
+    "productId": "cmusbich80010w4ggl2syw6p1",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ugglerum-coffee-table-walnut-veneer__1517521_pe1012366_s5.jpg",
+    "newUrl": "/uploads/products/prod-syw6p1-1-1723dcfa68.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:41.692Z"
+  },
+  {
+    "productId": "cmusbich80010w4ggl2syw6p1",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ugglerum-coffee-table-walnut-veneer__1517551_pe1012387_s5.jpg",
+    "newUrl": "/uploads/products/prod-syw6p1-2-9f2e2e49ea.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:42.773Z"
+  },
+  {
+    "productId": "cmusbich80010w4ggl2syw6p1",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ugglerum-coffee-table-walnut-veneer__1517522_pe1012368_s5.jpg",
+    "newUrl": "/uploads/products/prod-syw6p1-3-9207c3070f.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:43.529Z"
+  },
+  {
+    "productId": "cmusbicyf0015w4gggh6k7vi4",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-with-doors-black-brown-bjoerkoeviken-oak-veneer__1531459_pe1015644_s5.jpg",
+    "newUrl": "/uploads/products/prod-gh6k7vi4-85785efc27.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:44.073Z"
+  },
+  {
+    "productId": "cmusbicyf0015w4gggh6k7vi4",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-with-doors-black-brown-bjoerkoeviken-oak-veneer__1531459_pe1015644_s5.jpg",
+    "newUrl": "/uploads/products/prod-6k7vi4-0-85785efc27.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:44.617Z"
+  },
+  {
+    "productId": "cmusbicyf0015w4gggh6k7vi4",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-with-doors-black-brown-bjoerkoeviken-oak-veneer__1547838_pe1020733_s5.jpg",
+    "newUrl": "/uploads/products/prod-6k7vi4-1-c5b6af74fc.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:45.336Z"
+  },
+  {
+    "productId": "cmusbicyf0015w4gggh6k7vi4",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-with-doors-black-brown-bjoerkoeviken-oak-veneer__1547843_pe1020738_s5.jpg",
+    "newUrl": "/uploads/products/prod-6k7vi4-2-964e4733e6.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:45.952Z"
+  },
+  {
+    "productId": "cmusbicyf0015w4gggh6k7vi4",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-with-doors-black-brown-bjoerkoeviken-oak-veneer__1547890_pe1020785_s5.jpg",
+    "newUrl": "/uploads/products/prod-6k7vi4-3-82132f26d8.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:46.661Z"
+  },
+  {
+    "productId": "cmusbicyo001aw4gg9j5x5jym",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-unit-black-brown__0316226_pe516834_s5.jpg",
+    "newUrl": "/uploads/products/prod-9j5x5jym-3a4513abe0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:47.222Z"
+  },
+  {
+    "productId": "cmusbicyo001aw4gg9j5x5jym",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-unit-black-brown__0316226_pe516834_s5.jpg",
+    "newUrl": "/uploads/products/prod-5x5jym-0-3a4513abe0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:47.925Z"
+  },
+  {
+    "productId": "cmusbicyo001aw4gg9j5x5jym",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-unit-black-brown__0843438_pe535720_s5.jpg",
+    "newUrl": "/uploads/products/prod-5x5jym-1-197eb54271.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:49.035Z"
+  },
+  {
+    "productId": "cmusbicyo001aw4gg9j5x5jym",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-unit-black-brown__0720089_pe732401_s5.jpg",
+    "newUrl": "/uploads/products/prod-5x5jym-2-19666fcf9f.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:49.647Z"
+  },
+  {
+    "productId": "cmusbicyr001fw4ggqa7i5b8z",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kallax-tv-unit-white-stained-oak-effect__1238899_pe918670_s5.jpg",
+    "newUrl": "/uploads/products/prod-qa7i5b8z-110ab87e9d.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:50.539Z"
+  },
+  {
+    "productId": "cmusbicyr001fw4ggqa7i5b8z",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kallax-tv-unit-white-stained-oak-effect__1238899_pe918670_s5.jpg",
+    "newUrl": "/uploads/products/prod-7i5b8z-0-110ab87e9d.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:51.160Z"
+  },
+  {
+    "productId": "cmusbicyr001fw4ggqa7i5b8z",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kallax-tv-unit-white-stained-oak-effect__1248784_pe923212_s5.jpg",
+    "newUrl": "/uploads/products/prod-7i5b8z-1-a43bf58b1a.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:51.781Z"
+  },
+  {
+    "productId": "cmusbicyr001fw4ggqa7i5b8z",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kallax-tv-unit-white-stained-oak-effect__1274279_pe930230_s5.jpg",
+    "newUrl": "/uploads/products/prod-7i5b8z-2-b0d0583726.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:52.402Z"
+  },
+  {
+    "productId": "cmusbicyr001fw4ggqa7i5b8z",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/kallax-tv-unit-white-stained-oak-effect__1106847_pe868821_s5.jpg",
+    "newUrl": "/uploads/products/prod-7i5b8z-3-e393583dd8.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:53.119Z"
+  },
+  {
+    "productId": "cmusbicyw001kw4ggz0qh03ys",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-black-brown-lappviken-brown-walnut-effect__1449590_pe989968_s5.jpg",
+    "newUrl": "/uploads/products/prod-z0qh03ys-7d764625e3.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:53.713Z"
+  },
+  {
+    "productId": "cmusbicyw001kw4ggz0qh03ys",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-black-brown-lappviken-brown-walnut-effect__1449590_pe989968_s5.jpg",
+    "newUrl": "/uploads/products/prod-qh03ys-0-7d764625e3.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:54.239Z"
+  },
+  {
+    "productId": "cmusbicyw001kw4ggz0qh03ys",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-black-brown-lappviken-brown-walnut-effect__1465711_pe995149_s5.jpg",
+    "newUrl": "/uploads/products/prod-qh03ys-1-492d3dddee.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:54.988Z"
+  },
+  {
+    "productId": "cmusbicyw001kw4ggz0qh03ys",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-black-brown-lappviken-brown-walnut-effect__1465710_pe995150_s5.jpg",
+    "newUrl": "/uploads/products/prod-qh03ys-2-7ba2d80fee.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:56.001Z"
+  },
+  {
+    "productId": "cmusbicyw001kw4ggz0qh03ys",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/besta-tv-bench-black-brown-lappviken-brown-walnut-effect__0843438_pe535720_s5.jpg",
+    "newUrl": "/uploads/products/prod-qh03ys-3-8a252bc8bf.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:56.904Z"
+  },
+  {
+    "productId": "cmusbidn4001pw4ggmtsn0mu9",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ekenaeset-armchair-kilanda-light-beige__1109687_pe870153_s5.jpg",
+    "newUrl": "/uploads/products/prod-mtsn0mu9-92331e6819.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:57.804Z"
+  },
+  {
+    "productId": "cmusbidn4001pw4ggmtsn0mu9",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ekenaeset-armchair-kilanda-light-beige__1109687_pe870153_s5.jpg",
+    "newUrl": "/uploads/products/prod-sn0mu9-0-92331e6819.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:58.501Z"
+  },
+  {
+    "productId": "cmusbidn4001pw4ggmtsn0mu9",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ekenaeset-armchair-kilanda-light-beige__1179060_pe895831_s5.jpg",
+    "newUrl": "/uploads/products/prod-sn0mu9-1-f6474bf6d0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:03:59.412Z"
+  },
+  {
+    "productId": "cmusbidn4001pw4ggmtsn0mu9",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ekenaeset-armchair-kilanda-light-beige__1110707_pe870568_s5.jpg",
+    "newUrl": "/uploads/products/prod-sn0mu9-2-b34ab2a847.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:00.219Z"
+  },
+  {
+    "productId": "cmusbidn4001pw4ggmtsn0mu9",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/ekenaeset-armchair-kilanda-light-beige__1109720_pe870187_s5.jpg",
+    "newUrl": "/uploads/products/prod-sn0mu9-3-5395b99594.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:01.110Z"
+  },
+  {
+    "productId": "cmusbidnd001uw4ggk97ehvbu",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/strandmon-wing-chair-talliden-beige-brown__1543840_pe1018955_s5.jpg",
+    "newUrl": "/uploads/products/prod-k97ehvbu-58aee163c5.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:01.859Z"
+  },
+  {
+    "productId": "cmusbidnd001uw4ggk97ehvbu",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/strandmon-wing-chair-talliden-beige-brown__1543840_pe1018955_s5.jpg",
+    "newUrl": "/uploads/products/prod-7ehvbu-0-58aee163c5.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:02.718Z"
+  },
+  {
+    "productId": "cmusbidnd001uw4ggk97ehvbu",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/strandmon-wing-chair-talliden-beige-brown__1546523_pe1019996_s5.jpg",
+    "newUrl": "/uploads/products/prod-7ehvbu-1-019bbee2f9.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:03.488Z"
+  },
+  {
+    "productId": "cmusbidnd001uw4ggk97ehvbu",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/strandmon-wing-chair-talliden-beige-brown__1546521_pe1019995_s5.jpg",
+    "newUrl": "/uploads/products/prod-7ehvbu-2-cc062f1264.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:04.285Z"
+  },
+  {
+    "productId": "cmusbidnd001uw4ggk97ehvbu",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/strandmon-wing-chair-talliden-beige-brown__1546522_pe1019997_s5.jpg",
+    "newUrl": "/uploads/products/prod-7ehvbu-3-ef375d3295.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:05.319Z"
+  },
+  {
+    "productId": "cmusbidnh001zw4ggq3dhxp1l",
+    "field": "thumbnail",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/uppland-armchair-blekinge-white__0818464_pe774419_s5.jpg",
+    "newUrl": "/uploads/products/prod-q3dhxp1l-de174102b0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:05.876Z"
+  },
+  {
+    "productId": "cmusbidnh001zw4ggq3dhxp1l",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/uppland-armchair-blekinge-white__0818464_pe774419_s5.jpg",
+    "newUrl": "/uploads/products/prod-dhxp1l-0-de174102b0.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:06.372Z"
+  },
+  {
+    "productId": "cmusbidnh001zw4ggq3dhxp1l",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/uppland-armchair-blekinge-white__0818462_pe774422_s5.jpg",
+    "newUrl": "/uploads/products/prod-dhxp1l-1-92bb405260.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:06.976Z"
+  },
+  {
+    "productId": "cmusbidnh001zw4ggq3dhxp1l",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/uppland-armchair-blekinge-white__0261000_pe404970_s5.jpg",
+    "newUrl": "/uploads/products/prod-dhxp1l-2-78da3d5465.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:07.700Z"
+  },
+  {
+    "productId": "cmusbidnh001zw4ggq3dhxp1l",
+    "field": "image",
+    "oldUrl": "https://www.ikea.com/us/en/images/products/uppland-armchair-blekinge-white__0944721_pe797414_s5.jpg",
+    "newUrl": "/uploads/products/prod-dhxp1l-3-76221448e9.webp",
+    "status": "success",
+    "timestamp": "2026-10-04T01:04:08.349Z"
+  }
+]

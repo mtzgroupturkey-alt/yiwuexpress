@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
   MessageSquare, Building2, User, FolderTree, Tag, Star,
   PieChart, ArrowUpCircle, ArrowDownCircle, TrendingUp, Image as ImageIcon,
-  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon, Search, UtensilsCrossed, Tv
+  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon, Search, UtensilsCrossed, Tv, Bot, Cpu, Brain
 } from 'lucide-react'
 
 export interface NavItem {
@@ -27,6 +27,22 @@ export interface NavGroup {
 }
 
 export const navigationConfig: NavGroup[] = [
+  {
+    id: 'autopilot',
+    label: 'Auto-Pilot',
+    translationKey: 'autopilot',
+    icon: Bot,
+    items: [
+      { label: 'Neural Cockpit (The Brain)', translationKey: 'neuralCockpit', href: '/admin/autopilot/orb', icon: Brain },
+      { label: 'Classic Cockpit', translationKey: 'classicCockpit', href: '/admin/autopilot/classic', icon: Cpu },
+      { label: 'Approvals Inbox', translationKey: 'approvals', href: '/admin/autopilot/approvals', icon: Bell },
+      { label: 'Predictions & Radar', translationKey: 'predictions', href: '/admin/autopilot/predictions', icon: TrendingUp },
+      { label: 'Insights & Retrospective', translationKey: 'insights', href: '/admin/autopilot/insights', icon: Sparkles },
+      { label: 'Policy Rules', translationKey: 'policies', href: '/admin/autopilot/policies', icon: Shield },
+      { label: 'Audit Trail', translationKey: 'audit', href: '/admin/autopilot/audit', icon: FileText },
+      { label: 'System Settings', translationKey: 'settings', href: '/admin/autopilot/settings', icon: Settings },
+    ],
+  },
   {
     id: 'dashboard',
     label: 'Dashboard',

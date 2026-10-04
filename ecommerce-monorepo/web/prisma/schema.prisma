@@ -2464,4 +2464,222 @@ model ImageSearchLog {
   @@map("image_search_logs")
 }
 
+// ============================================================================
+// AUTO-PILOT BUSINESS MANAGEMENT SYSTEM (PHASE 1 FOUNDATION)
+// ============================================================================
+
+// --- EVENT STORE ---
+model DomainEvent {
+  id            String   @id @default(cuid())
+  type          String   // e.g. "order.created", "inventory.low_stock"
+  aggregateId   String   // e.g. orderId, productId
+  payload       Json     // Full event payload
+  occurredAt    DateTime @default(now())
+  correlationId String   // Tracing across probes and council cycles
+  causationId   String?  // Event or command that triggered this event
+  version       Int      @default(1)
+  hashPrev      String   // SHA-256 of the previous event for cryptographic chain
+  hashSelf      String   // SHA-256 of this event (including hashPrev)
+
+  @@index([type])
+  @@index([aggregateId])
+  @@index([correlationId])
+  @@index([occurredAt])
+  @@map("domain_events")
+}
+
+model MaterializedView {
+  id        String   @id @default(cuid())
+  name      String   // e.g. "business_snapshot", "inventory_summary"
+  key       String   // e.g. "global", "warehouse:YIWU", "warehouse:MINSK"
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, key])
+  @@map("materialized_views")
+}
+
+// --- AUTO-PILOT EXECUTION & CYCLE TRACKING ---
+model AutoPilotCycle {
+  id               String            @id @default(cuid())
+  startedAt        DateTime          @default(now())
+  finishedAt       DateTime?
+  status           String            @default("RUNNING") // RUNNING, COMPLETED, FAILED, TIMED_OUT
+  trigger          String            // SCHEDULED, REACTIVE_WEBHOOK, MANUAL, ANOMALY
+  councilConsensus Json?             // Synthesized council report and rationale
+  briefing         String?           @db.Text // Daily or cycle executive briefing (EN + FA)
+  criticalCount    Int               @default(0)
+  costUsd          Float             @default(0.0)
+  correlationId    String            @unique
+
+  probes           DepartmentProbe[]
+  decisions        Decision[]
+
+  @@index([status])
+  @@index([startedAt])
+  @@map("autopilot_cycles")
+}
+
+model DepartmentProbe {
+  id          String         @id @default(cuid())
+  cycleId     String
+  department  String         // logistics, finance, marketing, inventory, orders, support, sales, security, engineering, product
+  status      String         // ok, degraded, critical
+  metrics     Json           // Structured numerical/string telemetry
+  issues      Json           // Array of detected issues: [{ code, message, severity, evidence }]
+  severity    String         // low, medium, high, critical
+  confidence  Float          // 0.0 - 1.0
+  durationMs  Int
+  createdAt   DateTime       @default(now())
+
+  cycle       AutoPilotCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+
+  @@index([cycleId])
+  @@index([department])
+  @@index([status])
+  @@map("department_probes")
+}
+
+model Decision {
+  id         String          @id @default(cuid())
+  cycleId    String
+  type       String          // e.g. "STOCK_TRANSFER", "PRICE_UPDATE", "APOLOGY_EMAIL"
+  severity   String          // low, medium, high, critical
+  rationale  String          @db.Text
+  evidence   Json            // Supporting probe and snapshot evidence
+  action     Json            // Concrete action spec: { key, params, riskLevel }
+  confidence Float           // 0.0 - 1.0
+  createdAt  DateTime        @default(now())
+
+  cycle      AutoPilotCycle  @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  approvals  ActionApproval[]
+
+  @@index([cycleId])
+  @@index([type])
+  @@map("autopilot_decisions")
+}
+
+model ActionApproval {
+  id          String    @id @default(cuid())
+  decisionId  String
+  riskLevel   String    // AUTO (green), APPROVE (yellow), BLOCK (red)
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, EXECUTED, FAILED, TIMED_OUT
+  requestedAt DateTime  @default(now())
+  slaDeadline DateTime? // 2h default for APPROVE
+  approvedBy  String?   // Admin username or "AUTO" or Telegram user
+  approvedAt  DateTime?
+  executedAt  DateTime?
+  result      Json?     // Execution response or error details
+
+  decision    Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+
+  @@index([decisionId])
+  @@index([status])
+  @@index([riskLevel])
+  @@map("action_approvals")
+}
+
+model PolicyRule {
+  id           String   @id @default(cuid())
+  key          String   // e.g. "logistics_low_stock_transfer"
+  department   String   // logistics, finance, marketing, inventory, support, etc.
+  yaml         String   @db.Text // YAML policy definition
+  priority     Int      @default(50) // 0 - 100
+  enabled      Boolean  @default(true)
+  version      Int      @default(1)
+  isLatest     Boolean  @default(true)
+  supersededBy String?  // ID of newer policy rule version
+  updatedBy    String?
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@unique([key, version])
+  @@index([key, isLatest])
+  @@index([department])
+  @@index([enabled])
+  @@map("policy_rules")
+}
+
+model DecisionMemory {
+  id           String   @id @default(cuid())
+  contextText  String   @db.Text
+  // Note: Using JSON string for vector embeddings when pgvector extension is not active in PostgreSQL
+  // TODO: Migrate to Unsupported("vector(1536)") once pgvector is confirmed installed on production
+  embedding    String?  @db.Text
+  decision     Json
+  outcome      String?  // improved, unchanged, worsened
+  outcomeScore Float?   // -1.0 to 1.0
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("decision_memory")
+}
+
+model Prediction {
+  id          String   @id @default(cuid())
+  metric      String   // revenue_7d, traffic_7d, stockout_date, tickets_24h
+  horizon     String   // 7d, 30d, 90d
+  predicted   Float
+  confidence  Float    // 0.0 - 1.0
+  actualValue Float?
+  accuracy    Float?
+  createdAt   DateTime @default(now())
+
+  @@index([metric])
+  @@index([createdAt])
+  @@map("autopilot_predictions")
+}
+
+// Append-only, cryptographically hash-chained audit log
+model AuditEntry {
+  id        String   @id @default(cuid())
+  actor     String   // e.g. "autopilot:agent", "admin@dromkok.com", "webhook:stripe"
+  action    String   // e.g. "APPROVE_DECISION", "EXECUTE_TRANSFER", "KILL_SWITCH"
+  target    String   // e.g. "order:123", "system:kill_switch", "policy:low_stock"
+  payload   Json     // Sanitized event details
+  hashPrev  String   // SHA-256 of preceding audit entry
+  hashSelf  String   // SHA-256 of current entry including hashPrev
+  createdAt DateTime @default(now())
+
+  @@index([actor])
+  @@index([action])
+  @@index([createdAt])
+  @@map("autopilot_audit_entries")
+}
+
+// Log for visual image-based product searches (privacy-preserving: no raw images stored)
+model VisualSearchLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  imageHash   String
+  detected    Json?
+  resultCount Int      @default(0)
+  clickedId   String?
+  ipHash      String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([imageHash])
+  @@map("visual_search_logs")
+}
+
+// Auto-Pilot & System Operational Notifications Model
+model AutoPilotNotification {
+  id          String    @id @default(cuid())
+  type        String
+  severity    String
+  title       String
+  body        String    @db.Text
+  data        Json?
+  cycleId     String?
+  read        Boolean   @default(false)
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+  deliveryLog Json?     // { telegram: "sent"|"failed", email: "..." }
+
+  @@index([read, createdAt])
+  @@index([cycleId])
+  @@map("autopilot_notifications")
+}
+
 

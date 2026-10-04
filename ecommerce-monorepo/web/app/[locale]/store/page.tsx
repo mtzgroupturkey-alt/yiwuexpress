@@ -18,7 +18,9 @@ import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useSettings } from '@/components/SettingsProvider';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, Camera, RefreshCw, X, Sparkles, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { VisualSearchModal } from '@/components/search/VisualSearchModal';
 
 function StoreCatalogInner() {
   const searchParams = useSearchParams();
@@ -44,9 +46,36 @@ function StoreCatalogInner() {
   const isInstantWholesale = rfqModel === 'INSTANT';
   const isRfqMode = isWholesaleActive && !isInstantWholesale;
 
+  const tVisual = useTranslations('VisualSearch');
+
   const initialCategory = searchParams.get('category') || searchParams.get('cat') || null;
   const initialDepartment = searchParams.get('department') || searchParams.get('dept') || null;
   const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
+  const visualParam = searchParams.get('visual');
+  const visualHash = searchParams.get('hash');
+  const isVisualSearch = visualParam === '1' && Boolean(visualHash);
+
+  const [isVisualModalOpen, setIsVisualModalOpen] = useState(false);
+
+  // Fetch visual search results if visual=1&hash=...
+  const { 
+    data: visualData, 
+    isLoading: isVisualLoading, 
+    isError: isVisualError 
+  } = useQuery({
+    queryKey: ['visual-search-results', visualHash],
+    queryFn: async () => {
+      if (!visualHash) return null;
+      const res = await fetch(`/api/products/search/image/results?hash=${encodeURIComponent(visualHash)}`);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.code || 'EXPIRED');
+      }
+      return res.json();
+    },
+    enabled: isVisualSearch,
+    staleTime: 5 * 60 * 1000,
+  });
 
   // Toast notification for user actions
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -57,15 +86,18 @@ function StoreCatalogInner() {
   };
 
   // Fetch real products from DB with active locale
-  const { data: productsData, isLoading } = useQuery({
+  const { data: productsData, isLoading: isCatalogLoading } = useQuery({
     queryKey: ['products', 'store-catalog', locale],
     queryFn: async () => {
       const res = await fetch(`/api/products?limit=all&locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },
+    enabled: !isVisualSearch,
     staleTime: 5 * 60 * 1000,
   });
+
+  const isLoading = isVisualSearch ? isVisualLoading : isCatalogLoading;
 
   // Fetch real categories from DB with active locale
   const { data: categoriesData } = useQuery({
@@ -102,10 +134,25 @@ function StoreCatalogInner() {
     return rawList.map(mapDbProductToDesign3);
   }, [productsData]);
 
-  // Database catalog
+  // Visual search products mapped with similarity scores
+  const visualProducts: Product[] = useMemo(() => {
+    if (!isVisualSearch || !visualData?.results) return [];
+    return visualData.results.map((item: any) => {
+      const baseProd = mapDbProductToDesign3(item);
+      return {
+        ...baseProd,
+        similarity: typeof item.similarity === 'number' ? item.similarity : 0.85,
+      };
+    });
+  }, [isVisualSearch, visualData]);
+
+  // Catalog products: either visual search results or regular dbProducts
   const catalogProducts = useMemo(() => {
+    if (isVisualSearch) {
+      return visualProducts;
+    }
     return dbProducts;
-  }, [dbProducts]);
+  }, [isVisualSearch, visualProducts, dbProducts]);
 
   // Cart & Favorites State from Live Hooks & LocalStorage
   const { favoriteIds, toggleWishlist } = useWishlist();
@@ -317,10 +364,99 @@ function StoreCatalogInner() {
       {isLoading ? (
         <div className="min-h-[400px] flex items-center justify-center gap-2 text-slate-500 text-sm font-semibold">
           <Loader2 className="w-6 h-6 animate-spin text-[#00407a]" />
-          <span>Loading catalog...</span>
+          <span>{isVisualSearch ? tVisual('analyzing') : 'Loading catalog...'}</span>
+        </div>
+      ) : isVisualError ? (
+        /* Visual Search Expired or Not Found State */
+        <div className="max-w-xl mx-auto my-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-sm text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-slate-900">
+              {tVisual('expired')}
+            </h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              {tVisual('expiredBody')}
+            </p>
+          </div>
+          <div className="flex justify-center gap-3 pt-2">
+            <button
+              onClick={() => setIsVisualModalOpen(true)}
+              className="h-10 px-5 text-xs font-bold rounded-xl bg-[#00407a] hover:bg-[#00315c] text-white flex items-center gap-2 cursor-pointer shadow-sm transition-colors min-h-[44px]"
+            >
+              <Camera className="w-4 h-4" />
+              <span>{tVisual('uploadAgain')}</span>
+            </button>
+            <button
+              onClick={() => router.push(`/${locale}/store`)}
+              className="h-10 px-5 text-xs font-bold rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors min-h-[44px]"
+            >
+              <span>{tVisual('searchByText')}</span>
+            </button>
+          </div>
         </div>
       ) : (
         <>
+          {/* Visual Search Top Banner when active */}
+          {isVisualSearch && visualData && (
+            <div className="max-w-[1440px] mx-auto px-4 lg:px-6 mb-4">
+              <div className="bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50/40 border border-blue-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  {visualData.imagePreview && (
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-blue-200 shrink-0 shadow-xs flex items-center justify-center">
+                      <img
+                        src={visualData.imagePreview}
+                        alt="Visual search thumbnail"
+                        className="w-full h-full object-contain p-0.5"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-sm sm:text-base font-black text-slate-900">
+                        {tVisual('resultsTitle')}
+                      </h2>
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-2xs">
+                        {visualData.count} items
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap mt-1">
+                      {visualData.detected?.category && (
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-white border border-blue-200 text-[#00407a]">
+                          {visualData.detected.category}
+                        </span>
+                      )}
+                      {visualData.detected?.keywords?.slice(0, 3).map((kw: string) => (
+                        <span key={kw} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/80 border border-slate-200 text-slate-600">
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                  <button
+                    onClick={() => setIsVisualModalOpen(true)}
+                    className="flex-1 sm:flex-initial h-10 px-3.5 text-xs font-bold rounded-xl bg-white border border-blue-200 hover:border-blue-300 text-[#00407a] hover:bg-blue-50/50 flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer min-h-[44px]"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>{tVisual('editSearch')}</span>
+                  </button>
+                  <button
+                    onClick={() => router.push(`/${locale}/store`)}
+                    className="h-10 w-10 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer min-h-[44px] min-w-[44px]"
+                    aria-label="Clear visual search"
+                    title="Clear visual search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* MOBILE STORE VIEW (Phase 3, hidden on md+) */}
           <div className="md:hidden">
             <MobileStorePage
@@ -374,6 +510,12 @@ function StoreCatalogInner() {
           setSelectedProductForModal(null);
           router.push(`/${locale}/products/${product.slug || product.id}`);
         }}
+      />
+
+      {/* Visual Search Upload Modal */}
+      <VisualSearchModal
+        isOpen={isVisualModalOpen}
+        onClose={() => setIsVisualModalOpen(false)}
       />
     </div>
   );

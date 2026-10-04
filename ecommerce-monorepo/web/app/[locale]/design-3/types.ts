@@ -58,6 +58,7 @@ export interface Product {
   material?: string | null;
   weightKg?: number | null;
   dimensions?: any;
+  similarity?: number;
   attributes?: Record<string, any> | null;
 }
 

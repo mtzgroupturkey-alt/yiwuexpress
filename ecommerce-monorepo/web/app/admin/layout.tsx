@@ -8,6 +8,7 @@ import { Providers } from '@/components/providers'
 import DynamicFavicon from '@/components/DynamicFavicon'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { AdminHeader } from '@/components/admin/AdminHeader'
+import { CommandPalette } from '@/components/admin/CommandPalette'
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -174,6 +175,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
+
+      {/* Global Command Palette (Cmd+K / Ctrl+K) */}
+      <CommandPalette />
     </div>
   )
 }

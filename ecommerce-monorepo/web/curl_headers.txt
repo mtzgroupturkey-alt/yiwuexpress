@@ -1,0 +1,18 @@
+HTTP/1.1 200 OK
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: https://dromkok.com
+Access-Control-Allow-Methods: GET,DELETE,PATCH,POST,PUT,OPTIONS
+Access-Control-Allow-Headers: X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+X-XSS-Protection: 1; mode=block
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch
+content-type: application/json
+Date: Sun, 04 Oct 2026 01:15:24 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
