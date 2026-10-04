@@ -49,30 +49,35 @@ jobs:
           Host *
             StrictHostKeyChecking no
             UserKnownHostsFile /dev/null
-            ServerAliveInterval 15
-            ServerAliveCountMax 4
+            ServerAliveInterval 30
+            ServerAliveCountMax 10
             TCPKeepAlive yes
-            ConnectTimeout 15
+            ConnectTimeout 30
+            IPQoS throughput
+            ControlMaster auto
+            ControlPath ~/.ssh/control-%C
+            ControlPersist 120s
           EOF
           chmod 600 ~/.ssh/config
 
-          # Sync source files to server with retry logic
+          # Sync source files to server with progressive backoff and retry logic
           SUCCESS=0
-          for attempt in 1 2 3 4; do
+          for attempt in 1 2 3 4 5 6; do
             echo "🔄 Sync attempt $attempt..."
             if sshpass -p "$SERVER_PASSWORD" rsync -az --delete \
               --exclude='.git' \
               --exclude='node_modules' \
               --exclude='.next' \
               --exclude='.env*' \
-              -e "ssh -p $PORT -o ConnectTimeout=15 -o ServerAliveInterval=15" \
+              -e "ssh -p $PORT -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o IPQoS=throughput" \
               ecommerce-monorepo/web/ ${SERVER_USER}@${SERVER_HOST}:${TARGET}/; then
               echo "✅ Files synced successfully."
               SUCCESS=1
               break
             else
-              echo "⚠️ Sync attempt $attempt failed. Waiting 5 seconds before retrying..."
-              sleep 5
+              WAIT_SEC=$((attempt * 8))
+              echo "⚠️ Sync attempt $attempt failed. Waiting ${WAIT_SEC} seconds before retrying..."
+              sleep $WAIT_SEC
             fi
           done
 
