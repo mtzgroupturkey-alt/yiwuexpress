@@ -1,0 +1,598 @@
+{
+  "department": "Desks & desk chairs",
+  "departmentSlug": "workspace-desks-chairs-fu004",
+  "departmentCode": "fu004",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Письменные столы и стулья",
+    "zh": "书桌与办公椅"
+  },
+  "missingSubcategoriesCount": 5,
+  "totalMissingProductsCount": 294,
+  "subcategories": [
+    {
+      "categoryName": "Desks & computer desks",
+      "categorySlug": "desks-computer-desks-20649",
+      "ikeaCode": "20649",
+      "parentDepartment": "Desks & desk chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Desks & computer desks"
+        },
+        "ru": {
+          "name": "Desks & computer desks"
+        },
+        "zh": {
+          "name": "Desks & computer desks"
+        }
+      },
+      "totalIkeaProductsInStock": 246,
+      "sampleProductsToInsert": [
+        {
+          "name": "MICKE Desk",
+          "slug": "micke-desk-80213074",
+          "sku": "IK-80213074",
+          "price": 109.99,
+          "compareAtPrice": 137.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/micke-desk-white__0736018_pe740345_s5.jpg"
+          ],
+          "description": "MICKE Desk 41 3/8x19 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80213074",
+          "measure": "41 3/8x19 5/8 \"",
+          "categoryName": "Desks & computer desks",
+          "translations": {
+            "en": {
+              "name": "MICKE Desk",
+              "description": "MICKE Desk 41 3/8x19 5/8 \""
+            },
+            "ru": {
+              "name": "MICKE Desk",
+              "description": "MICKE Desk 41 3/8x19 5/8 \""
+            },
+            "zh": {
+              "name": "MICKE Desk",
+              "description": "MICKE Desk 41 3/8x19 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "LAGKAPTEN / ALEX Desk",
+          "slug": "lagkapten-alex-desk-99431982",
+          "sku": "IK-99431982",
+          "price": 239.99,
+          "compareAtPrice": 299.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lagkapten-alex-desk-white__1022432_pe832720_s5.jpg"
+          ],
+          "description": "LAGKAPTEN / ALEX Desk 55 1/8x23 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "99431982",
+          "measure": "55 1/8x23 5/8 \"",
+          "categoryName": "Desks & computer desks",
+          "translations": {
+            "en": {
+              "name": "LAGKAPTEN / ALEX Desk",
+              "description": "LAGKAPTEN / ALEX Desk 55 1/8x23 5/8 \""
+            },
+            "ru": {
+              "name": "LAGKAPTEN / ALEX Desk",
+              "description": "LAGKAPTEN / ALEX Desk 55 1/8x23 5/8 \""
+            },
+            "zh": {
+              "name": "LAGKAPTEN / ALEX Desk",
+              "description": "LAGKAPTEN / ALEX Desk 55 1/8x23 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "MICKE Desk",
+          "slug": "micke-desk-90214308",
+          "sku": "IK-90214308",
+          "price": 109.99,
+          "compareAtPrice": 137.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/micke-desk-white__0736020_pe740347_s5.jpg"
+          ],
+          "description": "MICKE Desk 55 7/8x19 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90214308",
+          "measure": "55 7/8x19 5/8 \"",
+          "categoryName": "Desks & computer desks",
+          "translations": {
+            "en": {
+              "name": "MICKE Desk",
+              "description": "MICKE Desk 55 7/8x19 5/8 \""
+            },
+            "ru": {
+              "name": "MICKE Desk",
+              "description": "MICKE Desk 55 7/8x19 5/8 \""
+            },
+            "zh": {
+              "name": "MICKE Desk",
+              "description": "MICKE Desk 55 7/8x19 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "LAGKAPTEN / ALEX Desk",
+          "slug": "lagkapten-alex-desk-89417057",
+          "sku": "IK-89417057",
+          "price": 159.99,
+          "compareAtPrice": 199.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lagkapten-alex-desk-black-brown-black__0977233_pe813476_s5.jpg"
+          ],
+          "description": "LAGKAPTEN / ALEX Desk 47 1/4x23 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "89417057",
+          "measure": "47 1/4x23 5/8 \"",
+          "categoryName": "Desks & computer desks",
+          "translations": {
+            "en": {
+              "name": "LAGKAPTEN / ALEX Desk",
+              "description": "LAGKAPTEN / ALEX Desk 47 1/4x23 5/8 \""
+            },
+            "ru": {
+              "name": "LAGKAPTEN / ALEX Desk",
+              "description": "LAGKAPTEN / ALEX Desk 47 1/4x23 5/8 \""
+            },
+            "zh": {
+              "name": "LAGKAPTEN / ALEX Desk",
+              "description": "LAGKAPTEN / ALEX Desk 47 1/4x23 5/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Conference tables",
+      "categorySlug": "mittzon-conference-meeting-tables-54173",
+      "ikeaCode": "54173",
+      "parentDepartment": "Desks & desk chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Conference tables"
+        },
+        "ru": {
+          "name": "Conference tables"
+        },
+        "zh": {
+          "name": "Conference tables"
+        }
+      },
+      "totalIkeaProductsInStock": 9,
+      "sampleProductsToInsert": [
+        {
+          "name": "MITTZON Conference table",
+          "slug": "mittzon-conference-table-39533422",
+          "sku": "IK-39533422",
+          "price": 399.99,
+          "compareAtPrice": 499.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-conference-table-walnut-veneer-black__1215880_pe912254_s5.jpg"
+          ],
+          "description": "MITTZON Conference table 55 1/8x42 1/2x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "39533422",
+          "measure": "55 1/8x42 1/2x29 1/2 \"",
+          "categoryName": "Conference tables",
+          "translations": {
+            "en": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 55 1/8x42 1/2x29 1/2 \""
+            },
+            "ru": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 55 1/8x42 1/2x29 1/2 \""
+            },
+            "zh": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 55 1/8x42 1/2x29 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "MITTZON Conference table",
+          "slug": "mittzon-conference-table-99532113",
+          "sku": "IK-99532113",
+          "price": 319.99,
+          "compareAtPrice": 399.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-conference-table-oak-veneer-black__1212818_pe910788_s5.jpg"
+          ],
+          "description": "MITTZON Conference table 47 1/4x42 1/2x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "99532113",
+          "measure": "47 1/4x42 1/2x29 1/2 \"",
+          "categoryName": "Conference tables",
+          "translations": {
+            "en": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 47 1/4x42 1/2x29 1/2 \""
+            },
+            "ru": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 47 1/4x42 1/2x29 1/2 \""
+            },
+            "zh": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 47 1/4x42 1/2x29 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "MITTZON Conference table",
+          "slug": "mittzon-conference-table-19533003",
+          "sku": "IK-19533003",
+          "price": 259.99,
+          "compareAtPrice": 324.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-conference-table-walnut-veneer-black__1215566_pe912058_s5.jpg"
+          ],
+          "description": "MITTZON Conference table 55 1/8x26 3/4x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19533003",
+          "measure": "55 1/8x26 3/4x29 1/2 \"",
+          "categoryName": "Conference tables",
+          "translations": {
+            "en": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 55 1/8x26 3/4x29 1/2 \""
+            },
+            "ru": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 55 1/8x26 3/4x29 1/2 \""
+            },
+            "zh": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 55 1/8x26 3/4x29 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "MITTZON Conference table",
+          "slug": "mittzon-conference-table-79530577",
+          "sku": "IK-79530577",
+          "price": 229.99,
+          "compareAtPrice": 287.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-conference-table-oak-veneer-white__1212775_pe910766_s5.jpg"
+          ],
+          "description": "MITTZON Conference table 47 1/4x26 3/4x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79530577",
+          "measure": "47 1/4x26 3/4x29 1/2 \"",
+          "categoryName": "Conference tables",
+          "translations": {
+            "en": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 47 1/4x26 3/4x29 1/2 \""
+            },
+            "ru": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 47 1/4x26 3/4x29 1/2 \""
+            },
+            "zh": {
+              "name": "MITTZON Conference table",
+              "description": "MITTZON Conference table 47 1/4x26 3/4x29 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Conference table & chair sets",
+      "categorySlug": "conference-table-chair-sets-700424",
+      "ikeaCode": "700424",
+      "parentDepartment": "Desks & desk chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Conference table & chair sets"
+        },
+        "ru": {
+          "name": "Conference table & chair sets"
+        },
+        "zh": {
+          "name": "Conference table & chair sets"
+        }
+      },
+      "totalIkeaProductsInStock": 0,
+      "sampleProductsToInsert": []
+    },
+    {
+      "categoryName": "Desk & chair sets",
+      "categorySlug": "desk-chair-sets-53249",
+      "ikeaCode": "53249",
+      "parentDepartment": "Desks & desk chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Desk & chair sets"
+        },
+        "ru": {
+          "name": "Desk & chair sets"
+        },
+        "zh": {
+          "name": "Desk & chair sets"
+        }
+      },
+      "totalIkeaProductsInStock": 31,
+      "sampleProductsToInsert": [
+        {
+          "name": "KALLAX / LOBERGET Desk and chair",
+          "slug": "kallax-loberget-desk-and-chair-49555003",
+          "sku": "IK-49555003",
+          "price": 139.98,
+          "compareAtPrice": 174.98,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kallax-loberget-desk-and-chair-white__1383003_pe962419_s5.jpg"
+          ],
+          "description": "KALLAX / LOBERGET Desk and chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "49555003",
+          "measure": "",
+          "categoryName": "Desk & chair sets",
+          "translations": {
+            "en": {
+              "name": "KALLAX / LOBERGET Desk and chair",
+              "description": "KALLAX / LOBERGET Desk and chair"
+            },
+            "ru": {
+              "name": "KALLAX / LOBERGET Desk and chair",
+              "description": "KALLAX / LOBERGET Desk and chair"
+            },
+            "zh": {
+              "name": "KALLAX / LOBERGET Desk and chair",
+              "description": "KALLAX / LOBERGET Desk and chair"
+            }
+          }
+        },
+        {
+          "name": "MICKE/ÖRFJÄLL Desk and chair",
+          "slug": "mickerfjll-desk-and-chair-69553456",
+          "sku": "IK-69553456",
+          "price": 139.98,
+          "compareAtPrice": 174.98,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/micke-oerfjaell-desk-and-chair-white-light-green__1258411_pe926328_s5.jpg"
+          ],
+          "description": "MICKE/ÖRFJÄLL Desk and chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69553456",
+          "measure": "",
+          "categoryName": "Desk & chair sets",
+          "translations": {
+            "en": {
+              "name": "MICKE/ÖRFJÄLL Desk and chair",
+              "description": "MICKE/ÖRFJÄLL Desk and chair"
+            },
+            "ru": {
+              "name": "MICKE/ÖRFJÄLL Desk and chair",
+              "description": "MICKE/ÖRFJÄLL Desk and chair"
+            },
+            "zh": {
+              "name": "MICKE/ÖRFJÄLL Desk and chair",
+              "description": "MICKE/ÖRFJÄLL Desk and chair"
+            }
+          }
+        },
+        {
+          "name": "KALLAX / ELDBERGET Desk and chair",
+          "slug": "kallax-eldberget-desk-and-chair-69555021",
+          "sku": "IK-69555021",
+          "price": 149.98,
+          "compareAtPrice": 187.48,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kallax-eldberget-desk-and-chair-white-stained-oak-effect-dark-gray-black__1383009_pe962425_s5.jpg"
+          ],
+          "description": "KALLAX / ELDBERGET Desk and chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69555021",
+          "measure": "",
+          "categoryName": "Desk & chair sets",
+          "translations": {
+            "en": {
+              "name": "KALLAX / ELDBERGET Desk and chair",
+              "description": "KALLAX / ELDBERGET Desk and chair"
+            },
+            "ru": {
+              "name": "KALLAX / ELDBERGET Desk and chair",
+              "description": "KALLAX / ELDBERGET Desk and chair"
+            },
+            "zh": {
+              "name": "KALLAX / ELDBERGET Desk and chair",
+              "description": "KALLAX / ELDBERGET Desk and chair"
+            }
+          }
+        },
+        {
+          "name": "ENKROKEN / LOBERGET Desk and chair",
+          "slug": "enkroken-loberget-desk-and-chair-79621186",
+          "sku": "IK-79621186",
+          "price": 124.98,
+          "compareAtPrice": 156.23,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/enkroken-loberget-desk-and-chair-white__1541822_pe1018191_s5.jpg"
+          ],
+          "description": "ENKROKEN / LOBERGET Desk and chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79621186",
+          "measure": "",
+          "categoryName": "Desk & chair sets",
+          "translations": {
+            "en": {
+              "name": "ENKROKEN / LOBERGET Desk and chair",
+              "description": "ENKROKEN / LOBERGET Desk and chair"
+            },
+            "ru": {
+              "name": "ENKROKEN / LOBERGET Desk and chair",
+              "description": "ENKROKEN / LOBERGET Desk and chair"
+            },
+            "zh": {
+              "name": "ENKROKEN / LOBERGET Desk and chair",
+              "description": "ENKROKEN / LOBERGET Desk and chair"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Conference chairs",
+      "categorySlug": "conference-chairs-47068",
+      "ikeaCode": "47068",
+      "parentDepartment": "Desks & desk chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Conference chairs"
+        },
+        "ru": {
+          "name": "Conference chairs"
+        },
+        "zh": {
+          "name": "Conference chairs"
+        }
+      },
+      "totalIkeaProductsInStock": 8,
+      "sampleProductsToInsert": [
+        {
+          "name": "LÅNGFJÄLL Conference chair",
+          "slug": "lngfjll-conference-chair-59252369",
+          "sku": "IK-59252369",
+          "price": 249.99,
+          "compareAtPrice": 312.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/langfjaell-conference-chair-gunnared-beige-white__0725410_pe734846_s5.jpg"
+          ],
+          "description": "LÅNGFJÄLL Conference chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59252369",
+          "measure": "",
+          "categoryName": "Conference chairs",
+          "translations": {
+            "en": {
+              "name": "LÅNGFJÄLL Conference chair",
+              "description": "LÅNGFJÄLL Conference chair"
+            },
+            "ru": {
+              "name": "LÅNGFJÄLL Conference chair",
+              "description": "LÅNGFJÄLL Conference chair"
+            },
+            "zh": {
+              "name": "LÅNGFJÄLL Conference chair",
+              "description": "LÅNGFJÄLL Conference chair"
+            }
+          }
+        },
+        {
+          "name": "TOSSBERG / LÅNGFJÄLL Conference chair",
+          "slug": "tossberg-lngfjll-conference-chair-89513105",
+          "sku": "IK-89513105",
+          "price": 379.99,
+          "compareAtPrice": 474.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tossberg-langfjaell-conference-chair-gunnared-beige-white__1199676_pe904634_s5.jpg"
+          ],
+          "description": "TOSSBERG / LÅNGFJÄLL Conference chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "89513105",
+          "measure": "",
+          "categoryName": "Conference chairs",
+          "translations": {
+            "en": {
+              "name": "TOSSBERG / LÅNGFJÄLL Conference chair",
+              "description": "TOSSBERG / LÅNGFJÄLL Conference chair"
+            },
+            "ru": {
+              "name": "TOSSBERG / LÅNGFJÄLL Conference chair",
+              "description": "TOSSBERG / LÅNGFJÄLL Conference chair"
+            },
+            "zh": {
+              "name": "TOSSBERG / LÅNGFJÄLL Conference chair",
+              "description": "TOSSBERG / LÅNGFJÄLL Conference chair"
+            }
+          }
+        },
+        {
+          "name": "FJÄLLBERGET Conference chair with casters",
+          "slug": "fjllberget-conference-chair-with-casters-30487764",
+          "sku": "IK-30487764",
+          "price": 329.99,
+          "compareAtPrice": 412.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fjaellberget-conference-chair-with-casters-white-stained-oak-veneer-gunnared-beige__0815078_pe772749_s5.jpg"
+          ],
+          "description": "FJÄLLBERGET Conference chair with casters",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30487764",
+          "measure": "",
+          "categoryName": "Conference chairs",
+          "translations": {
+            "en": {
+              "name": "FJÄLLBERGET Conference chair with casters",
+              "description": "FJÄLLBERGET Conference chair with casters"
+            },
+            "ru": {
+              "name": "FJÄLLBERGET Conference chair with casters",
+              "description": "FJÄLLBERGET Conference chair with casters"
+            },
+            "zh": {
+              "name": "FJÄLLBERGET Conference chair with casters",
+              "description": "FJÄLLBERGET Conference chair with casters"
+            }
+          }
+        },
+        {
+          "name": "LÅNGFJÄLL Conference chair with armrests",
+          "slug": "lngfjll-conference-chair-with-armrests-89252768",
+          "sku": "IK-89252768",
+          "price": 279.99,
+          "compareAtPrice": 349.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/langfjaell-conference-chair-with-armrests-gunnared-beige-white__0725412_pe734844_s5.jpg"
+          ],
+          "description": "LÅNGFJÄLL Conference chair with armrests",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "89252768",
+          "measure": "",
+          "categoryName": "Conference chairs",
+          "translations": {
+            "en": {
+              "name": "LÅNGFJÄLL Conference chair with armrests",
+              "description": "LÅNGFJÄLL Conference chair with armrests"
+            },
+            "ru": {
+              "name": "LÅNGFJÄLL Conference chair with armrests",
+              "description": "LÅNGFJÄLL Conference chair with armrests"
+            },
+            "zh": {
+              "name": "LÅNGFJÄLL Conference chair with armrests",
+              "description": "LÅNGFJÄLL Conference chair with armrests"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

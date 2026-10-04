@@ -1,0 +1,296 @@
+{
+  "department": "Baby & kids",
+  "departmentSlug": "baby-kids-bc001",
+  "departmentCode": "bc001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Товары для малышей и детей",
+    "zh": "婴儿与儿童"
+  },
+  "missingSubcategoriesCount": 2,
+  "totalMissingProductsCount": 985,
+  "subcategories": [
+    {
+      "categoryName": "Baby",
+      "categorySlug": "baby-bc002",
+      "ikeaCode": "bc002",
+      "parentDepartment": "Baby & kids",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Baby"
+        },
+        "ru": {
+          "name": "Baby"
+        },
+        "zh": {
+          "name": "Baby"
+        }
+      },
+      "totalIkeaProductsInStock": 353,
+      "sampleProductsToInsert": [
+        {
+          "name": "ANTILOP High chair with tray",
+          "slug": "antilop-high-chair-with-tray-39597517",
+          "sku": "IK-39597517",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/antilop-high-chair-with-tray-white-white__1416405_pe975540_s5.jpg"
+          ],
+          "description": "ANTILOP High chair with tray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "39597517",
+          "measure": "",
+          "categoryName": "Baby",
+          "translations": {
+            "en": {
+              "name": "ANTILOP High chair with tray",
+              "description": "ANTILOP High chair with tray"
+            },
+            "ru": {
+              "name": "ANTILOP High chair with tray",
+              "description": "ANTILOP High chair with tray"
+            },
+            "zh": {
+              "name": "ANTILOP High chair with tray",
+              "description": "ANTILOP High chair with tray"
+            }
+          }
+        },
+        {
+          "name": "SNIGLAR Crib",
+          "slug": "sniglar-crib-50248541",
+          "sku": "IK-50248541",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sniglar-crib-beech__1448915_pe989685_s5.jpg"
+          ],
+          "description": "SNIGLAR Crib 27 1/2x52 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50248541",
+          "measure": "27 1/2x52 \"",
+          "categoryName": "Baby",
+          "translations": {
+            "en": {
+              "name": "SNIGLAR Crib",
+              "description": "SNIGLAR Crib 27 1/2x52 \""
+            },
+            "ru": {
+              "name": "SNIGLAR Crib",
+              "description": "SNIGLAR Crib 27 1/2x52 \""
+            },
+            "zh": {
+              "name": "SNIGLAR Crib",
+              "description": "SNIGLAR Crib 27 1/2x52 \""
+            }
+          }
+        },
+        {
+          "name": "KRAMA Washcloth",
+          "slug": "krama-washcloth-40638847",
+          "sku": "IK-40638847",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/krama-washcloth-white__1507802_pe1009415_s5.jpg"
+          ],
+          "description": "KRAMA Washcloth 11 3/4x11 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40638847",
+          "measure": "11 3/4x11 3/4 \"",
+          "categoryName": "Baby",
+          "translations": {
+            "en": {
+              "name": "KRAMA Washcloth",
+              "description": "KRAMA Washcloth 11 3/4x11 3/4 \""
+            },
+            "ru": {
+              "name": "KRAMA Washcloth",
+              "description": "KRAMA Washcloth 11 3/4x11 3/4 \""
+            },
+            "zh": {
+              "name": "KRAMA Washcloth",
+              "description": "KRAMA Washcloth 11 3/4x11 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "ÄNGSHUMLA 4-piece bath toy set",
+          "slug": "ngshumla-4-piece-bath-toy-set-10582267",
+          "sku": "IK-10582267",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aengshumla-4-piece-bath-toy-set__1388522_pe964827_s5.jpg"
+          ],
+          "description": "ÄNGSHUMLA 4-piece bath toy set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10582267",
+          "measure": "",
+          "categoryName": "Baby",
+          "translations": {
+            "en": {
+              "name": "ÄNGSHUMLA 4-piece bath toy set",
+              "description": "ÄNGSHUMLA 4-piece bath toy set"
+            },
+            "ru": {
+              "name": "ÄNGSHUMLA 4-piece bath toy set",
+              "description": "ÄNGSHUMLA 4-piece bath toy set"
+            },
+            "zh": {
+              "name": "ÄNGSHUMLA 4-piece bath toy set",
+              "description": "ÄNGSHUMLA 4-piece bath toy set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kids",
+      "categorySlug": "kids-bc003",
+      "ikeaCode": "bc003",
+      "parentDepartment": "Baby & kids",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kids"
+        },
+        "ru": {
+          "name": "Kids"
+        },
+        "zh": {
+          "name": "Kids"
+        }
+      },
+      "totalIkeaProductsInStock": 632,
+      "sampleProductsToInsert": [
+        {
+          "name": "MÅLA Easel",
+          "slug": "mla-easel-30488966",
+          "sku": "IK-30488966",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mala-easel-softwood__0995590_pe821771_s5.jpg"
+          ],
+          "description": "MÅLA Easel",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30488966",
+          "measure": "",
+          "categoryName": "Kids",
+          "translations": {
+            "en": {
+              "name": "MÅLA Easel",
+              "description": "MÅLA Easel"
+            },
+            "ru": {
+              "name": "MÅLA Easel",
+              "description": "MÅLA Easel"
+            },
+            "zh": {
+              "name": "MÅLA Easel",
+              "description": "MÅLA Easel"
+            }
+          }
+        },
+        {
+          "name": "GREJSIMOJS Floor cushion, set of 3",
+          "slug": "grejsimojs-floor-cushion-set-of-3-00602015",
+          "sku": "IK-00602015",
+          "price": 89.99,
+          "compareAtPrice": 112.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grejsimojs-floor-cushion-set-of-3-stackable-multicolor__1430964_pe982193_s5.jpg"
+          ],
+          "description": "GREJSIMOJS Floor cushion, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00602015",
+          "measure": "",
+          "categoryName": "Kids",
+          "translations": {
+            "en": {
+              "name": "GREJSIMOJS Floor cushion, set of 3",
+              "description": "GREJSIMOJS Floor cushion, set of 3"
+            },
+            "ru": {
+              "name": "GREJSIMOJS Floor cushion, set of 3",
+              "description": "GREJSIMOJS Floor cushion, set of 3"
+            },
+            "zh": {
+              "name": "GREJSIMOJS Floor cushion, set of 3",
+              "description": "GREJSIMOJS Floor cushion, set of 3"
+            }
+          }
+        },
+        {
+          "name": "LÄTT Children's table and 2 chairs",
+          "slug": "ltt-childrens-table-and-2-chairs-50178411",
+          "sku": "IK-50178411",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/laett-childrens-table-and-2-chairs-white-pine__0735856_pe740220_s5.jpg"
+          ],
+          "description": "LÄTT Children's table and 2 chairs",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50178411",
+          "measure": "",
+          "categoryName": "Kids",
+          "translations": {
+            "en": {
+              "name": "LÄTT Children's table and 2 chairs",
+              "description": "LÄTT Children's table and 2 chairs"
+            },
+            "ru": {
+              "name": "LÄTT Children's table and 2 chairs",
+              "description": "LÄTT Children's table and 2 chairs"
+            },
+            "zh": {
+              "name": "LÄTT Children's table and 2 chairs",
+              "description": "LÄTT Children's table and 2 chairs"
+            }
+          }
+        },
+        {
+          "name": "TROFAST Storage combination with boxes",
+          "slug": "trofast-storage-combination-with-boxes-59574459",
+          "sku": "IK-59574459",
+          "price": 97.99,
+          "compareAtPrice": 122.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trofast-storage-combination-with-boxes-white-white__1354571_pe952833_s5.jpg"
+          ],
+          "description": "TROFAST Storage combination with boxes 39x17 3/8x22 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59574459",
+          "measure": "39x17 3/8x22 \"",
+          "categoryName": "Kids",
+          "translations": {
+            "en": {
+              "name": "TROFAST Storage combination with boxes",
+              "description": "TROFAST Storage combination with boxes 39x17 3/8x22 \""
+            },
+            "ru": {
+              "name": "TROFAST Storage combination with boxes",
+              "description": "TROFAST Storage combination with boxes 39x17 3/8x22 \""
+            },
+            "zh": {
+              "name": "TROFAST Storage combination with boxes",
+              "description": "TROFAST Storage combination with boxes 39x17 3/8x22 \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

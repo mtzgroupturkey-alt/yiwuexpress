@@ -1,0 +1,155 @@
+{
+  "department": "Bathroom: furniture, supplies & more",
+  "departmentSlug": "bathroom-ba001",
+  "departmentCode": "ba001",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Ванная комната: мебель и аксессуары",
+    "zh": "浴室：家具与配件"
+  },
+  "missingSubcategoriesCount": 1,
+  "totalMissingProductsCount": 45,
+  "subcategories": [
+    {
+      "categoryName": "Showers",
+      "categorySlug": "showers-40690",
+      "ikeaCode": "40690",
+      "parentDepartment": "Bathroom: furniture, supplies & more",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Showers"
+        },
+        "ru": {
+          "name": "Showers"
+        },
+        "zh": {
+          "name": "Showers"
+        }
+      },
+      "totalIkeaProductsInStock": 45,
+      "sampleProductsToInsert": [
+        {
+          "name": "BROGRUND Riser rail with hand shower/outlet",
+          "slug": "brogrund-riser-rail-with-hand-showeroutlet-50342628",
+          "sku": "IK-50342628",
+          "price": 79.99,
+          "compareAtPrice": 99.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brogrund-riser-rail-with-hand-shower-outlet-chrome-plated__0755269_pe748313_s5.jpg"
+          ],
+          "description": "BROGRUND Riser rail with hand shower/outlet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50342628",
+          "measure": "",
+          "categoryName": "Showers",
+          "translations": {
+            "en": {
+              "name": "BROGRUND Riser rail with hand shower/outlet",
+              "description": "BROGRUND Riser rail with hand shower/outlet"
+            },
+            "ru": {
+              "name": "BROGRUND Riser rail with hand shower/outlet",
+              "description": "BROGRUND Riser rail with hand shower/outlet"
+            },
+            "zh": {
+              "name": "BROGRUND Riser rail with hand shower/outlet",
+              "description": "BROGRUND Riser rail with hand shower/outlet"
+            }
+          }
+        },
+        {
+          "name": "TISKEN Basket with suction cup",
+          "slug": "tisken-basket-with-suction-cup-40381253",
+          "sku": "IK-40381253",
+          "price": 8.99,
+          "compareAtPrice": 11.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tisken-basket-with-suction-cup-white__0749052_pe745413_s5.jpg"
+          ],
+          "description": "TISKEN Basket with suction cup",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40381253",
+          "measure": "",
+          "categoryName": "Showers",
+          "translations": {
+            "en": {
+              "name": "TISKEN Basket with suction cup",
+              "description": "TISKEN Basket with suction cup"
+            },
+            "ru": {
+              "name": "TISKEN Basket with suction cup",
+              "description": "TISKEN Basket with suction cup"
+            },
+            "zh": {
+              "name": "TISKEN Basket with suction cup",
+              "description": "TISKEN Basket with suction cup"
+            }
+          }
+        },
+        {
+          "name": "NÄLK Shower curtain liner",
+          "slug": "nlk-shower-curtain-liner-00626498",
+          "sku": "IK-00626498",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/naelk-shower-curtain-liner-clear__1494459_pe1004746_s5.jpg"
+          ],
+          "description": "NÄLK Shower curtain liner 71x71 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00626498",
+          "measure": "71x71 \"",
+          "categoryName": "Showers",
+          "translations": {
+            "en": {
+              "name": "NÄLK Shower curtain liner",
+              "description": "NÄLK Shower curtain liner 71x71 \""
+            },
+            "ru": {
+              "name": "NÄLK Shower curtain liner",
+              "description": "NÄLK Shower curtain liner 71x71 \""
+            },
+            "zh": {
+              "name": "NÄLK Shower curtain liner",
+              "description": "NÄLK Shower curtain liner 71x71 \""
+            }
+          }
+        },
+        {
+          "name": "BROFJÄRDEN Shower shelf",
+          "slug": "brofjrden-shower-shelf-10582234",
+          "sku": "IK-10582234",
+          "price": 21.99,
+          "compareAtPrice": 27.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brofjaerden-shower-shelf-chrome-effect__1329640_pe945209_s5.jpg"
+          ],
+          "description": "BROFJÄRDEN Shower shelf 13x4 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10582234",
+          "measure": "13x4 ¾ \"",
+          "categoryName": "Showers",
+          "translations": {
+            "en": {
+              "name": "BROFJÄRDEN Shower shelf",
+              "description": "BROFJÄRDEN Shower shelf 13x4 ¾ \""
+            },
+            "ru": {
+              "name": "BROFJÄRDEN Shower shelf",
+              "description": "BROFJÄRDEN Shower shelf 13x4 ¾ \""
+            },
+            "zh": {
+              "name": "BROFJÄRDEN Shower shelf",
+              "description": "BROFJÄRDEN Shower shelf 13x4 ¾ \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

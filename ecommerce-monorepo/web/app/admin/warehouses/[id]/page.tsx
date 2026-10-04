@@ -24,8 +24,10 @@ import {
   Loader2,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useAdminLocale } from '../../contexts/AdminLocaleContext'
 
 export default function WarehouseDetailPage() {
+  const { dict } = useAdminLocale()
   const params = useParams()
   const warehouseId = params.id as string
   const queryClient = useQueryClient()
@@ -93,7 +95,7 @@ export default function WarehouseDetailPage() {
         <Link href="/admin/warehouses">
           <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs">
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Warehouses
+            {dict.warehouses.tabWarehouses || 'Back to Warehouses'}
           </Button>
         </Link>
       </div>
@@ -103,8 +105,8 @@ export default function WarehouseDetailPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{warehouse.name}</h1>
             <Badge variant="outline" className="font-mono font-bold text-xs">{warehouse.code}</Badge>
-            {warehouse.isDefaultProcurement && <Badge className="bg-amber-500 text-white text-[11px]">China Hub</Badge>}
-            {warehouse.isDefaultSales && <Badge className="bg-indigo-600 text-white text-[11px]">Belarus Sales DC</Badge>}
+            {warehouse.isDefaultProcurement && <Badge className="bg-amber-500 text-white text-[11px]">{dict.warehouses.defaultProcurement || 'China Hub'}</Badge>}
+            {warehouse.isDefaultSales && <Badge className="bg-indigo-600 text-white text-[11px]">{dict.warehouses.defaultSales || 'Belarus Sales DC'}</Badge>}
           </div>
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
             <MapPin className="w-3.5 h-3.5" />
@@ -114,7 +116,7 @@ export default function WarehouseDetailPage() {
         <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => setAddZoneOpen(true)} className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5">
             <Plus className="w-3.5 h-3.5" />
-            Add Zone
+            {dict.warehouses.addFirstZone || 'Add Zone'}
           </Button>
         </div>
       </div>
@@ -123,13 +125,13 @@ export default function WarehouseDetailPage() {
       <div className="space-y-4">
         <h2 className="text-base font-bold text-foreground flex items-center gap-2">
           <Layers className="w-4 h-4 text-indigo-600" />
-          Location Hierarchy (Zone → Bay → Slot)
+          {dict.warehouses.addressingTopology || 'Location Hierarchy (Zone → Bay → Slot)'}
         </h2>
 
         {(warehouse.zones || []).length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-xs text-muted-foreground">
-              No zones configured for this warehouse yet. Click &ldquo;Add Zone&rdquo; to start configuring locations.
+              {dict.warehouses.noZonesYet || 'No zones configured for this warehouse yet. Click "Add Zone" to start configuring locations.'}
             </CardContent>
           </Card>
         ) : (
@@ -186,8 +188,8 @@ export default function WarehouseDetailPage() {
       <Dialog open={addZoneOpen} onOpenChange={setAddZoneOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Add Warehouse Zone</DialogTitle>
-            <DialogDescription>Define a functional area (Storage, Receiving, Picking, etc.)</DialogDescription>
+            <DialogTitle>{dict.warehouses.modalAddZoneTitle || 'Add Warehouse Zone'}</DialogTitle>
+            <DialogDescription>{dict.warehouses.modalAddZoneDesc || 'Define functional area in'} {warehouse.name}</DialogDescription>
           </DialogHeader>
           <form
             onSubmit={(e) => {
@@ -198,7 +200,7 @@ export default function WarehouseDetailPage() {
             className="space-y-3 pt-2"
           >
             <div className="space-y-1">
-              <Label className="text-xs">Zone Code *</Label>
+              <Label className="text-xs">{dict.warehouses.zoneCode || 'Zone Code *'}</Label>
               <Input
                 required
                 placeholder="e.g. Z-STOR-02"
@@ -208,7 +210,7 @@ export default function WarehouseDetailPage() {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Zone Name *</Label>
+              <Label className="text-xs">{dict.warehouses.zoneName || 'Zone Name *'}</Label>
               <Input
                 required
                 placeholder="e.g. Pallet Racking B"
@@ -219,10 +221,10 @@ export default function WarehouseDetailPage() {
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
               <Button type="button" variant="outline" size="sm" onClick={() => setAddZoneOpen(false)} className="h-8 text-xs">
-                Cancel
+                {dict.common.cancel || 'Cancel'}
               </Button>
               <Button type="submit" size="sm" disabled={addZoneMutation.isPending} className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
-                {addZoneMutation.isPending ? 'Adding...' : 'Add Zone'}
+                {addZoneMutation.isPending ? (dict.common.loading || 'Adding...') : (dict.warehouses.addFirstZone || 'Add Zone')}
               </Button>
             </div>
           </form>

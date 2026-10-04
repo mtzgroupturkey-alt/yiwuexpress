@@ -17,11 +17,13 @@ import {
 } from 'lucide-react';
 import { DepartmentNodeData, NeuralStatePayload } from '@/lib/autopilot/ui/neural/types';
 import { STATUS_COLORS } from '@/lib/autopilot/ui/neural/colors';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export default function DepartmentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const deptKey = (params?.dept as string) || 'logistics';
+  const { dict } = useAdminLocale();
 
   const [state, setState] = useState<NeuralStatePayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -45,20 +47,24 @@ export default function DepartmentDetailPage() {
     ? STATUS_COLORS[deptData.status]
     : STATUS_COLORS.healthy;
 
+  const displayName = (dict.autopilot?.departments as Record<string, string> | undefined)?.[deptKey] || deptData?.name || deptKey;
+  const displayStatus = (dict.autopilot?.statuses as Record<string, string> | undefined)?.[deptData?.status || ''] || deptData?.status || 'Active';
+  const displayMetricLabel = (dict.autopilot?.metricLabels as Record<string, string> | undefined)?.[deptKey] || deptData?.metricLabel || 'Active Metric';
+
   const handleApproveAction = async (actionId: string) => {
-    setActionFeedback('Action approved and executing...');
+    setActionFeedback(dict.common?.saveSuccess || 'Action approved and executing...');
     setTimeout(() => setActionFeedback(null), 3000);
   };
 
   const handleRejectAction = async (actionId: string) => {
-    setActionFeedback('Action dismissed.');
+    setActionFeedback(dict.common?.deleteSuccess || 'Action dismissed.');
     setTimeout(() => setActionFeedback(null), 3000);
   };
 
   if (loading) {
     return (
       <div className="w-full h-full min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 font-mono">
-        Loading Department Neural Telemetry...
+        {dict.autopilot?.initializing || 'Loading Department Neural Telemetry...'}
       </div>
     );
   }
@@ -82,11 +88,11 @@ export default function DepartmentDetailPage() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer text-xs font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Return to Neural Orbit</span>
+            <span>{dict.autopilot?.returnToOrb || 'Return to Neural Orbit'}</span>
           </button>
 
           <span className="font-mono text-xs uppercase px-2.5 py-1 rounded-full border bg-slate-900 border-slate-800 text-slate-400">
-            Cluster: <b className="text-white capitalize">{deptData?.cluster || 'Ops'}</b>
+            {dict.autopilot?.clusterLabel || 'Cluster:'} <b className="text-white capitalize">{deptData?.cluster || 'Ops'}</b>
           </span>
         </div>
 
@@ -107,7 +113,7 @@ export default function DepartmentDetailPage() {
                   style={{ backgroundColor: colors.primary }}
                 />
                 <h1 className="text-2xl font-bold tracking-tight text-white capitalize">
-                  {deptData?.name || deptKey} Department
+                  {displayName}
                 </h1>
                 <span
                   className="text-xs uppercase font-mono px-2.5 py-0.5 rounded-full border font-bold"
@@ -117,26 +123,32 @@ export default function DepartmentDetailPage() {
                     backgroundColor: colors.bgSubtle,
                   }}
                 >
-                  {deptData?.status || 'Active'}
+                  {displayStatus}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Telemetry confidence level: {Math.round((deptData?.confidence || 0.95) * 100)}% | Health Index: {deptData?.health || 85}%
+                {(dict.autopilot?.confidenceLevel || 'Telemetry confidence level: {confidence}% | Health Index: {health}%')
+                  .replace('{confidence}', String(Math.round((deptData?.confidence || 0.95) * 100)))
+                  .replace('{health}', String(deptData?.health || 85))}
               </p>
             </div>
 
             <div className="flex items-center gap-6 bg-slate-950/70 p-3 rounded-xl border border-slate-800">
               <div>
-                <div className="text-[10px] uppercase font-mono text-slate-400">Primary Key Metric</div>
+                <div className="text-[10px] uppercase font-mono text-slate-400">
+                  {dict.autopilot?.primaryMetric || 'Primary Key Metric'}
+                </div>
                 <div className="text-2xl font-extrabold text-white font-mono">
                   {deptData?.metric || '0'}
                 </div>
               </div>
               <div className="w-[1px] h-8 bg-slate-800" />
               <div>
-                <div className="text-[10px] uppercase font-mono text-slate-400">Telemetry Label</div>
+                <div className="text-[10px] uppercase font-mono text-slate-400">
+                  {dict.autopilot?.telemetryLabel || 'Telemetry Label'}
+                </div>
                 <div className="text-xs font-semibold text-slate-300">
-                  {deptData?.metricLabel || 'Active Metric'}
+                  {displayMetricLabel}
                 </div>
               </div>
             </div>
@@ -158,7 +170,7 @@ export default function DepartmentDetailPage() {
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
               <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <span>Root Cause & Anomaly Diagnosis</span>
+                <span>{dict.autopilot?.rootCauseTitle || 'Root Cause & Anomaly Diagnosis'}</span>
               </h2>
 
               {deptData?.issues && deptData.issues.length > 0 ? (
@@ -179,7 +191,7 @@ export default function DepartmentDetailPage() {
               ) : (
                 <div className="text-xs text-slate-400 py-3 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>All telemetry probes reporting nominal operating thresholds.</span>
+                  <span>{dict.autopilot?.nominalProbes || 'All telemetry probes reporting nominal operating thresholds.'}</span>
                 </div>
               )}
             </div>
@@ -188,15 +200,15 @@ export default function DepartmentDetailPage() {
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
               <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
                 <TrendingUp className="w-4 h-4 text-purple-400" />
-                <span>Predictive Forecasting (Next 7 Days)</span>
+                <span>{dict.autopilot?.predictiveTitle || 'Predictive Forecasting (Next 7 Days)'}</span>
               </h2>
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-                  <div className="text-slate-400">Risk Trajectory</div>
-                  <div className="text-slate-200 font-bold mt-1">Stable / Declining</div>
+                  <div className="text-slate-400">{dict.autopilot?.riskTrajectory || 'Risk Trajectory'}</div>
+                  <div className="text-slate-200 font-bold mt-1">{dict.autopilot?.riskStable || 'Stable / Declining'}</div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-                  <div className="text-slate-400">Estimated Cost Impact</div>
+                  <div className="text-slate-400">{dict.autopilot?.estimatedCostImpact || 'Estimated Cost Impact'}</div>
                   <div className="text-slate-200 font-bold mt-1">&lt; $50.00 USD</div>
                 </div>
               </div>
@@ -206,7 +218,7 @@ export default function DepartmentDetailPage() {
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
               <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
                 <Clock className="w-4 h-4 text-slate-400" />
-                <span>Synaptic Probe Timeline</span>
+                <span>{dict.autopilot?.synapticTimeline || 'Synaptic Probe Timeline'}</span>
               </h2>
               <div className="space-y-2 text-xs font-mono text-slate-400">
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-800/60">
@@ -231,7 +243,7 @@ export default function DepartmentDetailPage() {
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
               <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
                 <Brain className="w-4 h-4 text-purple-400" />
-                <span>Council Consensus</span>
+                <span>{dict.autopilot?.councilConsensus || 'Council Consensus'}</span>
               </h2>
               <p className="text-xs text-slate-300 leading-relaxed italic bg-slate-950/80 p-3 rounded-xl border border-slate-800">
                 &ldquo;{state?.brain.consensusSummary || 'Operating within permissible parameters. Active telemetry synchronized with central arbitration graph.'}&rdquo;
@@ -242,7 +254,7 @@ export default function DepartmentDetailPage() {
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
               <h2 className="text-sm font-bold text-slate-200 flex items-center gap-2 mb-3">
                 <Zap className="w-4 h-4 text-amber-400" />
-                <span>Proposed Action Card</span>
+                <span>{dict.autopilot?.proposedAction || 'Proposed Action Card'}</span>
               </h2>
               <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
@@ -250,7 +262,7 @@ export default function DepartmentDetailPage() {
                     Auto-Remediation Candidate
                   </span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    APPROVE
+                    {dict.common?.approve || 'APPROVE'}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
@@ -262,14 +274,14 @@ export default function DepartmentDetailPage() {
                     onClick={() => handleApproveAction('act-1')}
                     className="flex-1 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition"
                   >
-                    Approve
+                    {dict.common?.approve || 'Approve'}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleRejectAction('act-1')}
                     className="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
                   >
-                    Reject
+                    {dict.common?.reject || 'Reject'}
                   </button>
                 </div>
               </div>

@@ -1,0 +1,1142 @@
+{
+  "department": "Sofas & armchairs",
+  "departmentSlug": "sofas-armchairs-700640",
+  "departmentCode": "700640",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Диваны и кресла",
+    "zh": "沙发与扶手椅"
+  },
+  "missingSubcategoriesCount": 8,
+  "totalMissingProductsCount": 491,
+  "subcategories": [
+    {
+      "categoryName": "Sleeper sofas & sofa beds",
+      "categorySlug": "sleeper-sofas-10663",
+      "ikeaCode": "10663",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Sleeper sofas & sofa beds"
+        },
+        "ru": {
+          "name": "Sleeper sofas & sofa beds"
+        },
+        "zh": {
+          "name": "Sleeper sofas & sofa beds"
+        }
+      },
+      "totalIkeaProductsInStock": 69,
+      "sampleProductsToInsert": [
+        {
+          "name": "GRUNNARP Sleeper sofa",
+          "slug": "grunnarp-sleeper-sofa-70585079",
+          "sku": "IK-70585079",
+          "price": 999,
+          "compareAtPrice": 1248.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grunnarp-sleeper-sofa-gunnared-beige__1409865_pe972413_s5.jpg"
+          ],
+          "description": "GRUNNARP Sleeper sofa",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70585079",
+          "measure": "",
+          "categoryName": "Sleeper sofas & sofa beds",
+          "translations": {
+            "en": {
+              "name": "GRUNNARP Sleeper sofa",
+              "description": "GRUNNARP Sleeper sofa"
+            },
+            "ru": {
+              "name": "GRUNNARP Sleeper sofa",
+              "description": "GRUNNARP Sleeper sofa"
+            },
+            "zh": {
+              "name": "GRUNNARP Sleeper sofa",
+              "description": "GRUNNARP Sleeper sofa"
+            }
+          }
+        },
+        {
+          "name": "FRIHETEN Sleeper sectional,3 seat w/storage",
+          "slug": "friheten-sleeper-sectional3-seat-wstorage-69216757",
+          "sku": "IK-69216757",
+          "price": 999,
+          "compareAtPrice": 1248.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/friheten-sleeper-sectional-3-seat-w-storage-skiftebo-dark-gray__0175610_pe328883_s5.jpg"
+          ],
+          "description": "FRIHETEN Sleeper sectional,3 seat w/storage",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69216757",
+          "measure": "",
+          "categoryName": "Sleeper sofas & sofa beds",
+          "translations": {
+            "en": {
+              "name": "FRIHETEN Sleeper sectional,3 seat w/storage",
+              "description": "FRIHETEN Sleeper sectional,3 seat w/storage"
+            },
+            "ru": {
+              "name": "FRIHETEN Sleeper sectional,3 seat w/storage",
+              "description": "FRIHETEN Sleeper sectional,3 seat w/storage"
+            },
+            "zh": {
+              "name": "FRIHETEN Sleeper sectional,3 seat w/storage",
+              "description": "FRIHETEN Sleeper sectional,3 seat w/storage"
+            }
+          }
+        },
+        {
+          "name": "ÄLVDALEN Sleeper sofa",
+          "slug": "lvdalen-sleeper-sofa-90530651",
+          "sku": "IK-90530651",
+          "price": 499,
+          "compareAtPrice": 623.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aelvdalen-sleeper-sofa-knisa-gray-beige__1194633_pe902030_s5.jpg"
+          ],
+          "description": "ÄLVDALEN Sleeper sofa",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90530651",
+          "measure": "",
+          "categoryName": "Sleeper sofas & sofa beds",
+          "translations": {
+            "en": {
+              "name": "ÄLVDALEN Sleeper sofa",
+              "description": "ÄLVDALEN Sleeper sofa"
+            },
+            "ru": {
+              "name": "ÄLVDALEN Sleeper sofa",
+              "description": "ÄLVDALEN Sleeper sofa"
+            },
+            "zh": {
+              "name": "ÄLVDALEN Sleeper sofa",
+              "description": "ÄLVDALEN Sleeper sofa"
+            }
+          }
+        },
+        {
+          "name": "BÅRSLÖV 3-seat sleeper sofa with chaise",
+          "slug": "brslv-3-seat-sleeper-sofa-with-chaise-50541581",
+          "sku": "IK-50541581",
+          "price": 1299,
+          "compareAtPrice": 1623.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/barsloev-3-seat-sleeper-sofa-with-chaise-tibbleby-beige-gray__1213693_pe911220_s5.jpg"
+          ],
+          "description": "BÅRSLÖV 3-seat sleeper sofa with chaise",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50541581",
+          "measure": "",
+          "categoryName": "Sleeper sofas & sofa beds",
+          "translations": {
+            "en": {
+              "name": "BÅRSLÖV 3-seat sleeper sofa with chaise",
+              "description": "BÅRSLÖV 3-seat sleeper sofa with chaise"
+            },
+            "ru": {
+              "name": "BÅRSLÖV 3-seat sleeper sofa with chaise",
+              "description": "BÅRSLÖV 3-seat sleeper sofa with chaise"
+            },
+            "zh": {
+              "name": "BÅRSLÖV 3-seat sleeper sofa with chaise",
+              "description": "BÅRSLÖV 3-seat sleeper sofa with chaise"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Armchairs & accent chairs",
+      "categorySlug": "armchairs-chaises-fu006",
+      "ikeaCode": "fu006",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Armchairs & accent chairs"
+        },
+        "ru": {
+          "name": "Armchairs & accent chairs"
+        },
+        "zh": {
+          "name": "Armchairs & accent chairs"
+        }
+      },
+      "totalIkeaProductsInStock": 127,
+      "sampleProductsToInsert": [
+        {
+          "name": "EKENÄSET Armchair",
+          "slug": "ekenset-armchair-30533493",
+          "sku": "IK-30533493",
+          "price": 199,
+          "compareAtPrice": 248.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ekenaeset-armchair-kilanda-light-beige__1109687_pe870153_s5.jpg"
+          ],
+          "description": "EKENÄSET Armchair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30533493",
+          "measure": "",
+          "categoryName": "Armchairs & accent chairs",
+          "translations": {
+            "en": {
+              "name": "EKENÄSET Armchair",
+              "description": "EKENÄSET Armchair"
+            },
+            "ru": {
+              "name": "EKENÄSET Armchair",
+              "description": "EKENÄSET Armchair"
+            },
+            "zh": {
+              "name": "EKENÄSET Armchair",
+              "description": "EKENÄSET Armchair"
+            }
+          }
+        },
+        {
+          "name": "DYVLINGE Swivel chair",
+          "slug": "dyvlinge-swivel-chair-80570831",
+          "sku": "IK-80570831",
+          "price": 199,
+          "compareAtPrice": 248.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/dyvlinge-swivel-chair-kelinge-black__1205899_pe907271_s5.jpg"
+          ],
+          "description": "DYVLINGE Swivel chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80570831",
+          "measure": "",
+          "categoryName": "Armchairs & accent chairs",
+          "translations": {
+            "en": {
+              "name": "DYVLINGE Swivel chair",
+              "description": "DYVLINGE Swivel chair"
+            },
+            "ru": {
+              "name": "DYVLINGE Swivel chair",
+              "description": "DYVLINGE Swivel chair"
+            },
+            "zh": {
+              "name": "DYVLINGE Swivel chair",
+              "description": "DYVLINGE Swivel chair"
+            }
+          }
+        },
+        {
+          "name": "POÄNG Armchair",
+          "slug": "pong-armchair-59305928",
+          "sku": "IK-59305928",
+          "price": 149,
+          "compareAtPrice": 186.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/poaeng-armchair-birch-veneer-knisa-light-beige__0571500_pe666933_s5.jpg"
+          ],
+          "description": "POÄNG Armchair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59305928",
+          "measure": "",
+          "categoryName": "Armchairs & accent chairs",
+          "translations": {
+            "en": {
+              "name": "POÄNG Armchair",
+              "description": "POÄNG Armchair"
+            },
+            "ru": {
+              "name": "POÄNG Armchair",
+              "description": "POÄNG Armchair"
+            },
+            "zh": {
+              "name": "POÄNG Armchair",
+              "description": "POÄNG Armchair"
+            }
+          }
+        },
+        {
+          "name": "STRANDMON Wing chair",
+          "slug": "strandmon-wing-chair-30628943",
+          "sku": "IK-30628943",
+          "price": 399,
+          "compareAtPrice": 498.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strandmon-wing-chair-talliden-beige-brown__1543840_pe1018955_s5.jpg"
+          ],
+          "description": "STRANDMON Wing chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30628943",
+          "measure": "",
+          "categoryName": "Armchairs & accent chairs",
+          "translations": {
+            "en": {
+              "name": "STRANDMON Wing chair",
+              "description": "STRANDMON Wing chair"
+            },
+            "ru": {
+              "name": "STRANDMON Wing chair",
+              "description": "STRANDMON Wing chair"
+            },
+            "zh": {
+              "name": "STRANDMON Wing chair",
+              "description": "STRANDMON Wing chair"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Ottomans, footstools & poufs",
+      "categorySlug": "ottomans-20926",
+      "ikeaCode": "20926",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Ottomans, footstools & poufs"
+        },
+        "ru": {
+          "name": "Ottomans, footstools & poufs"
+        },
+        "zh": {
+          "name": "Ottomans, footstools & poufs"
+        }
+      },
+      "totalIkeaProductsInStock": 57,
+      "sampleProductsToInsert": [
+        {
+          "name": "UPPLAND Ottoman",
+          "slug": "uppland-ottoman-09384112",
+          "sku": "IK-09384112",
+          "price": 219,
+          "compareAtPrice": 273.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppland-ottoman-blekinge-white__0944719_pe797412_s5.jpg"
+          ],
+          "description": "UPPLAND Ottoman",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "09384112",
+          "measure": "",
+          "categoryName": "Ottomans, footstools & poufs",
+          "translations": {
+            "en": {
+              "name": "UPPLAND Ottoman",
+              "description": "UPPLAND Ottoman"
+            },
+            "ru": {
+              "name": "UPPLAND Ottoman",
+              "description": "UPPLAND Ottoman"
+            },
+            "zh": {
+              "name": "UPPLAND Ottoman",
+              "description": "UPPLAND Ottoman"
+            }
+          }
+        },
+        {
+          "name": "JÄRRESTAD Pouf",
+          "slug": "jrrestad-pouf-10572758",
+          "sku": "IK-10572758",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaerrestad-pouf-with-storage-djuparp-dark-blue__1320776_pe941352_s5.jpg"
+          ],
+          "description": "JÄRRESTAD Pouf",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10572758",
+          "measure": "",
+          "categoryName": "Ottomans, footstools & poufs",
+          "translations": {
+            "en": {
+              "name": "JÄRRESTAD Pouf",
+              "description": "JÄRRESTAD Pouf"
+            },
+            "ru": {
+              "name": "JÄRRESTAD Pouf",
+              "description": "JÄRRESTAD Pouf"
+            },
+            "zh": {
+              "name": "JÄRRESTAD Pouf",
+              "description": "JÄRRESTAD Pouf"
+            }
+          }
+        },
+        {
+          "name": "GAMLEHULT Ottoman with storage",
+          "slug": "gamlehult-ottoman-with-storage-10434309",
+          "sku": "IK-10434309",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gamlehult-ottoman-with-storage-rattan-anthracite__0672903_pe716940_s5.jpg"
+          ],
+          "description": "GAMLEHULT Ottoman with storage",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10434309",
+          "measure": "",
+          "categoryName": "Ottomans, footstools & poufs",
+          "translations": {
+            "en": {
+              "name": "GAMLEHULT Ottoman with storage",
+              "description": "GAMLEHULT Ottoman with storage"
+            },
+            "ru": {
+              "name": "GAMLEHULT Ottoman with storage",
+              "description": "GAMLEHULT Ottoman with storage"
+            },
+            "zh": {
+              "name": "GAMLEHULT Ottoman with storage",
+              "description": "GAMLEHULT Ottoman with storage"
+            }
+          }
+        },
+        {
+          "name": "FÖRLUNDA Pouf",
+          "slug": "frlunda-pouf-00572749",
+          "sku": "IK-00572749",
+          "price": 69.99,
+          "compareAtPrice": 87.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foerlunda-pouf-with-storage-tonerud-red__1320731_pe941334_s5.jpg"
+          ],
+          "description": "FÖRLUNDA Pouf",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00572749",
+          "measure": "",
+          "categoryName": "Ottomans, footstools & poufs",
+          "translations": {
+            "en": {
+              "name": "FÖRLUNDA Pouf",
+              "description": "FÖRLUNDA Pouf"
+            },
+            "ru": {
+              "name": "FÖRLUNDA Pouf",
+              "description": "FÖRLUNDA Pouf"
+            },
+            "zh": {
+              "name": "FÖRLUNDA Pouf",
+              "description": "FÖRLUNDA Pouf"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Chaise lounges",
+      "categorySlug": "chaise-lounges-57527",
+      "ikeaCode": "57527",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Chaise lounges"
+        },
+        "ru": {
+          "name": "Chaise lounges"
+        },
+        "zh": {
+          "name": "Chaise lounges"
+        }
+      },
+      "totalIkeaProductsInStock": 13,
+      "sampleProductsToInsert": [
+        {
+          "name": "KIVIK Chaise",
+          "slug": "kivik-chaise-59443034",
+          "sku": "IK-59443034",
+          "price": 450,
+          "compareAtPrice": 562.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kivik-chaise-kelinge-gray-turquoise__1577279_pe1033059_s5.jpg"
+          ],
+          "description": "KIVIK Chaise",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59443034",
+          "measure": "",
+          "categoryName": "Chaise lounges",
+          "translations": {
+            "en": {
+              "name": "KIVIK Chaise",
+              "description": "KIVIK Chaise"
+            },
+            "ru": {
+              "name": "KIVIK Chaise",
+              "description": "KIVIK Chaise"
+            },
+            "zh": {
+              "name": "KIVIK Chaise",
+              "description": "KIVIK Chaise"
+            }
+          }
+        },
+        {
+          "name": "FINNALA Chaise",
+          "slug": "finnala-chaise-89319293",
+          "sku": "IK-89319293",
+          "price": 640,
+          "compareAtPrice": 800,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/finnala-chaise-gunnared-beige__0690969_pe723586_s5.jpg"
+          ],
+          "description": "FINNALA Chaise",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "89319293",
+          "measure": "",
+          "categoryName": "Chaise lounges",
+          "translations": {
+            "en": {
+              "name": "FINNALA Chaise",
+              "description": "FINNALA Chaise"
+            },
+            "ru": {
+              "name": "FINNALA Chaise",
+              "description": "FINNALA Chaise"
+            },
+            "zh": {
+              "name": "FINNALA Chaise",
+              "description": "FINNALA Chaise"
+            }
+          }
+        },
+        {
+          "name": "SÖDERHAMN Chaise",
+          "slug": "sderhamn-chaise-79449676",
+          "sku": "IK-79449676",
+          "price": 610,
+          "compareAtPrice": 762.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/soederhamn-chaise-fridtuna-light-beige__1577384_pe1033152_s5.jpg"
+          ],
+          "description": "SÖDERHAMN Chaise",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79449676",
+          "measure": "",
+          "categoryName": "Chaise lounges",
+          "translations": {
+            "en": {
+              "name": "SÖDERHAMN Chaise",
+              "description": "SÖDERHAMN Chaise"
+            },
+            "ru": {
+              "name": "SÖDERHAMN Chaise",
+              "description": "SÖDERHAMN Chaise"
+            },
+            "zh": {
+              "name": "SÖDERHAMN Chaise",
+              "description": "SÖDERHAMN Chaise"
+            }
+          }
+        },
+        {
+          "name": "JÄTTEBO Chaise module, left",
+          "slug": "jttebo-chaise-module-left-79471498",
+          "sku": "IK-79471498",
+          "price": 1180,
+          "compareAtPrice": 1475,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaettebo-chaise-module-left-with-armrest-samsala-dark-yellow-green__1577504_pe1033258_s5.jpg"
+          ],
+          "description": "JÄTTEBO Chaise module, left",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79471498",
+          "measure": "",
+          "categoryName": "Chaise lounges",
+          "translations": {
+            "en": {
+              "name": "JÄTTEBO Chaise module, left",
+              "description": "JÄTTEBO Chaise module, left"
+            },
+            "ru": {
+              "name": "JÄTTEBO Chaise module, left",
+              "description": "JÄTTEBO Chaise module, left"
+            },
+            "zh": {
+              "name": "JÄTTEBO Chaise module, left",
+              "description": "JÄTTEBO Chaise module, left"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Sofa & armchair cushions & headrests",
+      "categorySlug": "sofa-cushions-57536",
+      "ikeaCode": "57536",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Sofa & armchair cushions & headrests"
+        },
+        "ru": {
+          "name": "Sofa & armchair cushions & headrests"
+        },
+        "zh": {
+          "name": "Sofa & armchair cushions & headrests"
+        }
+      },
+      "totalIkeaProductsInStock": 12,
+      "sampleProductsToInsert": [
+        {
+          "name": "RÖDEBY Armrest tray",
+          "slug": "rdeby-armrest-tray-40417577",
+          "sku": "IK-40417577",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/roedeby-armrest-tray-bamboo__0976295_pe813137_s5.jpg"
+          ],
+          "description": "RÖDEBY Armrest tray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40417577",
+          "measure": "",
+          "categoryName": "Sofa & armchair cushions & headrests",
+          "translations": {
+            "en": {
+              "name": "RÖDEBY Armrest tray",
+              "description": "RÖDEBY Armrest tray"
+            },
+            "ru": {
+              "name": "RÖDEBY Armrest tray",
+              "description": "RÖDEBY Armrest tray"
+            },
+            "zh": {
+              "name": "RÖDEBY Armrest tray",
+              "description": "RÖDEBY Armrest tray"
+            }
+          }
+        },
+        {
+          "name": "KRAMPHULT Armrest tray",
+          "slug": "kramphult-armrest-tray-90609003",
+          "sku": "IK-90609003",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kramphult-armrest-tray-dark-lilac-red-metal__1507472_pe1009347_s5.jpg"
+          ],
+          "description": "KRAMPHULT Armrest tray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90609003",
+          "measure": "",
+          "categoryName": "Sofa & armchair cushions & headrests",
+          "translations": {
+            "en": {
+              "name": "KRAMPHULT Armrest tray",
+              "description": "KRAMPHULT Armrest tray"
+            },
+            "ru": {
+              "name": "KRAMPHULT Armrest tray",
+              "description": "KRAMPHULT Armrest tray"
+            },
+            "zh": {
+              "name": "KRAMPHULT Armrest tray",
+              "description": "KRAMPHULT Armrest tray"
+            }
+          }
+        },
+        {
+          "name": "JÄTTEBO Headrest cushion",
+          "slug": "jttebo-headrest-cushion-49483600",
+          "sku": "IK-49483600",
+          "price": 90,
+          "compareAtPrice": 112.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaettebo-headrest-cushion-samsala-dark-yellow-green__1165152_pe890720_s5.jpg"
+          ],
+          "description": "JÄTTEBO Headrest cushion",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "49483600",
+          "measure": "",
+          "categoryName": "Sofa & armchair cushions & headrests",
+          "translations": {
+            "en": {
+              "name": "JÄTTEBO Headrest cushion",
+              "description": "JÄTTEBO Headrest cushion"
+            },
+            "ru": {
+              "name": "JÄTTEBO Headrest cushion",
+              "description": "JÄTTEBO Headrest cushion"
+            },
+            "zh": {
+              "name": "JÄTTEBO Headrest cushion",
+              "description": "JÄTTEBO Headrest cushion"
+            }
+          }
+        },
+        {
+          "name": "TRANERED Armrest tray",
+          "slug": "tranered-armrest-tray-10609002",
+          "sku": "IK-10609002",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tranered-armrest-tray-dark-brown__1478956_pe999901_s5.jpg"
+          ],
+          "description": "TRANERED Armrest tray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10609002",
+          "measure": "",
+          "categoryName": "Sofa & armchair cushions & headrests",
+          "translations": {
+            "en": {
+              "name": "TRANERED Armrest tray",
+              "description": "TRANERED Armrest tray"
+            },
+            "ru": {
+              "name": "TRANERED Armrest tray",
+              "description": "TRANERED Armrest tray"
+            },
+            "zh": {
+              "name": "TRANERED Armrest tray",
+              "description": "TRANERED Armrest tray"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Sofa legs",
+      "categorySlug": "sofa-legs-31785",
+      "ikeaCode": "31785",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Sofa legs"
+        },
+        "ru": {
+          "name": "Sofa legs"
+        },
+        "zh": {
+          "name": "Sofa legs"
+        }
+      },
+      "totalIkeaProductsInStock": 9,
+      "sampleProductsToInsert": [
+        {
+          "name": "BASTFALLET Leg",
+          "slug": "bastfallet-leg-00620420",
+          "sku": "IK-00620420",
+          "price": 10,
+          "compareAtPrice": 12.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bastfallet-leg-wood__1497269_pe1005869_s5.jpg"
+          ],
+          "description": "BASTFALLET Leg 5 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00620420",
+          "measure": "5 1/8 \"",
+          "categoryName": "Sofa legs",
+          "translations": {
+            "en": {
+              "name": "BASTFALLET Leg",
+              "description": "BASTFALLET Leg 5 1/8 \""
+            },
+            "ru": {
+              "name": "BASTFALLET Leg",
+              "description": "BASTFALLET Leg 5 1/8 \""
+            },
+            "zh": {
+              "name": "BASTFALLET Leg",
+              "description": "BASTFALLET Leg 5 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "BANKHULT Leg",
+          "slug": "bankhult-leg-00635964",
+          "sku": "IK-00635964",
+          "price": 10,
+          "compareAtPrice": 12.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bankhult-leg-wood-brown__1477443_pe999206_s5.jpg"
+          ],
+          "description": "BANKHULT Leg 6 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00635964",
+          "measure": "6 3/4 \"",
+          "categoryName": "Sofa legs",
+          "translations": {
+            "en": {
+              "name": "BANKHULT Leg",
+              "description": "BANKHULT Leg 6 3/4 \""
+            },
+            "ru": {
+              "name": "BANKHULT Leg",
+              "description": "BANKHULT Leg 6 3/4 \""
+            },
+            "zh": {
+              "name": "BANKHULT Leg",
+              "description": "BANKHULT Leg 6 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "MORABO Leg",
+          "slug": "morabo-leg-20456348",
+          "sku": "IK-20456348",
+          "price": 20,
+          "compareAtPrice": 25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/morabo-leg-wood__0729164_pe736740_s5.jpg"
+          ],
+          "description": "MORABO Leg 6 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20456348",
+          "measure": "6 1/4 \"",
+          "categoryName": "Sofa legs",
+          "translations": {
+            "en": {
+              "name": "MORABO Leg",
+              "description": "MORABO Leg 6 1/4 \""
+            },
+            "ru": {
+              "name": "MORABO Leg",
+              "description": "MORABO Leg 6 1/4 \""
+            },
+            "zh": {
+              "name": "MORABO Leg",
+              "description": "MORABO Leg 6 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "BJURVALLA Leg",
+          "slug": "bjurvalla-leg-60623703",
+          "sku": "IK-60623703",
+          "price": 10,
+          "compareAtPrice": 12.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bjurvalla-leg-birch__1436135_pe984090_s5.jpg"
+          ],
+          "description": "BJURVALLA Leg 6 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60623703",
+          "measure": "6 3/4 \"",
+          "categoryName": "Sofa legs",
+          "translations": {
+            "en": {
+              "name": "BJURVALLA Leg",
+              "description": "BJURVALLA Leg 6 3/4 \""
+            },
+            "ru": {
+              "name": "BJURVALLA Leg",
+              "description": "BJURVALLA Leg 6 3/4 \""
+            },
+            "zh": {
+              "name": "BJURVALLA Leg",
+              "description": "BJURVALLA Leg 6 3/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Sofa & armchairs covers",
+      "categorySlug": "sofa-covers-10664",
+      "ikeaCode": "10664",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Sofa & armchairs covers"
+        },
+        "ru": {
+          "name": "Sofa & armchairs covers"
+        },
+        "zh": {
+          "name": "Sofa & armchairs covers"
+        }
+      },
+      "totalIkeaProductsInStock": 127,
+      "sampleProductsToInsert": [
+        {
+          "name": "UPPLAND Cover for sofa",
+          "slug": "uppland-cover-for-sofa-50487635",
+          "sku": "IK-50487635",
+          "price": 119,
+          "compareAtPrice": 148.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppland-cover-for-sofa-blekinge-white__1250804_pe924028_s5.jpg"
+          ],
+          "description": "UPPLAND Cover for sofa",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50487635",
+          "measure": "",
+          "categoryName": "Sofa & armchairs covers",
+          "translations": {
+            "en": {
+              "name": "UPPLAND Cover for sofa",
+              "description": "UPPLAND Cover for sofa"
+            },
+            "ru": {
+              "name": "UPPLAND Cover for sofa",
+              "description": "UPPLAND Cover for sofa"
+            },
+            "zh": {
+              "name": "UPPLAND Cover for sofa",
+              "description": "UPPLAND Cover for sofa"
+            }
+          }
+        },
+        {
+          "name": "UPPLAND Cover for loveseat",
+          "slug": "uppland-cover-for-loveseat-00487633",
+          "sku": "IK-00487633",
+          "price": 99,
+          "compareAtPrice": 123.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppland-cover-for-loveseat-blekinge-white__1250804_pe924028_s5.jpg"
+          ],
+          "description": "UPPLAND Cover for loveseat",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00487633",
+          "measure": "",
+          "categoryName": "Sofa & armchairs covers",
+          "translations": {
+            "en": {
+              "name": "UPPLAND Cover for loveseat",
+              "description": "UPPLAND Cover for loveseat"
+            },
+            "ru": {
+              "name": "UPPLAND Cover for loveseat",
+              "description": "UPPLAND Cover for loveseat"
+            },
+            "zh": {
+              "name": "UPPLAND Cover for loveseat",
+              "description": "UPPLAND Cover for loveseat"
+            }
+          }
+        },
+        {
+          "name": "KIVIK Cover for sofa",
+          "slug": "kivik-cover-for-sofa-30557686",
+          "sku": "IK-30557686",
+          "price": 209,
+          "compareAtPrice": 261.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kivik-cover-for-sofa-gunnared-beige__0781579_pe760888_s5.jpg"
+          ],
+          "description": "KIVIK Cover for sofa",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30557686",
+          "measure": "",
+          "categoryName": "Sofa & armchairs covers",
+          "translations": {
+            "en": {
+              "name": "KIVIK Cover for sofa",
+              "description": "KIVIK Cover for sofa"
+            },
+            "ru": {
+              "name": "KIVIK Cover for sofa",
+              "description": "KIVIK Cover for sofa"
+            },
+            "zh": {
+              "name": "KIVIK Cover for sofa",
+              "description": "KIVIK Cover for sofa"
+            }
+          }
+        },
+        {
+          "name": "HYLTARP Cover for sofa",
+          "slug": "hyltarp-cover-for-sofa-70547407",
+          "sku": "IK-70547407",
+          "price": 299,
+          "compareAtPrice": 373.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyltarp-cover-for-sofa-gransel-natural__1193990_pe901744_s5.jpg"
+          ],
+          "description": "HYLTARP Cover for sofa",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70547407",
+          "measure": "",
+          "categoryName": "Sofa & armchairs covers",
+          "translations": {
+            "en": {
+              "name": "HYLTARP Cover for sofa",
+              "description": "HYLTARP Cover for sofa"
+            },
+            "ru": {
+              "name": "HYLTARP Cover for sofa",
+              "description": "HYLTARP Cover for sofa"
+            },
+            "zh": {
+              "name": "HYLTARP Cover for sofa",
+              "description": "HYLTARP Cover for sofa"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Modular sofas",
+      "categorySlug": "sofa-modules-31786",
+      "ikeaCode": "31786",
+      "parentDepartment": "Sofas & armchairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Modular sofas"
+        },
+        "ru": {
+          "name": "Modular sofas"
+        },
+        "zh": {
+          "name": "Modular sofas"
+        }
+      },
+      "totalIkeaProductsInStock": 77,
+      "sampleProductsToInsert": [
+        {
+          "name": "JÄTTEBO 4-seat mod sofa w chaise",
+          "slug": "jttebo-4-seat-mod-sofa-w-chaise-59485203",
+          "sku": "IK-59485203",
+          "price": 2750,
+          "compareAtPrice": 3437.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaettebo-4-seat-mod-sofa-w-chaise-right-samsala-dark-yellow-green__1577527_pe1033279_s5.jpg"
+          ],
+          "description": "JÄTTEBO 4-seat mod sofa w chaise",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59485203",
+          "measure": "",
+          "categoryName": "Modular sofas",
+          "translations": {
+            "en": {
+              "name": "JÄTTEBO 4-seat mod sofa w chaise",
+              "description": "JÄTTEBO 4-seat mod sofa w chaise"
+            },
+            "ru": {
+              "name": "JÄTTEBO 4-seat mod sofa w chaise",
+              "description": "JÄTTEBO 4-seat mod sofa w chaise"
+            },
+            "zh": {
+              "name": "JÄTTEBO 4-seat mod sofa w chaise",
+              "description": "JÄTTEBO 4-seat mod sofa w chaise"
+            }
+          }
+        },
+        {
+          "name": "JÄTTEBO 1.5-seat module with storage",
+          "slug": "jttebo-15-seat-module-with-storage-39471462",
+          "sku": "IK-39471462",
+          "price": 670,
+          "compareAtPrice": 837.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaettebo-1-5-seat-module-with-storage-samsala-dark-yellow-green__1577478_pe1033229_s5.jpg"
+          ],
+          "description": "JÄTTEBO 1.5-seat module with storage",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "39471462",
+          "measure": "",
+          "categoryName": "Modular sofas",
+          "translations": {
+            "en": {
+              "name": "JÄTTEBO 1.5-seat module with storage",
+              "description": "JÄTTEBO 1.5-seat module with storage"
+            },
+            "ru": {
+              "name": "JÄTTEBO 1.5-seat module with storage",
+              "description": "JÄTTEBO 1.5-seat module with storage"
+            },
+            "zh": {
+              "name": "JÄTTEBO 1.5-seat module with storage",
+              "description": "JÄTTEBO 1.5-seat module with storage"
+            }
+          }
+        },
+        {
+          "name": "UPPÅKRA Corner module",
+          "slug": "uppkra-corner-module-29620797",
+          "sku": "IK-29620797",
+          "price": 670,
+          "compareAtPrice": 837.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppakra-corner-module-axvall-dark-gray-blue__1578215_pe1033884_s5.jpg"
+          ],
+          "description": "UPPÅKRA Corner module",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "29620797",
+          "measure": "",
+          "categoryName": "Modular sofas",
+          "translations": {
+            "en": {
+              "name": "UPPÅKRA Corner module",
+              "description": "UPPÅKRA Corner module"
+            },
+            "ru": {
+              "name": "UPPÅKRA Corner module",
+              "description": "UPPÅKRA Corner module"
+            },
+            "zh": {
+              "name": "UPPÅKRA Corner module",
+              "description": "UPPÅKRA Corner module"
+            }
+          }
+        },
+        {
+          "name": "JÄTTEBO 2.5-seat mod sofa w chaise",
+          "slug": "jttebo-25-seat-mod-sofa-w-chaise-69469491",
+          "sku": "IK-69469491",
+          "price": 1850,
+          "compareAtPrice": 2312.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaettebo-2-5-seat-mod-sofa-w-chaise-left-samsala-dark-yellow-green__1577512_pe1033266_s5.jpg"
+          ],
+          "description": "JÄTTEBO 2.5-seat mod sofa w chaise",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69469491",
+          "measure": "",
+          "categoryName": "Modular sofas",
+          "translations": {
+            "en": {
+              "name": "JÄTTEBO 2.5-seat mod sofa w chaise",
+              "description": "JÄTTEBO 2.5-seat mod sofa w chaise"
+            },
+            "ru": {
+              "name": "JÄTTEBO 2.5-seat mod sofa w chaise",
+              "description": "JÄTTEBO 2.5-seat mod sofa w chaise"
+            },
+            "zh": {
+              "name": "JÄTTEBO 2.5-seat mod sofa w chaise",
+              "description": "JÄTTEBO 2.5-seat mod sofa w chaise"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

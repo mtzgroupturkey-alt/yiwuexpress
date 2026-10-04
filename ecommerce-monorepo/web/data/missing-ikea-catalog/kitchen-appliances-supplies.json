@@ -1,0 +1,2129 @@
+{
+  "department": "Kitchen, appliances & supplies",
+  "departmentSlug": "kitchen-appliances-ka001",
+  "departmentCode": "ka001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Кухня, техника и кухонные принадлежности",
+    "zh": "厨房、电器与用品"
+  },
+  "missingSubcategoriesCount": 15,
+  "totalMissingProductsCount": 1588,
+  "subcategories": [
+    {
+      "categoryName": "Kitchen systems",
+      "categorySlug": "kitchens-ka003",
+      "ikeaCode": "ka003",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen systems"
+        },
+        "ru": {
+          "name": "Kitchen systems"
+        },
+        "zh": {
+          "name": "Kitchen systems"
+        }
+      },
+      "totalIkeaProductsInStock": 634,
+      "sampleProductsToInsert": [
+        {
+          "name": "KNOXHULT Base cabinet with doors and drawer",
+          "slug": "knoxhult-base-cabinet-with-doors-and-drawer-00372260",
+          "sku": "IK-00372260",
+          "price": 320,
+          "compareAtPrice": 400,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/knoxhult-base-cabinet-with-doors-and-drawer-white__0630750_pe694878_s5.jpg"
+          ],
+          "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00372260",
+          "measure": "72x24x36 \"",
+          "categoryName": "Kitchen systems",
+          "translations": {
+            "en": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \""
+            },
+            "ru": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \""
+            },
+            "zh": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \""
+            }
+          }
+        },
+        {
+          "name": "KNOXHULT Base cabinet with doors and drawer",
+          "slug": "knoxhult-base-cabinet-with-doors-and-drawer-50603989",
+          "sku": "IK-50603989",
+          "price": 350,
+          "compareAtPrice": 437.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/knoxhult-base-cabinet-with-doors-and-drawer-white-frame__1383166_pe962479_s5.jpg"
+          ],
+          "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50603989",
+          "measure": "48x24x36 \"",
+          "categoryName": "Kitchen systems",
+          "translations": {
+            "en": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \""
+            },
+            "ru": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \""
+            },
+            "zh": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \""
+            }
+          }
+        },
+        {
+          "name": "SEKTION Base cabinet",
+          "slug": "sektion-base-cabinet-80265398",
+          "sku": "IK-80265398",
+          "price": 97,
+          "compareAtPrice": 121.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sektion-base-cabinet-white__0268632_pe415276_s5.jpg"
+          ],
+          "description": "SEKTION Base cabinet 36x24x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80265398",
+          "measure": "36x24x30 \"",
+          "categoryName": "Kitchen systems",
+          "translations": {
+            "en": {
+              "name": "SEKTION Base cabinet",
+              "description": "SEKTION Base cabinet 36x24x30 \""
+            },
+            "ru": {
+              "name": "SEKTION Base cabinet",
+              "description": "SEKTION Base cabinet 36x24x30 \""
+            },
+            "zh": {
+              "name": "SEKTION Base cabinet",
+              "description": "SEKTION Base cabinet 36x24x30 \""
+            }
+          }
+        },
+        {
+          "name": "KNOXHULT Corner kitchen",
+          "slug": "knoxhult-corner-kitchen-69581925",
+          "sku": "IK-69581925",
+          "price": 850,
+          "compareAtPrice": 1062.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/knoxhult-corner-kitchen-white__1399786_pe968470_s5.jpg"
+          ],
+          "description": "KNOXHULT Corner kitchen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69581925",
+          "measure": "",
+          "categoryName": "Kitchen systems",
+          "translations": {
+            "en": {
+              "name": "KNOXHULT Corner kitchen",
+              "description": "KNOXHULT Corner kitchen"
+            },
+            "ru": {
+              "name": "KNOXHULT Corner kitchen",
+              "description": "KNOXHULT Corner kitchen"
+            },
+            "zh": {
+              "name": "KNOXHULT Corner kitchen",
+              "description": "KNOXHULT Corner kitchen"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen cabinets",
+      "categorySlug": "kitchen-cabinets-700292",
+      "ikeaCode": "700292",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen cabinets"
+        },
+        "ru": {
+          "name": "Kitchen cabinets"
+        },
+        "zh": {
+          "name": "Kitchen cabinets"
+        }
+      },
+      "totalIkeaProductsInStock": 157,
+      "sampleProductsToInsert": [
+        {
+          "name": "KNOXHULT Base cabinet with doors and drawer",
+          "slug": "knoxhult-base-cabinet-with-doors-and-drawer-00372260",
+          "sku": "IK-00372260",
+          "price": 320,
+          "compareAtPrice": 400,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/knoxhult-base-cabinet-with-doors-and-drawer-white__0630750_pe694878_s5.jpg"
+          ],
+          "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00372260",
+          "measure": "72x24x36 \"",
+          "categoryName": "Kitchen cabinets",
+          "translations": {
+            "en": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \""
+            },
+            "ru": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \""
+            },
+            "zh": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 72x24x36 \""
+            }
+          }
+        },
+        {
+          "name": "SEKTION Base cabinet",
+          "slug": "sektion-base-cabinet-90265388",
+          "sku": "IK-90265388",
+          "price": 76,
+          "compareAtPrice": 95,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sektion-base-cabinet-white__0268620_pe406679_s5.jpg"
+          ],
+          "description": "SEKTION Base cabinet 24x24x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90265388",
+          "measure": "24x24x30 \"",
+          "categoryName": "Kitchen cabinets",
+          "translations": {
+            "en": {
+              "name": "SEKTION Base cabinet",
+              "description": "SEKTION Base cabinet 24x24x30 \""
+            },
+            "ru": {
+              "name": "SEKTION Base cabinet",
+              "description": "SEKTION Base cabinet 24x24x30 \""
+            },
+            "zh": {
+              "name": "SEKTION Base cabinet",
+              "description": "SEKTION Base cabinet 24x24x30 \""
+            }
+          }
+        },
+        {
+          "name": "KNOXHULT Base cabinet with doors and drawer",
+          "slug": "knoxhult-base-cabinet-with-doors-and-drawer-60372262",
+          "sku": "IK-60372262",
+          "price": 240,
+          "compareAtPrice": 300,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/knoxhult-base-cabinet-with-doors-and-drawer-white__0630759_pe694887_s5.jpg"
+          ],
+          "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60372262",
+          "measure": "48x24x36 \"",
+          "categoryName": "Kitchen cabinets",
+          "translations": {
+            "en": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \""
+            },
+            "ru": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \""
+            },
+            "zh": {
+              "name": "KNOXHULT Base cabinet with doors and drawer",
+              "description": "KNOXHULT Base cabinet with doors and drawer 48x24x36 \""
+            }
+          }
+        },
+        {
+          "name": "SEKTION Base cabinet with shelves/2 doors",
+          "slug": "sektion-base-cabinet-with-shelves2-doors-19623895",
+          "sku": "IK-19623895",
+          "price": 298,
+          "compareAtPrice": 372.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sektion-base-cabinet-with-shelves-2-doors-white-aspudden-matte-white__1530022_pe1014777_s5.jpg"
+          ],
+          "description": "SEKTION Base cabinet with shelves/2 doors 30x15x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19623895",
+          "measure": "30x15x30 \"",
+          "categoryName": "Kitchen cabinets",
+          "translations": {
+            "en": {
+              "name": "SEKTION Base cabinet with shelves/2 doors",
+              "description": "SEKTION Base cabinet with shelves/2 doors 30x15x30 \""
+            },
+            "ru": {
+              "name": "SEKTION Base cabinet with shelves/2 doors",
+              "description": "SEKTION Base cabinet with shelves/2 doors 30x15x30 \""
+            },
+            "zh": {
+              "name": "SEKTION Base cabinet with shelves/2 doors",
+              "description": "SEKTION Base cabinet with shelves/2 doors 30x15x30 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen doors & drawer fronts",
+      "categorySlug": "kitchen-doors-drawer-fronts-700293",
+      "ikeaCode": "700293",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen doors & drawer fronts"
+        },
+        "ru": {
+          "name": "Kitchen doors & drawer fronts"
+        },
+        "zh": {
+          "name": "Kitchen doors & drawer fronts"
+        }
+      },
+      "totalIkeaProductsInStock": 58,
+      "sampleProductsToInsert": [
+        {
+          "name": "ENKÖPING Door",
+          "slug": "enkping-door-20505947",
+          "sku": "IK-20505947",
+          "price": 51,
+          "compareAtPrice": 63.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/enkoeping-door-white-wood-effect__1044229_pe842031_s5.jpg"
+          ],
+          "description": "ENKÖPING Door 18x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20505947",
+          "measure": "18x30 \"",
+          "categoryName": "Kitchen doors & drawer fronts",
+          "translations": {
+            "en": {
+              "name": "ENKÖPING Door",
+              "description": "ENKÖPING Door 18x30 \""
+            },
+            "ru": {
+              "name": "ENKÖPING Door",
+              "description": "ENKÖPING Door 18x30 \""
+            },
+            "zh": {
+              "name": "ENKÖPING Door",
+              "description": "ENKÖPING Door 18x30 \""
+            }
+          }
+        },
+        {
+          "name": "VALLSTENA Door",
+          "slug": "vallstena-door-70541815",
+          "sku": "IK-70541815",
+          "price": 21,
+          "compareAtPrice": 26.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vallstena-door-white__1163469_pe890196_s5.jpg"
+          ],
+          "description": "VALLSTENA Door 15x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70541815",
+          "measure": "15x30 \"",
+          "categoryName": "Kitchen doors & drawer fronts",
+          "translations": {
+            "en": {
+              "name": "VALLSTENA Door",
+              "description": "VALLSTENA Door 15x30 \""
+            },
+            "ru": {
+              "name": "VALLSTENA Door",
+              "description": "VALLSTENA Door 15x30 \""
+            },
+            "zh": {
+              "name": "VALLSTENA Door",
+              "description": "VALLSTENA Door 15x30 \""
+            }
+          }
+        },
+        {
+          "name": "AXSTAD Door",
+          "slug": "axstad-door-00426055",
+          "sku": "IK-00426055",
+          "price": 96,
+          "compareAtPrice": 120,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/axstad-door-matte-white__0650824_pe706549_s5.jpg"
+          ],
+          "description": "AXSTAD Door 18x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00426055",
+          "measure": "18x30 \"",
+          "categoryName": "Kitchen doors & drawer fronts",
+          "translations": {
+            "en": {
+              "name": "AXSTAD Door",
+              "description": "AXSTAD Door 18x30 \""
+            },
+            "ru": {
+              "name": "AXSTAD Door",
+              "description": "AXSTAD Door 18x30 \""
+            },
+            "zh": {
+              "name": "AXSTAD Door",
+              "description": "AXSTAD Door 18x30 \""
+            }
+          }
+        },
+        {
+          "name": "VEDHAMN Door",
+          "slug": "vedhamn-door-40505164",
+          "sku": "IK-40505164",
+          "price": 272,
+          "compareAtPrice": 340,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vedhamn-door-oak__1022645_pe832873_s5.jpg"
+          ],
+          "description": "VEDHAMN Door 24x30 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40505164",
+          "measure": "24x30 \"",
+          "categoryName": "Kitchen doors & drawer fronts",
+          "translations": {
+            "en": {
+              "name": "VEDHAMN Door",
+              "description": "VEDHAMN Door 24x30 \""
+            },
+            "ru": {
+              "name": "VEDHAMN Door",
+              "description": "VEDHAMN Door 24x30 \""
+            },
+            "zh": {
+              "name": "VEDHAMN Door",
+              "description": "VEDHAMN Door 24x30 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen appliances",
+      "categorySlug": "appliances-ka002",
+      "ikeaCode": "ka002",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen appliances"
+        },
+        "ru": {
+          "name": "Kitchen appliances"
+        },
+        "zh": {
+          "name": "Kitchen appliances"
+        }
+      },
+      "totalIkeaProductsInStock": 66,
+      "sampleProductsToInsert": [
+        {
+          "name": "SUPERKALL Built-in, panel-ready refrigerator",
+          "slug": "superkall-built-in-panel-ready-refrigerator-10462156",
+          "sku": "IK-10462156",
+          "price": 1599,
+          "compareAtPrice": 1998.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/superkall-built-in-panel-ready-refrigerator-panel-ready__1009013_pe828824_s5.jpg"
+          ],
+          "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10462156",
+          "measure": "8.8 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "SUPERKALL Built-in, panel-ready refrigerator",
+              "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft"
+            },
+            "ru": {
+              "name": "SUPERKALL Built-in, panel-ready refrigerator",
+              "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft"
+            },
+            "zh": {
+              "name": "SUPERKALL Built-in, panel-ready refrigerator",
+              "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft"
+            }
+          }
+        },
+        {
+          "name": "ÖVERSKÅDLIG French door refrigerator",
+          "slug": "verskdlig-french-door-refrigerator-60462154",
+          "sku": "IK-60462154",
+          "price": 3299,
+          "compareAtPrice": 4123.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/oeverskadlig-french-door-refrigerator-4-door-stainless-steel__0956636_pe804803_s5.jpg"
+          ],
+          "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60462154",
+          "measure": "22 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "ÖVERSKÅDLIG French door refrigerator",
+              "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft"
+            },
+            "ru": {
+              "name": "ÖVERSKÅDLIG French door refrigerator",
+              "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft"
+            },
+            "zh": {
+              "name": "ÖVERSKÅDLIG French door refrigerator",
+              "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft"
+            }
+          }
+        },
+        {
+          "name": "BERGSNÄS Bottom-freezer refrigerator",
+          "slug": "bergsns-bottom-freezer-refrigerator-60607883",
+          "sku": "IK-60607883",
+          "price": 1299,
+          "compareAtPrice": 1623.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bergsnaes-bottom-freezer-refrigerator-stainless-steel__1435157_pe985166_s5.jpg"
+          ],
+          "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60607883",
+          "measure": "11 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "BERGSNÄS Bottom-freezer refrigerator",
+              "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft"
+            },
+            "ru": {
+              "name": "BERGSNÄS Bottom-freezer refrigerator",
+              "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft"
+            },
+            "zh": {
+              "name": "BERGSNÄS Bottom-freezer refrigerator",
+              "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft"
+            }
+          }
+        },
+        {
+          "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+          "slug": "vlgrundad-bottom-freezer-refrigerator-70462158",
+          "sku": "IK-70462158",
+          "price": 1399,
+          "compareAtPrice": 1748.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vaelgrundad-bottom-freezer-refrigerator-stainless-steel__0956609_pe804786_s5.jpg"
+          ],
+          "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70462158",
+          "measure": "19 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+              "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft"
+            },
+            "ru": {
+              "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+              "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft"
+            },
+            "zh": {
+              "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+              "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen countertops",
+      "categorySlug": "kitchen-countertops-24264",
+      "ikeaCode": "24264",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen countertops"
+        },
+        "ru": {
+          "name": "Kitchen countertops"
+        },
+        "zh": {
+          "name": "Kitchen countertops"
+        }
+      },
+      "totalIkeaProductsInStock": 59,
+      "sampleProductsToInsert": [
+        {
+          "name": "KARLBY Countertop",
+          "slug": "karlby-countertop-50335208",
+          "sku": "IK-50335208",
+          "price": 279,
+          "compareAtPrice": 348.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/karlby-countertop-walnut-veneer__0444158_pe594746_s5.jpg"
+          ],
+          "description": "KARLBY Countertop 74x1 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50335208",
+          "measure": "74x1 1/2 \"",
+          "categoryName": "Kitchen countertops",
+          "translations": {
+            "en": {
+              "name": "KARLBY Countertop",
+              "description": "KARLBY Countertop 74x1 1/2 \""
+            },
+            "ru": {
+              "name": "KARLBY Countertop",
+              "description": "KARLBY Countertop 74x1 1/2 \""
+            },
+            "zh": {
+              "name": "KARLBY Countertop",
+              "description": "KARLBY Countertop 74x1 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "SÄLJAN Countertop",
+          "slug": "sljan-countertop-80439214",
+          "sku": "IK-80439214",
+          "price": 129,
+          "compareAtPrice": 161.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/saeljan-countertop-oak-effect-laminate__1466161_pe995264_s5.jpg"
+          ],
+          "description": "SÄLJAN Countertop 74x1 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80439214",
+          "measure": "74x1 1/2 \"",
+          "categoryName": "Kitchen countertops",
+          "translations": {
+            "en": {
+              "name": "SÄLJAN Countertop",
+              "description": "SÄLJAN Countertop 74x1 1/2 \""
+            },
+            "ru": {
+              "name": "SÄLJAN Countertop",
+              "description": "SÄLJAN Countertop 74x1 1/2 \""
+            },
+            "zh": {
+              "name": "SÄLJAN Countertop",
+              "description": "SÄLJAN Countertop 74x1 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "MÖCKLERYD Countertop",
+          "slug": "mckleryd-countertop-50591383",
+          "sku": "IK-50591383",
+          "price": 39,
+          "compareAtPrice": 48.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/moeckleryd-countertop-white-laminate__1390662_pe965475_s5.jpg"
+          ],
+          "description": "MÖCKLERYD Countertop 48 3/8x7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50591383",
+          "measure": "48 3/8x7/8 \"",
+          "categoryName": "Kitchen countertops",
+          "translations": {
+            "en": {
+              "name": "MÖCKLERYD Countertop",
+              "description": "MÖCKLERYD Countertop 48 3/8x7/8 \""
+            },
+            "ru": {
+              "name": "MÖCKLERYD Countertop",
+              "description": "MÖCKLERYD Countertop 48 3/8x7/8 \""
+            },
+            "zh": {
+              "name": "MÖCKLERYD Countertop",
+              "description": "MÖCKLERYD Countertop 48 3/8x7/8 \""
+            }
+          }
+        },
+        {
+          "name": "EKBACKEN Countertop",
+          "slug": "ekbacken-countertop-30337623",
+          "sku": "IK-30337623",
+          "price": 63.99,
+          "compareAtPrice": 79.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ekbacken-countertop-ash-effect-laminate__0488853_pe623333_s5.jpg"
+          ],
+          "description": "EKBACKEN Countertop 74x1 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30337623",
+          "measure": "74x1 1/8 \"",
+          "categoryName": "Kitchen countertops",
+          "translations": {
+            "en": {
+              "name": "EKBACKEN Countertop",
+              "description": "EKBACKEN Countertop 74x1 1/8 \""
+            },
+            "ru": {
+              "name": "EKBACKEN Countertop",
+              "description": "EKBACKEN Countertop 74x1 1/8 \""
+            },
+            "zh": {
+              "name": "EKBACKEN Countertop",
+              "description": "EKBACKEN Countertop 74x1 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen islands & carts",
+      "categorySlug": "kitchen-islands-carts-10471",
+      "ikeaCode": "10471",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen islands & carts"
+        },
+        "ru": {
+          "name": "Kitchen islands & carts"
+        },
+        "zh": {
+          "name": "Kitchen islands & carts"
+        }
+      },
+      "totalIkeaProductsInStock": 26,
+      "sampleProductsToInsert": [
+        {
+          "name": "VADHOLMA Kitchen island",
+          "slug": "vadholma-kitchen-island-40366115",
+          "sku": "IK-40366115",
+          "price": 449.99,
+          "compareAtPrice": 562.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vadholma-kitchen-island-black-oak__0736821_pe740763_s5.jpg"
+          ],
+          "description": "VADHOLMA Kitchen island 31 1/8x24 5/8x35 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40366115",
+          "measure": "31 1/8x24 5/8x35 3/8 \"",
+          "categoryName": "Kitchen islands & carts",
+          "translations": {
+            "en": {
+              "name": "VADHOLMA Kitchen island",
+              "description": "VADHOLMA Kitchen island 31 1/8x24 5/8x35 3/8 \""
+            },
+            "ru": {
+              "name": "VADHOLMA Kitchen island",
+              "description": "VADHOLMA Kitchen island 31 1/8x24 5/8x35 3/8 \""
+            },
+            "zh": {
+              "name": "VADHOLMA Kitchen island",
+              "description": "VADHOLMA Kitchen island 31 1/8x24 5/8x35 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "TORNVIKEN Kitchen island",
+          "slug": "tornviken-kitchen-island-40391657",
+          "sku": "IK-40391657",
+          "price": 399.99,
+          "compareAtPrice": 499.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tornviken-kitchen-island-off-white-oak__0736817_pe740760_s5.jpg"
+          ],
+          "description": "TORNVIKEN Kitchen island 49 5/8x30 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40391657",
+          "measure": "49 5/8x30 3/8 \"",
+          "categoryName": "Kitchen islands & carts",
+          "translations": {
+            "en": {
+              "name": "TORNVIKEN Kitchen island",
+              "description": "TORNVIKEN Kitchen island 49 5/8x30 3/8 \""
+            },
+            "ru": {
+              "name": "TORNVIKEN Kitchen island",
+              "description": "TORNVIKEN Kitchen island 49 5/8x30 3/8 \""
+            },
+            "zh": {
+              "name": "TORNVIKEN Kitchen island",
+              "description": "TORNVIKEN Kitchen island 49 5/8x30 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "VADHOLMA Kitchen island",
+          "slug": "vadholma-kitchen-island-20359154",
+          "sku": "IK-20359154",
+          "price": 629,
+          "compareAtPrice": 786.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vadholma-kitchen-island-black-oak__0736820_pe740762_s5.jpg"
+          ],
+          "description": "VADHOLMA Kitchen island 49 5/8x31 1/8x35 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20359154",
+          "measure": "49 5/8x31 1/8x35 3/8 \"",
+          "categoryName": "Kitchen islands & carts",
+          "translations": {
+            "en": {
+              "name": "VADHOLMA Kitchen island",
+              "description": "VADHOLMA Kitchen island 49 5/8x31 1/8x35 3/8 \""
+            },
+            "ru": {
+              "name": "VADHOLMA Kitchen island",
+              "description": "VADHOLMA Kitchen island 49 5/8x31 1/8x35 3/8 \""
+            },
+            "zh": {
+              "name": "VADHOLMA Kitchen island",
+              "description": "VADHOLMA Kitchen island 49 5/8x31 1/8x35 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "FÖRHÖJA Kitchen cart",
+          "slug": "frhja-kitchen-cart-80486724",
+          "sku": "IK-80486724",
+          "price": 179.99,
+          "compareAtPrice": 224.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foerhoeja-kitchen-cart-birch-white__1057905_pe849059_s5.jpg"
+          ],
+          "description": "FÖRHÖJA Kitchen cart 39 3/8x16 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80486724",
+          "measure": "39 3/8x16 7/8 \"",
+          "categoryName": "Kitchen islands & carts",
+          "translations": {
+            "en": {
+              "name": "FÖRHÖJA Kitchen cart",
+              "description": "FÖRHÖJA Kitchen cart 39 3/8x16 7/8 \""
+            },
+            "ru": {
+              "name": "FÖRHÖJA Kitchen cart",
+              "description": "FÖRHÖJA Kitchen cart 39 3/8x16 7/8 \""
+            },
+            "zh": {
+              "name": "FÖRHÖJA Kitchen cart",
+              "description": "FÖRHÖJA Kitchen cart 39 3/8x16 7/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen cabinet & drawer organization",
+      "categorySlug": "interior-fittings-24255",
+      "ikeaCode": "24255",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen cabinet & drawer organization"
+        },
+        "ru": {
+          "name": "Kitchen cabinet & drawer organization"
+        },
+        "zh": {
+          "name": "Kitchen cabinet & drawer organization"
+        }
+      },
+      "totalIkeaProductsInStock": 97,
+      "sampleProductsToInsert": [
+        {
+          "name": "UPPDATERA Flatware tray",
+          "slug": "uppdatera-flatware-tray-20491356",
+          "sku": "IK-20491356",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppdatera-flatware-tray-light-bamboo__0968836_pe810562_s5.jpg"
+          ],
+          "description": "UPPDATERA Flatware tray 15x19 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20491356",
+          "measure": "15x19 ½ \"",
+          "categoryName": "Kitchen cabinet & drawer organization",
+          "translations": {
+            "en": {
+              "name": "UPPDATERA Flatware tray",
+              "description": "UPPDATERA Flatware tray 15x19 ½ \""
+            },
+            "ru": {
+              "name": "UPPDATERA Flatware tray",
+              "description": "UPPDATERA Flatware tray 15x19 ½ \""
+            },
+            "zh": {
+              "name": "UPPDATERA Flatware tray",
+              "description": "UPPDATERA Flatware tray 15x19 ½ \""
+            }
+          }
+        },
+        {
+          "name": "VARIERA Pot lid organizer",
+          "slug": "variera-pot-lid-organizer-70154800",
+          "sku": "IK-70154800",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/variera-pot-lid-organizer-stainless-steel__0626878_pe693056_s5.jpg"
+          ],
+          "description": "VARIERA Pot lid organizer",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70154800",
+          "measure": "",
+          "categoryName": "Kitchen cabinet & drawer organization",
+          "translations": {
+            "en": {
+              "name": "VARIERA Pot lid organizer",
+              "description": "VARIERA Pot lid organizer"
+            },
+            "ru": {
+              "name": "VARIERA Pot lid organizer",
+              "description": "VARIERA Pot lid organizer"
+            },
+            "zh": {
+              "name": "VARIERA Pot lid organizer",
+              "description": "VARIERA Pot lid organizer"
+            }
+          }
+        },
+        {
+          "name": "VARIERA Flatware tray",
+          "slug": "variera-flatware-tray-80613816",
+          "sku": "IK-80613816",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/variera-flatware-tray-adjustable__1456612_pe992412_s5.jpg"
+          ],
+          "description": "VARIERA Flatware tray 11 3/16-17 1/2x18 9/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80613816",
+          "measure": "11 3/16-17 1/2x18 9/16 \"",
+          "categoryName": "Kitchen cabinet & drawer organization",
+          "translations": {
+            "en": {
+              "name": "VARIERA Flatware tray",
+              "description": "VARIERA Flatware tray 11 3/16-17 1/2x18 9/16 \""
+            },
+            "ru": {
+              "name": "VARIERA Flatware tray",
+              "description": "VARIERA Flatware tray 11 3/16-17 1/2x18 9/16 \""
+            },
+            "zh": {
+              "name": "VARIERA Flatware tray",
+              "description": "VARIERA Flatware tray 11 3/16-17 1/2x18 9/16 \""
+            }
+          }
+        },
+        {
+          "name": "UPPDATERA Utensil tray",
+          "slug": "uppdatera-utensil-tray-20618096",
+          "sku": "IK-20618096",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppdatera-utensil-tray-bamboo__1419032_pe976789_s5.jpg"
+          ],
+          "description": "UPPDATERA Utensil tray 6x19 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20618096",
+          "measure": "6x19 ½ \"",
+          "categoryName": "Kitchen cabinet & drawer organization",
+          "translations": {
+            "en": {
+              "name": "UPPDATERA Utensil tray",
+              "description": "UPPDATERA Utensil tray 6x19 ½ \""
+            },
+            "ru": {
+              "name": "UPPDATERA Utensil tray",
+              "description": "UPPDATERA Utensil tray 6x19 ½ \""
+            },
+            "zh": {
+              "name": "UPPDATERA Utensil tray",
+              "description": "UPPDATERA Utensil tray 6x19 ½ \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen organization & wall storage",
+      "categorySlug": "kitchen-wall-storage-20676",
+      "ikeaCode": "20676",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen organization & wall storage"
+        },
+        "ru": {
+          "name": "Kitchen organization & wall storage"
+        },
+        "zh": {
+          "name": "Kitchen organization & wall storage"
+        }
+      },
+      "totalIkeaProductsInStock": 85,
+      "sampleProductsToInsert": [
+        {
+          "name": "KUNGSFORS Suspension rail with shelf/wll grid",
+          "slug": "kungsfors-suspension-rail-with-shelfwll-grid-19254332",
+          "sku": "IK-19254332",
+          "price": 127.97,
+          "compareAtPrice": 159.96,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kungsfors-suspension-rail-with-shelf-wll-grid-stainless-steel__0709900_pe727151_s5.jpg"
+          ],
+          "description": "KUNGSFORS Suspension rail with shelf/wll grid",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19254332",
+          "measure": "",
+          "categoryName": "Kitchen organization & wall storage",
+          "translations": {
+            "en": {
+              "name": "KUNGSFORS Suspension rail with shelf/wll grid",
+              "description": "KUNGSFORS Suspension rail with shelf/wll grid"
+            },
+            "ru": {
+              "name": "KUNGSFORS Suspension rail with shelf/wll grid",
+              "description": "KUNGSFORS Suspension rail with shelf/wll grid"
+            },
+            "zh": {
+              "name": "KUNGSFORS Suspension rail with shelf/wll grid",
+              "description": "KUNGSFORS Suspension rail with shelf/wll grid"
+            }
+          }
+        },
+        {
+          "name": "KUNGSFORS Wall rack",
+          "slug": "kungsfors-wall-rack-80334919",
+          "sku": "IK-80334919",
+          "price": 27.99,
+          "compareAtPrice": 34.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kungsfors-wall-rack-stainless-steel__0713281_pe729389_s5.jpg"
+          ],
+          "description": "KUNGSFORS Wall rack",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80334919",
+          "measure": "",
+          "categoryName": "Kitchen organization & wall storage",
+          "translations": {
+            "en": {
+              "name": "KUNGSFORS Wall rack",
+              "description": "KUNGSFORS Wall rack"
+            },
+            "ru": {
+              "name": "KUNGSFORS Wall rack",
+              "description": "KUNGSFORS Wall rack"
+            },
+            "zh": {
+              "name": "KUNGSFORS Wall rack",
+              "description": "KUNGSFORS Wall rack"
+            }
+          }
+        },
+        {
+          "name": "KUNGSFORS Wall grid with storage",
+          "slug": "kungsfors-wall-grid-with-storage-49254335",
+          "sku": "IK-49254335",
+          "price": 254.96,
+          "compareAtPrice": 318.7,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kungsfors-wall-grid-with-storage-stainless-steel-ash__0720840_pe732863_s5.jpg"
+          ],
+          "description": "KUNGSFORS Wall grid with storage",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "49254335",
+          "measure": "",
+          "categoryName": "Kitchen organization & wall storage",
+          "translations": {
+            "en": {
+              "name": "KUNGSFORS Wall grid with storage",
+              "description": "KUNGSFORS Wall grid with storage"
+            },
+            "ru": {
+              "name": "KUNGSFORS Wall grid with storage",
+              "description": "KUNGSFORS Wall grid with storage"
+            },
+            "zh": {
+              "name": "KUNGSFORS Wall grid with storage",
+              "description": "KUNGSFORS Wall grid with storage"
+            }
+          }
+        },
+        {
+          "name": "BEKVÄM Spice rack",
+          "slug": "bekvm-spice-rack-20487175",
+          "sku": "IK-20487175",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bekvaem-spice-rack-aspen__0993240_pe814904_s5.jpg"
+          ],
+          "description": "BEKVÄM Spice rack",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20487175",
+          "measure": "",
+          "categoryName": "Kitchen organization & wall storage",
+          "translations": {
+            "en": {
+              "name": "BEKVÄM Spice rack",
+              "description": "BEKVÄM Spice rack"
+            },
+            "ru": {
+              "name": "BEKVÄM Spice rack",
+              "description": "BEKVÄM Spice rack"
+            },
+            "zh": {
+              "name": "BEKVÄM Spice rack",
+              "description": "BEKVÄM Spice rack"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Pantry shelving",
+      "categorySlug": "kitchen-pantry-storage-16200",
+      "ikeaCode": "16200",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Pantry shelving"
+        },
+        "ru": {
+          "name": "Pantry shelving"
+        },
+        "zh": {
+          "name": "Pantry shelving"
+        }
+      },
+      "totalIkeaProductsInStock": 29,
+      "sampleProductsToInsert": [
+        {
+          "name": "OMAR 1 section shelving unit",
+          "slug": "omar-1-section-shelving-unit-69829083",
+          "sku": "IK-69829083",
+          "price": 130,
+          "compareAtPrice": 162.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/omar-1-section-shelving-unit__0626066_pe692566_s5.jpg"
+          ],
+          "description": "OMAR 1 section shelving unit 36 1/4x14 1/8x71 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69829083",
+          "measure": "36 1/4x14 1/8x71 1/4 \"",
+          "categoryName": "Pantry shelving",
+          "translations": {
+            "en": {
+              "name": "OMAR 1 section shelving unit",
+              "description": "OMAR 1 section shelving unit 36 1/4x14 1/8x71 1/4 \""
+            },
+            "ru": {
+              "name": "OMAR 1 section shelving unit",
+              "description": "OMAR 1 section shelving unit 36 1/4x14 1/8x71 1/4 \""
+            },
+            "zh": {
+              "name": "OMAR 1 section shelving unit",
+              "description": "OMAR 1 section shelving unit 36 1/4x14 1/8x71 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-30428326",
+          "sku": "IK-30428326",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0639121_pe704408_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30428326",
+          "measure": "23 5/8x10 5/8x29 1/8 \"",
+          "categoryName": "Pantry shelving",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-00278578",
+          "sku": "IK-00278578",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0626021_pe692562_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00278578",
+          "measure": "23 5/8x10 5/8x55 1/8 \"",
+          "categoryName": "Pantry shelving",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "OMAR 1 section shelving unit",
+          "slug": "omar-1-section-shelving-unit-19829090",
+          "sku": "IK-19829090",
+          "price": 100,
+          "compareAtPrice": 125,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/omar-1-section-shelving-unit__0650690_pe706426_s5.jpg"
+          ],
+          "description": "OMAR 1 section shelving unit 18 1/8x14 1/8x71 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19829090",
+          "measure": "18 1/8x14 1/8x71 1/4 \"",
+          "categoryName": "Pantry shelving",
+          "translations": {
+            "en": {
+              "name": "OMAR 1 section shelving unit",
+              "description": "OMAR 1 section shelving unit 18 1/8x14 1/8x71 1/4 \""
+            },
+            "ru": {
+              "name": "OMAR 1 section shelving unit",
+              "description": "OMAR 1 section shelving unit 18 1/8x14 1/8x71 1/4 \""
+            },
+            "zh": {
+              "name": "OMAR 1 section shelving unit",
+              "description": "OMAR 1 section shelving unit 18 1/8x14 1/8x71 1/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen faucets",
+      "categorySlug": "kitchen-faucets-10482",
+      "ikeaCode": "10482",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen faucets"
+        },
+        "ru": {
+          "name": "Kitchen faucets"
+        },
+        "zh": {
+          "name": "Kitchen faucets"
+        }
+      },
+      "totalIkeaProductsInStock": 19,
+      "sampleProductsToInsert": [
+        {
+          "name": "MACKSJÖN Pull down kitchen faucet with spray",
+          "slug": "macksjn-pull-down-kitchen-faucet-with-spray-80600833",
+          "sku": "IK-80600833",
+          "price": 99,
+          "compareAtPrice": 123.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/macksjoen-pull-down-kitchen-faucet-with-spray-stainless-steel__1474154_pe997965_s5.jpg"
+          ],
+          "description": "MACKSJÖN Pull down kitchen faucet with spray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80600833",
+          "measure": "",
+          "categoryName": "Kitchen faucets",
+          "translations": {
+            "en": {
+              "name": "MACKSJÖN Pull down kitchen faucet with spray",
+              "description": "MACKSJÖN Pull down kitchen faucet with spray"
+            },
+            "ru": {
+              "name": "MACKSJÖN Pull down kitchen faucet with spray",
+              "description": "MACKSJÖN Pull down kitchen faucet with spray"
+            },
+            "zh": {
+              "name": "MACKSJÖN Pull down kitchen faucet with spray",
+              "description": "MACKSJÖN Pull down kitchen faucet with spray"
+            }
+          }
+        },
+        {
+          "name": "SALLSJÖN Pull out kitchen faucet with spray",
+          "slug": "sallsjn-pull-out-kitchen-faucet-with-spray-40610626",
+          "sku": "IK-40610626",
+          "price": 149,
+          "compareAtPrice": 186.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sallsjoen-pull-out-kitchen-faucet-with-spray-stainless-steel__1468671_pe996240_s5.jpg"
+          ],
+          "description": "SALLSJÖN Pull out kitchen faucet with spray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40610626",
+          "measure": "",
+          "categoryName": "Kitchen faucets",
+          "translations": {
+            "en": {
+              "name": "SALLSJÖN Pull out kitchen faucet with spray",
+              "description": "SALLSJÖN Pull out kitchen faucet with spray"
+            },
+            "ru": {
+              "name": "SALLSJÖN Pull out kitchen faucet with spray",
+              "description": "SALLSJÖN Pull out kitchen faucet with spray"
+            },
+            "zh": {
+              "name": "SALLSJÖN Pull out kitchen faucet with spray",
+              "description": "SALLSJÖN Pull out kitchen faucet with spray"
+            }
+          }
+        },
+        {
+          "name": "ÄLMAREN Kitchen faucet with pull-out spout",
+          "slug": "lmaren-kitchen-faucet-with-pull-out-spout-80341651",
+          "sku": "IK-80341651",
+          "price": 149,
+          "compareAtPrice": 186.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aelmaren-kitchen-faucet-with-pull-out-spout-stainless-steel__0756724_pe749057_s5.jpg"
+          ],
+          "description": "ÄLMAREN Kitchen faucet with pull-out spout",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80341651",
+          "measure": "",
+          "categoryName": "Kitchen faucets",
+          "translations": {
+            "en": {
+              "name": "ÄLMAREN Kitchen faucet with pull-out spout",
+              "description": "ÄLMAREN Kitchen faucet with pull-out spout"
+            },
+            "ru": {
+              "name": "ÄLMAREN Kitchen faucet with pull-out spout",
+              "description": "ÄLMAREN Kitchen faucet with pull-out spout"
+            },
+            "zh": {
+              "name": "ÄLMAREN Kitchen faucet with pull-out spout",
+              "description": "ÄLMAREN Kitchen faucet with pull-out spout"
+            }
+          }
+        },
+        {
+          "name": "TAKSJÖN Pull down kitchen faucet with spray",
+          "slug": "taksjn-pull-down-kitchen-faucet-with-spray-10610500",
+          "sku": "IK-10610500",
+          "price": 179,
+          "compareAtPrice": 223.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/taksjoen-pull-down-kitchen-faucet-with-spray-stainless-steel__1466195_pe995295_s5.jpg"
+          ],
+          "description": "TAKSJÖN Pull down kitchen faucet with spray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10610500",
+          "measure": "",
+          "categoryName": "Kitchen faucets",
+          "translations": {
+            "en": {
+              "name": "TAKSJÖN Pull down kitchen faucet with spray",
+              "description": "TAKSJÖN Pull down kitchen faucet with spray"
+            },
+            "ru": {
+              "name": "TAKSJÖN Pull down kitchen faucet with spray",
+              "description": "TAKSJÖN Pull down kitchen faucet with spray"
+            },
+            "zh": {
+              "name": "TAKSJÖN Pull down kitchen faucet with spray",
+              "description": "TAKSJÖN Pull down kitchen faucet with spray"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen sinks",
+      "categorySlug": "kitchen-sinks-24263",
+      "ikeaCode": "24263",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen sinks"
+        },
+        "ru": {
+          "name": "Kitchen sinks"
+        },
+        "zh": {
+          "name": "Kitchen sinks"
+        }
+      },
+      "totalIkeaProductsInStock": 17,
+      "sampleProductsToInsert": [
+        {
+          "name": "BOVIGGEN Apron front sink",
+          "slug": "boviggen-apron-front-sink-69443104",
+          "sku": "IK-69443104",
+          "price": 424,
+          "compareAtPrice": 530,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/boviggen-apron-front-sink-white__1410888_pe972987_s5.jpg"
+          ],
+          "description": "BOVIGGEN Apron front sink",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69443104",
+          "measure": "",
+          "categoryName": "Kitchen sinks",
+          "translations": {
+            "en": {
+              "name": "BOVIGGEN Apron front sink",
+              "description": "BOVIGGEN Apron front sink"
+            },
+            "ru": {
+              "name": "BOVIGGEN Apron front sink",
+              "description": "BOVIGGEN Apron front sink"
+            },
+            "zh": {
+              "name": "BOVIGGEN Apron front sink",
+              "description": "BOVIGGEN Apron front sink"
+            }
+          }
+        },
+        {
+          "name": "HAVSEN Apron front double bowl sink",
+          "slug": "havsen-apron-front-double-bowl-sink-59253726",
+          "sku": "IK-59253726",
+          "price": 279,
+          "compareAtPrice": 348.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/havsen-apron-front-double-bowl-sink-white__0754715_pe748058_s5.jpg"
+          ],
+          "description": "HAVSEN Apron front double bowl sink 37x19 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59253726",
+          "measure": "37x19 \"",
+          "categoryName": "Kitchen sinks",
+          "translations": {
+            "en": {
+              "name": "HAVSEN Apron front double bowl sink",
+              "description": "HAVSEN Apron front double bowl sink 37x19 \""
+            },
+            "ru": {
+              "name": "HAVSEN Apron front double bowl sink",
+              "description": "HAVSEN Apron front double bowl sink 37x19 \""
+            },
+            "zh": {
+              "name": "HAVSEN Apron front double bowl sink",
+              "description": "HAVSEN Apron front double bowl sink 37x19 \""
+            }
+          }
+        },
+        {
+          "name": "VRESJÖN Sink",
+          "slug": "vresjn-sink-99425735",
+          "sku": "IK-99425735",
+          "price": 384,
+          "compareAtPrice": 480,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vresjoen-sink-stainless-steel__1054578_pe847751_s5.jpg"
+          ],
+          "description": "VRESJÖN Sink 28 3/4x17 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "99425735",
+          "measure": "28 3/4x17 3/8 \"",
+          "categoryName": "Kitchen sinks",
+          "translations": {
+            "en": {
+              "name": "VRESJÖN Sink",
+              "description": "VRESJÖN Sink 28 3/4x17 3/8 \""
+            },
+            "ru": {
+              "name": "VRESJÖN Sink",
+              "description": "VRESJÖN Sink 28 3/4x17 3/8 \""
+            },
+            "zh": {
+              "name": "VRESJÖN Sink",
+              "description": "VRESJÖN Sink 28 3/4x17 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "TALLSJÖN Apron front sink",
+          "slug": "tallsjn-apron-front-sink-69491369",
+          "sku": "IK-69491369",
+          "price": 384,
+          "compareAtPrice": 480,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tallsjoen-apron-front-sink-dark-gray-stone-effect__1425732_pe979622_s5.jpg"
+          ],
+          "description": "TALLSJÖN Apron front sink 29 7/8x26 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69491369",
+          "measure": "29 7/8x26 1/8 \"",
+          "categoryName": "Kitchen sinks",
+          "translations": {
+            "en": {
+              "name": "TALLSJÖN Apron front sink",
+              "description": "TALLSJÖN Apron front sink 29 7/8x26 1/8 \""
+            },
+            "ru": {
+              "name": "TALLSJÖN Apron front sink",
+              "description": "TALLSJÖN Apron front sink 29 7/8x26 1/8 \""
+            },
+            "zh": {
+              "name": "TALLSJÖN Apron front sink",
+              "description": "TALLSJÖN Apron front sink 29 7/8x26 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Modular kitchens & kitchenettes",
+      "categorySlug": "modular-kitchens-22957",
+      "ikeaCode": "22957",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Modular kitchens & kitchenettes"
+        },
+        "ru": {
+          "name": "Modular kitchens & kitchenettes"
+        },
+        "zh": {
+          "name": "Modular kitchens & kitchenettes"
+        }
+      },
+      "totalIkeaProductsInStock": 73,
+      "sampleProductsToInsert": [
+        {
+          "name": "ÖNNERUP Kitchenette",
+          "slug": "nnerup-kitchenette-00500286",
+          "sku": "IK-00500286",
+          "price": 699,
+          "compareAtPrice": 873.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/oennerup-kitchenette-off-white__1244718_pe921262_s5.jpg"
+          ],
+          "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00500286",
+          "measure": "51 1/8x25 1/4x86 1/4 \"",
+          "categoryName": "Modular kitchens & kitchenettes",
+          "translations": {
+            "en": {
+              "name": "ÖNNERUP Kitchenette",
+              "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \""
+            },
+            "ru": {
+              "name": "ÖNNERUP Kitchenette",
+              "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \""
+            },
+            "zh": {
+              "name": "ÖNNERUP Kitchenette",
+              "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "ÄSPINGE Kitchenette",
+          "slug": "spinge-kitchenette-20500285",
+          "sku": "IK-20500285",
+          "price": 550,
+          "compareAtPrice": 687.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aespinge-kitchenette-black-ash__1092710_pe862965_s5.jpg"
+          ],
+          "description": "ÄSPINGE Kitchenette 47 1/4x23 5/8x79 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20500285",
+          "measure": "47 1/4x23 5/8x79 3/8 \"",
+          "categoryName": "Modular kitchens & kitchenettes",
+          "translations": {
+            "en": {
+              "name": "ÄSPINGE Kitchenette",
+              "description": "ÄSPINGE Kitchenette 47 1/4x23 5/8x79 3/8 \""
+            },
+            "ru": {
+              "name": "ÄSPINGE Kitchenette",
+              "description": "ÄSPINGE Kitchenette 47 1/4x23 5/8x79 3/8 \""
+            },
+            "zh": {
+              "name": "ÄSPINGE Kitchenette",
+              "description": "ÄSPINGE Kitchenette 47 1/4x23 5/8x79 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "UPPDATERA Box",
+          "slug": "uppdatera-box-20546467",
+          "sku": "IK-20546467",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppdatera-box-white__1215004_pe911802_s5.jpg"
+          ],
+          "description": "UPPDATERA Box 9 1/2x6 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20546467",
+          "measure": "9 1/2x6 3/4 \"",
+          "categoryName": "Modular kitchens & kitchenettes",
+          "translations": {
+            "en": {
+              "name": "UPPDATERA Box",
+              "description": "UPPDATERA Box 9 1/2x6 3/4 \""
+            },
+            "ru": {
+              "name": "UPPDATERA Box",
+              "description": "UPPDATERA Box 9 1/2x6 3/4 \""
+            },
+            "zh": {
+              "name": "UPPDATERA Box",
+              "description": "UPPDATERA Box 9 1/2x6 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "ÖNNERUP Kitchenette",
+          "slug": "nnerup-kitchenette-69634212",
+          "sku": "IK-69634212",
+          "price": 879,
+          "compareAtPrice": 1098.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/oennerup-kitchenette-off-white__1545675_pe1019813_s5.jpg"
+          ],
+          "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69634212",
+          "measure": "51 1/8x25 1/4x86 1/4 \"",
+          "categoryName": "Modular kitchens & kitchenettes",
+          "translations": {
+            "en": {
+              "name": "ÖNNERUP Kitchenette",
+              "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \""
+            },
+            "ru": {
+              "name": "ÖNNERUP Kitchenette",
+              "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \""
+            },
+            "zh": {
+              "name": "ÖNNERUP Kitchenette",
+              "description": "ÖNNERUP Kitchenette 51 1/8x25 1/4x86 1/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Knobs and handles",
+      "categorySlug": "cabinet-knobs-handles-pulls-16298",
+      "ikeaCode": "16298",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Knobs and handles"
+        },
+        "ru": {
+          "name": "Knobs and handles"
+        },
+        "zh": {
+          "name": "Knobs and handles"
+        }
+      },
+      "totalIkeaProductsInStock": 56,
+      "sampleProductsToInsert": [
+        {
+          "name": "KALERUM Handle",
+          "slug": "kalerum-handle-60553644",
+          "sku": "IK-60553644",
+          "price": 10,
+          "compareAtPrice": 12.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kalerum-handle-stainless-steel__1239414_pe918885_s5.jpg"
+          ],
+          "description": "KALERUM Handle 5 7/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60553644",
+          "measure": "5 7/16 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "KALERUM Handle",
+              "description": "KALERUM Handle 5 7/16 \""
+            },
+            "ru": {
+              "name": "KALERUM Handle",
+              "description": "KALERUM Handle 5 7/16 \""
+            },
+            "zh": {
+              "name": "KALERUM Handle",
+              "description": "KALERUM Handle 5 7/16 \""
+            }
+          }
+        },
+        {
+          "name": "ENERYDA Knob",
+          "slug": "eneryda-knob-50610862",
+          "sku": "IK-50610862",
+          "price": 9,
+          "compareAtPrice": 11.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/eneryda-knob-brass-color__1427450_pe980247_s5.jpg"
+          ],
+          "description": "ENERYDA Knob 1 1/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50610862",
+          "measure": "1 1/16 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "ENERYDA Knob",
+              "description": "ENERYDA Knob 1 1/16 \""
+            },
+            "ru": {
+              "name": "ENERYDA Knob",
+              "description": "ENERYDA Knob 1 1/16 \""
+            },
+            "zh": {
+              "name": "ENERYDA Knob",
+              "description": "ENERYDA Knob 1 1/16 \""
+            }
+          }
+        },
+        {
+          "name": "KALERUM Knob",
+          "slug": "kalerum-knob-60596554",
+          "sku": "IK-60596554",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kalerum-knob-brass-color__1370954_pe958919_s5.jpg"
+          ],
+          "description": "KALERUM Knob 1 3/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60596554",
+          "measure": "1 3/16 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "KALERUM Knob",
+              "description": "KALERUM Knob 1 3/16 \""
+            },
+            "ru": {
+              "name": "KALERUM Knob",
+              "description": "KALERUM Knob 1 3/16 \""
+            },
+            "zh": {
+              "name": "KALERUM Knob",
+              "description": "KALERUM Knob 1 3/16 \""
+            }
+          }
+        },
+        {
+          "name": "GRIBBOL Handle",
+          "slug": "gribbol-handle-40496305",
+          "sku": "IK-40496305",
+          "price": 11,
+          "compareAtPrice": 13.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gribbol-handle-brass-color__0945521_pe797714_s5.jpg"
+          ],
+          "description": "GRIBBOL Handle 5 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40496305",
+          "measure": "5 1/2 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "GRIBBOL Handle",
+              "description": "GRIBBOL Handle 5 1/2 \""
+            },
+            "ru": {
+              "name": "GRIBBOL Handle",
+              "description": "GRIBBOL Handle 5 1/2 \""
+            },
+            "zh": {
+              "name": "GRIBBOL Handle",
+              "description": "GRIBBOL Handle 5 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen lighting",
+      "categorySlug": "kitchen-lighting-16282",
+      "ikeaCode": "16282",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen lighting"
+        },
+        "ru": {
+          "name": "Kitchen lighting"
+        },
+        "zh": {
+          "name": "Kitchen lighting"
+        }
+      },
+      "totalIkeaProductsInStock": 19,
+      "sampleProductsToInsert": [
+        {
+          "name": "MITTLED LED kitchen cntrtp lighting strip",
+          "slug": "mittled-led-kitchen-cntrtp-lighting-strip-00455420",
+          "sku": "IK-00455420",
+          "price": 30,
+          "compareAtPrice": 37.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittled-led-kitchen-cntrtp-lighting-strip-dimmable-white__0869941_pe781536_s5.jpg"
+          ],
+          "description": "MITTLED LED kitchen cntrtp lighting strip 24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00455420",
+          "measure": "24 \"",
+          "categoryName": "Kitchen lighting",
+          "translations": {
+            "en": {
+              "name": "MITTLED LED kitchen cntrtp lighting strip",
+              "description": "MITTLED LED kitchen cntrtp lighting strip 24 \""
+            },
+            "ru": {
+              "name": "MITTLED LED kitchen cntrtp lighting strip",
+              "description": "MITTLED LED kitchen cntrtp lighting strip 24 \""
+            },
+            "zh": {
+              "name": "MITTLED LED kitchen cntrtp lighting strip",
+              "description": "MITTLED LED kitchen cntrtp lighting strip 24 \""
+            }
+          }
+        },
+        {
+          "name": "GÖMPYSSLING LED lighting with sensor",
+          "slug": "gmpyssling-led-lighting-with-sensor-90615155",
+          "sku": "IK-90615155",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/goempyssling-led-lighting-with-sensor-white-battery-operated__1469276_pe996466_s5.jpg"
+          ],
+          "description": "GÖMPYSSLING LED lighting with sensor 3 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90615155",
+          "measure": "3 \"",
+          "categoryName": "Kitchen lighting",
+          "translations": {
+            "en": {
+              "name": "GÖMPYSSLING LED lighting with sensor",
+              "description": "GÖMPYSSLING LED lighting with sensor 3 \""
+            },
+            "ru": {
+              "name": "GÖMPYSSLING LED lighting with sensor",
+              "description": "GÖMPYSSLING LED lighting with sensor 3 \""
+            },
+            "zh": {
+              "name": "GÖMPYSSLING LED lighting with sensor",
+              "description": "GÖMPYSSLING LED lighting with sensor 3 \""
+            }
+          }
+        },
+        {
+          "name": "MITTLED LED spotlight",
+          "slug": "mittled-led-spotlight-50472139",
+          "sku": "IK-50472139",
+          "price": 20,
+          "compareAtPrice": 25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittled-led-spotlight-dimmable-black__0869944_pe781539_s5.jpg"
+          ],
+          "description": "MITTLED LED spotlight",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50472139",
+          "measure": "",
+          "categoryName": "Kitchen lighting",
+          "translations": {
+            "en": {
+              "name": "MITTLED LED spotlight",
+              "description": "MITTLED LED spotlight"
+            },
+            "ru": {
+              "name": "MITTLED LED spotlight",
+              "description": "MITTLED LED spotlight"
+            },
+            "zh": {
+              "name": "MITTLED LED spotlight",
+              "description": "MITTLED LED spotlight"
+            }
+          }
+        },
+        {
+          "name": "SKYDRAG LED cntp/wrd lght strp w sensor",
+          "slug": "skydrag-led-cntpwrd-lght-strp-w-sensor-40439602",
+          "sku": "IK-40439602",
+          "price": 34,
+          "compareAtPrice": 42.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skydrag-led-cntp-wrd-lght-strp-w-sensor-dimmable-white__0812900_pe772200_s5.jpg"
+          ],
+          "description": "SKYDRAG LED cntp/wrd lght strp w sensor 24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40439602",
+          "measure": "24 \"",
+          "categoryName": "Kitchen lighting",
+          "translations": {
+            "en": {
+              "name": "SKYDRAG LED cntp/wrd lght strp w sensor",
+              "description": "SKYDRAG LED cntp/wrd lght strp w sensor 24 \""
+            },
+            "ru": {
+              "name": "SKYDRAG LED cntp/wrd lght strp w sensor",
+              "description": "SKYDRAG LED cntp/wrd lght strp w sensor 24 \""
+            },
+            "zh": {
+              "name": "SKYDRAG LED cntp/wrd lght strp w sensor",
+              "description": "SKYDRAG LED cntp/wrd lght strp w sensor 24 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "SEKTION cabinet shelves & drawers",
+      "categorySlug": "sektion-cabinet-shelves-and-drawers-49117",
+      "ikeaCode": "49117",
+      "parentDepartment": "Kitchen, appliances & supplies",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "SEKTION cabinet shelves & drawers"
+        },
+        "ru": {
+          "name": "SEKTION cabinet shelves & drawers"
+        },
+        "zh": {
+          "name": "SEKTION cabinet shelves & drawers"
+        }
+      },
+      "totalIkeaProductsInStock": 193,
+      "sampleProductsToInsert": [
+        {
+          "name": "MAXIMERA Drawer, medium",
+          "slug": "maximera-drawer-medium-80265666",
+          "sku": "IK-80265666",
+          "price": 50,
+          "compareAtPrice": 62.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/maximera-drawer-medium-white__0268050_pe405665_s5.jpg"
+          ],
+          "description": "MAXIMERA Drawer, medium 24x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80265666",
+          "measure": "24x24 \"",
+          "categoryName": "SEKTION cabinet shelves & drawers",
+          "translations": {
+            "en": {
+              "name": "MAXIMERA Drawer, medium",
+              "description": "MAXIMERA Drawer, medium 24x24 \""
+            },
+            "ru": {
+              "name": "MAXIMERA Drawer, medium",
+              "description": "MAXIMERA Drawer, medium 24x24 \""
+            },
+            "zh": {
+              "name": "MAXIMERA Drawer, medium",
+              "description": "MAXIMERA Drawer, medium 24x24 \""
+            }
+          }
+        },
+        {
+          "name": "UTRUSTA Shelf",
+          "slug": "utrusta-shelf-10265523",
+          "sku": "IK-10265523",
+          "price": 22,
+          "compareAtPrice": 27.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/utrusta-shelf-white__0268720_pe422281_s5.jpg"
+          ],
+          "description": "UTRUSTA Shelf 24x14 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10265523",
+          "measure": "24x14 3/4 \"",
+          "categoryName": "SEKTION cabinet shelves & drawers",
+          "translations": {
+            "en": {
+              "name": "UTRUSTA Shelf",
+              "description": "UTRUSTA Shelf 24x14 3/4 \""
+            },
+            "ru": {
+              "name": "UTRUSTA Shelf",
+              "description": "UTRUSTA Shelf 24x14 3/4 \""
+            },
+            "zh": {
+              "name": "UTRUSTA Shelf",
+              "description": "UTRUSTA Shelf 24x14 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "UTRUSTA Pull-out pantry organizer",
+          "slug": "utrusta-pull-out-pantry-organizer-10517795",
+          "sku": "IK-10517795",
+          "price": 400,
+          "compareAtPrice": 500,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/utrusta-pull-out-pantry-organizer__1111370_pe870754_s5.jpg"
+          ],
+          "description": "UTRUSTA Pull-out pantry organizer",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10517795",
+          "measure": "",
+          "categoryName": "SEKTION cabinet shelves & drawers",
+          "translations": {
+            "en": {
+              "name": "UTRUSTA Pull-out pantry organizer",
+              "description": "UTRUSTA Pull-out pantry organizer"
+            },
+            "ru": {
+              "name": "UTRUSTA Pull-out pantry organizer",
+              "description": "UTRUSTA Pull-out pantry organizer"
+            },
+            "zh": {
+              "name": "UTRUSTA Pull-out pantry organizer",
+              "description": "UTRUSTA Pull-out pantry organizer"
+            }
+          }
+        },
+        {
+          "name": "MAXIMERA Drawer, low",
+          "slug": "maximera-drawer-low-70265662",
+          "sku": "IK-70265662",
+          "price": 44,
+          "compareAtPrice": 55,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/maximera-drawer-low-white__0268017_pe405675_s5.jpg"
+          ],
+          "description": "MAXIMERA Drawer, low 24x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70265662",
+          "measure": "24x24 \"",
+          "categoryName": "SEKTION cabinet shelves & drawers",
+          "translations": {
+            "en": {
+              "name": "MAXIMERA Drawer, low",
+              "description": "MAXIMERA Drawer, low 24x24 \""
+            },
+            "ru": {
+              "name": "MAXIMERA Drawer, low",
+              "description": "MAXIMERA Drawer, low 24x24 \""
+            },
+            "zh": {
+              "name": "MAXIMERA Drawer, low",
+              "description": "MAXIMERA Drawer, low 24x24 \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

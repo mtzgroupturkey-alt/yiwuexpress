@@ -1,0 +1,719 @@
+{
+  "department": "Tables & chairs",
+  "departmentSlug": "tables-chairs-fu002",
+  "departmentCode": "fu002",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Столы и стулья",
+    "zh": "桌子与椅子"
+  },
+  "missingSubcategoriesCount": 5,
+  "totalMissingProductsCount": 153,
+  "subcategories": [
+    {
+      "categoryName": "Accent tables",
+      "categorySlug": "accent-tables-10705",
+      "ikeaCode": "10705",
+      "parentDepartment": "Tables & chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Accent tables"
+        },
+        "ru": {
+          "name": "Accent tables"
+        },
+        "zh": {
+          "name": "Accent tables"
+        }
+      },
+      "totalIkeaProductsInStock": 100,
+      "sampleProductsToInsert": [
+        {
+          "name": "HOLMERUD Side table",
+          "slug": "holmerud-side-table-40541421",
+          "sku": "IK-40541421",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/holmerud-side-table-oak-effect__1193662_pe901564_s5.jpg"
+          ],
+          "description": "HOLMERUD Side table 31 1/2x12 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40541421",
+          "measure": "31 1/2x12 1/4 \"",
+          "categoryName": "Accent tables",
+          "translations": {
+            "en": {
+              "name": "HOLMERUD Side table",
+              "description": "HOLMERUD Side table 31 1/2x12 1/4 \""
+            },
+            "ru": {
+              "name": "HOLMERUD Side table",
+              "description": "HOLMERUD Side table 31 1/2x12 1/4 \""
+            },
+            "zh": {
+              "name": "HOLMERUD Side table",
+              "description": "HOLMERUD Side table 31 1/2x12 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "LACK Coffee table",
+          "slug": "lack-coffee-table-40104294",
+          "sku": "IK-40104294",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lack-coffee-table-black-brown__57540_pe163122_s5.jpg"
+          ],
+          "description": "LACK Coffee table 35 3/8x21 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40104294",
+          "measure": "35 3/8x21 5/8 \"",
+          "categoryName": "Accent tables",
+          "translations": {
+            "en": {
+              "name": "LACK Coffee table",
+              "description": "LACK Coffee table 35 3/8x21 5/8 \""
+            },
+            "ru": {
+              "name": "LACK Coffee table",
+              "description": "LACK Coffee table 35 3/8x21 5/8 \""
+            },
+            "zh": {
+              "name": "LACK Coffee table",
+              "description": "LACK Coffee table 35 3/8x21 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "STOCKHOLM Nesting tables, set of 2",
+          "slug": "stockholm-nesting-tables-set-of-2-10239713",
+          "sku": "IK-10239713",
+          "price": 399.99,
+          "compareAtPrice": 499.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stockholm-nesting-tables-set-of-2-walnut-veneer__0735683_pe740088_s5.jpg"
+          ],
+          "description": "STOCKHOLM Nesting tables, set of 2",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10239713",
+          "measure": "",
+          "categoryName": "Accent tables",
+          "translations": {
+            "en": {
+              "name": "STOCKHOLM Nesting tables, set of 2",
+              "description": "STOCKHOLM Nesting tables, set of 2"
+            },
+            "ru": {
+              "name": "STOCKHOLM Nesting tables, set of 2",
+              "description": "STOCKHOLM Nesting tables, set of 2"
+            },
+            "zh": {
+              "name": "STOCKHOLM Nesting tables, set of 2",
+              "description": "STOCKHOLM Nesting tables, set of 2"
+            }
+          }
+        },
+        {
+          "name": "GLADOM Tray table",
+          "slug": "gladom-tray-table-50411990",
+          "sku": "IK-50411990",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gladom-tray-table-black__0567223_pe664991_s5.jpg"
+          ],
+          "description": "GLADOM Tray table 17 1/2x20 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50411990",
+          "measure": "17 1/2x20 5/8 \"",
+          "categoryName": "Accent tables",
+          "translations": {
+            "en": {
+              "name": "GLADOM Tray table",
+              "description": "GLADOM Tray table 17 1/2x20 5/8 \""
+            },
+            "ru": {
+              "name": "GLADOM Tray table",
+              "description": "GLADOM Tray table 17 1/2x20 5/8 \""
+            },
+            "zh": {
+              "name": "GLADOM Tray table",
+              "description": "GLADOM Tray table 17 1/2x20 5/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kids tables",
+      "categorySlug": "kids-tables-18768",
+      "ikeaCode": "18768",
+      "parentDepartment": "Tables & chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kids tables"
+        },
+        "ru": {
+          "name": "Kids tables"
+        },
+        "zh": {
+          "name": "Kids tables"
+        }
+      },
+      "totalIkeaProductsInStock": 9,
+      "sampleProductsToInsert": [
+        {
+          "name": "LÄTT Children's table and 2 chairs",
+          "slug": "ltt-childrens-table-and-2-chairs-50178411",
+          "sku": "IK-50178411",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/laett-childrens-table-and-2-chairs-white-pine__0735856_pe740220_s5.jpg"
+          ],
+          "description": "LÄTT Children's table and 2 chairs",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50178411",
+          "measure": "",
+          "categoryName": "Kids tables",
+          "translations": {
+            "en": {
+              "name": "LÄTT Children's table and 2 chairs",
+              "description": "LÄTT Children's table and 2 chairs"
+            },
+            "ru": {
+              "name": "LÄTT Children's table and 2 chairs",
+              "description": "LÄTT Children's table and 2 chairs"
+            },
+            "zh": {
+              "name": "LÄTT Children's table and 2 chairs",
+              "description": "LÄTT Children's table and 2 chairs"
+            }
+          }
+        },
+        {
+          "name": "FLISAT Children's table",
+          "slug": "flisat-childrens-table-50298418",
+          "sku": "IK-50298418",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/flisat-childrens-table__0735831_pe740206_s5.jpg"
+          ],
+          "description": "FLISAT Children's table 32 5/8x22 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50298418",
+          "measure": "32 5/8x22 7/8 \"",
+          "categoryName": "Kids tables",
+          "translations": {
+            "en": {
+              "name": "FLISAT Children's table",
+              "description": "FLISAT Children's table 32 5/8x22 7/8 \""
+            },
+            "ru": {
+              "name": "FLISAT Children's table",
+              "description": "FLISAT Children's table 32 5/8x22 7/8 \""
+            },
+            "zh": {
+              "name": "FLISAT Children's table",
+              "description": "FLISAT Children's table 32 5/8x22 7/8 \""
+            }
+          }
+        },
+        {
+          "name": "MAMMUT Children's table",
+          "slug": "mammut-childrens-table-50365177",
+          "sku": "IK-50365177",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mammut-childrens-table-indoor-outdoor-white__0735842_pe740215_s5.jpg"
+          ],
+          "description": "MAMMUT Children's table 30 3/8x21 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50365177",
+          "measure": "30 3/8x21 5/8 \"",
+          "categoryName": "Kids tables",
+          "translations": {
+            "en": {
+              "name": "MAMMUT Children's table",
+              "description": "MAMMUT Children's table 30 3/8x21 5/8 \""
+            },
+            "ru": {
+              "name": "MAMMUT Children's table",
+              "description": "MAMMUT Children's table 30 3/8x21 5/8 \""
+            },
+            "zh": {
+              "name": "MAMMUT Children's table",
+              "description": "MAMMUT Children's table 30 3/8x21 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "GREJSIMOJS Children's table",
+          "slug": "grejsimojs-childrens-table-70598963",
+          "sku": "IK-70598963",
+          "price": 69.99,
+          "compareAtPrice": 87.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grejsimojs-childrens-table-wood-orange__1474385_pe998043_s5.jpg"
+          ],
+          "description": "GREJSIMOJS Children's table 33 1/8x16 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70598963",
+          "measure": "33 1/8x16 1/2 \"",
+          "categoryName": "Kids tables",
+          "translations": {
+            "en": {
+              "name": "GREJSIMOJS Children's table",
+              "description": "GREJSIMOJS Children's table 33 1/8x16 1/2 \""
+            },
+            "ru": {
+              "name": "GREJSIMOJS Children's table",
+              "description": "GREJSIMOJS Children's table 33 1/8x16 1/2 \""
+            },
+            "zh": {
+              "name": "GREJSIMOJS Children's table",
+              "description": "GREJSIMOJS Children's table 33 1/8x16 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Step stools & step ladders",
+      "categorySlug": "step-stools-step-ladders-20611",
+      "ikeaCode": "20611",
+      "parentDepartment": "Tables & chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Step stools & step ladders"
+        },
+        "ru": {
+          "name": "Step stools & step ladders"
+        },
+        "zh": {
+          "name": "Step stools & step ladders"
+        }
+      },
+      "totalIkeaProductsInStock": 4,
+      "sampleProductsToInsert": [
+        {
+          "name": "BEKVÄM Step stool",
+          "slug": "bekvm-step-stool-40611032",
+          "sku": "IK-40611032",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bekvaem-step-stool-white__1389750_pe965249_s5.jpg"
+          ],
+          "description": "BEKVÄM Step stool 19 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40611032",
+          "measure": "19 5/8 \"",
+          "categoryName": "Step stools & step ladders",
+          "translations": {
+            "en": {
+              "name": "BEKVÄM Step stool",
+              "description": "BEKVÄM Step stool 19 5/8 \""
+            },
+            "ru": {
+              "name": "BEKVÄM Step stool",
+              "description": "BEKVÄM Step stool 19 5/8 \""
+            },
+            "zh": {
+              "name": "BEKVÄM Step stool",
+              "description": "BEKVÄM Step stool 19 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "BEKVÄM Step stool",
+          "slug": "bekvm-step-stool-50484670",
+          "sku": "IK-50484670",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bekvaem-step-stool-beech__0987795_pe819439_s5.jpg"
+          ],
+          "description": "BEKVÄM Step stool 24 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50484670",
+          "measure": "24 3/4 \"",
+          "categoryName": "Step stools & step ladders",
+          "translations": {
+            "en": {
+              "name": "BEKVÄM Step stool",
+              "description": "BEKVÄM Step stool 24 3/4 \""
+            },
+            "ru": {
+              "name": "BEKVÄM Step stool",
+              "description": "BEKVÄM Step stool 24 3/4 \""
+            },
+            "zh": {
+              "name": "BEKVÄM Step stool",
+              "description": "BEKVÄM Step stool 24 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "BÄSINGEN Step stool with handrail, 2-steps",
+          "slug": "bsingen-step-stool-with-handrail-2-steps-40597502",
+          "sku": "IK-40597502",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/baesingen-step-stool-with-handrail-2-steps-anthracite__1386021_pe963591_s5.jpg"
+          ],
+          "description": "BÄSINGEN Step stool with handrail, 2-steps",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40597502",
+          "measure": "",
+          "categoryName": "Step stools & step ladders",
+          "translations": {
+            "en": {
+              "name": "BÄSINGEN Step stool with handrail, 2-steps",
+              "description": "BÄSINGEN Step stool with handrail, 2-steps"
+            },
+            "ru": {
+              "name": "BÄSINGEN Step stool with handrail, 2-steps",
+              "description": "BÄSINGEN Step stool with handrail, 2-steps"
+            },
+            "zh": {
+              "name": "BÄSINGEN Step stool with handrail, 2-steps",
+              "description": "BÄSINGEN Step stool with handrail, 2-steps"
+            }
+          }
+        },
+        {
+          "name": "BÄSINGEN Step stool with handrail",
+          "slug": "bsingen-step-stool-with-handrail-80597492",
+          "sku": "IK-80597492",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/baesingen-step-stool-with-handrail-anthracite__1386023_pe963593_s5.jpg"
+          ],
+          "description": "BÄSINGEN Step stool with handrail",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80597492",
+          "measure": "",
+          "categoryName": "Step stools & step ladders",
+          "translations": {
+            "en": {
+              "name": "BÄSINGEN Step stool with handrail",
+              "description": "BÄSINGEN Step stool with handrail"
+            },
+            "ru": {
+              "name": "BÄSINGEN Step stool with handrail",
+              "description": "BÄSINGEN Step stool with handrail"
+            },
+            "zh": {
+              "name": "BÄSINGEN Step stool with handrail",
+              "description": "BÄSINGEN Step stool with handrail"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Vanity chairs",
+      "categorySlug": "dressing-table-chairs-stools-59250",
+      "ikeaCode": "59250",
+      "parentDepartment": "Tables & chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Vanity chairs"
+        },
+        "ru": {
+          "name": "Vanity chairs"
+        },
+        "zh": {
+          "name": "Vanity chairs"
+        }
+      },
+      "totalIkeaProductsInStock": 4,
+      "sampleProductsToInsert": [
+        {
+          "name": "BJÖRKBERGET Swivel chair",
+          "slug": "bjrkberget-swivel-chair-40487160",
+          "sku": "IK-40487160",
+          "price": 119.99,
+          "compareAtPrice": 149.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bjoerkberget-swivel-chair-idekulla-blue__0955770_pe804116_s5.jpg"
+          ],
+          "description": "BJÖRKBERGET Swivel chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40487160",
+          "measure": "",
+          "categoryName": "Vanity chairs",
+          "translations": {
+            "en": {
+              "name": "BJÖRKBERGET Swivel chair",
+              "description": "BJÖRKBERGET Swivel chair"
+            },
+            "ru": {
+              "name": "BJÖRKBERGET Swivel chair",
+              "description": "BJÖRKBERGET Swivel chair"
+            },
+            "zh": {
+              "name": "BJÖRKBERGET Swivel chair",
+              "description": "BJÖRKBERGET Swivel chair"
+            }
+          }
+        },
+        {
+          "name": "BALTSAR Swivel chair",
+          "slug": "baltsar-swivel-chair-40532134",
+          "sku": "IK-40532134",
+          "price": 235,
+          "compareAtPrice": 293.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/baltsar-swivel-chair-white__1118662_pe873208_s5.jpg"
+          ],
+          "description": "BALTSAR Swivel chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40532134",
+          "measure": "",
+          "categoryName": "Vanity chairs",
+          "translations": {
+            "en": {
+              "name": "BALTSAR Swivel chair",
+              "description": "BALTSAR Swivel chair"
+            },
+            "ru": {
+              "name": "BALTSAR Swivel chair",
+              "description": "BALTSAR Swivel chair"
+            },
+            "zh": {
+              "name": "BALTSAR Swivel chair",
+              "description": "BALTSAR Swivel chair"
+            }
+          }
+        },
+        {
+          "name": "STIGBYGEL Swivel chair with armrests",
+          "slug": "stigbygel-swivel-chair-with-armrests-50556431",
+          "sku": "IK-50556431",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stigbygel-swivel-chair-with-armrests-beige-white__1305706_pe939588_s5.jpg"
+          ],
+          "description": "STIGBYGEL Swivel chair with armrests",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50556431",
+          "measure": "",
+          "categoryName": "Vanity chairs",
+          "translations": {
+            "en": {
+              "name": "STIGBYGEL Swivel chair with armrests",
+              "description": "STIGBYGEL Swivel chair with armrests"
+            },
+            "ru": {
+              "name": "STIGBYGEL Swivel chair with armrests",
+              "description": "STIGBYGEL Swivel chair with armrests"
+            },
+            "zh": {
+              "name": "STIGBYGEL Swivel chair with armrests",
+              "description": "STIGBYGEL Swivel chair with armrests"
+            }
+          }
+        },
+        {
+          "name": "FJÄLLBERGET Conference chair with casters",
+          "slug": "fjllberget-conference-chair-with-casters-30487764",
+          "sku": "IK-30487764",
+          "price": 329.99,
+          "compareAtPrice": 412.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fjaellberget-conference-chair-with-casters-white-stained-oak-veneer-gunnared-beige__0815078_pe772749_s5.jpg"
+          ],
+          "description": "FJÄLLBERGET Conference chair with casters",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30487764",
+          "measure": "",
+          "categoryName": "Vanity chairs",
+          "translations": {
+            "en": {
+              "name": "FJÄLLBERGET Conference chair with casters",
+              "description": "FJÄLLBERGET Conference chair with casters"
+            },
+            "ru": {
+              "name": "FJÄLLBERGET Conference chair with casters",
+              "description": "FJÄLLBERGET Conference chair with casters"
+            },
+            "zh": {
+              "name": "FJÄLLBERGET Conference chair with casters",
+              "description": "FJÄLLBERGET Conference chair with casters"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Children's seating",
+      "categorySlug": "childrens-chairs-bc004",
+      "ikeaCode": "bc004",
+      "parentDepartment": "Tables & chairs",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Children's seating"
+        },
+        "ru": {
+          "name": "Children's seating"
+        },
+        "zh": {
+          "name": "Children's seating"
+        }
+      },
+      "totalIkeaProductsInStock": 36,
+      "sampleProductsToInsert": [
+        {
+          "name": "FLISAT Children's stool",
+          "slug": "flisat-childrens-stool-30596536",
+          "sku": "IK-30596536",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/flisat-childrens-stool-pine__1377351_pe960901_s5.jpg"
+          ],
+          "description": "FLISAT Children's stool",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30596536",
+          "measure": "",
+          "categoryName": "Children's seating",
+          "translations": {
+            "en": {
+              "name": "FLISAT Children's stool",
+              "description": "FLISAT Children's stool"
+            },
+            "ru": {
+              "name": "FLISAT Children's stool",
+              "description": "FLISAT Children's stool"
+            },
+            "zh": {
+              "name": "FLISAT Children's stool",
+              "description": "FLISAT Children's stool"
+            }
+          }
+        },
+        {
+          "name": "SUNDVIK Children's chair",
+          "slug": "sundvik-childrens-chair-70628314",
+          "sku": "IK-70628314",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sundvik-childrens-chair-blue__1541852_pe1018208_s5.jpg"
+          ],
+          "description": "SUNDVIK Children's chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70628314",
+          "measure": "",
+          "categoryName": "Children's seating",
+          "translations": {
+            "en": {
+              "name": "SUNDVIK Children's chair",
+              "description": "SUNDVIK Children's chair"
+            },
+            "ru": {
+              "name": "SUNDVIK Children's chair",
+              "description": "SUNDVIK Children's chair"
+            },
+            "zh": {
+              "name": "SUNDVIK Children's chair",
+              "description": "SUNDVIK Children's chair"
+            }
+          }
+        },
+        {
+          "name": "FÖRSIKTIG Children's stool",
+          "slug": "frsiktig-childrens-stool-10591318",
+          "sku": "IK-10591318",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foersiktig-childrens-stool-white-turquoise__1383247_pe962509_s5.jpg"
+          ],
+          "description": "FÖRSIKTIG Children's stool",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10591318",
+          "measure": "",
+          "categoryName": "Children's seating",
+          "translations": {
+            "en": {
+              "name": "FÖRSIKTIG Children's stool",
+              "description": "FÖRSIKTIG Children's stool"
+            },
+            "ru": {
+              "name": "FÖRSIKTIG Children's stool",
+              "description": "FÖRSIKTIG Children's stool"
+            },
+            "zh": {
+              "name": "FÖRSIKTIG Children's stool",
+              "description": "FÖRSIKTIG Children's stool"
+            }
+          }
+        },
+        {
+          "name": "MAMMUT Children's chair",
+          "slug": "mammut-childrens-chair-40365371",
+          "sku": "IK-40365371",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mammut-childrens-chair-indoor-outdoor-white__0727925_pe735934_s5.jpg"
+          ],
+          "description": "MAMMUT Children's chair",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40365371",
+          "measure": "",
+          "categoryName": "Children's seating",
+          "translations": {
+            "en": {
+              "name": "MAMMUT Children's chair",
+              "description": "MAMMUT Children's chair"
+            },
+            "ru": {
+              "name": "MAMMUT Children's chair",
+              "description": "MAMMUT Children's chair"
+            },
+            "zh": {
+              "name": "MAMMUT Children's chair",
+              "description": "MAMMUT Children's chair"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

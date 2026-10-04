@@ -1,0 +1,428 @@
+{
+  "department": "Window treatments & coverings",
+  "departmentSlug": "window-treatments-tl002",
+  "departmentCode": "tl002",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Оформление окон и шторы",
+    "zh": "窗帘与窗饰"
+  },
+  "missingSubcategoriesCount": 4,
+  "totalMissingProductsCount": 138,
+  "subcategories": [
+    {
+      "categoryName": "Window blinds and shades",
+      "categorySlug": "blinds-10701",
+      "ikeaCode": "10701",
+      "parentDepartment": "Window treatments & coverings",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Window blinds and shades"
+        },
+        "ru": {
+          "name": "Window blinds and shades"
+        },
+        "zh": {
+          "name": "Window blinds and shades"
+        }
+      },
+      "totalIkeaProductsInStock": 89,
+      "sampleProductsToInsert": [
+        {
+          "name": "HOPPVALS Cellular blind",
+          "slug": "hoppvals-cellular-blind-70431402",
+          "sku": "IK-70431402",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hoppvals-cellular-blind-white__0602283_pe680560_s5.jpg"
+          ],
+          "description": "HOPPVALS Cellular blind 34x64 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70431402",
+          "measure": "34x64 \"",
+          "categoryName": "Window blinds and shades",
+          "translations": {
+            "en": {
+              "name": "HOPPVALS Cellular blind",
+              "description": "HOPPVALS Cellular blind 34x64 \""
+            },
+            "ru": {
+              "name": "HOPPVALS Cellular blind",
+              "description": "HOPPVALS Cellular blind 34x64 \""
+            },
+            "zh": {
+              "name": "HOPPVALS Cellular blind",
+              "description": "HOPPVALS Cellular blind 34x64 \""
+            }
+          }
+        },
+        {
+          "name": "TANDLUNDFLY Double layered blind",
+          "slug": "tandlundfly-double-layered-blind-60596506",
+          "sku": "IK-60596506",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tandlundfly-double-layered-blind__1322854_pe942298_s5.jpg"
+          ],
+          "description": "TANDLUNDFLY Double layered blind 34x98 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60596506",
+          "measure": "34x98 ½ \"",
+          "categoryName": "Window blinds and shades",
+          "translations": {
+            "en": {
+              "name": "TANDLUNDFLY Double layered blind",
+              "description": "TANDLUNDFLY Double layered blind 34x98 ½ \""
+            },
+            "ru": {
+              "name": "TANDLUNDFLY Double layered blind",
+              "description": "TANDLUNDFLY Double layered blind 34x98 ½ \""
+            },
+            "zh": {
+              "name": "TANDLUNDFLY Double layered blind",
+              "description": "TANDLUNDFLY Double layered blind 34x98 ½ \""
+            }
+          }
+        },
+        {
+          "name": "TRIPPEVALS Black-out cellular blind",
+          "slug": "trippevals-black-out-cellular-blind-70506572",
+          "sku": "IK-70506572",
+          "price": 69.99,
+          "compareAtPrice": 87.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trippevals-black-out-cellular-blind-white__0973695_pe812105_s5.jpg"
+          ],
+          "description": "TRIPPEVALS Black-out cellular blind 34x76 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70506572",
+          "measure": "34x76 ¾ \"",
+          "categoryName": "Window blinds and shades",
+          "translations": {
+            "en": {
+              "name": "TRIPPEVALS Black-out cellular blind",
+              "description": "TRIPPEVALS Black-out cellular blind 34x76 ¾ \""
+            },
+            "ru": {
+              "name": "TRIPPEVALS Black-out cellular blind",
+              "description": "TRIPPEVALS Black-out cellular blind 34x76 ¾ \""
+            },
+            "zh": {
+              "name": "TRIPPEVALS Black-out cellular blind",
+              "description": "TRIPPEVALS Black-out cellular blind 34x76 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "SANDVEDEL Roller blind",
+          "slug": "sandvedel-roller-blind-50474058",
+          "sku": "IK-50474058",
+          "price": 44.99,
+          "compareAtPrice": 56.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sandvedel-roller-blind-beige__0812603_pe772057_s5.jpg"
+          ],
+          "description": "SANDVEDEL Roller blind 34x76 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50474058",
+          "measure": "34x76 ¾ \"",
+          "categoryName": "Window blinds and shades",
+          "translations": {
+            "en": {
+              "name": "SANDVEDEL Roller blind",
+              "description": "SANDVEDEL Roller blind 34x76 ¾ \""
+            },
+            "ru": {
+              "name": "SANDVEDEL Roller blind",
+              "description": "SANDVEDEL Roller blind 34x76 ¾ \""
+            },
+            "zh": {
+              "name": "SANDVEDEL Roller blind",
+              "description": "SANDVEDEL Roller blind 34x76 ¾ \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Curtain rods, rails & holders",
+      "categorySlug": "curtain-rods-rails-18891",
+      "ikeaCode": "18891",
+      "parentDepartment": "Window treatments & coverings",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Curtain rods, rails & holders"
+        },
+        "ru": {
+          "name": "Curtain rods, rails & holders"
+        },
+        "zh": {
+          "name": "Curtain rods, rails & holders"
+        }
+      },
+      "totalIkeaProductsInStock": 46,
+      "sampleProductsToInsert": [
+        {
+          "name": "VIDGA Single track rail",
+          "slug": "vidga-single-track-rail-20492916",
+          "sku": "IK-20492916",
+          "price": 25,
+          "compareAtPrice": 31.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vidga-single-track-rail-included-ceiling-fittings-white__0968268_pe810384_s5.jpg"
+          ],
+          "description": "VIDGA Single track rail 55 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20492916",
+          "measure": "55 \"",
+          "categoryName": "Curtain rods, rails & holders",
+          "translations": {
+            "en": {
+              "name": "VIDGA Single track rail",
+              "description": "VIDGA Single track rail 55 \""
+            },
+            "ru": {
+              "name": "VIDGA Single track rail",
+              "description": "VIDGA Single track rail 55 \""
+            },
+            "zh": {
+              "name": "VIDGA Single track rail",
+              "description": "VIDGA Single track rail 55 \""
+            }
+          }
+        },
+        {
+          "name": "BETYDLIG Wall/ceiling bracket",
+          "slug": "betydlig-wallceiling-bracket-60217228",
+          "sku": "IK-60217228",
+          "price": 2.5,
+          "compareAtPrice": 3.13,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/betydlig-wall-ceiling-bracket-black__0603487_pe680820_s5.jpg"
+          ],
+          "description": "BETYDLIG Wall/ceiling bracket",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60217228",
+          "measure": "",
+          "categoryName": "Curtain rods, rails & holders",
+          "translations": {
+            "en": {
+              "name": "BETYDLIG Wall/ceiling bracket",
+              "description": "BETYDLIG Wall/ceiling bracket"
+            },
+            "ru": {
+              "name": "BETYDLIG Wall/ceiling bracket",
+              "description": "BETYDLIG Wall/ceiling bracket"
+            },
+            "zh": {
+              "name": "BETYDLIG Wall/ceiling bracket",
+              "description": "BETYDLIG Wall/ceiling bracket"
+            }
+          }
+        },
+        {
+          "name": "VIDGA Single track set",
+          "slug": "vidga-single-track-set-49428232",
+          "sku": "IK-49428232",
+          "price": 35,
+          "compareAtPrice": 43.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vidga-single-track-set-white__1021809_pe832368_s5.jpg"
+          ],
+          "description": "VIDGA Single track set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "49428232",
+          "measure": "",
+          "categoryName": "Curtain rods, rails & holders",
+          "translations": {
+            "en": {
+              "name": "VIDGA Single track set",
+              "description": "VIDGA Single track set"
+            },
+            "ru": {
+              "name": "VIDGA Single track set",
+              "description": "VIDGA Single track set"
+            },
+            "zh": {
+              "name": "VIDGA Single track set",
+              "description": "VIDGA Single track set"
+            }
+          }
+        },
+        {
+          "name": "BEKRÄFTA Curtain rod set",
+          "slug": "bekrfta-curtain-rod-set-30489683",
+          "sku": "IK-30489683",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bekraefta-curtain-rod-set-black__0924301_pe788523_s5.jpg"
+          ],
+          "description": "BEKRÄFTA Curtain rod set 47 ¼-82 ¾ 1 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30489683",
+          "measure": "47 ¼-82 ¾ 1 1/8 \"",
+          "categoryName": "Curtain rods, rails & holders",
+          "translations": {
+            "en": {
+              "name": "BEKRÄFTA Curtain rod set",
+              "description": "BEKRÄFTA Curtain rod set 47 ¼-82 ¾ 1 1/8 \""
+            },
+            "ru": {
+              "name": "BEKRÄFTA Curtain rod set",
+              "description": "BEKRÄFTA Curtain rod set 47 ¼-82 ¾ 1 1/8 \""
+            },
+            "zh": {
+              "name": "BEKRÄFTA Curtain rod set",
+              "description": "BEKRÄFTA Curtain rod set 47 ¼-82 ¾ 1 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Sewing supplies & accessories",
+      "categorySlug": "sewing-accessories-14350",
+      "ikeaCode": "14350",
+      "parentDepartment": "Window treatments & coverings",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Sewing supplies & accessories"
+        },
+        "ru": {
+          "name": "Sewing supplies & accessories"
+        },
+        "zh": {
+          "name": "Sewing supplies & accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 2,
+      "sampleProductsToInsert": [
+        {
+          "name": "SY Iron-on hemming tape",
+          "slug": "sy-iron-on-hemming-tape-50078746",
+          "sku": "IK-50078746",
+          "price": 3,
+          "compareAtPrice": 3.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sy-iron-on-hemming-tape__0598142_pe677480_s5.jpg"
+          ],
+          "description": "SY Iron-on hemming tape",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50078746",
+          "measure": "",
+          "categoryName": "Sewing supplies & accessories",
+          "translations": {
+            "en": {
+              "name": "SY Iron-on hemming tape",
+              "description": "SY Iron-on hemming tape"
+            },
+            "ru": {
+              "name": "SY Iron-on hemming tape",
+              "description": "SY Iron-on hemming tape"
+            },
+            "zh": {
+              "name": "SY Iron-on hemming tape",
+              "description": "SY Iron-on hemming tape"
+            }
+          }
+        },
+        {
+          "name": "TRIXIG 39-piece mending kit",
+          "slug": "trixig-39-piece-mending-kit-30578250",
+          "sku": "IK-30578250",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-39-piece-mending-kit__1376753_pe960486_s5.jpg"
+          ],
+          "description": "TRIXIG 39-piece mending kit",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30578250",
+          "measure": "",
+          "categoryName": "Sewing supplies & accessories",
+          "translations": {
+            "en": {
+              "name": "TRIXIG 39-piece mending kit",
+              "description": "TRIXIG 39-piece mending kit"
+            },
+            "ru": {
+              "name": "TRIXIG 39-piece mending kit",
+              "description": "TRIXIG 39-piece mending kit"
+            },
+            "zh": {
+              "name": "TRIXIG 39-piece mending kit",
+              "description": "TRIXIG 39-piece mending kit"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Window accessories",
+      "categorySlug": "window-films-accessories-700628",
+      "ikeaCode": "700628",
+      "parentDepartment": "Window treatments & coverings",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Window accessories"
+        },
+        "ru": {
+          "name": "Window accessories"
+        },
+        "zh": {
+          "name": "Window accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 1,
+      "sampleProductsToInsert": [
+        {
+          "name": "RIKTIG Draw rod",
+          "slug": "riktig-draw-rod-30316296",
+          "sku": "IK-30316296",
+          "price": 8,
+          "compareAtPrice": 10,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/riktig-draw-rod-extendable__0603496_pe680829_s5.jpg"
+          ],
+          "description": "RIKTIG Draw rod 28 ¾-52 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30316296",
+          "measure": "28 ¾-52 ¼ \"",
+          "categoryName": "Window accessories",
+          "translations": {
+            "en": {
+              "name": "RIKTIG Draw rod",
+              "description": "RIKTIG Draw rod 28 ¾-52 ¼ \""
+            },
+            "ru": {
+              "name": "RIKTIG Draw rod",
+              "description": "RIKTIG Draw rod 28 ¾-52 ¼ \""
+            },
+            "zh": {
+              "name": "RIKTIG Draw rod",
+              "description": "RIKTIG Draw rod 28 ¾-52 ¼ \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

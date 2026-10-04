@@ -1,0 +1,1001 @@
+{
+  "department": "Home electronics",
+  "departmentSlug": "home-electronics-he001",
+  "departmentCode": "he001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Бытовая электроника",
+    "zh": "家用电子产品"
+  },
+  "missingSubcategoriesCount": 7,
+  "totalMissingProductsCount": 207,
+  "subcategories": [
+    {
+      "categoryName": "Wireless & home speakers",
+      "categorySlug": "speakers-40842",
+      "ikeaCode": "40842",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Wireless & home speakers"
+        },
+        "ru": {
+          "name": "Wireless & home speakers"
+        },
+        "zh": {
+          "name": "Wireless & home speakers"
+        }
+      },
+      "totalIkeaProductsInStock": 16,
+      "sampleProductsToInsert": [
+        {
+          "name": "VAPPEBY Bluetooth speaker",
+          "slug": "vappeby-bluetooth-speaker-10517371",
+          "sku": "IK-10517371",
+          "price": 79.99,
+          "compareAtPrice": 99.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vappeby-bluetooth-speaker-black-gen-3__1218129_pe913141_s5.jpg"
+          ],
+          "description": "VAPPEBY Bluetooth speaker 8x8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10517371",
+          "measure": "8x8 \"",
+          "categoryName": "Wireless & home speakers",
+          "translations": {
+            "en": {
+              "name": "VAPPEBY Bluetooth speaker",
+              "description": "VAPPEBY Bluetooth speaker 8x8 \""
+            },
+            "ru": {
+              "name": "VAPPEBY Bluetooth speaker",
+              "description": "VAPPEBY Bluetooth speaker 8x8 \""
+            },
+            "zh": {
+              "name": "VAPPEBY Bluetooth speaker",
+              "description": "VAPPEBY Bluetooth speaker 8x8 \""
+            }
+          }
+        },
+        {
+          "name": "SOLSKYDD Bluetooth speaker",
+          "slug": "solskydd-bluetooth-speaker-80606991",
+          "sku": "IK-80606991",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/solskydd-bluetooth-speaker-black__1533334_pe1015970_s5.jpg"
+          ],
+          "description": "SOLSKYDD Bluetooth speaker 18 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80606991",
+          "measure": "18 \"",
+          "categoryName": "Wireless & home speakers",
+          "translations": {
+            "en": {
+              "name": "SOLSKYDD Bluetooth speaker",
+              "description": "SOLSKYDD Bluetooth speaker 18 \""
+            },
+            "ru": {
+              "name": "SOLSKYDD Bluetooth speaker",
+              "description": "SOLSKYDD Bluetooth speaker 18 \""
+            },
+            "zh": {
+              "name": "SOLSKYDD Bluetooth speaker",
+              "description": "SOLSKYDD Bluetooth speaker 18 \""
+            }
+          }
+        },
+        {
+          "name": "KULGLASS Bluetooth speaker lamp",
+          "slug": "kulglass-bluetooth-speaker-lamp-80605294",
+          "sku": "IK-80605294",
+          "price": 129.99,
+          "compareAtPrice": 162.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kulglass-bluetooth-speaker-lamp-red-brown-pink__1479137_pe999934_s5.jpg"
+          ],
+          "description": "KULGLASS Bluetooth speaker lamp",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80605294",
+          "measure": "",
+          "categoryName": "Wireless & home speakers",
+          "translations": {
+            "en": {
+              "name": "KULGLASS Bluetooth speaker lamp",
+              "description": "KULGLASS Bluetooth speaker lamp"
+            },
+            "ru": {
+              "name": "KULGLASS Bluetooth speaker lamp",
+              "description": "KULGLASS Bluetooth speaker lamp"
+            },
+            "zh": {
+              "name": "KULGLASS Bluetooth speaker lamp",
+              "description": "KULGLASS Bluetooth speaker lamp"
+            }
+          }
+        },
+        {
+          "name": "SOLSKYDD Portable Bluetooth speaker",
+          "slug": "solskydd-portable-bluetooth-speaker-30606682",
+          "sku": "IK-30606682",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/solskydd-portable-bluetooth-speaker-black__1533335_pe1015971_s5.jpg"
+          ],
+          "description": "SOLSKYDD Portable Bluetooth speaker 8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30606682",
+          "measure": "8 \"",
+          "categoryName": "Wireless & home speakers",
+          "translations": {
+            "en": {
+              "name": "SOLSKYDD Portable Bluetooth speaker",
+              "description": "SOLSKYDD Portable Bluetooth speaker 8 \""
+            },
+            "ru": {
+              "name": "SOLSKYDD Portable Bluetooth speaker",
+              "description": "SOLSKYDD Portable Bluetooth speaker 8 \""
+            },
+            "zh": {
+              "name": "SOLSKYDD Portable Bluetooth speaker",
+              "description": "SOLSKYDD Portable Bluetooth speaker 8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Cell phone, tablet & laptop accessories",
+      "categorySlug": "mobile-tablet-accessories-40843",
+      "ikeaCode": "40843",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Cell phone, tablet & laptop accessories"
+        },
+        "ru": {
+          "name": "Cell phone, tablet & laptop accessories"
+        },
+        "zh": {
+          "name": "Cell phone, tablet & laptop accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 30,
+      "sampleProductsToInsert": [
+        {
+          "name": "DRÖNJÖNS Laptop support",
+          "slug": "drnjns-laptop-support-30596800",
+          "sku": "IK-30596800",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/droenjoens-laptop-support-white__1382964_pe962408_s5.jpg"
+          ],
+          "description": "DRÖNJÖNS Laptop support",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30596800",
+          "measure": "",
+          "categoryName": "Cell phone, tablet & laptop accessories",
+          "translations": {
+            "en": {
+              "name": "DRÖNJÖNS Laptop support",
+              "description": "DRÖNJÖNS Laptop support"
+            },
+            "ru": {
+              "name": "DRÖNJÖNS Laptop support",
+              "description": "DRÖNJÖNS Laptop support"
+            },
+            "zh": {
+              "name": "DRÖNJÖNS Laptop support",
+              "description": "DRÖNJÖNS Laptop support"
+            }
+          }
+        },
+        {
+          "name": "VÄSTMÄRKE Wireless charging stand",
+          "slug": "vstmrke-wireless-charging-stand-50618429",
+          "sku": "IK-50618429",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vaestmaerke-wireless-charging-stand__1435811_pe983948_s5.jpg"
+          ],
+          "description": "VÄSTMÄRKE Wireless charging stand",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50618429",
+          "measure": "",
+          "categoryName": "Cell phone, tablet & laptop accessories",
+          "translations": {
+            "en": {
+              "name": "VÄSTMÄRKE Wireless charging stand",
+              "description": "VÄSTMÄRKE Wireless charging stand"
+            },
+            "ru": {
+              "name": "VÄSTMÄRKE Wireless charging stand",
+              "description": "VÄSTMÄRKE Wireless charging stand"
+            },
+            "zh": {
+              "name": "VÄSTMÄRKE Wireless charging stand",
+              "description": "VÄSTMÄRKE Wireless charging stand"
+            }
+          }
+        },
+        {
+          "name": "HAVSKÅL 2-piece, USB anchor",
+          "slug": "havskl-2-piece-usb-anchor-90555745",
+          "sku": "IK-90555745",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/havskal-2-piece-usb-anchor-black-yellow__1180225_pe898324_s5.jpg"
+          ],
+          "description": "HAVSKÅL 2-piece, USB anchor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90555745",
+          "measure": "",
+          "categoryName": "Cell phone, tablet & laptop accessories",
+          "translations": {
+            "en": {
+              "name": "HAVSKÅL 2-piece, USB anchor",
+              "description": "HAVSKÅL 2-piece, USB anchor"
+            },
+            "ru": {
+              "name": "HAVSKÅL 2-piece, USB anchor",
+              "description": "HAVSKÅL 2-piece, USB anchor"
+            },
+            "zh": {
+              "name": "HAVSKÅL 2-piece, USB anchor",
+              "description": "HAVSKÅL 2-piece, USB anchor"
+            }
+          }
+        },
+        {
+          "name": "STENERIK Laptop support",
+          "slug": "stenerik-laptop-support-30564012",
+          "sku": "IK-30564012",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stenerik-laptop-support__1187968_pe899291_s5.jpg"
+          ],
+          "description": "STENERIK Laptop support",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30564012",
+          "measure": "",
+          "categoryName": "Cell phone, tablet & laptop accessories",
+          "translations": {
+            "en": {
+              "name": "STENERIK Laptop support",
+              "description": "STENERIK Laptop support"
+            },
+            "ru": {
+              "name": "STENERIK Laptop support",
+              "description": "STENERIK Laptop support"
+            },
+            "zh": {
+              "name": "STENERIK Laptop support",
+              "description": "STENERIK Laptop support"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Charging accessories & power cords",
+      "categorySlug": "cords-chargers-40845",
+      "ikeaCode": "40845",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Charging accessories & power cords"
+        },
+        "ru": {
+          "name": "Charging accessories & power cords"
+        },
+        "zh": {
+          "name": "Charging accessories & power cords"
+        }
+      },
+      "totalIkeaProductsInStock": 43,
+      "sampleProductsToInsert": [
+        {
+          "name": "SKOTAT Extension cord",
+          "slug": "skotat-extension-cord-20558441",
+          "sku": "IK-20558441",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skotat-extension-cord-green__1299458_pe936555_s5.jpg"
+          ],
+          "description": "SKOTAT Extension cord 5 ' 11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20558441",
+          "measure": "5 ' 11 \"",
+          "categoryName": "Charging accessories & power cords",
+          "translations": {
+            "en": {
+              "name": "SKOTAT Extension cord",
+              "description": "SKOTAT Extension cord 5 ' 11 \""
+            },
+            "ru": {
+              "name": "SKOTAT Extension cord",
+              "description": "SKOTAT Extension cord 5 ' 11 \""
+            },
+            "zh": {
+              "name": "SKOTAT Extension cord",
+              "description": "SKOTAT Extension cord 5 ' 11 \""
+            }
+          }
+        },
+        {
+          "name": "KOPPLA 6 outlet power strip with switch",
+          "slug": "koppla-6-outlet-power-strip-with-switch-70086401",
+          "sku": "IK-70086401",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/koppla-6-outlet-power-strip-with-switch-grounded-white__0605972_pe681936_s5.jpg"
+          ],
+          "description": "KOPPLA 6 outlet power strip with switch 19 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70086401",
+          "measure": "19 ¾ \"",
+          "categoryName": "Charging accessories & power cords",
+          "translations": {
+            "en": {
+              "name": "KOPPLA 6 outlet power strip with switch",
+              "description": "KOPPLA 6 outlet power strip with switch 19 ¾ \""
+            },
+            "ru": {
+              "name": "KOPPLA 6 outlet power strip with switch",
+              "description": "KOPPLA 6 outlet power strip with switch 19 ¾ \""
+            },
+            "zh": {
+              "name": "KOPPLA 6 outlet power strip with switch",
+              "description": "KOPPLA 6 outlet power strip with switch 19 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "VÄSTMÄRKE Wireless charger",
+          "slug": "vstmrke-wireless-charger-30618425",
+          "sku": "IK-30618425",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vaestmaerke-wireless-charger__1435813_pe983949_s5.jpg"
+          ],
+          "description": "VÄSTMÄRKE Wireless charger",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30618425",
+          "measure": "",
+          "categoryName": "Charging accessories & power cords",
+          "translations": {
+            "en": {
+              "name": "VÄSTMÄRKE Wireless charger",
+              "description": "VÄSTMÄRKE Wireless charger"
+            },
+            "ru": {
+              "name": "VÄSTMÄRKE Wireless charger",
+              "description": "VÄSTMÄRKE Wireless charger"
+            },
+            "zh": {
+              "name": "VÄSTMÄRKE Wireless charger",
+              "description": "VÄSTMÄRKE Wireless charger"
+            }
+          }
+        },
+        {
+          "name": "KOPPLA 5 outlet power strip & 2 USB ports",
+          "slug": "koppla-5-outlet-power-strip-2-usb-ports-10280825",
+          "sku": "IK-10280825",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/koppla-5-outlet-power-strip-2-usb-ports-white__0605950_pe681919_s5.jpg"
+          ],
+          "description": "KOPPLA 5 outlet power strip & 2 USB ports 118 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10280825",
+          "measure": "118 \"",
+          "categoryName": "Charging accessories & power cords",
+          "translations": {
+            "en": {
+              "name": "KOPPLA 5 outlet power strip & 2 USB ports",
+              "description": "KOPPLA 5 outlet power strip & 2 USB ports 118 \""
+            },
+            "ru": {
+              "name": "KOPPLA 5 outlet power strip & 2 USB ports",
+              "description": "KOPPLA 5 outlet power strip & 2 USB ports 118 \""
+            },
+            "zh": {
+              "name": "KOPPLA 5 outlet power strip & 2 USB ports",
+              "description": "KOPPLA 5 outlet power strip & 2 USB ports 118 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Cable management & cord organizers",
+      "categorySlug": "cable-management-accessories-16195",
+      "ikeaCode": "16195",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Cable management & cord organizers"
+        },
+        "ru": {
+          "name": "Cable management & cord organizers"
+        },
+        "zh": {
+          "name": "Cable management & cord organizers"
+        }
+      },
+      "totalIkeaProductsInStock": 18,
+      "sampleProductsToInsert": [
+        {
+          "name": "FÖRSÄSONG Cable management tray",
+          "slug": "frssong-cable-management-tray-00573188",
+          "sku": "IK-00573188",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foersaesong-cable-management-tray-white__1390880_pe965608_s5.jpg"
+          ],
+          "description": "FÖRSÄSONG Cable management tray 15 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00573188",
+          "measure": "15 \"",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "FÖRSÄSONG Cable management tray",
+              "description": "FÖRSÄSONG Cable management tray 15 \""
+            },
+            "ru": {
+              "name": "FÖRSÄSONG Cable management tray",
+              "description": "FÖRSÄSONG Cable management tray 15 \""
+            },
+            "zh": {
+              "name": "FÖRSÄSONG Cable management tray",
+              "description": "FÖRSÄSONG Cable management tray 15 \""
+            }
+          }
+        },
+        {
+          "name": "KALKSTUFF Cable holder, set of 3",
+          "slug": "kalkstuff-cable-holder-set-of-3-30573021",
+          "sku": "IK-30573021",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kalkstuff-cable-holder-set-of-3-white__1180202_pe896338_s5.jpg"
+          ],
+          "description": "KALKSTUFF Cable holder, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30573021",
+          "measure": "",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "KALKSTUFF Cable holder, set of 3",
+              "description": "KALKSTUFF Cable holder, set of 3"
+            },
+            "ru": {
+              "name": "KALKSTUFF Cable holder, set of 3",
+              "description": "KALKSTUFF Cable holder, set of 3"
+            },
+            "zh": {
+              "name": "KALKSTUFF Cable holder, set of 3",
+              "description": "KALKSTUFF Cable holder, set of 3"
+            }
+          }
+        },
+        {
+          "name": "MONTERA Cable management",
+          "slug": "montera-cable-management-30147425",
+          "sku": "IK-30147425",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/montera-cable-management-white__0088067_pe218108_s5.jpg"
+          ],
+          "description": "MONTERA Cable management 43 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30147425",
+          "measure": "43 \"",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "MONTERA Cable management",
+              "description": "MONTERA Cable management 43 \""
+            },
+            "ru": {
+              "name": "MONTERA Cable management",
+              "description": "MONTERA Cable management 43 \""
+            },
+            "zh": {
+              "name": "MONTERA Cable management",
+              "description": "MONTERA Cable management 43 \""
+            }
+          }
+        },
+        {
+          "name": "TRIXIG 150-piece cable management set",
+          "slug": "trixig-150-piece-cable-management-set-60563737",
+          "sku": "IK-60563737",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-150-piece-cable-management-set__1222990_pe914758_s5.jpg"
+          ],
+          "description": "TRIXIG 150-piece cable management set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60563737",
+          "measure": "",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "TRIXIG 150-piece cable management set",
+              "description": "TRIXIG 150-piece cable management set"
+            },
+            "ru": {
+              "name": "TRIXIG 150-piece cable management set",
+              "description": "TRIXIG 150-piece cable management set"
+            },
+            "zh": {
+              "name": "TRIXIG 150-piece cable management set",
+              "description": "TRIXIG 150-piece cable management set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen appliances",
+      "categorySlug": "appliances-ka002",
+      "ikeaCode": "ka002",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen appliances"
+        },
+        "ru": {
+          "name": "Kitchen appliances"
+        },
+        "zh": {
+          "name": "Kitchen appliances"
+        }
+      },
+      "totalIkeaProductsInStock": 66,
+      "sampleProductsToInsert": [
+        {
+          "name": "SUPERKALL Built-in, panel-ready refrigerator",
+          "slug": "superkall-built-in-panel-ready-refrigerator-10462156",
+          "sku": "IK-10462156",
+          "price": 1599,
+          "compareAtPrice": 1998.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/superkall-built-in-panel-ready-refrigerator-panel-ready__1009013_pe828824_s5.jpg"
+          ],
+          "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10462156",
+          "measure": "8.8 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "SUPERKALL Built-in, panel-ready refrigerator",
+              "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft"
+            },
+            "ru": {
+              "name": "SUPERKALL Built-in, panel-ready refrigerator",
+              "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft"
+            },
+            "zh": {
+              "name": "SUPERKALL Built-in, panel-ready refrigerator",
+              "description": "SUPERKALL Built-in, panel-ready refrigerator 8.8 cu.ft"
+            }
+          }
+        },
+        {
+          "name": "ÖVERSKÅDLIG French door refrigerator",
+          "slug": "verskdlig-french-door-refrigerator-60462154",
+          "sku": "IK-60462154",
+          "price": 3299,
+          "compareAtPrice": 4123.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/oeverskadlig-french-door-refrigerator-4-door-stainless-steel__0956636_pe804803_s5.jpg"
+          ],
+          "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60462154",
+          "measure": "22 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "ÖVERSKÅDLIG French door refrigerator",
+              "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft"
+            },
+            "ru": {
+              "name": "ÖVERSKÅDLIG French door refrigerator",
+              "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft"
+            },
+            "zh": {
+              "name": "ÖVERSKÅDLIG French door refrigerator",
+              "description": "ÖVERSKÅDLIG French door refrigerator 22 cu.ft"
+            }
+          }
+        },
+        {
+          "name": "BERGSNÄS Bottom-freezer refrigerator",
+          "slug": "bergsns-bottom-freezer-refrigerator-60607883",
+          "sku": "IK-60607883",
+          "price": 1299,
+          "compareAtPrice": 1623.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bergsnaes-bottom-freezer-refrigerator-stainless-steel__1435157_pe985166_s5.jpg"
+          ],
+          "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60607883",
+          "measure": "11 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "BERGSNÄS Bottom-freezer refrigerator",
+              "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft"
+            },
+            "ru": {
+              "name": "BERGSNÄS Bottom-freezer refrigerator",
+              "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft"
+            },
+            "zh": {
+              "name": "BERGSNÄS Bottom-freezer refrigerator",
+              "description": "BERGSNÄS Bottom-freezer refrigerator 11 cu.ft"
+            }
+          }
+        },
+        {
+          "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+          "slug": "vlgrundad-bottom-freezer-refrigerator-70462158",
+          "sku": "IK-70462158",
+          "price": 1399,
+          "compareAtPrice": 1748.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vaelgrundad-bottom-freezer-refrigerator-stainless-steel__0956609_pe804786_s5.jpg"
+          ],
+          "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70462158",
+          "measure": "19 cu.ft",
+          "categoryName": "Kitchen appliances",
+          "translations": {
+            "en": {
+              "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+              "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft"
+            },
+            "ru": {
+              "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+              "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft"
+            },
+            "zh": {
+              "name": "VÄLGRUNDAD Bottom-freezer refrigerator",
+              "description": "VÄLGRUNDAD Bottom-freezer refrigerator 19 cu.ft"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Air purifiers & filters",
+      "categorySlug": "air-quality-products-49081",
+      "ikeaCode": "49081",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Air purifiers & filters"
+        },
+        "ru": {
+          "name": "Air purifiers & filters"
+        },
+        "zh": {
+          "name": "Air purifiers & filters"
+        }
+      },
+      "totalIkeaProductsInStock": 16,
+      "sampleProductsToInsert": [
+        {
+          "name": "UPPÅTVIND Filter for particle removal",
+          "slug": "upptvind-filter-for-particle-removal-90551498",
+          "sku": "IK-90551498",
+          "price": 18,
+          "compareAtPrice": 22.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppatvind-filter-for-particle-removal__1124264_pe875119_s5.jpg"
+          ],
+          "description": "UPPÅTVIND Filter for particle removal",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90551498",
+          "measure": "",
+          "categoryName": "Air purifiers & filters",
+          "translations": {
+            "en": {
+              "name": "UPPÅTVIND Filter for particle removal",
+              "description": "UPPÅTVIND Filter for particle removal"
+            },
+            "ru": {
+              "name": "UPPÅTVIND Filter for particle removal",
+              "description": "UPPÅTVIND Filter for particle removal"
+            },
+            "zh": {
+              "name": "UPPÅTVIND Filter for particle removal",
+              "description": "UPPÅTVIND Filter for particle removal"
+            }
+          }
+        },
+        {
+          "name": "UPPÅTVIND Air purifier",
+          "slug": "upptvind-air-purifier-60498228",
+          "sku": "IK-60498228",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppatvind-air-purifier__1113273_pe871676_s5.jpg"
+          ],
+          "description": "UPPÅTVIND Air purifier",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60498228",
+          "measure": "",
+          "categoryName": "Air purifiers & filters",
+          "translations": {
+            "en": {
+              "name": "UPPÅTVIND Air purifier",
+              "description": "UPPÅTVIND Air purifier"
+            },
+            "ru": {
+              "name": "UPPÅTVIND Air purifier",
+              "description": "UPPÅTVIND Air purifier"
+            },
+            "zh": {
+              "name": "UPPÅTVIND Air purifier",
+              "description": "UPPÅTVIND Air purifier"
+            }
+          }
+        },
+        {
+          "name": "FÖRNUFTIG Air purifier",
+          "slug": "frnuftig-air-purifier-50461961",
+          "sku": "IK-50461961",
+          "price": 79.99,
+          "compareAtPrice": 99.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foernuftig-air-purifier-white__0832294_pe777645_s5.jpg"
+          ],
+          "description": "FÖRNUFTIG Air purifier 12x18 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50461961",
+          "measure": "12x18 \"",
+          "categoryName": "Air purifiers & filters",
+          "translations": {
+            "en": {
+              "name": "FÖRNUFTIG Air purifier",
+              "description": "FÖRNUFTIG Air purifier 12x18 \""
+            },
+            "ru": {
+              "name": "FÖRNUFTIG Air purifier",
+              "description": "FÖRNUFTIG Air purifier 12x18 \""
+            },
+            "zh": {
+              "name": "FÖRNUFTIG Air purifier",
+              "description": "FÖRNUFTIG Air purifier 12x18 \""
+            }
+          }
+        },
+        {
+          "name": "FÖRNUFTIG 2-piece filter set",
+          "slug": "frnuftig-2-piece-filter-set-19444196",
+          "sku": "IK-19444196",
+          "price": 43,
+          "compareAtPrice": 53.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foernuftig-2-piece-filter-set__1052010_pe845875_s5.jpg"
+          ],
+          "description": "FÖRNUFTIG 2-piece filter set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19444196",
+          "measure": "",
+          "categoryName": "Air purifiers & filters",
+          "translations": {
+            "en": {
+              "name": "FÖRNUFTIG 2-piece filter set",
+              "description": "FÖRNUFTIG 2-piece filter set"
+            },
+            "ru": {
+              "name": "FÖRNUFTIG 2-piece filter set",
+              "description": "FÖRNUFTIG 2-piece filter set"
+            },
+            "zh": {
+              "name": "FÖRNUFTIG 2-piece filter set",
+              "description": "FÖRNUFTIG 2-piece filter set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Smart switches, plugs & sensors",
+      "categorySlug": "smart-light-wireless-switch-36814",
+      "ikeaCode": "36814",
+      "parentDepartment": "Home electronics",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Smart switches, plugs & sensors"
+        },
+        "ru": {
+          "name": "Smart switches, plugs & sensors"
+        },
+        "zh": {
+          "name": "Smart switches, plugs & sensors"
+        }
+      },
+      "totalIkeaProductsInStock": 18,
+      "sampleProductsToInsert": [
+        {
+          "name": "BILRESA Remote control",
+          "slug": "bilresa-remote-control-80617876",
+          "sku": "IK-80617876",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bilresa-remote-control-white-smart-dual-button__1402959_pe969197_s5.jpg"
+          ],
+          "description": "BILRESA Remote control",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80617876",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "BILRESA Remote control",
+              "description": "BILRESA Remote control"
+            },
+            "ru": {
+              "name": "BILRESA Remote control",
+              "description": "BILRESA Remote control"
+            },
+            "zh": {
+              "name": "BILRESA Remote control",
+              "description": "BILRESA Remote control"
+            }
+          }
+        },
+        {
+          "name": "GRILLPLATS Plug",
+          "slug": "grillplats-plug-70624740",
+          "sku": "IK-70624740",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grillplats-plug-smart__1570372_pe1029861_s5.jpg"
+          ],
+          "description": "GRILLPLATS Plug",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70624740",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "GRILLPLATS Plug",
+              "description": "GRILLPLATS Plug"
+            },
+            "ru": {
+              "name": "GRILLPLATS Plug",
+              "description": "GRILLPLATS Plug"
+            },
+            "zh": {
+              "name": "GRILLPLATS Plug",
+              "description": "GRILLPLATS Plug"
+            }
+          }
+        },
+        {
+          "name": "MYGGBETT Door/window sensor",
+          "slug": "myggbett-doorwindow-sensor-60617641",
+          "sku": "IK-60617641",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/myggbett-door-window-sensor-smart__1420257_pe977237_s5.jpg"
+          ],
+          "description": "MYGGBETT Door/window sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60617641",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            },
+            "ru": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            },
+            "zh": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            }
+          }
+        },
+        {
+          "name": "TIMMERFLOTTE Temperature/humidity sensor",
+          "slug": "timmerflotte-temperaturehumidity-sensor-50618957",
+          "sku": "IK-50618957",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/timmerflotte-temperature-humidity-sensor-smart__1402991_pe969207_s5.jpg"
+          ],
+          "description": "TIMMERFLOTTE Temperature/humidity sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50618957",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "TIMMERFLOTTE Temperature/humidity sensor",
+              "description": "TIMMERFLOTTE Temperature/humidity sensor"
+            },
+            "ru": {
+              "name": "TIMMERFLOTTE Temperature/humidity sensor",
+              "description": "TIMMERFLOTTE Temperature/humidity sensor"
+            },
+            "zh": {
+              "name": "TIMMERFLOTTE Temperature/humidity sensor",
+              "description": "TIMMERFLOTTE Temperature/humidity sensor"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

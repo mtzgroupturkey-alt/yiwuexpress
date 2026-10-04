@@ -17,8 +17,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { MetricCard } from '@/lib/autopilot/ui/MetricCard';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export default function AutoPilotInsightsPage() {
+  const { dict } = useAdminLocale();
   const [report, setReport] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,14 +72,14 @@ export default function AutoPilotInsightsPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Self-Improvement &amp; Retrospectives
+                {dict.autopilot?.retrospectivesTitle || 'Self-Improvement & Retrospectives'}
               </h1>
               <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
-                Layer 10 Memory
+                {dict.autopilot?.layer10Memory || 'Layer 10 Memory'}
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              Evaluates past decision outcomes, vector memory associations, and prompts/policy optimizations
+              {dict.autopilot?.retrospectivesSubtitle || 'Evaluates past decision outcomes, vector memory associations, and prompts/policy optimizations'}
             </p>
           </div>
         </div>
@@ -85,7 +87,7 @@ export default function AutoPilotInsightsPage() {
         <button
           onClick={fetchRetrospective}
           className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 text-slate-600 dark:text-slate-400"
-          title="Refresh Report"
+          title={dict.common?.refresh || 'Refresh Report'}
         >
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -94,9 +96,9 @@ export default function AutoPilotInsightsPage() {
       {/* KPI Overview Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
-          title="Decisions Tracked"
+          title={dict.autopilot?.decisionsTracked || 'Decisions Tracked'}
           value={report ? String(report.totalDecisionsAnalyzed) : '0'}
-          subtitle="30-day rolling evaluation window"
+          subtitle={dict.autopilot?.decisionsTrackedSub || '30-day rolling evaluation window'}
           icon={Brain}
           colorVariant="default"
         />

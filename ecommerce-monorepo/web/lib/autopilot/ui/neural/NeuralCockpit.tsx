@@ -14,8 +14,10 @@ import { CrossConnection } from './CrossConnection';
 import { calculateNodePosition } from './layoutEngine';
 import { NeuralErrorBoundary } from './NeuralErrorBoundary';
 import { Activity, Shield, RefreshCw, Zap, ChevronRight, Inbox } from 'lucide-react';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export const NeuralCockpit: React.FC = () => {
+  const { dict } = useAdminLocale();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -174,7 +176,7 @@ export const NeuralCockpit: React.FC = () => {
       <div className="w-full min-h-[calc(100vh-140px)] flex flex-col items-center justify-center bg-slate-950 text-slate-400">
         <RefreshCw className="w-8 h-8 animate-spin text-purple-400 mb-3" />
         <span className="font-mono text-xs uppercase tracking-widest text-slate-300">
-          Synaptic Neural Network Initializing...
+          {dict.autopilot?.initializing || 'Synaptic Neural Network Initializing...'}
         </span>
       </div>
     );
@@ -185,9 +187,9 @@ export const NeuralCockpit: React.FC = () => {
     return (
       <div className="w-full min-h-[calc(100vh-140px)] flex flex-col items-center justify-center p-8 bg-slate-950 text-slate-300">
         <Inbox className="w-12 h-12 text-purple-400 mb-3 opacity-60" />
-        <h3 className="text-base font-bold text-white mb-1">No Department Data Synced</h3>
+        <h3 className="text-base font-bold text-white mb-1">{dict.autopilot?.noDataTitle || 'No Department Data Synced'}</h3>
         <p className="text-xs text-slate-400 mb-4 font-mono">
-          Run an operational cycle to activate the synaptic network.
+          {dict.autopilot?.noDataDesc || 'Run an operational cycle to activate the synaptic network.'}
         </p>
         <button
           type="button"
@@ -195,7 +197,7 @@ export const NeuralCockpit: React.FC = () => {
           disabled={isTriggering}
           className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs transition"
         >
-          Dispatch Initial Cycle
+          {dict.autopilot?.dispatchInitialCycle || 'Dispatch Initial Cycle'}
         </button>
       </div>
     );
@@ -224,13 +226,13 @@ export const NeuralCockpit: React.FC = () => {
             </div>
             <div>
               <h1 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
-                AUTO-PILOT NEURAL COCKPIT
+                {dict.autopilot?.title?.toUpperCase() || 'AUTO-PILOT NEURAL COCKPIT'}
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                  LIVE ORB
+                  {dict.autopilot?.liveOrbBadge || 'LIVE ORB'}
                 </span>
               </h1>
               <p className="text-[11px] text-slate-400 font-medium">
-                Synaptic Graph & Multi-Department Telemetry Stream
+                {dict.autopilot?.subtitle || 'Synaptic Graph & Multi-Department Telemetry Stream'}
               </p>
             </div>
           </div>
@@ -243,7 +245,7 @@ export const NeuralCockpit: React.FC = () => {
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-medium text-xs transition shadow-lg shadow-purple-900/40 border border-purple-400/40 disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isTriggering ? 'animate-spin' : ''}`} />
-              <span>Pulse Cycle</span>
+              <span>{dict.autopilot?.pulseCycle || 'Pulse Cycle'}</span>
             </button>
 
             <button
@@ -252,7 +254,7 @@ export const NeuralCockpit: React.FC = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs border border-slate-700/80 transition"
             >
               <Shield className="w-3.5 h-3.5 text-purple-400" />
-              <span>Classic View</span>
+              <span>{dict.autopilot?.classicView || 'Classic View'}</span>
             </button>
           </div>
         </header>
@@ -272,7 +274,7 @@ export const NeuralCockpit: React.FC = () => {
 
               <div className="w-full text-center mb-3">
                 <span className="text-xs font-mono text-purple-300 uppercase tracking-widest">
-                  Department Nodes
+                  {dict.autopilot?.departmentNodes || 'Department Nodes'}
                 </span>
               </div>
 
@@ -395,7 +397,7 @@ export const NeuralCockpit: React.FC = () => {
           <div className="flex items-center gap-2 pr-4 border-r border-slate-800 shrink-0">
             <Activity className="w-4 h-4 text-purple-400 animate-pulse" />
             <span className="text-[11px] font-mono uppercase font-bold text-slate-300">
-              SYNAPTIC FEED
+              {dict.autopilot?.synapticFeed || 'SYNAPTIC FEED'}
             </span>
           </div>
 
@@ -429,7 +431,7 @@ export const NeuralCockpit: React.FC = () => {
             onClick={() => router.push('/admin/autopilot/live')}
             className="shrink-0 ml-4 flex items-center gap-1 text-[11px] text-purple-400 hover:text-purple-300 transition font-medium"
           >
-            <span>All Events</span>
+            <span>{dict.autopilot?.allEvents || 'All Events'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </footer>

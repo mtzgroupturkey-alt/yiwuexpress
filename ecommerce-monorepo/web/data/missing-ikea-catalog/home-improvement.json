@@ -1,0 +1,1142 @@
+{
+  "department": "Home improvement",
+  "departmentSlug": "home-improvement-hi001",
+  "departmentCode": "hi001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Ремонт и обустройство",
+    "zh": "家居装修与五金"
+  },
+  "missingSubcategoriesCount": 8,
+  "totalMissingProductsCount": 196,
+  "subcategories": [
+    {
+      "categoryName": "SKYTTA sliding door system",
+      "categorySlug": "skytta-sliding-door-system-55984",
+      "ikeaCode": "55984",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "SKYTTA sliding door system"
+        },
+        "ru": {
+          "name": "SKYTTA sliding door system"
+        },
+        "zh": {
+          "name": "SKYTTA sliding door system"
+        }
+      },
+      "totalIkeaProductsInStock": 55,
+      "sampleProductsToInsert": [
+        {
+          "name": "SKYTTA Hardware pack for double track rail",
+          "slug": "skytta-hardware-pack-for-double-track-rail-10500064",
+          "sku": "IK-10500064",
+          "price": 40,
+          "compareAtPrice": 50,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skytta-hardware-pack-for-double-track-rail__1004746_pe825146_s5.jpg"
+          ],
+          "description": "SKYTTA Hardware pack for double track rail",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10500064",
+          "measure": "",
+          "categoryName": "SKYTTA sliding door system",
+          "translations": {
+            "en": {
+              "name": "SKYTTA Hardware pack for double track rail",
+              "description": "SKYTTA Hardware pack for double track rail"
+            },
+            "ru": {
+              "name": "SKYTTA Hardware pack for double track rail",
+              "description": "SKYTTA Hardware pack for double track rail"
+            },
+            "zh": {
+              "name": "SKYTTA Hardware pack for double track rail",
+              "description": "SKYTTA Hardware pack for double track rail"
+            }
+          }
+        },
+        {
+          "name": "MEHAMN 4 panels for sliding door frame",
+          "slug": "mehamn-4-panels-for-sliding-door-frame-80421186",
+          "sku": "IK-80421186",
+          "price": 70,
+          "compareAtPrice": 87.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mehamn-4-panels-for-sliding-door-frame-white-stained-oak-effect-white__0704012_pe724947_s5.jpg"
+          ],
+          "description": "MEHAMN 4 panels for sliding door frame 39 3/8x92 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80421186",
+          "measure": "39 3/8x92 7/8 \"",
+          "categoryName": "SKYTTA sliding door system",
+          "translations": {
+            "en": {
+              "name": "MEHAMN 4 panels for sliding door frame",
+              "description": "MEHAMN 4 panels for sliding door frame 39 3/8x92 7/8 \""
+            },
+            "ru": {
+              "name": "MEHAMN 4 panels for sliding door frame",
+              "description": "MEHAMN 4 panels for sliding door frame 39 3/8x92 7/8 \""
+            },
+            "zh": {
+              "name": "MEHAMN 4 panels for sliding door frame",
+              "description": "MEHAMN 4 panels for sliding door frame 39 3/8x92 7/8 \""
+            }
+          }
+        },
+        {
+          "name": "SKYTTA Sliding door frame",
+          "slug": "skytta-sliding-door-frame-80497732",
+          "sku": "IK-80497732",
+          "price": 130,
+          "compareAtPrice": 162.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skytta-sliding-door-frame-black__1004770_pe825166_s5.jpg"
+          ],
+          "description": "SKYTTA Sliding door frame 30 3/8x91 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80497732",
+          "measure": "30 3/8x91 \"",
+          "categoryName": "SKYTTA sliding door system",
+          "translations": {
+            "en": {
+              "name": "SKYTTA Sliding door frame",
+              "description": "SKYTTA Sliding door frame 30 3/8x91 \""
+            },
+            "ru": {
+              "name": "SKYTTA Sliding door frame",
+              "description": "SKYTTA Sliding door frame 30 3/8x91 \""
+            },
+            "zh": {
+              "name": "SKYTTA Sliding door frame",
+              "description": "SKYTTA Sliding door frame 30 3/8x91 \""
+            }
+          }
+        },
+        {
+          "name": "SKYTTA / SVARTISDAL Sliding door",
+          "slug": "skytta-svartisdal-sliding-door-59422734",
+          "sku": "IK-59422734",
+          "price": 948,
+          "compareAtPrice": 1185,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skytta-svartisdal-sliding-door-aluminum-white-paper__1004817_pe825211_s5.jpg"
+          ],
+          "description": "SKYTTA / SVARTISDAL Sliding door 118 1/2x80 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59422734",
+          "measure": "118 1/2x80 1/2 \"",
+          "categoryName": "SKYTTA sliding door system",
+          "translations": {
+            "en": {
+              "name": "SKYTTA / SVARTISDAL Sliding door",
+              "description": "SKYTTA / SVARTISDAL Sliding door 118 1/2x80 1/2 \""
+            },
+            "ru": {
+              "name": "SKYTTA / SVARTISDAL Sliding door",
+              "description": "SKYTTA / SVARTISDAL Sliding door 118 1/2x80 1/2 \""
+            },
+            "zh": {
+              "name": "SKYTTA / SVARTISDAL Sliding door",
+              "description": "SKYTTA / SVARTISDAL Sliding door 118 1/2x80 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Knobs and handles",
+      "categorySlug": "cabinet-knobs-handles-pulls-16298",
+      "ikeaCode": "16298",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Knobs and handles"
+        },
+        "ru": {
+          "name": "Knobs and handles"
+        },
+        "zh": {
+          "name": "Knobs and handles"
+        }
+      },
+      "totalIkeaProductsInStock": 56,
+      "sampleProductsToInsert": [
+        {
+          "name": "KALERUM Handle",
+          "slug": "kalerum-handle-60553644",
+          "sku": "IK-60553644",
+          "price": 10,
+          "compareAtPrice": 12.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kalerum-handle-stainless-steel__1239414_pe918885_s5.jpg"
+          ],
+          "description": "KALERUM Handle 5 7/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60553644",
+          "measure": "5 7/16 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "KALERUM Handle",
+              "description": "KALERUM Handle 5 7/16 \""
+            },
+            "ru": {
+              "name": "KALERUM Handle",
+              "description": "KALERUM Handle 5 7/16 \""
+            },
+            "zh": {
+              "name": "KALERUM Handle",
+              "description": "KALERUM Handle 5 7/16 \""
+            }
+          }
+        },
+        {
+          "name": "ENERYDA Knob",
+          "slug": "eneryda-knob-50610862",
+          "sku": "IK-50610862",
+          "price": 9,
+          "compareAtPrice": 11.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/eneryda-knob-brass-color__1427450_pe980247_s5.jpg"
+          ],
+          "description": "ENERYDA Knob 1 1/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50610862",
+          "measure": "1 1/16 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "ENERYDA Knob",
+              "description": "ENERYDA Knob 1 1/16 \""
+            },
+            "ru": {
+              "name": "ENERYDA Knob",
+              "description": "ENERYDA Knob 1 1/16 \""
+            },
+            "zh": {
+              "name": "ENERYDA Knob",
+              "description": "ENERYDA Knob 1 1/16 \""
+            }
+          }
+        },
+        {
+          "name": "KALERUM Knob",
+          "slug": "kalerum-knob-60596554",
+          "sku": "IK-60596554",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kalerum-knob-brass-color__1370954_pe958919_s5.jpg"
+          ],
+          "description": "KALERUM Knob 1 3/16 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60596554",
+          "measure": "1 3/16 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "KALERUM Knob",
+              "description": "KALERUM Knob 1 3/16 \""
+            },
+            "ru": {
+              "name": "KALERUM Knob",
+              "description": "KALERUM Knob 1 3/16 \""
+            },
+            "zh": {
+              "name": "KALERUM Knob",
+              "description": "KALERUM Knob 1 3/16 \""
+            }
+          }
+        },
+        {
+          "name": "GRIBBOL Handle",
+          "slug": "gribbol-handle-40496305",
+          "sku": "IK-40496305",
+          "price": 11,
+          "compareAtPrice": 13.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gribbol-handle-brass-color__0945521_pe797714_s5.jpg"
+          ],
+          "description": "GRIBBOL Handle 5 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40496305",
+          "measure": "5 1/2 \"",
+          "categoryName": "Knobs and handles",
+          "translations": {
+            "en": {
+              "name": "GRIBBOL Handle",
+              "description": "GRIBBOL Handle 5 1/2 \""
+            },
+            "ru": {
+              "name": "GRIBBOL Handle",
+              "description": "GRIBBOL Handle 5 1/2 \""
+            },
+            "zh": {
+              "name": "GRIBBOL Handle",
+              "description": "GRIBBOL Handle 5 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor tiles & flooring",
+      "categorySlug": "outdoor-flooring-21957",
+      "ikeaCode": "21957",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor tiles & flooring"
+        },
+        "ru": {
+          "name": "Outdoor tiles & flooring"
+        },
+        "zh": {
+          "name": "Outdoor tiles & flooring"
+        }
+      },
+      "totalIkeaProductsInStock": 6,
+      "sampleProductsToInsert": [
+        {
+          "name": "RUNNEN Decking, outdoor",
+          "slug": "runnen-decking-outdoor-60518486",
+          "sku": "IK-60518486",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/runnen-decking-outdoor-acacia__1151157_pe884806_s5.jpg"
+          ],
+          "description": "RUNNEN Decking, outdoor 9 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60518486",
+          "measure": "9 sq feet",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "RUNNEN Decking, outdoor",
+              "description": "RUNNEN Decking, outdoor 9 sq feet"
+            },
+            "ru": {
+              "name": "RUNNEN Decking, outdoor",
+              "description": "RUNNEN Decking, outdoor 9 sq feet"
+            },
+            "zh": {
+              "name": "RUNNEN Decking, outdoor",
+              "description": "RUNNEN Decking, outdoor 9 sq feet"
+            }
+          }
+        },
+        {
+          "name": "ALTAPPEN Decking, outdoor",
+          "slug": "altappen-decking-outdoor-90420898",
+          "sku": "IK-90420898",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/altappen-decking-outdoor-light-gray__0723465_pe733986_s5.jpg"
+          ],
+          "description": "ALTAPPEN Decking, outdoor 9 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90420898",
+          "measure": "9 sq feet",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "ALTAPPEN Decking, outdoor",
+              "description": "ALTAPPEN Decking, outdoor 9 sq feet"
+            },
+            "ru": {
+              "name": "ALTAPPEN Decking, outdoor",
+              "description": "ALTAPPEN Decking, outdoor 9 sq feet"
+            },
+            "zh": {
+              "name": "ALTAPPEN Decking, outdoor",
+              "description": "ALTAPPEN Decking, outdoor 9 sq feet"
+            }
+          }
+        },
+        {
+          "name": "RUNNEN Edging strip, outdoor decking",
+          "slug": "runnen-edging-strip-outdoor-decking-50494141",
+          "sku": "IK-50494141",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/runnen-edging-strip-outdoor-decking-dark-gray__0973716_pe812118_s5.jpg"
+          ],
+          "description": "RUNNEN Edging strip, outdoor decking 4 pack",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50494141",
+          "measure": "4 pack",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "RUNNEN Edging strip, outdoor decking",
+              "description": "RUNNEN Edging strip, outdoor decking 4 pack"
+            },
+            "ru": {
+              "name": "RUNNEN Edging strip, outdoor decking",
+              "description": "RUNNEN Edging strip, outdoor decking 4 pack"
+            },
+            "zh": {
+              "name": "RUNNEN Edging strip, outdoor decking",
+              "description": "RUNNEN Edging strip, outdoor decking 4 pack"
+            }
+          }
+        },
+        {
+          "name": "RUNNEN Corner edge, outdoor decking",
+          "slug": "runnen-corner-edge-outdoor-decking-10494138",
+          "sku": "IK-10494138",
+          "price": 3,
+          "compareAtPrice": 3.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/runnen-corner-edge-outdoor-decking-dark-gray__0976284_pe814672_s5.jpg"
+          ],
+          "description": "RUNNEN Corner edge, outdoor decking",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10494138",
+          "measure": "",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "RUNNEN Corner edge, outdoor decking",
+              "description": "RUNNEN Corner edge, outdoor decking"
+            },
+            "ru": {
+              "name": "RUNNEN Corner edge, outdoor decking",
+              "description": "RUNNEN Corner edge, outdoor decking"
+            },
+            "zh": {
+              "name": "RUNNEN Corner edge, outdoor decking",
+              "description": "RUNNEN Corner edge, outdoor decking"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Tools and accessories",
+      "categorySlug": "tools-hardware-16292",
+      "ikeaCode": "16292",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Tools and accessories"
+        },
+        "ru": {
+          "name": "Tools and accessories"
+        },
+        "zh": {
+          "name": "Tools and accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 14,
+      "sampleProductsToInsert": [
+        {
+          "name": "TRIXIG 15-piece tool set",
+          "slug": "trixig-15-piece-tool-set-80556689",
+          "sku": "IK-80556689",
+          "price": 15.99,
+          "compareAtPrice": 19.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-15-piece-tool-set__1223642_pe914725_s5.jpg"
+          ],
+          "description": "TRIXIG 15-piece tool set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80556689",
+          "measure": "",
+          "categoryName": "Tools and accessories",
+          "translations": {
+            "en": {
+              "name": "TRIXIG 15-piece tool set",
+              "description": "TRIXIG 15-piece tool set"
+            },
+            "ru": {
+              "name": "TRIXIG 15-piece tool set",
+              "description": "TRIXIG 15-piece tool set"
+            },
+            "zh": {
+              "name": "TRIXIG 15-piece tool set",
+              "description": "TRIXIG 15-piece tool set"
+            }
+          }
+        },
+        {
+          "name": "TRIXIG Screwdriver/drill, lithium-ion",
+          "slug": "trixig-screwdriverdrill-lithium-ion-10564211",
+          "sku": "IK-10564211",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-screwdriver-drill-lithium-ion__1223920_pe914729_s5.jpg"
+          ],
+          "description": "TRIXIG Screwdriver/drill, lithium-ion 12 V",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10564211",
+          "measure": "12 V",
+          "categoryName": "Tools and accessories",
+          "translations": {
+            "en": {
+              "name": "TRIXIG Screwdriver/drill, lithium-ion",
+              "description": "TRIXIG Screwdriver/drill, lithium-ion 12 V"
+            },
+            "ru": {
+              "name": "TRIXIG Screwdriver/drill, lithium-ion",
+              "description": "TRIXIG Screwdriver/drill, lithium-ion 12 V"
+            },
+            "zh": {
+              "name": "TRIXIG Screwdriver/drill, lithium-ion",
+              "description": "TRIXIG Screwdriver/drill, lithium-ion 12 V"
+            }
+          }
+        },
+        {
+          "name": "TRIXIG 25-piece precision screwdriver set",
+          "slug": "trixig-25-piece-precision-screwdriver-set-30568091",
+          "sku": "IK-30568091",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-25-piece-precision-screwdriver-set__1223004_pe914746_s5.jpg"
+          ],
+          "description": "TRIXIG 25-piece precision screwdriver set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30568091",
+          "measure": "",
+          "categoryName": "Tools and accessories",
+          "translations": {
+            "en": {
+              "name": "TRIXIG 25-piece precision screwdriver set",
+              "description": "TRIXIG 25-piece precision screwdriver set"
+            },
+            "ru": {
+              "name": "TRIXIG 25-piece precision screwdriver set",
+              "description": "TRIXIG 25-piece precision screwdriver set"
+            },
+            "zh": {
+              "name": "TRIXIG 25-piece precision screwdriver set",
+              "description": "TRIXIG 25-piece precision screwdriver set"
+            }
+          }
+        },
+        {
+          "name": "TRIXIG 175-piece screw and plug set",
+          "slug": "trixig-175-piece-screw-and-plug-set-50556695",
+          "sku": "IK-50556695",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-175-piece-screw-and-plug-set__1223533_pe914740_s5.jpg"
+          ],
+          "description": "TRIXIG 175-piece screw and plug set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50556695",
+          "measure": "",
+          "categoryName": "Tools and accessories",
+          "translations": {
+            "en": {
+              "name": "TRIXIG 175-piece screw and plug set",
+              "description": "TRIXIG 175-piece screw and plug set"
+            },
+            "ru": {
+              "name": "TRIXIG 175-piece screw and plug set",
+              "description": "TRIXIG 175-piece screw and plug set"
+            },
+            "zh": {
+              "name": "TRIXIG 175-piece screw and plug set",
+              "description": "TRIXIG 175-piece screw and plug set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Faucets",
+      "categorySlug": "taps-700718",
+      "ikeaCode": "700718",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Faucets"
+        },
+        "ru": {
+          "name": "Faucets"
+        },
+        "zh": {
+          "name": "Faucets"
+        }
+      },
+      "totalIkeaProductsInStock": 35,
+      "sampleProductsToInsert": [
+        {
+          "name": "MAJSJÖN Pull out kitchen faucet with spray",
+          "slug": "majsjn-pull-out-kitchen-faucet-with-spray-60610654",
+          "sku": "IK-60610654",
+          "price": 199,
+          "compareAtPrice": 248.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/majsjoen-pull-out-kitchen-faucet-with-spray-stainless-steel__1465858_pe995186_s5.jpg"
+          ],
+          "description": "MAJSJÖN Pull out kitchen faucet with spray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60610654",
+          "measure": "",
+          "categoryName": "Faucets",
+          "translations": {
+            "en": {
+              "name": "MAJSJÖN Pull out kitchen faucet with spray",
+              "description": "MAJSJÖN Pull out kitchen faucet with spray"
+            },
+            "ru": {
+              "name": "MAJSJÖN Pull out kitchen faucet with spray",
+              "description": "MAJSJÖN Pull out kitchen faucet with spray"
+            },
+            "zh": {
+              "name": "MAJSJÖN Pull out kitchen faucet with spray",
+              "description": "MAJSJÖN Pull out kitchen faucet with spray"
+            }
+          }
+        },
+        {
+          "name": "MACKSJÖN Pull down kitchen faucet with spray",
+          "slug": "macksjn-pull-down-kitchen-faucet-with-spray-80600833",
+          "sku": "IK-80600833",
+          "price": 99,
+          "compareAtPrice": 123.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/macksjoen-pull-down-kitchen-faucet-with-spray-stainless-steel__1474154_pe997965_s5.jpg"
+          ],
+          "description": "MACKSJÖN Pull down kitchen faucet with spray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80600833",
+          "measure": "",
+          "categoryName": "Faucets",
+          "translations": {
+            "en": {
+              "name": "MACKSJÖN Pull down kitchen faucet with spray",
+              "description": "MACKSJÖN Pull down kitchen faucet with spray"
+            },
+            "ru": {
+              "name": "MACKSJÖN Pull down kitchen faucet with spray",
+              "description": "MACKSJÖN Pull down kitchen faucet with spray"
+            },
+            "zh": {
+              "name": "MACKSJÖN Pull down kitchen faucet with spray",
+              "description": "MACKSJÖN Pull down kitchen faucet with spray"
+            }
+          }
+        },
+        {
+          "name": "TAKSJÖN Pull down kitchen faucet with spray",
+          "slug": "taksjn-pull-down-kitchen-faucet-with-spray-10610500",
+          "sku": "IK-10610500",
+          "price": 179,
+          "compareAtPrice": 223.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/taksjoen-pull-down-kitchen-faucet-with-spray-stainless-steel__1466195_pe995295_s5.jpg"
+          ],
+          "description": "TAKSJÖN Pull down kitchen faucet with spray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10610500",
+          "measure": "",
+          "categoryName": "Faucets",
+          "translations": {
+            "en": {
+              "name": "TAKSJÖN Pull down kitchen faucet with spray",
+              "description": "TAKSJÖN Pull down kitchen faucet with spray"
+            },
+            "ru": {
+              "name": "TAKSJÖN Pull down kitchen faucet with spray",
+              "description": "TAKSJÖN Pull down kitchen faucet with spray"
+            },
+            "zh": {
+              "name": "TAKSJÖN Pull down kitchen faucet with spray",
+              "description": "TAKSJÖN Pull down kitchen faucet with spray"
+            }
+          }
+        },
+        {
+          "name": "ÄLMAREN Kitchen faucet",
+          "slug": "lmaren-kitchen-faucet-50341643",
+          "sku": "IK-50341643",
+          "price": 49,
+          "compareAtPrice": 61.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aelmaren-kitchen-faucet-stainless-steel__0804883_pe769403_s5.jpg"
+          ],
+          "description": "ÄLMAREN Kitchen faucet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50341643",
+          "measure": "",
+          "categoryName": "Faucets",
+          "translations": {
+            "en": {
+              "name": "ÄLMAREN Kitchen faucet",
+              "description": "ÄLMAREN Kitchen faucet"
+            },
+            "ru": {
+              "name": "ÄLMAREN Kitchen faucet",
+              "description": "ÄLMAREN Kitchen faucet"
+            },
+            "zh": {
+              "name": "ÄLMAREN Kitchen faucet",
+              "description": "ÄLMAREN Kitchen faucet"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Moving supplies",
+      "categorySlug": "moving-supplies-46078",
+      "ikeaCode": "46078",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Moving supplies"
+        },
+        "ru": {
+          "name": "Moving supplies"
+        },
+        "zh": {
+          "name": "Moving supplies"
+        }
+      },
+      "totalIkeaProductsInStock": 11,
+      "sampleProductsToInsert": [
+        {
+          "name": "FRAKTA Storage bag for cart",
+          "slug": "frakta-storage-bag-for-cart-90149148",
+          "sku": "IK-90149148",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-storage-bag-for-cart-blue__0711261_pe728099_s5.jpg"
+          ],
+          "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90149148",
+          "measure": "28 ¾x13 ¾x11 ¾ \" 20 gallon",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            }
+          }
+        },
+        {
+          "name": "FRAKTA Shopping bag, large",
+          "slug": "frakta-shopping-bag-large-20611108",
+          "sku": "IK-20611108",
+          "price": 0.99,
+          "compareAtPrice": 1.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-shopping-bag-large-blue__1409200_pe972162_s5.jpg"
+          ],
+          "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20611108",
+          "measure": "21 ¾x14 ½x13 ¾ \"/19 gallon",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            }
+          }
+        },
+        {
+          "name": "INVALLNING Utility cart",
+          "slug": "invallning-utility-cart-10569398",
+          "sku": "IK-10569398",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/invallning-utility-cart-for-boxes-white__1216371_pe912411_s5.jpg"
+          ],
+          "description": "INVALLNING Utility cart 26 3/4x15 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10569398",
+          "measure": "26 3/4x15 3/8 \"",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "INVALLNING Utility cart",
+              "description": "INVALLNING Utility cart 26 3/4x15 3/8 \""
+            },
+            "ru": {
+              "name": "INVALLNING Utility cart",
+              "description": "INVALLNING Utility cart 26 3/4x15 3/8 \""
+            },
+            "zh": {
+              "name": "INVALLNING Utility cart",
+              "description": "INVALLNING Utility cart 26 3/4x15 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "RULLEBÖR Cart",
+          "slug": "rullebr-cart-10516772",
+          "sku": "IK-10516772",
+          "price": 44.99,
+          "compareAtPrice": 56.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rulleboer-cart-black__1045853_pe842738_s5.jpg"
+          ],
+          "description": "RULLEBÖR Cart",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10516772",
+          "measure": "",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "RULLEBÖR Cart",
+              "description": "RULLEBÖR Cart"
+            },
+            "ru": {
+              "name": "RULLEBÖR Cart",
+              "description": "RULLEBÖR Cart"
+            },
+            "zh": {
+              "name": "RULLEBÖR Cart",
+              "description": "RULLEBÖR Cart"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Sound absorbing acoustic panels",
+      "categorySlug": "acoustic-panels-46077",
+      "ikeaCode": "46077",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Sound absorbing acoustic panels"
+        },
+        "ru": {
+          "name": "Sound absorbing acoustic panels"
+        },
+        "zh": {
+          "name": "Sound absorbing acoustic panels"
+        }
+      },
+      "totalIkeaProductsInStock": 6,
+      "sampleProductsToInsert": [
+        {
+          "name": "MITTZON Acoustic screen, floor standing",
+          "slug": "mittzon-acoustic-screen-floor-standing-60528206",
+          "sku": "IK-60528206",
+          "price": 280,
+          "compareAtPrice": 350,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-acoustic-screen-floor-standing-gunnared-beige__1271931_pe929630_s5.jpg"
+          ],
+          "description": "MITTZON Acoustic screen, floor standing 35 3/8x61 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60528206",
+          "measure": "35 3/8x61 3/4 \"",
+          "categoryName": "Sound absorbing acoustic panels",
+          "translations": {
+            "en": {
+              "name": "MITTZON Acoustic screen, floor standing",
+              "description": "MITTZON Acoustic screen, floor standing 35 3/8x61 3/4 \""
+            },
+            "ru": {
+              "name": "MITTZON Acoustic screen, floor standing",
+              "description": "MITTZON Acoustic screen, floor standing 35 3/8x61 3/4 \""
+            },
+            "zh": {
+              "name": "MITTZON Acoustic screen, floor standing",
+              "description": "MITTZON Acoustic screen, floor standing 35 3/8x61 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "MITTZON Acoustic screen for desk",
+          "slug": "mittzon-acoustic-screen-for-desk-40528212",
+          "sku": "IK-40528212",
+          "price": 210,
+          "compareAtPrice": 262.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-acoustic-screen-for-desk-gunnared-beige__1271915_pe929619_s5.jpg"
+          ],
+          "description": "MITTZON Acoustic screen for desk 49 1/4x28 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40528212",
+          "measure": "49 1/4x28 3/8 \"",
+          "categoryName": "Sound absorbing acoustic panels",
+          "translations": {
+            "en": {
+              "name": "MITTZON Acoustic screen for desk",
+              "description": "MITTZON Acoustic screen for desk 49 1/4x28 3/8 \""
+            },
+            "ru": {
+              "name": "MITTZON Acoustic screen for desk",
+              "description": "MITTZON Acoustic screen for desk 49 1/4x28 3/8 \""
+            },
+            "zh": {
+              "name": "MITTZON Acoustic screen for desk",
+              "description": "MITTZON Acoustic screen for desk 49 1/4x28 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "MITTZON Acoustic baffle set",
+          "slug": "mittzon-acoustic-baffle-set-19603128",
+          "sku": "IK-19603128",
+          "price": 500,
+          "compareAtPrice": 625,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-acoustic-baffle-set-gunnared-beige__1425371_pe979492_s5.jpg"
+          ],
+          "description": "MITTZON Acoustic baffle set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19603128",
+          "measure": "",
+          "categoryName": "Sound absorbing acoustic panels",
+          "translations": {
+            "en": {
+              "name": "MITTZON Acoustic baffle set",
+              "description": "MITTZON Acoustic baffle set"
+            },
+            "ru": {
+              "name": "MITTZON Acoustic baffle set",
+              "description": "MITTZON Acoustic baffle set"
+            },
+            "zh": {
+              "name": "MITTZON Acoustic baffle set",
+              "description": "MITTZON Acoustic baffle set"
+            }
+          }
+        },
+        {
+          "name": "MITTZON Acoustic baffle",
+          "slug": "mittzon-acoustic-baffle-80605604",
+          "sku": "IK-80605604",
+          "price": 125,
+          "compareAtPrice": 156.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittzon-acoustic-baffle-gunnared-beige__1271941_pe929634_s5.jpg"
+          ],
+          "description": "MITTZON Acoustic baffle 37 3/8x20 7/8x3 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80605604",
+          "measure": "37 3/8x20 7/8x3 1/8 \"",
+          "categoryName": "Sound absorbing acoustic panels",
+          "translations": {
+            "en": {
+              "name": "MITTZON Acoustic baffle",
+              "description": "MITTZON Acoustic baffle 37 3/8x20 7/8x3 1/8 \""
+            },
+            "ru": {
+              "name": "MITTZON Acoustic baffle",
+              "description": "MITTZON Acoustic baffle 37 3/8x20 7/8x3 1/8 \""
+            },
+            "zh": {
+              "name": "MITTZON Acoustic baffle",
+              "description": "MITTZON Acoustic baffle 37 3/8x20 7/8x3 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Home safety locks, latches & more",
+      "categorySlug": "safety-products-sp001",
+      "ikeaCode": "sp001",
+      "parentDepartment": "Home improvement",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Home safety locks, latches & more"
+        },
+        "ru": {
+          "name": "Home safety locks, latches & more"
+        },
+        "zh": {
+          "name": "Home safety locks, latches & more"
+        }
+      },
+      "totalIkeaProductsInStock": 13,
+      "sampleProductsToInsert": [
+        {
+          "name": "MYGGBETT Door/window sensor",
+          "slug": "myggbett-doorwindow-sensor-60617641",
+          "sku": "IK-60617641",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/myggbett-door-window-sensor-smart__1420257_pe977237_s5.jpg"
+          ],
+          "description": "MYGGBETT Door/window sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60617641",
+          "measure": "",
+          "categoryName": "Home safety locks, latches & more",
+          "translations": {
+            "en": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            },
+            "ru": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            },
+            "zh": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            }
+          }
+        },
+        {
+          "name": "MYGGSPRAY Wireless motion sensor",
+          "slug": "myggspray-wireless-motion-sensor-80619451",
+          "sku": "IK-80619451",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/myggspray-wireless-motion-sensor-smart__1420239_pe977223_s5.jpg"
+          ],
+          "description": "MYGGSPRAY Wireless motion sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80619451",
+          "measure": "",
+          "categoryName": "Home safety locks, latches & more",
+          "translations": {
+            "en": {
+              "name": "MYGGSPRAY Wireless motion sensor",
+              "description": "MYGGSPRAY Wireless motion sensor"
+            },
+            "ru": {
+              "name": "MYGGSPRAY Wireless motion sensor",
+              "description": "MYGGSPRAY Wireless motion sensor"
+            },
+            "zh": {
+              "name": "MYGGSPRAY Wireless motion sensor",
+              "description": "MYGGSPRAY Wireless motion sensor"
+            }
+          }
+        },
+        {
+          "name": "MÖRKRÄDD LED nightlight with sensor",
+          "slug": "mrkrdd-led-nightlight-with-sensor-70350127",
+          "sku": "IK-70350127",
+          "price": 8.99,
+          "compareAtPrice": 11.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/moerkraedd-led-nightlight-with-sensor-white__0546112_pe655896_s5.jpg"
+          ],
+          "description": "MÖRKRÄDD LED nightlight with sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70350127",
+          "measure": "",
+          "categoryName": "Home safety locks, latches & more",
+          "translations": {
+            "en": {
+              "name": "MÖRKRÄDD LED nightlight with sensor",
+              "description": "MÖRKRÄDD LED nightlight with sensor"
+            },
+            "ru": {
+              "name": "MÖRKRÄDD LED nightlight with sensor",
+              "description": "MÖRKRÄDD LED nightlight with sensor"
+            },
+            "zh": {
+              "name": "MÖRKRÄDD LED nightlight with sensor",
+              "description": "MÖRKRÄDD LED nightlight with sensor"
+            }
+          }
+        },
+        {
+          "name": "UNDVIKA Corner bumper",
+          "slug": "undvika-corner-bumper-20349023",
+          "sku": "IK-20349023",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/undvika-corner-bumper-white__0710896_pe727828_s5.jpg"
+          ],
+          "description": "UNDVIKA Corner bumper",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20349023",
+          "measure": "",
+          "categoryName": "Home safety locks, latches & more",
+          "translations": {
+            "en": {
+              "name": "UNDVIKA Corner bumper",
+              "description": "UNDVIKA Corner bumper"
+            },
+            "ru": {
+              "name": "UNDVIKA Corner bumper",
+              "description": "UNDVIKA Corner bumper"
+            },
+            "zh": {
+              "name": "UNDVIKA Corner bumper",
+              "description": "UNDVIKA Corner bumper"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

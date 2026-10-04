@@ -26,8 +26,10 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 export default function WarehousesPage() {
+  const { dict } = useAdminLocale()
   const queryClient = useQueryClient()
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [form, setForm] = useState({
@@ -104,10 +106,10 @@ export default function WarehousesPage() {
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2 text-foreground">
             <WarehouseIcon className="w-7 h-7 text-indigo-600" />
-            Warehouse & Fulfillment Network
+            {dict.warehouses.pageTitle || 'Warehouse Management'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Dual-warehouse architecture: China Procurement DC & Belarus Sales Distribution Center.
+            {dict.warehouses.pageSubtitle || 'Dual-warehouse architecture: China Procurement DC & Belarus Sales Distribution Center.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -118,7 +120,7 @@ export default function WarehousesPage() {
             className="h-9 gap-1.5"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {dict.warehouses.refresh || 'Refresh'}
           </Button>
           <Button
             size="sm"
@@ -126,7 +128,7 @@ export default function WarehousesPage() {
             className="h-9 gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             <Plus className="w-4 h-4" />
-            Add Warehouse
+            {dict.warehouses.registerWarehouse || 'Add Warehouse'}
           </Button>
         </div>
       </div>
@@ -184,19 +186,19 @@ export default function WarehousesPage() {
                 {/* Metrics */}
                 <div className="grid grid-cols-3 gap-3 p-3 bg-muted/40 rounded-lg text-center">
                   <div>
-                    <span className="text-[11px] text-muted-foreground block font-medium">On-Hand Stock</span>
+                    <span className="text-[11px] text-muted-foreground block font-medium">{dict.reports.thOnHand || 'On-Hand Stock'}</span>
                     <span className="text-xl font-extrabold text-foreground font-mono">
                       {(wh.totalStockUnits || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="border-x border-border">
-                    <span className="text-[11px] text-muted-foreground block font-medium">Reserved (24h)</span>
+                    <span className="text-[11px] text-muted-foreground block font-medium">{dict.reports.thReserved || 'Reserved (24h)'}</span>
                     <span className="text-xl font-extrabold text-amber-600 font-mono">
                       {(wh.totalReservedUnits || 0).toLocaleString()}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[11px] text-muted-foreground block font-medium">Available</span>
+                    <span className="text-[11px] text-muted-foreground block font-medium">{dict.reports.thAvailable || 'Available'}</span>
                     <span className="text-xl font-extrabold text-emerald-600 font-mono">
                       {(wh.totalAvailableUnits || 0).toLocaleString()}
                     </span>
@@ -207,7 +209,7 @@ export default function WarehousesPage() {
                 <div className="space-y-1.5">
                   <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5" />
-                    Storage Zones & Addressing:
+                    {dict.warehouses.currentHubZones || 'Storage Zones & Addressing:'}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {wh.zones?.length > 0 ? (
@@ -221,7 +223,7 @@ export default function WarehousesPage() {
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-muted-foreground italic">No zones configured</span>
+                      <span className="text-xs text-muted-foreground italic">{dict.warehouses.noZonesYet || 'No zones configured'}</span>
                     )}
                   </div>
                 </div>
@@ -229,7 +231,7 @@ export default function WarehousesPage() {
                 {/* Contact info */}
                 {(wh.contactPerson || wh.contactPhone || wh.contactEmail) && (
                   <div className="pt-2 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Contact: {wh.contactPerson || 'Warehouse Manager'}</span>
+                    <span>{dict.warehouses.contact || 'Contact:'} {wh.contactPerson || 'Warehouse Manager'}</span>
                     <span className="font-mono">{wh.contactPhone || wh.contactEmail}</span>
                   </div>
                 )}
@@ -239,12 +241,12 @@ export default function WarehousesPage() {
                   <Link href={`/admin/inventory?warehouseId=${wh.id}`}>
                     <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
                       <Package className="w-3.5 h-3.5" />
-                      View Inventory
+                      {dict.reports.tabInventoryValuation || 'View Inventory'}
                     </Button>
                   </Link>
                   <Link href={`/admin/warehouses/${wh.id}`}>
                     <Button size="sm" className="h-8 text-xs gap-1 bg-indigo-600 hover:bg-indigo-700 text-white">
-                      Manage Zones & Slots
+                      {dict.warehouses.configure2DLayout || 'Manage Zones & Slots'}
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   </Link>
@@ -259,15 +261,15 @@ export default function WarehousesPage() {
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Warehouse Facility</DialogTitle>
+            <DialogTitle>{dict.warehouses.modalRegisterWarehouseTitle || 'Add Warehouse Facility'}</DialogTitle>
             <DialogDescription>
-              Register a new logistics hub or storage location into the dual-warehouse network.
+              {dict.warehouses.modalWarehouseDesc || 'Register a new logistics hub or storage location into the dual-warehouse network.'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-3 pt-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Warehouse Name *</Label>
+                <Label className="text-xs">{dict.warehouses.warehouseName || 'Warehouse Name *'}</Label>
                 <Input
                   required
                   placeholder="e.g. Warsaw Transit Hub"
@@ -277,7 +279,7 @@ export default function WarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Code * (Unique)</Label>
+                <Label className="text-xs">{dict.warehouses.warehouseCode || 'Code * (Unique)'}</Label>
                 <Input
                   required
                   placeholder="e.g. PL-WAW"
@@ -290,7 +292,7 @@ export default function WarehousesPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Country *</Label>
+                <Label className="text-xs">{dict.warehouses.country || 'Country *'}</Label>
                 <Input
                   required
                   placeholder="e.g. Poland"
@@ -300,7 +302,7 @@ export default function WarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">City *</Label>
+                <Label className="text-xs">{dict.warehouses.city || 'City *'}</Label>
                 <Input
                   required
                   placeholder="e.g. Warsaw"
@@ -312,7 +314,7 @@ export default function WarehousesPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Full Address *</Label>
+              <Label className="text-xs">{dict.warehouses.physicalAddress || 'Full Address *'}</Label>
               <Input
                 required
                 placeholder="Logistics park address..."
@@ -324,7 +326,7 @@ export default function WarehousesPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">Contact Person</Label>
+                <Label className="text-xs">{dict.warehouses.contactManager || 'Contact Person'}</Label>
                 <Input
                   placeholder="Manager name"
                   value={form.contactPerson}
@@ -333,7 +335,7 @@ export default function WarehousesPage() {
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Phone</Label>
+                <Label className="text-xs">{dict.warehouses.contactPhone || 'Phone'}</Label>
                 <Input
                   placeholder="+48 22 123 4567"
                   value={form.contactPhone}
@@ -351,7 +353,7 @@ export default function WarehousesPage() {
                 onClick={() => setCreateModalOpen(false)}
                 className="h-8 text-xs"
               >
-                Cancel
+                {dict.common.cancel || 'Cancel'}
               </Button>
               <Button
                 type="submit"
@@ -359,7 +361,7 @@ export default function WarehousesPage() {
                 disabled={createMutation.isPending}
                 className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white"
               >
-                {createMutation.isPending ? 'Creating...' : 'Create Warehouse'}
+                {createMutation.isPending ? (dict.common.loading || 'Creating...') : (dict.warehouses.saveWarehouse || 'Create Warehouse')}
               </Button>
             </div>
           </form>

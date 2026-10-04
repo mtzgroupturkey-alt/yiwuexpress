@@ -1,0 +1,971 @@
+{
+  "department": "Laundry & cleaning",
+  "departmentSlug": "laundry-cleaning-lc001",
+  "departmentCode": "lc001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Стирка и уборка",
+    "zh": "洗晒与清洁"
+  },
+  "missingSubcategoriesCount": 7,
+  "totalMissingProductsCount": 149,
+  "subcategories": [
+    {
+      "categoryName": "Waste sorting",
+      "categorySlug": "bins-bags-16213",
+      "ikeaCode": "16213",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Waste sorting"
+        },
+        "ru": {
+          "name": "Waste sorting"
+        },
+        "zh": {
+          "name": "Waste sorting"
+        }
+      },
+      "totalIkeaProductsInStock": 48,
+      "sampleProductsToInsert": [
+        {
+          "name": "HÅLLBAR Bin with lid",
+          "slug": "hllbar-bin-with-lid-50420206",
+          "sku": "IK-50420206",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hallbar-bin-with-lid-light-gray__0742729_pe742786_s5.jpg"
+          ],
+          "description": "HÅLLBAR Bin with lid 9 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50420206",
+          "measure": "9 gallon",
+          "categoryName": "Waste sorting",
+          "translations": {
+            "en": {
+              "name": "HÅLLBAR Bin with lid",
+              "description": "HÅLLBAR Bin with lid 9 gallon"
+            },
+            "ru": {
+              "name": "HÅLLBAR Bin with lid",
+              "description": "HÅLLBAR Bin with lid 9 gallon"
+            },
+            "zh": {
+              "name": "HÅLLBAR Bin with lid",
+              "description": "HÅLLBAR Bin with lid 9 gallon"
+            }
+          }
+        },
+        {
+          "name": "GÅRDSBUTIK Bin with lid",
+          "slug": "grdsbutik-bin-with-lid-70565199",
+          "sku": "IK-70565199",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gardsbutik-bin-with-lid-gray-beige__1383349_pe962519_s5.jpg"
+          ],
+          "description": "GÅRDSBUTIK Bin with lid 6 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70565199",
+          "measure": "6 gallon",
+          "categoryName": "Waste sorting",
+          "translations": {
+            "en": {
+              "name": "GÅRDSBUTIK Bin with lid",
+              "description": "GÅRDSBUTIK Bin with lid 6 gallon"
+            },
+            "ru": {
+              "name": "GÅRDSBUTIK Bin with lid",
+              "description": "GÅRDSBUTIK Bin with lid 6 gallon"
+            },
+            "zh": {
+              "name": "GÅRDSBUTIK Bin with lid",
+              "description": "GÅRDSBUTIK Bin with lid 6 gallon"
+            }
+          }
+        },
+        {
+          "name": "SORTERA Sorting bin with lid",
+          "slug": "sortera-sorting-bin-with-lid-00602096",
+          "sku": "IK-00602096",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sortera-sorting-bin-with-lid-beige__1498235_pe1006266_s5.jpg"
+          ],
+          "description": "SORTERA Sorting bin with lid 16 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00602096",
+          "measure": "16 gallon",
+          "categoryName": "Waste sorting",
+          "translations": {
+            "en": {
+              "name": "SORTERA Sorting bin with lid",
+              "description": "SORTERA Sorting bin with lid 16 gallon"
+            },
+            "ru": {
+              "name": "SORTERA Sorting bin with lid",
+              "description": "SORTERA Sorting bin with lid 16 gallon"
+            },
+            "zh": {
+              "name": "SORTERA Sorting bin with lid",
+              "description": "SORTERA Sorting bin with lid 16 gallon"
+            }
+          }
+        },
+        {
+          "name": "DAMMÄNG Bin with lid",
+          "slug": "dammng-bin-with-lid-60559976",
+          "sku": "IK-60559976",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/dammaeng-bin-with-lid-gray-beige__1216063_pe912322_s5.jpg"
+          ],
+          "description": "DAMMÄNG Bin with lid 7 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60559976",
+          "measure": "7 gallon",
+          "categoryName": "Waste sorting",
+          "translations": {
+            "en": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 7 gallon"
+            },
+            "ru": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 7 gallon"
+            },
+            "zh": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 7 gallon"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Dishwashing accessories",
+      "categorySlug": "dishwashing-accessories-15938",
+      "ikeaCode": "15938",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Dishwashing accessories"
+        },
+        "ru": {
+          "name": "Dishwashing accessories"
+        },
+        "zh": {
+          "name": "Dishwashing accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 48,
+      "sampleProductsToInsert": [
+        {
+          "name": "LILLHAVET Multifunctional dish rack",
+          "slug": "lillhavet-multifunctional-dish-rack-80461276",
+          "sku": "IK-80461276",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lillhavet-multifunctional-dish-rack-anthracite__1057050_pe848721_s5.jpg"
+          ],
+          "description": "LILLHAVET Multifunctional dish rack",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80461276",
+          "measure": "",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "LILLHAVET Multifunctional dish rack",
+              "description": "LILLHAVET Multifunctional dish rack"
+            },
+            "ru": {
+              "name": "LILLHAVET Multifunctional dish rack",
+              "description": "LILLHAVET Multifunctional dish rack"
+            },
+            "zh": {
+              "name": "LILLHAVET Multifunctional dish rack",
+              "description": "LILLHAVET Multifunctional dish rack"
+            }
+          }
+        },
+        {
+          "name": "RINNIG Sink container",
+          "slug": "rinnig-sink-container-80595445",
+          "sku": "IK-80595445",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-sink-container-black__1407244_pe971451_s5.jpg"
+          ],
+          "description": "RINNIG Sink container",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80595445",
+          "measure": "",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "RINNIG Sink container",
+              "description": "RINNIG Sink container"
+            },
+            "ru": {
+              "name": "RINNIG Sink container",
+              "description": "RINNIG Sink container"
+            },
+            "zh": {
+              "name": "RINNIG Sink container",
+              "description": "RINNIG Sink container"
+            }
+          }
+        },
+        {
+          "name": "ORDNING Dish drainer",
+          "slug": "ordning-dish-drainer-10018194",
+          "sku": "IK-10018194",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ordning-dish-drainer-stainless-steel__0712681_pe728966_s5.jpg"
+          ],
+          "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10018194",
+          "measure": "19 5/8x10 5/8x14 1/8 \"",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "ORDNING Dish drainer",
+              "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \""
+            },
+            "ru": {
+              "name": "ORDNING Dish drainer",
+              "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \""
+            },
+            "zh": {
+              "name": "ORDNING Dish drainer",
+              "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "VÄLVÅRDAD Dish-washing brush refills",
+          "slug": "vlvrdad-dish-washing-brush-refills-10490526",
+          "sku": "IK-10490526",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vaelvardad-dish-washing-brush-refills-agave-leaf-fiber__1015785_pe835929_s5.jpg"
+          ],
+          "description": "VÄLVÅRDAD Dish-washing brush refills",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10490526",
+          "measure": "",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "VÄLVÅRDAD Dish-washing brush refills",
+              "description": "VÄLVÅRDAD Dish-washing brush refills"
+            },
+            "ru": {
+              "name": "VÄLVÅRDAD Dish-washing brush refills",
+              "description": "VÄLVÅRDAD Dish-washing brush refills"
+            },
+            "zh": {
+              "name": "VÄLVÅRDAD Dish-washing brush refills",
+              "description": "VÄLVÅRDAD Dish-washing brush refills"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Laundry room cabinets & shelving",
+      "categorySlug": "laundry-cabinets-shelving-48925",
+      "ikeaCode": "48925",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Laundry room cabinets & shelving"
+        },
+        "ru": {
+          "name": "Laundry room cabinets & shelving"
+        },
+        "zh": {
+          "name": "Laundry room cabinets & shelving"
+        }
+      },
+      "totalIkeaProductsInStock": 14,
+      "sampleProductsToInsert": [
+        {
+          "name": "NYSJÖN Laundry cabinet",
+          "slug": "nysjn-laundry-cabinet-40496471",
+          "sku": "IK-40496471",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/nysjoen-laundry-cabinet-white__0971575_pe811384_s5.jpg"
+          ],
+          "description": "NYSJÖN Laundry cabinet 15 3/4x74 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40496471",
+          "measure": "15 3/4x74 3/4 \"",
+          "categoryName": "Laundry room cabinets & shelving",
+          "translations": {
+            "en": {
+              "name": "NYSJÖN Laundry cabinet",
+              "description": "NYSJÖN Laundry cabinet 15 3/4x74 3/4 \""
+            },
+            "ru": {
+              "name": "NYSJÖN Laundry cabinet",
+              "description": "NYSJÖN Laundry cabinet 15 3/4x74 3/4 \""
+            },
+            "zh": {
+              "name": "NYSJÖN Laundry cabinet",
+              "description": "NYSJÖN Laundry cabinet 15 3/4x74 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "NYSJÖN High cabinet",
+          "slug": "nysjn-high-cabinet-20470815",
+          "sku": "IK-20470815",
+          "price": 119.99,
+          "compareAtPrice": 149.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/nysjoen-high-cabinet-white__0971572_pe811380_s5.jpg"
+          ],
+          "description": "NYSJÖN High cabinet 11 3/4x74 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20470815",
+          "measure": "11 3/4x74 3/4 \"",
+          "categoryName": "Laundry room cabinets & shelving",
+          "translations": {
+            "en": {
+              "name": "NYSJÖN High cabinet",
+              "description": "NYSJÖN High cabinet 11 3/4x74 3/4 \""
+            },
+            "ru": {
+              "name": "NYSJÖN High cabinet",
+              "description": "NYSJÖN High cabinet 11 3/4x74 3/4 \""
+            },
+            "zh": {
+              "name": "NYSJÖN High cabinet",
+              "description": "NYSJÖN High cabinet 11 3/4x74 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "JONAXEL Storage combination",
+          "slug": "jonaxel-storage-combination-79305098",
+          "sku": "IK-79305098",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jonaxel-storage-combination-white__0736848_pe740768_s5.jpg"
+          ],
+          "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79305098",
+          "measure": "19 5/8x20 1/8x27 1/2 \"",
+          "categoryName": "Laundry room cabinets & shelving",
+          "translations": {
+            "en": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            },
+            "ru": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            },
+            "zh": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "JONAXEL Storage combination",
+          "slug": "jonaxel-storage-combination-99297144",
+          "sku": "IK-99297144",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jonaxel-storage-combination-white__0703702_pe732304_s5.jpg"
+          ],
+          "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "99297144",
+          "measure": "19 5/8x20 1/8x27 1/2 \"",
+          "categoryName": "Laundry room cabinets & shelving",
+          "translations": {
+            "en": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            },
+            "ru": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            },
+            "zh": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Laundry accessories",
+      "categorySlug": "laundry-accessories-55004",
+      "ikeaCode": "55004",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Laundry accessories"
+        },
+        "ru": {
+          "name": "Laundry accessories"
+        },
+        "zh": {
+          "name": "Laundry accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 3,
+      "sampleProductsToInsert": [
+        {
+          "name": "SLIBB Clothes pin",
+          "slug": "slibb-clothes-pin-30567732",
+          "sku": "IK-30567732",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/slibb-clothes-pin-green__1232094_pe916408_s5.jpg"
+          ],
+          "description": "SLIBB Clothes pin",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30567732",
+          "measure": "",
+          "categoryName": "Laundry accessories",
+          "translations": {
+            "en": {
+              "name": "SLIBB Clothes pin",
+              "description": "SLIBB Clothes pin"
+            },
+            "ru": {
+              "name": "SLIBB Clothes pin",
+              "description": "SLIBB Clothes pin"
+            },
+            "zh": {
+              "name": "SLIBB Clothes pin",
+              "description": "SLIBB Clothes pin"
+            }
+          }
+        },
+        {
+          "name": "PRESSA Hanging dryer with 16 clothes clips",
+          "slug": "pressa-hanging-dryer-with-16-clothes-clips-90579157",
+          "sku": "IK-90579157",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pressa-hanging-dryer-with-16-clothes-clips-green__1263429_pe927295_s5.jpg"
+          ],
+          "description": "PRESSA Hanging dryer with 16 clothes clips",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90579157",
+          "measure": "",
+          "categoryName": "Laundry accessories",
+          "translations": {
+            "en": {
+              "name": "PRESSA Hanging dryer with 16 clothes clips",
+              "description": "PRESSA Hanging dryer with 16 clothes clips"
+            },
+            "ru": {
+              "name": "PRESSA Hanging dryer with 16 clothes clips",
+              "description": "PRESSA Hanging dryer with 16 clothes clips"
+            },
+            "zh": {
+              "name": "PRESSA Hanging dryer with 16 clothes clips",
+              "description": "PRESSA Hanging dryer with 16 clothes clips"
+            }
+          }
+        },
+        {
+          "name": "SLIBB Washing bag",
+          "slug": "slibb-washing-bag-60567735",
+          "sku": "IK-60567735",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/slibb-washing-bag-white-gray__1232154_pe916438_s5.jpg"
+          ],
+          "description": "SLIBB Washing bag",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60567735",
+          "measure": "",
+          "categoryName": "Laundry accessories",
+          "translations": {
+            "en": {
+              "name": "SLIBB Washing bag",
+              "description": "SLIBB Washing bag"
+            },
+            "ru": {
+              "name": "SLIBB Washing bag",
+              "description": "SLIBB Washing bag"
+            },
+            "zh": {
+              "name": "SLIBB Washing bag",
+              "description": "SLIBB Washing bag"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Cleaning tools & essentials",
+      "categorySlug": "cleaning-accessories-20609",
+      "ikeaCode": "20609",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Cleaning tools & essentials"
+        },
+        "ru": {
+          "name": "Cleaning tools & essentials"
+        },
+        "zh": {
+          "name": "Cleaning tools & essentials"
+        }
+      },
+      "totalIkeaProductsInStock": 24,
+      "sampleProductsToInsert": [
+        {
+          "name": "PEPPRIG Cleaning set",
+          "slug": "pepprig-cleaning-set-80567621",
+          "sku": "IK-80567621",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pepprig-cleaning-set-blue-yellow__1240399_pe919359_s5.jpg"
+          ],
+          "description": "PEPPRIG Cleaning set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80567621",
+          "measure": "",
+          "categoryName": "Cleaning tools & essentials",
+          "translations": {
+            "en": {
+              "name": "PEPPRIG Cleaning set",
+              "description": "PEPPRIG Cleaning set"
+            },
+            "ru": {
+              "name": "PEPPRIG Cleaning set",
+              "description": "PEPPRIG Cleaning set"
+            },
+            "zh": {
+              "name": "PEPPRIG Cleaning set",
+              "description": "PEPPRIG Cleaning set"
+            }
+          }
+        },
+        {
+          "name": "PEPPRIG Dustpan and broom",
+          "slug": "pepprig-dustpan-and-broom-90567630",
+          "sku": "IK-90567630",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pepprig-dustpan-and-broom-gray-green__1240401_pe919360_s5.jpg"
+          ],
+          "description": "PEPPRIG Dustpan and broom",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90567630",
+          "measure": "",
+          "categoryName": "Cleaning tools & essentials",
+          "translations": {
+            "en": {
+              "name": "PEPPRIG Dustpan and broom",
+              "description": "PEPPRIG Dustpan and broom"
+            },
+            "ru": {
+              "name": "PEPPRIG Dustpan and broom",
+              "description": "PEPPRIG Dustpan and broom"
+            },
+            "zh": {
+              "name": "PEPPRIG Dustpan and broom",
+              "description": "PEPPRIG Dustpan and broom"
+            }
+          }
+        },
+        {
+          "name": "PEPPRIG Dust pan and brush",
+          "slug": "pepprig-dust-pan-and-brush-10527087",
+          "sku": "IK-10527087",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pepprig-dust-pan-and-brush-gray__1115989_pe872324_s5.jpg"
+          ],
+          "description": "PEPPRIG Dust pan and brush",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10527087",
+          "measure": "",
+          "categoryName": "Cleaning tools & essentials",
+          "translations": {
+            "en": {
+              "name": "PEPPRIG Dust pan and brush",
+              "description": "PEPPRIG Dust pan and brush"
+            },
+            "ru": {
+              "name": "PEPPRIG Dust pan and brush",
+              "description": "PEPPRIG Dust pan and brush"
+            },
+            "zh": {
+              "name": "PEPPRIG Dust pan and brush",
+              "description": "PEPPRIG Dust pan and brush"
+            }
+          }
+        },
+        {
+          "name": "LILLNAGGEN Shower squeegee",
+          "slug": "lillnaggen-shower-squeegee-40243596",
+          "sku": "IK-40243596",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lillnaggen-shower-squeegee__0711844_pe728517_s5.jpg"
+          ],
+          "description": "LILLNAGGEN Shower squeegee",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40243596",
+          "measure": "",
+          "categoryName": "Cleaning tools & essentials",
+          "translations": {
+            "en": {
+              "name": "LILLNAGGEN Shower squeegee",
+              "description": "LILLNAGGEN Shower squeegee"
+            },
+            "ru": {
+              "name": "LILLNAGGEN Shower squeegee",
+              "description": "LILLNAGGEN Shower squeegee"
+            },
+            "zh": {
+              "name": "LILLNAGGEN Shower squeegee",
+              "description": "LILLNAGGEN Shower squeegee"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Clothes drying racks",
+      "categorySlug": "drying-racks-20602",
+      "ikeaCode": "20602",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Clothes drying racks"
+        },
+        "ru": {
+          "name": "Clothes drying racks"
+        },
+        "zh": {
+          "name": "Clothes drying racks"
+        }
+      },
+      "totalIkeaProductsInStock": 8,
+      "sampleProductsToInsert": [
+        {
+          "name": "MULIG Drying rack, indoor/outdoor",
+          "slug": "mulig-drying-rack-indooroutdoor-50228755",
+          "sku": "IK-50228755",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mulig-drying-rack-indoor-outdoor-white__0710880_pe727820_s5.jpg"
+          ],
+          "description": "MULIG Drying rack, indoor/outdoor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50228755",
+          "measure": "",
+          "categoryName": "Clothes drying racks",
+          "translations": {
+            "en": {
+              "name": "MULIG Drying rack, indoor/outdoor",
+              "description": "MULIG Drying rack, indoor/outdoor"
+            },
+            "ru": {
+              "name": "MULIG Drying rack, indoor/outdoor",
+              "description": "MULIG Drying rack, indoor/outdoor"
+            },
+            "zh": {
+              "name": "MULIG Drying rack, indoor/outdoor",
+              "description": "MULIG Drying rack, indoor/outdoor"
+            }
+          }
+        },
+        {
+          "name": "PRESSA Hanging dryer with 16 clothes clips",
+          "slug": "pressa-hanging-dryer-with-16-clothes-clips-90579157",
+          "sku": "IK-90579157",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pressa-hanging-dryer-with-16-clothes-clips-green__1263429_pe927295_s5.jpg"
+          ],
+          "description": "PRESSA Hanging dryer with 16 clothes clips",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90579157",
+          "measure": "",
+          "categoryName": "Clothes drying racks",
+          "translations": {
+            "en": {
+              "name": "PRESSA Hanging dryer with 16 clothes clips",
+              "description": "PRESSA Hanging dryer with 16 clothes clips"
+            },
+            "ru": {
+              "name": "PRESSA Hanging dryer with 16 clothes clips",
+              "description": "PRESSA Hanging dryer with 16 clothes clips"
+            },
+            "zh": {
+              "name": "PRESSA Hanging dryer with 16 clothes clips",
+              "description": "PRESSA Hanging dryer with 16 clothes clips"
+            }
+          }
+        },
+        {
+          "name": "MULIG Clothes bar",
+          "slug": "mulig-clothes-bar-30179435",
+          "sku": "IK-30179435",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mulig-clothes-bar-white__0710698_pe727732_s5.jpg"
+          ],
+          "description": "MULIG Clothes bar 23 5/8-35 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30179435",
+          "measure": "23 5/8-35 3/8 \"",
+          "categoryName": "Clothes drying racks",
+          "translations": {
+            "en": {
+              "name": "MULIG Clothes bar",
+              "description": "MULIG Clothes bar 23 5/8-35 3/8 \""
+            },
+            "ru": {
+              "name": "MULIG Clothes bar",
+              "description": "MULIG Clothes bar 23 5/8-35 3/8 \""
+            },
+            "zh": {
+              "name": "MULIG Clothes bar",
+              "description": "MULIG Clothes bar 23 5/8-35 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "BOAXEL Laundry combination",
+          "slug": "boaxel-laundry-combination-69385571",
+          "sku": "IK-69385571",
+          "price": 112,
+          "compareAtPrice": 140,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/boaxel-laundry-combination-white__0840934_pe778714_s5.jpg"
+          ],
+          "description": "BOAXEL Laundry combination 32 1/4x15 3/4x79 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69385571",
+          "measure": "32 1/4x15 3/4x79 \"",
+          "categoryName": "Clothes drying racks",
+          "translations": {
+            "en": {
+              "name": "BOAXEL Laundry combination",
+              "description": "BOAXEL Laundry combination 32 1/4x15 3/4x79 \""
+            },
+            "ru": {
+              "name": "BOAXEL Laundry combination",
+              "description": "BOAXEL Laundry combination 32 1/4x15 3/4x79 \""
+            },
+            "zh": {
+              "name": "BOAXEL Laundry combination",
+              "description": "BOAXEL Laundry combination 32 1/4x15 3/4x79 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Ironing boards & covers",
+      "categorySlug": "ironing-boards-20608",
+      "ikeaCode": "20608",
+      "parentDepartment": "Laundry & cleaning",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Ironing boards & covers"
+        },
+        "ru": {
+          "name": "Ironing boards & covers"
+        },
+        "zh": {
+          "name": "Ironing boards & covers"
+        }
+      },
+      "totalIkeaProductsInStock": 4,
+      "sampleProductsToInsert": [
+        {
+          "name": "DÄNKA Ironing board",
+          "slug": "dnka-ironing-board-20471612",
+          "sku": "IK-20471612",
+          "price": 44.99,
+          "compareAtPrice": 56.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/daenka-ironing-board__0710874_pe727814_s5.jpg"
+          ],
+          "description": "DÄNKA Ironing board 47 ¼x14 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20471612",
+          "measure": "47 ¼x14 ½ \"",
+          "categoryName": "Ironing boards & covers",
+          "translations": {
+            "en": {
+              "name": "DÄNKA Ironing board",
+              "description": "DÄNKA Ironing board 47 ¼x14 ½ \""
+            },
+            "ru": {
+              "name": "DÄNKA Ironing board",
+              "description": "DÄNKA Ironing board 47 ¼x14 ½ \""
+            },
+            "zh": {
+              "name": "DÄNKA Ironing board",
+              "description": "DÄNKA Ironing board 47 ¼x14 ½ \""
+            }
+          }
+        },
+        {
+          "name": "RUTER Ironing board",
+          "slug": "ruter-ironing-board-60471610",
+          "sku": "IK-60471610",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ruter-ironing-board-white__0710877_pe727823_s5.jpg"
+          ],
+          "description": "RUTER Ironing board 42 ½x13 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60471610",
+          "measure": "42 ½x13 \"",
+          "categoryName": "Ironing boards & covers",
+          "translations": {
+            "en": {
+              "name": "RUTER Ironing board",
+              "description": "RUTER Ironing board 42 ½x13 \""
+            },
+            "ru": {
+              "name": "RUTER Ironing board",
+              "description": "RUTER Ironing board 42 ½x13 \""
+            },
+            "zh": {
+              "name": "RUTER Ironing board",
+              "description": "RUTER Ironing board 42 ½x13 \""
+            }
+          }
+        },
+        {
+          "name": "LAGT Ironing board cover",
+          "slug": "lagt-ironing-board-cover-30348235",
+          "sku": "IK-30348235",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lagt-ironing-board-cover-gray__0738566_pe741487_s5.jpg"
+          ],
+          "description": "LAGT Ironing board cover",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30348235",
+          "measure": "",
+          "categoryName": "Ironing boards & covers",
+          "translations": {
+            "en": {
+              "name": "LAGT Ironing board cover",
+              "description": "LAGT Ironing board cover"
+            },
+            "ru": {
+              "name": "LAGT Ironing board cover",
+              "description": "LAGT Ironing board cover"
+            },
+            "zh": {
+              "name": "LAGT Ironing board cover",
+              "description": "LAGT Ironing board cover"
+            }
+          }
+        },
+        {
+          "name": "JÄLL Tabletop ironing board",
+          "slug": "jll-tabletop-ironing-board-20242890",
+          "sku": "IK-20242890",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaell-tabletop-ironing-board__0710876_pe727816_s5.jpg"
+          ],
+          "description": "JÄLL Tabletop ironing board 28 ¾x12 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20242890",
+          "measure": "28 ¾x12 ½ \"",
+          "categoryName": "Ironing boards & covers",
+          "translations": {
+            "en": {
+              "name": "JÄLL Tabletop ironing board",
+              "description": "JÄLL Tabletop ironing board 28 ¾x12 ½ \""
+            },
+            "ru": {
+              "name": "JÄLL Tabletop ironing board",
+              "description": "JÄLL Tabletop ironing board 28 ¾x12 ½ \""
+            },
+            "zh": {
+              "name": "JÄLL Tabletop ironing board",
+              "description": "JÄLL Tabletop ironing board 28 ¾x12 ½ \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

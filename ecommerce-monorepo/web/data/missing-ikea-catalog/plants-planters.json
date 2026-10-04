@@ -1,0 +1,578 @@
+{
+  "department": "Plants & planters",
+  "departmentSlug": "plants-planters-pp001",
+  "departmentCode": "pp001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Растения и кашпо",
+    "zh": "植物与花盆"
+  },
+  "missingSubcategoriesCount": 4,
+  "totalMissingProductsCount": 285,
+  "subcategories": [
+    {
+      "categoryName": "Plants and flowers",
+      "categorySlug": "plants-flowers-pp003",
+      "ikeaCode": "pp003",
+      "parentDepartment": "Plants & planters",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Plants and flowers"
+        },
+        "ru": {
+          "name": "Plants and flowers"
+        },
+        "zh": {
+          "name": "Plants and flowers"
+        }
+      },
+      "totalIkeaProductsInStock": 251,
+      "sampleProductsToInsert": [
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-10615258",
+          "sku": "IK-10615258",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-hanging__0748917_pe745318_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 3 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10615258",
+          "measure": "3 ½ \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            }
+          }
+        },
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-30615276",
+          "sku": "IK-30615276",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-weeping-fig__0748885_pe745274_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 8 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30615276",
+          "measure": "8 ¼ \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 8 ¼ \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 8 ¼ \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 8 ¼ \""
+            }
+          }
+        },
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-00615249",
+          "sku": "IK-00615249",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-hanging-eucalyptus__0817871_pe774216_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 3 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00615249",
+          "measure": "3 ½ \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            }
+          }
+        },
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-70610601",
+          "sku": "IK-70610601",
+          "price": 89.99,
+          "compareAtPrice": 112.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-bird-of-paradise__1034065_pe840176_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 9 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70610601",
+          "measure": "9 \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 9 \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 9 \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 9 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Plant stands",
+      "categorySlug": "plant-stands-movers-20494",
+      "ikeaCode": "20494",
+      "parentDepartment": "Plants & planters",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Plant stands"
+        },
+        "ru": {
+          "name": "Plant stands"
+        },
+        "zh": {
+          "name": "Plant stands"
+        }
+      },
+      "totalIkeaProductsInStock": 21,
+      "sampleProductsToInsert": [
+        {
+          "name": "SATSUMAS Plant stand",
+          "slug": "satsumas-plant-stand-90258156",
+          "sku": "IK-90258156",
+          "price": 69.99,
+          "compareAtPrice": 87.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/satsumas-plant-stand-bamboo-white__0635819_pe697396_s5.jpg"
+          ],
+          "description": "SATSUMAS Plant stand 27 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90258156",
+          "measure": "27 ½ \"",
+          "categoryName": "Plant stands",
+          "translations": {
+            "en": {
+              "name": "SATSUMAS Plant stand",
+              "description": "SATSUMAS Plant stand 27 ½ \""
+            },
+            "ru": {
+              "name": "SATSUMAS Plant stand",
+              "description": "SATSUMAS Plant stand 27 ½ \""
+            },
+            "zh": {
+              "name": "SATSUMAS Plant stand",
+              "description": "SATSUMAS Plant stand 27 ½ \""
+            }
+          }
+        },
+        {
+          "name": "OLIVBLAD Plant stand",
+          "slug": "olivblad-plant-stand-10486647",
+          "sku": "IK-10486647",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/olivblad-plant-stand-indoor-outdoor-black__1010784_pe828333_s5.jpg"
+          ],
+          "description": "OLIVBLAD Plant stand 22 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10486647",
+          "measure": "22 \"",
+          "categoryName": "Plant stands",
+          "translations": {
+            "en": {
+              "name": "OLIVBLAD Plant stand",
+              "description": "OLIVBLAD Plant stand 22 \""
+            },
+            "ru": {
+              "name": "OLIVBLAD Plant stand",
+              "description": "OLIVBLAD Plant stand 22 \""
+            },
+            "zh": {
+              "name": "OLIVBLAD Plant stand",
+              "description": "OLIVBLAD Plant stand 22 \""
+            }
+          }
+        },
+        {
+          "name": "OLIVBLAD Plant stand",
+          "slug": "olivblad-plant-stand-50486650",
+          "sku": "IK-50486650",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/olivblad-plant-stand-indoor-outdoor-black__1010787_pe828336_s5.jpg"
+          ],
+          "description": "OLIVBLAD Plant stand 22 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50486650",
+          "measure": "22 ¾ \"",
+          "categoryName": "Plant stands",
+          "translations": {
+            "en": {
+              "name": "OLIVBLAD Plant stand",
+              "description": "OLIVBLAD Plant stand 22 ¾ \""
+            },
+            "ru": {
+              "name": "OLIVBLAD Plant stand",
+              "description": "OLIVBLAD Plant stand 22 ¾ \""
+            },
+            "zh": {
+              "name": "OLIVBLAD Plant stand",
+              "description": "OLIVBLAD Plant stand 22 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "DAKSJUS Plant stand",
+          "slug": "daksjus-plant-stand-70624354",
+          "sku": "IK-70624354",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/daksjus-plant-stand-bamboo__1514149_pe1010861_s5.jpg"
+          ],
+          "description": "DAKSJUS Plant stand 11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70624354",
+          "measure": "11 \"",
+          "categoryName": "Plant stands",
+          "translations": {
+            "en": {
+              "name": "DAKSJUS Plant stand",
+              "description": "DAKSJUS Plant stand 11 \""
+            },
+            "ru": {
+              "name": "DAKSJUS Plant stand",
+              "description": "DAKSJUS Plant stand 11 \""
+            },
+            "zh": {
+              "name": "DAKSJUS Plant stand",
+              "description": "DAKSJUS Plant stand 11 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Plant supplies & accessories",
+      "categorySlug": "plant-supplies-accessories-24887",
+      "ikeaCode": "24887",
+      "parentDepartment": "Plants & planters",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Plant supplies & accessories"
+        },
+        "ru": {
+          "name": "Plant supplies & accessories"
+        },
+        "zh": {
+          "name": "Plant supplies & accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 7,
+      "sampleProductsToInsert": [
+        {
+          "name": "ÅKERBÄR Greenhouse",
+          "slug": "kerbr-greenhouse-30537170",
+          "sku": "IK-30537170",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/akerbaer-greenhouse-indoor-outdoor-white__1122670_pe874640_s5.jpg"
+          ],
+          "description": "ÅKERBÄR Greenhouse 17 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30537170",
+          "measure": "17 ¾ \"",
+          "categoryName": "Plant supplies & accessories",
+          "translations": {
+            "en": {
+              "name": "ÅKERBÄR Greenhouse",
+              "description": "ÅKERBÄR Greenhouse 17 ¾ \""
+            },
+            "ru": {
+              "name": "ÅKERBÄR Greenhouse",
+              "description": "ÅKERBÄR Greenhouse 17 ¾ \""
+            },
+            "zh": {
+              "name": "ÅKERBÄR Greenhouse",
+              "description": "ÅKERBÄR Greenhouse 17 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "BRYTBÖNA Scissors",
+          "slug": "brytbna-scissors-80611935",
+          "sku": "IK-80611935",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brytboena-scissors-stainless-steel__1461298_pe994157_s5.jpg"
+          ],
+          "description": "BRYTBÖNA Scissors 6 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80611935",
+          "measure": "6 \"",
+          "categoryName": "Plant supplies & accessories",
+          "translations": {
+            "en": {
+              "name": "BRYTBÖNA Scissors",
+              "description": "BRYTBÖNA Scissors 6 \""
+            },
+            "ru": {
+              "name": "BRYTBÖNA Scissors",
+              "description": "BRYTBÖNA Scissors 6 \""
+            },
+            "zh": {
+              "name": "BRYTBÖNA Scissors",
+              "description": "BRYTBÖNA Scissors 6 \""
+            }
+          }
+        },
+        {
+          "name": "ASPAREN Greenhouse",
+          "slug": "asparen-greenhouse-60601857",
+          "sku": "IK-60601857",
+          "price": 189.99,
+          "compareAtPrice": 237.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/asparen-greenhouse-transparent-white__1376739_pe960474_s5.jpg"
+          ],
+          "description": "ASPAREN Greenhouse 48 3/8x74 3/4x74 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60601857",
+          "measure": "48 3/8x74 3/4x74 3/4 \"",
+          "categoryName": "Plant supplies & accessories",
+          "translations": {
+            "en": {
+              "name": "ASPAREN Greenhouse",
+              "description": "ASPAREN Greenhouse 48 3/8x74 3/4x74 3/4 \""
+            },
+            "ru": {
+              "name": "ASPAREN Greenhouse",
+              "description": "ASPAREN Greenhouse 48 3/8x74 3/4x74 3/4 \""
+            },
+            "zh": {
+              "name": "ASPAREN Greenhouse",
+              "description": "ASPAREN Greenhouse 48 3/8x74 3/4x74 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "ASPAREN Plant set",
+          "slug": "asparen-plant-set-79577560",
+          "sku": "IK-79577560",
+          "price": 89.99,
+          "compareAtPrice": 112.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/asparen-plant-set-outdoor-gray-transparent-white__1376494_pe960457_s5.jpg"
+          ],
+          "description": "ASPAREN Plant set 35x15x35 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79577560",
+          "measure": "35x15x35 7/8 \"",
+          "categoryName": "Plant supplies & accessories",
+          "translations": {
+            "en": {
+              "name": "ASPAREN Plant set",
+              "description": "ASPAREN Plant set 35x15x35 7/8 \""
+            },
+            "ru": {
+              "name": "ASPAREN Plant set",
+              "description": "ASPAREN Plant set 35x15x35 7/8 \""
+            },
+            "zh": {
+              "name": "ASPAREN Plant set",
+              "description": "ASPAREN Plant set 35x15x35 7/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Spray bottles & misters",
+      "categorySlug": "spray-bottles-misters-700778",
+      "ikeaCode": "700778",
+      "parentDepartment": "Plants & planters",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Spray bottles & misters"
+        },
+        "ru": {
+          "name": "Spray bottles & misters"
+        },
+        "zh": {
+          "name": "Spray bottles & misters"
+        }
+      },
+      "totalIkeaProductsInStock": 6,
+      "sampleProductsToInsert": [
+        {
+          "name": "TOMAT Spray bottle",
+          "slug": "tomat-spray-bottle-40371254",
+          "sku": "IK-40371254",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tomat-spray-bottle-white__0637666_pe698477_s5.jpg"
+          ],
+          "description": "TOMAT Spray bottle 12 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40371254",
+          "measure": "12 oz",
+          "categoryName": "Spray bottles & misters",
+          "translations": {
+            "en": {
+              "name": "TOMAT Spray bottle",
+              "description": "TOMAT Spray bottle 12 oz"
+            },
+            "ru": {
+              "name": "TOMAT Spray bottle",
+              "description": "TOMAT Spray bottle 12 oz"
+            },
+            "zh": {
+              "name": "TOMAT Spray bottle",
+              "description": "TOMAT Spray bottle 12 oz"
+            }
+          }
+        },
+        {
+          "name": "PEPPRIG Spray bottle",
+          "slug": "pepprig-spray-bottle-30499535",
+          "sku": "IK-30499535",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pepprig-spray-bottle__0993583_pe820618_s5.jpg"
+          ],
+          "description": "PEPPRIG Spray bottle 19 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30499535",
+          "measure": "19 oz",
+          "categoryName": "Spray bottles & misters",
+          "translations": {
+            "en": {
+              "name": "PEPPRIG Spray bottle",
+              "description": "PEPPRIG Spray bottle 19 oz"
+            },
+            "ru": {
+              "name": "PEPPRIG Spray bottle",
+              "description": "PEPPRIG Spray bottle 19 oz"
+            },
+            "zh": {
+              "name": "PEPPRIG Spray bottle",
+              "description": "PEPPRIG Spray bottle 19 oz"
+            }
+          }
+        },
+        {
+          "name": "SESAMFRÖN Plant mister",
+          "slug": "sesamfrn-plant-mister-20488189",
+          "sku": "IK-20488189",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sesamfroen-plant-mister-clear-glass__0958896_pe809495_s5.jpg"
+          ],
+          "description": "SESAMFRÖN Plant mister 8 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20488189",
+          "measure": "8 oz",
+          "categoryName": "Spray bottles & misters",
+          "translations": {
+            "en": {
+              "name": "SESAMFRÖN Plant mister",
+              "description": "SESAMFRÖN Plant mister 8 oz"
+            },
+            "ru": {
+              "name": "SESAMFRÖN Plant mister",
+              "description": "SESAMFRÖN Plant mister 8 oz"
+            },
+            "zh": {
+              "name": "SESAMFRÖN Plant mister",
+              "description": "SESAMFRÖN Plant mister 8 oz"
+            }
+          }
+        },
+        {
+          "name": "SVÄMSKOG Self-watering insert",
+          "slug": "svmskog-self-watering-insert-40570871",
+          "sku": "IK-40570871",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svaemskog-self-watering-insert-terracotta-transparent__1354848_pe952876_s5.jpg"
+          ],
+          "description": "SVÄMSKOG Self-watering insert 8 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40570871",
+          "measure": "8 oz",
+          "categoryName": "Spray bottles & misters",
+          "translations": {
+            "en": {
+              "name": "SVÄMSKOG Self-watering insert",
+              "description": "SVÄMSKOG Self-watering insert 8 oz"
+            },
+            "ru": {
+              "name": "SVÄMSKOG Self-watering insert",
+              "description": "SVÄMSKOG Self-watering insert 8 oz"
+            },
+            "zh": {
+              "name": "SVÄMSKOG Self-watering insert",
+              "description": "SVÄMSKOG Self-watering insert 8 oz"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

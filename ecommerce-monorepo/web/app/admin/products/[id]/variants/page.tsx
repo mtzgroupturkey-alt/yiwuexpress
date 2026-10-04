@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Edit, Trash2, Package, DollarSign, Archive, ArrowLeft } from 'lucide-react'
+import { useAdminLocale } from '../../../contexts/AdminLocaleContext'
 
 interface ProductVariant {
   id: string
@@ -28,6 +29,7 @@ interface ProductVariant {
 }
 
 export default function ProductVariantsPage() {
+  const { dict } = useAdminLocale()
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
@@ -233,10 +235,10 @@ export default function ProductVariantsPage() {
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Products
+          {dict.products.title || 'Back to Products'}
         </Button>
         
-        <h1 className="text-3xl font-bold text-gray-900">Product Variants</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{dict.products.variants || 'Product Variants'}</h1>
         {product && (
           <p className="text-gray-600 mt-2">
             Managing variants for: <span className="font-semibold">{product.name}</span>
@@ -253,11 +255,11 @@ export default function ProductVariantsPage() {
       <div className="flex gap-4 mb-6">
         <Button onClick={() => setShowAddForm(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Single Variant
+          {dict.common.add || 'Add Single Variant'}
         </Button>
         <Button onClick={() => setShowBulkForm(true)} variant="outline">
           <Package className="w-4 h-4 mr-2" />
-          Bulk Create Variants
+          {dict.bulk.bulkActions || 'Bulk Create Variants'}
         </Button>
       </div>
 

@@ -1,0 +1,1142 @@
+{
+  "department": "Home decor & accessories",
+  "departmentSlug": "home-decor-de001",
+  "departmentCode": "de001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Декор и аксессуары для дома",
+    "zh": "家居装饰与配件"
+  },
+  "missingSubcategoriesCount": 8,
+  "totalMissingProductsCount": 903,
+  "subcategories": [
+    {
+      "categoryName": "Wall décor",
+      "categorySlug": "wall-decor-10757",
+      "ikeaCode": "10757",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Wall décor"
+        },
+        "ru": {
+          "name": "Wall décor"
+        },
+        "zh": {
+          "name": "Wall décor"
+        }
+      },
+      "totalIkeaProductsInStock": 109,
+      "sampleProductsToInsert": [
+        {
+          "name": "BLODFLÄDER Picture",
+          "slug": "blodflder-picture-80601917",
+          "sku": "IK-80601917",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/blodflaeder-picture-nazare__1392151_pe966013_s5.jpg"
+          ],
+          "description": "BLODFLÄDER Picture 19 ¾x27 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80601917",
+          "measure": "19 ¾x27 ½ \"",
+          "categoryName": "Wall décor",
+          "translations": {
+            "en": {
+              "name": "BLODFLÄDER Picture",
+              "description": "BLODFLÄDER Picture 19 ¾x27 ½ \""
+            },
+            "ru": {
+              "name": "BLODFLÄDER Picture",
+              "description": "BLODFLÄDER Picture 19 ¾x27 ½ \""
+            },
+            "zh": {
+              "name": "BLODFLÄDER Picture",
+              "description": "BLODFLÄDER Picture 19 ¾x27 ½ \""
+            }
+          }
+        },
+        {
+          "name": "BLODFLÄDER Picture",
+          "slug": "blodflder-picture-20601915",
+          "sku": "IK-20601915",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/blodflaeder-picture-the-seine-at-giverny__1392143_pe966004_s5.jpg"
+          ],
+          "description": "BLODFLÄDER Picture 46 ½x30 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20601915",
+          "measure": "46 ½x30 ¾ \"",
+          "categoryName": "Wall décor",
+          "translations": {
+            "en": {
+              "name": "BLODFLÄDER Picture",
+              "description": "BLODFLÄDER Picture 46 ½x30 ¾ \""
+            },
+            "ru": {
+              "name": "BLODFLÄDER Picture",
+              "description": "BLODFLÄDER Picture 46 ½x30 ¾ \""
+            },
+            "zh": {
+              "name": "BLODFLÄDER Picture",
+              "description": "BLODFLÄDER Picture 46 ½x30 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "HÄCKHAGTORN Frame",
+          "slug": "hckhagtorn-frame-90614127",
+          "sku": "IK-90614127",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/haeckhagtorn-frame-pine__1482770_pe1001131_s5.jpg"
+          ],
+          "description": "HÄCKHAGTORN Frame 8x10 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90614127",
+          "measure": "8x10 \"",
+          "categoryName": "Wall décor",
+          "translations": {
+            "en": {
+              "name": "HÄCKHAGTORN Frame",
+              "description": "HÄCKHAGTORN Frame 8x10 \""
+            },
+            "ru": {
+              "name": "HÄCKHAGTORN Frame",
+              "description": "HÄCKHAGTORN Frame 8x10 \""
+            },
+            "zh": {
+              "name": "HÄCKHAGTORN Frame",
+              "description": "HÄCKHAGTORN Frame 8x10 \""
+            }
+          }
+        },
+        {
+          "name": "GILLSTAD Wall decoration, set of 3",
+          "slug": "gillstad-wall-decoration-set-of-3-20518030",
+          "sku": "IK-20518030",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gillstad-wall-decoration-set-of-3-sedge-handmade__1110045_pe870334_s5.jpg"
+          ],
+          "description": "GILLSTAD Wall decoration, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20518030",
+          "measure": "",
+          "categoryName": "Wall décor",
+          "translations": {
+            "en": {
+              "name": "GILLSTAD Wall decoration, set of 3",
+              "description": "GILLSTAD Wall decoration, set of 3"
+            },
+            "ru": {
+              "name": "GILLSTAD Wall decoration, set of 3",
+              "description": "GILLSTAD Wall decoration, set of 3"
+            },
+            "zh": {
+              "name": "GILLSTAD Wall decoration, set of 3",
+              "description": "GILLSTAD Wall decoration, set of 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Plants and flowers",
+      "categorySlug": "plants-flowers-pp003",
+      "ikeaCode": "pp003",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Plants and flowers"
+        },
+        "ru": {
+          "name": "Plants and flowers"
+        },
+        "zh": {
+          "name": "Plants and flowers"
+        }
+      },
+      "totalIkeaProductsInStock": 251,
+      "sampleProductsToInsert": [
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-10615258",
+          "sku": "IK-10615258",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-hanging__0748917_pe745318_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 3 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10615258",
+          "measure": "3 ½ \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            }
+          }
+        },
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-30615276",
+          "sku": "IK-30615276",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-weeping-fig__0748885_pe745274_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 8 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30615276",
+          "measure": "8 ¼ \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 8 ¼ \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 8 ¼ \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 8 ¼ \""
+            }
+          }
+        },
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-00615249",
+          "sku": "IK-00615249",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-hanging-eucalyptus__0817871_pe774216_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 3 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00615249",
+          "measure": "3 ½ \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 3 ½ \""
+            }
+          }
+        },
+        {
+          "name": "FEJKA Artificial potted plant",
+          "slug": "fejka-artificial-potted-plant-70610601",
+          "sku": "IK-70610601",
+          "price": 89.99,
+          "compareAtPrice": 112.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fejka-artificial-potted-plant-indoor-outdoor-bird-of-paradise__1034065_pe840176_s5.jpg"
+          ],
+          "description": "FEJKA Artificial potted plant 9 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70610601",
+          "measure": "9 \"",
+          "categoryName": "Plants and flowers",
+          "translations": {
+            "en": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 9 \""
+            },
+            "ru": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 9 \""
+            },
+            "zh": {
+              "name": "FEJKA Artificial potted plant",
+              "description": "FEJKA Artificial potted plant 9 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Home fragrances & scents",
+      "categorySlug": "home-fragrance-42926",
+      "ikeaCode": "42926",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Home fragrances & scents"
+        },
+        "ru": {
+          "name": "Home fragrances & scents"
+        },
+        "zh": {
+          "name": "Home fragrances & scents"
+        }
+      },
+      "totalIkeaProductsInStock": 93,
+      "sampleProductsToInsert": [
+        {
+          "name": "KRONSÅNGARE Scented candle in glass, 2 wicks",
+          "slug": "kronsngare-scented-candle-in-glass-2-wicks-80609292",
+          "sku": "IK-80609292",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kronsangare-scented-candle-in-glass-2-wicks-peach-dotted-brown__1485660_pe1002096_s5.jpg"
+          ],
+          "description": "KRONSÅNGARE Scented candle in glass, 2 wicks 50 hr",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80609292",
+          "measure": "50 hr",
+          "categoryName": "Home fragrances & scents",
+          "translations": {
+            "en": {
+              "name": "KRONSÅNGARE Scented candle in glass, 2 wicks",
+              "description": "KRONSÅNGARE Scented candle in glass, 2 wicks 50 hr"
+            },
+            "ru": {
+              "name": "KRONSÅNGARE Scented candle in glass, 2 wicks",
+              "description": "KRONSÅNGARE Scented candle in glass, 2 wicks 50 hr"
+            },
+            "zh": {
+              "name": "KRONSÅNGARE Scented candle in glass, 2 wicks",
+              "description": "KRONSÅNGARE Scented candle in glass, 2 wicks 50 hr"
+            }
+          }
+        },
+        {
+          "name": "HÖSTAGILLE Scented candle in glass",
+          "slug": "hstagille-scented-candle-in-glass-40625798",
+          "sku": "IK-40625798",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hoestagille-scented-candle-in-glass-spiced-pumpkin-green__1515312_pe1011361_s5.jpg"
+          ],
+          "description": "HÖSTAGILLE Scented candle in glass 20 hr",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40625798",
+          "measure": "20 hr",
+          "categoryName": "Home fragrances & scents",
+          "translations": {
+            "en": {
+              "name": "HÖSTAGILLE Scented candle in glass",
+              "description": "HÖSTAGILLE Scented candle in glass 20 hr"
+            },
+            "ru": {
+              "name": "HÖSTAGILLE Scented candle in glass",
+              "description": "HÖSTAGILLE Scented candle in glass 20 hr"
+            },
+            "zh": {
+              "name": "HÖSTAGILLE Scented candle in glass",
+              "description": "HÖSTAGILLE Scented candle in glass 20 hr"
+            }
+          }
+        },
+        {
+          "name": "LOTSFÅGEL Scented candle in glass with lid",
+          "slug": "lotsfgel-scented-candle-in-glass-with-lid-10608371",
+          "sku": "IK-10608371",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lotsfagel-scented-candle-in-glass-with-lid-vanilla-pale-beige__1485742_pe1002135_s5.jpg"
+          ],
+          "description": "LOTSFÅGEL Scented candle in glass with lid 40 hr",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10608371",
+          "measure": "40 hr",
+          "categoryName": "Home fragrances & scents",
+          "translations": {
+            "en": {
+              "name": "LOTSFÅGEL Scented candle in glass with lid",
+              "description": "LOTSFÅGEL Scented candle in glass with lid 40 hr"
+            },
+            "ru": {
+              "name": "LOTSFÅGEL Scented candle in glass with lid",
+              "description": "LOTSFÅGEL Scented candle in glass with lid 40 hr"
+            },
+            "zh": {
+              "name": "LOTSFÅGEL Scented candle in glass with lid",
+              "description": "LOTSFÅGEL Scented candle in glass with lid 40 hr"
+            }
+          }
+        },
+        {
+          "name": "KUSTFYR Scented candle in glass, 3 wicks",
+          "slug": "kustfyr-scented-candle-in-glass-3-wicks-20626379",
+          "sku": "IK-20626379",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kustfyr-scented-candle-in-glass-3-wicks-jelly-candy-ghost-black-white__1515480_pe1011463_s5.jpg"
+          ],
+          "description": "KUSTFYR Scented candle in glass, 3 wicks 28 hr",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20626379",
+          "measure": "28 hr",
+          "categoryName": "Home fragrances & scents",
+          "translations": {
+            "en": {
+              "name": "KUSTFYR Scented candle in glass, 3 wicks",
+              "description": "KUSTFYR Scented candle in glass, 3 wicks 28 hr"
+            },
+            "ru": {
+              "name": "KUSTFYR Scented candle in glass, 3 wicks",
+              "description": "KUSTFYR Scented candle in glass, 3 wicks 28 hr"
+            },
+            "zh": {
+              "name": "KUSTFYR Scented candle in glass, 3 wicks",
+              "description": "KUSTFYR Scented candle in glass, 3 wicks 28 hr"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Candle holders & candles",
+      "categorySlug": "candle-holders-candles-10760",
+      "ikeaCode": "10760",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Candle holders & candles"
+        },
+        "ru": {
+          "name": "Candle holders & candles"
+        },
+        "zh": {
+          "name": "Candle holders & candles"
+        }
+      },
+      "totalIkeaProductsInStock": 212,
+      "sampleProductsToInsert": [
+        {
+          "name": "SILVERPÄRON Candlestick for 2 candles",
+          "slug": "silverpron-candlestick-for-2-candles-40574987",
+          "sku": "IK-40574987",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/silverpaeron-candlestick-for-2-candles-silver-color__1290284_pe934618_s5.jpg"
+          ],
+          "description": "SILVERPÄRON Candlestick for 2 candles 7 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40574987",
+          "measure": "7 ¾ \"",
+          "categoryName": "Candle holders & candles",
+          "translations": {
+            "en": {
+              "name": "SILVERPÄRON Candlestick for 2 candles",
+              "description": "SILVERPÄRON Candlestick for 2 candles 7 ¾ \""
+            },
+            "ru": {
+              "name": "SILVERPÄRON Candlestick for 2 candles",
+              "description": "SILVERPÄRON Candlestick for 2 candles 7 ¾ \""
+            },
+            "zh": {
+              "name": "SILVERPÄRON Candlestick for 2 candles",
+              "description": "SILVERPÄRON Candlestick for 2 candles 7 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "FENOMEN Unscented pillar candle, set of 5",
+          "slug": "fenomen-unscented-pillar-candle-set-of-5-80377937",
+          "sku": "IK-80377937",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fenomen-unscented-pillar-candle-set-of-5-natural__0577466_pe668898_s5.jpg"
+          ],
+          "description": "FENOMEN Unscented pillar candle, set of 5",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80377937",
+          "measure": "",
+          "categoryName": "Candle holders & candles",
+          "translations": {
+            "en": {
+              "name": "FENOMEN Unscented pillar candle, set of 5",
+              "description": "FENOMEN Unscented pillar candle, set of 5"
+            },
+            "ru": {
+              "name": "FENOMEN Unscented pillar candle, set of 5",
+              "description": "FENOMEN Unscented pillar candle, set of 5"
+            },
+            "zh": {
+              "name": "FENOMEN Unscented pillar candle, set of 5",
+              "description": "FENOMEN Unscented pillar candle, set of 5"
+            }
+          }
+        },
+        {
+          "name": "JUBLA Unscented household candle",
+          "slug": "jubla-unscented-household-candle-60191916",
+          "sku": "IK-60191916",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jubla-unscented-household-candle-white__0638475_pe698968_s5.jpg"
+          ],
+          "description": "JUBLA Unscented household candle 7 ½ \" 6 hr",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60191916",
+          "measure": "7 ½ \" 6 hr",
+          "categoryName": "Candle holders & candles",
+          "translations": {
+            "en": {
+              "name": "JUBLA Unscented household candle",
+              "description": "JUBLA Unscented household candle 7 ½ \" 6 hr"
+            },
+            "ru": {
+              "name": "JUBLA Unscented household candle",
+              "description": "JUBLA Unscented household candle 7 ½ \" 6 hr"
+            },
+            "zh": {
+              "name": "JUBLA Unscented household candle",
+              "description": "JUBLA Unscented household candle 7 ½ \" 6 hr"
+            }
+          }
+        },
+        {
+          "name": "FULLTALIG Candlestick, set of 3",
+          "slug": "fulltalig-candlestick-set-of-3-40342134",
+          "sku": "IK-40342134",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fulltalig-candlestick-set-of-3-black__0523288_pe643714_s5.jpg"
+          ],
+          "description": "FULLTALIG Candlestick, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40342134",
+          "measure": "",
+          "categoryName": "Candle holders & candles",
+          "translations": {
+            "en": {
+              "name": "FULLTALIG Candlestick, set of 3",
+              "description": "FULLTALIG Candlestick, set of 3"
+            },
+            "ru": {
+              "name": "FULLTALIG Candlestick, set of 3",
+              "description": "FULLTALIG Candlestick, set of 3"
+            },
+            "zh": {
+              "name": "FULLTALIG Candlestick, set of 3",
+              "description": "FULLTALIG Candlestick, set of 3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Vases & decorating bowls",
+      "categorySlug": "vases-bowls-10769",
+      "ikeaCode": "10769",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Vases & decorating bowls"
+        },
+        "ru": {
+          "name": "Vases & decorating bowls"
+        },
+        "zh": {
+          "name": "Vases & decorating bowls"
+        }
+      },
+      "totalIkeaProductsInStock": 82,
+      "sampleProductsToInsert": [
+        {
+          "name": "PÄRLHÄGG Vase",
+          "slug": "prlhgg-vase-30637725",
+          "sku": "IK-30637725",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/paerlhaegg-vase-light-pink__1514346_pe1010998_s5.jpg"
+          ],
+          "description": "PÄRLHÄGG Vase 5 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30637725",
+          "measure": "5 ½ \"",
+          "categoryName": "Vases & decorating bowls",
+          "translations": {
+            "en": {
+              "name": "PÄRLHÄGG Vase",
+              "description": "PÄRLHÄGG Vase 5 ½ \""
+            },
+            "ru": {
+              "name": "PÄRLHÄGG Vase",
+              "description": "PÄRLHÄGG Vase 5 ½ \""
+            },
+            "zh": {
+              "name": "PÄRLHÄGG Vase",
+              "description": "PÄRLHÄGG Vase 5 ½ \""
+            }
+          }
+        },
+        {
+          "name": "STOCKHOLM 2025 Bowl",
+          "slug": "stockholm-2025-bowl-10590465",
+          "sku": "IK-10590465",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stockholm-2025-bowl-dark-blue-turquoise__1359446_pe954181_s5.jpg"
+          ],
+          "description": "STOCKHOLM 2025 Bowl 13 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10590465",
+          "measure": "13 ½ \"",
+          "categoryName": "Vases & decorating bowls",
+          "translations": {
+            "en": {
+              "name": "STOCKHOLM 2025 Bowl",
+              "description": "STOCKHOLM 2025 Bowl 13 ½ \""
+            },
+            "ru": {
+              "name": "STOCKHOLM 2025 Bowl",
+              "description": "STOCKHOLM 2025 Bowl 13 ½ \""
+            },
+            "zh": {
+              "name": "STOCKHOLM 2025 Bowl",
+              "description": "STOCKHOLM 2025 Bowl 13 ½ \""
+            }
+          }
+        },
+        {
+          "name": "STILREN Vase",
+          "slug": "stilren-vase-10592365",
+          "sku": "IK-10592365",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stilren-vase-white__1292624_pe935067_s5.jpg"
+          ],
+          "description": "STILREN Vase 4 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10592365",
+          "measure": "4 ¾ \"",
+          "categoryName": "Vases & decorating bowls",
+          "translations": {
+            "en": {
+              "name": "STILREN Vase",
+              "description": "STILREN Vase 4 ¾ \""
+            },
+            "ru": {
+              "name": "STILREN Vase",
+              "description": "STILREN Vase 4 ¾ \""
+            },
+            "zh": {
+              "name": "STILREN Vase",
+              "description": "STILREN Vase 4 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "BLODBJÖRK Vase",
+          "slug": "blodbjrk-vase-90607297",
+          "sku": "IK-90607297",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/blodbjoerk-vase-beige__1394059_pe966384_s5.jpg"
+          ],
+          "description": "BLODBJÖRK Vase 6 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90607297",
+          "measure": "6 ¼ \"",
+          "categoryName": "Vases & decorating bowls",
+          "translations": {
+            "en": {
+              "name": "BLODBJÖRK Vase",
+              "description": "BLODBJÖRK Vase 6 ¼ \""
+            },
+            "ru": {
+              "name": "BLODBJÖRK Vase",
+              "description": "BLODBJÖRK Vase 6 ¼ \""
+            },
+            "zh": {
+              "name": "BLODBJÖRK Vase",
+              "description": "BLODBJÖRK Vase 6 ¼ \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Bulletin boards, peg boards, pin boards & more",
+      "categorySlug": "noticeboards-10574",
+      "ikeaCode": "10574",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Bulletin boards, peg boards, pin boards & more"
+        },
+        "ru": {
+          "name": "Bulletin boards, peg boards, pin boards & more"
+        },
+        "zh": {
+          "name": "Bulletin boards, peg boards, pin boards & more"
+        }
+      },
+      "totalIkeaProductsInStock": 32,
+      "sampleProductsToInsert": [
+        {
+          "name": "FLÖNSA Memo board with pins",
+          "slug": "flnsa-memo-board-with-pins-60532468",
+          "sku": "IK-60532468",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/floensa-memo-board-with-pins-cork__1158093_pe887988_s5.jpg"
+          ],
+          "description": "FLÖNSA Memo board with pins 20 ½x13 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60532468",
+          "measure": "20 ½x13 \"",
+          "categoryName": "Bulletin boards, peg boards, pin boards & more",
+          "translations": {
+            "en": {
+              "name": "FLÖNSA Memo board with pins",
+              "description": "FLÖNSA Memo board with pins 20 ½x13 \""
+            },
+            "ru": {
+              "name": "FLÖNSA Memo board with pins",
+              "description": "FLÖNSA Memo board with pins 20 ½x13 \""
+            },
+            "zh": {
+              "name": "FLÖNSA Memo board with pins",
+              "description": "FLÖNSA Memo board with pins 20 ½x13 \""
+            }
+          }
+        },
+        {
+          "name": "SKÅDIS Pegboard",
+          "slug": "skdis-pegboard-10321618",
+          "sku": "IK-10321618",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skadis-pegboard-white__0710683_pe727709_s5.jpg"
+          ],
+          "description": "SKÅDIS Pegboard 30x22 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10321618",
+          "measure": "30x22 \"",
+          "categoryName": "Bulletin boards, peg boards, pin boards & more",
+          "translations": {
+            "en": {
+              "name": "SKÅDIS Pegboard",
+              "description": "SKÅDIS Pegboard 30x22 \""
+            },
+            "ru": {
+              "name": "SKÅDIS Pegboard",
+              "description": "SKÅDIS Pegboard 30x22 \""
+            },
+            "zh": {
+              "name": "SKÅDIS Pegboard",
+              "description": "SKÅDIS Pegboard 30x22 \""
+            }
+          }
+        },
+        {
+          "name": "SKÅDIS Pegboard combination",
+          "slug": "skdis-pegboard-combination-89406365",
+          "sku": "IK-89406365",
+          "price": 69.48,
+          "compareAtPrice": 86.85,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skadis-pegboard-combination__0964299_pe808971_s5.jpg"
+          ],
+          "description": "SKÅDIS Pegboard combination",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "89406365",
+          "measure": "",
+          "categoryName": "Bulletin boards, peg boards, pin boards & more",
+          "translations": {
+            "en": {
+              "name": "SKÅDIS Pegboard combination",
+              "description": "SKÅDIS Pegboard combination"
+            },
+            "ru": {
+              "name": "SKÅDIS Pegboard combination",
+              "description": "SKÅDIS Pegboard combination"
+            },
+            "zh": {
+              "name": "SKÅDIS Pegboard combination",
+              "description": "SKÅDIS Pegboard combination"
+            }
+          }
+        },
+        {
+          "name": "SVENSÅS Memo board",
+          "slug": "svenss-memo-board-00440363",
+          "sku": "IK-00440363",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svensas-memo-board-white__0748935_pe745332_s5.jpg"
+          ],
+          "description": "SVENSÅS Memo board 15 ¾x23 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00440363",
+          "measure": "15 ¾x23 ½ \"",
+          "categoryName": "Bulletin boards, peg boards, pin boards & more",
+          "translations": {
+            "en": {
+              "name": "SVENSÅS Memo board",
+              "description": "SVENSÅS Memo board 15 ¾x23 ½ \""
+            },
+            "ru": {
+              "name": "SVENSÅS Memo board",
+              "description": "SVENSÅS Memo board 15 ¾x23 ½ \""
+            },
+            "zh": {
+              "name": "SVENSÅS Memo board",
+              "description": "SVENSÅS Memo board 15 ¾x23 ½ \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Holiday decor",
+      "categorySlug": "winter-decoration-49149",
+      "ikeaCode": "49149",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Holiday decor"
+        },
+        "ru": {
+          "name": "Holiday decor"
+        },
+        "zh": {
+          "name": "Holiday decor"
+        }
+      },
+      "totalIkeaProductsInStock": 89,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Wall decoration",
+          "slug": "vinterfint-wall-decoration-80633386",
+          "sku": "IK-80633386",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-wall-decoration-pine__1327496_pe944482_s5.jpg"
+          ],
+          "description": "VINTERFINT Wall decoration",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80633386",
+          "measure": "",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Wall decoration",
+              "description": "VINTERFINT Wall decoration"
+            },
+            "ru": {
+              "name": "VINTERFINT Wall decoration",
+              "description": "VINTERFINT Wall decoration"
+            },
+            "zh": {
+              "name": "VINTERFINT Wall decoration",
+              "description": "VINTERFINT Wall decoration"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Decoration, set of 3",
+          "slug": "vinterfint-decoration-set-of-3-80640363",
+          "sku": "IK-80640363",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-decoration-set-of-3-christmas-tree-green__1511758_pe1010170_s5.jpg"
+          ],
+          "description": "VINTERFINT Decoration, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80640363",
+          "measure": "",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Decoration, set of 3",
+              "description": "VINTERFINT Decoration, set of 3"
+            },
+            "ru": {
+              "name": "VINTERFINT Decoration, set of 3",
+              "description": "VINTERFINT Decoration, set of 3"
+            },
+            "zh": {
+              "name": "VINTERFINT Decoration, set of 3",
+              "description": "VINTERFINT Decoration, set of 3"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Tree ornament",
+          "slug": "vinterfint-tree-ornament-80637092",
+          "sku": "IK-80637092",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tree-ornament-bauble-glass-mixed-colors__1540130_pe1017735_s5.jpg"
+          ],
+          "description": "VINTERFINT Tree ornament 3 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80637092",
+          "measure": "3 1/8 \"",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tree ornament",
+              "description": "VINTERFINT Tree ornament 3 1/8 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Tree ornament",
+              "description": "VINTERFINT Tree ornament 3 1/8 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Tree ornament",
+              "description": "VINTERFINT Tree ornament 3 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Tealight holder",
+          "slug": "vinterfint-tealight-holder-90634253",
+          "sku": "IK-90634253",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tealight-holder-green__1538653_pe1017417_s5.jpg"
+          ],
+          "description": "VINTERFINT Tealight holder 2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90634253",
+          "measure": "2 \"",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tealight holder",
+              "description": "VINTERFINT Tealight holder 2 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Tealight holder",
+              "description": "VINTERFINT Tealight holder 2 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Tealight holder",
+              "description": "VINTERFINT Tealight holder 2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Wrapping paper and bags",
+      "categorySlug": "paper-shop-25227",
+      "ikeaCode": "25227",
+      "parentDepartment": "Home decor & accessories",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Wrapping paper and bags"
+        },
+        "ru": {
+          "name": "Wrapping paper and bags"
+        },
+        "zh": {
+          "name": "Wrapping paper and bags"
+        }
+      },
+      "totalIkeaProductsInStock": 35,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Gift wrap, roll",
+          "slug": "vinterfint-gift-wrap-roll-60636098",
+          "sku": "IK-60636098",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-gift-wrap-roll-mixed-patterns-multicolor__1538956_pe1017525_s5.jpg"
+          ],
+          "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60636098",
+          "measure": "9.84x2.30 '/22.60 sq feet",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet"
+            },
+            "ru": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet"
+            },
+            "zh": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Gift wrap, roll",
+          "slug": "vinterfint-gift-wrap-roll-70636093",
+          "sku": "IK-70636093",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-gift-wrap-roll-mixed-patterns-multicolor__1538958_pe1017527_s5.jpg"
+          ],
+          "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70636093",
+          "measure": "10x2.30 '/22.60 sq feet",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet"
+            },
+            "ru": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet"
+            },
+            "zh": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Storage bag",
+          "slug": "vinterfint-storage-bag-20636496",
+          "sku": "IK-20636496",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-storage-bag-christmas-pattern-multicolor__1541272_pe1018003_s5.jpg"
+          ],
+          "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20636496",
+          "measure": "13 ¾x28 ¾x11 ¾ \"/20 gallon",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Storage bag",
+              "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon"
+            },
+            "ru": {
+              "name": "VINTERFINT Storage bag",
+              "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon"
+            },
+            "zh": {
+              "name": "VINTERFINT Storage bag",
+              "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Ribbon, set of 3",
+          "slug": "vinterfint-ribbon-set-of-3-00632244",
+          "sku": "IK-00632244",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-ribbon-set-of-3-mixed-colors__1539695_pe1017657_s5.jpg"
+          ],
+          "description": "VINTERFINT Ribbon, set of 3 16 '",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00632244",
+          "measure": "16 '",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Ribbon, set of 3",
+              "description": "VINTERFINT Ribbon, set of 3 16 '"
+            },
+            "ru": {
+              "name": "VINTERFINT Ribbon, set of 3",
+              "description": "VINTERFINT Ribbon, set of 3 16 '"
+            },
+            "zh": {
+              "name": "VINTERFINT Ribbon, set of 3",
+              "description": "VINTERFINT Ribbon, set of 3 16 '"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -5,8 +5,10 @@ import { Download, RefreshCw, FileText, BarChart3, Warehouse, DollarSign, Layers
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export default function ReportsInventoryPage() {
+  const { dict } = useAdminLocale()
   const [data, setData] = useState<any[]>([])
   const [summary, setSummary] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -37,22 +39,22 @@ export default function ReportsInventoryPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">
-            Inventory Valuation & Distribution Report
+            {dict.reports.inventoryTitle}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Real-time stock valuation by warehouse DC, weighted landed cost, and slot locations
+            {dict.reports.inventorySubtitle}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchReport} className="rounded-xl gap-1.5 text-xs">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Refresh
+            {dict.reports.refresh}
           </Button>
           <a href="/api/admin/reports/inventory?format=csv" download="inventory-valuation.csv">
             <Button size="sm" className="rounded-xl gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs">
               <Download size={14} />
-              Export CSV
+              {dict.reports.exportCsv}
             </Button>
           </a>
         </div>
@@ -67,8 +69,8 @@ export default function ReportsInventoryPage() {
                 <DollarSign size={24} />
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-medium">Total Inventory Asset Valuation</p>
-                <p className="text-xl font-black text-gray-900 font-mono">$${Number(summary.totalValuation || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                <p className="text-xs text-gray-500 font-medium">{dict.reports.totalValuation}</p>
+                <p className="text-xl font-black text-gray-900 font-mono">${Number(summary.totalValuation || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
             </CardContent>
           </Card>
@@ -79,8 +81,8 @@ export default function ReportsInventoryPage() {
                 <Layers size={24} />
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-medium">Total Physical Units On Hand</p>
-                <p className="text-xl font-black text-gray-900 font-mono">{summary.totalUnits} units</p>
+                <p className="text-xs text-gray-500 font-medium">{dict.reports.totalPhysicalUnits}</p>
+                <p className="text-xl font-black text-gray-900 font-mono">{summary.totalUnits}</p>
               </div>
             </CardContent>
           </Card>
@@ -91,8 +93,8 @@ export default function ReportsInventoryPage() {
                 <Warehouse size={24} />
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-medium">Active Warehouse SKUs</p>
-                <p className="text-xl font-black text-gray-900 font-mono">{summary.recordCount} records</p>
+                <p className="text-xs text-gray-500 font-medium">{dict.reports.activeSkus}</p>
+                <p className="text-xl font-black text-gray-900 font-mono">{summary.recordCount}</p>
               </div>
             </CardContent>
           </Card>
@@ -101,10 +103,10 @@ export default function ReportsInventoryPage() {
 
       {/* Navigation Sub-Tabs for Reports */}
       <div className="flex gap-2 border-b border-gray-200 pb-2 text-xs font-semibold">
-        <span className="px-3 py-1.5 bg-[#1a3a5c] text-white rounded-lg">Inventory Valuation</span>
-        <Link href="/admin/reports/landed-cost" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">Landed Cost Multipliers</Link>
-        <Link href="/admin/reports/sales" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">Sales & Profit Margins</Link>
-        <Link href="/admin/reports/stock-movements" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">Stock Movement Ledger</Link>
+        <span className="px-3 py-1.5 bg-[#1a3a5c] text-white rounded-lg">{dict.reports.tabInventoryValuation}</span>
+        <Link href="/admin/reports/landed-cost" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">{dict.reports.tabLandedCost}</Link>
+        <Link href="/admin/reports/sales" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">{dict.reports.tabSalesMargins}</Link>
+        <Link href="/admin/reports/stock-movements" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">{dict.reports.tabStockLedger}</Link>
       </div>
 
       {/* Report Table */}
@@ -113,15 +115,15 @@ export default function ReportsInventoryPage() {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/70 text-gray-500 font-bold uppercase tracking-wider">
-                <th className="py-3 px-4">Warehouse</th>
-                <th className="py-3 px-4">Product Name</th>
-                <th className="py-3 px-4">SKU</th>
-                <th className="py-3 px-4">Location</th>
-                <th className="py-3 px-4 text-right">On Hand</th>
-                <th className="py-3 px-4 text-right">Reserved</th>
-                <th className="py-3 px-4 text-right">Available</th>
-                <th className="py-3 px-4 text-right">Avg Landed Cost</th>
-                <th className="py-3 px-4 text-right">Asset Valuation</th>
+                <th className="py-3 px-4">{dict.reports.thWarehouse}</th>
+                <th className="py-3 px-4">{dict.reports.thProductName}</th>
+                <th className="py-3 px-4">{dict.reports.thSku}</th>
+                <th className="py-3 px-4">{dict.reports.thLocation}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thOnHand}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thReserved}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thAvailable}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thAvgLandedCost}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thAssetValuation}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -134,8 +136,8 @@ export default function ReportsInventoryPage() {
                   <td className="py-3 px-4 text-right font-bold">{r.quantity}</td>
                   <td className="py-3 px-4 text-right text-amber-600 font-medium">{r.reservedQty}</td>
                   <td className="py-3 px-4 text-right text-emerald-600 font-bold">{r.availableQty}</td>
-                  <td className="py-3 px-4 text-right font-mono">$${Number(r.avgCost).toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right font-mono font-bold text-gray-900">$${Number(r.totalValue).toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right font-mono">${Number(r.avgCost).toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right font-mono font-bold text-gray-900">${Number(r.totalValue).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

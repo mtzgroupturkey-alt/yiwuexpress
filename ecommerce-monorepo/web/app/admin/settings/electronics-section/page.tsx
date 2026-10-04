@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 interface CategoryItem {
   id: string;
@@ -50,6 +51,7 @@ interface SectionTextValues {
 }
 
 export default function ElectronicsSectionSettingsPage() {
+  const { dict } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -408,11 +410,11 @@ export default function ElectronicsSectionSettingsPage() {
               <Tv className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Electronics & Appliances Block Settings
+              {dict.electronicsSection.pageTitle}
             </h1>
           </div>
           <p className="text-sm text-slate-500">
-            Configure the titles, category filters, and featured products displayed in the Electronics & Appliances homepage section.
+            {dict.electronicsSection.pageSubtitle}
           </p>
         </div>
 
@@ -423,7 +425,7 @@ export default function ElectronicsSectionSettingsPage() {
             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors shadow-xs"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>View Storefront</span>
+            <span>{dict.electronicsSection.viewStorefront}</span>
           </Link>
           <Button
             onClick={handleSave}
@@ -431,7 +433,7 @@ export default function ElectronicsSectionSettingsPage() {
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5 shadow-xs"
           >
             {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>{saving ? 'Saving...' : 'Save Settings'}</span>
+            <span>{saving ? dict.electronicsSection.saving : dict.electronicsSection.saveSettings}</span>
           </Button>
         </div>
       </div>
@@ -443,14 +445,14 @@ export default function ElectronicsSectionSettingsPage() {
             <div className="space-y-0.5">
               <div className="flex items-center gap-2">
                 <span className="text-base font-bold text-slate-900">
-                  Enable Electronics & Appliances Section on Homepage
+                  {dict.electronicsSection.enableSection}
                 </span>
                 <Badge variant={enabled ? 'default' : 'secondary'} className={enabled ? 'bg-blue-600' : ''}>
-                  {enabled ? 'Active on Homepage' : 'Hidden'}
+                  {enabled ? 'Active' : 'Hidden'}
                 </Badge>
               </div>
               <p className="text-xs text-slate-500">
-                When enabled, this curated product block appears on your homepage with subcategory tabs.
+                {dict.electronicsSection.enableSectionDesc}
               </p>
             </div>
             <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -465,11 +467,11 @@ export default function ElectronicsSectionSettingsPage() {
             <div className="flex items-center gap-2">
               <Eye className="w-4 h-4 text-blue-600" />
               <CardTitle className="text-sm font-bold text-slate-800">
-                Live Homepage Block Preview
+                {dict.electronicsSection.livePreviewTitle}
               </CardTitle>
             </div>
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Storefront Preview
+              {dict.electronicsSection.storefrontPreviewBadge}
             </span>
           </div>
         </CardHeader>
@@ -552,7 +554,7 @@ export default function ElectronicsSectionSettingsPage() {
                   ) : (
                     <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                   )}
-                  <span>{isTranslating ? 'Translating...' : 'Translate to All'}</span>
+                  <span>{isTranslating ? dict.electronicsSection.translating : dict.electronicsSection.translateToAll}</span>
                 </Button>
               </div>
             </CardHeader>
@@ -598,13 +600,8 @@ export default function ElectronicsSectionSettingsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-bold text-slate-700">
-                      Section Title ({activeLocaleTab.toUpperCase()})
+                      {dict.electronicsSection.sectionTitleLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
-                    <span className="text-[10px] text-slate-400">
-                      {activeLocaleTab === 'en'
-                        ? 'Main headline'
-                        : `Headline in ${activeLocaleTab === 'ru' ? 'Russian' : 'Chinese'}`}
-                    </span>
                   </div>
                   <Input
                     value={textTranslations[activeLocaleTab].title}
@@ -629,9 +626,8 @@ export default function ElectronicsSectionSettingsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-bold text-slate-700">
-                      Subtitle / Tagline ({activeLocaleTab.toUpperCase()})
+                      {dict.electronicsSection.subtitleLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
-                    <span className="text-[10px] text-slate-400">Supporting promotional copy</span>
                   </div>
                   <Textarea
                     value={textTranslations[activeLocaleTab].subtitle}
@@ -657,7 +653,7 @@ export default function ElectronicsSectionSettingsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                      Badge Text ({activeLocaleTab.toUpperCase()})
+                      {dict.electronicsSection.badgeTextLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
                     <Input
                       value={textTranslations[activeLocaleTab].badgeText}
@@ -681,7 +677,7 @@ export default function ElectronicsSectionSettingsPage() {
 
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                      View All Button Label ({activeLocaleTab.toUpperCase()})
+                      {dict.electronicsSection.viewAllLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
                     <Input
                       value={textTranslations[activeLocaleTab].viewAllLabel}
@@ -707,7 +703,7 @@ export default function ElectronicsSectionSettingsPage() {
 
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Maximum Products to Display
+                  {dict.electronicsSection.maxProductsLabel}
                 </label>
                 <select
                   value={maxProducts}
@@ -715,10 +711,10 @@ export default function ElectronicsSectionSettingsPage() {
                   aria-label="Maximum Products to Display"
                   className="w-full h-10 px-3 py-2 text-xs font-medium bg-white border border-slate-300 rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={4}>4 Products (Single Row)</option>
-                  <option value={8}>8 Products (2 Rows - Recommended)</option>
-                  <option value={12}>12 Products (3 Rows)</option>
-                  <option value={16}>16 Products (4 Rows)</option>
+                  <option value={4}>4</option>
+                  <option value={8}>8 ({dict.kitchenSection.recommended})</option>
+                  <option value={12}>12</option>
+                  <option value={16}>16</option>
                 </select>
               </div>
             </CardContent>
@@ -729,10 +725,10 @@ export default function ElectronicsSectionSettingsPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="text-base font-bold text-slate-900">
-                  Pinned / Highlighted Products ({pinnedProducts.length})
+                  {dict.electronicsSection.pinnedProductsTitle.replace('{count}', String(pinnedProducts.length))}
                 </CardTitle>
                 <CardDescription className="text-xs text-slate-500">
-                  Pick specific products that will always appear first in this section.
+                  {dict.electronicsSection.pinnedProductsDesc}
                 </CardDescription>
               </div>
               <Button
@@ -743,16 +739,16 @@ export default function ElectronicsSectionSettingsPage() {
                 className="text-xs font-semibold text-blue-700 border-blue-200 hover:bg-blue-50 gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Pin a Product</span>
+                <span>{dict.electronicsSection.pinProductBtn}</span>
               </Button>
             </CardHeader>
             <CardContent>
               {pinnedProducts.length === 0 ? (
                 <div className="text-center py-8 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                   <Cpu className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                  <p className="text-xs font-medium text-slate-600">No pinned products yet</p>
+                  <p className="text-xs font-medium text-slate-600">{dict.electronicsSection.noPinnedProducts}</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    The section automatically populates products from your selected categories. You can pin specific bestsellers above.
+                    {dict.electronicsSection.noPinnedProductsDesc}
                   </p>
                 </div>
               ) : (
@@ -807,10 +803,10 @@ export default function ElectronicsSectionSettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-bold text-slate-900">
-                    Categories Filter
+                    {dict.electronicsSection.categoriesFilterTitle}
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500">
-                    Choose which categories supply products for this block.
+                    {dict.electronicsSection.categoriesFilterDesc}
                   </CardDescription>
                 </div>
                 <Button
@@ -821,21 +817,21 @@ export default function ElectronicsSectionSettingsPage() {
                   className="text-xs font-semibold text-blue-700 border-blue-200 hover:bg-blue-50 gap-1.5"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Auto-Select Electronics</span>
+                  <span>{dict.electronicsSection.autoSelectElectronics}</span>
                 </Button>
               </div>
 
               {selectedCategoryIds.length > 0 && (
                 <div className="flex items-center justify-between pt-2">
                   <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 font-semibold">
-                    Filtering by {selectedCategoryIds.length} selected category/categories
+                    {dict.electronicsSection.filteringByCount.replace('{count}', String(selectedCategoryIds.length))}
                   </Badge>
                   <button
                     type="button"
                     onClick={handleClearCategories}
                     className="text-xs text-rose-600 hover:underline font-medium cursor-pointer"
                   >
-                    Clear Selection (Use Keyword Auto-Match)
+                    {dict.electronicsSection.clearSelection}
                   </button>
                 </div>
               )}
@@ -894,7 +890,7 @@ export default function ElectronicsSectionSettingsPage() {
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
               <div className="flex items-center gap-2">
                 <Search className="w-4 h-4 text-blue-600" />
-                <h3 className="font-bold text-slate-900 text-sm">Search Catalog to Pin Product</h3>
+                <h3 className="font-bold text-slate-900 text-sm">{dict.electronicsSection.searchProductModalTitle}</h3>
               </div>
               <Button
                 variant="ghost"
@@ -917,7 +913,7 @@ export default function ElectronicsSectionSettingsPage() {
                   autoFocus
                   value={productSearchQuery}
                   onChange={(e) => handleSearchProducts(e.target.value)}
-                  placeholder="Type product name or SKU (e.g. Smart Bulb, Floor Lamp)..."
+                  placeholder={dict.electronicsSection.searchPlaceholder}
                   className="pl-9"
                 />
               </div>
@@ -926,12 +922,12 @@ export default function ElectronicsSectionSettingsPage() {
                 {searchingProducts ? (
                   <div className="py-8 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-                    Searching products...
+                    {dict.common.loading}
                   </div>
                 ) : searchResults.length === 0 ? (
                   <div className="py-8 text-center text-slate-400 text-xs">
                     {productSearchQuery.length < 2
-                      ? 'Type at least 2 characters to search catalog'
+                      ? dict.electronicsSection.typeQueryHint
                       : 'No products found'}
                   </div>
                 ) : (
@@ -971,7 +967,7 @@ export default function ElectronicsSectionSettingsPage() {
                               : 'bg-blue-600 hover:bg-blue-700 text-white'
                           }`}
                         >
-                          {isAlreadyPinned ? 'Pinned' : 'Pin'}
+                          {isAlreadyPinned ? 'Pinned' : dict.electronicsSection.pinAction}
                         </Button>
                       </div>
                     );

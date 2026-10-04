@@ -1,0 +1,1001 @@
+{
+  "department": "Outdoor",
+  "departmentSlug": "outdoor-od001",
+  "departmentCode": "od001",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Мебель и товары для улицы",
+    "zh": "户外与庭院"
+  },
+  "missingSubcategoriesCount": 7,
+  "totalMissingProductsCount": 412,
+  "subcategories": [
+    {
+      "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+      "categorySlug": "outdoor-organizing-21958",
+      "ikeaCode": "21958",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor storage: shelves, cabinets & boxes"
+        },
+        "ru": {
+          "name": "Outdoor storage: shelves, cabinets & boxes"
+        },
+        "zh": {
+          "name": "Outdoor storage: shelves, cabinets & boxes"
+        }
+      },
+      "totalIkeaProductsInStock": 22,
+      "sampleProductsToInsert": [
+        {
+          "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+          "slug": "kolbjrn-cabinet-indooroutdoor-30409295",
+          "sku": "IK-30409295",
+          "price": 169.99,
+          "compareAtPrice": 212.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kolbjoern-cabinet-indoor-outdoor-beige__0664606_pe718444_s5.jpg"
+          ],
+          "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30409295",
+          "measure": "31 1/2x31 7/8 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+              "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \""
+            },
+            "ru": {
+              "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+              "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \""
+            },
+            "zh": {
+              "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+              "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-30428326",
+          "sku": "IK-30428326",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0639121_pe704408_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30428326",
+          "measure": "23 5/8x10 5/8x29 1/8 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "KOLBJÖRN Cabinet",
+          "slug": "kolbjrn-cabinet-60601862",
+          "sku": "IK-60601862",
+          "price": 349.99,
+          "compareAtPrice": 437.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kolbjoern-cabinet-beige-outdoor-indoor__0733033_pe718455_s5.jpg"
+          ],
+          "description": "KOLBJÖRN Cabinet 35x63 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60601862",
+          "measure": "35x63 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "KOLBJÖRN Cabinet",
+              "description": "KOLBJÖRN Cabinet 35x63 \""
+            },
+            "ru": {
+              "name": "KOLBJÖRN Cabinet",
+              "description": "KOLBJÖRN Cabinet 35x63 \""
+            },
+            "zh": {
+              "name": "KOLBJÖRN Cabinet",
+              "description": "KOLBJÖRN Cabinet 35x63 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-00278578",
+          "sku": "IK-00278578",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0626021_pe692562_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00278578",
+          "measure": "23 5/8x10 5/8x55 1/8 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor tiles & flooring",
+      "categorySlug": "outdoor-flooring-21957",
+      "ikeaCode": "21957",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor tiles & flooring"
+        },
+        "ru": {
+          "name": "Outdoor tiles & flooring"
+        },
+        "zh": {
+          "name": "Outdoor tiles & flooring"
+        }
+      },
+      "totalIkeaProductsInStock": 6,
+      "sampleProductsToInsert": [
+        {
+          "name": "RUNNEN Decking, outdoor",
+          "slug": "runnen-decking-outdoor-60518486",
+          "sku": "IK-60518486",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/runnen-decking-outdoor-acacia__1151157_pe884806_s5.jpg"
+          ],
+          "description": "RUNNEN Decking, outdoor 9 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60518486",
+          "measure": "9 sq feet",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "RUNNEN Decking, outdoor",
+              "description": "RUNNEN Decking, outdoor 9 sq feet"
+            },
+            "ru": {
+              "name": "RUNNEN Decking, outdoor",
+              "description": "RUNNEN Decking, outdoor 9 sq feet"
+            },
+            "zh": {
+              "name": "RUNNEN Decking, outdoor",
+              "description": "RUNNEN Decking, outdoor 9 sq feet"
+            }
+          }
+        },
+        {
+          "name": "ALTAPPEN Decking, outdoor",
+          "slug": "altappen-decking-outdoor-90420898",
+          "sku": "IK-90420898",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/altappen-decking-outdoor-light-gray__0723465_pe733986_s5.jpg"
+          ],
+          "description": "ALTAPPEN Decking, outdoor 9 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90420898",
+          "measure": "9 sq feet",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "ALTAPPEN Decking, outdoor",
+              "description": "ALTAPPEN Decking, outdoor 9 sq feet"
+            },
+            "ru": {
+              "name": "ALTAPPEN Decking, outdoor",
+              "description": "ALTAPPEN Decking, outdoor 9 sq feet"
+            },
+            "zh": {
+              "name": "ALTAPPEN Decking, outdoor",
+              "description": "ALTAPPEN Decking, outdoor 9 sq feet"
+            }
+          }
+        },
+        {
+          "name": "RUNNEN Edging strip, outdoor decking",
+          "slug": "runnen-edging-strip-outdoor-decking-50494141",
+          "sku": "IK-50494141",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/runnen-edging-strip-outdoor-decking-dark-gray__0973716_pe812118_s5.jpg"
+          ],
+          "description": "RUNNEN Edging strip, outdoor decking 4 pack",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50494141",
+          "measure": "4 pack",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "RUNNEN Edging strip, outdoor decking",
+              "description": "RUNNEN Edging strip, outdoor decking 4 pack"
+            },
+            "ru": {
+              "name": "RUNNEN Edging strip, outdoor decking",
+              "description": "RUNNEN Edging strip, outdoor decking 4 pack"
+            },
+            "zh": {
+              "name": "RUNNEN Edging strip, outdoor decking",
+              "description": "RUNNEN Edging strip, outdoor decking 4 pack"
+            }
+          }
+        },
+        {
+          "name": "RUNNEN Corner edge, outdoor decking",
+          "slug": "runnen-corner-edge-outdoor-decking-10494138",
+          "sku": "IK-10494138",
+          "price": 3,
+          "compareAtPrice": 3.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/runnen-corner-edge-outdoor-decking-dark-gray__0976284_pe814672_s5.jpg"
+          ],
+          "description": "RUNNEN Corner edge, outdoor decking",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10494138",
+          "measure": "",
+          "categoryName": "Outdoor tiles & flooring",
+          "translations": {
+            "en": {
+              "name": "RUNNEN Corner edge, outdoor decking",
+              "description": "RUNNEN Corner edge, outdoor decking"
+            },
+            "ru": {
+              "name": "RUNNEN Corner edge, outdoor decking",
+              "description": "RUNNEN Corner edge, outdoor decking"
+            },
+            "zh": {
+              "name": "RUNNEN Corner edge, outdoor decking",
+              "description": "RUNNEN Corner edge, outdoor decking"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor kitchen & accessories",
+      "categorySlug": "outdoor-kitchens-700349",
+      "ikeaCode": "700349",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor kitchen & accessories"
+        },
+        "ru": {
+          "name": "Outdoor kitchen & accessories"
+        },
+        "zh": {
+          "name": "Outdoor kitchen & accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 66,
+      "sampleProductsToInsert": [
+        {
+          "name": "BÅTSKÄR Closed kitchen unit",
+          "slug": "btskr-closed-kitchen-unit-90623240",
+          "sku": "IK-90623240",
+          "price": 580,
+          "compareAtPrice": 725,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/batskaer-closed-kitchen-unit-outdoor-dark-gray__1240495_pe919403_s5.jpg"
+          ],
+          "description": "BÅTSKÄR Closed kitchen unit 47 1/4x23 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90623240",
+          "measure": "47 1/4x23 5/8 \"",
+          "categoryName": "Outdoor kitchen & accessories",
+          "translations": {
+            "en": {
+              "name": "BÅTSKÄR Closed kitchen unit",
+              "description": "BÅTSKÄR Closed kitchen unit 47 1/4x23 5/8 \""
+            },
+            "ru": {
+              "name": "BÅTSKÄR Closed kitchen unit",
+              "description": "BÅTSKÄR Closed kitchen unit 47 1/4x23 5/8 \""
+            },
+            "zh": {
+              "name": "BÅTSKÄR Closed kitchen unit",
+              "description": "BÅTSKÄR Closed kitchen unit 47 1/4x23 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "GRILLSKÄR Kitchen island shelf unit",
+          "slug": "grillskr-kitchen-island-shelf-unit-29390107",
+          "sku": "IK-29390107",
+          "price": 330,
+          "compareAtPrice": 412.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grillskaer-kitchen-island-shelf-unit-stainless-steel__0920473_pe787059_s5.jpg"
+          ],
+          "description": "GRILLSKÄR Kitchen island shelf unit 33 7/8x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "29390107",
+          "measure": "33 7/8x24 \"",
+          "categoryName": "Outdoor kitchen & accessories",
+          "translations": {
+            "en": {
+              "name": "GRILLSKÄR Kitchen island shelf unit",
+              "description": "GRILLSKÄR Kitchen island shelf unit 33 7/8x24 \""
+            },
+            "ru": {
+              "name": "GRILLSKÄR Kitchen island shelf unit",
+              "description": "GRILLSKÄR Kitchen island shelf unit 33 7/8x24 \""
+            },
+            "zh": {
+              "name": "GRILLSKÄR Kitchen island shelf unit",
+              "description": "GRILLSKÄR Kitchen island shelf unit 33 7/8x24 \""
+            }
+          }
+        },
+        {
+          "name": "BÅTSKÄR Shelf unit for sink",
+          "slug": "btskr-shelf-unit-for-sink-70623255",
+          "sku": "IK-70623255",
+          "price": 580,
+          "compareAtPrice": 725,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/batskaer-shelf-unit-for-sink-outdoor-dark-gray__1240581_pe919405_s5.jpg"
+          ],
+          "description": "BÅTSKÄR Shelf unit for sink 47 1/4x23 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70623255",
+          "measure": "47 1/4x23 5/8 \"",
+          "categoryName": "Outdoor kitchen & accessories",
+          "translations": {
+            "en": {
+              "name": "BÅTSKÄR Shelf unit for sink",
+              "description": "BÅTSKÄR Shelf unit for sink 47 1/4x23 5/8 \""
+            },
+            "ru": {
+              "name": "BÅTSKÄR Shelf unit for sink",
+              "description": "BÅTSKÄR Shelf unit for sink 47 1/4x23 5/8 \""
+            },
+            "zh": {
+              "name": "BÅTSKÄR Shelf unit for sink",
+              "description": "BÅTSKÄR Shelf unit for sink 47 1/4x23 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "BÅTSKÄR Outdoor kitchen w gas grill",
+          "slug": "btskr-outdoor-kitchen-w-gas-grill-19617979",
+          "sku": "IK-19617979",
+          "price": 1779,
+          "compareAtPrice": 2223.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/batskaer-outdoor-kitchen-w-gas-grill-dark-gray__1533645_pe1016008_s5.jpg"
+          ],
+          "description": "BÅTSKÄR Outdoor kitchen w gas grill 94 1/2x23 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19617979",
+          "measure": "94 1/2x23 5/8 \"",
+          "categoryName": "Outdoor kitchen & accessories",
+          "translations": {
+            "en": {
+              "name": "BÅTSKÄR Outdoor kitchen w gas grill",
+              "description": "BÅTSKÄR Outdoor kitchen w gas grill 94 1/2x23 5/8 \""
+            },
+            "ru": {
+              "name": "BÅTSKÄR Outdoor kitchen w gas grill",
+              "description": "BÅTSKÄR Outdoor kitchen w gas grill 94 1/2x23 5/8 \""
+            },
+            "zh": {
+              "name": "BÅTSKÄR Outdoor kitchen w gas grill",
+              "description": "BÅTSKÄR Outdoor kitchen w gas grill 94 1/2x23 5/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor patio accessories",
+      "categorySlug": "outdoor-accessories-34203",
+      "ikeaCode": "34203",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor patio accessories"
+        },
+        "ru": {
+          "name": "Outdoor patio accessories"
+        },
+        "zh": {
+          "name": "Outdoor patio accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 171,
+      "sampleProductsToInsert": [
+        {
+          "name": "KUDDARNA Chair pad, outdoor",
+          "slug": "kuddarna-chair-pad-outdoor-90547232",
+          "sku": "IK-90547232",
+          "price": 15,
+          "compareAtPrice": 18.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kuddarna-chair-pad-outdoor-light-grey-beige__1476735_pe999002_s5.jpg"
+          ],
+          "description": "KUDDARNA Chair pad, outdoor 17 3/8x17 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90547232",
+          "measure": "17 3/8x17 3/8 \"",
+          "categoryName": "Outdoor patio accessories",
+          "translations": {
+            "en": {
+              "name": "KUDDARNA Chair pad, outdoor",
+              "description": "KUDDARNA Chair pad, outdoor 17 3/8x17 3/8 \""
+            },
+            "ru": {
+              "name": "KUDDARNA Chair pad, outdoor",
+              "description": "KUDDARNA Chair pad, outdoor 17 3/8x17 3/8 \""
+            },
+            "zh": {
+              "name": "KUDDARNA Chair pad, outdoor",
+              "description": "KUDDARNA Chair pad, outdoor 17 3/8x17 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "KUDDARNA Back cushion, outdoor",
+          "slug": "kuddarna-back-cushion-outdoor-80547256",
+          "sku": "IK-80547256",
+          "price": 20,
+          "compareAtPrice": 25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kuddarna-back-cushion-outdoor-light-grey-beige__1458342_pe992994_s5.jpg"
+          ],
+          "description": "KUDDARNA Back cushion, outdoor 24 3/8x17 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80547256",
+          "measure": "24 3/8x17 3/8 \"",
+          "categoryName": "Outdoor patio accessories",
+          "translations": {
+            "en": {
+              "name": "KUDDARNA Back cushion, outdoor",
+              "description": "KUDDARNA Back cushion, outdoor 24 3/8x17 3/8 \""
+            },
+            "ru": {
+              "name": "KUDDARNA Back cushion, outdoor",
+              "description": "KUDDARNA Back cushion, outdoor 24 3/8x17 3/8 \""
+            },
+            "zh": {
+              "name": "KUDDARNA Back cushion, outdoor",
+              "description": "KUDDARNA Back cushion, outdoor 24 3/8x17 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor",
+          "slug": "frsnduvholmen-chair-pad-outdoor-59253444",
+          "sku": "IK-59253444",
+          "price": 30,
+          "compareAtPrice": 37.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/froesoen-duvholmen-chair-pad-outdoor-beige__0685056_pe721329_s5.jpg"
+          ],
+          "description": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor 17 3/8x17 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59253444",
+          "measure": "17 3/8x17 3/8 \"",
+          "categoryName": "Outdoor patio accessories",
+          "translations": {
+            "en": {
+              "name": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor",
+              "description": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor 17 3/8x17 3/8 \""
+            },
+            "ru": {
+              "name": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor",
+              "description": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor 17 3/8x17 3/8 \""
+            },
+            "zh": {
+              "name": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor",
+              "description": "FRÖSÖN/DUVHOLMEN Chair pad, outdoor 17 3/8x17 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "KUDDARNA Bench pad, outdoor",
+          "slug": "kuddarna-bench-pad-outdoor-80584183",
+          "sku": "IK-80584183",
+          "price": 30,
+          "compareAtPrice": 37.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kuddarna-bench-pad-outdoor-light-grey-beige__1458345_pe993001_s5.jpg"
+          ],
+          "description": "KUDDARNA Bench pad, outdoor 47 1/4x15 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80584183",
+          "measure": "47 1/4x15 3/4 \"",
+          "categoryName": "Outdoor patio accessories",
+          "translations": {
+            "en": {
+              "name": "KUDDARNA Bench pad, outdoor",
+              "description": "KUDDARNA Bench pad, outdoor 47 1/4x15 3/4 \""
+            },
+            "ru": {
+              "name": "KUDDARNA Bench pad, outdoor",
+              "description": "KUDDARNA Bench pad, outdoor 47 1/4x15 3/4 \""
+            },
+            "zh": {
+              "name": "KUDDARNA Bench pad, outdoor",
+              "description": "KUDDARNA Bench pad, outdoor 47 1/4x15 3/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor umbrellas, canopies, gazebos & more",
+      "categorySlug": "umbrellas-gazebos-17887",
+      "ikeaCode": "17887",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor umbrellas, canopies, gazebos & more"
+        },
+        "ru": {
+          "name": "Outdoor umbrellas, canopies, gazebos & more"
+        },
+        "zh": {
+          "name": "Outdoor umbrellas, canopies, gazebos & more"
+        }
+      },
+      "totalIkeaProductsInStock": 22,
+      "sampleProductsToInsert": [
+        {
+          "name": "NÄMMARÖ Privacy screen",
+          "slug": "nmmar-privacy-screen-20532743",
+          "sku": "IK-20532743",
+          "price": 119.99,
+          "compareAtPrice": 149.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/naemmaroe-privacy-screen-light-brown-stained-indoor-outdoor__1137840_pe879763_s5.jpg"
+          ],
+          "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20532743",
+          "measure": "55 1/8x31 1/2x19 5/8 \"",
+          "categoryName": "Outdoor umbrellas, canopies, gazebos & more",
+          "translations": {
+            "en": {
+              "name": "NÄMMARÖ Privacy screen",
+              "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \""
+            },
+            "ru": {
+              "name": "NÄMMARÖ Privacy screen",
+              "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \""
+            },
+            "zh": {
+              "name": "NÄMMARÖ Privacy screen",
+              "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "JOGGESÖ Umbrella",
+          "slug": "jogges-umbrella-90531896",
+          "sku": "IK-90531896",
+          "price": 129.99,
+          "compareAtPrice": 162.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/joggesoe-umbrella-light-grey-beige__1118688_pe873224_s5.jpg"
+          ],
+          "description": "JOGGESÖ Umbrella 118 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90531896",
+          "measure": "118 1/8 \"",
+          "categoryName": "Outdoor umbrellas, canopies, gazebos & more",
+          "translations": {
+            "en": {
+              "name": "JOGGESÖ Umbrella",
+              "description": "JOGGESÖ Umbrella 118 1/8 \""
+            },
+            "ru": {
+              "name": "JOGGESÖ Umbrella",
+              "description": "JOGGESÖ Umbrella 118 1/8 \""
+            },
+            "zh": {
+              "name": "JOGGESÖ Umbrella",
+              "description": "JOGGESÖ Umbrella 118 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "SVALÖN Umbrella, hanging",
+          "slug": "svaln-umbrella-hanging-00557051",
+          "sku": "IK-00557051",
+          "price": 299.99,
+          "compareAtPrice": 374.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svaloen-umbrella-hanging-light-grey-beige__1121639_pe874308_s5.jpg"
+          ],
+          "description": "SVALÖN Umbrella, hanging 118 1/8x78 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00557051",
+          "measure": "118 1/8x78 3/4 \"",
+          "categoryName": "Outdoor umbrellas, canopies, gazebos & more",
+          "translations": {
+            "en": {
+              "name": "SVALÖN Umbrella, hanging",
+              "description": "SVALÖN Umbrella, hanging 118 1/8x78 3/4 \""
+            },
+            "ru": {
+              "name": "SVALÖN Umbrella, hanging",
+              "description": "SVALÖN Umbrella, hanging 118 1/8x78 3/4 \""
+            },
+            "zh": {
+              "name": "SVALÖN Umbrella, hanging",
+              "description": "SVALÖN Umbrella, hanging 118 1/8x78 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "SEGLARÖ / IGGÖN Hanging umbrella with base",
+          "slug": "seglar-iggn-hanging-umbrella-with-base-99577540",
+          "sku": "IK-99577540",
+          "price": 479.99,
+          "compareAtPrice": 599.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/seglaroe-iggoen-hanging-umbrella-with-base-anthracite-dark-gray__1379415_pe961530_s5.jpg"
+          ],
+          "description": "SEGLARÖ / IGGÖN Hanging umbrella with base 129 7/8x94 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "99577540",
+          "measure": "129 7/8x94 1/2 \"",
+          "categoryName": "Outdoor umbrellas, canopies, gazebos & more",
+          "translations": {
+            "en": {
+              "name": "SEGLARÖ / IGGÖN Hanging umbrella with base",
+              "description": "SEGLARÖ / IGGÖN Hanging umbrella with base 129 7/8x94 1/2 \""
+            },
+            "ru": {
+              "name": "SEGLARÖ / IGGÖN Hanging umbrella with base",
+              "description": "SEGLARÖ / IGGÖN Hanging umbrella with base 129 7/8x94 1/2 \""
+            },
+            "zh": {
+              "name": "SEGLARÖ / IGGÖN Hanging umbrella with base",
+              "description": "SEGLARÖ / IGGÖN Hanging umbrella with base 129 7/8x94 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Plant accessories",
+      "categorySlug": "outdoor-pots-plants-31787",
+      "ikeaCode": "31787",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Plant accessories"
+        },
+        "ru": {
+          "name": "Plant accessories"
+        },
+        "zh": {
+          "name": "Plant accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 119,
+      "sampleProductsToInsert": [
+        {
+          "name": "SVÄMSKOG Self-watering insert",
+          "slug": "svmskog-self-watering-insert-40570871",
+          "sku": "IK-40570871",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svaemskog-self-watering-insert-terracotta-transparent__1354848_pe952876_s5.jpg"
+          ],
+          "description": "SVÄMSKOG Self-watering insert 8 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40570871",
+          "measure": "8 oz",
+          "categoryName": "Plant accessories",
+          "translations": {
+            "en": {
+              "name": "SVÄMSKOG Self-watering insert",
+              "description": "SVÄMSKOG Self-watering insert 8 oz"
+            },
+            "ru": {
+              "name": "SVÄMSKOG Self-watering insert",
+              "description": "SVÄMSKOG Self-watering insert 8 oz"
+            },
+            "zh": {
+              "name": "SVÄMSKOG Self-watering insert",
+              "description": "SVÄMSKOG Self-watering insert 8 oz"
+            }
+          }
+        },
+        {
+          "name": "CHILISTRÅN Hanging planter",
+          "slug": "chilistrn-hanging-planter-70492264",
+          "sku": "IK-70492264",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/chilistran-hanging-planter-indoor-outdoor-white__0990165_pe820964_s5.jpg"
+          ],
+          "description": "CHILISTRÅN Hanging planter 4 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70492264",
+          "measure": "4 ¾ \"",
+          "categoryName": "Plant accessories",
+          "translations": {
+            "en": {
+              "name": "CHILISTRÅN Hanging planter",
+              "description": "CHILISTRÅN Hanging planter 4 ¾ \""
+            },
+            "ru": {
+              "name": "CHILISTRÅN Hanging planter",
+              "description": "CHILISTRÅN Hanging planter 4 ¾ \""
+            },
+            "zh": {
+              "name": "CHILISTRÅN Hanging planter",
+              "description": "CHILISTRÅN Hanging planter 4 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "ASKHOLMEN Plant stand",
+          "slug": "askholmen-plant-stand-30557506",
+          "sku": "IK-30557506",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/askholmen-plant-stand-dark-brown__1246722_pe922262_s5.jpg"
+          ],
+          "description": "ASKHOLMEN Plant stand",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30557506",
+          "measure": "",
+          "categoryName": "Plant accessories",
+          "translations": {
+            "en": {
+              "name": "ASKHOLMEN Plant stand",
+              "description": "ASKHOLMEN Plant stand"
+            },
+            "ru": {
+              "name": "ASKHOLMEN Plant stand",
+              "description": "ASKHOLMEN Plant stand"
+            },
+            "zh": {
+              "name": "ASKHOLMEN Plant stand",
+              "description": "ASKHOLMEN Plant stand"
+            }
+          }
+        },
+        {
+          "name": "HATTHOLMEN Plant stand",
+          "slug": "hattholmen-plant-stand-80519079",
+          "sku": "IK-80519079",
+          "price": 209.99,
+          "compareAtPrice": 262.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hattholmen-plant-stand-stained-eucalyptus-outdoor__1151913_pe885057_s5.jpg"
+          ],
+          "description": "HATTHOLMEN Plant stand",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80519079",
+          "measure": "",
+          "categoryName": "Plant accessories",
+          "translations": {
+            "en": {
+              "name": "HATTHOLMEN Plant stand",
+              "description": "HATTHOLMEN Plant stand"
+            },
+            "ru": {
+              "name": "HATTHOLMEN Plant stand",
+              "description": "HATTHOLMEN Plant stand"
+            },
+            "zh": {
+              "name": "HATTHOLMEN Plant stand",
+              "description": "HATTHOLMEN Plant stand"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor rugs",
+      "categorySlug": "outdoor-rugs-34204",
+      "ikeaCode": "34204",
+      "parentDepartment": "Outdoor",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor rugs"
+        },
+        "ru": {
+          "name": "Outdoor rugs"
+        },
+        "zh": {
+          "name": "Outdoor rugs"
+        }
+      },
+      "totalIkeaProductsInStock": 6,
+      "sampleProductsToInsert": [
+        {
+          "name": "LYDERSHOLM Rug flatwoven, in/outdoor",
+          "slug": "lydersholm-rug-flatwoven-inoutdoor-50495391",
+          "sku": "IK-50495391",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lydersholm-rug-flatwoven-in-outdoor-medium-brown__0936190_pe793165_s5.jpg"
+          ],
+          "description": "LYDERSHOLM Rug flatwoven, in/outdoor 2 ' 7 \"x4 ' 11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50495391",
+          "measure": "2 ' 7 \"x4 ' 11 \"",
+          "categoryName": "Outdoor rugs",
+          "translations": {
+            "en": {
+              "name": "LYDERSHOLM Rug flatwoven, in/outdoor",
+              "description": "LYDERSHOLM Rug flatwoven, in/outdoor 2 ' 7 \"x4 ' 11 \""
+            },
+            "ru": {
+              "name": "LYDERSHOLM Rug flatwoven, in/outdoor",
+              "description": "LYDERSHOLM Rug flatwoven, in/outdoor 2 ' 7 \"x4 ' 11 \""
+            },
+            "zh": {
+              "name": "LYDERSHOLM Rug flatwoven, in/outdoor",
+              "description": "LYDERSHOLM Rug flatwoven, in/outdoor 2 ' 7 \"x4 ' 11 \""
+            }
+          }
+        },
+        {
+          "name": "LÄTTBETONG Rug flatwoven, in/outdoor",
+          "slug": "lttbetong-rug-flatwoven-inoutdoor-70620959",
+          "sku": "IK-70620959",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/laettbetong-rug-flatwoven-in-outdoor-beige-light-brown__1435027_pe983676_s5.jpg"
+          ],
+          "description": "LÄTTBETONG Rug flatwoven, in/outdoor 7 ' 10 \"x10 '",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70620959",
+          "measure": "7 ' 10 \"x10 '",
+          "categoryName": "Outdoor rugs",
+          "translations": {
+            "en": {
+              "name": "LÄTTBETONG Rug flatwoven, in/outdoor",
+              "description": "LÄTTBETONG Rug flatwoven, in/outdoor 7 ' 10 \"x10 '"
+            },
+            "ru": {
+              "name": "LÄTTBETONG Rug flatwoven, in/outdoor",
+              "description": "LÄTTBETONG Rug flatwoven, in/outdoor 7 ' 10 \"x10 '"
+            },
+            "zh": {
+              "name": "LÄTTBETONG Rug flatwoven, in/outdoor",
+              "description": "LÄTTBETONG Rug flatwoven, in/outdoor 7 ' 10 \"x10 '"
+            }
+          }
+        },
+        {
+          "name": "MORUM Rug flatwoven, in/outdoor",
+          "slug": "morum-rug-flatwoven-inoutdoor-20623125",
+          "sku": "IK-20623125",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/morum-rug-flatwoven-in-outdoor-orange__1449110_pe989775_s5.jpg"
+          ],
+          "description": "MORUM Rug flatwoven, in/outdoor 5 ' 3 \"x7 ' 7 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20623125",
+          "measure": "5 ' 3 \"x7 ' 7 \"",
+          "categoryName": "Outdoor rugs",
+          "translations": {
+            "en": {
+              "name": "MORUM Rug flatwoven, in/outdoor",
+              "description": "MORUM Rug flatwoven, in/outdoor 5 ' 3 \"x7 ' 7 \""
+            },
+            "ru": {
+              "name": "MORUM Rug flatwoven, in/outdoor",
+              "description": "MORUM Rug flatwoven, in/outdoor 5 ' 3 \"x7 ' 7 \""
+            },
+            "zh": {
+              "name": "MORUM Rug flatwoven, in/outdoor",
+              "description": "MORUM Rug flatwoven, in/outdoor 5 ' 3 \"x7 ' 7 \""
+            }
+          }
+        },
+        {
+          "name": "MORUM Rug flatwoven, in/outdoor",
+          "slug": "morum-rug-flatwoven-inoutdoor-60624175",
+          "sku": "IK-60624175",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/morum-rug-flatwoven-in-outdoor-dark-green__1477806_pe999296_s5.jpg"
+          ],
+          "description": "MORUM Rug flatwoven, in/outdoor 2 ' 7 \"x6 ' 7 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60624175",
+          "measure": "2 ' 7 \"x6 ' 7 \"",
+          "categoryName": "Outdoor rugs",
+          "translations": {
+            "en": {
+              "name": "MORUM Rug flatwoven, in/outdoor",
+              "description": "MORUM Rug flatwoven, in/outdoor 2 ' 7 \"x6 ' 7 \""
+            },
+            "ru": {
+              "name": "MORUM Rug flatwoven, in/outdoor",
+              "description": "MORUM Rug flatwoven, in/outdoor 2 ' 7 \"x6 ' 7 \""
+            },
+            "zh": {
+              "name": "MORUM Rug flatwoven, in/outdoor",
+              "description": "MORUM Rug flatwoven, in/outdoor 2 ' 7 \"x6 ' 7 \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

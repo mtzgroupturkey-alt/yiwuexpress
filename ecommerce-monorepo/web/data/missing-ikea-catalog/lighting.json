@@ -1,0 +1,719 @@
+{
+  "department": "Lighting",
+  "departmentSlug": "lighting-li001",
+  "departmentCode": "li001",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Освещение",
+    "zh": "照明与灯具"
+  },
+  "missingSubcategoriesCount": 5,
+  "totalMissingProductsCount": 617,
+  "subcategories": [
+    {
+      "categoryName": "Lamps & light fixtures",
+      "categorySlug": "lamps-light-fixtures-li002",
+      "ikeaCode": "li002",
+      "parentDepartment": "Lighting",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Lamps & light fixtures"
+        },
+        "ru": {
+          "name": "Lamps & light fixtures"
+        },
+        "zh": {
+          "name": "Lamps & light fixtures"
+        }
+      },
+      "totalIkeaProductsInStock": 401,
+      "sampleProductsToInsert": [
+        {
+          "name": "FADO Table lamp",
+          "slug": "fado-table-lamp-70096377",
+          "sku": "IK-70096377",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fado-table-lamp-white__0606976_pe682645_s5.jpg"
+          ],
+          "description": "FADO Table lamp 10 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70096377",
+          "measure": "10 \"",
+          "categoryName": "Lamps & light fixtures",
+          "translations": {
+            "en": {
+              "name": "FADO Table lamp",
+              "description": "FADO Table lamp 10 \""
+            },
+            "ru": {
+              "name": "FADO Table lamp",
+              "description": "FADO Table lamp 10 \""
+            },
+            "zh": {
+              "name": "FADO Table lamp",
+              "description": "FADO Table lamp 10 \""
+            }
+          }
+        },
+        {
+          "name": "VARMBLIXT LED table/wall lamp",
+          "slug": "varmblixt-led-tablewall-lamp-90525150",
+          "sku": "IK-90525150",
+          "price": 89.99,
+          "compareAtPrice": 112.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/varmblixt-led-table-wall-lamp-orange-glass-round__1116616_pe872535_s5.jpg"
+          ],
+          "description": "VARMBLIXT LED table/wall lamp 12 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90525150",
+          "measure": "12 \"",
+          "categoryName": "Lamps & light fixtures",
+          "translations": {
+            "en": {
+              "name": "VARMBLIXT LED table/wall lamp",
+              "description": "VARMBLIXT LED table/wall lamp 12 \""
+            },
+            "ru": {
+              "name": "VARMBLIXT LED table/wall lamp",
+              "description": "VARMBLIXT LED table/wall lamp 12 \""
+            },
+            "zh": {
+              "name": "VARMBLIXT LED table/wall lamp",
+              "description": "VARMBLIXT LED table/wall lamp 12 \""
+            }
+          }
+        },
+        {
+          "name": "SIMRISHAMN Floor lamp",
+          "slug": "simrishamn-floor-lamp-50437773",
+          "sku": "IK-50437773",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/simrishamn-floor-lamp-chrome-plated-opal-glass__0789445_pe763989_s5.jpg"
+          ],
+          "description": "SIMRISHAMN Floor lamp",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50437773",
+          "measure": "",
+          "categoryName": "Lamps & light fixtures",
+          "translations": {
+            "en": {
+              "name": "SIMRISHAMN Floor lamp",
+              "description": "SIMRISHAMN Floor lamp"
+            },
+            "ru": {
+              "name": "SIMRISHAMN Floor lamp",
+              "description": "SIMRISHAMN Floor lamp"
+            },
+            "zh": {
+              "name": "SIMRISHAMN Floor lamp",
+              "description": "SIMRISHAMN Floor lamp"
+            }
+          }
+        },
+        {
+          "name": "STRÅLA LED floor lamp",
+          "slug": "strla-led-floor-lamp-50645611",
+          "sku": "IK-50645611",
+          "price": 44.99,
+          "compareAtPrice": 56.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-led-floor-lamp-matchstick-shaped-wood__1409060_pe972117_s5.jpg"
+          ],
+          "description": "STRÅLA LED floor lamp",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50645611",
+          "measure": "",
+          "categoryName": "Lamps & light fixtures",
+          "translations": {
+            "en": {
+              "name": "STRÅLA LED floor lamp",
+              "description": "STRÅLA LED floor lamp"
+            },
+            "ru": {
+              "name": "STRÅLA LED floor lamp",
+              "description": "STRÅLA LED floor lamp"
+            },
+            "zh": {
+              "name": "STRÅLA LED floor lamp",
+              "description": "STRÅLA LED floor lamp"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Decorative lighting",
+      "categorySlug": "decorative-lighting-14971",
+      "ikeaCode": "14971",
+      "parentDepartment": "Lighting",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Decorative lighting"
+        },
+        "ru": {
+          "name": "Decorative lighting"
+        },
+        "zh": {
+          "name": "Decorative lighting"
+        }
+      },
+      "totalIkeaProductsInStock": 94,
+      "sampleProductsToInsert": [
+        {
+          "name": "STRÅLA Cord set",
+          "slug": "strla-cord-set-90371505",
+          "sku": "IK-90371505",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-cord-set-white__0492264_pe625579_s5.jpg"
+          ],
+          "description": "STRÅLA Cord set 157 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90371505",
+          "measure": "157 \"",
+          "categoryName": "Decorative lighting",
+          "translations": {
+            "en": {
+              "name": "STRÅLA Cord set",
+              "description": "STRÅLA Cord set 157 \""
+            },
+            "ru": {
+              "name": "STRÅLA Cord set",
+              "description": "STRÅLA Cord set 157 \""
+            },
+            "zh": {
+              "name": "STRÅLA Cord set",
+              "description": "STRÅLA Cord set 157 \""
+            }
+          }
+        },
+        {
+          "name": "STRÅLA Lamp shade",
+          "slug": "strla-lamp-shade-80639878",
+          "sku": "IK-80639878",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-lamp-shade-paper-star-lace-white__0430597_pe584694_s5.jpg"
+          ],
+          "description": "STRÅLA Lamp shade 28 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80639878",
+          "measure": "28 \"",
+          "categoryName": "Decorative lighting",
+          "translations": {
+            "en": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 28 \""
+            },
+            "ru": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 28 \""
+            },
+            "zh": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 28 \""
+            }
+          }
+        },
+        {
+          "name": "SNÖRPTRÅD LED table decoration",
+          "slug": "snrptrd-led-table-decoration-80621939",
+          "sku": "IK-80621939",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/snoerptrad-led-table-decoration-battery-operated-brass-color__1495289_pe1005010_s5.jpg"
+          ],
+          "description": "SNÖRPTRÅD LED table decoration",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80621939",
+          "measure": "",
+          "categoryName": "Decorative lighting",
+          "translations": {
+            "en": {
+              "name": "SNÖRPTRÅD LED table decoration",
+              "description": "SNÖRPTRÅD LED table decoration"
+            },
+            "ru": {
+              "name": "SNÖRPTRÅD LED table decoration",
+              "description": "SNÖRPTRÅD LED table decoration"
+            },
+            "zh": {
+              "name": "SNÖRPTRÅD LED table decoration",
+              "description": "SNÖRPTRÅD LED table decoration"
+            }
+          }
+        },
+        {
+          "name": "STRÅLA LED lighting chain",
+          "slug": "strla-led-lighting-chain-20633209",
+          "sku": "IK-20633209",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-led-lighting-chain-sparkler-battery-operated__1516799_pe1011955_s5.jpg"
+          ],
+          "description": "STRÅLA LED lighting chain 7 ' 3 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20633209",
+          "measure": "7 ' 3 \"",
+          "categoryName": "Decorative lighting",
+          "translations": {
+            "en": {
+              "name": "STRÅLA LED lighting chain",
+              "description": "STRÅLA LED lighting chain 7 ' 3 \""
+            },
+            "ru": {
+              "name": "STRÅLA LED lighting chain",
+              "description": "STRÅLA LED lighting chain 7 ' 3 \""
+            },
+            "zh": {
+              "name": "STRÅLA LED lighting chain",
+              "description": "STRÅLA LED lighting chain 7 ' 3 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Integrated lighting",
+      "categorySlug": "integrated-lighting-16280",
+      "ikeaCode": "16280",
+      "parentDepartment": "Lighting",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Integrated lighting"
+        },
+        "ru": {
+          "name": "Integrated lighting"
+        },
+        "zh": {
+          "name": "Integrated lighting"
+        }
+      },
+      "totalIkeaProductsInStock": 31,
+      "sampleProductsToInsert": [
+        {
+          "name": "TVÄRDRAG Cabinet lighting",
+          "slug": "tvrdrag-cabinet-lighting-40516841",
+          "sku": "IK-40516841",
+          "price": 29,
+          "compareAtPrice": 36.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tvaerdrag-cabinet-lighting-black-dimmable__1051158_pe845030_s5.jpg"
+          ],
+          "description": "TVÄRDRAG Cabinet lighting",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40516841",
+          "measure": "",
+          "categoryName": "Integrated lighting",
+          "translations": {
+            "en": {
+              "name": "TVÄRDRAG Cabinet lighting",
+              "description": "TVÄRDRAG Cabinet lighting"
+            },
+            "ru": {
+              "name": "TVÄRDRAG Cabinet lighting",
+              "description": "TVÄRDRAG Cabinet lighting"
+            },
+            "zh": {
+              "name": "TVÄRDRAG Cabinet lighting",
+              "description": "TVÄRDRAG Cabinet lighting"
+            }
+          }
+        },
+        {
+          "name": "MITTLED LED spotlight",
+          "slug": "mittled-led-spotlight-50472139",
+          "sku": "IK-50472139",
+          "price": 20,
+          "compareAtPrice": 25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittled-led-spotlight-dimmable-black__0869944_pe781539_s5.jpg"
+          ],
+          "description": "MITTLED LED spotlight",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50472139",
+          "measure": "",
+          "categoryName": "Integrated lighting",
+          "translations": {
+            "en": {
+              "name": "MITTLED LED spotlight",
+              "description": "MITTLED LED spotlight"
+            },
+            "ru": {
+              "name": "MITTLED LED spotlight",
+              "description": "MITTLED LED spotlight"
+            },
+            "zh": {
+              "name": "MITTLED LED spotlight",
+              "description": "MITTLED LED spotlight"
+            }
+          }
+        },
+        {
+          "name": "MITTLED LED kitchen cntrtp lighting strip",
+          "slug": "mittled-led-kitchen-cntrtp-lighting-strip-00455420",
+          "sku": "IK-00455420",
+          "price": 30,
+          "compareAtPrice": 37.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mittled-led-kitchen-cntrtp-lighting-strip-dimmable-white__0869941_pe781536_s5.jpg"
+          ],
+          "description": "MITTLED LED kitchen cntrtp lighting strip 24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00455420",
+          "measure": "24 \"",
+          "categoryName": "Integrated lighting",
+          "translations": {
+            "en": {
+              "name": "MITTLED LED kitchen cntrtp lighting strip",
+              "description": "MITTLED LED kitchen cntrtp lighting strip 24 \""
+            },
+            "ru": {
+              "name": "MITTLED LED kitchen cntrtp lighting strip",
+              "description": "MITTLED LED kitchen cntrtp lighting strip 24 \""
+            },
+            "zh": {
+              "name": "MITTLED LED kitchen cntrtp lighting strip",
+              "description": "MITTLED LED kitchen cntrtp lighting strip 24 \""
+            }
+          }
+        },
+        {
+          "name": "KAPPLAKE LED spotlight",
+          "slug": "kapplake-led-spotlight-30543166",
+          "sku": "IK-30543166",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kapplake-led-spotlight-white__1118637_pe878605_s5.jpg"
+          ],
+          "description": "KAPPLAKE LED spotlight",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30543166",
+          "measure": "",
+          "categoryName": "Integrated lighting",
+          "translations": {
+            "en": {
+              "name": "KAPPLAKE LED spotlight",
+              "description": "KAPPLAKE LED spotlight"
+            },
+            "ru": {
+              "name": "KAPPLAKE LED spotlight",
+              "description": "KAPPLAKE LED spotlight"
+            },
+            "zh": {
+              "name": "KAPPLAKE LED spotlight",
+              "description": "KAPPLAKE LED spotlight"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "LED light bulbs",
+      "categorySlug": "led-bulbs-20514",
+      "ikeaCode": "20514",
+      "parentDepartment": "Lighting",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "LED light bulbs"
+        },
+        "ru": {
+          "name": "LED light bulbs"
+        },
+        "zh": {
+          "name": "LED light bulbs"
+        }
+      },
+      "totalIkeaProductsInStock": 81,
+      "sampleProductsToInsert": [
+        {
+          "name": "SOLHETTA LED bulb E26 800 lumen",
+          "slug": "solhetta-led-bulb-e26-800-lumen-20583935",
+          "sku": "IK-20583935",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/solhetta-led-bulb-e26-800-lumen-dimmable-globe-opal__0988839_pe818255_s5.jpg"
+          ],
+          "description": "SOLHETTA LED bulb E26 800 lumen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20583935",
+          "measure": "",
+          "categoryName": "LED light bulbs",
+          "translations": {
+            "en": {
+              "name": "SOLHETTA LED bulb E26 800 lumen",
+              "description": "SOLHETTA LED bulb E26 800 lumen"
+            },
+            "ru": {
+              "name": "SOLHETTA LED bulb E26 800 lumen",
+              "description": "SOLHETTA LED bulb E26 800 lumen"
+            },
+            "zh": {
+              "name": "SOLHETTA LED bulb E26 800 lumen",
+              "description": "SOLHETTA LED bulb E26 800 lumen"
+            }
+          }
+        },
+        {
+          "name": "MOLNART LED bulb E26 150 lumen",
+          "slug": "molnart-led-bulb-e26-150-lumen-60586362",
+          "sku": "IK-60586362",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/molnart-led-bulb-e26-150-lumen-globe-brown-clear-glass__1259136_pe926562_s5.jpg"
+          ],
+          "description": "MOLNART LED bulb E26 150 lumen 4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60586362",
+          "measure": "4 \"",
+          "categoryName": "LED light bulbs",
+          "translations": {
+            "en": {
+              "name": "MOLNART LED bulb E26 150 lumen",
+              "description": "MOLNART LED bulb E26 150 lumen 4 \""
+            },
+            "ru": {
+              "name": "MOLNART LED bulb E26 150 lumen",
+              "description": "MOLNART LED bulb E26 150 lumen 4 \""
+            },
+            "zh": {
+              "name": "MOLNART LED bulb E26 150 lumen",
+              "description": "MOLNART LED bulb E26 150 lumen 4 \""
+            }
+          }
+        },
+        {
+          "name": "MOLNART LED bulb E26 120 lumen",
+          "slug": "molnart-led-bulb-e26-120-lumen-00586746",
+          "sku": "IK-00586746",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/molnart-led-bulb-e26-120-lumen-donut-shaped-opal__1286463_pe933563_s5.jpg"
+          ],
+          "description": "MOLNART LED bulb E26 120 lumen 2400 K 6 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00586746",
+          "measure": "2400 K 6 \"",
+          "categoryName": "LED light bulbs",
+          "translations": {
+            "en": {
+              "name": "MOLNART LED bulb E26 120 lumen",
+              "description": "MOLNART LED bulb E26 120 lumen 2400 K 6 \""
+            },
+            "ru": {
+              "name": "MOLNART LED bulb E26 120 lumen",
+              "description": "MOLNART LED bulb E26 120 lumen 2400 K 6 \""
+            },
+            "zh": {
+              "name": "MOLNART LED bulb E26 120 lumen",
+              "description": "MOLNART LED bulb E26 120 lumen 2400 K 6 \""
+            }
+          }
+        },
+        {
+          "name": "KAJPLATS LED bulb E26 1100 lumen",
+          "slug": "kajplats-led-bulb-e26-1100-lumen-30611462",
+          "sku": "IK-30611462",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kajplats-led-bulb-e26-1100-lumen-smart-color-and-white-spectrum-globe-opal__1452549_pe991078_s5.jpg"
+          ],
+          "description": "KAJPLATS LED bulb E26 1100 lumen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30611462",
+          "measure": "",
+          "categoryName": "LED light bulbs",
+          "translations": {
+            "en": {
+              "name": "KAJPLATS LED bulb E26 1100 lumen",
+              "description": "KAJPLATS LED bulb E26 1100 lumen"
+            },
+            "ru": {
+              "name": "KAJPLATS LED bulb E26 1100 lumen",
+              "description": "KAJPLATS LED bulb E26 1100 lumen"
+            },
+            "zh": {
+              "name": "KAJPLATS LED bulb E26 1100 lumen",
+              "description": "KAJPLATS LED bulb E26 1100 lumen"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Ceiling fans",
+      "categorySlug": "ceiling-fans-700600",
+      "ikeaCode": "700600",
+      "parentDepartment": "Lighting",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Ceiling fans"
+        },
+        "ru": {
+          "name": "Ceiling fans"
+        },
+        "zh": {
+          "name": "Ceiling fans"
+        }
+      },
+      "totalIkeaProductsInStock": 10,
+      "sampleProductsToInsert": [
+        {
+          "name": "AKTERSKARP LED ceiling fan with light",
+          "slug": "akterskarp-led-ceiling-fan-with-light-20595453",
+          "sku": "IK-20595453",
+          "price": 139.99,
+          "compareAtPrice": 174.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/akterskarp-led-ceiling-fan-with-light-dimmable-wood-effect-dark-gray__1385429_pe963305_s5.jpg"
+          ],
+          "description": "AKTERSKARP LED ceiling fan with light",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20595453",
+          "measure": "",
+          "categoryName": "Ceiling fans",
+          "translations": {
+            "en": {
+              "name": "AKTERSKARP LED ceiling fan with light",
+              "description": "AKTERSKARP LED ceiling fan with light"
+            },
+            "ru": {
+              "name": "AKTERSKARP LED ceiling fan with light",
+              "description": "AKTERSKARP LED ceiling fan with light"
+            },
+            "zh": {
+              "name": "AKTERSKARP LED ceiling fan with light",
+              "description": "AKTERSKARP LED ceiling fan with light"
+            }
+          }
+        },
+        {
+          "name": "AKTERTOFTER LED ceiling fan with light",
+          "slug": "aktertofter-led-ceiling-fan-with-light-80595450",
+          "sku": "IK-80595450",
+          "price": 169.99,
+          "compareAtPrice": 212.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aktertofter-led-ceiling-fan-with-light-dimmable-wood-effect-silver-color__1385438_pe963313_s5.jpg"
+          ],
+          "description": "AKTERTOFTER LED ceiling fan with light",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80595450",
+          "measure": "",
+          "categoryName": "Ceiling fans",
+          "translations": {
+            "en": {
+              "name": "AKTERTOFTER LED ceiling fan with light",
+              "description": "AKTERTOFTER LED ceiling fan with light"
+            },
+            "ru": {
+              "name": "AKTERTOFTER LED ceiling fan with light",
+              "description": "AKTERTOFTER LED ceiling fan with light"
+            },
+            "zh": {
+              "name": "AKTERTOFTER LED ceiling fan with light",
+              "description": "AKTERTOFTER LED ceiling fan with light"
+            }
+          }
+        },
+        {
+          "name": "AKTERSTAGAD Ceiling fan with light",
+          "slug": "akterstagad-ceiling-fan-with-light-50597262",
+          "sku": "IK-50597262",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/akterstagad-ceiling-fan-with-light-wood-effect-beige__1385432_pe963307_s5.jpg"
+          ],
+          "description": "AKTERSTAGAD Ceiling fan with light",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50597262",
+          "measure": "",
+          "categoryName": "Ceiling fans",
+          "translations": {
+            "en": {
+              "name": "AKTERSTAGAD Ceiling fan with light",
+              "description": "AKTERSTAGAD Ceiling fan with light"
+            },
+            "ru": {
+              "name": "AKTERSTAGAD Ceiling fan with light",
+              "description": "AKTERSTAGAD Ceiling fan with light"
+            },
+            "zh": {
+              "name": "AKTERSTAGAD Ceiling fan with light",
+              "description": "AKTERSTAGAD Ceiling fan with light"
+            }
+          }
+        },
+        {
+          "name": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod",
+          "slug": "akterstagad-brunalger-ceiling-fan-w-extension-downrod-69578292",
+          "sku": "IK-69578292",
+          "price": 109.99,
+          "compareAtPrice": 137.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/akterstagad-brunalger-ceiling-fan-w-extension-downrod-wood-effect-beige__1385443_pe963319_s5.jpg"
+          ],
+          "description": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "69578292",
+          "measure": "",
+          "categoryName": "Ceiling fans",
+          "translations": {
+            "en": {
+              "name": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod",
+              "description": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod"
+            },
+            "ru": {
+              "name": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod",
+              "description": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod"
+            },
+            "zh": {
+              "name": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod",
+              "description": "AKTERSTAGAD / BRUNALGER Ceiling fan w extension downrod"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

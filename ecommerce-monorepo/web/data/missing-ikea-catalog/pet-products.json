@@ -1,0 +1,155 @@
+{
+  "department": "Pet products",
+  "departmentSlug": "pet-accessories-pt001",
+  "departmentCode": "pt001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Товары для животных",
+    "zh": "宠物用品"
+  },
+  "missingSubcategoriesCount": 1,
+  "totalMissingProductsCount": 14,
+  "subcategories": [
+    {
+      "categoryName": "Dog beds, toys & bowls",
+      "categorySlug": "dogs-39570",
+      "ikeaCode": "39570",
+      "parentDepartment": "Pet products",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Dog beds, toys & bowls"
+        },
+        "ru": {
+          "name": "Dog beds, toys & bowls"
+        },
+        "zh": {
+          "name": "Dog beds, toys & bowls"
+        }
+      },
+      "totalIkeaProductsInStock": 14,
+      "sampleProductsToInsert": [
+        {
+          "name": "UTSÅDD Place mat for food bowl",
+          "slug": "utsdd-place-mat-for-food-bowl-00569214",
+          "sku": "IK-00569214",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/utsadd-place-mat-for-food-bowl-gray-green__1281625_pe931965_s5.jpg"
+          ],
+          "description": "UTSÅDD Place mat for food bowl 13x19 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00569214",
+          "measure": "13x19 5/8 \"",
+          "categoryName": "Dog beds, toys & bowls",
+          "translations": {
+            "en": {
+              "name": "UTSÅDD Place mat for food bowl",
+              "description": "UTSÅDD Place mat for food bowl 13x19 5/8 \""
+            },
+            "ru": {
+              "name": "UTSÅDD Place mat for food bowl",
+              "description": "UTSÅDD Place mat for food bowl 13x19 5/8 \""
+            },
+            "zh": {
+              "name": "UTSÅDD Place mat for food bowl",
+              "description": "UTSÅDD Place mat for food bowl 13x19 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "UTSÅDD Dog bed",
+          "slug": "utsdd-dog-bed-70570884",
+          "sku": "IK-70570884",
+          "price": 89.99,
+          "compareAtPrice": 112.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/utsadd-dog-bed-rattan__1291760_pe934983_s5.jpg"
+          ],
+          "description": "UTSÅDD Dog bed 31 ½x19 ¾x7 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70570884",
+          "measure": "31 ½x19 ¾x7 ¾ \"",
+          "categoryName": "Dog beds, toys & bowls",
+          "translations": {
+            "en": {
+              "name": "UTSÅDD Dog bed",
+              "description": "UTSÅDD Dog bed 31 ½x19 ¾x7 ¾ \""
+            },
+            "ru": {
+              "name": "UTSÅDD Dog bed",
+              "description": "UTSÅDD Dog bed 31 ½x19 ¾x7 ¾ \""
+            },
+            "zh": {
+              "name": "UTSÅDD Dog bed",
+              "description": "UTSÅDD Dog bed 31 ½x19 ¾x7 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "UTSÅDD Pet blanket",
+          "slug": "utsdd-pet-blanket-20567799",
+          "sku": "IK-20567799",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/utsadd-pet-blanket-green__1239828_pe919125_s5.jpg"
+          ],
+          "description": "UTSÅDD Pet blanket 39 ¼x59 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20567799",
+          "measure": "39 ¼x59 \"",
+          "categoryName": "Dog beds, toys & bowls",
+          "translations": {
+            "en": {
+              "name": "UTSÅDD Pet blanket",
+              "description": "UTSÅDD Pet blanket 39 ¼x59 \""
+            },
+            "ru": {
+              "name": "UTSÅDD Pet blanket",
+              "description": "UTSÅDD Pet blanket 39 ¼x59 \""
+            },
+            "zh": {
+              "name": "UTSÅDD Pet blanket",
+              "description": "UTSÅDD Pet blanket 39 ¼x59 \""
+            }
+          }
+        },
+        {
+          "name": "UTSÅDD Pet bowl",
+          "slug": "utsdd-pet-bowl-30569203",
+          "sku": "IK-30569203",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/utsadd-pet-bowl-stripe-pattern-black-blue-gray-green__1281624_pe931964_s5.jpg"
+          ],
+          "description": "UTSÅDD Pet bowl 7 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30569203",
+          "measure": "7 ½ \"",
+          "categoryName": "Dog beds, toys & bowls",
+          "translations": {
+            "en": {
+              "name": "UTSÅDD Pet bowl",
+              "description": "UTSÅDD Pet bowl 7 ½ \""
+            },
+            "ru": {
+              "name": "UTSÅDD Pet bowl",
+              "description": "UTSÅDD Pet bowl 7 ½ \""
+            },
+            "zh": {
+              "name": "UTSÅDD Pet bowl",
+              "description": "UTSÅDD Pet bowl 7 ½ \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

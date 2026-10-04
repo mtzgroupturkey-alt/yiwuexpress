@@ -1,0 +1,821 @@
+{
+  "department": "Beds & mattresses",
+  "departmentSlug": "beds-mattresses-bm001",
+  "departmentCode": "bm001",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Кровати и матрасы",
+    "zh": "床与床垫"
+  },
+  "missingSubcategoriesCount": 7,
+  "totalMissingProductsCount": 242,
+  "subcategories": [
+    {
+      "categoryName": "Beds",
+      "categorySlug": "beds-bm003",
+      "ikeaCode": "bm003",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Beds"
+        },
+        "ru": {
+          "name": "Beds"
+        },
+        "zh": {
+          "name": "Beds"
+        }
+      },
+      "totalIkeaProductsInStock": 208,
+      "sampleProductsToInsert": [
+        {
+          "name": "MALM High bed frame/2 storage boxes",
+          "slug": "malm-high-bed-frame2-storage-boxes-79175978",
+          "sku": "IK-79175978",
+          "price": 399,
+          "compareAtPrice": 498.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/malm-high-bed-frame-2-storage-boxes-white-luroey__1154393_pe886042_s5.jpg"
+          ],
+          "description": "MALM High bed frame/2 storage boxes Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79175978",
+          "measure": "Queen",
+          "categoryName": "Beds",
+          "translations": {
+            "en": {
+              "name": "MALM High bed frame/2 storage boxes",
+              "description": "MALM High bed frame/2 storage boxes Queen"
+            },
+            "ru": {
+              "name": "MALM High bed frame/2 storage boxes",
+              "description": "MALM High bed frame/2 storage boxes Queen"
+            },
+            "zh": {
+              "name": "MALM High bed frame/2 storage boxes",
+              "description": "MALM High bed frame/2 storage boxes Queen"
+            }
+          }
+        },
+        {
+          "name": "MALM Bed frame",
+          "slug": "malm-bed-frame-49574365",
+          "sku": "IK-49574365",
+          "price": 299,
+          "compareAtPrice": 373.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/malm-bed-frame-dark-brown-veneer-luroey__1364772_pe956028_s5.jpg"
+          ],
+          "description": "MALM Bed frame Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "49574365",
+          "measure": "Queen",
+          "categoryName": "Beds",
+          "translations": {
+            "en": {
+              "name": "MALM Bed frame",
+              "description": "MALM Bed frame Queen"
+            },
+            "ru": {
+              "name": "MALM Bed frame",
+              "description": "MALM Bed frame Queen"
+            },
+            "zh": {
+              "name": "MALM Bed frame",
+              "description": "MALM Bed frame Queen"
+            }
+          }
+        },
+        {
+          "name": "TARVA Bed frame",
+          "slug": "tarva-bed-frame-29069796",
+          "sku": "IK-29069796",
+          "price": 179,
+          "compareAtPrice": 223.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tarva-bed-frame-pine-luroey__0637611_pe698421_s5.jpg"
+          ],
+          "description": "TARVA Bed frame Full",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "29069796",
+          "measure": "Full",
+          "categoryName": "Beds",
+          "translations": {
+            "en": {
+              "name": "TARVA Bed frame",
+              "description": "TARVA Bed frame Full"
+            },
+            "ru": {
+              "name": "TARVA Bed frame",
+              "description": "TARVA Bed frame Full"
+            },
+            "zh": {
+              "name": "TARVA Bed frame",
+              "description": "TARVA Bed frame Full"
+            }
+          }
+        },
+        {
+          "name": "BRIMNES Bed frame with storage & headboard",
+          "slug": "brimnes-bed-frame-with-storage-headboard-59129609",
+          "sku": "IK-59129609",
+          "price": 549,
+          "compareAtPrice": 686.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brimnes-bed-frame-with-storage-headboard-white-luroey__1151032_pe884763_s5.jpg"
+          ],
+          "description": "BRIMNES Bed frame with storage & headboard Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59129609",
+          "measure": "Queen",
+          "categoryName": "Beds",
+          "translations": {
+            "en": {
+              "name": "BRIMNES Bed frame with storage & headboard",
+              "description": "BRIMNES Bed frame with storage & headboard Queen"
+            },
+            "ru": {
+              "name": "BRIMNES Bed frame with storage & headboard",
+              "description": "BRIMNES Bed frame with storage & headboard Queen"
+            },
+            "zh": {
+              "name": "BRIMNES Bed frame with storage & headboard",
+              "description": "BRIMNES Bed frame with storage & headboard Queen"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Underbed storage bags & bins",
+      "categorySlug": "under-bed-storage-19059",
+      "ikeaCode": "19059",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Underbed storage bags & bins"
+        },
+        "ru": {
+          "name": "Underbed storage bags & bins"
+        },
+        "zh": {
+          "name": "Underbed storage bags & bins"
+        }
+      },
+      "totalIkeaProductsInStock": 17,
+      "sampleProductsToInsert": [
+        {
+          "name": "SOCKERBIT Storage box with lid",
+          "slug": "sockerbit-storage-box-with-lid-20411524",
+          "sku": "IK-20411524",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sockerbit-storage-box-with-lid-white__0662633_pe712054_s5.jpg"
+          ],
+          "description": "SOCKERBIT Storage box with lid 19 ¾x30 ¼x7 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20411524",
+          "measure": "19 ¾x30 ¼x7 ½ \"",
+          "categoryName": "Underbed storage bags & bins",
+          "translations": {
+            "en": {
+              "name": "SOCKERBIT Storage box with lid",
+              "description": "SOCKERBIT Storage box with lid 19 ¾x30 ¼x7 ½ \""
+            },
+            "ru": {
+              "name": "SOCKERBIT Storage box with lid",
+              "description": "SOCKERBIT Storage box with lid 19 ¾x30 ¼x7 ½ \""
+            },
+            "zh": {
+              "name": "SOCKERBIT Storage box with lid",
+              "description": "SOCKERBIT Storage box with lid 19 ¾x30 ¼x7 ½ \""
+            }
+          }
+        },
+        {
+          "name": "SKUBB Storage case",
+          "slug": "skubb-storage-case-80591051",
+          "sku": "IK-80591051",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skubb-storage-case-white__0711311_pe728149_s5.jpg"
+          ],
+          "description": "SKUBB Storage case 35 ½x20 ¾x7 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80591051",
+          "measure": "35 ½x20 ¾x7 ½ \"",
+          "categoryName": "Underbed storage bags & bins",
+          "translations": {
+            "en": {
+              "name": "SKUBB Storage case",
+              "description": "SKUBB Storage case 35 ½x20 ¾x7 ½ \""
+            },
+            "ru": {
+              "name": "SKUBB Storage case",
+              "description": "SKUBB Storage case 35 ½x20 ¾x7 ½ \""
+            },
+            "zh": {
+              "name": "SKUBB Storage case",
+              "description": "SKUBB Storage case 35 ½x20 ¾x7 ½ \""
+            }
+          }
+        },
+        {
+          "name": "VARDÖ Underbed storage box",
+          "slug": "vard-underbed-storage-box-20238223",
+          "sku": "IK-20238223",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vardoe-underbed-storage-box-black__0636228_pe697741_s5.jpg"
+          ],
+          "description": "VARDÖ Underbed storage box 25 5/8x27 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20238223",
+          "measure": "25 5/8x27 1/2 \"",
+          "categoryName": "Underbed storage bags & bins",
+          "translations": {
+            "en": {
+              "name": "VARDÖ Underbed storage box",
+              "description": "VARDÖ Underbed storage box 25 5/8x27 1/2 \""
+            },
+            "ru": {
+              "name": "VARDÖ Underbed storage box",
+              "description": "VARDÖ Underbed storage box 25 5/8x27 1/2 \""
+            },
+            "zh": {
+              "name": "VARDÖ Underbed storage box",
+              "description": "VARDÖ Underbed storage box 25 5/8x27 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "GÖRSNYGG Storage case",
+          "slug": "grsnygg-storage-case-40504193",
+          "sku": "IK-40504193",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/goersnygg-storage-case-white-clear__1013439_pe829198_s5.jpg"
+          ],
+          "description": "GÖRSNYGG Storage case 22x19x7 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40504193",
+          "measure": "22x19x7 \"",
+          "categoryName": "Underbed storage bags & bins",
+          "translations": {
+            "en": {
+              "name": "GÖRSNYGG Storage case",
+              "description": "GÖRSNYGG Storage case 22x19x7 \""
+            },
+            "ru": {
+              "name": "GÖRSNYGG Storage case",
+              "description": "GÖRSNYGG Storage case 22x19x7 \""
+            },
+            "zh": {
+              "name": "GÖRSNYGG Storage case",
+              "description": "GÖRSNYGG Storage case 22x19x7 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Headboards",
+      "categorySlug": "headboards-19064",
+      "ikeaCode": "19064",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Headboards"
+        },
+        "ru": {
+          "name": "Headboards"
+        },
+        "zh": {
+          "name": "Headboards"
+        }
+      },
+      "totalIkeaProductsInStock": 6,
+      "sampleProductsToInsert": [
+        {
+          "name": "MANDAL Headboard",
+          "slug": "mandal-headboard-70176312",
+          "sku": "IK-70176312",
+          "price": 200,
+          "compareAtPrice": 250,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mandal-headboard-birch-white__0636300_pe697793_s5.jpg"
+          ],
+          "description": "MANDAL Headboard 94 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70176312",
+          "measure": "94 1/2 \"",
+          "categoryName": "Headboards",
+          "translations": {
+            "en": {
+              "name": "MANDAL Headboard",
+              "description": "MANDAL Headboard 94 1/2 \""
+            },
+            "ru": {
+              "name": "MANDAL Headboard",
+              "description": "MANDAL Headboard 94 1/2 \""
+            },
+            "zh": {
+              "name": "MANDAL Headboard",
+              "description": "MANDAL Headboard 94 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "TOLKNING Headboard",
+          "slug": "tolkning-headboard-30512631",
+          "sku": "IK-30512631",
+          "price": 60,
+          "compareAtPrice": 75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tolkning-headboard-handmade-rattan__1098693_pe865486_s5.jpg"
+          ],
+          "description": "TOLKNING Headboard",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30512631",
+          "measure": "",
+          "categoryName": "Headboards",
+          "translations": {
+            "en": {
+              "name": "TOLKNING Headboard",
+              "description": "TOLKNING Headboard"
+            },
+            "ru": {
+              "name": "TOLKNING Headboard",
+              "description": "TOLKNING Headboard"
+            },
+            "zh": {
+              "name": "TOLKNING Headboard",
+              "description": "TOLKNING Headboard"
+            }
+          }
+        },
+        {
+          "name": "BRIMNES Headboard with storage compartment",
+          "slug": "brimnes-headboard-with-storage-compartment-90269169",
+          "sku": "IK-90269169",
+          "price": 150,
+          "compareAtPrice": 187.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brimnes-headboard-with-storage-compartment-black__0636302_pe697794_s5.jpg"
+          ],
+          "description": "BRIMNES Headboard with storage compartment Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90269169",
+          "measure": "Queen",
+          "categoryName": "Headboards",
+          "translations": {
+            "en": {
+              "name": "BRIMNES Headboard with storage compartment",
+              "description": "BRIMNES Headboard with storage compartment Queen"
+            },
+            "ru": {
+              "name": "BRIMNES Headboard with storage compartment",
+              "description": "BRIMNES Headboard with storage compartment Queen"
+            },
+            "zh": {
+              "name": "BRIMNES Headboard with storage compartment",
+              "description": "BRIMNES Headboard with storage compartment Queen"
+            }
+          }
+        },
+        {
+          "name": "BRIMNES Headboard with storage compartment",
+          "slug": "brimnes-headboard-with-storage-compartment-20228714",
+          "sku": "IK-20228714",
+          "price": 130,
+          "compareAtPrice": 162.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brimnes-headboard-with-storage-compartment-white__0636301_pe697796_s5.jpg"
+          ],
+          "description": "BRIMNES Headboard with storage compartment Full/Double",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20228714",
+          "measure": "Full/Double",
+          "categoryName": "Headboards",
+          "translations": {
+            "en": {
+              "name": "BRIMNES Headboard with storage compartment",
+              "description": "BRIMNES Headboard with storage compartment Full/Double"
+            },
+            "ru": {
+              "name": "BRIMNES Headboard with storage compartment",
+              "description": "BRIMNES Headboard with storage compartment Full/Double"
+            },
+            "zh": {
+              "name": "BRIMNES Headboard with storage compartment",
+              "description": "BRIMNES Headboard with storage compartment Full/Double"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Bed slats",
+      "categorySlug": "bed-slats-24827",
+      "ikeaCode": "24827",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Bed slats"
+        },
+        "ru": {
+          "name": "Bed slats"
+        },
+        "zh": {
+          "name": "Bed slats"
+        }
+      },
+      "totalIkeaProductsInStock": 3,
+      "sampleProductsToInsert": [
+        {
+          "name": "LURÖY Slatted bed base",
+          "slug": "lury-slatted-bed-base-00160215",
+          "sku": "IK-00160215",
+          "price": 50,
+          "compareAtPrice": 62.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/luroey-slatted-bed-base__0268303_pe406267_s5.jpg"
+          ],
+          "description": "LURÖY Slatted bed base Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00160215",
+          "measure": "Queen",
+          "categoryName": "Bed slats",
+          "translations": {
+            "en": {
+              "name": "LURÖY Slatted bed base",
+              "description": "LURÖY Slatted bed base Queen"
+            },
+            "ru": {
+              "name": "LURÖY Slatted bed base",
+              "description": "LURÖY Slatted bed base Queen"
+            },
+            "zh": {
+              "name": "LURÖY Slatted bed base",
+              "description": "LURÖY Slatted bed base Queen"
+            }
+          }
+        },
+        {
+          "name": "LÖNSET Slatted bed base",
+          "slug": "lnset-slatted-bed-base-80278715",
+          "sku": "IK-80278715",
+          "price": 120,
+          "compareAtPrice": 150,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/loenset-slatted-bed-base__0373754_pe553510_s5.jpg"
+          ],
+          "description": "LÖNSET Slatted bed base Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80278715",
+          "measure": "Queen",
+          "categoryName": "Bed slats",
+          "translations": {
+            "en": {
+              "name": "LÖNSET Slatted bed base",
+              "description": "LÖNSET Slatted bed base Queen"
+            },
+            "ru": {
+              "name": "LÖNSET Slatted bed base",
+              "description": "LÖNSET Slatted bed base Queen"
+            },
+            "zh": {
+              "name": "LÖNSET Slatted bed base",
+              "description": "LÖNSET Slatted bed base Queen"
+            }
+          }
+        },
+        {
+          "name": "SKORVA Center support beam",
+          "slug": "skorva-center-support-beam-90124534",
+          "sku": "IK-90124534",
+          "price": 15,
+          "compareAtPrice": 18.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skorva-center-support-beam-galvanized__0636189_pe697703_s5.jpg"
+          ],
+          "description": "SKORVA Center support beam",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90124534",
+          "measure": "",
+          "categoryName": "Bed slats",
+          "translations": {
+            "en": {
+              "name": "SKORVA Center support beam",
+              "description": "SKORVA Center support beam"
+            },
+            "ru": {
+              "name": "SKORVA Center support beam",
+              "description": "SKORVA Center support beam"
+            },
+            "zh": {
+              "name": "SKORVA Center support beam",
+              "description": "SKORVA Center support beam"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Mattress foundations & bases",
+      "categorySlug": "mattress-bases-24825",
+      "ikeaCode": "24825",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Mattress foundations & bases"
+        },
+        "ru": {
+          "name": "Mattress foundations & bases"
+        },
+        "zh": {
+          "name": "Mattress foundations & bases"
+        }
+      },
+      "totalIkeaProductsInStock": 2,
+      "sampleProductsToInsert": [
+        {
+          "name": "LYNGÖR Foundation",
+          "slug": "lyngr-foundation-40488254",
+          "sku": "IK-40488254",
+          "price": 230,
+          "compareAtPrice": 287.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lyngoer-foundation__1244363_pe921944_s5.jpg"
+          ],
+          "description": "LYNGÖR Foundation Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40488254",
+          "measure": "Queen",
+          "categoryName": "Mattress foundations & bases",
+          "translations": {
+            "en": {
+              "name": "LYNGÖR Foundation",
+              "description": "LYNGÖR Foundation Queen"
+            },
+            "ru": {
+              "name": "LYNGÖR Foundation",
+              "description": "LYNGÖR Foundation Queen"
+            },
+            "zh": {
+              "name": "LYNGÖR Foundation",
+              "description": "LYNGÖR Foundation Queen"
+            }
+          }
+        },
+        {
+          "name": "LYNGÖR Slatted mattress base with legs",
+          "slug": "lyngr-slatted-mattress-base-with-legs-79615406",
+          "sku": "IK-79615406",
+          "price": 320,
+          "compareAtPrice": 400,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lyngoer-slatted-mattress-base-with-legs-dark-gray__1482671_pe1001101_s5.jpg"
+          ],
+          "description": "LYNGÖR Slatted mattress base with legs Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "79615406",
+          "measure": "Queen",
+          "categoryName": "Mattress foundations & bases",
+          "translations": {
+            "en": {
+              "name": "LYNGÖR Slatted mattress base with legs",
+              "description": "LYNGÖR Slatted mattress base with legs Queen"
+            },
+            "ru": {
+              "name": "LYNGÖR Slatted mattress base with legs",
+              "description": "LYNGÖR Slatted mattress base with legs Queen"
+            },
+            "zh": {
+              "name": "LYNGÖR Slatted mattress base with legs",
+              "description": "LYNGÖR Slatted mattress base with legs Queen"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Bed frame & headboard covers",
+      "categorySlug": "bed-headboard-covers-57280",
+      "ikeaCode": "57280",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Bed frame & headboard covers"
+        },
+        "ru": {
+          "name": "Bed frame & headboard covers"
+        },
+        "zh": {
+          "name": "Bed frame & headboard covers"
+        }
+      },
+      "totalIkeaProductsInStock": 5,
+      "sampleProductsToInsert": [
+        {
+          "name": "TÄRNKULLEN Cover for bed frame",
+          "slug": "trnkullen-cover-for-bed-frame-40584953",
+          "sku": "IK-40584953",
+          "price": 59,
+          "compareAtPrice": 73.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/taernkullen-cover-for-bed-frame-vissle-beige__1323433_pe942705_s5.jpg"
+          ],
+          "description": "TÄRNKULLEN Cover for bed frame Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40584953",
+          "measure": "Queen",
+          "categoryName": "Bed frame & headboard covers",
+          "translations": {
+            "en": {
+              "name": "TÄRNKULLEN Cover for bed frame",
+              "description": "TÄRNKULLEN Cover for bed frame Queen"
+            },
+            "ru": {
+              "name": "TÄRNKULLEN Cover for bed frame",
+              "description": "TÄRNKULLEN Cover for bed frame Queen"
+            },
+            "zh": {
+              "name": "TÄRNKULLEN Cover for bed frame",
+              "description": "TÄRNKULLEN Cover for bed frame Queen"
+            }
+          }
+        },
+        {
+          "name": "LYNGÖR Cover",
+          "slug": "lyngr-cover-90488237",
+          "sku": "IK-90488237",
+          "price": 40,
+          "compareAtPrice": 50,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lyngoer-cover-dark-gray__1000997_pe825312_s5.jpg"
+          ],
+          "description": "LYNGÖR Cover Queen",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90488237",
+          "measure": "Queen",
+          "categoryName": "Bed frame & headboard covers",
+          "translations": {
+            "en": {
+              "name": "LYNGÖR Cover",
+              "description": "LYNGÖR Cover Queen"
+            },
+            "ru": {
+              "name": "LYNGÖR Cover",
+              "description": "LYNGÖR Cover Queen"
+            },
+            "zh": {
+              "name": "LYNGÖR Cover",
+              "description": "LYNGÖR Cover Queen"
+            }
+          }
+        },
+        {
+          "name": "SLATTUM Slipcover for headboard",
+          "slug": "slattum-slipcover-for-headboard-90624466",
+          "sku": "IK-90624466",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/slattum-slipcover-for-headboard-oereryd-gray-beige__1490330_pe1004132_s5.jpg"
+          ],
+          "description": "SLATTUM Slipcover for headboard Full",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90624466",
+          "measure": "Full",
+          "categoryName": "Bed frame & headboard covers",
+          "translations": {
+            "en": {
+              "name": "SLATTUM Slipcover for headboard",
+              "description": "SLATTUM Slipcover for headboard Full"
+            },
+            "ru": {
+              "name": "SLATTUM Slipcover for headboard",
+              "description": "SLATTUM Slipcover for headboard Full"
+            },
+            "zh": {
+              "name": "SLATTUM Slipcover for headboard",
+              "description": "SLATTUM Slipcover for headboard Full"
+            }
+          }
+        },
+        {
+          "name": "RAMNEFJÄLL Cover for bed frame",
+          "slug": "ramnefjll-cover-for-bed-frame-30630917",
+          "sku": "IK-30630917",
+          "price": 69,
+          "compareAtPrice": 86.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ramnefjaell-cover-for-bed-frame-idekulla-beige__1540752_pe1017886_s5.jpg"
+          ],
+          "description": "RAMNEFJÄLL Cover for bed frame Full",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30630917",
+          "measure": "Full",
+          "categoryName": "Bed frame & headboard covers",
+          "translations": {
+            "en": {
+              "name": "RAMNEFJÄLL Cover for bed frame",
+              "description": "RAMNEFJÄLL Cover for bed frame Full"
+            },
+            "ru": {
+              "name": "RAMNEFJÄLL Cover for bed frame",
+              "description": "RAMNEFJÄLL Cover for bed frame Full"
+            },
+            "zh": {
+              "name": "RAMNEFJÄLL Cover for bed frame",
+              "description": "RAMNEFJÄLL Cover for bed frame Full"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Bed legs",
+      "categorySlug": "bed-legs-24822",
+      "ikeaCode": "24822",
+      "parentDepartment": "Beds & mattresses",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Bed legs"
+        },
+        "ru": {
+          "name": "Bed legs"
+        },
+        "zh": {
+          "name": "Bed legs"
+        }
+      },
+      "totalIkeaProductsInStock": 1,
+      "sampleProductsToInsert": [
+        {
+          "name": "BRYNILEN Leg",
+          "slug": "brynilen-leg-10608106",
+          "sku": "IK-10608106",
+          "price": 50,
+          "compareAtPrice": 62.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brynilen-leg-birch__1404094_pe969929_s5.jpg"
+          ],
+          "description": "BRYNILEN Leg 7 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10608106",
+          "measure": "7 7/8 \"",
+          "categoryName": "Bed legs",
+          "translations": {
+            "en": {
+              "name": "BRYNILEN Leg",
+              "description": "BRYNILEN Leg 7 7/8 \""
+            },
+            "ru": {
+              "name": "BRYNILEN Leg",
+              "description": "BRYNILEN Leg 7 7/8 \""
+            },
+            "zh": {
+              "name": "BRYNILEN Leg",
+              "description": "BRYNILEN Leg 7 7/8 \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -83,25 +83,25 @@ export function StatusLight({
   );
 }
 
-export function RiskBadge({ risk }: { risk: string }) {
+export function RiskBadge({ risk, label }: { risk: string; label?: string }) {
   const r = risk.toUpperCase();
   if (r === 'AUTO') {
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-        🟢 AUTO
+        🟢 {label || 'AUTO'}
       </span>
     );
   }
   if (r === 'APPROVE') {
     return (
       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-        🟡 APPROVE
+        🟡 {label || 'APPROVE'}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-      🔴 BLOCK
+      🔴 {label || 'BLOCK'}
     </span>
   );
 }

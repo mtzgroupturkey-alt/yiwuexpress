@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, CheckCircle2, AlertOctagon, RefreshCw, FileText } from 'lucide-react';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export default function AuditTrailPage() {
+  const { dict } = useAdminLocale();
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [verifyStatus, setVerifyStatus] = useState<any>(null);
@@ -56,10 +58,10 @@ export default function AuditTrailPage() {
           </Link>
           <div>
             <h1 className="text-xl font-black text-slate-900 dark:text-white">
-              Cryptographic Audit Log
+              {dict.autopilot?.cryptographicAuditTitle || 'Cryptographic Audit Log'}
             </h1>
             <p className="text-xs text-slate-500">
-              Append-only SHA-256 hash chained ledger of all autonomous actions & intents
+              {dict.autopilot?.cryptographicAuditSubtitle || 'Append-only SHA-256 hash chained ledger of all autonomous actions & intents'}
             </p>
           </div>
         </div>
@@ -71,7 +73,11 @@ export default function AuditTrailPage() {
             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-2 shadow-sm"
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>{verifying ? 'Verifying Chain...' : 'Verify Cryptographic Integrity'}</span>
+            <span>
+              {verifying
+                ? dict.autopilot?.verifyingChain || 'Verifying Chain...'
+                : dict.autopilot?.verifyCryptographicIntegrity || 'Verify Cryptographic Integrity'}
+            </span>
           </button>
         </div>
       </div>
@@ -81,8 +87,7 @@ export default function AuditTrailPage() {
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>
-              <strong>Cryptographic Hash Chain Valid:</strong> All {verifyStatus.totalEntries} entries
-              verified intact with zero mathematical corruption.
+              {(dict.autopilot?.hashChainValid || 'Cryptographic Hash Chain Valid: All {count} entries verified intact with zero mathematical corruption.').replace('{count}', String(verifyStatus.totalEntries))}
             </span>
           </div>
           <span className="text-[11px] opacity-75">Checked at {verifyStatus.verifiedAt}</span>
@@ -93,9 +98,11 @@ export default function AuditTrailPage() {
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-mono text-xs">
         <div className="px-5 py-3.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 font-sans font-bold flex items-center justify-between">
           <span className="text-slate-700 dark:text-slate-300 uppercase tracking-wider text-xs">
-            Immutable Audit Trail
+            {dict.autopilot?.immutableAuditTrail || 'Immutable Audit Trail'}
           </span>
-          <span className="text-xs font-normal text-slate-400">Total Entries: {entries.length}</span>
+          <span className="text-xs font-normal text-slate-400">
+            {(dict.autopilot?.totalEntriesCount || 'Total Entries: {count}').replace('{count}', String(entries.length))}
+          </span>
         </div>
 
         <div className="overflow-x-auto">

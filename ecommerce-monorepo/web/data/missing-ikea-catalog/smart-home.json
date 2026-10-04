@@ -1,0 +1,296 @@
+{
+  "department": "Smart home",
+  "departmentSlug": "smart-home-hs001",
+  "departmentCode": "hs001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Умный дом",
+    "zh": "智能家居"
+  },
+  "missingSubcategoriesCount": 2,
+  "totalMissingProductsCount": 25,
+  "subcategories": [
+    {
+      "categoryName": "Smart switches, plugs & sensors",
+      "categorySlug": "smart-light-wireless-switch-36814",
+      "ikeaCode": "36814",
+      "parentDepartment": "Smart home",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Smart switches, plugs & sensors"
+        },
+        "ru": {
+          "name": "Smart switches, plugs & sensors"
+        },
+        "zh": {
+          "name": "Smart switches, plugs & sensors"
+        }
+      },
+      "totalIkeaProductsInStock": 18,
+      "sampleProductsToInsert": [
+        {
+          "name": "BILRESA Remote control",
+          "slug": "bilresa-remote-control-80617876",
+          "sku": "IK-80617876",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bilresa-remote-control-white-smart-dual-button__1402959_pe969197_s5.jpg"
+          ],
+          "description": "BILRESA Remote control",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80617876",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "BILRESA Remote control",
+              "description": "BILRESA Remote control"
+            },
+            "ru": {
+              "name": "BILRESA Remote control",
+              "description": "BILRESA Remote control"
+            },
+            "zh": {
+              "name": "BILRESA Remote control",
+              "description": "BILRESA Remote control"
+            }
+          }
+        },
+        {
+          "name": "GRILLPLATS Plug",
+          "slug": "grillplats-plug-70624740",
+          "sku": "IK-70624740",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grillplats-plug-smart__1570372_pe1029861_s5.jpg"
+          ],
+          "description": "GRILLPLATS Plug",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70624740",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "GRILLPLATS Plug",
+              "description": "GRILLPLATS Plug"
+            },
+            "ru": {
+              "name": "GRILLPLATS Plug",
+              "description": "GRILLPLATS Plug"
+            },
+            "zh": {
+              "name": "GRILLPLATS Plug",
+              "description": "GRILLPLATS Plug"
+            }
+          }
+        },
+        {
+          "name": "MYGGBETT Door/window sensor",
+          "slug": "myggbett-doorwindow-sensor-60617641",
+          "sku": "IK-60617641",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/myggbett-door-window-sensor-smart__1420257_pe977237_s5.jpg"
+          ],
+          "description": "MYGGBETT Door/window sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60617641",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            },
+            "ru": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            },
+            "zh": {
+              "name": "MYGGBETT Door/window sensor",
+              "description": "MYGGBETT Door/window sensor"
+            }
+          }
+        },
+        {
+          "name": "TIMMERFLOTTE Temperature/humidity sensor",
+          "slug": "timmerflotte-temperaturehumidity-sensor-50618957",
+          "sku": "IK-50618957",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/timmerflotte-temperature-humidity-sensor-smart__1402991_pe969207_s5.jpg"
+          ],
+          "description": "TIMMERFLOTTE Temperature/humidity sensor",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50618957",
+          "measure": "",
+          "categoryName": "Smart switches, plugs & sensors",
+          "translations": {
+            "en": {
+              "name": "TIMMERFLOTTE Temperature/humidity sensor",
+              "description": "TIMMERFLOTTE Temperature/humidity sensor"
+            },
+            "ru": {
+              "name": "TIMMERFLOTTE Temperature/humidity sensor",
+              "description": "TIMMERFLOTTE Temperature/humidity sensor"
+            },
+            "zh": {
+              "name": "TIMMERFLOTTE Temperature/humidity sensor",
+              "description": "TIMMERFLOTTE Temperature/humidity sensor"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Smart air purifiers",
+      "categorySlug": "smart-air-purifiers-56472",
+      "ikeaCode": "56472",
+      "parentDepartment": "Smart home",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Smart air purifiers"
+        },
+        "ru": {
+          "name": "Smart air purifiers"
+        },
+        "zh": {
+          "name": "Smart air purifiers"
+        }
+      },
+      "totalIkeaProductsInStock": 7,
+      "sampleProductsToInsert": [
+        {
+          "name": "STARKVIND Table with air purifier",
+          "slug": "starkvind-table-with-air-purifier-30501958",
+          "sku": "IK-30501958",
+          "price": 249.99,
+          "compareAtPrice": 312.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/starkvind-table-with-air-purifier-stained-oak-veneer-dark-brown-smart__1040331_pe840839_s5.jpg"
+          ],
+          "description": "STARKVIND Table with air purifier",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30501958",
+          "measure": "",
+          "categoryName": "Smart air purifiers",
+          "translations": {
+            "en": {
+              "name": "STARKVIND Table with air purifier",
+              "description": "STARKVIND Table with air purifier"
+            },
+            "ru": {
+              "name": "STARKVIND Table with air purifier",
+              "description": "STARKVIND Table with air purifier"
+            },
+            "zh": {
+              "name": "STARKVIND Table with air purifier",
+              "description": "STARKVIND Table with air purifier"
+            }
+          }
+        },
+        {
+          "name": "STARKVIND Air purifier",
+          "slug": "starkvind-air-purifier-00461949",
+          "sku": "IK-00461949",
+          "price": 149.99,
+          "compareAtPrice": 187.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/starkvind-air-purifier-white-smart__0978611_pe814183_s5.jpg"
+          ],
+          "description": "STARKVIND Air purifier",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00461949",
+          "measure": "",
+          "categoryName": "Smart air purifiers",
+          "translations": {
+            "en": {
+              "name": "STARKVIND Air purifier",
+              "description": "STARKVIND Air purifier"
+            },
+            "ru": {
+              "name": "STARKVIND Air purifier",
+              "description": "STARKVIND Air purifier"
+            },
+            "zh": {
+              "name": "STARKVIND Air purifier",
+              "description": "STARKVIND Air purifier"
+            }
+          }
+        },
+        {
+          "name": "STARKVIND Table with air purifier",
+          "slug": "starkvind-table-with-air-purifier-29471373",
+          "sku": "IK-29471373",
+          "price": 284.99,
+          "compareAtPrice": 356.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/starkvind-table-with-air-purifier-additional-gas-filter-stained-oak-veneer-white__1052011_pe845876_s5.jpg"
+          ],
+          "description": "STARKVIND Table with air purifier",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "29471373",
+          "measure": "",
+          "categoryName": "Smart air purifiers",
+          "translations": {
+            "en": {
+              "name": "STARKVIND Table with air purifier",
+              "description": "STARKVIND Table with air purifier"
+            },
+            "ru": {
+              "name": "STARKVIND Table with air purifier",
+              "description": "STARKVIND Table with air purifier"
+            },
+            "zh": {
+              "name": "STARKVIND Table with air purifier",
+              "description": "STARKVIND Table with air purifier"
+            }
+          }
+        },
+        {
+          "name": "STARKVIND Air purifier/additional gas filter",
+          "slug": "starkvind-air-purifieradditional-gas-filter-59471319",
+          "sku": "IK-59471319",
+          "price": 184.99,
+          "compareAtPrice": 231.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/starkvind-air-purifier-additional-gas-filter-black__1052015_pe845880_s5.jpg"
+          ],
+          "description": "STARKVIND Air purifier/additional gas filter",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "59471319",
+          "measure": "",
+          "categoryName": "Smart air purifiers",
+          "translations": {
+            "en": {
+              "name": "STARKVIND Air purifier/additional gas filter",
+              "description": "STARKVIND Air purifier/additional gas filter"
+            },
+            "ru": {
+              "name": "STARKVIND Air purifier/additional gas filter",
+              "description": "STARKVIND Air purifier/additional gas filter"
+            },
+            "zh": {
+              "name": "STARKVIND Air purifier/additional gas filter",
+              "description": "STARKVIND Air purifier/additional gas filter"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

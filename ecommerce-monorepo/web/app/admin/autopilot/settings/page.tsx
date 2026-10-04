@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Shield, Sliders, DollarSign, Bell, RefreshCw, Power } from 'lucide-react';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export default function AutoPilotSettingsPage() {
+  const { dict } = useAdminLocale();
   const [killStatus, setKillStatus] = useState<any>(null);
   const [budget, setBudget] = useState('5.00');
   const [loading, setLoading] = useState(false);
@@ -58,10 +60,10 @@ export default function AutoPilotSettingsPage() {
         </Link>
         <div>
           <h1 className="text-xl font-black text-slate-900 dark:text-white">
-            Auto-Pilot System Settings
+            {dict.autopilot?.settingsTitle || 'Auto-Pilot System Settings'}
           </h1>
           <p className="text-xs text-slate-500">
-            Emergency kill switches, operational budget limits, and notification channels
+            {dict.autopilot?.settingsSubtitle || 'Emergency kill switches, operational budget limits, and notification channels'}
           </p>
         </div>
       </div>
@@ -73,10 +75,10 @@ export default function AutoPilotSettingsPage() {
             <Power className="w-5 h-5 text-rose-500" />
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Global Emergency Kill Switch
+                {dict.autopilot?.globalKillSwitch || 'Global Emergency Kill Switch'}
               </h3>
               <p className="text-xs text-slate-500">
-                Immediately block all autonomous execution across all 10 departments.
+                {dict.autopilot?.globalKillSwitchDesc || 'Immediately block all autonomous execution across all 10 departments.'}
               </p>
             </div>
           </div>
@@ -89,14 +91,18 @@ export default function AutoPilotSettingsPage() {
                 : 'bg-rose-600 hover:bg-rose-700 text-white'
             }`}
           >
-            {killStatus?.globalActive ? 'DEACTIVATE KILL SWITCH' : 'ACTIVATE LOCKDOWN'}
+            {killStatus?.globalActive
+              ? dict.autopilot?.deactivateKillSwitch || 'DEACTIVATE KILL SWITCH'
+              : dict.autopilot?.activateLockdown || 'ACTIVATE LOCKDOWN'}
           </button>
         </div>
 
         <div className="text-xs text-slate-600 dark:text-slate-400">
-          Current State:{' '}
+          {dict.autopilot?.currentStateLabel || 'Current State:'}{' '}
           <strong className={killStatus?.globalActive ? 'text-rose-600' : 'text-emerald-600'}>
-            {killStatus?.globalActive ? 'LOCKDOWN ACTIVE (Actions Blocked)' : 'NOMINAL (Full Autonomous Active)'}
+            {killStatus?.globalActive
+              ? dict.autopilot?.lockdownActive || 'LOCKDOWN ACTIVE (Actions Blocked)'
+              : dict.autopilot?.nominalAutonomous || 'NOMINAL (Full Autonomous Active)'}
           </strong>
         </div>
       </div>

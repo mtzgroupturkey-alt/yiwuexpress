@@ -20,8 +20,10 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export default function StockTransfersPage() {
+  const { dict } = useAdminLocale()
   const queryClient = useQueryClient()
 
   const { data, isLoading, refetch } = useQuery<{ success: boolean; data: any[] }>({
@@ -41,7 +43,7 @@ export default function StockTransfersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-stock-transfers'] })
-      toast.success('Transfer dispatched (stock deducted from source warehouse)')
+      toast.success('Transfer dispatched')
     },
     onError: (err: any) => toast.error(err.message),
   })
@@ -54,7 +56,7 @@ export default function StockTransfersPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-stock-transfers'] })
-      toast.success('Transfer received into destination warehouse stock')
+      toast.success('Transfer received')
     },
     onError: (err: any) => toast.error(err.message),
   })
@@ -67,15 +69,15 @@ export default function StockTransfersPage() {
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2 text-foreground">
             <ArrowRightLeft className="w-7 h-7 text-indigo-600" />
-            Inter-Warehouse Stock Transfers
+            {dict.stockTransfers.pageTitle}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Dispatch and receive inventory balance movements between warehouses with full ledger audit.
+            {dict.stockTransfers.pageSubtitle}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => refetch()} className="h-9 gap-1.5">
           <RefreshCw className="w-4 h-4" />
-          Refresh
+          {dict.stockTransfers.refresh}
         </Button>
       </div>
 
@@ -84,13 +86,13 @@ export default function StockTransfersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Transfer #</TableHead>
-                <TableHead>Source Warehouse</TableHead>
-                <TableHead>Destination Warehouse</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead>{dict.stockTransfers.thTransferNum}</TableHead>
+                <TableHead>{dict.stockTransfers.thSourceWarehouse}</TableHead>
+                <TableHead>{dict.stockTransfers.thDestWarehouse}</TableHead>
+                <TableHead>{dict.stockTransfers.thStatus}</TableHead>
+                <TableHead>{dict.stockTransfers.thItems}</TableHead>
+                <TableHead>{dict.stockTransfers.thDate}</TableHead>
+                <TableHead className="text-right">{dict.stockTransfers.thAction}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -98,12 +100,13 @@ export default function StockTransfersPage() {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto text-indigo-600" />
+                    <span className="text-xs text-muted-foreground mt-2 block">{dict.stockTransfers.loadingTransfers}</span>
                   </TableCell>
                 </TableRow>
               ) : transfers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">
-                    No inter-warehouse stock transfers found.
+                    {dict.stockTransfers.noTransfers}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -136,7 +139,7 @@ export default function StockTransfersPage() {
                           className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white gap-1"
                         >
                           <Truck className="w-3 h-3" />
-                          Dispatch
+                          {dict.stockTransfers.btnDispatch}
                         </Button>
                       )}
                       {tr.status === 'IN_TRANSIT' && (
@@ -147,11 +150,11 @@ export default function StockTransfersPage() {
                           className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
                         >
                           <CheckCircle className="w-3 h-3" />
-                          Receive
+                          {dict.stockTransfers.btnReceive}
                         </Button>
                       )}
                       {tr.status === 'COMPLETED' && (
-                        <span className="text-xs text-emerald-600 font-semibold">Completed</span>
+                        <span className="text-xs text-emerald-600 font-semibold">{dict.stockTransfers.statusReceived}</span>
                       )}
                     </TableCell>
                   </TableRow>

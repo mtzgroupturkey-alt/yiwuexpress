@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useAdminLocale } from '../../contexts/AdminLocaleContext';
 
 interface Candidate {
   id?: string;
@@ -61,6 +62,7 @@ interface ProductItem {
 }
 
 export default function ImageFinderPage() {
+  const { dict } = useAdminLocale();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -515,13 +517,13 @@ export default function ImageFinderPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Image Finder & Target Matcher</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">{dict.tools.imageFinderTitle || 'Image Finder & Target Matcher'}</h1>
             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              Target Site & Legal Workflow
+              {dict.tools.legalWorkflowBadge || 'Target Site & Legal Workflow'}
             </Badge>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            Search matching products on target sites (e.g., <strong>ikea.com</strong>) or stock libraries, review photos, and safely convert to local WebP storage.
+            {dict.tools.imageFinderSubtitle || 'Search matching products on target sites or stock libraries, review photos, and safely convert to local WebP storage.'}
           </p>
         </div>
 
@@ -529,12 +531,12 @@ export default function ImageFinderPage() {
           <Link href="/admin/tools/images">
             <Button variant="outline" size="sm" className="gap-2">
               <Layers className="w-4 h-4" />
-              Image Migration Tool
+              {dict.tools.imageMigrationTitle || 'Image Migration Tool'}
             </Button>
           </Link>
           <Button variant="outline" size="sm" onClick={fetchProducts} disabled={loading} className="gap-2">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
+            {dict.tools.refreshStats || 'Refresh'}
           </Button>
         </div>
       </div>
@@ -546,13 +548,13 @@ export default function ImageFinderPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-bold text-gray-900">Target Websites for Product Matching</span>
+                <span className="text-sm font-bold text-gray-900">{dict.tools.targetWebsites || 'Target Websites for Product Matching'}</span>
                 <Badge variant="secondary" className="text-[11px] bg-blue-100 text-blue-800">
-                  Active: {activeTargetSite}
+                  {(dict.tools.activeSite || 'Active: {site}').replace('{site}', activeTargetSite)}
                 </Badge>
               </div>
               <p className="text-xs text-gray-600">
-                Click a website to set it as active, or add any custom supplier/competitor website domain to search product names on it.
+                {dict.tools.targetWebsitesDesc || 'Click a website to set it as active, or add any custom supplier/competitor website domain to search product names on it.'}
               </p>
             </div>
 
@@ -574,14 +576,14 @@ export default function ImageFinderPage() {
                 className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white shrink-0 gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
-                Save Website
+                {dict.tools.saveWebsite || 'Save Website'}
               </Button>
             </div>
           </div>
 
           {/* Target Sites List Pills */}
           <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-blue-100/80">
-            <span className="text-xs font-semibold text-gray-500 mr-1">Saved Sites:</span>
+            <span className="text-xs font-semibold text-gray-500 mr-1">{dict.tools.savedSites || 'Saved Sites:'}</span>
             {targetSites.map((site) => {
               const isActive = activeTargetSite === site;
               return (
@@ -621,34 +623,34 @@ export default function ImageFinderPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="shadow-xs border-gray-200">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold text-gray-500">Filtered Products</CardDescription>
+            <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.filteredProducts || 'Filtered Products'}</CardDescription>
             <CardTitle className="text-2xl font-black text-amber-600">{totalCount.toLocaleString()}</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-500">In current filtered search view</CardContent>
+          <CardContent className="text-xs text-gray-500">{dict.tools.filteredProductsSub || 'In current filtered search view'}</CardContent>
         </Card>
 
         <Card className="shadow-xs border-gray-200">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold text-gray-500">Missing Thumbnails</CardDescription>
+            <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.missingThumbnails || 'Missing Thumbnails'}</CardDescription>
             <CardTitle className="text-2xl font-black text-rose-600">{stats.nullThumbCount.toLocaleString()}</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-500">Products with no primary thumbnail set</CardContent>
+          <CardContent className="text-xs text-gray-500">{dict.tools.missingThumbnailsSub || 'Products with no primary thumbnail set'}</CardContent>
         </Card>
 
         <Card className="shadow-xs border-gray-200">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold text-gray-500">External / IKEA Images</CardDescription>
+            <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.externalImages || 'External / IKEA Images'}</CardDescription>
             <CardTitle className="text-2xl font-black text-blue-600">{stats.ikeaOrExternalCount.toLocaleString()}</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-500">Hotlinked images subject to blocking</CardContent>
+          <CardContent className="text-xs text-gray-500">{dict.tools.externalImagesSub || 'Hotlinked images subject to blocking'}</CardContent>
         </Card>
 
         <Card className="shadow-xs border-gray-200">
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold text-gray-500">Total Products</CardDescription>
+            <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.totalProductsCatalog || 'Total Products'}</CardDescription>
             <CardTitle className="text-2xl font-black text-gray-800">{stats.totalProducts.toLocaleString()}</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-500">Full catalog database records</CardContent>
+          <CardContent className="text-xs text-gray-500">{dict.tools.totalProductsCatalogSub || 'Full catalog database records'}</CardContent>
         </Card>
       </div>
 
@@ -659,7 +661,7 @@ export default function ImageFinderPage() {
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
               <Input
-                placeholder="Search products by name, SKU, or slug..."
+                placeholder={dict.tools.searchProductsPlaceholder || 'Search products by name, SKU, or slug...'}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 bg-white"
@@ -675,7 +677,7 @@ export default function ImageFinderPage() {
                 }}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">All Categories</option>
+                <option value="">{dict.tools.allCategories || 'All Categories'}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -691,9 +693,9 @@ export default function ImageFinderPage() {
                 }}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
-                <option value="missing_or_external">Missing or External (IKEA)</option>
-                <option value="no_thumbnail">No Thumbnail Only</option>
-                <option value="all">All Products</option>
+                <option value="missing_or_external">{dict.tools.missingOrExternal || 'Missing or External (IKEA)'}</option>
+                <option value="no_thumbnail">{dict.tools.noThumbnailOnly || 'No Thumbnail Only'}</option>
+                <option value="all">{dict.tools.allProductsFilter || 'All Products'}</option>
               </select>
 
               <select
@@ -720,11 +722,11 @@ export default function ImageFinderPage() {
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-semibold uppercase text-gray-500 tracking-wider">
-                <th className="py-3 px-4 w-16">Image</th>
-                <th className="py-3 px-4">Product & SKU</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Image Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4 w-16">{dict.tools.thImage || 'Image'}</th>
+                <th className="py-3 px-4">{dict.tools.thProductSku || 'Product & SKU'}</th>
+                <th className="py-3 px-4">{dict.tools.thCategory || 'Category'}</th>
+                <th className="py-3 px-4">{dict.tools.thImageStatus || 'Image Status'}</th>
+                <th className="py-3 px-4 text-right">{dict.tools.thActions || 'Actions'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -732,13 +734,13 @@ export default function ImageFinderPage() {
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-gray-500">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-600 mb-2" />
-                    Loading products...
+                    {dict.common?.loading || 'Loading products...'}
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-gray-400">
-                    No products matching current filter.
+                    {dict.tools.noProductsMatch || 'No products matching current filter.'}
                   </td>
                 </tr>
               ) : (
@@ -765,7 +767,7 @@ export default function ImageFinderPage() {
                           ) : (
                             <div className="flex flex-col items-center justify-center text-[10px] text-gray-400">
                               <ImageIcon className="w-5 h-5 text-gray-300" />
-                              <span className="font-bold text-rose-500">None</span>
+                              <span className="font-bold text-rose-500">{dict.common?.none || 'None'}</span>
                             </div>
                           )}
                         </div>
@@ -779,7 +781,9 @@ export default function ImageFinderPage() {
                           <span>•</span>
                           <span>${p.price.toFixed(2)}</span>
                           <span>•</span>
-                          <span className="text-gray-400">{p.images?.length || 0} images</span>
+                          <span className="text-gray-400">
+                            {(dict.tools.imagesCount || '{count} images').replace('{count}', String(p.images?.length || 0))}
+                          </span>
                         </div>
                       </td>
 
@@ -790,7 +794,7 @@ export default function ImageFinderPage() {
                             {p.category.name}
                           </Badge>
                         ) : (
-                          <span className="text-gray-400 text-xs">Uncategorized</span>
+                          <span className="text-gray-400 text-xs">{dict.tools.uncategorized || 'Uncategorized'}</span>
                         )}
                       </td>
 
@@ -798,20 +802,20 @@ export default function ImageFinderPage() {
                       <td className="py-3 px-4">
                         {isMissing ? (
                           <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 text-xs">
-                            Missing Image
+                            {dict.tools.missingImageBadge || 'Missing Image'}
                           </Badge>
                         ) : hasExternal ? (
                           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
-                            Hotlinked (IKEA)
+                            {dict.tools.hotlinkedBadge || 'Hotlinked (IKEA)'}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                            Self-Hosted
+                            {dict.tools.selfHostedBadge || 'Self-Hosted'}
                           </Badge>
                         )}
                         {p.imageCandidates && p.imageCandidates.length > 0 && (
                           <div className="text-[11px] text-blue-600 font-medium mt-1">
-                            {p.imageCandidates.length} candidate(s) cached
+                            {(dict.tools.candidateCached || '{count} candidate(s) cached').replace('{count}', String(p.imageCandidates.length))}
                           </div>
                         )}
                       </td>
@@ -826,7 +830,7 @@ export default function ImageFinderPage() {
                             className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 h-8 text-xs shadow-xs"
                           >
                             <Search className="w-3.5 h-3.5" />
-                            Search on {activeTargetSite}
+                            {(dict.tools.btnSearchOn || 'Search on {site}').replace('{site}', activeTargetSite)}
                           </Button>
 
                           <Button
@@ -838,7 +842,7 @@ export default function ImageFinderPage() {
                             title="Upload directly from device"
                           >
                             <Upload className="w-3.5 h-3.5" />
-                            Upload
+                            {dict.tools.btnUpload || 'Upload'}
                           </Button>
                         </div>
                       </td>
@@ -853,8 +857,9 @@ export default function ImageFinderPage() {
         {/* Pagination Bar */}
         <div className="p-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-500">
           <div>
-            Showing <strong className="text-gray-800">{products.length}</strong> of{' '}
-            <strong className="text-gray-800">{totalCount.toLocaleString()}</strong> products
+            {(dict.tools.showingProductsPagination || 'Showing {current} of {total} products')
+              .replace('{current}', String(products.length))
+              .replace('{total}', totalCount.toLocaleString())}
           </div>
 
           <div className="flex items-center gap-1">
@@ -868,7 +873,9 @@ export default function ImageFinderPage() {
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <span className="px-3 text-xs font-semibold text-gray-700">
-              Page {page} of {totalPages || 1}
+              {(dict.tools.pageOf || 'Page {page} of {total}')
+                .replace('{page}', String(page))
+                .replace('{total}', String(totalPages || 1))}
             </span>
             <Button
               size="sm"
@@ -952,7 +959,7 @@ export default function ImageFinderPage() {
                       }`}
                     >
                       <Sparkles className="w-3.5 h-3.5" />
-                      Free Stock (Unsplash, Pexels)
+                      {dict.tools.modalSearchStock || 'Free Stock (Unsplash, Pexels)'}
                     </button>
 
                     <button
@@ -965,7 +972,7 @@ export default function ImageFinderPage() {
                       }`}
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      Direct Image URL
+                      {dict.tools.modalDirectUrl || 'Direct Image URL'}
                     </button>
                   </div>
 
@@ -1018,17 +1025,17 @@ export default function ImageFinderPage() {
                       >
                         <RefreshCw className={`w-4 h-4 ${searching ? 'animate-spin' : ''}`} />
                         {searching
-                          ? 'Searching...'
+                          ? dict.common?.loading || 'Searching...'
                           : searchMode === 'target_site'
-                          ? `Search on ${modalTargetSite}`
-                          : 'Search Stock Photos'}
+                          ? (dict.tools.btnSearchOn || 'Search on {site}').replace('{site}', modalTargetSite)
+                          : dict.tools.modalSearchStock || 'Search Stock Photos'}
                       </Button>
                     </div>
 
                     {/* Quick Search Suggestions Pills */}
                     {querySuggestions.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-                        <span className="text-gray-500 font-medium">Query suggestions:</span>
+                        <span className="text-gray-500 font-medium">{dict.tools.querySuggestions || 'Query suggestions:'}</span>
                         {querySuggestions.map((sug, idx) => (
                           <button
                             key={idx}
@@ -1074,7 +1081,7 @@ export default function ImageFinderPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-gray-900">
-                      Product Photos Found ({candidates.length})
+                      {(dict.tools.photosFound || 'Product Photos Found ({count})').replace('{count}', String(candidates.length))}
                     </h3>
                     {selectedCandidateKeys.size > 0 && (
                       <Badge className="bg-emerald-600 text-white text-xs">
@@ -1092,7 +1099,7 @@ export default function ImageFinderPage() {
                         className="h-7 text-xs gap-1 text-gray-700"
                       >
                         <CheckSquare className="w-3.5 h-3.5" />
-                        Select All
+                        {dict.tools.selectAll || 'Select All'}
                       </Button>
                       <Button
                         size="sm"
@@ -1100,7 +1107,7 @@ export default function ImageFinderPage() {
                         onClick={clearSelection}
                         className="h-7 text-xs text-gray-500 hover:text-gray-800"
                       >
-                        Clear Selection
+                        {dict.tools.clearSelection || 'Clear Selection'}
                       </Button>
                     </div>
                   )}
@@ -1215,7 +1222,7 @@ export default function ImageFinderPage() {
                     <div className="space-y-0.5">
                       <div className="text-xs font-bold text-gray-900 uppercase tracking-wider flex items-center gap-1.5">
                         <SlidersHorizontal className="w-3.5 h-3.5 text-blue-600" />
-                        Assignment Mode for {selectedCandidateKeys.size} Selected Photo(s)
+                        {(dict.tools.assignmentModeTitle || 'Assignment Mode for {count} Selected Photo(s)').replace('{count}', String(selectedCandidateKeys.size))}
                       </div>
                       <p className="text-xs text-gray-500">
                         Choose how the selected photos should be applied to <strong>{activeProduct.name}</strong>.
@@ -1233,7 +1240,7 @@ export default function ImageFinderPage() {
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        Main Thumbnail + Gallery
+                        {dict.tools.modeThumbnail || 'Main Thumbnail + Gallery'}
                       </button>
                       <button
                         type="button"
@@ -1244,7 +1251,7 @@ export default function ImageFinderPage() {
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        Add to Gallery Only
+                        {dict.tools.modeGallery || 'Add to Gallery Only'}
                       </button>
                       <button
                         type="button"
@@ -1255,7 +1262,7 @@ export default function ImageFinderPage() {
                             : 'text-gray-700 hover:bg-gray-100'
                         }`}
                       >
-                        Replace All Images
+                        {dict.tools.modeReplace || 'Replace All Images'}
                       </button>
                     </div>
                   </div>
@@ -1265,7 +1272,7 @@ export default function ImageFinderPage() {
                     <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 space-y-2">
                       <div className="flex items-center gap-2 font-bold text-amber-800">
                         <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                        Copyright & Legal Notice
+                        {dict.tools.copyrightNotice || 'Copyright & Legal Notice'}
                       </div>
                       <p className="leading-relaxed">
                         ⚠️ One or more selected images originate from external commercial websites (e.g. <strong>{modalTargetSite}</strong>).
@@ -1279,7 +1286,7 @@ export default function ImageFinderPage() {
                           onChange={(e) => setConfirmRights(e.target.checked)}
                           className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
                         />
-                        <span>I confirm that I have the legal right or permission to use these images.</span>
+                        <span>{dict.tools.copyrightConfirm || 'I confirm that I have the legal right or permission to use these images.'}</span>
                       </label>
                     </div>
                   )}
@@ -1290,7 +1297,7 @@ export default function ImageFinderPage() {
             {/* Modal Footer */}
             <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
               <Button variant="ghost" size="sm" onClick={() => setActiveProduct(null)}>
-                Cancel
+                {dict.common?.cancel || 'Cancel'}
               </Button>
 
               <div className="flex items-center gap-2">
@@ -1306,7 +1313,7 @@ export default function ImageFinderPage() {
                   <CheckCircle2 className={`w-4 h-4 ${assigning ? 'animate-spin' : ''}`} />
                   {assigning
                     ? 'Downloading & Converting to WebP...'
-                    : `Apply ${selectedCandidateKeys.size} Image${selectedCandidateKeys.size > 1 ? 's' : ''} to Product`}
+                    : (dict.tools.btnApplyImages || 'Apply {count} Image(s) to Product').replace('{count}', String(selectedCandidateKeys.size))}
                 </Button>
               </div>
             </div>

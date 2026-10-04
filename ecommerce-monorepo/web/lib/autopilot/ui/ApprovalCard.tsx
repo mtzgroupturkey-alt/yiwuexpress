@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Check, X, Clock, Eye, AlertCircle, Loader2 } from 'lucide-react';
 import { RiskBadge } from './StatusLight';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export interface ApprovalCardProps {
   id: string;
@@ -25,6 +26,7 @@ export function ApprovalCard({
   slaDeadline,
   onResolved,
 }: ApprovalCardProps) {
+  const { dict } = useAdminLocale();
   const [loading, setLoading] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -66,14 +68,40 @@ export function ApprovalCard({
     }
   };
 
+  const riskKey = risk?.toLowerCase() as 'auto' | 'approve' | 'block';
+  const riskLabel = dict.autopilot?.riskLabels?.[riskKey] || risk;
+  const normalizedAction = action.toUpperCase().replace(/\s+/g, '_');
+  const localizedAction = (dict.autopilot?.actionTypes as any)?.[normalizedAction] || 
+    (dict.autopilot?.actionTypes as any)?.[action] || 
+    action;
+
+  let localizedRationale = (dict.autopilot?.actionDescriptions as any)?.[normalizedAction] || 
+    (dict.autopilot?.actionDescriptions as any)?.[action];
+
+  if (!localizedRationale) {
+    if (rationale.includes('Replenish 3 high-velocity') || rationale.includes('Replenish depleted SKUs')) {
+      localizedRationale = (dict.autopilot?.actionDescriptions as any)?.['CREATE_TRANSFER_REQUEST'] || rationale;
+    } else if (rationale.includes('failed login brute-force') || rationale.includes('containment of')) {
+      localizedRationale = (dict.autopilot?.actionDescriptions as any)?.['LOCK_SUSPICIOUS_SESSIONS'] || rationale;
+    } else if (rationale.includes('customs inspection delay') || rationale.includes('delay (>72h)')) {
+      localizedRationale = (dict.autopilot?.actionDescriptions as any)?.['DRAFT_CUSTOMER_DELAY_NOTICE'] || rationale;
+    } else if (rationale.includes('Reprioritize 3 SLA-breached') || rationale.includes('SLA-breached wholesale inquiries')) {
+      localizedRationale = (dict.autopilot?.actionDescriptions as any)?.['ESCALATE_SUPPORT_QUEUE'] || rationale;
+    } else if (rationale.includes('Audit payment provider') || rationale.includes('declined transactions')) {
+      localizedRationale = (dict.autopilot?.actionDescriptions as any)?.['INSPECT_PAYMENT_GATEWAY'] || rationale;
+    } else {
+      localizedRationale = rationale;
+    }
+  }
+
   return (
     <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <RiskBadge risk={risk} />
+            <RiskBadge risk={risk} label={riskLabel} />
             <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              {action}
+              {localizedAction}
             </span>
           </div>
           <span className="text-[11px] font-semibold text-slate-500 uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800">
@@ -82,13 +110,13 @@ export function ApprovalCard({
         </div>
 
         <p className="text-xs text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
-          {rationale}
+          {localizedRationale}
         </p>
 
         {slaDeadline && (
           <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
             <Clock className="w-3.5 h-3.5" />
-            <span>SLA Deadline: {new Date(slaDeadline).toLocaleTimeString()}</span>
+            <span>SLA: {new Date(slaDeadline).toLocaleTimeString()}</span>
           </div>
         )}
 
@@ -105,7 +133,7 @@ export function ApprovalCard({
           className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1"
         >
           <Eye className="w-3.5 h-3.5" />
-          <span>{detailsOpen ? 'Hide' : 'Details'}</span>
+          <span>{detailsOpen ? (dict.common?.hide || 'Hide') : (dict.common?.details || 'Details')}</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -115,7 +143,7 @@ export function ApprovalCard({
             className="px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
           >
             <X className="w-3.5 h-3.5 inline mr-1" />
-            Reject
+            {dict.common?.reject || 'Reject'}
           </button>
           <button
             onClick={handleApprove}
@@ -123,7 +151,7 @@ export function ApprovalCard({
             className="px-3 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors flex items-center gap-1"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-            Approve
+            {dict.common?.approve || 'Approve'}
           </button>
         </div>
       </div>
@@ -132,7 +160,7 @@ export function ApprovalCard({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-xl p-5 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-xl">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 text-rose-500" /> Reject Action Proposal
+              <AlertCircle className="w-4 h-4 text-rose-500" /> {dict.common?.reject || 'Reject'}
             </h4>
             <p className="text-xs text-slate-500 mt-1">
               Please enter the reason for rejecting this autonomous recommendation:
@@ -140,7 +168,7 @@ export function ApprovalCard({
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="E.g. Inventory reserved for wholesale VIP client..."
+              placeholder="..."
               className="mt-3 w-full p-2 text-xs border rounded-lg dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-rose-500"
               rows={3}
             />
@@ -149,14 +177,14 @@ export function ApprovalCard({
                 onClick={() => setRejectModalOpen(false)}
                 className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400"
               >
-                Cancel
+                {dict.common?.cancel || 'Cancel'}
               </button>
               <button
                 onClick={handleReject}
                 disabled={!rejectReason.trim() || loading}
                 className="px-3 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg disabled:opacity-50"
               >
-                Confirm Reject
+                {dict.common?.confirm || 'Confirm'} {dict.common?.reject || 'Reject'}
               </button>
             </div>
           </div>

@@ -1,0 +1,1142 @@
+{
+  "department": "Storage containers, organizers & baskets",
+  "departmentSlug": "storage-containers-st007",
+  "departmentCode": "st007",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Контейнеры и органайзеры для хранения",
+    "zh": "收纳盒与整理箱"
+  },
+  "missingSubcategoriesCount": 8,
+  "totalMissingProductsCount": 601,
+  "subcategories": [
+    {
+      "categoryName": "Clothes organizers",
+      "categorySlug": "clothes-organizers-10452",
+      "ikeaCode": "10452",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Clothes organizers"
+        },
+        "ru": {
+          "name": "Clothes organizers"
+        },
+        "zh": {
+          "name": "Clothes organizers"
+        }
+      },
+      "totalIkeaProductsInStock": 172,
+      "sampleProductsToInsert": [
+        {
+          "name": "SKUBB Box, set of 6",
+          "slug": "skubb-box-set-of-6-20538542",
+          "sku": "IK-20538542",
+          "price": 8.99,
+          "compareAtPrice": 11.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skubb-box-set-of-6-white__0111720_pe262659_s5.jpg"
+          ],
+          "description": "SKUBB Box, set of 6",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20538542",
+          "measure": "",
+          "categoryName": "Clothes organizers",
+          "translations": {
+            "en": {
+              "name": "SKUBB Box, set of 6",
+              "description": "SKUBB Box, set of 6"
+            },
+            "ru": {
+              "name": "SKUBB Box, set of 6",
+              "description": "SKUBB Box, set of 6"
+            },
+            "zh": {
+              "name": "SKUBB Box, set of 6",
+              "description": "SKUBB Box, set of 6"
+            }
+          }
+        },
+        {
+          "name": "PURRPINGLA Box, set of 3",
+          "slug": "purrpingla-box-set-of-3-60612262",
+          "sku": "IK-60612262",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/purrpingla-box-set-of-3-textile-beige__1404758_pe970219_s5.jpg"
+          ],
+          "description": "PURRPINGLA Box, set of 3 7 ¾x15x4 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60612262",
+          "measure": "7 ¾x15x4 ¾ \"",
+          "categoryName": "Clothes organizers",
+          "translations": {
+            "en": {
+              "name": "PURRPINGLA Box, set of 3",
+              "description": "PURRPINGLA Box, set of 3 7 ¾x15x4 ¾ \""
+            },
+            "ru": {
+              "name": "PURRPINGLA Box, set of 3",
+              "description": "PURRPINGLA Box, set of 3 7 ¾x15x4 ¾ \""
+            },
+            "zh": {
+              "name": "PURRPINGLA Box, set of 3",
+              "description": "PURRPINGLA Box, set of 3 7 ¾x15x4 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "SKUBB Organizer with 6 compartments",
+          "slug": "skubb-organizer-with-6-compartments-40300049",
+          "sku": "IK-40300049",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/skubb-organizer-with-6-compartments-white__0710647_pe727677_s5.jpg"
+          ],
+          "description": "SKUBB Organizer with 6 compartments 13 ¾x17 ¾x49 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40300049",
+          "measure": "13 ¾x17 ¾x49 ¼ \"",
+          "categoryName": "Clothes organizers",
+          "translations": {
+            "en": {
+              "name": "SKUBB Organizer with 6 compartments",
+              "description": "SKUBB Organizer with 6 compartments 13 ¾x17 ¾x49 ¼ \""
+            },
+            "ru": {
+              "name": "SKUBB Organizer with 6 compartments",
+              "description": "SKUBB Organizer with 6 compartments 13 ¾x17 ¾x49 ¼ \""
+            },
+            "zh": {
+              "name": "SKUBB Organizer with 6 compartments",
+              "description": "SKUBB Organizer with 6 compartments 13 ¾x17 ¾x49 ¼ \""
+            }
+          }
+        },
+        {
+          "name": "BUMERANG Pants/skirt hanger",
+          "slug": "bumerang-pantsskirt-hanger-40432479",
+          "sku": "IK-40432479",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bumerang-pants-skirt-hanger-natural__0944475_pe797281_s5.jpg"
+          ],
+          "description": "BUMERANG Pants/skirt hanger",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40432479",
+          "measure": "",
+          "categoryName": "Clothes organizers",
+          "translations": {
+            "en": {
+              "name": "BUMERANG Pants/skirt hanger",
+              "description": "BUMERANG Pants/skirt hanger"
+            },
+            "ru": {
+              "name": "BUMERANG Pants/skirt hanger",
+              "description": "BUMERANG Pants/skirt hanger"
+            },
+            "zh": {
+              "name": "BUMERANG Pants/skirt hanger",
+              "description": "BUMERANG Pants/skirt hanger"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Desk accessories",
+      "categorySlug": "desk-accessories-10573",
+      "ikeaCode": "10573",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Desk accessories"
+        },
+        "ru": {
+          "name": "Desk accessories"
+        },
+        "zh": {
+          "name": "Desk accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 49,
+      "sampleProductsToInsert": [
+        {
+          "name": "ELLOVEN Monitor stand with drawer",
+          "slug": "elloven-monitor-stand-with-drawer-50474770",
+          "sku": "IK-50474770",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/elloven-monitor-stand-with-drawer-white__0955984_pe804426_s5.jpg"
+          ],
+          "description": "ELLOVEN Monitor stand with drawer",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50474770",
+          "measure": "",
+          "categoryName": "Desk accessories",
+          "translations": {
+            "en": {
+              "name": "ELLOVEN Monitor stand with drawer",
+              "description": "ELLOVEN Monitor stand with drawer"
+            },
+            "ru": {
+              "name": "ELLOVEN Monitor stand with drawer",
+              "description": "ELLOVEN Monitor stand with drawer"
+            },
+            "zh": {
+              "name": "ELLOVEN Monitor stand with drawer",
+              "description": "ELLOVEN Monitor stand with drawer"
+            }
+          }
+        },
+        {
+          "name": "HARVMATTA Letter tray",
+          "slug": "harvmatta-letter-tray-20578585",
+          "sku": "IK-20578585",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/harvmatta-letter-tray-anthracite__1272583_pe929722_s5.jpg"
+          ],
+          "description": "HARVMATTA Letter tray",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20578585",
+          "measure": "",
+          "categoryName": "Desk accessories",
+          "translations": {
+            "en": {
+              "name": "HARVMATTA Letter tray",
+              "description": "HARVMATTA Letter tray"
+            },
+            "ru": {
+              "name": "HARVMATTA Letter tray",
+              "description": "HARVMATTA Letter tray"
+            },
+            "zh": {
+              "name": "HARVMATTA Letter tray",
+              "description": "HARVMATTA Letter tray"
+            }
+          }
+        },
+        {
+          "name": "PLÖJA Desk pad",
+          "slug": "plja-desk-pad-10520892",
+          "sku": "IK-10520892",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ploeja-desk-pad-white-clear__1074653_pe856495_s5.jpg"
+          ],
+          "description": "PLÖJA Desk pad 25 ½x17 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10520892",
+          "measure": "25 ½x17 ¾ \"",
+          "categoryName": "Desk accessories",
+          "translations": {
+            "en": {
+              "name": "PLÖJA Desk pad",
+              "description": "PLÖJA Desk pad 25 ½x17 ¾ \""
+            },
+            "ru": {
+              "name": "PLÖJA Desk pad",
+              "description": "PLÖJA Desk pad 25 ½x17 ¾ \""
+            },
+            "zh": {
+              "name": "PLÖJA Desk pad",
+              "description": "PLÖJA Desk pad 25 ½x17 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "VATTENKAR Desktop shelf",
+          "slug": "vattenkar-desktop-shelf-40541572",
+          "sku": "IK-40541572",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vattenkar-desktop-shelf-black__1150009_pe884317_s5.jpg"
+          ],
+          "description": "VATTENKAR Desktop shelf 19 ¼x6 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40541572",
+          "measure": "19 ¼x6 \"",
+          "categoryName": "Desk accessories",
+          "translations": {
+            "en": {
+              "name": "VATTENKAR Desktop shelf",
+              "description": "VATTENKAR Desktop shelf 19 ¼x6 \""
+            },
+            "ru": {
+              "name": "VATTENKAR Desktop shelf",
+              "description": "VATTENKAR Desktop shelf 19 ¼x6 \""
+            },
+            "zh": {
+              "name": "VATTENKAR Desktop shelf",
+              "description": "VATTENKAR Desktop shelf 19 ¼x6 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Food storage & organizing",
+      "categorySlug": "food-storage-organizing-15937",
+      "ikeaCode": "15937",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Food storage & organizing"
+        },
+        "ru": {
+          "name": "Food storage & organizing"
+        },
+        "zh": {
+          "name": "Food storage & organizing"
+        }
+      },
+      "totalIkeaProductsInStock": 182,
+      "sampleProductsToInsert": [
+        {
+          "name": "IKEA 365+ Food container with lid",
+          "slug": "ikea-365-food-container-with-lid-20625252",
+          "sku": "IK-20625252",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-food-container-with-lid-rectangular-glass__1446776_pe988680_s5.jpg"
+          ],
+          "description": "IKEA 365+ Food container with lid 34 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20625252",
+          "measure": "34 oz",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 34 oz"
+            },
+            "ru": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 34 oz"
+            },
+            "zh": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 34 oz"
+            }
+          }
+        },
+        {
+          "name": "IKEA 365+ Food container with lid",
+          "slug": "ikea-365-food-container-with-lid-50625255",
+          "sku": "IK-50625255",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-food-container-with-lid-square-glass__1503449_pe1007869_s5.jpg"
+          ],
+          "description": "IKEA 365+ Food container with lid 20 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50625255",
+          "measure": "20 oz",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 20 oz"
+            },
+            "ru": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 20 oz"
+            },
+            "zh": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 20 oz"
+            }
+          }
+        },
+        {
+          "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+          "slug": "korallvippa-dry-food-jar-with-lid-set-of-6-50599416",
+          "sku": "IK-50599416",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/korallvippa-dry-food-jar-with-lid-set-of-6-clear__1383821_pe962684_s5.jpg"
+          ],
+          "description": "KORALLVIPPA Dry food jar with lid, set of 6",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50599416",
+          "measure": "",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+              "description": "KORALLVIPPA Dry food jar with lid, set of 6"
+            },
+            "ru": {
+              "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+              "description": "KORALLVIPPA Dry food jar with lid, set of 6"
+            },
+            "zh": {
+              "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+              "description": "KORALLVIPPA Dry food jar with lid, set of 6"
+            }
+          }
+        },
+        {
+          "name": "IKEA 365+ Dry food storage with lid",
+          "slug": "ikea-365-dry-food-storage-with-lid-80578182",
+          "sku": "IK-80578182",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-dry-food-storage-with-lid-clear-white__0711438_pe728254_s5.jpg"
+          ],
+          "description": "IKEA 365+ Dry food storage with lid 2 qt",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80578182",
+          "measure": "2 qt",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Dry food storage with lid",
+              "description": "IKEA 365+ Dry food storage with lid 2 qt"
+            },
+            "ru": {
+              "name": "IKEA 365+ Dry food storage with lid",
+              "description": "IKEA 365+ Dry food storage with lid 2 qt"
+            },
+            "zh": {
+              "name": "IKEA 365+ Dry food storage with lid",
+              "description": "IKEA 365+ Dry food storage with lid 2 qt"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Paper & media organizers",
+      "categorySlug": "paper-media-organizers-10551",
+      "ikeaCode": "10551",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Paper & media organizers"
+        },
+        "ru": {
+          "name": "Paper & media organizers"
+        },
+        "zh": {
+          "name": "Paper & media organizers"
+        }
+      },
+      "totalIkeaProductsInStock": 119,
+      "sampleProductsToInsert": [
+        {
+          "name": "FJÄDERHARV Mini chest with 2 drawers",
+          "slug": "fjderharv-mini-chest-with-2-drawers-10596896",
+          "sku": "IK-10596896",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fjaederharv-mini-chest-with-2-drawers-white__1396172_pe967197_s5.jpg"
+          ],
+          "description": "FJÄDERHARV Mini chest with 2 drawers 12 ½x9 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10596896",
+          "measure": "12 ½x9 ¾ \"",
+          "categoryName": "Paper & media organizers",
+          "translations": {
+            "en": {
+              "name": "FJÄDERHARV Mini chest with 2 drawers",
+              "description": "FJÄDERHARV Mini chest with 2 drawers 12 ½x9 ¾ \""
+            },
+            "ru": {
+              "name": "FJÄDERHARV Mini chest with 2 drawers",
+              "description": "FJÄDERHARV Mini chest with 2 drawers 12 ½x9 ¾ \""
+            },
+            "zh": {
+              "name": "FJÄDERHARV Mini chest with 2 drawers",
+              "description": "FJÄDERHARV Mini chest with 2 drawers 12 ½x9 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "KUGGIS Magazine file",
+          "slug": "kuggis-magazine-file-10515334",
+          "sku": "IK-10515334",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kuggis-magazine-file-white__1074639_pe856242_s5.jpg"
+          ],
+          "description": "KUGGIS Magazine file",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10515334",
+          "measure": "",
+          "categoryName": "Paper & media organizers",
+          "translations": {
+            "en": {
+              "name": "KUGGIS Magazine file",
+              "description": "KUGGIS Magazine file"
+            },
+            "ru": {
+              "name": "KUGGIS Magazine file",
+              "description": "KUGGIS Magazine file"
+            },
+            "zh": {
+              "name": "KUGGIS Magazine file",
+              "description": "KUGGIS Magazine file"
+            }
+          }
+        },
+        {
+          "name": "GÄRDESGÅRD Storage box with lid",
+          "slug": "grdesgrd-storage-box-with-lid-70596935",
+          "sku": "IK-70596935",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gaerdesgard-storage-box-with-lid-natural__1426502_pe979827_s5.jpg"
+          ],
+          "description": "GÄRDESGÅRD Storage box with lid 9 ¾x13 ¾x6 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70596935",
+          "measure": "9 ¾x13 ¾x6 ¼ \"",
+          "categoryName": "Paper & media organizers",
+          "translations": {
+            "en": {
+              "name": "GÄRDESGÅRD Storage box with lid",
+              "description": "GÄRDESGÅRD Storage box with lid 9 ¾x13 ¾x6 ¼ \""
+            },
+            "ru": {
+              "name": "GÄRDESGÅRD Storage box with lid",
+              "description": "GÄRDESGÅRD Storage box with lid 9 ¾x13 ¾x6 ¼ \""
+            },
+            "zh": {
+              "name": "GÄRDESGÅRD Storage box with lid",
+              "description": "GÄRDESGÅRD Storage box with lid 9 ¾x13 ¾x6 ¼ \""
+            }
+          }
+        },
+        {
+          "name": "RELATERA Bookend",
+          "slug": "relatera-bookend-30559001",
+          "sku": "IK-30559001",
+          "price": 5,
+          "compareAtPrice": 6.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/relatera-bookend-light-gray-green__1292474_pe935026_s5.jpg"
+          ],
+          "description": "RELATERA Bookend 2 pieces",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30559001",
+          "measure": "2 pieces",
+          "categoryName": "Paper & media organizers",
+          "translations": {
+            "en": {
+              "name": "RELATERA Bookend",
+              "description": "RELATERA Bookend 2 pieces"
+            },
+            "ru": {
+              "name": "RELATERA Bookend",
+              "description": "RELATERA Bookend 2 pieces"
+            },
+            "zh": {
+              "name": "RELATERA Bookend",
+              "description": "RELATERA Bookend 2 pieces"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Recycling bins",
+      "categorySlug": "recycling-bins-34470",
+      "ikeaCode": "34470",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Recycling bins"
+        },
+        "ru": {
+          "name": "Recycling bins"
+        },
+        "zh": {
+          "name": "Recycling bins"
+        }
+      },
+      "totalIkeaProductsInStock": 13,
+      "sampleProductsToInsert": [
+        {
+          "name": "SORTERA Sorting bin with lid",
+          "slug": "sortera-sorting-bin-with-lid-00602096",
+          "sku": "IK-00602096",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sortera-sorting-bin-with-lid-beige__1498235_pe1006266_s5.jpg"
+          ],
+          "description": "SORTERA Sorting bin with lid 16 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00602096",
+          "measure": "16 gallon",
+          "categoryName": "Recycling bins",
+          "translations": {
+            "en": {
+              "name": "SORTERA Sorting bin with lid",
+              "description": "SORTERA Sorting bin with lid 16 gallon"
+            },
+            "ru": {
+              "name": "SORTERA Sorting bin with lid",
+              "description": "SORTERA Sorting bin with lid 16 gallon"
+            },
+            "zh": {
+              "name": "SORTERA Sorting bin with lid",
+              "description": "SORTERA Sorting bin with lid 16 gallon"
+            }
+          }
+        },
+        {
+          "name": "HÅLLBAR Bin with lid",
+          "slug": "hllbar-bin-with-lid-50420206",
+          "sku": "IK-50420206",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hallbar-bin-with-lid-light-gray__0742729_pe742786_s5.jpg"
+          ],
+          "description": "HÅLLBAR Bin with lid 9 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50420206",
+          "measure": "9 gallon",
+          "categoryName": "Recycling bins",
+          "translations": {
+            "en": {
+              "name": "HÅLLBAR Bin with lid",
+              "description": "HÅLLBAR Bin with lid 9 gallon"
+            },
+            "ru": {
+              "name": "HÅLLBAR Bin with lid",
+              "description": "HÅLLBAR Bin with lid 9 gallon"
+            },
+            "zh": {
+              "name": "HÅLLBAR Bin with lid",
+              "description": "HÅLLBAR Bin with lid 9 gallon"
+            }
+          }
+        },
+        {
+          "name": "DAMMÄNG Bin with lid",
+          "slug": "dammng-bin-with-lid-00559979",
+          "sku": "IK-00559979",
+          "price": 41.99,
+          "compareAtPrice": 52.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/dammaeng-bin-with-lid-gray-green__1216059_pe912319_s5.jpg"
+          ],
+          "description": "DAMMÄNG Bin with lid 13 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00559979",
+          "measure": "13 gallon",
+          "categoryName": "Recycling bins",
+          "translations": {
+            "en": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 13 gallon"
+            },
+            "ru": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 13 gallon"
+            },
+            "zh": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 13 gallon"
+            }
+          }
+        },
+        {
+          "name": "DAMMÄNG Bin with lid",
+          "slug": "dammng-bin-with-lid-60559976",
+          "sku": "IK-60559976",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/dammaeng-bin-with-lid-gray-beige__1216063_pe912322_s5.jpg"
+          ],
+          "description": "DAMMÄNG Bin with lid 7 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60559976",
+          "measure": "7 gallon",
+          "categoryName": "Recycling bins",
+          "translations": {
+            "en": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 7 gallon"
+            },
+            "ru": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 7 gallon"
+            },
+            "zh": {
+              "name": "DAMMÄNG Bin with lid",
+              "description": "DAMMÄNG Bin with lid 7 gallon"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Cable management & cord organizers",
+      "categorySlug": "cable-management-accessories-16195",
+      "ikeaCode": "16195",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Cable management & cord organizers"
+        },
+        "ru": {
+          "name": "Cable management & cord organizers"
+        },
+        "zh": {
+          "name": "Cable management & cord organizers"
+        }
+      },
+      "totalIkeaProductsInStock": 18,
+      "sampleProductsToInsert": [
+        {
+          "name": "FÖRSÄSONG Cable management tray",
+          "slug": "frssong-cable-management-tray-00573188",
+          "sku": "IK-00573188",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/foersaesong-cable-management-tray-white__1390880_pe965608_s5.jpg"
+          ],
+          "description": "FÖRSÄSONG Cable management tray 15 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00573188",
+          "measure": "15 \"",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "FÖRSÄSONG Cable management tray",
+              "description": "FÖRSÄSONG Cable management tray 15 \""
+            },
+            "ru": {
+              "name": "FÖRSÄSONG Cable management tray",
+              "description": "FÖRSÄSONG Cable management tray 15 \""
+            },
+            "zh": {
+              "name": "FÖRSÄSONG Cable management tray",
+              "description": "FÖRSÄSONG Cable management tray 15 \""
+            }
+          }
+        },
+        {
+          "name": "KALKSTUFF Cable holder, set of 3",
+          "slug": "kalkstuff-cable-holder-set-of-3-30573021",
+          "sku": "IK-30573021",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kalkstuff-cable-holder-set-of-3-white__1180202_pe896338_s5.jpg"
+          ],
+          "description": "KALKSTUFF Cable holder, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30573021",
+          "measure": "",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "KALKSTUFF Cable holder, set of 3",
+              "description": "KALKSTUFF Cable holder, set of 3"
+            },
+            "ru": {
+              "name": "KALKSTUFF Cable holder, set of 3",
+              "description": "KALKSTUFF Cable holder, set of 3"
+            },
+            "zh": {
+              "name": "KALKSTUFF Cable holder, set of 3",
+              "description": "KALKSTUFF Cable holder, set of 3"
+            }
+          }
+        },
+        {
+          "name": "MONTERA Cable management",
+          "slug": "montera-cable-management-30147425",
+          "sku": "IK-30147425",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/montera-cable-management-white__0088067_pe218108_s5.jpg"
+          ],
+          "description": "MONTERA Cable management 43 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30147425",
+          "measure": "43 \"",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "MONTERA Cable management",
+              "description": "MONTERA Cable management 43 \""
+            },
+            "ru": {
+              "name": "MONTERA Cable management",
+              "description": "MONTERA Cable management 43 \""
+            },
+            "zh": {
+              "name": "MONTERA Cable management",
+              "description": "MONTERA Cable management 43 \""
+            }
+          }
+        },
+        {
+          "name": "TRIXIG 150-piece cable management set",
+          "slug": "trixig-150-piece-cable-management-set-60563737",
+          "sku": "IK-60563737",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trixig-150-piece-cable-management-set__1222990_pe914758_s5.jpg"
+          ],
+          "description": "TRIXIG 150-piece cable management set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60563737",
+          "measure": "",
+          "categoryName": "Cable management & cord organizers",
+          "translations": {
+            "en": {
+              "name": "TRIXIG 150-piece cable management set",
+              "description": "TRIXIG 150-piece cable management set"
+            },
+            "ru": {
+              "name": "TRIXIG 150-piece cable management set",
+              "description": "TRIXIG 150-piece cable management set"
+            },
+            "zh": {
+              "name": "TRIXIG 150-piece cable management set",
+              "description": "TRIXIG 150-piece cable management set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Bags",
+      "categorySlug": "bags-16248",
+      "ikeaCode": "16248",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Bags"
+        },
+        "ru": {
+          "name": "Bags"
+        },
+        "zh": {
+          "name": "Bags"
+        }
+      },
+      "totalIkeaProductsInStock": 37,
+      "sampleProductsToInsert": [
+        {
+          "name": "FRAKTA Shopping bag, large",
+          "slug": "frakta-shopping-bag-large-20611108",
+          "sku": "IK-20611108",
+          "price": 0.99,
+          "compareAtPrice": 1.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-shopping-bag-large-blue__1409200_pe972162_s5.jpg"
+          ],
+          "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20611108",
+          "measure": "21 ¾x14 ½x13 ¾ \"/19 gallon",
+          "categoryName": "Bags",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            }
+          }
+        },
+        {
+          "name": "FRAKTA Storage bag for cart",
+          "slug": "frakta-storage-bag-for-cart-90149148",
+          "sku": "IK-90149148",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-storage-bag-for-cart-blue__0711261_pe728099_s5.jpg"
+          ],
+          "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90149148",
+          "measure": "28 ¾x13 ¾x11 ¾ \" 20 gallon",
+          "categoryName": "Bags",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            }
+          }
+        },
+        {
+          "name": "FRAKTA Shopping bag, medium",
+          "slug": "frakta-shopping-bag-medium-60611111",
+          "sku": "IK-60611111",
+          "price": 0.89,
+          "compareAtPrice": 1.11,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-shopping-bag-medium-blue__1409204_pe972164_s5.jpg"
+          ],
+          "description": "FRAKTA Shopping bag, medium 17 ¾x7x17 ¾ \"/10 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60611111",
+          "measure": "17 ¾x7x17 ¾ \"/10 gallon",
+          "categoryName": "Bags",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Shopping bag, medium",
+              "description": "FRAKTA Shopping bag, medium 17 ¾x7x17 ¾ \"/10 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Shopping bag, medium",
+              "description": "FRAKTA Shopping bag, medium 17 ¾x7x17 ¾ \"/10 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Shopping bag, medium",
+              "description": "FRAKTA Shopping bag, medium 17 ¾x7x17 ¾ \"/10 gallon"
+            }
+          }
+        },
+        {
+          "name": "GÖRSNYGG Shopping bag, large",
+          "slug": "grsnygg-shopping-bag-large-20504194",
+          "sku": "IK-20504194",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/goersnygg-shopping-bag-large-light-beige__1013442_pe829201_s5.jpg"
+          ],
+          "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20504194",
+          "measure": "22 ½x14 ½x15 ¼ \"/2401 oz",
+          "categoryName": "Bags",
+          "translations": {
+            "en": {
+              "name": "GÖRSNYGG Shopping bag, large",
+              "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz"
+            },
+            "ru": {
+              "name": "GÖRSNYGG Shopping bag, large",
+              "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz"
+            },
+            "zh": {
+              "name": "GÖRSNYGG Shopping bag, large",
+              "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Moving supplies",
+      "categorySlug": "moving-supplies-46078",
+      "ikeaCode": "46078",
+      "parentDepartment": "Storage containers, organizers & baskets",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Moving supplies"
+        },
+        "ru": {
+          "name": "Moving supplies"
+        },
+        "zh": {
+          "name": "Moving supplies"
+        }
+      },
+      "totalIkeaProductsInStock": 11,
+      "sampleProductsToInsert": [
+        {
+          "name": "FRAKTA Storage bag for cart",
+          "slug": "frakta-storage-bag-for-cart-90149148",
+          "sku": "IK-90149148",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-storage-bag-for-cart-blue__0711261_pe728099_s5.jpg"
+          ],
+          "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90149148",
+          "measure": "28 ¾x13 ¾x11 ¾ \" 20 gallon",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Storage bag for cart",
+              "description": "FRAKTA Storage bag for cart 28 ¾x13 ¾x11 ¾ \" 20 gallon"
+            }
+          }
+        },
+        {
+          "name": "FRAKTA Shopping bag, large",
+          "slug": "frakta-shopping-bag-large-20611108",
+          "sku": "IK-20611108",
+          "price": 0.99,
+          "compareAtPrice": 1.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/frakta-shopping-bag-large-blue__1409200_pe972162_s5.jpg"
+          ],
+          "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20611108",
+          "measure": "21 ¾x14 ½x13 ¾ \"/19 gallon",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            },
+            "ru": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            },
+            "zh": {
+              "name": "FRAKTA Shopping bag, large",
+              "description": "FRAKTA Shopping bag, large 21 ¾x14 ½x13 ¾ \"/19 gallon"
+            }
+          }
+        },
+        {
+          "name": "INVALLNING Utility cart",
+          "slug": "invallning-utility-cart-10569398",
+          "sku": "IK-10569398",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/invallning-utility-cart-for-boxes-white__1216371_pe912411_s5.jpg"
+          ],
+          "description": "INVALLNING Utility cart 26 3/4x15 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10569398",
+          "measure": "26 3/4x15 3/8 \"",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "INVALLNING Utility cart",
+              "description": "INVALLNING Utility cart 26 3/4x15 3/8 \""
+            },
+            "ru": {
+              "name": "INVALLNING Utility cart",
+              "description": "INVALLNING Utility cart 26 3/4x15 3/8 \""
+            },
+            "zh": {
+              "name": "INVALLNING Utility cart",
+              "description": "INVALLNING Utility cart 26 3/4x15 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "RULLEBÖR Cart",
+          "slug": "rullebr-cart-10516772",
+          "sku": "IK-10516772",
+          "price": 44.99,
+          "compareAtPrice": 56.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rulleboer-cart-black__1045853_pe842738_s5.jpg"
+          ],
+          "description": "RULLEBÖR Cart",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10516772",
+          "measure": "",
+          "categoryName": "Moving supplies",
+          "translations": {
+            "en": {
+              "name": "RULLEBÖR Cart",
+              "description": "RULLEBÖR Cart"
+            },
+            "ru": {
+              "name": "RULLEBÖR Cart",
+              "description": "RULLEBÖR Cart"
+            },
+            "zh": {
+              "name": "RULLEBÖR Cart",
+              "description": "RULLEBÖR Cart"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

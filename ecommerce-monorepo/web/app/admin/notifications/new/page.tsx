@@ -39,8 +39,10 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from '@/components/ui/use-toast'
 import { useSettings } from '@/components/SettingsProvider'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export default function ComposePushNotificationPage() {
+  const { dict } = useAdminLocale()
   const router = useRouter()
   const { settings } = useSettings()
   const companyName = settings?.companyName || 'Global Trade'
@@ -228,7 +230,7 @@ export default function ComposePushNotificationPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
-              Compose Push Notification
+              {dict.settings.notifications || 'Compose Push Notification'}
             </h1>
             <p className="text-xs text-gray-500 dark:text-slate-400">
               Create and preview your campaign with real-time multi-device rendering

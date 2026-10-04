@@ -20,6 +20,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAdminLocale } from '../../contexts/AdminLocaleContext';
 
 interface MigrationStats {
   total: number;
@@ -51,6 +52,7 @@ interface PreviewResult {
 }
 
 export default function ImageMigrationPage() {
+  const { dict } = useAdminLocale();
   const [stats, setStats] = useState<MigrationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -257,10 +259,10 @@ export default function ImageMigrationPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Download className="w-6 h-6 text-primary-600" />
-            Product Image Migration
+            {dict.tools.imageMigrationTitle || 'Product Image Migration'}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Download external product images, optimize to modern WebP format, and re-host locally or to Cloudflare R2.
+            {dict.tools.imageMigrationSubtitle || 'Download external product images, optimize to modern WebP format, and re-host locally or to Cloudflare R2.'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -270,7 +272,7 @@ export default function ImageMigrationPage() {
             className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh Stats
+            {dict.tools.refreshStats || 'Refresh Stats'}
           </button>
         </div>
       </div>
@@ -279,35 +281,35 @@ export default function ImageMigrationPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">External URLs</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">{dict.tools.cardExternalUrls || 'External URLs'}</span>
             <AlertTriangle className="w-5 h-5 text-amber-500" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold text-amber-600">
               {loading ? '...' : (stats?.external ?? 0).toLocaleString()}
             </span>
-            <span className="text-xs text-gray-500">remaining</span>
+            <span className="text-xs text-gray-500">{dict.tools.remaining || 'remaining'}</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">Images hosted on external CDNs</p>
+          <p className="text-xs text-gray-400 mt-1">{dict.tools.imagesOnCdn || 'Images hosted on external CDNs'}</p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Re-hosted URLs</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">{dict.tools.cardRehostedUrls || 'Re-hosted URLs'}</span>
             <CheckCircle2 className="w-5 h-5 text-green-500" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold text-green-600">
               {loading ? '...' : (stats?.local ?? 0).toLocaleString()}
             </span>
-            <span className="text-xs text-gray-500">optimized</span>
+            <span className="text-xs text-gray-500">{dict.tools.optimized || 'optimized'}</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">WebP files hosted locally / R2</p>
+          <p className="text-xs text-gray-400 mt-1">{dict.tools.webpFilesHosted || 'WebP files hosted locally / R2'}</p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Products</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">{dict.tools.totalProducts || 'Total Products'}</span>
             <Layers className="w-5 h-5 text-blue-500" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -315,12 +317,12 @@ export default function ImageMigrationPage() {
               {loading ? '...' : (stats?.totalProducts ?? 0).toLocaleString()}
             </span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">Across all categories in database</p>
+          <p className="text-xs text-gray-400 mt-1">{dict.tools.acrossCategories || 'Across all categories in database'}</p>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Storage Target</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">{dict.tools.storageMode || 'Storage Target'}</span>
             {stats?.storageType === 'r2' ? (
               <Cloud className="w-5 h-5 text-purple-500" />
             ) : (
@@ -342,14 +344,14 @@ export default function ImageMigrationPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-5">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Migration Controls</h2>
+            <h2 className="text-lg font-bold text-gray-900">{dict.tools.migrationControls || 'Migration Controls'}</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Processes images in batches with 1s sleep between batches. Fully resumable if interrupted.
+              {dict.tools.migrationControlsDesc || 'Processes images in batches with 1s sleep between batches. Fully resumable if interrupted.'}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-600 font-medium">Batch Size:</label>
+            <label className="text-sm text-gray-600 font-medium">{dict.tools.batchSize || 'Batch Size:'}</label>
             <input
               type="number"
               min={5}
@@ -370,7 +372,7 @@ export default function ImageMigrationPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-800 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors shadow-sm disabled:opacity-50"
           >
             <Eye className="w-4 h-4 text-gray-600" />
-            Preview Dry Run
+            {dict.tools.previewDryRun || 'Preview Dry Run'}
           </button>
 
           {!isRunning ? (
@@ -380,7 +382,7 @@ export default function ImageMigrationPage() {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-lg hover:bg-primary-700 transition-colors shadow-md disabled:opacity-50"
             >
               <Play className="w-4 h-4" />
-              Download & Re-host All Images
+              {dict.tools.downloadRehostAll || 'Download & Re-host All Images'}
             </button>
           ) : (
             <button
@@ -389,7 +391,7 @@ export default function ImageMigrationPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-colors shadow-md"
             >
               <Square className="w-4 h-4" />
-              Cancel Job
+              {dict.tools.cancelJob || 'Cancel Job'}
             </button>
           )}
 
@@ -400,7 +402,7 @@ export default function ImageMigrationPage() {
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors shadow-sm"
             >
               <RefreshCw className="w-4 h-4" />
-              Resume Interrupted Job
+              {dict.tools.resumeJob || 'Resume Interrupted Job'}
             </button>
           )}
 
@@ -410,7 +412,7 @@ export default function ImageMigrationPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-red-700 border border-red-200 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors ml-auto shadow-sm disabled:opacity-50"
           >
             <RotateCcw className="w-4 h-4 text-red-500" />
-            Rollback
+            {dict.tools.rollback || 'Rollback'}
           </button>
         </div>
 
@@ -422,12 +424,12 @@ export default function ImageMigrationPage() {
                 {isRunning ? (
                   <>
                     <RefreshCw className="w-4 h-4 text-primary-600 animate-spin" />
-                    Downloading & Re-hosting in progress...
+                    {dict.tools.inProgress || 'Downloading & Re-hosting in progress...'}
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4 text-green-600" />
-                    Last Run Completed
+                    {dict.tools.lastRunCompleted || 'Last Run Completed'}
                   </>
                 )}
               </span>

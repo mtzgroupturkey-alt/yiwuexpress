@@ -7,6 +7,7 @@ import {
   Filter, RefreshCw, ArrowRight, Building2, User, ChevronRight, Eye
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
+import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 interface QuoteItemSummary {
   id: string
@@ -54,6 +55,7 @@ interface StatusCounts {
 }
 
 export default function AdminQuotesPage() {
+  const { dict } = useAdminLocale()
   const { isAdmin, loading: authLoading } = useAdminAuth()
   const [quotes, setQuotes] = useState<QuoteSummary[]>([])
   const [counts, setCounts] = useState<StatusCounts>({
@@ -118,43 +120,43 @@ export default function AdminQuotesPage() {
       case 'PENDING':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
-            <Clock size={12} /> Pending Pricing
+            <Clock size={12} /> {dict.quotesExtended.tabPending || 'Pending Review'}
           </span>
         )
       case 'UNDER_REVIEW':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-            <RefreshCw size={12} className="animate-spin" /> In Negotiation
+            <RefreshCw size={12} className="animate-spin" /> {dict.quotesExtended.tabUnderReview || 'Under Review'}
           </span>
         )
       case 'PRICED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
-            <CheckCircle2 size={12} /> Draft Priced
+            <CheckCircle2 size={12} /> {dict.quotesExtended.tabPriced || 'Draft Priced'}
           </span>
         )
       case 'SENT':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
-            <Send size={12} /> Offer Sent
+            <Send size={12} /> {dict.quotesExtended.tabSent || 'Offer Sent'}
           </span>
         )
       case 'ACCEPTED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-            <CheckCircle2 size={12} /> Accepted & Ordered
+            <CheckCircle2 size={12} /> {dict.quotesExtended.tabAccepted || 'Accepted'}
           </span>
         )
       case 'REJECTED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">
-            <XCircle size={12} /> Declined
+            <XCircle size={12} /> {dict.quotesExtended.tabRejected || 'Declined'}
           </span>
         )
       case 'EXPIRED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200">
-            <Clock size={12} /> Expired
+            <Clock size={12} /> {dict.quotesExtended.tabExpired || 'Expired'}
           </span>
         )
       default:
@@ -177,8 +179,8 @@ export default function AdminQuotesPage() {
             <FileText size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">B2B Quotations & RFQ Desk</h1>
-            <p className="text-xs text-gray-500">Review customer requests, audit multi-warehouse availability, and issue commercial quotes</p>
+            <h1 className="text-2xl font-bold text-gray-900">{dict.quotesExtended.pageTitle || 'B2B Quotations & RFQ Desk'}</h1>
+            <p className="text-xs text-gray-500">{dict.quotesExtended.pageSubtitle || 'Review customer requests, audit multi-warehouse availability, and issue commercial quotes'}</p>
           </div>
         </div>
 
@@ -187,7 +189,7 @@ export default function AdminQuotesPage() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-sm transition"
         >
           <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-          Refresh Desk
+          {dict.quotesExtended.refresh || 'Refresh Desk'}
         </button>
       </div>
 
@@ -202,11 +204,11 @@ export default function AdminQuotesPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-700">Pending Pricing</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700">{dict.quotesExtended.tabPending || 'Pending Review'}</span>
             <Clock size={18} className="text-amber-500" />
           </div>
           <p className="text-2xl font-black text-gray-900 mt-2">{counts.PENDING}</p>
-          <span className="text-[11px] text-gray-500">Requires line quote</span>
+          <span className="text-[11px] text-gray-500">{dict.quotesExtended.tabPending || 'Requires line quote'}</span>
         </div>
 
         <div
@@ -218,11 +220,11 @@ export default function AdminQuotesPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700">Under Review</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700">{dict.quotesExtended.tabUnderReview || 'Under Review'}</span>
             <RefreshCw size={18} className="text-blue-500" />
           </div>
           <p className="text-2xl font-black text-gray-900 mt-2">{counts.UNDER_REVIEW}</p>
-          <span className="text-[11px] text-gray-500">Revision requested</span>
+          <span className="text-[11px] text-gray-500">{dict.quotesExtended.tabUnderReview || 'Revision requested'}</span>
         </div>
 
         <div
@@ -234,11 +236,11 @@ export default function AdminQuotesPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-700">Offers Sent</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-purple-700">{dict.quotesExtended.tabSent || 'Offers Sent'}</span>
             <Send size={18} className="text-purple-500" />
           </div>
           <p className="text-2xl font-black text-gray-900 mt-2">{counts.SENT}</p>
-          <span className="text-[11px] text-gray-500">Awaiting customer acceptance</span>
+          <span className="text-[11px] text-gray-500">{dict.quotesExtended.tabSent || 'Awaiting customer acceptance'}</span>
         </div>
 
         <div
@@ -250,11 +252,11 @@ export default function AdminQuotesPage() {
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Accepted</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">{dict.quotesExtended.tabAccepted || 'Accepted'}</span>
             <CheckCircle2 size={18} className="text-emerald-500" />
           </div>
           <p className="text-2xl font-black text-gray-900 mt-2">{counts.ACCEPTED}</p>
-          <span className="text-[11px] text-gray-500">Converted to Orders</span>
+          <span className="text-[11px] text-gray-500">{dict.quotesExtended.tabAccepted || 'Converted to Orders'}</span>
         </div>
       </div>
 
@@ -263,13 +265,13 @@ export default function AdminQuotesPage() {
         {/* Status Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
           {[
-            { key: 'ALL', label: 'All Quotes', count: counts.ALL },
-            { key: 'PENDING', label: 'Pending', count: counts.PENDING },
-            { key: 'UNDER_REVIEW', label: 'Revisions', count: counts.UNDER_REVIEW },
-            { key: 'PRICED', label: 'Draft Priced', count: counts.PRICED },
-            { key: 'SENT', label: 'Sent', count: counts.SENT },
-            { key: 'ACCEPTED', label: 'Accepted', count: counts.ACCEPTED },
-            { key: 'EXPIRED', label: 'Expired', count: counts.EXPIRED },
+            { key: 'ALL', label: dict.quotesExtended.tabAll || 'All Quotes', count: counts.ALL },
+            { key: 'PENDING', label: dict.quotesExtended.tabPending || 'Pending', count: counts.PENDING },
+            { key: 'UNDER_REVIEW', label: dict.quotesExtended.tabUnderReview || 'Revisions', count: counts.UNDER_REVIEW },
+            { key: 'PRICED', label: dict.quotesExtended.tabPriced || 'Draft Priced', count: counts.PRICED },
+            { key: 'SENT', label: dict.quotesExtended.tabSent || 'Sent', count: counts.SENT },
+            { key: 'ACCEPTED', label: dict.quotesExtended.tabAccepted || 'Accepted', count: counts.ACCEPTED },
+            { key: 'EXPIRED', label: dict.quotesExtended.tabExpired || 'Expired', count: counts.EXPIRED },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -295,7 +297,7 @@ export default function AdminQuotesPage() {
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search quote#, company, email..."
+            placeholder={dict.quotesExtended.searchPlaceholder || 'Search quote#, company, email...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-xl text-xs text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500 transition"
@@ -308,26 +310,26 @@ export default function AdminQuotesPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center p-16">
             <RefreshCw size={28} className="animate-spin text-blue-600 mb-3" />
-            <p className="text-xs font-semibold text-gray-500">Loading quotation requests...</p>
+            <p className="text-xs font-semibold text-gray-500">{dict.common.loading || 'Loading...'}</p>
           </div>
         ) : quotes.length === 0 ? (
           <div className="text-center p-16">
             <FileText size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-sm font-bold text-gray-700">No quotation requests found</p>
-            <p className="text-xs text-gray-500 mt-1">There are no quotes matching the current filters.</p>
+            <p className="text-sm font-bold text-gray-700">{dict.quotesExtended.noQuotesFound || 'No quotation requests found'}</p>
+            <p className="text-xs text-gray-500 mt-1">{dict.common.noData || 'There are no quotes matching the current filters.'}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/80 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Quote Number</th>
-                  <th className="py-3.5 px-4">Customer & Company</th>
-                  <th className="py-3.5 px-4">Line Items</th>
-                  <th className="py-3.5 px-4">Quoted Amount</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Submitted</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{dict.quotesExtended.thQuoteNum || 'Quote Number'}</th>
+                  <th className="py-3.5 px-4">{dict.quotesExtended.thCustomer || 'Customer & Company'}</th>
+                  <th className="py-3.5 px-4">{dict.quotesExtended.thItemsCount || 'Line Items'}</th>
+                  <th className="py-3.5 px-4">{dict.quotesExtended.thTotal || 'Quoted Amount'}</th>
+                  <th className="py-3.5 px-4">{dict.quotesExtended.thStatus || 'Status'}</th>
+                  <th className="py-3.5 px-4">{dict.quotesExtended.thCreated || 'Submitted'}</th>
+                  <th className="py-3.5 px-4 text-right">{dict.quotesExtended.thActions || 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-xs text-gray-700">
@@ -388,7 +390,7 @@ export default function AdminQuotesPage() {
                           href={`/admin/quotes/${quote.id}`}
                           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-600 hover:text-white transition shadow-sm"
                         >
-                          <span>Review & Price</span>
+                          <span>{dict.quotesExtended.viewDetails || 'Review & Price'}</span>
                           <ChevronRight size={13} />
                         </Link>
                       </td>
@@ -410,14 +412,14 @@ export default function AdminQuotesPage() {
                 onClick={() => setPage(p => p - 1)}
                 className="px-3 py-1 rounded-lg border border-gray-300 text-xs font-semibold disabled:opacity-40 hover:bg-white"
               >
-                Previous
+                {dict.common.previous || 'Previous'}
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(p => p + 1)}
                 className="px-3 py-1 rounded-lg border border-gray-300 text-xs font-semibold disabled:opacity-40 hover:bg-white"
               >
-                Next
+                {dict.common.next || 'Next'}
               </button>
             </div>
           </div>

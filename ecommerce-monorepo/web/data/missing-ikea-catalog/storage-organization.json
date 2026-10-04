@@ -1,0 +1,1424 @@
+{
+  "department": "Storage & organization",
+  "departmentSlug": "storage-organization-st001",
+  "departmentCode": "st001",
+  "existsInCurrentSystem": true,
+  "translations": {
+    "ru": "Хранение и порядок",
+    "zh": "储物与收纳"
+  },
+  "missingSubcategoriesCount": 10,
+  "totalMissingProductsCount": 2256,
+  "subcategories": [
+    {
+      "categoryName": "Dressers & storage drawers",
+      "categorySlug": "dressers-storage-drawers-st004",
+      "ikeaCode": "st004",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Dressers & storage drawers"
+        },
+        "ru": {
+          "name": "Dressers & storage drawers"
+        },
+        "zh": {
+          "name": "Dressers & storage drawers"
+        }
+      },
+      "totalIkeaProductsInStock": 148,
+      "sampleProductsToInsert": [
+        {
+          "name": "STORKLINTA 6-drawer dresser",
+          "slug": "storklinta-6-drawer-dresser-60561248",
+          "sku": "IK-60561248",
+          "price": 249.99,
+          "compareAtPrice": 312.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/storklinta-6-drawer-dresser-white-anchor-unlock-function__1590235_pe1038874_s5.jpg"
+          ],
+          "description": "STORKLINTA 6-drawer dresser 55 1/8x18 7/8x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60561248",
+          "measure": "55 1/8x18 7/8x29 1/2 \"",
+          "categoryName": "Dressers & storage drawers",
+          "translations": {
+            "en": {
+              "name": "STORKLINTA 6-drawer dresser",
+              "description": "STORKLINTA 6-drawer dresser 55 1/8x18 7/8x29 1/2 \""
+            },
+            "ru": {
+              "name": "STORKLINTA 6-drawer dresser",
+              "description": "STORKLINTA 6-drawer dresser 55 1/8x18 7/8x29 1/2 \""
+            },
+            "zh": {
+              "name": "STORKLINTA 6-drawer dresser",
+              "description": "STORKLINTA 6-drawer dresser 55 1/8x18 7/8x29 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "STOREMOLLA 8-drawer dresser",
+          "slug": "storemolla-8-drawer-dresser-60522394",
+          "sku": "IK-60522394",
+          "price": 649.99,
+          "compareAtPrice": 812.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/storemolla-8-drawer-dresser-gray-brown-stained__1602298_pe1043388_s5.jpg"
+          ],
+          "description": "STOREMOLLA 8-drawer dresser 67 3/8x19 5/8x35 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60522394",
+          "measure": "67 3/8x19 5/8x35 7/8 \"",
+          "categoryName": "Dressers & storage drawers",
+          "translations": {
+            "en": {
+              "name": "STOREMOLLA 8-drawer dresser",
+              "description": "STOREMOLLA 8-drawer dresser 67 3/8x19 5/8x35 7/8 \""
+            },
+            "ru": {
+              "name": "STOREMOLLA 8-drawer dresser",
+              "description": "STOREMOLLA 8-drawer dresser 67 3/8x19 5/8x35 7/8 \""
+            },
+            "zh": {
+              "name": "STOREMOLLA 8-drawer dresser",
+              "description": "STOREMOLLA 8-drawer dresser 67 3/8x19 5/8x35 7/8 \""
+            }
+          }
+        },
+        {
+          "name": "STORKLINTA 6-drawer dresser",
+          "slug": "storklinta-6-drawer-dresser-10559281",
+          "sku": "IK-10559281",
+          "price": 229.99,
+          "compareAtPrice": 287.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/storklinta-6-drawer-dresser-white-anchor-unlock-function__1590216_pe1038855_s5.jpg"
+          ],
+          "description": "STORKLINTA 6-drawer dresser 27 1/2x18 7/8x47 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10559281",
+          "measure": "27 1/2x18 7/8x47 1/4 \"",
+          "categoryName": "Dressers & storage drawers",
+          "translations": {
+            "en": {
+              "name": "STORKLINTA 6-drawer dresser",
+              "description": "STORKLINTA 6-drawer dresser 27 1/2x18 7/8x47 1/4 \""
+            },
+            "ru": {
+              "name": "STORKLINTA 6-drawer dresser",
+              "description": "STORKLINTA 6-drawer dresser 27 1/2x18 7/8x47 1/4 \""
+            },
+            "zh": {
+              "name": "STORKLINTA 6-drawer dresser",
+              "description": "STORKLINTA 6-drawer dresser 27 1/2x18 7/8x47 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "STORKLINTA 3-drawer dresser",
+          "slug": "storklinta-3-drawer-dresser-00559291",
+          "sku": "IK-00559291",
+          "price": 129.99,
+          "compareAtPrice": 162.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/storklinta-3-drawer-dresser-white-anchor-unlock-function__1590137_pe1038778_s5.jpg"
+          ],
+          "description": "STORKLINTA 3-drawer dresser 27 1/2x18 7/8x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00559291",
+          "measure": "27 1/2x18 7/8x29 1/2 \"",
+          "categoryName": "Dressers & storage drawers",
+          "translations": {
+            "en": {
+              "name": "STORKLINTA 3-drawer dresser",
+              "description": "STORKLINTA 3-drawer dresser 27 1/2x18 7/8x29 1/2 \""
+            },
+            "ru": {
+              "name": "STORKLINTA 3-drawer dresser",
+              "description": "STORKLINTA 3-drawer dresser 27 1/2x18 7/8x29 1/2 \""
+            },
+            "zh": {
+              "name": "STORKLINTA 3-drawer dresser",
+              "description": "STORKLINTA 3-drawer dresser 27 1/2x18 7/8x29 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Storage solution systems",
+      "categorySlug": "storage-solution-systems-46052",
+      "ikeaCode": "46052",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Storage solution systems"
+        },
+        "ru": {
+          "name": "Storage solution systems"
+        },
+        "zh": {
+          "name": "Storage solution systems"
+        }
+      },
+      "totalIkeaProductsInStock": 1069,
+      "sampleProductsToInsert": [
+        {
+          "name": "JONAXEL Storage combination",
+          "slug": "jonaxel-storage-combination-99297144",
+          "sku": "IK-99297144",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jonaxel-storage-combination-white__0703702_pe732304_s5.jpg"
+          ],
+          "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "99297144",
+          "measure": "19 5/8x20 1/8x27 1/2 \"",
+          "categoryName": "Storage solution systems",
+          "translations": {
+            "en": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            },
+            "ru": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            },
+            "zh": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x27 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "AURDAL Wardrobe combination",
+          "slug": "aurdal-wardrobe-combination-09331524",
+          "sku": "IK-09331524",
+          "price": 315,
+          "compareAtPrice": 393.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aurdal-wardrobe-combination-white__0825301_pe776274_s5.jpg"
+          ],
+          "description": "AURDAL Wardrobe combination 68 1/2-94 1/2x15 3/4x87 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "09331524",
+          "measure": "68 1/2-94 1/2x15 3/4x87 \"",
+          "categoryName": "Storage solution systems",
+          "translations": {
+            "en": {
+              "name": "AURDAL Wardrobe combination",
+              "description": "AURDAL Wardrobe combination 68 1/2-94 1/2x15 3/4x87 \""
+            },
+            "ru": {
+              "name": "AURDAL Wardrobe combination",
+              "description": "AURDAL Wardrobe combination 68 1/2-94 1/2x15 3/4x87 \""
+            },
+            "zh": {
+              "name": "AURDAL Wardrobe combination",
+              "description": "AURDAL Wardrobe combination 68 1/2-94 1/2x15 3/4x87 \""
+            }
+          }
+        },
+        {
+          "name": "AURDAL Wardrobe combination",
+          "slug": "aurdal-wardrobe-combination-19564645",
+          "sku": "IK-19564645",
+          "price": 575,
+          "compareAtPrice": 718.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aurdal-wardrobe-combination-white__1304320_pe938725_s5.jpg"
+          ],
+          "description": "AURDAL Wardrobe combination 92 1/8-118 1/8x15 3/4x87 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "19564645",
+          "measure": "92 1/8-118 1/8x15 3/4x87 \"",
+          "categoryName": "Storage solution systems",
+          "translations": {
+            "en": {
+              "name": "AURDAL Wardrobe combination",
+              "description": "AURDAL Wardrobe combination 92 1/8-118 1/8x15 3/4x87 \""
+            },
+            "ru": {
+              "name": "AURDAL Wardrobe combination",
+              "description": "AURDAL Wardrobe combination 92 1/8-118 1/8x15 3/4x87 \""
+            },
+            "zh": {
+              "name": "AURDAL Wardrobe combination",
+              "description": "AURDAL Wardrobe combination 92 1/8-118 1/8x15 3/4x87 \""
+            }
+          }
+        },
+        {
+          "name": "JONAXEL Storage combination",
+          "slug": "jonaxel-storage-combination-09297488",
+          "sku": "IK-09297488",
+          "price": 74.99,
+          "compareAtPrice": 93.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jonaxel-storage-combination-white__0703632_pe732229_s5.jpg"
+          ],
+          "description": "JONAXEL Storage combination 19 5/8x20 1/8x41 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "09297488",
+          "measure": "19 5/8x20 1/8x41 \"",
+          "categoryName": "Storage solution systems",
+          "translations": {
+            "en": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x41 \""
+            },
+            "ru": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x41 \""
+            },
+            "zh": {
+              "name": "JONAXEL Storage combination",
+              "description": "JONAXEL Storage combination 19 5/8x20 1/8x41 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Display & storage cabinets",
+      "categorySlug": "display-storage-cabinets-st003",
+      "ikeaCode": "st003",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Display & storage cabinets"
+        },
+        "ru": {
+          "name": "Display & storage cabinets"
+        },
+        "zh": {
+          "name": "Display & storage cabinets"
+        }
+      },
+      "totalIkeaProductsInStock": 207,
+      "sampleProductsToInsert": [
+        {
+          "name": "BRIMNES Cabinet with doors",
+          "slug": "brimnes-cabinet-with-doors-40300662",
+          "sku": "IK-40300662",
+          "price": 99,
+          "compareAtPrice": 123.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brimnes-cabinet-with-doors-white__0627105_pe693181_s5.jpg"
+          ],
+          "description": "BRIMNES Cabinet with doors 30 3/4x37 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40300662",
+          "measure": "30 3/4x37 3/8 \"",
+          "categoryName": "Display & storage cabinets",
+          "translations": {
+            "en": {
+              "name": "BRIMNES Cabinet with doors",
+              "description": "BRIMNES Cabinet with doors 30 3/4x37 3/8 \""
+            },
+            "ru": {
+              "name": "BRIMNES Cabinet with doors",
+              "description": "BRIMNES Cabinet with doors 30 3/4x37 3/8 \""
+            },
+            "zh": {
+              "name": "BRIMNES Cabinet with doors",
+              "description": "BRIMNES Cabinet with doors 30 3/4x37 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "VIHALS Sideboard",
+          "slug": "vihals-sideboard-90491720",
+          "sku": "IK-90491720",
+          "price": 199,
+          "compareAtPrice": 248.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vihals-sideboard-white__1035578_pe838113_s5.jpg"
+          ],
+          "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90491720",
+          "measure": "55 1/8x18 1/2x29 1/2 \"",
+          "categoryName": "Display & storage cabinets",
+          "translations": {
+            "en": {
+              "name": "VIHALS Sideboard",
+              "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \""
+            },
+            "ru": {
+              "name": "VIHALS Sideboard",
+              "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \""
+            },
+            "zh": {
+              "name": "VIHALS Sideboard",
+              "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "LOMMARP Cabinet with glass doors",
+          "slug": "lommarp-cabinet-with-glass-doors-40383737",
+          "sku": "IK-40383737",
+          "price": 499,
+          "compareAtPrice": 623.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lommarp-cabinet-with-glass-doors-dark-blue-green__0739331_pe741694_s5.jpg"
+          ],
+          "description": "LOMMARP Cabinet with glass doors 33 7/8x78 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40383737",
+          "measure": "33 7/8x78 3/8 \"",
+          "categoryName": "Display & storage cabinets",
+          "translations": {
+            "en": {
+              "name": "LOMMARP Cabinet with glass doors",
+              "description": "LOMMARP Cabinet with glass doors 33 7/8x78 3/8 \""
+            },
+            "ru": {
+              "name": "LOMMARP Cabinet with glass doors",
+              "description": "LOMMARP Cabinet with glass doors 33 7/8x78 3/8 \""
+            },
+            "zh": {
+              "name": "LOMMARP Cabinet with glass doors",
+              "description": "LOMMARP Cabinet with glass doors 33 7/8x78 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "HEMNES Glass-door cabinet with 3 drawers",
+          "slug": "hemnes-glass-door-cabinet-with-3-drawers-00596161",
+          "sku": "IK-00596161",
+          "price": 449,
+          "compareAtPrice": 561.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hemnes-glass-door-cabinet-with-3-drawers-gray-green-light-brown-stained__1421222_pe977587_s5.jpg"
+          ],
+          "description": "HEMNES Glass-door cabinet with 3 drawers 35 3/8x77 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00596161",
+          "measure": "35 3/8x77 1/2 \"",
+          "categoryName": "Display & storage cabinets",
+          "translations": {
+            "en": {
+              "name": "HEMNES Glass-door cabinet with 3 drawers",
+              "description": "HEMNES Glass-door cabinet with 3 drawers 35 3/8x77 1/2 \""
+            },
+            "ru": {
+              "name": "HEMNES Glass-door cabinet with 3 drawers",
+              "description": "HEMNES Glass-door cabinet with 3 drawers 35 3/8x77 1/2 \""
+            },
+            "zh": {
+              "name": "HEMNES Glass-door cabinet with 3 drawers",
+              "description": "HEMNES Glass-door cabinet with 3 drawers 35 3/8x77 1/2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Armoires & wardrobes",
+      "categorySlug": "armoires-wardrobes-19053",
+      "ikeaCode": "19053",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Armoires & wardrobes"
+        },
+        "ru": {
+          "name": "Armoires & wardrobes"
+        },
+        "zh": {
+          "name": "Armoires & wardrobes"
+        }
+      },
+      "totalIkeaProductsInStock": 448,
+      "sampleProductsToInsert": [
+        {
+          "name": "BRIMNES Wardrobe with 3 doors",
+          "slug": "brimnes-wardrobe-with-3-doors-90574800",
+          "sku": "IK-90574800",
+          "price": 249.99,
+          "compareAtPrice": 312.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brimnes-wardrobe-with-3-doors-white__1268958_pe928897_s5.jpg"
+          ],
+          "description": "BRIMNES Wardrobe with 3 doors 46x19 3/4x74 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90574800",
+          "measure": "46x19 3/4x74 3/4 \"",
+          "categoryName": "Armoires & wardrobes",
+          "translations": {
+            "en": {
+              "name": "BRIMNES Wardrobe with 3 doors",
+              "description": "BRIMNES Wardrobe with 3 doors 46x19 3/4x74 3/4 \""
+            },
+            "ru": {
+              "name": "BRIMNES Wardrobe with 3 doors",
+              "description": "BRIMNES Wardrobe with 3 doors 46x19 3/4x74 3/4 \""
+            },
+            "zh": {
+              "name": "BRIMNES Wardrobe with 3 doors",
+              "description": "BRIMNES Wardrobe with 3 doors 46x19 3/4x74 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "KLEPPSTAD Wardrobe with 3 doors",
+          "slug": "kleppstad-wardrobe-with-3-doors-20441757",
+          "sku": "IK-20441757",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kleppstad-wardrobe-with-3-doors-white__0753594_pe748782_s5.jpg"
+          ],
+          "description": "KLEPPSTAD Wardrobe with 3 doors 46 1/8x21 5/8x69 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20441757",
+          "measure": "46 1/8x21 5/8x69 1/4 \"",
+          "categoryName": "Armoires & wardrobes",
+          "translations": {
+            "en": {
+              "name": "KLEPPSTAD Wardrobe with 3 doors",
+              "description": "KLEPPSTAD Wardrobe with 3 doors 46 1/8x21 5/8x69 1/4 \""
+            },
+            "ru": {
+              "name": "KLEPPSTAD Wardrobe with 3 doors",
+              "description": "KLEPPSTAD Wardrobe with 3 doors 46 1/8x21 5/8x69 1/4 \""
+            },
+            "zh": {
+              "name": "KLEPPSTAD Wardrobe with 3 doors",
+              "description": "KLEPPSTAD Wardrobe with 3 doors 46 1/8x21 5/8x69 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "RÅDMANSÖ Wardrobe",
+          "slug": "rdmans-wardrobe-00593841",
+          "sku": "IK-00593841",
+          "price": 349.99,
+          "compareAtPrice": 437.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/radmansoe-wardrobe-brown-walnut-effect__1384140_pe962861_s5.jpg"
+          ],
+          "description": "RÅDMANSÖ Wardrobe 46 5/8x25 3/8x74 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00593841",
+          "measure": "46 5/8x25 3/8x74 5/8 \"",
+          "categoryName": "Armoires & wardrobes",
+          "translations": {
+            "en": {
+              "name": "RÅDMANSÖ Wardrobe",
+              "description": "RÅDMANSÖ Wardrobe 46 5/8x25 3/8x74 5/8 \""
+            },
+            "ru": {
+              "name": "RÅDMANSÖ Wardrobe",
+              "description": "RÅDMANSÖ Wardrobe 46 5/8x25 3/8x74 5/8 \""
+            },
+            "zh": {
+              "name": "RÅDMANSÖ Wardrobe",
+              "description": "RÅDMANSÖ Wardrobe 46 5/8x25 3/8x74 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "BRIMNES Wardrobe with 2 doors",
+          "slug": "brimnes-wardrobe-with-2-doors-30574799",
+          "sku": "IK-30574799",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/brimnes-wardrobe-with-2-doors-white__1268948_pe928889_s5.jpg"
+          ],
+          "description": "BRIMNES Wardrobe with 2 doors 30 3/4x19 5/8x74 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30574799",
+          "measure": "30 3/4x19 5/8x74 3/4 \"",
+          "categoryName": "Armoires & wardrobes",
+          "translations": {
+            "en": {
+              "name": "BRIMNES Wardrobe with 2 doors",
+              "description": "BRIMNES Wardrobe with 2 doors 30 3/4x19 5/8x74 3/4 \""
+            },
+            "ru": {
+              "name": "BRIMNES Wardrobe with 2 doors",
+              "description": "BRIMNES Wardrobe with 2 doors 30 3/4x19 5/8x74 3/4 \""
+            },
+            "zh": {
+              "name": "BRIMNES Wardrobe with 2 doors",
+              "description": "BRIMNES Wardrobe with 2 doors 30 3/4x19 5/8x74 3/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Living room & entryway tables",
+      "categorySlug": "sideboards-buffets-sofa-tables-30454",
+      "ikeaCode": "30454",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Living room & entryway tables"
+        },
+        "ru": {
+          "name": "Living room & entryway tables"
+        },
+        "zh": {
+          "name": "Living room & entryway tables"
+        }
+      },
+      "totalIkeaProductsInStock": 51,
+      "sampleProductsToInsert": [
+        {
+          "name": "HOLMERUD Side table",
+          "slug": "holmerud-side-table-40541421",
+          "sku": "IK-40541421",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/holmerud-side-table-oak-effect__1193662_pe901564_s5.jpg"
+          ],
+          "description": "HOLMERUD Side table 31 1/2x12 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40541421",
+          "measure": "31 1/2x12 1/4 \"",
+          "categoryName": "Living room & entryway tables",
+          "translations": {
+            "en": {
+              "name": "HOLMERUD Side table",
+              "description": "HOLMERUD Side table 31 1/2x12 1/4 \""
+            },
+            "ru": {
+              "name": "HOLMERUD Side table",
+              "description": "HOLMERUD Side table 31 1/2x12 1/4 \""
+            },
+            "zh": {
+              "name": "HOLMERUD Side table",
+              "description": "HOLMERUD Side table 31 1/2x12 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "STOCKHOLM 2025 Sideboard",
+          "slug": "stockholm-2025-sideboard-10586604",
+          "sku": "IK-10586604",
+          "price": 599,
+          "compareAtPrice": 748.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stockholm-2025-sideboard-oak-veneer__1397699_pe967720_s5.jpg"
+          ],
+          "description": "STOCKHOLM 2025 Sideboard 63 1/4x16 1/2x32 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10586604",
+          "measure": "63 1/4x16 1/2x32 3/4 \"",
+          "categoryName": "Living room & entryway tables",
+          "translations": {
+            "en": {
+              "name": "STOCKHOLM 2025 Sideboard",
+              "description": "STOCKHOLM 2025 Sideboard 63 1/4x16 1/2x32 3/4 \""
+            },
+            "ru": {
+              "name": "STOCKHOLM 2025 Sideboard",
+              "description": "STOCKHOLM 2025 Sideboard 63 1/4x16 1/2x32 3/4 \""
+            },
+            "zh": {
+              "name": "STOCKHOLM 2025 Sideboard",
+              "description": "STOCKHOLM 2025 Sideboard 63 1/4x16 1/2x32 3/4 \""
+            }
+          }
+        },
+        {
+          "name": "VIHALS Sideboard",
+          "slug": "vihals-sideboard-90542927",
+          "sku": "IK-90542927",
+          "price": 149,
+          "compareAtPrice": 186.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vihals-sideboard-dark-gray__1203691_pe906387_s5.jpg"
+          ],
+          "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90542927",
+          "measure": "55 1/8x18 1/2x29 1/2 \"",
+          "categoryName": "Living room & entryway tables",
+          "translations": {
+            "en": {
+              "name": "VIHALS Sideboard",
+              "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \""
+            },
+            "ru": {
+              "name": "VIHALS Sideboard",
+              "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \""
+            },
+            "zh": {
+              "name": "VIHALS Sideboard",
+              "description": "VIHALS Sideboard 55 1/8x18 1/2x29 1/2 \""
+            }
+          }
+        },
+        {
+          "name": "BESTÅ Storage combination with doors",
+          "slug": "best-storage-combination-with-doors-29209829",
+          "sku": "IK-29209829",
+          "price": 240,
+          "compareAtPrice": 300,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/besta-storage-combination-with-doors-white-stained-oak-effect-lappviken-stubbarp-white-stained-oak-effect__1602647_pe1043561_s5.jpg"
+          ],
+          "description": "BESTÅ Storage combination with doors 47 1/4x16 1/2x29 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "29209829",
+          "measure": "47 1/4x16 1/2x29 1/8 \"",
+          "categoryName": "Living room & entryway tables",
+          "translations": {
+            "en": {
+              "name": "BESTÅ Storage combination with doors",
+              "description": "BESTÅ Storage combination with doors 47 1/4x16 1/2x29 1/8 \""
+            },
+            "ru": {
+              "name": "BESTÅ Storage combination with doors",
+              "description": "BESTÅ Storage combination with doors 47 1/4x16 1/2x29 1/8 \""
+            },
+            "zh": {
+              "name": "BESTÅ Storage combination with doors",
+              "description": "BESTÅ Storage combination with doors 47 1/4x16 1/2x29 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Rolling utility & storage carts",
+      "categorySlug": "utility-storage-carts-fu005",
+      "ikeaCode": "fu005",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Rolling utility & storage carts"
+        },
+        "ru": {
+          "name": "Rolling utility & storage carts"
+        },
+        "zh": {
+          "name": "Rolling utility & storage carts"
+        }
+      },
+      "totalIkeaProductsInStock": 29,
+      "sampleProductsToInsert": [
+        {
+          "name": "RÅSKOG Utility cart",
+          "slug": "rskog-utility-cart-30586783",
+          "sku": "IK-30586783",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/raskog-utility-cart-white__1366882_pe957173_s5.jpg"
+          ],
+          "description": "RÅSKOG Utility cart 13 3/4x17 3/4x30 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30586783",
+          "measure": "13 3/4x17 3/4x30 3/8 \"",
+          "categoryName": "Rolling utility & storage carts",
+          "translations": {
+            "en": {
+              "name": "RÅSKOG Utility cart",
+              "description": "RÅSKOG Utility cart 13 3/4x17 3/4x30 3/8 \""
+            },
+            "ru": {
+              "name": "RÅSKOG Utility cart",
+              "description": "RÅSKOG Utility cart 13 3/4x17 3/4x30 3/8 \""
+            },
+            "zh": {
+              "name": "RÅSKOG Utility cart",
+              "description": "RÅSKOG Utility cart 13 3/4x17 3/4x30 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "RÅSKOG Utility cart",
+          "slug": "rskog-utility-cart-50591769",
+          "sku": "IK-50591769",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/raskog-utility-cart-gray-green__1366914_pe957203_s5.jpg"
+          ],
+          "description": "RÅSKOG Utility cart 11x15x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50591769",
+          "measure": "11x15x24 \"",
+          "categoryName": "Rolling utility & storage carts",
+          "translations": {
+            "en": {
+              "name": "RÅSKOG Utility cart",
+              "description": "RÅSKOG Utility cart 11x15x24 \""
+            },
+            "ru": {
+              "name": "RÅSKOG Utility cart",
+              "description": "RÅSKOG Utility cart 11x15x24 \""
+            },
+            "zh": {
+              "name": "RÅSKOG Utility cart",
+              "description": "RÅSKOG Utility cart 11x15x24 \""
+            }
+          }
+        },
+        {
+          "name": "VESKEN Cart",
+          "slug": "vesken-cart-00471222",
+          "sku": "IK-00471222",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vesken-cart-white__0832009_pe777548_s5.jpg"
+          ],
+          "description": "VESKEN Cart 21 1/4x7 1/8x28 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00471222",
+          "measure": "21 1/4x7 1/8x28 \"",
+          "categoryName": "Rolling utility & storage carts",
+          "translations": {
+            "en": {
+              "name": "VESKEN Cart",
+              "description": "VESKEN Cart 21 1/4x7 1/8x28 \""
+            },
+            "ru": {
+              "name": "VESKEN Cart",
+              "description": "VESKEN Cart 21 1/4x7 1/8x28 \""
+            },
+            "zh": {
+              "name": "VESKEN Cart",
+              "description": "VESKEN Cart 21 1/4x7 1/8x28 \""
+            }
+          }
+        },
+        {
+          "name": "NISSAFORS Utility cart",
+          "slug": "nissafors-utility-cart-20399777",
+          "sku": "IK-20399777",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/nissafors-utility-cart-black__0672522_pe716744_s5.jpg"
+          ],
+          "description": "NISSAFORS Utility cart 19 7/8x11 3/4x32 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20399777",
+          "measure": "19 7/8x11 3/4x32 5/8 \"",
+          "categoryName": "Rolling utility & storage carts",
+          "translations": {
+            "en": {
+              "name": "NISSAFORS Utility cart",
+              "description": "NISSAFORS Utility cart 19 7/8x11 3/4x32 5/8 \""
+            },
+            "ru": {
+              "name": "NISSAFORS Utility cart",
+              "description": "NISSAFORS Utility cart 19 7/8x11 3/4x32 5/8 \""
+            },
+            "zh": {
+              "name": "NISSAFORS Utility cart",
+              "description": "NISSAFORS Utility cart 19 7/8x11 3/4x32 5/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Garage storage solutions",
+      "categorySlug": "garage-storage-700440",
+      "ikeaCode": "700440",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Garage storage solutions"
+        },
+        "ru": {
+          "name": "Garage storage solutions"
+        },
+        "zh": {
+          "name": "Garage storage solutions"
+        }
+      },
+      "totalIkeaProductsInStock": 238,
+      "sampleProductsToInsert": [
+        {
+          "name": "BROR Cabinet with doors",
+          "slug": "bror-cabinet-with-doors-50494297",
+          "sku": "IK-50494297",
+          "price": 399,
+          "compareAtPrice": 498.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bror-cabinet-with-doors-black__1041747_pe841137_s5.jpg"
+          ],
+          "description": "BROR Cabinet with doors 33 1/2x15 3/4x75 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50494297",
+          "measure": "33 1/2x15 3/4x75 1/4 \"",
+          "categoryName": "Garage storage solutions",
+          "translations": {
+            "en": {
+              "name": "BROR Cabinet with doors",
+              "description": "BROR Cabinet with doors 33 1/2x15 3/4x75 1/4 \""
+            },
+            "ru": {
+              "name": "BROR Cabinet with doors",
+              "description": "BROR Cabinet with doors 33 1/2x15 3/4x75 1/4 \""
+            },
+            "zh": {
+              "name": "BROR Cabinet with doors",
+              "description": "BROR Cabinet with doors 33 1/2x15 3/4x75 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "BROR Storage combo w/cabinets+workbench",
+          "slug": "bror-storage-combo-wcabinetsworkbench-49436883",
+          "sku": "IK-49436883",
+          "price": 1396,
+          "compareAtPrice": 1745,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bror-storage-combo-w-cabinets-workbench-black-pine-plywood__1042711_pe841547_s5.jpg"
+          ],
+          "description": "BROR Storage combo w/cabinets+workbench 133 7/8x15 3/4x75 1/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "49436883",
+          "measure": "133 7/8x15 3/4x75 1/4 \"",
+          "categoryName": "Garage storage solutions",
+          "translations": {
+            "en": {
+              "name": "BROR Storage combo w/cabinets+workbench",
+              "description": "BROR Storage combo w/cabinets+workbench 133 7/8x15 3/4x75 1/4 \""
+            },
+            "ru": {
+              "name": "BROR Storage combo w/cabinets+workbench",
+              "description": "BROR Storage combo w/cabinets+workbench 133 7/8x15 3/4x75 1/4 \""
+            },
+            "zh": {
+              "name": "BROR Storage combo w/cabinets+workbench",
+              "description": "BROR Storage combo w/cabinets+workbench 133 7/8x15 3/4x75 1/4 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-30428326",
+          "sku": "IK-30428326",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0639121_pe704408_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30428326",
+          "measure": "23 5/8x10 5/8x29 1/8 \"",
+          "categoryName": "Garage storage solutions",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-00278578",
+          "sku": "IK-00278578",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0626021_pe692562_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00278578",
+          "measure": "23 5/8x10 5/8x55 1/8 \"",
+          "categoryName": "Garage storage solutions",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+      "categorySlug": "outdoor-organizing-21958",
+      "ikeaCode": "21958",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor storage: shelves, cabinets & boxes"
+        },
+        "ru": {
+          "name": "Outdoor storage: shelves, cabinets & boxes"
+        },
+        "zh": {
+          "name": "Outdoor storage: shelves, cabinets & boxes"
+        }
+      },
+      "totalIkeaProductsInStock": 22,
+      "sampleProductsToInsert": [
+        {
+          "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+          "slug": "kolbjrn-cabinet-indooroutdoor-30409295",
+          "sku": "IK-30409295",
+          "price": 169.99,
+          "compareAtPrice": 212.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kolbjoern-cabinet-indoor-outdoor-beige__0664606_pe718444_s5.jpg"
+          ],
+          "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30409295",
+          "measure": "31 1/2x31 7/8 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+              "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \""
+            },
+            "ru": {
+              "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+              "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \""
+            },
+            "zh": {
+              "name": "KOLBJÖRN Cabinet, indoor/outdoor",
+              "description": "KOLBJÖRN Cabinet, indoor/outdoor 31 1/2x31 7/8 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-30428326",
+          "sku": "IK-30428326",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0639121_pe704408_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30428326",
+          "measure": "23 5/8x10 5/8x29 1/8 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x29 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "KOLBJÖRN Cabinet",
+          "slug": "kolbjrn-cabinet-60601862",
+          "sku": "IK-60601862",
+          "price": 349.99,
+          "compareAtPrice": 437.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kolbjoern-cabinet-beige-outdoor-indoor__0733033_pe718455_s5.jpg"
+          ],
+          "description": "KOLBJÖRN Cabinet 35x63 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60601862",
+          "measure": "35x63 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "KOLBJÖRN Cabinet",
+              "description": "KOLBJÖRN Cabinet 35x63 \""
+            },
+            "ru": {
+              "name": "KOLBJÖRN Cabinet",
+              "description": "KOLBJÖRN Cabinet 35x63 \""
+            },
+            "zh": {
+              "name": "KOLBJÖRN Cabinet",
+              "description": "KOLBJÖRN Cabinet 35x63 \""
+            }
+          }
+        },
+        {
+          "name": "HYLLIS Shelf unit",
+          "slug": "hyllis-shelf-unit-00278578",
+          "sku": "IK-00278578",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/hyllis-shelf-unit-indoor-outdoor__0626021_pe692562_s5.jpg"
+          ],
+          "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00278578",
+          "measure": "23 5/8x10 5/8x55 1/8 \"",
+          "categoryName": "Outdoor storage: shelves, cabinets & boxes",
+          "translations": {
+            "en": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "ru": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            },
+            "zh": {
+              "name": "HYLLIS Shelf unit",
+              "description": "HYLLIS Shelf unit 23 5/8x10 5/8x55 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Room dividers",
+      "categorySlug": "room-dividers-46080",
+      "ikeaCode": "46080",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Room dividers"
+        },
+        "ru": {
+          "name": "Room dividers"
+        },
+        "zh": {
+          "name": "Room dividers"
+        }
+      },
+      "totalIkeaProductsInStock": 19,
+      "sampleProductsToInsert": [
+        {
+          "name": "NÄMMARÖ Privacy screen",
+          "slug": "nmmar-privacy-screen-20532743",
+          "sku": "IK-20532743",
+          "price": 119.99,
+          "compareAtPrice": 149.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/naemmaroe-privacy-screen-light-brown-stained-indoor-outdoor__1137840_pe879763_s5.jpg"
+          ],
+          "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20532743",
+          "measure": "55 1/8x31 1/2x19 5/8 \"",
+          "categoryName": "Room dividers",
+          "translations": {
+            "en": {
+              "name": "NÄMMARÖ Privacy screen",
+              "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \""
+            },
+            "ru": {
+              "name": "NÄMMARÖ Privacy screen",
+              "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \""
+            },
+            "zh": {
+              "name": "NÄMMARÖ Privacy screen",
+              "description": "NÄMMARÖ Privacy screen 55 1/8x31 1/2x19 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "GLAMBERGET Room divider",
+          "slug": "glamberget-room-divider-90564735",
+          "sku": "IK-90564735",
+          "price": 99.99,
+          "compareAtPrice": 124.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/glamberget-room-divider-pine-katorp-beige__1336028_pe947272_s5.jpg"
+          ],
+          "description": "GLAMBERGET Room divider 59x59 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90564735",
+          "measure": "59x59 \"",
+          "categoryName": "Room dividers",
+          "translations": {
+            "en": {
+              "name": "GLAMBERGET Room divider",
+              "description": "GLAMBERGET Room divider 59x59 \""
+            },
+            "ru": {
+              "name": "GLAMBERGET Room divider",
+              "description": "GLAMBERGET Room divider 59x59 \""
+            },
+            "zh": {
+              "name": "GLAMBERGET Room divider",
+              "description": "GLAMBERGET Room divider 59x59 \""
+            }
+          }
+        },
+        {
+          "name": "RISÖR Room divider",
+          "slug": "risr-room-divider-70182191",
+          "sku": "IK-70182191",
+          "price": 199.99,
+          "compareAtPrice": 249.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/risoer-room-divider-white-black__0107404_pe257072_s5.jpg"
+          ],
+          "description": "RISÖR Room divider 85x72 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70182191",
+          "measure": "85x72 7/8 \"",
+          "categoryName": "Room dividers",
+          "translations": {
+            "en": {
+              "name": "RISÖR Room divider",
+              "description": "RISÖR Room divider 85x72 7/8 \""
+            },
+            "ru": {
+              "name": "RISÖR Room divider",
+              "description": "RISÖR Room divider 85x72 7/8 \""
+            },
+            "zh": {
+              "name": "RISÖR Room divider",
+              "description": "RISÖR Room divider 85x72 7/8 \""
+            }
+          }
+        },
+        {
+          "name": "TOLKNING Room divider",
+          "slug": "tolkning-room-divider-60512663",
+          "sku": "IK-60512663",
+          "price": 179.99,
+          "compareAtPrice": 224.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tolkning-room-divider-handmade-rattan__1098698_pe865491_s5.jpg"
+          ],
+          "description": "TOLKNING Room divider 59x66 7/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60512663",
+          "measure": "59x66 7/8 \"",
+          "categoryName": "Room dividers",
+          "translations": {
+            "en": {
+              "name": "TOLKNING Room divider",
+              "description": "TOLKNING Room divider 59x66 7/8 \""
+            },
+            "ru": {
+              "name": "TOLKNING Room divider",
+              "description": "TOLKNING Room divider 59x66 7/8 \""
+            },
+            "zh": {
+              "name": "TOLKNING Room divider",
+              "description": "TOLKNING Room divider 59x66 7/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Shoe cabinets",
+      "categorySlug": "shoe-cabinets-10456",
+      "ikeaCode": "10456",
+      "parentDepartment": "Storage & organization",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Shoe cabinets"
+        },
+        "ru": {
+          "name": "Shoe cabinets"
+        },
+        "zh": {
+          "name": "Shoe cabinets"
+        }
+      },
+      "totalIkeaProductsInStock": 25,
+      "sampleProductsToInsert": [
+        {
+          "name": "TRONES Shoe/storage cabinet",
+          "slug": "trones-shoestorage-cabinet-00397307",
+          "sku": "IK-00397307",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trones-shoe-storage-cabinet-white__0710711_pe727734_s5.jpg"
+          ],
+          "description": "TRONES Shoe/storage cabinet 20 1/2x7 1/8x15 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00397307",
+          "measure": "20 1/2x7 1/8x15 3/8 \"",
+          "categoryName": "Shoe cabinets",
+          "translations": {
+            "en": {
+              "name": "TRONES Shoe/storage cabinet",
+              "description": "TRONES Shoe/storage cabinet 20 1/2x7 1/8x15 3/8 \""
+            },
+            "ru": {
+              "name": "TRONES Shoe/storage cabinet",
+              "description": "TRONES Shoe/storage cabinet 20 1/2x7 1/8x15 3/8 \""
+            },
+            "zh": {
+              "name": "TRONES Shoe/storage cabinet",
+              "description": "TRONES Shoe/storage cabinet 20 1/2x7 1/8x15 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "STÄLL Shoe cabinet with 4 compartments",
+          "slug": "stll-shoe-cabinet-with-4-compartments-60530266",
+          "sku": "IK-60530266",
+          "price": 149.99,
+          "compareAtPrice": 187.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/staell-shoe-cabinet-with-4-compartments-white__1126561_pe875781_s5.jpg"
+          ],
+          "description": "STÄLL Shoe cabinet with 4 compartments 37 3/4x6 3/4x35 3/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60530266",
+          "measure": "37 3/4x6 3/4x35 3/8 \"",
+          "categoryName": "Shoe cabinets",
+          "translations": {
+            "en": {
+              "name": "STÄLL Shoe cabinet with 4 compartments",
+              "description": "STÄLL Shoe cabinet with 4 compartments 37 3/4x6 3/4x35 3/8 \""
+            },
+            "ru": {
+              "name": "STÄLL Shoe cabinet with 4 compartments",
+              "description": "STÄLL Shoe cabinet with 4 compartments 37 3/4x6 3/4x35 3/8 \""
+            },
+            "zh": {
+              "name": "STÄLL Shoe cabinet with 4 compartments",
+              "description": "STÄLL Shoe cabinet with 4 compartments 37 3/4x6 3/4x35 3/8 \""
+            }
+          }
+        },
+        {
+          "name": "BISSA Shoe cabinet with 2 compartments",
+          "slug": "bissa-shoe-cabinet-with-2-compartments-70530256",
+          "sku": "IK-70530256",
+          "price": 49.99,
+          "compareAtPrice": 62.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bissa-shoe-cabinet-with-2-compartments-white__1126569_pe875786_s5.jpg"
+          ],
+          "description": "BISSA Shoe cabinet with 2 compartments 19 1/4x11x36 5/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70530256",
+          "measure": "19 1/4x11x36 5/8 \"",
+          "categoryName": "Shoe cabinets",
+          "translations": {
+            "en": {
+              "name": "BISSA Shoe cabinet with 2 compartments",
+              "description": "BISSA Shoe cabinet with 2 compartments 19 1/4x11x36 5/8 \""
+            },
+            "ru": {
+              "name": "BISSA Shoe cabinet with 2 compartments",
+              "description": "BISSA Shoe cabinet with 2 compartments 19 1/4x11x36 5/8 \""
+            },
+            "zh": {
+              "name": "BISSA Shoe cabinet with 2 compartments",
+              "description": "BISSA Shoe cabinet with 2 compartments 19 1/4x11x36 5/8 \""
+            }
+          }
+        },
+        {
+          "name": "GULLABERG Shoe cabinet with 2 compartments",
+          "slug": "gullaberg-shoe-cabinet-with-2-compartments-50587692",
+          "sku": "IK-50587692",
+          "price": 179.99,
+          "compareAtPrice": 224.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gullaberg-shoe-cabinet-with-2-compartments-white__1384131_pe962849_s5.jpg"
+          ],
+          "description": "GULLABERG Shoe cabinet with 2 compartments 34 5/8x11 3/4x48 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50587692",
+          "measure": "34 5/8x11 3/4x48 \"",
+          "categoryName": "Shoe cabinets",
+          "translations": {
+            "en": {
+              "name": "GULLABERG Shoe cabinet with 2 compartments",
+              "description": "GULLABERG Shoe cabinet with 2 compartments 34 5/8x11 3/4x48 \""
+            },
+            "ru": {
+              "name": "GULLABERG Shoe cabinet with 2 compartments",
+              "description": "GULLABERG Shoe cabinet with 2 compartments 34 5/8x11 3/4x48 \""
+            },
+            "zh": {
+              "name": "GULLABERG Shoe cabinet with 2 compartments",
+              "description": "GULLABERG Shoe cabinet with 2 compartments 34 5/8x11 3/4x48 \""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

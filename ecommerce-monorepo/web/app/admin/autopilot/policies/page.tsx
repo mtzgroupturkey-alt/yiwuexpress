@@ -14,8 +14,10 @@ import {
   Sliders,
   ShieldCheck,
 } from 'lucide-react';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export default function PolicyRulesEditorPage() {
+  const { dict } = useAdminLocale();
   const [policies, setPolicies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPolicy, setSelectedPolicy] = useState<any | null>(null);
@@ -150,10 +152,10 @@ then:
           </Link>
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              Policy Rules Engine
+              {dict.autopilot?.policyRulesTitle || 'Declarative Business Policy Engine'}
             </h1>
             <p className="text-xs text-slate-500">
-              Layer 2 Policy DSL — YAML declarative business rules with priority arbitration
+              {dict.autopilot?.policyRulesSubtitle || 'Define strict executable threshold constraints, guardrails, and automated trigger workflows'}
             </p>
           </div>
         </div>
@@ -164,12 +166,12 @@ then:
             className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 text-xs font-bold flex items-center gap-1.5 hover:bg-indigo-100 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Rule</span>
+            <span>{dict.autopilot?.createNewPolicy || 'New Rule'}</span>
           </button>
           <button
             onClick={fetchPolicies}
             className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 text-slate-600 dark:text-slate-400"
-            title="Refresh list"
+            title={dict.common?.refresh || 'Refresh list'}
           >
             <RefreshCw className="w-4 h-4" />
           </button>

@@ -1,0 +1,1193 @@
+{
+  "department": "Rugs & home textiles",
+  "departmentSlug": "home-textiles-tl001",
+  "departmentCode": "tl001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Ковры и домашний текстиль",
+    "zh": "地毯与家用纺织品"
+  },
+  "missingSubcategoriesCount": 9,
+  "totalMissingProductsCount": 440,
+  "subcategories": [
+    {
+      "categoryName": "Rugs",
+      "categorySlug": "rugs-10653",
+      "ikeaCode": "10653",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Rugs"
+        },
+        "ru": {
+          "name": "Rugs"
+        },
+        "zh": {
+          "name": "Rugs"
+        }
+      },
+      "totalIkeaProductsInStock": 151,
+      "sampleProductsToInsert": [
+        {
+          "name": "STOENSE Rug, low pile",
+          "slug": "stoense-rug-low-pile-20635449",
+          "sku": "IK-20635449",
+          "price": 249.99,
+          "compareAtPrice": 312.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stoense-rug-low-pile-off-white__1495129_pe1004956_s5.jpg"
+          ],
+          "description": "STOENSE Rug, low pile 7 ' 10 \"x10 '",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20635449",
+          "measure": "7 ' 10 \"x10 '",
+          "categoryName": "Rugs",
+          "translations": {
+            "en": {
+              "name": "STOENSE Rug, low pile",
+              "description": "STOENSE Rug, low pile 7 ' 10 \"x10 '"
+            },
+            "ru": {
+              "name": "STOENSE Rug, low pile",
+              "description": "STOENSE Rug, low pile 7 ' 10 \"x10 '"
+            },
+            "zh": {
+              "name": "STOENSE Rug, low pile",
+              "description": "STOENSE Rug, low pile 7 ' 10 \"x10 '"
+            }
+          }
+        },
+        {
+          "name": "LOHALS Rug, flatwoven",
+          "slug": "lohals-rug-flatwoven-50277393",
+          "sku": "IK-50277393",
+          "price": 129.99,
+          "compareAtPrice": 162.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lohals-rug-flatwoven-natural__0280221_pe419173_s5.jpg"
+          ],
+          "description": "LOHALS Rug, flatwoven 5 ' 3 \"x7 ' 7 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50277393",
+          "measure": "5 ' 3 \"x7 ' 7 \"",
+          "categoryName": "Rugs",
+          "translations": {
+            "en": {
+              "name": "LOHALS Rug, flatwoven",
+              "description": "LOHALS Rug, flatwoven 5 ' 3 \"x7 ' 7 \""
+            },
+            "ru": {
+              "name": "LOHALS Rug, flatwoven",
+              "description": "LOHALS Rug, flatwoven 5 ' 3 \"x7 ' 7 \""
+            },
+            "zh": {
+              "name": "LOHALS Rug, flatwoven",
+              "description": "LOHALS Rug, flatwoven 5 ' 3 \"x7 ' 7 \""
+            }
+          }
+        },
+        {
+          "name": "JÄRNVÄG Rug, low pile",
+          "slug": "jrnvg-rug-low-pile-60635447",
+          "sku": "IK-60635447",
+          "price": 229.99,
+          "compareAtPrice": 287.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/jaernvaeg-rug-low-pile-ornament-pattern-pink-beige__1435112_pe983704_s5.jpg"
+          ],
+          "description": "JÄRNVÄG Rug, low pile 7 ' 10 \"x10 '",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60635447",
+          "measure": "7 ' 10 \"x10 '",
+          "categoryName": "Rugs",
+          "translations": {
+            "en": {
+              "name": "JÄRNVÄG Rug, low pile",
+              "description": "JÄRNVÄG Rug, low pile 7 ' 10 \"x10 '"
+            },
+            "ru": {
+              "name": "JÄRNVÄG Rug, low pile",
+              "description": "JÄRNVÄG Rug, low pile 7 ' 10 \"x10 '"
+            },
+            "zh": {
+              "name": "JÄRNVÄG Rug, low pile",
+              "description": "JÄRNVÄG Rug, low pile 7 ' 10 \"x10 '"
+            }
+          }
+        },
+        {
+          "name": "LOKALTÅG Rug, low pile",
+          "slug": "lokaltg-rug-low-pile-20623408",
+          "sku": "IK-20623408",
+          "price": 149.99,
+          "compareAtPrice": 187.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lokaltag-rug-low-pile-beige-gray__1514369_pe1010943_s5.jpg"
+          ],
+          "description": "LOKALTÅG Rug, low pile 8 ' 0 \"x10 ' 0 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20623408",
+          "measure": "8 ' 0 \"x10 ' 0 \"",
+          "categoryName": "Rugs",
+          "translations": {
+            "en": {
+              "name": "LOKALTÅG Rug, low pile",
+              "description": "LOKALTÅG Rug, low pile 8 ' 0 \"x10 ' 0 \""
+            },
+            "ru": {
+              "name": "LOKALTÅG Rug, low pile",
+              "description": "LOKALTÅG Rug, low pile 8 ' 0 \"x10 ' 0 \""
+            },
+            "zh": {
+              "name": "LOKALTÅG Rug, low pile",
+              "description": "LOKALTÅG Rug, low pile 8 ' 0 \"x10 ' 0 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Table linens",
+      "categorySlug": "table-linen-20538",
+      "ikeaCode": "20538",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Table linens"
+        },
+        "ru": {
+          "name": "Table linens"
+        },
+        "zh": {
+          "name": "Table linens"
+        }
+      },
+      "totalIkeaProductsInStock": 66,
+      "sampleProductsToInsert": [
+        {
+          "name": "SOARÉ Placemat",
+          "slug": "soar-placemat-40082536",
+          "sku": "IK-40082536",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/soare-placemat-water-hyacinth__0711868_pe728538_s5.jpg"
+          ],
+          "description": "SOARÉ Placemat 15 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40082536",
+          "measure": "15 \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "SOARÉ Placemat",
+              "description": "SOARÉ Placemat 15 \""
+            },
+            "ru": {
+              "name": "SOARÉ Placemat",
+              "description": "SOARÉ Placemat 15 \""
+            },
+            "zh": {
+              "name": "SOARÉ Placemat",
+              "description": "SOARÉ Placemat 15 \""
+            }
+          }
+        },
+        {
+          "name": "VÅRARV Place mat",
+          "slug": "vrarv-place-mat-20545849",
+          "sku": "IK-20545849",
+          "price": 3.49,
+          "compareAtPrice": 4.36,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vararv-place-mat-dark-gray-natural__1144121_pe882895_s5.jpg"
+          ],
+          "description": "VÅRARV Place mat 13 ¾x17 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20545849",
+          "measure": "13 ¾x17 ¾ \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "VÅRARV Place mat",
+              "description": "VÅRARV Place mat 13 ¾x17 ¾ \""
+            },
+            "ru": {
+              "name": "VÅRARV Place mat",
+              "description": "VÅRARV Place mat 13 ¾x17 ¾ \""
+            },
+            "zh": {
+              "name": "VÅRARV Place mat",
+              "description": "VÅRARV Place mat 13 ¾x17 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "SVARTSENAP Placemat",
+          "slug": "svartsenap-placemat-80527965",
+          "sku": "IK-80527965",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svartsenap-placemat-green-blue__1089636_pe861613_s5.jpg"
+          ],
+          "description": "SVARTSENAP Placemat 14x18 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80527965",
+          "measure": "14x18 \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "SVARTSENAP Placemat",
+              "description": "SVARTSENAP Placemat 14x18 \""
+            },
+            "ru": {
+              "name": "SVARTSENAP Placemat",
+              "description": "SVARTSENAP Placemat 14x18 \""
+            },
+            "zh": {
+              "name": "SVARTSENAP Placemat",
+              "description": "SVARTSENAP Placemat 14x18 \""
+            }
+          }
+        },
+        {
+          "name": "SILVERARV Tablecloth",
+          "slug": "silverarv-tablecloth-80526579",
+          "sku": "IK-80526579",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/silverarv-tablecloth-beige__1062943_pe851135_s5.jpg"
+          ],
+          "description": "SILVERARV Tablecloth 57x94 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80526579",
+          "measure": "57x94 \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "SILVERARV Tablecloth",
+              "description": "SILVERARV Tablecloth 57x94 \""
+            },
+            "ru": {
+              "name": "SILVERARV Tablecloth",
+              "description": "SILVERARV Tablecloth 57x94 \""
+            },
+            "zh": {
+              "name": "SILVERARV Tablecloth",
+              "description": "SILVERARV Tablecloth 57x94 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen linens & textiles",
+      "categorySlug": "kitchen-textiles-18850",
+      "ikeaCode": "18850",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen linens & textiles"
+        },
+        "ru": {
+          "name": "Kitchen linens & textiles"
+        },
+        "zh": {
+          "name": "Kitchen linens & textiles"
+        }
+      },
+      "totalIkeaProductsInStock": 28,
+      "sampleProductsToInsert": [
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-20612768",
+          "sku": "IK-20612768",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-multicolor-patterned__1391212_pe965715_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20612768",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-20476346",
+          "sku": "IK-20476346",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-white-dark-gray-patterned__0813216_pe772338_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20476346",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "RÖDSPÄTTA Dish towel",
+          "slug": "rdsptta-dish-towel-60618570",
+          "sku": "IK-60618570",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/roedspaetta-dish-towel-white__1446800_pe988920_s5.jpg"
+          ],
+          "description": "RÖDSPÄTTA Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60618570",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RÖDSPÄTTA Dish towel",
+              "description": "RÖDSPÄTTA Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RÖDSPÄTTA Dish towel",
+              "description": "RÖDSPÄTTA Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RÖDSPÄTTA Dish towel",
+              "description": "RÖDSPÄTTA Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-70612695",
+          "sku": "IK-70612695",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-red-beige-stripe__1390638_pe965461_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70612695",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Textiles for kids",
+      "categorySlug": "kids-textiles-18730",
+      "ikeaCode": "18730",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Textiles for kids"
+        },
+        "ru": {
+          "name": "Textiles for kids"
+        },
+        "zh": {
+          "name": "Textiles for kids"
+        }
+      },
+      "totalIkeaProductsInStock": 95,
+      "sampleProductsToInsert": [
+        {
+          "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+          "slug": "barndrm-duvet-cover-and-pillowcases-00622688",
+          "sku": "IK-00622688",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/barndroem-duvet-cover-and-pillowcase-s-blue-green-stripe-pattern__1474595_pe998178_s5.jpg"
+          ],
+          "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00622688",
+          "measure": "Twin",
+          "categoryName": "Textiles for kids",
+          "translations": {
+            "en": {
+              "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+              "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin"
+            },
+            "ru": {
+              "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+              "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin"
+            },
+            "zh": {
+              "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+              "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin"
+            }
+          }
+        },
+        {
+          "name": "BARNDRÖM Fitted sheet",
+          "slug": "barndrm-fitted-sheet-80622726",
+          "sku": "IK-80622726",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/barndroem-fitted-sheet-pink-unicorn-pattern__1472350_pe997521_s5.jpg"
+          ],
+          "description": "BARNDRÖM Fitted sheet Twin",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80622726",
+          "measure": "Twin",
+          "categoryName": "Textiles for kids",
+          "translations": {
+            "en": {
+              "name": "BARNDRÖM Fitted sheet",
+              "description": "BARNDRÖM Fitted sheet Twin"
+            },
+            "ru": {
+              "name": "BARNDRÖM Fitted sheet",
+              "description": "BARNDRÖM Fitted sheet Twin"
+            },
+            "zh": {
+              "name": "BARNDRÖM Fitted sheet",
+              "description": "BARNDRÖM Fitted sheet Twin"
+            }
+          }
+        },
+        {
+          "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+          "slug": "barndrm-duvet-cover-and-pillowcases-70623608",
+          "sku": "IK-70623608",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/barndroem-duvet-cover-and-pillowcase-s-heart-pattern-white-pink__1472333_pe997508_s5.jpg"
+          ],
+          "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70623608",
+          "measure": "Twin",
+          "categoryName": "Textiles for kids",
+          "translations": {
+            "en": {
+              "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+              "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin"
+            },
+            "ru": {
+              "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+              "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin"
+            },
+            "zh": {
+              "name": "BARNDRÖM Duvet cover and pillowcase(s)",
+              "description": "BARNDRÖM Duvet cover and pillowcase(s) Twin"
+            }
+          }
+        },
+        {
+          "name": "VALLABY Rug",
+          "slug": "vallaby-rug-10548216",
+          "sku": "IK-10548216",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vallaby-rug-green__1185059_pe898241_s5.jpg"
+          ],
+          "description": "VALLABY Rug 3 ' 3 \"x4 ' 4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10548216",
+          "measure": "3 ' 3 \"x4 ' 4 \"",
+          "categoryName": "Textiles for kids",
+          "translations": {
+            "en": {
+              "name": "VALLABY Rug",
+              "description": "VALLABY Rug 3 ' 3 \"x4 ' 4 \""
+            },
+            "ru": {
+              "name": "VALLABY Rug",
+              "description": "VALLABY Rug 3 ' 3 \"x4 ' 4 \""
+            },
+            "zh": {
+              "name": "VALLABY Rug",
+              "description": "VALLABY Rug 3 ' 3 \"x4 ' 4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Chair pads & seat cushions",
+      "categorySlug": "chair-pads-20542",
+      "ikeaCode": "20542",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Chair pads & seat cushions"
+        },
+        "ru": {
+          "name": "Chair pads & seat cushions"
+        },
+        "zh": {
+          "name": "Chair pads & seat cushions"
+        }
+      },
+      "totalIkeaProductsInStock": 16,
+      "sampleProductsToInsert": [
+        {
+          "name": "MALINDA Chair pad",
+          "slug": "malinda-chair-pad-90586983",
+          "sku": "IK-90586983",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/malinda-chair-pad-light-beige__0143188_pe302771_s5.jpg"
+          ],
+          "description": "MALINDA Chair pad 16/14x15x3 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90586983",
+          "measure": "16/14x15x3 \"",
+          "categoryName": "Chair pads & seat cushions",
+          "translations": {
+            "en": {
+              "name": "MALINDA Chair pad",
+              "description": "MALINDA Chair pad 16/14x15x3 \""
+            },
+            "ru": {
+              "name": "MALINDA Chair pad",
+              "description": "MALINDA Chair pad 16/14x15x3 \""
+            },
+            "zh": {
+              "name": "MALINDA Chair pad",
+              "description": "MALINDA Chair pad 16/14x15x3 \""
+            }
+          }
+        },
+        {
+          "name": "VIPPÄRT Chair pad",
+          "slug": "vipprt-chair-pad-40599285",
+          "sku": "IK-40599285",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vippaert-chair-pad-beige__0668998_pe714812_s5.jpg"
+          ],
+          "description": "VIPPÄRT Chair pad 15x15x3 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40599285",
+          "measure": "15x15x3 \"",
+          "categoryName": "Chair pads & seat cushions",
+          "translations": {
+            "en": {
+              "name": "VIPPÄRT Chair pad",
+              "description": "VIPPÄRT Chair pad 15x15x3 \""
+            },
+            "ru": {
+              "name": "VIPPÄRT Chair pad",
+              "description": "VIPPÄRT Chair pad 15x15x3 \""
+            },
+            "zh": {
+              "name": "VIPPÄRT Chair pad",
+              "description": "VIPPÄRT Chair pad 15x15x3 \""
+            }
+          }
+        },
+        {
+          "name": "JUSTINA Chair pad",
+          "slug": "justina-chair-pad-10563551",
+          "sku": "IK-10563551",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/justina-chair-pad-light-green__1237795_pe918140_s5.jpg"
+          ],
+          "description": "JUSTINA Chair pad 17/14x16x2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10563551",
+          "measure": "17/14x16x2 \"",
+          "categoryName": "Chair pads & seat cushions",
+          "translations": {
+            "en": {
+              "name": "JUSTINA Chair pad",
+              "description": "JUSTINA Chair pad 17/14x16x2 \""
+            },
+            "ru": {
+              "name": "JUSTINA Chair pad",
+              "description": "JUSTINA Chair pad 17/14x16x2 \""
+            },
+            "zh": {
+              "name": "JUSTINA Chair pad",
+              "description": "JUSTINA Chair pad 17/14x16x2 \""
+            }
+          }
+        },
+        {
+          "name": "ÅKERVINDEFLY Chair pad",
+          "slug": "kervindefly-chair-pad-30560207",
+          "sku": "IK-30560207",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/akervindefly-chair-pad-beige__1159544_pe888540_s5.jpg"
+          ],
+          "description": "ÅKERVINDEFLY Chair pad 15/14x15x2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30560207",
+          "measure": "15/14x15x2 \"",
+          "categoryName": "Chair pads & seat cushions",
+          "translations": {
+            "en": {
+              "name": "ÅKERVINDEFLY Chair pad",
+              "description": "ÅKERVINDEFLY Chair pad 15/14x15x2 \""
+            },
+            "ru": {
+              "name": "ÅKERVINDEFLY Chair pad",
+              "description": "ÅKERVINDEFLY Chair pad 15/14x15x2 \""
+            },
+            "zh": {
+              "name": "ÅKERVINDEFLY Chair pad",
+              "description": "ÅKERVINDEFLY Chair pad 15/14x15x2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Clothing & accessories",
+      "categorySlug": "clothing-accessories-42925",
+      "ikeaCode": "42925",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Clothing & accessories"
+        },
+        "ru": {
+          "name": "Clothing & accessories"
+        },
+        "zh": {
+          "name": "Clothing & accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 17,
+      "sampleProductsToInsert": [
+        {
+          "name": "BJÄLVEN Bathrobe",
+          "slug": "bjlven-bathrobe-20512976",
+          "sku": "IK-20512976",
+          "price": 22.99,
+          "compareAtPrice": 28.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/bjaelven-bathrobe-beige__1135518_pe879084_s5.jpg"
+          ],
+          "description": "BJÄLVEN Bathrobe L/XL",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20512976",
+          "measure": "L/XL",
+          "categoryName": "Clothing & accessories",
+          "translations": {
+            "en": {
+              "name": "BJÄLVEN Bathrobe",
+              "description": "BJÄLVEN Bathrobe L/XL"
+            },
+            "ru": {
+              "name": "BJÄLVEN Bathrobe",
+              "description": "BJÄLVEN Bathrobe L/XL"
+            },
+            "zh": {
+              "name": "BJÄLVEN Bathrobe",
+              "description": "BJÄLVEN Bathrobe L/XL"
+            }
+          }
+        },
+        {
+          "name": "TÅSJÖN Slippers",
+          "slug": "tsjn-slippers-10446576",
+          "sku": "IK-10446576",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tasjoen-slippers-gray__0668754_pe714677_s5.jpg"
+          ],
+          "description": "TÅSJÖN Slippers L/XL",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10446576",
+          "measure": "L/XL",
+          "categoryName": "Clothing & accessories",
+          "translations": {
+            "en": {
+              "name": "TÅSJÖN Slippers",
+              "description": "TÅSJÖN Slippers L/XL"
+            },
+            "ru": {
+              "name": "TÅSJÖN Slippers",
+              "description": "TÅSJÖN Slippers L/XL"
+            },
+            "zh": {
+              "name": "TÅSJÖN Slippers",
+              "description": "TÅSJÖN Slippers L/XL"
+            }
+          }
+        },
+        {
+          "name": "TÅSJÖN Slippers",
+          "slug": "tsjn-slippers-50446579",
+          "sku": "IK-50446579",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tasjoen-slippers-gray__0668751_pe714668_s5.jpg"
+          ],
+          "description": "TÅSJÖN Slippers S/M",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50446579",
+          "measure": "S/M",
+          "categoryName": "Clothing & accessories",
+          "translations": {
+            "en": {
+              "name": "TÅSJÖN Slippers",
+              "description": "TÅSJÖN Slippers S/M"
+            },
+            "ru": {
+              "name": "TÅSJÖN Slippers",
+              "description": "TÅSJÖN Slippers S/M"
+            },
+            "zh": {
+              "name": "TÅSJÖN Slippers",
+              "description": "TÅSJÖN Slippers S/M"
+            }
+          }
+        },
+        {
+          "name": "ROCKÅN Bathrobe",
+          "slug": "rockn-bathrobe-00391918",
+          "sku": "IK-00391918",
+          "price": 39.99,
+          "compareAtPrice": 49.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rockan-bathrobe-white__1135537_pe879096_s5.jpg"
+          ],
+          "description": "ROCKÅN Bathrobe S/M",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00391918",
+          "measure": "S/M",
+          "categoryName": "Clothing & accessories",
+          "translations": {
+            "en": {
+              "name": "ROCKÅN Bathrobe",
+              "description": "ROCKÅN Bathrobe S/M"
+            },
+            "ru": {
+              "name": "ROCKÅN Bathrobe",
+              "description": "ROCKÅN Bathrobe S/M"
+            },
+            "zh": {
+              "name": "ROCKÅN Bathrobe",
+              "description": "ROCKÅN Bathrobe S/M"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Baby textiles",
+      "categorySlug": "baby-textiles-18690",
+      "ikeaCode": "18690",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Baby textiles"
+        },
+        "ru": {
+          "name": "Baby textiles"
+        },
+        "zh": {
+          "name": "Baby textiles"
+        }
+      },
+      "totalIkeaProductsInStock": 46,
+      "sampleProductsToInsert": [
+        {
+          "name": "LEN Crib pillow",
+          "slug": "len-crib-pillow-72897210",
+          "sku": "IK-72897210",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/len-crib-pillow-white__0598616_pe677730_s5.jpg"
+          ],
+          "description": "LEN Crib pillow 14x22 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "72897210",
+          "measure": "14x22 \"",
+          "categoryName": "Baby textiles",
+          "translations": {
+            "en": {
+              "name": "LEN Crib pillow",
+              "description": "LEN Crib pillow 14x22 \""
+            },
+            "ru": {
+              "name": "LEN Crib pillow",
+              "description": "LEN Crib pillow 14x22 \""
+            },
+            "zh": {
+              "name": "LEN Crib pillow",
+              "description": "LEN Crib pillow 14x22 \""
+            }
+          }
+        },
+        {
+          "name": "LEN Crib duvet insert",
+          "slug": "len-crib-duvet-insert-72899110",
+          "sku": "IK-72899110",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/len-crib-duvet-insert-white__0598057_pe677421_s5.jpg"
+          ],
+          "description": "LEN Crib duvet insert 43x49 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "72899110",
+          "measure": "43x49 \"",
+          "categoryName": "Baby textiles",
+          "translations": {
+            "en": {
+              "name": "LEN Crib duvet insert",
+              "description": "LEN Crib duvet insert 43x49 \""
+            },
+            "ru": {
+              "name": "LEN Crib duvet insert",
+              "description": "LEN Crib duvet insert 43x49 \""
+            },
+            "zh": {
+              "name": "LEN Crib duvet insert",
+              "description": "LEN Crib duvet insert 43x49 \""
+            }
+          }
+        },
+        {
+          "name": "LEN Crib fitted sheet",
+          "slug": "len-crib-fitted-sheet-40625128",
+          "sku": "IK-40625128",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/len-crib-fitted-sheet-white-beige-muslin__1503083_pe1007771_s5.jpg"
+          ],
+          "description": "LEN Crib fitted sheet 27 1/2x52 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40625128",
+          "measure": "27 1/2x52 \"",
+          "categoryName": "Baby textiles",
+          "translations": {
+            "en": {
+              "name": "LEN Crib fitted sheet",
+              "description": "LEN Crib fitted sheet 27 1/2x52 \""
+            },
+            "ru": {
+              "name": "LEN Crib fitted sheet",
+              "description": "LEN Crib fitted sheet 27 1/2x52 \""
+            },
+            "zh": {
+              "name": "LEN Crib fitted sheet",
+              "description": "LEN Crib fitted sheet 27 1/2x52 \""
+            }
+          }
+        },
+        {
+          "name": "KRAMA Washcloth",
+          "slug": "krama-washcloth-40638847",
+          "sku": "IK-40638847",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/krama-washcloth-white__1507802_pe1009415_s5.jpg"
+          ],
+          "description": "KRAMA Washcloth 11 3/4x11 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40638847",
+          "measure": "11 3/4x11 3/4 \"",
+          "categoryName": "Baby textiles",
+          "translations": {
+            "en": {
+              "name": "KRAMA Washcloth",
+              "description": "KRAMA Washcloth 11 3/4x11 3/4 \""
+            },
+            "ru": {
+              "name": "KRAMA Washcloth",
+              "description": "KRAMA Washcloth 11 3/4x11 3/4 \""
+            },
+            "zh": {
+              "name": "KRAMA Washcloth",
+              "description": "KRAMA Washcloth 11 3/4x11 3/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Fabric & sewing accessories",
+      "categorySlug": "fabrics-sewing-10655",
+      "ikeaCode": "10655",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Fabric & sewing accessories"
+        },
+        "ru": {
+          "name": "Fabric & sewing accessories"
+        },
+        "zh": {
+          "name": "Fabric & sewing accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 20,
+      "sampleProductsToInsert": [
+        {
+          "name": "PENDELKAKTUS Pre-cut fabric",
+          "slug": "pendelkaktus-pre-cut-fabric-10608149",
+          "sku": "IK-10608149",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pendelkaktus-pre-cut-fabric-mountains-multicolor__1391449_pe965803_s5.jpg"
+          ],
+          "description": "PENDELKAKTUS Pre-cut fabric 59x118 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10608149",
+          "measure": "59x118 \"",
+          "categoryName": "Fabric & sewing accessories",
+          "translations": {
+            "en": {
+              "name": "PENDELKAKTUS Pre-cut fabric",
+              "description": "PENDELKAKTUS Pre-cut fabric 59x118 \""
+            },
+            "ru": {
+              "name": "PENDELKAKTUS Pre-cut fabric",
+              "description": "PENDELKAKTUS Pre-cut fabric 59x118 \""
+            },
+            "zh": {
+              "name": "PENDELKAKTUS Pre-cut fabric",
+              "description": "PENDELKAKTUS Pre-cut fabric 59x118 \""
+            }
+          }
+        },
+        {
+          "name": "SY Iron-on hemming tape",
+          "slug": "sy-iron-on-hemming-tape-50078746",
+          "sku": "IK-50078746",
+          "price": 3,
+          "compareAtPrice": 3.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/sy-iron-on-hemming-tape__0598142_pe677480_s5.jpg"
+          ],
+          "description": "SY Iron-on hemming tape",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50078746",
+          "measure": "",
+          "categoryName": "Fabric & sewing accessories",
+          "translations": {
+            "en": {
+              "name": "SY Iron-on hemming tape",
+              "description": "SY Iron-on hemming tape"
+            },
+            "ru": {
+              "name": "SY Iron-on hemming tape",
+              "description": "SY Iron-on hemming tape"
+            },
+            "zh": {
+              "name": "SY Iron-on hemming tape",
+              "description": "SY Iron-on hemming tape"
+            }
+          }
+        },
+        {
+          "name": "IKEA PS 2026 Pre-cut fabric",
+          "slug": "ikea-ps-2026-pre-cut-fabric-30617505",
+          "sku": "IK-30617505",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-ps-2026-pre-cut-fabric-white-multicolor-big-pattern__1478196_pe999450_s5.jpg"
+          ],
+          "description": "IKEA PS 2026 Pre-cut fabric 59x118 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30617505",
+          "measure": "59x118 \"",
+          "categoryName": "Fabric & sewing accessories",
+          "translations": {
+            "en": {
+              "name": "IKEA PS 2026 Pre-cut fabric",
+              "description": "IKEA PS 2026 Pre-cut fabric 59x118 \""
+            },
+            "ru": {
+              "name": "IKEA PS 2026 Pre-cut fabric",
+              "description": "IKEA PS 2026 Pre-cut fabric 59x118 \""
+            },
+            "zh": {
+              "name": "IKEA PS 2026 Pre-cut fabric",
+              "description": "IKEA PS 2026 Pre-cut fabric 59x118 \""
+            }
+          }
+        },
+        {
+          "name": "DAGGBJÖRNBÄR Pre-cut fabric",
+          "slug": "daggbjrnbr-pre-cut-fabric-10633511",
+          "sku": "IK-10633511",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/daggbjoernbaer-pre-cut-fabric__1529616_pe1014566_s5.jpg"
+          ],
+          "description": "DAGGBJÖRNBÄR Pre-cut fabric 59x118 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10633511",
+          "measure": "59x118 \"",
+          "categoryName": "Fabric & sewing accessories",
+          "translations": {
+            "en": {
+              "name": "DAGGBJÖRNBÄR Pre-cut fabric",
+              "description": "DAGGBJÖRNBÄR Pre-cut fabric 59x118 \""
+            },
+            "ru": {
+              "name": "DAGGBJÖRNBÄR Pre-cut fabric",
+              "description": "DAGGBJÖRNBÄR Pre-cut fabric 59x118 \""
+            },
+            "zh": {
+              "name": "DAGGBJÖRNBÄR Pre-cut fabric",
+              "description": "DAGGBJÖRNBÄR Pre-cut fabric 59x118 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Lumbar support pillows",
+      "categorySlug": "lumbar-support-700528",
+      "ikeaCode": "700528",
+      "parentDepartment": "Rugs & home textiles",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Lumbar support pillows"
+        },
+        "ru": {
+          "name": "Lumbar support pillows"
+        },
+        "zh": {
+          "name": "Lumbar support pillows"
+        }
+      },
+      "totalIkeaProductsInStock": 1,
+      "sampleProductsToInsert": [
+        {
+          "name": "RAGGARV Neck/lumbar pillow",
+          "slug": "raggarv-necklumbar-pillow-20530353",
+          "sku": "IK-20530353",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/raggarv-neck-lumbar-pillow__1078190_pe857143_s5.jpg"
+          ],
+          "description": "RAGGARV Neck/lumbar pillow",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20530353",
+          "measure": "",
+          "categoryName": "Lumbar support pillows",
+          "translations": {
+            "en": {
+              "name": "RAGGARV Neck/lumbar pillow",
+              "description": "RAGGARV Neck/lumbar pillow"
+            },
+            "ru": {
+              "name": "RAGGARV Neck/lumbar pillow",
+              "description": "RAGGARV Neck/lumbar pillow"
+            },
+            "zh": {
+              "name": "RAGGARV Neck/lumbar pillow",
+              "description": "RAGGARV Neck/lumbar pillow"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

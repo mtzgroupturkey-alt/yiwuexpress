@@ -5,8 +5,10 @@ import { Download, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export default function ReportsMovementsPage() {
+  const { dict } = useAdminLocale()
   const [rows, setRows] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -32,32 +34,32 @@ export default function ReportsMovementsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">
-            Stock Movement Audit Trail Ledger
+            {dict.reports.stockMovementsTitle}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Complete inventory audit trail across POs, containers, transfers, reservations, and sales
+            {dict.reports.stockMovementsSubtitle}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchReport} className="rounded-xl gap-1.5 text-xs">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Refresh
+            {dict.reports.refresh}
           </Button>
           <a href="/api/admin/reports/stock-movements?format=csv" download="stock-movements-ledger.csv">
             <Button size="sm" className="rounded-xl gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs">
               <Download size={14} />
-              Export CSV
+              {dict.reports.exportCsv}
             </Button>
           </a>
         </div>
       </div>
 
       <div className="flex gap-2 border-b border-gray-200 pb-2 text-xs font-semibold">
-        <Link href="/admin/reports/inventory" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">Inventory Valuation</Link>
-        <Link href="/admin/reports/landed-cost" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">Landed Cost Multipliers</Link>
-        <Link href="/admin/reports/sales" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">Sales & Profit Margins</Link>
-        <span className="px-3 py-1.5 bg-[#1a3a5c] text-white rounded-lg">Stock Movement Ledger</span>
+        <Link href="/admin/reports/inventory" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">{dict.reports.tabInventoryValuation}</Link>
+        <Link href="/admin/reports/landed-cost" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">{dict.reports.tabLandedCost}</Link>
+        <Link href="/admin/reports/sales" className="px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded-lg">{dict.reports.tabSalesMargins}</Link>
+        <span className="px-3 py-1.5 bg-[#1a3a5c] text-white rounded-lg">{dict.reports.tabStockLedger}</span>
       </div>
 
       <Card className="rounded-2xl border-gray-200/80 overflow-hidden shadow-xs">
@@ -65,15 +67,15 @@ export default function ReportsMovementsPage() {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/70 text-gray-500 font-bold uppercase tracking-wider">
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4">Product Name</th>
-                <th className="py-3 px-4">SKU</th>
-                <th className="py-3 px-4">Warehouse</th>
-                <th className="py-3 px-4 text-right">Quantity</th>
-                <th className="py-3 px-4 text-right">Unit Cost</th>
-                <th className="py-3 px-4 text-right">Total Value</th>
-                <th className="py-3 px-4">Reference</th>
+                <th className="py-3 px-4">{dict.reports.thDate}</th>
+                <th className="py-3 px-4">{dict.reports.thType}</th>
+                <th className="py-3 px-4">{dict.reports.thProductName}</th>
+                <th className="py-3 px-4">{dict.reports.thSku}</th>
+                <th className="py-3 px-4">{dict.reports.thWarehouse}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thLoadedQty}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thUnitCost}</th>
+                <th className="py-3 px-4 text-right">{dict.reports.thTotalValue}</th>
+                <th className="py-3 px-4">{dict.reports.thReference}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -87,8 +89,8 @@ export default function ReportsMovementsPage() {
                   <td className="py-3 px-4 font-mono text-gray-400">{r.sku}</td>
                   <td className="py-3 px-4 font-medium text-gray-700">{r.warehouse}</td>
                   <td className="py-3 px-4 text-right font-bold">{r.quantity > 0 ? `+${r.quantity}` : r.quantity}</td>
-                  <td className="py-3 px-4 text-right font-mono">$${Number(r.unitCost).toFixed(2)}</td>
-                  <td className="py-3 px-4 text-right font-mono font-bold">$${Number(r.totalCost).toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right font-mono">${Number(r.unitCost).toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right font-mono font-bold">${Number(r.totalCost).toFixed(2)}</td>
                   <td className="py-3 px-4 font-mono text-gray-500">{r.reference}</td>
                 </tr>
               ))}

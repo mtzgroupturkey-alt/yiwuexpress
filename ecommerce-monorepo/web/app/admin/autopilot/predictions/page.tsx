@@ -14,8 +14,10 @@ import {
   BarChart,
   Bar,
 } from 'recharts';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 export default function PredictionsRadarPage() {
+  const { dict } = useAdminLocale();
   const [predictions, setPredictions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,10 +66,10 @@ export default function PredictionsRadarPage() {
           </Link>
           <div>
             <h1 className="text-xl font-black text-slate-900 dark:text-white">
-              Predictive Intelligence & Radar
+              {dict.autopilot?.predictionsTitle || 'Predictive Intelligence & Radar'}
             </h1>
             <p className="text-xs text-slate-500">
-              Mathematical time-series forecasting (OLS Trend + Moving Averages)
+              {dict.autopilot?.predictionsSubtitle || 'Mathematical time-series forecasting (OLS Trend + Moving Averages)'}
             </p>
           </div>
         </div>
@@ -77,7 +79,7 @@ export default function PredictionsRadarPage() {
           className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
+          <span>{dict.common?.refresh || 'Refresh'}</span>
         </button>
       </div>
 
@@ -86,12 +88,12 @@ export default function PredictionsRadarPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Revenue Trajectory Forecast (7-Day Baseline)
+              {dict.autopilot?.revenueForecastTitle || 'Revenue Trajectory Forecast (7-Day Baseline)'}
             </h3>
-            <p className="text-xs text-slate-500">Historical Actuals vs Trend Projection</p>
+            <p className="text-xs text-slate-500">{dict.autopilot?.historicalVsTrend || 'Historical Actuals vs Trend Projection'}</p>
           </div>
           <span className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded">
-            +18% Projected Trend
+            {dict.autopilot?.projectedTrend || '+18% Projected Trend'}
           </span>
         </div>
 

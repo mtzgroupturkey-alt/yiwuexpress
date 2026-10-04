@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { DepartmentNodeData } from './types';
 import { STATUS_COLORS, CLUSTER_COLORS } from './colors';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 interface DepartmentNodeProps {
   data: DepartmentNodeData;
@@ -42,12 +43,17 @@ export const DepartmentNode: React.FC<DepartmentNodeProps> = React.memo(({
   onClick,
   isDimmed = false,
 }) => {
+  const { dict } = useAdminLocale();
   const shouldReduceMotion = useReducedMotion();
   const Icon = ICON_MAP[data.key] || Cpu;
   const colors = STATUS_COLORS[data.status] || STATUS_COLORS.healthy;
   const clusterColor = CLUSTER_COLORS[data.cluster] || '#94a3b8';
 
   const isCritical = data.status === 'critical';
+
+  const displayName = (dict.autopilot?.departments as Record<string, string> | undefined)?.[data.key] || data.name;
+  const displayStatus = (dict.autopilot?.statuses as Record<string, string> | undefined)?.[data.status] || data.status;
+  const displayMetricLabel = (dict.autopilot?.metricLabels as Record<string, string> | undefined)?.[data.key] || data.metricLabel;
 
   return (
     <motion.div
@@ -61,7 +67,7 @@ export const DepartmentNode: React.FC<DepartmentNodeProps> = React.memo(({
       }}
       tabIndex={0}
       role="button"
-      aria-label={`${data.name} department, status: ${data.status}, metric: ${data.metric} ${data.metricLabel}`}
+      aria-label={`${displayName}, ${displayStatus}, ${data.metric} ${displayMetricLabel}`}
       className={`group relative rounded-2xl cursor-pointer p-3 select-none transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-purple-400 ${
         isDimmed ? 'opacity-40 scale-95' : 'opacity-100'
       }`}
@@ -116,7 +122,7 @@ export const DepartmentNode: React.FC<DepartmentNodeProps> = React.memo(({
           style={{ color: colors.primary }}
         />
         <span className="text-[12px] font-bold text-slate-100 truncate tracking-tight">
-          {data.name}
+          {displayName}
         </span>
       </div>
 
@@ -136,7 +142,7 @@ export const DepartmentNode: React.FC<DepartmentNodeProps> = React.memo(({
       {/* Bottom Row: Subtitle Metric Label */}
       <div className="mt-0.5 flex items-center justify-between">
         <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400 truncate max-w-[85px]">
-          {data.metricLabel}
+          {displayMetricLabel}
         </span>
         <span className="text-[9px] font-mono text-slate-500">
           {data.health}%
@@ -146,9 +152,9 @@ export const DepartmentNode: React.FC<DepartmentNodeProps> = React.memo(({
       {/* Hover Quick Insight Tooltip Bar */}
       <div className="pointer-events-none absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
         <div className="bg-slate-900/95 border border-slate-700/80 rounded-lg px-2.5 py-1 text-[10px] text-slate-200 whitespace-nowrap shadow-xl flex items-center gap-2">
-          <span>Confidence: <b>{Math.round(data.confidence * 100)}%</b></span>
+          <span>{dict.autopilot?.telemetryLabel || 'Telemetry'}: <b>{Math.round(data.confidence * 100)}%</b></span>
           <span className="w-1 h-1 rounded-full bg-slate-600" />
-          <span className="capitalize">{data.status}</span>
+          <span className="capitalize">{displayStatus}</span>
         </div>
       </div>
     </motion.div>

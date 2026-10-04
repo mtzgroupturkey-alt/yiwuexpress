@@ -1,0 +1,1142 @@
+{
+  "department": "Winter holiday shop",
+  "departmentSlug": "winter-holidays-wt001",
+  "departmentCode": "wt001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Новогодние товары и декор",
+    "zh": "冬季节日特辑"
+  },
+  "missingSubcategoriesCount": 8,
+  "totalMissingProductsCount": 389,
+  "subcategories": [
+    {
+      "categoryName": "Holiday decor",
+      "categorySlug": "winter-decoration-49149",
+      "ikeaCode": "49149",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Holiday decor"
+        },
+        "ru": {
+          "name": "Holiday decor"
+        },
+        "zh": {
+          "name": "Holiday decor"
+        }
+      },
+      "totalIkeaProductsInStock": 89,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Wall decoration",
+          "slug": "vinterfint-wall-decoration-80633386",
+          "sku": "IK-80633386",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-wall-decoration-pine__1327496_pe944482_s5.jpg"
+          ],
+          "description": "VINTERFINT Wall decoration",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80633386",
+          "measure": "",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Wall decoration",
+              "description": "VINTERFINT Wall decoration"
+            },
+            "ru": {
+              "name": "VINTERFINT Wall decoration",
+              "description": "VINTERFINT Wall decoration"
+            },
+            "zh": {
+              "name": "VINTERFINT Wall decoration",
+              "description": "VINTERFINT Wall decoration"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Decoration, set of 3",
+          "slug": "vinterfint-decoration-set-of-3-80640363",
+          "sku": "IK-80640363",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-decoration-set-of-3-christmas-tree-green__1511758_pe1010170_s5.jpg"
+          ],
+          "description": "VINTERFINT Decoration, set of 3",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80640363",
+          "measure": "",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Decoration, set of 3",
+              "description": "VINTERFINT Decoration, set of 3"
+            },
+            "ru": {
+              "name": "VINTERFINT Decoration, set of 3",
+              "description": "VINTERFINT Decoration, set of 3"
+            },
+            "zh": {
+              "name": "VINTERFINT Decoration, set of 3",
+              "description": "VINTERFINT Decoration, set of 3"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Tree ornament",
+          "slug": "vinterfint-tree-ornament-80637092",
+          "sku": "IK-80637092",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tree-ornament-bauble-glass-mixed-colors__1540130_pe1017735_s5.jpg"
+          ],
+          "description": "VINTERFINT Tree ornament 3 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80637092",
+          "measure": "3 1/8 \"",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tree ornament",
+              "description": "VINTERFINT Tree ornament 3 1/8 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Tree ornament",
+              "description": "VINTERFINT Tree ornament 3 1/8 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Tree ornament",
+              "description": "VINTERFINT Tree ornament 3 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Tealight holder",
+          "slug": "vinterfint-tealight-holder-90634253",
+          "sku": "IK-90634253",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tealight-holder-green__1538653_pe1017417_s5.jpg"
+          ],
+          "description": "VINTERFINT Tealight holder 2 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90634253",
+          "measure": "2 \"",
+          "categoryName": "Holiday decor",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tealight holder",
+              "description": "VINTERFINT Tealight holder 2 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Tealight holder",
+              "description": "VINTERFINT Tealight holder 2 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Tealight holder",
+              "description": "VINTERFINT Tealight holder 2 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Christmas lights",
+      "categorySlug": "winter-lights-49150",
+      "ikeaCode": "49150",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Christmas lights"
+        },
+        "ru": {
+          "name": "Christmas lights"
+        },
+        "zh": {
+          "name": "Christmas lights"
+        }
+      },
+      "totalIkeaProductsInStock": 91,
+      "sampleProductsToInsert": [
+        {
+          "name": "STRÅLA Lamp shade",
+          "slug": "strla-lamp-shade-80639878",
+          "sku": "IK-80639878",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-lamp-shade-paper-star-lace-white__0430597_pe584694_s5.jpg"
+          ],
+          "description": "STRÅLA Lamp shade 28 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80639878",
+          "measure": "28 \"",
+          "categoryName": "Christmas lights",
+          "translations": {
+            "en": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 28 \""
+            },
+            "ru": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 28 \""
+            },
+            "zh": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 28 \""
+            }
+          }
+        },
+        {
+          "name": "SNÖRPTRÅD LED table decoration",
+          "slug": "snrptrd-led-table-decoration-80621939",
+          "sku": "IK-80621939",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/snoerptrad-led-table-decoration-battery-operated-brass-color__1495289_pe1005010_s5.jpg"
+          ],
+          "description": "SNÖRPTRÅD LED table decoration",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80621939",
+          "measure": "",
+          "categoryName": "Christmas lights",
+          "translations": {
+            "en": {
+              "name": "SNÖRPTRÅD LED table decoration",
+              "description": "SNÖRPTRÅD LED table decoration"
+            },
+            "ru": {
+              "name": "SNÖRPTRÅD LED table decoration",
+              "description": "SNÖRPTRÅD LED table decoration"
+            },
+            "zh": {
+              "name": "SNÖRPTRÅD LED table decoration",
+              "description": "SNÖRPTRÅD LED table decoration"
+            }
+          }
+        },
+        {
+          "name": "STRÅLA Lamp shade",
+          "slug": "strla-lamp-shade-60639884",
+          "sku": "IK-60639884",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-lamp-shade-paper-star-lace-white__0811470_pe771919_s5.jpg"
+          ],
+          "description": "STRÅLA Lamp shade 19 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60639884",
+          "measure": "19 \"",
+          "categoryName": "Christmas lights",
+          "translations": {
+            "en": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 19 \""
+            },
+            "ru": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 19 \""
+            },
+            "zh": {
+              "name": "STRÅLA Lamp shade",
+              "description": "STRÅLA Lamp shade 19 \""
+            }
+          }
+        },
+        {
+          "name": "STRÅLA LED table decoration",
+          "slug": "strla-led-table-decoration-00633314",
+          "sku": "IK-00633314",
+          "price": 15.99,
+          "compareAtPrice": 19.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/strala-led-table-decoration-battery-operated-dome-village-white__1089955_pe861773_s5.jpg"
+          ],
+          "description": "STRÅLA LED table decoration 7 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00633314",
+          "measure": "7 1/8 \"",
+          "categoryName": "Christmas lights",
+          "translations": {
+            "en": {
+              "name": "STRÅLA LED table decoration",
+              "description": "STRÅLA LED table decoration 7 1/8 \""
+            },
+            "ru": {
+              "name": "STRÅLA LED table decoration",
+              "description": "STRÅLA LED table decoration 7 1/8 \""
+            },
+            "zh": {
+              "name": "STRÅLA LED table decoration",
+              "description": "STRÅLA LED table decoration 7 1/8 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Holiday textiles",
+      "categorySlug": "winter-textiles-49152",
+      "ikeaCode": "49152",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Holiday textiles"
+        },
+        "ru": {
+          "name": "Holiday textiles"
+        },
+        "zh": {
+          "name": "Holiday textiles"
+        }
+      },
+      "totalIkeaProductsInStock": 30,
+      "sampleProductsToInsert": [
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-70612695",
+          "sku": "IK-70612695",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-red-beige-stripe__1390638_pe965461_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70612695",
+          "measure": "18x24 \"",
+          "categoryName": "Holiday textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Cushion cover",
+          "slug": "vinterfint-cushion-cover-60643329",
+          "sku": "IK-60643329",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-cushion-cover-christmas-tree-red__1538468_pe1017355_s5.jpg"
+          ],
+          "description": "VINTERFINT Cushion cover 20x20 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60643329",
+          "measure": "20x20 \"",
+          "categoryName": "Holiday textiles",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Cushion cover",
+              "description": "VINTERFINT Cushion cover 20x20 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Cushion cover",
+              "description": "VINTERFINT Cushion cover 20x20 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Cushion cover",
+              "description": "VINTERFINT Cushion cover 20x20 \""
+            }
+          }
+        },
+        {
+          "name": "LÖVSÅNGARE Duvet cover and pillowcase(s)",
+          "slug": "lvsngare-duvet-cover-and-pillowcases-70644149",
+          "sku": "IK-70644149",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/loevsangare-duvet-cover-and-pillowcase-s-candy-cane-pattern__1417797_pe976258_s5.jpg"
+          ],
+          "description": "LÖVSÅNGARE Duvet cover and pillowcase(s) Twin",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70644149",
+          "measure": "Twin",
+          "categoryName": "Holiday textiles",
+          "translations": {
+            "en": {
+              "name": "LÖVSÅNGARE Duvet cover and pillowcase(s)",
+              "description": "LÖVSÅNGARE Duvet cover and pillowcase(s) Twin"
+            },
+            "ru": {
+              "name": "LÖVSÅNGARE Duvet cover and pillowcase(s)",
+              "description": "LÖVSÅNGARE Duvet cover and pillowcase(s) Twin"
+            },
+            "zh": {
+              "name": "LÖVSÅNGARE Duvet cover and pillowcase(s)",
+              "description": "LÖVSÅNGARE Duvet cover and pillowcase(s) Twin"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Cushion cover",
+          "slug": "vinterfint-cushion-cover-80643328",
+          "sku": "IK-80643328",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-cushion-cover-santa-claus-pattern-green__1538470_pe1017359_s5.jpg"
+          ],
+          "description": "VINTERFINT Cushion cover 20x20 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80643328",
+          "measure": "20x20 \"",
+          "categoryName": "Holiday textiles",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Cushion cover",
+              "description": "VINTERFINT Cushion cover 20x20 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Cushion cover",
+              "description": "VINTERFINT Cushion cover 20x20 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Cushion cover",
+              "description": "VINTERFINT Cushion cover 20x20 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Holiday tableware",
+      "categorySlug": "winter-tableware-49153",
+      "ikeaCode": "49153",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Holiday tableware"
+        },
+        "ru": {
+          "name": "Holiday tableware"
+        },
+        "zh": {
+          "name": "Holiday tableware"
+        }
+      },
+      "totalIkeaProductsInStock": 40,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Serving stand, 3 tiers",
+          "slug": "vinterfint-serving-stand-3-tiers-00642648",
+          "sku": "IK-00642648",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-serving-stand-3-tiers-red__1576707_pe1032643_s5.jpg"
+          ],
+          "description": "VINTERFINT Serving stand, 3 tiers",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00642648",
+          "measure": "",
+          "categoryName": "Holiday tableware",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Serving stand, 3 tiers",
+              "description": "VINTERFINT Serving stand, 3 tiers"
+            },
+            "ru": {
+              "name": "VINTERFINT Serving stand, 3 tiers",
+              "description": "VINTERFINT Serving stand, 3 tiers"
+            },
+            "zh": {
+              "name": "VINTERFINT Serving stand, 3 tiers",
+              "description": "VINTERFINT Serving stand, 3 tiers"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Paper napkin",
+          "slug": "vinterfint-paper-napkin-90633828",
+          "sku": "IK-90633828",
+          "price": 2.49,
+          "compareAtPrice": 3.11,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-paper-napkin-santa-claus-pattern-green__1538542_pe1017380_s5.jpg"
+          ],
+          "description": "VINTERFINT Paper napkin 13x13 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90633828",
+          "measure": "13x13 \"",
+          "categoryName": "Holiday tableware",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Paper napkin",
+              "description": "VINTERFINT Paper napkin 13x13 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Paper napkin",
+              "description": "VINTERFINT Paper napkin 13x13 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Paper napkin",
+              "description": "VINTERFINT Paper napkin 13x13 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Tablecloth",
+          "slug": "vinterfint-tablecloth-40643330",
+          "sku": "IK-40643330",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tablecloth-stripe-white-red__1538557_pe1017386_s5.jpg"
+          ],
+          "description": "VINTERFINT Tablecloth 57x94 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40643330",
+          "measure": "57x94 \"",
+          "categoryName": "Holiday tableware",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tablecloth",
+              "description": "VINTERFINT Tablecloth 57x94 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Tablecloth",
+              "description": "VINTERFINT Tablecloth 57x94 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Tablecloth",
+              "description": "VINTERFINT Tablecloth 57x94 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Paper napkin",
+          "slug": "vinterfint-paper-napkin-60636654",
+          "sku": "IK-60636654",
+          "price": 2.49,
+          "compareAtPrice": 3.11,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-paper-napkin-heart-white-red__1439289_pe985246_s5.jpg"
+          ],
+          "description": "VINTERFINT Paper napkin 13x13 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60636654",
+          "measure": "13x13 \"",
+          "categoryName": "Holiday tableware",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Paper napkin",
+              "description": "VINTERFINT Paper napkin 13x13 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Paper napkin",
+              "description": "VINTERFINT Paper napkin 13x13 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Paper napkin",
+              "description": "VINTERFINT Paper napkin 13x13 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Winter plants",
+      "categorySlug": "winter-pots-plants-49151",
+      "ikeaCode": "49151",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Winter plants"
+        },
+        "ru": {
+          "name": "Winter plants"
+        },
+        "zh": {
+          "name": "Winter plants"
+        }
+      },
+      "totalIkeaProductsInStock": 26,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Artificial Christmas tree",
+          "slug": "vinterfint-artificial-christmas-tree-60636507",
+          "sku": "IK-60636507",
+          "price": 169.99,
+          "compareAtPrice": 212.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-artificial-christmas-tree-indoor-outdoor-green__1538593_pe1017396_s5.jpg"
+          ],
+          "description": "VINTERFINT Artificial Christmas tree 94 ½ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60636507",
+          "measure": "94 ½ \"",
+          "categoryName": "Winter plants",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 94 ½ \""
+            },
+            "ru": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 94 ½ \""
+            },
+            "zh": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 94 ½ \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Artificial Christmas tree",
+          "slug": "vinterfint-artificial-christmas-tree-80636375",
+          "sku": "IK-80636375",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-artificial-christmas-tree-indoor-outdoor-green__1538589_pe1017393_s5.jpg"
+          ],
+          "description": "VINTERFINT Artificial Christmas tree 59 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80636375",
+          "measure": "59 \"",
+          "categoryName": "Winter plants",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 59 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 59 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 59 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Artificial potted plant",
+          "slug": "vinterfint-artificial-potted-plant-00636435",
+          "sku": "IK-00636435",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-artificial-potted-plant-indoor-outdoor-christmas-tree-green__1538595_pe1017398_s5.jpg"
+          ],
+          "description": "VINTERFINT Artificial potted plant 4 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00636435",
+          "measure": "4 ¾ \"",
+          "categoryName": "Winter plants",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Artificial potted plant",
+              "description": "VINTERFINT Artificial potted plant 4 ¾ \""
+            },
+            "ru": {
+              "name": "VINTERFINT Artificial potted plant",
+              "description": "VINTERFINT Artificial potted plant 4 ¾ \""
+            },
+            "zh": {
+              "name": "VINTERFINT Artificial potted plant",
+              "description": "VINTERFINT Artificial potted plant 4 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Artificial Christmas tree",
+          "slug": "vinterfint-artificial-christmas-tree-90641710",
+          "sku": "IK-90641710",
+          "price": 59.99,
+          "compareAtPrice": 74.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-artificial-christmas-tree-indoor-outdoor-green__1538594_pe1017397_s5.jpg"
+          ],
+          "description": "VINTERFINT Artificial Christmas tree 59 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90641710",
+          "measure": "59 \"",
+          "categoryName": "Winter plants",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 59 \""
+            },
+            "ru": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 59 \""
+            },
+            "zh": {
+              "name": "VINTERFINT Artificial Christmas tree",
+              "description": "VINTERFINT Artificial Christmas tree 59 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Holiday food",
+      "categorySlug": "holiday-foods-49227",
+      "ikeaCode": "49227",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Holiday food"
+        },
+        "ru": {
+          "name": "Holiday food"
+        },
+        "zh": {
+          "name": "Holiday food"
+        }
+      },
+      "totalIkeaProductsInStock": 31,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERSAGA Advent calendar",
+          "slug": "vintersaga-advent-calendar-10646580",
+          "sku": "IK-10646580",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vintersaga-advent-calendar__1531818_pe1015778_s5.jpg"
+          ],
+          "description": "VINTERSAGA Advent calendar 1 lb",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10646580",
+          "measure": "1 lb",
+          "categoryName": "Holiday food",
+          "translations": {
+            "en": {
+              "name": "VINTERSAGA Advent calendar",
+              "description": "VINTERSAGA Advent calendar 1 lb"
+            },
+            "ru": {
+              "name": "VINTERSAGA Advent calendar",
+              "description": "VINTERSAGA Advent calendar 1 lb"
+            },
+            "zh": {
+              "name": "VINTERSAGA Advent calendar",
+              "description": "VINTERSAGA Advent calendar 1 lb"
+            }
+          }
+        },
+        {
+          "name": "VINTERSAGA Ginger thins",
+          "slug": "vintersaga-ginger-thins-20611976",
+          "sku": "IK-20611976",
+          "price": 6.49,
+          "compareAtPrice": 8.11,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vintersaga-ginger-thins__1544238_pe1019108_s5.jpg"
+          ],
+          "description": "VINTERSAGA Ginger thins 1 lb",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20611976",
+          "measure": "1 lb",
+          "categoryName": "Holiday food",
+          "translations": {
+            "en": {
+              "name": "VINTERSAGA Ginger thins",
+              "description": "VINTERSAGA Ginger thins 1 lb"
+            },
+            "ru": {
+              "name": "VINTERSAGA Ginger thins",
+              "description": "VINTERSAGA Ginger thins 1 lb"
+            },
+            "zh": {
+              "name": "VINTERSAGA Ginger thins",
+              "description": "VINTERSAGA Ginger thins 1 lb"
+            }
+          }
+        },
+        {
+          "name": "VINTERSAGA Mulled fruit drink",
+          "slug": "vintersaga-mulled-fruit-drink-30621060",
+          "sku": "IK-30621060",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vintersaga-mulled-fruit-drink__1562175_pe1025912_s5.jpg"
+          ],
+          "description": "VINTERSAGA Mulled fruit drink 25 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30621060",
+          "measure": "25 oz",
+          "categoryName": "Holiday food",
+          "translations": {
+            "en": {
+              "name": "VINTERSAGA Mulled fruit drink",
+              "description": "VINTERSAGA Mulled fruit drink 25 oz"
+            },
+            "ru": {
+              "name": "VINTERSAGA Mulled fruit drink",
+              "description": "VINTERSAGA Mulled fruit drink 25 oz"
+            },
+            "zh": {
+              "name": "VINTERSAGA Mulled fruit drink",
+              "description": "VINTERSAGA Mulled fruit drink 25 oz"
+            }
+          }
+        },
+        {
+          "name": "HUVUDROLL Meatballs",
+          "slug": "huvudroll-meatballs-20613876",
+          "sku": "IK-20613876",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/huvudroll-meatballs-frozen__1442390_pe986787_s5.jpg"
+          ],
+          "description": "HUVUDROLL Meatballs 2 lb 3 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20613876",
+          "measure": "2 lb 3 oz",
+          "categoryName": "Holiday food",
+          "translations": {
+            "en": {
+              "name": "HUVUDROLL Meatballs",
+              "description": "HUVUDROLL Meatballs 2 lb 3 oz"
+            },
+            "ru": {
+              "name": "HUVUDROLL Meatballs",
+              "description": "HUVUDROLL Meatballs 2 lb 3 oz"
+            },
+            "zh": {
+              "name": "HUVUDROLL Meatballs",
+              "description": "HUVUDROLL Meatballs 2 lb 3 oz"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Wrapping paper and bags",
+      "categorySlug": "paper-shop-25227",
+      "ikeaCode": "25227",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Wrapping paper and bags"
+        },
+        "ru": {
+          "name": "Wrapping paper and bags"
+        },
+        "zh": {
+          "name": "Wrapping paper and bags"
+        }
+      },
+      "totalIkeaProductsInStock": 35,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Gift wrap, roll",
+          "slug": "vinterfint-gift-wrap-roll-60636098",
+          "sku": "IK-60636098",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-gift-wrap-roll-mixed-patterns-multicolor__1538956_pe1017525_s5.jpg"
+          ],
+          "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60636098",
+          "measure": "9.84x2.30 '/22.60 sq feet",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet"
+            },
+            "ru": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet"
+            },
+            "zh": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 9.84x2.30 '/22.60 sq feet"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Gift wrap, roll",
+          "slug": "vinterfint-gift-wrap-roll-70636093",
+          "sku": "IK-70636093",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-gift-wrap-roll-mixed-patterns-multicolor__1538958_pe1017527_s5.jpg"
+          ],
+          "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70636093",
+          "measure": "10x2.30 '/22.60 sq feet",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet"
+            },
+            "ru": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet"
+            },
+            "zh": {
+              "name": "VINTERFINT Gift wrap, roll",
+              "description": "VINTERFINT Gift wrap, roll 10x2.30 '/22.60 sq feet"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Storage bag",
+          "slug": "vinterfint-storage-bag-20636496",
+          "sku": "IK-20636496",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-storage-bag-christmas-pattern-multicolor__1541272_pe1018003_s5.jpg"
+          ],
+          "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20636496",
+          "measure": "13 ¾x28 ¾x11 ¾ \"/20 gallon",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Storage bag",
+              "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon"
+            },
+            "ru": {
+              "name": "VINTERFINT Storage bag",
+              "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon"
+            },
+            "zh": {
+              "name": "VINTERFINT Storage bag",
+              "description": "VINTERFINT Storage bag 13 ¾x28 ¾x11 ¾ \"/20 gallon"
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Ribbon, set of 3",
+          "slug": "vinterfint-ribbon-set-of-3-00632244",
+          "sku": "IK-00632244",
+          "price": 11.99,
+          "compareAtPrice": 14.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-ribbon-set-of-3-mixed-colors__1539695_pe1017657_s5.jpg"
+          ],
+          "description": "VINTERFINT Ribbon, set of 3 16 '",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00632244",
+          "measure": "16 '",
+          "categoryName": "Wrapping paper and bags",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Ribbon, set of 3",
+              "description": "VINTERFINT Ribbon, set of 3 16 '"
+            },
+            "ru": {
+              "name": "VINTERFINT Ribbon, set of 3",
+              "description": "VINTERFINT Ribbon, set of 3 16 '"
+            },
+            "zh": {
+              "name": "VINTERFINT Ribbon, set of 3",
+              "description": "VINTERFINT Ribbon, set of 3 16 '"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Holiday baking tools",
+      "categorySlug": "winter-cooking-baking-49154",
+      "ikeaCode": "49154",
+      "parentDepartment": "Winter holiday shop",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Holiday baking tools"
+        },
+        "ru": {
+          "name": "Holiday baking tools"
+        },
+        "zh": {
+          "name": "Holiday baking tools"
+        }
+      },
+      "totalIkeaProductsInStock": 47,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERFINT Tin with lid",
+          "slug": "vinterfint-tin-with-lid-10636492",
+          "sku": "IK-10636492",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tin-with-lid-white-red__1538488_pe1017369_s5.jpg"
+          ],
+          "description": "VINTERFINT Tin with lid",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10636492",
+          "measure": "",
+          "categoryName": "Holiday baking tools",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tin with lid",
+              "description": "VINTERFINT Tin with lid"
+            },
+            "ru": {
+              "name": "VINTERFINT Tin with lid",
+              "description": "VINTERFINT Tin with lid"
+            },
+            "zh": {
+              "name": "VINTERFINT Tin with lid",
+              "description": "VINTERFINT Tin with lid"
+            }
+          }
+        },
+        {
+          "name": "SVARTABBORRE Baking sheet rack",
+          "slug": "svartabborre-baking-sheet-rack-70599482",
+          "sku": "IK-70599482",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svartabborre-baking-sheet-rack-foldable-black__1440821_pe986052_s5.jpg"
+          ],
+          "description": "SVARTABBORRE Baking sheet rack 10 ¾x10 ¼x13 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70599482",
+          "measure": "10 ¾x10 ¼x13 \"",
+          "categoryName": "Holiday baking tools",
+          "translations": {
+            "en": {
+              "name": "SVARTABBORRE Baking sheet rack",
+              "description": "SVARTABBORRE Baking sheet rack 10 ¾x10 ¼x13 \""
+            },
+            "ru": {
+              "name": "SVARTABBORRE Baking sheet rack",
+              "description": "SVARTABBORRE Baking sheet rack 10 ¾x10 ¼x13 \""
+            },
+            "zh": {
+              "name": "SVARTABBORRE Baking sheet rack",
+              "description": "SVARTABBORRE Baking sheet rack 10 ¾x10 ¼x13 \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Tin with lid",
+          "slug": "vinterfint-tin-with-lid-10636487",
+          "sku": "IK-10636487",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-tin-with-lid-flower-pattern-red__1538487_pe1017368_s5.jpg"
+          ],
+          "description": "VINTERFINT Tin with lid 11 ½x7 ¾x3 ¼ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10636487",
+          "measure": "11 ½x7 ¾x3 ¼ \"",
+          "categoryName": "Holiday baking tools",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Tin with lid",
+              "description": "VINTERFINT Tin with lid 11 ½x7 ¾x3 ¼ \""
+            },
+            "ru": {
+              "name": "VINTERFINT Tin with lid",
+              "description": "VINTERFINT Tin with lid 11 ½x7 ¾x3 ¼ \""
+            },
+            "zh": {
+              "name": "VINTERFINT Tin with lid",
+              "description": "VINTERFINT Tin with lid 11 ½x7 ¾x3 ¼ \""
+            }
+          }
+        },
+        {
+          "name": "VINTERFINT Baking cup, paper",
+          "slug": "vinterfint-baking-cup-paper-20633742",
+          "sku": "IK-20633742",
+          "price": 1.49,
+          "compareAtPrice": 1.86,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterfint-baking-cup-paper-stripe-red-white__1511778_pe1010179_s5.jpg"
+          ],
+          "description": "VINTERFINT Baking cup, paper",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20633742",
+          "measure": "",
+          "categoryName": "Holiday baking tools",
+          "translations": {
+            "en": {
+              "name": "VINTERFINT Baking cup, paper",
+              "description": "VINTERFINT Baking cup, paper"
+            },
+            "ru": {
+              "name": "VINTERFINT Baking cup, paper",
+              "description": "VINTERFINT Baking cup, paper"
+            },
+            "zh": {
+              "name": "VINTERFINT Baking cup, paper",
+              "description": "VINTERFINT Baking cup, paper"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

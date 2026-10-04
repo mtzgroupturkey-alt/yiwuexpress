@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
 
 interface CategoryItem {
   id: string;
@@ -49,6 +50,7 @@ interface SectionTextValues {
 }
 
 export default function KitchenSectionSettingsPage() {
+  const { dict } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -347,14 +349,14 @@ export default function KitchenSectionSettingsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-              Kitchenware & Dining Block Settings
+              {dict.kitchenSection.pageTitle}
             </h1>
             <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-              Homepage Section
+              {dict.kitchenSection.badgeTag}
             </Badge>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            Configure the titles, category filters, and featured products displayed in the Kitchenware & Dining homepage section.
+            {dict.kitchenSection.pageSubtitle}
           </p>
         </div>
 
@@ -362,12 +364,12 @@ export default function KitchenSectionSettingsPage() {
           <Link href="/" target="_blank">
             <Button variant="outline" size="sm" className="gap-2">
               <Eye className="w-4 h-4" />
-              View Storefront
+              {dict.kitchenSection.viewStorefront}
             </Button>
           </Link>
           <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
             <Save className={`w-4 h-4 ${saving ? 'animate-spin' : ''}`} />
-            {saving ? 'Saving...' : 'Save Settings'}
+            {saving ? dict.kitchenSection.saving : dict.kitchenSection.saveSettings}
           </Button>
         </div>
       </div>
@@ -378,10 +380,10 @@ export default function KitchenSectionSettingsPage() {
           <div className="space-y-0.5">
             <div className="font-semibold text-gray-900 flex items-center gap-2">
               <UtensilsCrossed className="w-5 h-5 text-amber-600" />
-              Enable Kitchenware & Dining Section on Homepage
+              {dict.kitchenSection.enableSection}
             </div>
             <p className="text-xs text-gray-500">
-              When enabled, this curated product block appears on your homepage with subcategory tabs.
+              {dict.kitchenSection.enableSectionDesc}
             </p>
           </div>
           <Switch checked={enabled} onCheckedChange={setEnabled} />
@@ -394,10 +396,10 @@ export default function KitchenSectionSettingsPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-xs uppercase font-bold text-gray-500 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              Live Homepage Block Preview
+              {dict.kitchenSection.livePreviewTitle}
             </CardTitle>
             <Badge variant="secondary" className="text-[10px]">
-              Storefront Preview
+              {dict.kitchenSection.storefrontPreviewBadge}
             </Badge>
           </div>
         </CardHeader>
@@ -444,10 +446,10 @@ export default function KitchenSectionSettingsPage() {
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <CardTitle className="text-base font-bold text-gray-900">
-                    Header Texts & Multi-Language Translations
+                    {dict.kitchenSection.headerTextsTitle}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Configure titles, taglines, and badges in English, Russian, and Chinese. Click Translate to auto-fill all languages.
+                    {dict.kitchenSection.headerTextsDesc}
                   </CardDescription>
                 </div>
                 {/* Auto Translate Button */}
@@ -464,7 +466,7 @@ export default function KitchenSectionSettingsPage() {
                   ) : (
                     <Sparkles className="w-3.5 h-3.5 text-blue-600" />
                   )}
-                  <span>{isTranslating ? 'Translating...' : 'Translate to All'}</span>
+                  <span>{isTranslating ? dict.kitchenSection.translating : dict.kitchenSection.translateToAll}</span>
                 </Button>
               </div>
             </CardHeader>
@@ -510,13 +512,8 @@ export default function KitchenSectionSettingsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-bold text-gray-700">
-                      Section Title ({activeLocaleTab.toUpperCase()})
+                      {dict.kitchenSection.sectionTitleLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
-                    <span className="text-[10px] text-gray-400">
-                      {activeLocaleTab === 'en'
-                        ? 'Main headline'
-                        : `Headline in ${activeLocaleTab === 'ru' ? 'Russian' : 'Chinese'}`}
-                    </span>
                   </div>
                   <Input
                     value={textTranslations[activeLocaleTab].title}
@@ -540,9 +537,8 @@ export default function KitchenSectionSettingsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-xs font-bold text-gray-700">
-                      Subtitle / Tagline ({activeLocaleTab.toUpperCase()})
+                      {dict.kitchenSection.subtitleLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
-                    <span className="text-[10px] text-gray-400">Supporting promotional copy</span>
                   </div>
                   <Textarea
                     value={textTranslations[activeLocaleTab].subtitle}
@@ -567,7 +563,7 @@ export default function KitchenSectionSettingsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1">
-                      Badge Text ({activeLocaleTab.toUpperCase()})
+                      {dict.kitchenSection.badgeTextLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
                     <Input
                       value={textTranslations[activeLocaleTab].badgeText}
@@ -590,7 +586,7 @@ export default function KitchenSectionSettingsPage() {
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1">
-                      View All Button Label ({activeLocaleTab.toUpperCase()})
+                      {dict.kitchenSection.viewAllLabel} ({activeLocaleTab.toUpperCase()})
                     </label>
                     <Input
                       value={textTranslations[activeLocaleTab].viewAllLabel}
@@ -614,17 +610,17 @@ export default function KitchenSectionSettingsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Maximum Products to Display</label>
+                <label className="text-xs font-bold text-gray-700 block mb-1">{dict.kitchenSection.maxProductsLabel}</label>
                 <select
                   value={maxProducts}
                   onChange={(e) => setMaxProducts(Number(e.target.value))}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={6}>6 Products</option>
-                  <option value={8}>8 Products</option>
-                  <option value={12}>12 Products (Recommended)</option>
-                  <option value={16}>16 Products</option>
-                  <option value={24}>24 Products</option>
+                  <option value={6}>6</option>
+                  <option value={8}>8</option>
+                  <option value={12}>12 ({dict.kitchenSection.recommended})</option>
+                  <option value={16}>16</option>
+                  <option value={24}>24</option>
                 </select>
               </div>
             </CardContent>
@@ -637,9 +633,9 @@ export default function KitchenSectionSettingsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-bold text-gray-900">Categories Filter</CardTitle>
+                  <CardTitle className="text-base font-bold text-gray-900">{dict.kitchenSection.categoriesFilterTitle}</CardTitle>
                   <CardDescription className="text-xs">
-                    Choose which categories supply products for this block.
+                    {dict.kitchenSection.categoriesFilterDesc}
                   </CardDescription>
                 </div>
                 <Button
@@ -648,15 +644,15 @@ export default function KitchenSectionSettingsPage() {
                   onClick={handleSelectSuggestedKitchenCategories}
                   className="text-xs h-7"
                 >
-                  Auto-Select Kitchen
+                  {dict.kitchenSection.autoSelectKitchen}
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-xs text-gray-500">
                 {selectedCategoryIds.length === 0
-                  ? '⚡ No specific categories selected: The block automatically includes all products with cookware, dining, tableware, and kitchen keywords.'
-                  : `Filtering by ${selectedCategoryIds.length} selected category/categories:`}
+                  ? dict.kitchenSection.noCategoriesSelected
+                  : dict.kitchenSection.filteringByCount.replace('{count}', String(selectedCategoryIds.length))}
               </p>
 
               <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto p-2 border border-gray-200 rounded-lg bg-gray-50/50">
@@ -686,7 +682,7 @@ export default function KitchenSectionSettingsPage() {
                   onClick={() => setSelectedCategoryIds([])}
                   className="text-xs text-gray-500 h-6 px-2 hover:text-red-600"
                 >
-                  Clear Selection (Use Keyword Auto-Match)
+                  {dict.kitchenSection.clearSelection}
                 </Button>
               )}
             </CardContent>
@@ -700,10 +696,10 @@ export default function KitchenSectionSettingsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-base font-bold text-gray-900">
-                Pinned / Highlighted Products ({pinnedProducts.length})
+                {dict.kitchenSection.pinnedProductsTitle.replace('{count}', String(pinnedProducts.length))}
               </CardTitle>
               <CardDescription className="text-xs">
-                Pick specific products that will always appear first in this section.
+                {dict.kitchenSection.pinnedProductsDesc}
               </CardDescription>
             </div>
 
@@ -714,7 +710,7 @@ export default function KitchenSectionSettingsPage() {
               className="gap-1.5 text-xs h-8"
             >
               <Plus className="w-3.5 h-3.5" />
-              Pin a Product
+              {dict.kitchenSection.pinProductBtn}
             </Button>
           </div>
         </CardHeader>
@@ -723,9 +719,9 @@ export default function KitchenSectionSettingsPage() {
           {pinnedProducts.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
               <ShoppingBag className="w-7 h-7 text-gray-300 mx-auto mb-1.5" />
-              <p className="text-sm font-semibold text-gray-700">No pinned products yet</p>
+              <p className="text-sm font-semibold text-gray-700">{dict.kitchenSection.noPinnedProducts}</p>
               <p className="text-xs text-gray-400 mt-0.5">
-                The section automatically populates products from your kitchen categories. You can pin specific bestsellers above.
+                {dict.kitchenSection.noPinnedProductsDesc}
               </p>
             </div>
           ) : (
@@ -768,7 +764,7 @@ export default function KitchenSectionSettingsPage() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-5 border border-gray-200 space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-base text-gray-900">Search Product to Pin</h3>
+              <h3 className="font-bold text-base text-gray-900">{dict.kitchenSection.searchProductModalTitle}</h3>
               <button onClick={() => setIsSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
                 ✕
               </button>
@@ -776,7 +772,7 @@ export default function KitchenSectionSettingsPage() {
 
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Search product by name or SKU..."
+                placeholder={dict.kitchenSection.searchPlaceholder}
                 value={productSearchQuery}
                 onChange={(e) => setProductSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -791,7 +787,7 @@ export default function KitchenSectionSettingsPage() {
             <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
               {searchResults.length === 0 ? (
                 <div className="text-center py-6 text-xs text-gray-400">
-                  {searchingProducts ? 'Searching...' : 'Type a query and press search'}
+                  {searchingProducts ? dict.common.loading : dict.kitchenSection.typeQueryHint}
                 </div>
               ) : (
                 searchResults.map((p) => (
@@ -811,7 +807,7 @@ export default function KitchenSectionSettingsPage() {
                       onClick={() => handleAddPinnedProduct(p)}
                       className="text-xs h-7"
                     >
-                      Pin
+                      {dict.kitchenSection.pinAction}
                     </Button>
                   </div>
                 ))

@@ -16,8 +16,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 
 export default function LowStockAlertsPage() {
+  const { dict } = useAdminLocale()
   const [alerts, setAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [scanning, setScanning] = useState(false)
@@ -101,14 +103,14 @@ export default function LowStockAlertsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900">
-              Low Stock Alerts & Reorder Points
+              {dict.inventoryAlerts.pageTitle}
             </h1>
             <span className="px-2.5 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-full">
-              {alerts.length} alerts
+              {dict.inventoryAlerts.activeAlertsBadge.replace('{count}', String(alerts.length))}
             </span>
           </div>
           <p className="text-sm text-gray-500 mt-1">
-            Automated notifications for multi-warehouse balance deficiencies and threshold triggers
+            {dict.inventoryAlerts.pageSubtitle}
           </p>
         </div>
 
@@ -121,7 +123,7 @@ export default function LowStockAlertsPage() {
             className="rounded-xl gap-1.5 text-xs"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Refresh
+            {dict.inventoryAlerts.refresh}
           </Button>
 
           <Button
@@ -131,7 +133,7 @@ export default function LowStockAlertsPage() {
             className="rounded-xl gap-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
           >
             <ShieldAlert size={14} className={scanning ? 'animate-spin' : ''} />
-            {scanning ? 'Scanning Warehouse Stock...' : 'Scan Stock Now'}
+            {scanning ? dict.inventoryAlerts.scanningStock : dict.inventoryAlerts.scanStockNow}
           </Button>
         </div>
       </div>
@@ -157,7 +159,7 @@ export default function LowStockAlertsPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search by product name or SKU..."
+            placeholder={dict.inventoryAlerts.searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 h-10 bg-gray-50/50 border-gray-200 rounded-xl text-xs"
@@ -170,10 +172,10 @@ export default function LowStockAlertsPage() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="h-10 px-3 bg-gray-50 border border-gray-200 text-xs font-medium rounded-xl text-gray-700 outline-hidden"
           >
-            <option value="ACTIVE">Active Alerts</option>
-            <option value="RESOLVED">Resolved Alerts</option>
-            <option value="IGNORED">Ignored Alerts</option>
-            <option value="ALL">All Alerts</option>
+            <option value="ACTIVE">{dict.inventoryAlerts.filterActive}</option>
+            <option value="RESOLVED">{dict.inventoryAlerts.filterResolved}</option>
+            <option value="IGNORED">{dict.inventoryAlerts.filterIgnored}</option>
+            <option value="ALL">{dict.inventoryAlerts.filterAll}</option>
           </select>
         </div>
       </div>
@@ -184,26 +186,26 @@ export default function LowStockAlertsPage() {
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center text-gray-400 text-xs gap-2">
               <div className="w-8 h-8 border-3 border-gray-200 border-t-amber-600 rounded-full animate-spin"></div>
-              <span>Checking inventory thresholds...</span>
+              <span>{dict.inventoryAlerts.checkingThresholds}</span>
             </div>
           ) : alerts.length === 0 ? (
             <div className="py-16 text-center text-gray-400 text-xs">
               <CheckCircle2 size={36} className="mx-auto text-emerald-500 mb-2" />
-              <p className="font-semibold text-gray-700">All Stock Levels Healthy!</p>
-              <p className="text-gray-400 mt-1">No low stock alerts matching current filter.</p>
+              <p className="font-semibold text-gray-700">{dict.inventoryAlerts.allStockHealthy}</p>
+              <p className="text-gray-400 mt-1">{dict.inventoryAlerts.noAlertsDesc}</p>
             </div>
           ) : (
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/70 text-gray-500 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4">Severity</th>
-                  <th className="py-3 px-4">Product / SKU</th>
-                  <th className="py-3 px-4">Warehouse</th>
-                  <th className="py-3 px-4">Current Stock</th>
-                  <th className="py-3 px-4">Threshold</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Date Triggered</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{dict.inventoryAlerts.thSeverity}</th>
+                  <th className="py-3 px-4">{dict.inventoryAlerts.thProductSku}</th>
+                  <th className="py-3 px-4">{dict.inventoryAlerts.thWarehouse}</th>
+                  <th className="py-3 px-4">{dict.inventoryAlerts.thCurrentStock}</th>
+                  <th className="py-3 px-4">{dict.inventoryAlerts.thThreshold}</th>
+                  <th className="py-3 px-4">{dict.common.status}</th>
+                  <th className="py-3 px-4">{dict.inventoryAlerts.thTriggeredAt}</th>
+                  <th className="py-3 px-4 text-right">{dict.inventoryAlerts.thActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -254,7 +256,7 @@ export default function LowStockAlertsPage() {
                             onClick={() => handleResolve(al.id, 'RESOLVED')}
                             className="h-7 px-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
                           >
-                            Mark Resolved
+                            {dict.inventoryAlerts.btnResolve}
                           </Button>
                           <Link href="/admin/purchase-orders/new">
                             <Button

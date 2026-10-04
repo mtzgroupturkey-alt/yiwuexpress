@@ -1,0 +1,1988 @@
+{
+  "department": "Kitchenware & tableware",
+  "departmentSlug": "cookware-tableware-kt001",
+  "departmentCode": "kt001",
+  "existsInCurrentSystem": false,
+  "translations": {
+    "ru": "Посуда и сервировка стола",
+    "zh": "餐具与厨房烹饪用品"
+  },
+  "missingSubcategoriesCount": 14,
+  "totalMissingProductsCount": 1013,
+  "subcategories": [
+    {
+      "categoryName": "Food storage & organizing",
+      "categorySlug": "food-storage-organizing-15937",
+      "ikeaCode": "15937",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Food storage & organizing"
+        },
+        "ru": {
+          "name": "Food storage & organizing"
+        },
+        "zh": {
+          "name": "Food storage & organizing"
+        }
+      },
+      "totalIkeaProductsInStock": 182,
+      "sampleProductsToInsert": [
+        {
+          "name": "IKEA 365+ Food container with lid",
+          "slug": "ikea-365-food-container-with-lid-20625252",
+          "sku": "IK-20625252",
+          "price": 17.99,
+          "compareAtPrice": 22.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-food-container-with-lid-rectangular-glass__1446776_pe988680_s5.jpg"
+          ],
+          "description": "IKEA 365+ Food container with lid 34 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20625252",
+          "measure": "34 oz",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 34 oz"
+            },
+            "ru": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 34 oz"
+            },
+            "zh": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 34 oz"
+            }
+          }
+        },
+        {
+          "name": "IKEA 365+ Food container with lid",
+          "slug": "ikea-365-food-container-with-lid-50625255",
+          "sku": "IK-50625255",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-food-container-with-lid-square-glass__1503449_pe1007869_s5.jpg"
+          ],
+          "description": "IKEA 365+ Food container with lid 20 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50625255",
+          "measure": "20 oz",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 20 oz"
+            },
+            "ru": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 20 oz"
+            },
+            "zh": {
+              "name": "IKEA 365+ Food container with lid",
+              "description": "IKEA 365+ Food container with lid 20 oz"
+            }
+          }
+        },
+        {
+          "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+          "slug": "korallvippa-dry-food-jar-with-lid-set-of-6-50599416",
+          "sku": "IK-50599416",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/korallvippa-dry-food-jar-with-lid-set-of-6-clear__1383821_pe962684_s5.jpg"
+          ],
+          "description": "KORALLVIPPA Dry food jar with lid, set of 6",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50599416",
+          "measure": "",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+              "description": "KORALLVIPPA Dry food jar with lid, set of 6"
+            },
+            "ru": {
+              "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+              "description": "KORALLVIPPA Dry food jar with lid, set of 6"
+            },
+            "zh": {
+              "name": "KORALLVIPPA Dry food jar with lid, set of 6",
+              "description": "KORALLVIPPA Dry food jar with lid, set of 6"
+            }
+          }
+        },
+        {
+          "name": "IKEA 365+ Dry food storage with lid",
+          "slug": "ikea-365-dry-food-storage-with-lid-80578182",
+          "sku": "IK-80578182",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-dry-food-storage-with-lid-clear-white__0711438_pe728254_s5.jpg"
+          ],
+          "description": "IKEA 365+ Dry food storage with lid 2 qt",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80578182",
+          "measure": "2 qt",
+          "categoryName": "Food storage & organizing",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Dry food storage with lid",
+              "description": "IKEA 365+ Dry food storage with lid 2 qt"
+            },
+            "ru": {
+              "name": "IKEA 365+ Dry food storage with lid",
+              "description": "IKEA 365+ Dry food storage with lid 2 qt"
+            },
+            "zh": {
+              "name": "IKEA 365+ Dry food storage with lid",
+              "description": "IKEA 365+ Dry food storage with lid 2 qt"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Serveware",
+      "categorySlug": "serveware-16043",
+      "ikeaCode": "16043",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Serveware"
+        },
+        "ru": {
+          "name": "Serveware"
+        },
+        "zh": {
+          "name": "Serveware"
+        }
+      },
+      "totalIkeaProductsInStock": 99,
+      "sampleProductsToInsert": [
+        {
+          "name": "IKEA 365+ Bowl",
+          "slug": "ikea-365-bowl-20278351",
+          "sku": "IK-20278351",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-bowl-rounded-sides-white__0712930_pe729142_s5.jpg"
+          ],
+          "description": "IKEA 365+ Bowl 6 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20278351",
+          "measure": "6 \"",
+          "categoryName": "Serveware",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Bowl",
+              "description": "IKEA 365+ Bowl 6 \""
+            },
+            "ru": {
+              "name": "IKEA 365+ Bowl",
+              "description": "IKEA 365+ Bowl 6 \""
+            },
+            "zh": {
+              "name": "IKEA 365+ Bowl",
+              "description": "IKEA 365+ Bowl 6 \""
+            }
+          }
+        },
+        {
+          "name": "AFTONHAJ Serving bowl",
+          "slug": "aftonhaj-serving-bowl-60624024",
+          "sku": "IK-60624024",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aftonhaj-serving-bowl-stainless-steel__1489993_pe1004035_s5.jpg"
+          ],
+          "description": "AFTONHAJ Serving bowl 10 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60624024",
+          "measure": "10 \"",
+          "categoryName": "Serveware",
+          "translations": {
+            "en": {
+              "name": "AFTONHAJ Serving bowl",
+              "description": "AFTONHAJ Serving bowl 10 \""
+            },
+            "ru": {
+              "name": "AFTONHAJ Serving bowl",
+              "description": "AFTONHAJ Serving bowl 10 \""
+            },
+            "zh": {
+              "name": "AFTONHAJ Serving bowl",
+              "description": "AFTONHAJ Serving bowl 10 \""
+            }
+          }
+        },
+        {
+          "name": "BLANDA BLANK Serving bowl",
+          "slug": "blanda-blank-serving-bowl-00637265",
+          "sku": "IK-00637265",
+          "price": 8.99,
+          "compareAtPrice": 11.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/blanda-blank-serving-bowl-stainless-steel__1245291_pe921567_s5.jpg"
+          ],
+          "description": "BLANDA BLANK Serving bowl 11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00637265",
+          "measure": "11 \"",
+          "categoryName": "Serveware",
+          "translations": {
+            "en": {
+              "name": "BLANDA BLANK Serving bowl",
+              "description": "BLANDA BLANK Serving bowl 11 \""
+            },
+            "ru": {
+              "name": "BLANDA BLANK Serving bowl",
+              "description": "BLANDA BLANK Serving bowl 11 \""
+            },
+            "zh": {
+              "name": "BLANDA BLANK Serving bowl",
+              "description": "BLANDA BLANK Serving bowl 11 \""
+            }
+          }
+        },
+        {
+          "name": "BLANDA MATT Serving bowl",
+          "slug": "blanda-matt-serving-bowl-60214343",
+          "sku": "IK-60214343",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/blanda-matt-serving-bowl-bamboo__1395111_pe966843_s5.jpg"
+          ],
+          "description": "BLANDA MATT Serving bowl 11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60214343",
+          "measure": "11 \"",
+          "categoryName": "Serveware",
+          "translations": {
+            "en": {
+              "name": "BLANDA MATT Serving bowl",
+              "description": "BLANDA MATT Serving bowl 11 \""
+            },
+            "ru": {
+              "name": "BLANDA MATT Serving bowl",
+              "description": "BLANDA MATT Serving bowl 11 \""
+            },
+            "zh": {
+              "name": "BLANDA MATT Serving bowl",
+              "description": "BLANDA MATT Serving bowl 11 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Drinkware",
+      "categorySlug": "drinkware-18868",
+      "ikeaCode": "18868",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Drinkware"
+        },
+        "ru": {
+          "name": "Drinkware"
+        },
+        "zh": {
+          "name": "Drinkware"
+        }
+      },
+      "totalIkeaProductsInStock": 93,
+      "sampleProductsToInsert": [
+        {
+          "name": "IKEA 365+ Glass",
+          "slug": "ikea-365-glass-60279711",
+          "sku": "IK-60279711",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-glass-clear-glass__0928963_pe790099_s5.jpg"
+          ],
+          "description": "IKEA 365+ Glass 15 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60279711",
+          "measure": "15 oz",
+          "categoryName": "Drinkware",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Glass",
+              "description": "IKEA 365+ Glass 15 oz"
+            },
+            "ru": {
+              "name": "IKEA 365+ Glass",
+              "description": "IKEA 365+ Glass 15 oz"
+            },
+            "zh": {
+              "name": "IKEA 365+ Glass",
+              "description": "IKEA 365+ Glass 15 oz"
+            }
+          }
+        },
+        {
+          "name": "POKAL Glass",
+          "slug": "pokal-glass-80621816",
+          "sku": "IK-80621816",
+          "price": 0.99,
+          "compareAtPrice": 1.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pokal-glass-clear-glass__1468546_pe996183_s5.jpg"
+          ],
+          "description": "POKAL Glass 9 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80621816",
+          "measure": "9 oz",
+          "categoryName": "Drinkware",
+          "translations": {
+            "en": {
+              "name": "POKAL Glass",
+              "description": "POKAL Glass 9 oz"
+            },
+            "ru": {
+              "name": "POKAL Glass",
+              "description": "POKAL Glass 9 oz"
+            },
+            "zh": {
+              "name": "POKAL Glass",
+              "description": "POKAL Glass 9 oz"
+            }
+          }
+        },
+        {
+          "name": "STOCKHOLM 2025 Glass",
+          "slug": "stockholm-2025-glass-20592440",
+          "sku": "IK-20592440",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stockholm-2025-glass__1534501_pe1016156_s5.jpg"
+          ],
+          "description": "STOCKHOLM 2025 Glass 14 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20592440",
+          "measure": "14 oz",
+          "categoryName": "Drinkware",
+          "translations": {
+            "en": {
+              "name": "STOCKHOLM 2025 Glass",
+              "description": "STOCKHOLM 2025 Glass 14 oz"
+            },
+            "ru": {
+              "name": "STOCKHOLM 2025 Glass",
+              "description": "STOCKHOLM 2025 Glass 14 oz"
+            },
+            "zh": {
+              "name": "STOCKHOLM 2025 Glass",
+              "description": "STOCKHOLM 2025 Glass 14 oz"
+            }
+          }
+        },
+        {
+          "name": "PAPPERSBJÖRK Glass",
+          "slug": "pappersbjrk-glass-50619928",
+          "sku": "IK-50619928",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/pappersbjoerk-glass-mixed-colors__1467556_pe995776_s5.jpg"
+          ],
+          "description": "PAPPERSBJÖRK Glass 10 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50619928",
+          "measure": "10 oz",
+          "categoryName": "Drinkware",
+          "translations": {
+            "en": {
+              "name": "PAPPERSBJÖRK Glass",
+              "description": "PAPPERSBJÖRK Glass 10 oz"
+            },
+            "ru": {
+              "name": "PAPPERSBJÖRK Glass",
+              "description": "PAPPERSBJÖRK Glass 10 oz"
+            },
+            "zh": {
+              "name": "PAPPERSBJÖRK Glass",
+              "description": "PAPPERSBJÖRK Glass 10 oz"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen & cooking accessories",
+      "categorySlug": "cooking-baking-utensils-kt002",
+      "ikeaCode": "kt002",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen & cooking accessories"
+        },
+        "ru": {
+          "name": "Kitchen & cooking accessories"
+        },
+        "zh": {
+          "name": "Kitchen & cooking accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 153,
+      "sampleProductsToInsert": [
+        {
+          "name": "GRUNKA 4-piece kitchen utensil set",
+          "slug": "grunka-4-piece-kitchen-utensil-set-20577897",
+          "sku": "IK-20577897",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/grunka-4-piece-kitchen-utensil-set-stainless-steel__0711741_pe728430_s5.jpg"
+          ],
+          "description": "GRUNKA 4-piece kitchen utensil set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20577897",
+          "measure": "",
+          "categoryName": "Kitchen & cooking accessories",
+          "translations": {
+            "en": {
+              "name": "GRUNKA 4-piece kitchen utensil set",
+              "description": "GRUNKA 4-piece kitchen utensil set"
+            },
+            "ru": {
+              "name": "GRUNKA 4-piece kitchen utensil set",
+              "description": "GRUNKA 4-piece kitchen utensil set"
+            },
+            "zh": {
+              "name": "GRUNKA 4-piece kitchen utensil set",
+              "description": "GRUNKA 4-piece kitchen utensil set"
+            }
+          }
+        },
+        {
+          "name": "UPPFYLLD Grater with container, set of 4",
+          "slug": "uppfylld-grater-with-container-set-of-4-70578210",
+          "sku": "IK-70578210",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/uppfylld-grater-with-container-set-of-4-mixed-colors__1124830_pe875278_s5.jpg"
+          ],
+          "description": "UPPFYLLD Grater with container, set of 4",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70578210",
+          "measure": "",
+          "categoryName": "Kitchen & cooking accessories",
+          "translations": {
+            "en": {
+              "name": "UPPFYLLD Grater with container, set of 4",
+              "description": "UPPFYLLD Grater with container, set of 4"
+            },
+            "ru": {
+              "name": "UPPFYLLD Grater with container, set of 4",
+              "description": "UPPFYLLD Grater with container, set of 4"
+            },
+            "zh": {
+              "name": "UPPFYLLD Grater with container, set of 4",
+              "description": "UPPFYLLD Grater with container, set of 4"
+            }
+          }
+        },
+        {
+          "name": "IDEALISK Colander",
+          "slug": "idealisk-colander-30578170",
+          "sku": "IK-30578170",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/idealisk-colander-stainless-steel__1057986_pe849096_s5.jpg"
+          ],
+          "description": "IDEALISK Colander",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30578170",
+          "measure": "",
+          "categoryName": "Kitchen & cooking accessories",
+          "translations": {
+            "en": {
+              "name": "IDEALISK Colander",
+              "description": "IDEALISK Colander"
+            },
+            "ru": {
+              "name": "IDEALISK Colander",
+              "description": "IDEALISK Colander"
+            },
+            "zh": {
+              "name": "IDEALISK Colander",
+              "description": "IDEALISK Colander"
+            }
+          }
+        },
+        {
+          "name": "TROJKA Scissors",
+          "slug": "trojka-scissors-20578364",
+          "sku": "IK-20578364",
+          "price": 2.49,
+          "compareAtPrice": 3.11,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/trojka-scissors-light-green__1215208_pe911920_s5.jpg"
+          ],
+          "description": "TROJKA Scissors",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20578364",
+          "measure": "",
+          "categoryName": "Kitchen & cooking accessories",
+          "translations": {
+            "en": {
+              "name": "TROJKA Scissors",
+              "description": "TROJKA Scissors"
+            },
+            "ru": {
+              "name": "TROJKA Scissors",
+              "description": "TROJKA Scissors"
+            },
+            "zh": {
+              "name": "TROJKA Scissors",
+              "description": "TROJKA Scissors"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Table linens",
+      "categorySlug": "table-linen-20538",
+      "ikeaCode": "20538",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Table linens"
+        },
+        "ru": {
+          "name": "Table linens"
+        },
+        "zh": {
+          "name": "Table linens"
+        }
+      },
+      "totalIkeaProductsInStock": 66,
+      "sampleProductsToInsert": [
+        {
+          "name": "SOARÉ Placemat",
+          "slug": "soar-placemat-40082536",
+          "sku": "IK-40082536",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/soare-placemat-water-hyacinth__0711868_pe728538_s5.jpg"
+          ],
+          "description": "SOARÉ Placemat 15 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40082536",
+          "measure": "15 \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "SOARÉ Placemat",
+              "description": "SOARÉ Placemat 15 \""
+            },
+            "ru": {
+              "name": "SOARÉ Placemat",
+              "description": "SOARÉ Placemat 15 \""
+            },
+            "zh": {
+              "name": "SOARÉ Placemat",
+              "description": "SOARÉ Placemat 15 \""
+            }
+          }
+        },
+        {
+          "name": "VÅRARV Place mat",
+          "slug": "vrarv-place-mat-20545849",
+          "sku": "IK-20545849",
+          "price": 3.49,
+          "compareAtPrice": 4.36,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vararv-place-mat-dark-gray-natural__1144121_pe882895_s5.jpg"
+          ],
+          "description": "VÅRARV Place mat 13 ¾x17 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20545849",
+          "measure": "13 ¾x17 ¾ \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "VÅRARV Place mat",
+              "description": "VÅRARV Place mat 13 ¾x17 ¾ \""
+            },
+            "ru": {
+              "name": "VÅRARV Place mat",
+              "description": "VÅRARV Place mat 13 ¾x17 ¾ \""
+            },
+            "zh": {
+              "name": "VÅRARV Place mat",
+              "description": "VÅRARV Place mat 13 ¾x17 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "SVARTSENAP Placemat",
+          "slug": "svartsenap-placemat-80527965",
+          "sku": "IK-80527965",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/svartsenap-placemat-green-blue__1089636_pe861613_s5.jpg"
+          ],
+          "description": "SVARTSENAP Placemat 14x18 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80527965",
+          "measure": "14x18 \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "SVARTSENAP Placemat",
+              "description": "SVARTSENAP Placemat 14x18 \""
+            },
+            "ru": {
+              "name": "SVARTSENAP Placemat",
+              "description": "SVARTSENAP Placemat 14x18 \""
+            },
+            "zh": {
+              "name": "SVARTSENAP Placemat",
+              "description": "SVARTSENAP Placemat 14x18 \""
+            }
+          }
+        },
+        {
+          "name": "SILVERARV Tablecloth",
+          "slug": "silverarv-tablecloth-80526579",
+          "sku": "IK-80526579",
+          "price": 24.99,
+          "compareAtPrice": 31.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/silverarv-tablecloth-beige__1062943_pe851135_s5.jpg"
+          ],
+          "description": "SILVERARV Tablecloth 57x94 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80526579",
+          "measure": "57x94 \"",
+          "categoryName": "Table linens",
+          "translations": {
+            "en": {
+              "name": "SILVERARV Tablecloth",
+              "description": "SILVERARV Tablecloth 57x94 \""
+            },
+            "ru": {
+              "name": "SILVERARV Tablecloth",
+              "description": "SILVERARV Tablecloth 57x94 \""
+            },
+            "zh": {
+              "name": "SILVERARV Tablecloth",
+              "description": "SILVERARV Tablecloth 57x94 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Bakeware & accessories",
+      "categorySlug": "bakeware-20636",
+      "ikeaCode": "20636",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Bakeware & accessories"
+        },
+        "ru": {
+          "name": "Bakeware & accessories"
+        },
+        "zh": {
+          "name": "Bakeware & accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 61,
+      "sampleProductsToInsert": [
+        {
+          "name": "VINTERROCKA Baking sheet, set of 2",
+          "slug": "vinterrocka-baking-sheet-set-of-2-50633095",
+          "sku": "IK-50633095",
+          "price": 15.99,
+          "compareAtPrice": 19.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vinterrocka-baking-sheet-set-of-2-stainless-steel__1522028_pe1013468_s5.jpg"
+          ],
+          "description": "VINTERROCKA Baking sheet, set of 2",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50633095",
+          "measure": "",
+          "categoryName": "Bakeware & accessories",
+          "translations": {
+            "en": {
+              "name": "VINTERROCKA Baking sheet, set of 2",
+              "description": "VINTERROCKA Baking sheet, set of 2"
+            },
+            "ru": {
+              "name": "VINTERROCKA Baking sheet, set of 2",
+              "description": "VINTERROCKA Baking sheet, set of 2"
+            },
+            "zh": {
+              "name": "VINTERROCKA Baking sheet, set of 2",
+              "description": "VINTERROCKA Baking sheet, set of 2"
+            }
+          }
+        },
+        {
+          "name": "VARDAGEN Measuring spoons, set of 4",
+          "slug": "vardagen-measuring-spoons-set-of-4-00330703",
+          "sku": "IK-00330703",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vardagen-measuring-spoons-set-of-4__0462971_pe608472_s5.jpg"
+          ],
+          "description": "VARDAGEN Measuring spoons, set of 4",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00330703",
+          "measure": "",
+          "categoryName": "Bakeware & accessories",
+          "translations": {
+            "en": {
+              "name": "VARDAGEN Measuring spoons, set of 4",
+              "description": "VARDAGEN Measuring spoons, set of 4"
+            },
+            "ru": {
+              "name": "VARDAGEN Measuring spoons, set of 4",
+              "description": "VARDAGEN Measuring spoons, set of 4"
+            },
+            "zh": {
+              "name": "VARDAGEN Measuring spoons, set of 4",
+              "description": "VARDAGEN Measuring spoons, set of 4"
+            }
+          }
+        },
+        {
+          "name": "LÄTTBAKAD Cooling rack",
+          "slug": "lttbakad-cooling-rack-20480145",
+          "sku": "IK-20480145",
+          "price": 8.99,
+          "compareAtPrice": 11.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/laettbakad-cooling-rack__0930504_pe790792_s5.jpg"
+          ],
+          "description": "LÄTTBAKAD Cooling rack 15x11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20480145",
+          "measure": "15x11 \"",
+          "categoryName": "Bakeware & accessories",
+          "translations": {
+            "en": {
+              "name": "LÄTTBAKAD Cooling rack",
+              "description": "LÄTTBAKAD Cooling rack 15x11 \""
+            },
+            "ru": {
+              "name": "LÄTTBAKAD Cooling rack",
+              "description": "LÄTTBAKAD Cooling rack 15x11 \""
+            },
+            "zh": {
+              "name": "LÄTTBAKAD Cooling rack",
+              "description": "LÄTTBAKAD Cooling rack 15x11 \""
+            }
+          }
+        },
+        {
+          "name": "BAKTIDER Rolling pin",
+          "slug": "baktider-rolling-pin-60629644",
+          "sku": "IK-60629644",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/baktider-rolling-pin-acacia__1522011_pe1013461_s5.jpg"
+          ],
+          "description": "BAKTIDER Rolling pin 17 3/4 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60629644",
+          "measure": "17 3/4 \"",
+          "categoryName": "Bakeware & accessories",
+          "translations": {
+            "en": {
+              "name": "BAKTIDER Rolling pin",
+              "description": "BAKTIDER Rolling pin 17 3/4 \""
+            },
+            "ru": {
+              "name": "BAKTIDER Rolling pin",
+              "description": "BAKTIDER Rolling pin 17 3/4 \""
+            },
+            "zh": {
+              "name": "BAKTIDER Rolling pin",
+              "description": "BAKTIDER Rolling pin 17 3/4 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Dishwashing accessories",
+      "categorySlug": "dishwashing-accessories-15938",
+      "ikeaCode": "15938",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Dishwashing accessories"
+        },
+        "ru": {
+          "name": "Dishwashing accessories"
+        },
+        "zh": {
+          "name": "Dishwashing accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 48,
+      "sampleProductsToInsert": [
+        {
+          "name": "LILLHAVET Multifunctional dish rack",
+          "slug": "lillhavet-multifunctional-dish-rack-80461276",
+          "sku": "IK-80461276",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/lillhavet-multifunctional-dish-rack-anthracite__1057050_pe848721_s5.jpg"
+          ],
+          "description": "LILLHAVET Multifunctional dish rack",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80461276",
+          "measure": "",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "LILLHAVET Multifunctional dish rack",
+              "description": "LILLHAVET Multifunctional dish rack"
+            },
+            "ru": {
+              "name": "LILLHAVET Multifunctional dish rack",
+              "description": "LILLHAVET Multifunctional dish rack"
+            },
+            "zh": {
+              "name": "LILLHAVET Multifunctional dish rack",
+              "description": "LILLHAVET Multifunctional dish rack"
+            }
+          }
+        },
+        {
+          "name": "RINNIG Sink container",
+          "slug": "rinnig-sink-container-80595445",
+          "sku": "IK-80595445",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-sink-container-black__1407244_pe971451_s5.jpg"
+          ],
+          "description": "RINNIG Sink container",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80595445",
+          "measure": "",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "RINNIG Sink container",
+              "description": "RINNIG Sink container"
+            },
+            "ru": {
+              "name": "RINNIG Sink container",
+              "description": "RINNIG Sink container"
+            },
+            "zh": {
+              "name": "RINNIG Sink container",
+              "description": "RINNIG Sink container"
+            }
+          }
+        },
+        {
+          "name": "ORDNING Dish drainer",
+          "slug": "ordning-dish-drainer-10018194",
+          "sku": "IK-10018194",
+          "price": 34.99,
+          "compareAtPrice": 43.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ordning-dish-drainer-stainless-steel__0712681_pe728966_s5.jpg"
+          ],
+          "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10018194",
+          "measure": "19 5/8x10 5/8x14 1/8 \"",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "ORDNING Dish drainer",
+              "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \""
+            },
+            "ru": {
+              "name": "ORDNING Dish drainer",
+              "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \""
+            },
+            "zh": {
+              "name": "ORDNING Dish drainer",
+              "description": "ORDNING Dish drainer 19 5/8x10 5/8x14 1/8 \""
+            }
+          }
+        },
+        {
+          "name": "VÄLVÅRDAD Dish-washing brush refills",
+          "slug": "vlvrdad-dish-washing-brush-refills-10490526",
+          "sku": "IK-10490526",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/vaelvardad-dish-washing-brush-refills-agave-leaf-fiber__1015785_pe835929_s5.jpg"
+          ],
+          "description": "VÄLVÅRDAD Dish-washing brush refills",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10490526",
+          "measure": "",
+          "categoryName": "Dishwashing accessories",
+          "translations": {
+            "en": {
+              "name": "VÄLVÅRDAD Dish-washing brush refills",
+              "description": "VÄLVÅRDAD Dish-washing brush refills"
+            },
+            "ru": {
+              "name": "VÄLVÅRDAD Dish-washing brush refills",
+              "description": "VÄLVÅRDAD Dish-washing brush refills"
+            },
+            "zh": {
+              "name": "VÄLVÅRDAD Dish-washing brush refills",
+              "description": "VÄLVÅRDAD Dish-washing brush refills"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kitchen linens & textiles",
+      "categorySlug": "kitchen-textiles-18850",
+      "ikeaCode": "18850",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kitchen linens & textiles"
+        },
+        "ru": {
+          "name": "Kitchen linens & textiles"
+        },
+        "zh": {
+          "name": "Kitchen linens & textiles"
+        }
+      },
+      "totalIkeaProductsInStock": 28,
+      "sampleProductsToInsert": [
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-20612768",
+          "sku": "IK-20612768",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-multicolor-patterned__1391212_pe965715_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20612768",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-20476346",
+          "sku": "IK-20476346",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-white-dark-gray-patterned__0813216_pe772338_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20476346",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "RÖDSPÄTTA Dish towel",
+          "slug": "rdsptta-dish-towel-60618570",
+          "sku": "IK-60618570",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/roedspaetta-dish-towel-white__1446800_pe988920_s5.jpg"
+          ],
+          "description": "RÖDSPÄTTA Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60618570",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RÖDSPÄTTA Dish towel",
+              "description": "RÖDSPÄTTA Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RÖDSPÄTTA Dish towel",
+              "description": "RÖDSPÄTTA Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RÖDSPÄTTA Dish towel",
+              "description": "RÖDSPÄTTA Dish towel 18x24 \""
+            }
+          }
+        },
+        {
+          "name": "RINNIG Dish towel",
+          "slug": "rinnig-dish-towel-70612695",
+          "sku": "IK-70612695",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rinnig-dish-towel-red-beige-stripe__1390638_pe965461_s5.jpg"
+          ],
+          "description": "RINNIG Dish towel 18x24 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "70612695",
+          "measure": "18x24 \"",
+          "categoryName": "Kitchen linens & textiles",
+          "translations": {
+            "en": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "ru": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            },
+            "zh": {
+              "name": "RINNIG Dish towel",
+              "description": "RINNIG Dish towel 18x24 \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Kids tableware & dinnerware",
+      "categorySlug": "kids-kitchenware-tableware-18714",
+      "ikeaCode": "18714",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Kids tableware & dinnerware"
+        },
+        "ru": {
+          "name": "Kids tableware & dinnerware"
+        },
+        "zh": {
+          "name": "Kids tableware & dinnerware"
+        }
+      },
+      "totalIkeaProductsInStock": 16,
+      "sampleProductsToInsert": [
+        {
+          "name": "FABLER 3-piece flatware set",
+          "slug": "fabler-3-piece-flatware-set-60137571",
+          "sku": "IK-60137571",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fabler-3-piece-flatware-set-stainless-steel__0711359_pe728202_s5.jpg"
+          ],
+          "description": "FABLER 3-piece flatware set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60137571",
+          "measure": "",
+          "categoryName": "Kids tableware & dinnerware",
+          "translations": {
+            "en": {
+              "name": "FABLER 3-piece flatware set",
+              "description": "FABLER 3-piece flatware set"
+            },
+            "ru": {
+              "name": "FABLER 3-piece flatware set",
+              "description": "FABLER 3-piece flatware set"
+            },
+            "zh": {
+              "name": "FABLER 3-piece flatware set",
+              "description": "FABLER 3-piece flatware set"
+            }
+          }
+        },
+        {
+          "name": "SMASKA 3-piece flatware set",
+          "slug": "smaska-3-piece-flatware-set-10596938",
+          "sku": "IK-10596938",
+          "price": 5.99,
+          "compareAtPrice": 7.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/smaska-3-piece-flatware-set-mixed-colors__1414346_pe974766_s5.jpg"
+          ],
+          "description": "SMASKA 3-piece flatware set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10596938",
+          "measure": "",
+          "categoryName": "Kids tableware & dinnerware",
+          "translations": {
+            "en": {
+              "name": "SMASKA 3-piece flatware set",
+              "description": "SMASKA 3-piece flatware set"
+            },
+            "ru": {
+              "name": "SMASKA 3-piece flatware set",
+              "description": "SMASKA 3-piece flatware set"
+            },
+            "zh": {
+              "name": "SMASKA 3-piece flatware set",
+              "description": "SMASKA 3-piece flatware set"
+            }
+          }
+        },
+        {
+          "name": "GRÖNFINK Place mat",
+          "slug": "grnfink-place-mat-30572413",
+          "sku": "IK-30572413",
+          "price": 1.99,
+          "compareAtPrice": 2.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/groenfink-place-mat-multicolor__1250490_pe923773_s5.jpg"
+          ],
+          "description": "GRÖNFINK Place mat 11 ¾x15 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30572413",
+          "measure": "11 ¾x15 ¾ \"",
+          "categoryName": "Kids tableware & dinnerware",
+          "translations": {
+            "en": {
+              "name": "GRÖNFINK Place mat",
+              "description": "GRÖNFINK Place mat 11 ¾x15 ¾ \""
+            },
+            "ru": {
+              "name": "GRÖNFINK Place mat",
+              "description": "GRÖNFINK Place mat 11 ¾x15 ¾ \""
+            },
+            "zh": {
+              "name": "GRÖNFINK Place mat",
+              "description": "GRÖNFINK Place mat 11 ¾x15 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "SMÅBIT 2-piece knife set",
+          "slug": "smbit-2-piece-knife-set-60576626",
+          "sku": "IK-60576626",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/smabit-2-piece-knife-set-light-turquoise-bright-red__1214868_pe911766_s5.jpg"
+          ],
+          "description": "SMÅBIT 2-piece knife set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60576626",
+          "measure": "",
+          "categoryName": "Kids tableware & dinnerware",
+          "translations": {
+            "en": {
+              "name": "SMÅBIT 2-piece knife set",
+              "description": "SMÅBIT 2-piece knife set"
+            },
+            "ru": {
+              "name": "SMÅBIT 2-piece knife set",
+              "description": "SMÅBIT 2-piece knife set"
+            },
+            "zh": {
+              "name": "SMÅBIT 2-piece knife set",
+              "description": "SMÅBIT 2-piece knife set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Coffee & tea accessories",
+      "categorySlug": "coffee-tea-16044",
+      "ikeaCode": "16044",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Coffee & tea accessories"
+        },
+        "ru": {
+          "name": "Coffee & tea accessories"
+        },
+        "zh": {
+          "name": "Coffee & tea accessories"
+        }
+      },
+      "totalIkeaProductsInStock": 59,
+      "sampleProductsToInsert": [
+        {
+          "name": "IKEA 365+ Mug",
+          "slug": "ikea-365-mug-10279723",
+          "sku": "IK-10279723",
+          "price": 4,
+          "compareAtPrice": 5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-mug-clear-glass__0713394_pe729487_s5.jpg"
+          ],
+          "description": "IKEA 365+ Mug 8 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "10279723",
+          "measure": "8 oz",
+          "categoryName": "Coffee & tea accessories",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ Mug",
+              "description": "IKEA 365+ Mug 8 oz"
+            },
+            "ru": {
+              "name": "IKEA 365+ Mug",
+              "description": "IKEA 365+ Mug 8 oz"
+            },
+            "zh": {
+              "name": "IKEA 365+ Mug",
+              "description": "IKEA 365+ Mug 8 oz"
+            }
+          }
+        },
+        {
+          "name": "GLADELIG Mug",
+          "slug": "gladelig-mug-40503626",
+          "sku": "IK-40503626",
+          "price": 6,
+          "compareAtPrice": 7.5,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/gladelig-mug-blue__0986803_pe817327_s5.jpg"
+          ],
+          "description": "GLADELIG Mug 13 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40503626",
+          "measure": "13 oz",
+          "categoryName": "Coffee & tea accessories",
+          "translations": {
+            "en": {
+              "name": "GLADELIG Mug",
+              "description": "GLADELIG Mug 13 oz"
+            },
+            "ru": {
+              "name": "GLADELIG Mug",
+              "description": "GLADELIG Mug 13 oz"
+            },
+            "zh": {
+              "name": "GLADELIG Mug",
+              "description": "GLADELIG Mug 13 oz"
+            }
+          }
+        },
+        {
+          "name": "TOBISFISK Mug",
+          "slug": "tobisfisk-mug-50603687",
+          "sku": "IK-50603687",
+          "price": 5,
+          "compareAtPrice": 6.25,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tobisfisk-mug-patterned-beige__1397586_pe967649_s5.jpg"
+          ],
+          "description": "TOBISFISK Mug 17 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50603687",
+          "measure": "17 oz",
+          "categoryName": "Coffee & tea accessories",
+          "translations": {
+            "en": {
+              "name": "TOBISFISK Mug",
+              "description": "TOBISFISK Mug 17 oz"
+            },
+            "ru": {
+              "name": "TOBISFISK Mug",
+              "description": "TOBISFISK Mug 17 oz"
+            },
+            "zh": {
+              "name": "TOBISFISK Mug",
+              "description": "TOBISFISK Mug 17 oz"
+            }
+          }
+        },
+        {
+          "name": "DRÖMBILD Mug",
+          "slug": "drmbild-mug-00417452",
+          "sku": "IK-00417452",
+          "price": 3,
+          "compareAtPrice": 3.75,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/droembild-mug-clear-glass__0622974_pe690858_s5.jpg"
+          ],
+          "description": "DRÖMBILD Mug 8 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00417452",
+          "measure": "8 oz",
+          "categoryName": "Coffee & tea accessories",
+          "translations": {
+            "en": {
+              "name": "DRÖMBILD Mug",
+              "description": "DRÖMBILD Mug 8 oz"
+            },
+            "ru": {
+              "name": "DRÖMBILD Mug",
+              "description": "DRÖMBILD Mug 8 oz"
+            },
+            "zh": {
+              "name": "DRÖMBILD Mug",
+              "description": "DRÖMBILD Mug 8 oz"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Knives & cutting boards",
+      "categorySlug": "knives-chopping-boards-15934",
+      "ikeaCode": "15934",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Knives & cutting boards"
+        },
+        "ru": {
+          "name": "Knives & cutting boards"
+        },
+        "zh": {
+          "name": "Knives & cutting boards"
+        }
+      },
+      "totalIkeaProductsInStock": 64,
+      "sampleProductsToInsert": [
+        {
+          "name": "APTITLIG Cutting board",
+          "slug": "aptitlig-cutting-board-80233430",
+          "sku": "IK-80233430",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aptitlig-cutting-board-bamboo__1377033_pe960693_s5.jpg"
+          ],
+          "description": "APTITLIG Cutting board 17 ¾x11 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80233430",
+          "measure": "17 ¾x11 \"",
+          "categoryName": "Knives & cutting boards",
+          "translations": {
+            "en": {
+              "name": "APTITLIG Cutting board",
+              "description": "APTITLIG Cutting board 17 ¾x11 \""
+            },
+            "ru": {
+              "name": "APTITLIG Cutting board",
+              "description": "APTITLIG Cutting board 17 ¾x11 \""
+            },
+            "zh": {
+              "name": "APTITLIG Cutting board",
+              "description": "APTITLIG Cutting board 17 ¾x11 \""
+            }
+          }
+        },
+        {
+          "name": "IKEA 365+ 5-piece knife set",
+          "slug": "ikea-365-5-piece-knife-set-40578358",
+          "sku": "IK-40578358",
+          "price": 69.99,
+          "compareAtPrice": 87.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/ikea-365-5-piece-knife-set-stainless-steel__1173121_pe893807_s5.jpg"
+          ],
+          "description": "IKEA 365+ 5-piece knife set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "40578358",
+          "measure": "",
+          "categoryName": "Knives & cutting boards",
+          "translations": {
+            "en": {
+              "name": "IKEA 365+ 5-piece knife set",
+              "description": "IKEA 365+ 5-piece knife set"
+            },
+            "ru": {
+              "name": "IKEA 365+ 5-piece knife set",
+              "description": "IKEA 365+ 5-piece knife set"
+            },
+            "zh": {
+              "name": "IKEA 365+ 5-piece knife set",
+              "description": "IKEA 365+ 5-piece knife set"
+            }
+          }
+        },
+        {
+          "name": "LÄMPLIG Cutting board",
+          "slug": "lmplig-cutting-board-00309829",
+          "sku": "IK-00309829",
+          "price": 29.99,
+          "compareAtPrice": 37.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/laemplig-cutting-board-bamboo__0711757_pe728449_s5.jpg"
+          ],
+          "description": "LÄMPLIG Cutting board 20 ¾x18 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00309829",
+          "measure": "20 ¾x18 \"",
+          "categoryName": "Knives & cutting boards",
+          "translations": {
+            "en": {
+              "name": "LÄMPLIG Cutting board",
+              "description": "LÄMPLIG Cutting board 20 ¾x18 \""
+            },
+            "ru": {
+              "name": "LÄMPLIG Cutting board",
+              "description": "LÄMPLIG Cutting board 20 ¾x18 \""
+            },
+            "zh": {
+              "name": "LÄMPLIG Cutting board",
+              "description": "LÄMPLIG Cutting board 20 ¾x18 \""
+            }
+          }
+        },
+        {
+          "name": "ÄNDLIG 3-piece knife set",
+          "slug": "ndlig-3-piece-knife-set-80578342",
+          "sku": "IK-80578342",
+          "price": 12.99,
+          "compareAtPrice": 16.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/aendlig-3-piece-knife-set-light-gray-white__0210168_pe363627_s5.jpg"
+          ],
+          "description": "ÄNDLIG 3-piece knife set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "80578342",
+          "measure": "",
+          "categoryName": "Knives & cutting boards",
+          "translations": {
+            "en": {
+              "name": "ÄNDLIG 3-piece knife set",
+              "description": "ÄNDLIG 3-piece knife set"
+            },
+            "ru": {
+              "name": "ÄNDLIG 3-piece knife set",
+              "description": "ÄNDLIG 3-piece knife set"
+            },
+            "zh": {
+              "name": "ÄNDLIG 3-piece knife set",
+              "description": "ÄNDLIG 3-piece knife set"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Napkins & napkin holders",
+      "categorySlug": "napkins-napkin-holders-20560",
+      "ikeaCode": "20560",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Napkins & napkin holders"
+        },
+        "ru": {
+          "name": "Napkins & napkin holders"
+        },
+        "zh": {
+          "name": "Napkins & napkin holders"
+        }
+      },
+      "totalIkeaProductsInStock": 29,
+      "sampleProductsToInsert": [
+        {
+          "name": "TILLSTÄLLNING Napkin holder",
+          "slug": "tillstllning-napkin-holder-30350110",
+          "sku": "IK-30350110",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/tillstaellning-napkin-holder-brass-color__0498164_pe629481_s5.jpg"
+          ],
+          "description": "TILLSTÄLLNING Napkin holder",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30350110",
+          "measure": "",
+          "categoryName": "Napkins & napkin holders",
+          "translations": {
+            "en": {
+              "name": "TILLSTÄLLNING Napkin holder",
+              "description": "TILLSTÄLLNING Napkin holder"
+            },
+            "ru": {
+              "name": "TILLSTÄLLNING Napkin holder",
+              "description": "TILLSTÄLLNING Napkin holder"
+            },
+            "zh": {
+              "name": "TILLSTÄLLNING Napkin holder",
+              "description": "TILLSTÄLLNING Napkin holder"
+            }
+          }
+        },
+        {
+          "name": "CISSAN Napkin holder",
+          "slug": "cissan-napkin-holder-60334289",
+          "sku": "IK-60334289",
+          "price": 14.99,
+          "compareAtPrice": 18.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/cissan-napkin-holder-water-hyacinth__0439528_pe592131_s5.jpg"
+          ],
+          "description": "CISSAN Napkin holder 9x9 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "60334289",
+          "measure": "9x9 \"",
+          "categoryName": "Napkins & napkin holders",
+          "translations": {
+            "en": {
+              "name": "CISSAN Napkin holder",
+              "description": "CISSAN Napkin holder 9x9 \""
+            },
+            "ru": {
+              "name": "CISSAN Napkin holder",
+              "description": "CISSAN Napkin holder 9x9 \""
+            },
+            "zh": {
+              "name": "CISSAN Napkin holder",
+              "description": "CISSAN Napkin holder 9x9 \""
+            }
+          }
+        },
+        {
+          "name": "STOCKHOLM 2025 Napkin",
+          "slug": "stockholm-2025-napkin-30592449",
+          "sku": "IK-30592449",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/stockholm-2025-napkin-dark-green__1387469_pe964247_s5.jpg"
+          ],
+          "description": "STOCKHOLM 2025 Napkin 20x20 \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30592449",
+          "measure": "20x20 \"",
+          "categoryName": "Napkins & napkin holders",
+          "translations": {
+            "en": {
+              "name": "STOCKHOLM 2025 Napkin",
+              "description": "STOCKHOLM 2025 Napkin 20x20 \""
+            },
+            "ru": {
+              "name": "STOCKHOLM 2025 Napkin",
+              "description": "STOCKHOLM 2025 Napkin 20x20 \""
+            },
+            "zh": {
+              "name": "STOCKHOLM 2025 Napkin",
+              "description": "STOCKHOLM 2025 Napkin 20x20 \""
+            }
+          }
+        },
+        {
+          "name": "FANTASTISK Paper napkin",
+          "slug": "fantastisk-paper-napkin-50035752",
+          "sku": "IK-50035752",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/fantastisk-paper-napkin-white__0736402_pe740508_s5.jpg"
+          ],
+          "description": "FANTASTISK Paper napkin 15 ¾x15 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50035752",
+          "measure": "15 ¾x15 ¾ \"",
+          "categoryName": "Napkins & napkin holders",
+          "translations": {
+            "en": {
+              "name": "FANTASTISK Paper napkin",
+              "description": "FANTASTISK Paper napkin 15 ¾x15 ¾ \""
+            },
+            "ru": {
+              "name": "FANTASTISK Paper napkin",
+              "description": "FANTASTISK Paper napkin 15 ¾x15 ¾ \""
+            },
+            "zh": {
+              "name": "FANTASTISK Paper napkin",
+              "description": "FANTASTISK Paper napkin 15 ¾x15 ¾ \""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Outdoor & picnic supplies",
+      "categorySlug": "picnic-outdoor-recreation-42924",
+      "ikeaCode": "42924",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Outdoor & picnic supplies"
+        },
+        "ru": {
+          "name": "Outdoor & picnic supplies"
+        },
+        "zh": {
+          "name": "Outdoor & picnic supplies"
+        }
+      },
+      "totalIkeaProductsInStock": 107,
+      "sampleProductsToInsert": [
+        {
+          "name": "KLOTPIL Cooler bag",
+          "slug": "klotpil-cooler-bag-90586370",
+          "sku": "IK-90586370",
+          "price": 19.99,
+          "compareAtPrice": 24.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/klotpil-cooler-bag__1353715_pe952294_s5.jpg"
+          ],
+          "description": "KLOTPIL Cooler bag 15x9 ½x15 ¾ \"",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90586370",
+          "measure": "15x9 ½x15 ¾ \"",
+          "categoryName": "Outdoor & picnic supplies",
+          "translations": {
+            "en": {
+              "name": "KLOTPIL Cooler bag",
+              "description": "KLOTPIL Cooler bag 15x9 ½x15 ¾ \""
+            },
+            "ru": {
+              "name": "KLOTPIL Cooler bag",
+              "description": "KLOTPIL Cooler bag 15x9 ½x15 ¾ \""
+            },
+            "zh": {
+              "name": "KLOTPIL Cooler bag",
+              "description": "KLOTPIL Cooler bag 15x9 ½x15 ¾ \""
+            }
+          }
+        },
+        {
+          "name": "MARULK 21-piece picnic set",
+          "slug": "marulk-21-piece-picnic-set-50594503",
+          "sku": "IK-50594503",
+          "price": 9.99,
+          "compareAtPrice": 12.49,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/marulk-21-piece-picnic-set-mixed-colors__1397466_pe967573_s5.jpg"
+          ],
+          "description": "MARULK 21-piece picnic set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "50594503",
+          "measure": "",
+          "categoryName": "Outdoor & picnic supplies",
+          "translations": {
+            "en": {
+              "name": "MARULK 21-piece picnic set",
+              "description": "MARULK 21-piece picnic set"
+            },
+            "ru": {
+              "name": "MARULK 21-piece picnic set",
+              "description": "MARULK 21-piece picnic set"
+            },
+            "zh": {
+              "name": "MARULK 21-piece picnic set",
+              "description": "MARULK 21-piece picnic set"
+            }
+          }
+        },
+        {
+          "name": "GÖRSNYGG Shopping bag, large",
+          "slug": "grsnygg-shopping-bag-large-20504194",
+          "sku": "IK-20504194",
+          "price": 2.99,
+          "compareAtPrice": 3.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/goersnygg-shopping-bag-large-light-beige__1013442_pe829201_s5.jpg"
+          ],
+          "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "20504194",
+          "measure": "22 ½x14 ½x15 ¼ \"/2401 oz",
+          "categoryName": "Outdoor & picnic supplies",
+          "translations": {
+            "en": {
+              "name": "GÖRSNYGG Shopping bag, large",
+              "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz"
+            },
+            "ru": {
+              "name": "GÖRSNYGG Shopping bag, large",
+              "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz"
+            },
+            "zh": {
+              "name": "GÖRSNYGG Shopping bag, large",
+              "description": "GÖRSNYGG Shopping bag, large 22 ½x14 ½x15 ¼ \"/2401 oz"
+            }
+          }
+        },
+        {
+          "name": "RENSARE Waterproof bag",
+          "slug": "rensare-waterproof-bag-30497739",
+          "sku": "IK-30497739",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/rensare-waterproof-bag__0976287_pe813135_s5.jpg"
+          ],
+          "description": "RENSARE Waterproof bag 6 ¼x4 ¾x9 ½ \"/85 oz",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30497739",
+          "measure": "6 ¼x4 ¾x9 ½ \"/85 oz",
+          "categoryName": "Outdoor & picnic supplies",
+          "translations": {
+            "en": {
+              "name": "RENSARE Waterproof bag",
+              "description": "RENSARE Waterproof bag 6 ¼x4 ¾x9 ½ \"/85 oz"
+            },
+            "ru": {
+              "name": "RENSARE Waterproof bag",
+              "description": "RENSARE Waterproof bag 6 ¼x4 ¾x9 ½ \"/85 oz"
+            },
+            "zh": {
+              "name": "RENSARE Waterproof bag",
+              "description": "RENSARE Waterproof bag 6 ¼x4 ¾x9 ½ \"/85 oz"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "categoryName": "Nursing, feeding & eating",
+      "categorySlug": "nursing-feeding-eating-31772",
+      "ikeaCode": "31772",
+      "parentDepartment": "Kitchenware & tableware",
+      "level": 2,
+      "translations": {
+        "en": {
+          "name": "Nursing, feeding & eating"
+        },
+        "ru": {
+          "name": "Nursing, feeding & eating"
+        },
+        "zh": {
+          "name": "Nursing, feeding & eating"
+        }
+      },
+      "totalIkeaProductsInStock": 8,
+      "sampleProductsToInsert": [
+        {
+          "name": "KLADDIG Bib",
+          "slug": "kladdig-bib-90607141",
+          "sku": "IK-90607141",
+          "price": 6.99,
+          "compareAtPrice": 8.74,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/kladdig-bib-white-green__1390188_pe965382_s5.jpg"
+          ],
+          "description": "KLADDIG Bib",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90607141",
+          "measure": "",
+          "categoryName": "Nursing, feeding & eating",
+          "translations": {
+            "en": {
+              "name": "KLADDIG Bib",
+              "description": "KLADDIG Bib"
+            },
+            "ru": {
+              "name": "KLADDIG Bib",
+              "description": "KLADDIG Bib"
+            },
+            "zh": {
+              "name": "KLADDIG Bib",
+              "description": "KLADDIG Bib"
+            }
+          }
+        },
+        {
+          "name": "MATA 4-piece dinnerware set",
+          "slug": "mata-4-piece-dinnerware-set-30596937",
+          "sku": "IK-30596937",
+          "price": 4.99,
+          "compareAtPrice": 6.24,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/mata-4-piece-dinnerware-set-bright-green__1415289_pe975227_s5.jpg"
+          ],
+          "description": "MATA 4-piece dinnerware set",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "30596937",
+          "measure": "",
+          "categoryName": "Nursing, feeding & eating",
+          "translations": {
+            "en": {
+              "name": "MATA 4-piece dinnerware set",
+              "description": "MATA 4-piece dinnerware set"
+            },
+            "ru": {
+              "name": "MATA 4-piece dinnerware set",
+              "description": "MATA 4-piece dinnerware set"
+            },
+            "zh": {
+              "name": "MATA 4-piece dinnerware set",
+              "description": "MATA 4-piece dinnerware set"
+            }
+          }
+        },
+        {
+          "name": "BÖRJA Training cup",
+          "slug": "brja-training-cup-00596811",
+          "sku": "IK-00596811",
+          "price": 3.99,
+          "compareAtPrice": 4.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/boerja-training-cup-white-blue__1414477_pe974819_s5.jpg"
+          ],
+          "description": "BÖRJA Training cup",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "00596811",
+          "measure": "",
+          "categoryName": "Nursing, feeding & eating",
+          "translations": {
+            "en": {
+              "name": "BÖRJA Training cup",
+              "description": "BÖRJA Training cup"
+            },
+            "ru": {
+              "name": "BÖRJA Training cup",
+              "description": "BÖRJA Training cup"
+            },
+            "zh": {
+              "name": "BÖRJA Training cup",
+              "description": "BÖRJA Training cup"
+            }
+          }
+        },
+        {
+          "name": "BÖRJA Plate/bowl",
+          "slug": "brja-platebowl-90596816",
+          "sku": "IK-90596816",
+          "price": 7.99,
+          "compareAtPrice": 9.99,
+          "images": [
+            "https://www.ikea.com/us/en/images/products/boerja-plate-bowl-white-blue__1414475_pe974817_s5.jpg"
+          ],
+          "description": "BÖRJA Plate/bowl",
+          "stock": 50,
+          "weightKg": 1.5,
+          "ikeaItemNo": "90596816",
+          "measure": "",
+          "categoryName": "Nursing, feeding & eating",
+          "translations": {
+            "en": {
+              "name": "BÖRJA Plate/bowl",
+              "description": "BÖRJA Plate/bowl"
+            },
+            "ru": {
+              "name": "BÖRJA Plate/bowl",
+              "description": "BÖRJA Plate/bowl"
+            },
+            "zh": {
+              "name": "BÖRJA Plate/bowl",
+              "description": "BÖRJA Plate/bowl"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
