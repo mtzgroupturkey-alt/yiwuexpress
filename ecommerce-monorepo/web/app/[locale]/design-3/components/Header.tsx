@@ -26,7 +26,8 @@ import {
   Coins,
   Menu,
   Truck,
-  FileText
+  FileText,
+  Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStoreMode } from '@/contexts/StoreModeContext';
@@ -36,6 +37,7 @@ import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { useMobile } from '@/components/MobileProvider';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher';
+import { VisualSearchModal } from '@/components/search/VisualSearchModal';
 
 export interface NavChildCategory {
   id: string;
@@ -112,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { storeMode: ctxStoreMode } = useStoreMode();
   const { sessionMode, isWholesaleSession } = useSessionMode();
   const { quoteCount } = useQuoteCart();
-  const { isStandalone } = useMobile();
+  const { isStandalone, openDrawer } = useMobile();
 
   const effectiveStoreMode = ctxStoreMode || storeMode || 'WHOLESALE';
   const isWholesaleActive =
@@ -131,6 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
   const [selectedSearchScope, setSelectedSearchScope] = useState(() => tHeader('everywhere'));
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false);
   const desktopLogo = settings?.companyLogo || '/logo.png';
   const [logoFailed, setLogoFailed] = useState(false);
 
@@ -272,7 +275,7 @@ export const Header: React.FC<HeaderProps> = ({
         onSearchChange={onSearchChange}
         onSearchSubmit={handleSearchSubmit}
         onSearchClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-        onMenuClick={onOpenCatalog}
+        onMenuClick={isStandalone ? openDrawer : onOpenCatalog}
         onCartClick={isWholesaleActive && !isInstantWholesale ? undefined : onOpenCart}
       />
 
@@ -300,9 +303,17 @@ export const Header: React.FC<HeaderProps> = ({
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder={tHeader('searchPlaceholder')}
                 autoFocus
-                className="w-full h-10 pl-9 pr-3 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#00407a]"
+                className="w-full h-10 pl-9 pr-10 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-[#00407a]"
               />
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+              <button
+                type="button"
+                onClick={() => setIsVisualSearchOpen(true)}
+                className="absolute right-2.5 top-2.5 p-1 text-slate-400 hover:text-[#00407a] cursor-pointer"
+                aria-label="Search by image"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
             </div>
             <button
               type="submit"
@@ -488,11 +499,21 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => onSearchChange('')}
-                  className="p-1 text-slate-400 hover:text-slate-600 mr-2 cursor-pointer"
+                  className="p-1 text-slate-400 hover:text-slate-600 mr-1 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
+              {/* Visual Search (Camera) Button */}
+              <button
+                type="button"
+                onClick={() => setIsVisualSearchOpen(true)}
+                title="Search by image"
+                aria-label="Search by image"
+                className="p-1.5 text-slate-400 hover:text-[#00407a] hover:bg-slate-100 rounded-md transition-colors mr-1 cursor-pointer"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Submit Button */}
@@ -917,6 +938,12 @@ export const Header: React.FC<HeaderProps> = ({
         document.body
       );
     })()}
+
+    {/* Visual Search Modal */}
+    <VisualSearchModal
+      isOpen={isVisualSearchOpen}
+      onClose={() => setIsVisualSearchOpen(false)}
+    />
   </>
 );
 };
