@@ -40,18 +40,47 @@ interface ProductSearchItem {
   category?: { name: string } | null;
 }
 
+type TranslationLocale = 'en' | 'ru' | 'zh';
+
+interface SectionTextValues {
+  title: string;
+  subtitle: string;
+  badgeText: string;
+  viewAllLabel: string;
+}
+
 export default function ElectronicsSectionSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [activeLocaleTab, setActiveLocaleTab] = useState<TranslationLocale>('en');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Form State
   const [enabled, setEnabled] = useState(true);
-  const [title, setTitle] = useState('Popular in Electronics & Appliances');
-  const [subtitle, setSubtitle] = useState('Official manufacturer equipment with factory guarantee');
-  const [badgeText, setBadgeText] = useState('ELECTRONICS & APPLIANCES');
-  const [viewAllLabel, setViewAllLabel] = useState('View all in category');
   const [maxProducts, setMaxProducts] = useState(8);
+
+  // Multi-language text state (English, Russian, Chinese)
+  const [textTranslations, setTextTranslations] = useState<Record<TranslationLocale, SectionTextValues>>({
+    en: {
+      title: 'Popular in Electronics & Appliances',
+      subtitle: 'Official manufacturer equipment with factory guarantee',
+      badgeText: 'ELECTRONICS & APPLIANCES',
+      viewAllLabel: 'View all in category',
+    },
+    ru: {
+      title: 'Популярное в электронике и технике',
+      subtitle: 'Официальная техника от производителей с заводской гарантией',
+      badgeText: 'ЭЛЕКТРОНИКА И ТЕХНИКА',
+      viewAllLabel: 'Смотреть всю категорию',
+    },
+    zh: {
+      title: '热销家电与数码装备',
+      subtitle: '官方正品行货，全国联保与原厂售后质保',
+      badgeText: '智能家电与数码',
+      viewAllLabel: '查看本类全部商品',
+    },
+  });
 
   // Categories
   const [availableCategories, setAvailableCategories] = useState<CategoryItem[]>([]);
@@ -75,11 +104,42 @@ export default function ElectronicsSectionSettingsPage() {
       if (data.settings) {
         const s = data.settings;
         setEnabled(s.electronicsSectionEnabled !== false);
-        setTitle(s.electronicsSectionTitle || 'Popular in Electronics & Appliances');
-        setSubtitle(s.electronicsSectionSubtitle || 'Official manufacturer equipment with factory guarantee');
-        setBadgeText(s.electronicsSectionBadge || 'ELECTRONICS & APPLIANCES');
-        setViewAllLabel(s.electronicsSectionViewAllLabel || 'View all in category');
         setMaxProducts(s.electronicsSectionMaxProducts || 8);
+
+        const loadedTranslations: Record<TranslationLocale, SectionTextValues> = {
+          en: {
+            title: s.electronicsSectionTitle || 'Popular in Electronics & Appliances',
+            subtitle: s.electronicsSectionSubtitle || 'Official manufacturer equipment with factory guarantee',
+            badgeText: s.electronicsSectionBadge || 'ELECTRONICS & APPLIANCES',
+            viewAllLabel: s.electronicsSectionViewAllLabel || 'View all in category',
+          },
+          ru: {
+            title: 'Популярное в электронике и технике',
+            subtitle: 'Официальная техника от производителей с заводской гарантией',
+            badgeText: 'ЭЛЕКТРОНИКА И ТЕХНИКА',
+            viewAllLabel: 'Смотреть всю категорию',
+          },
+          zh: {
+            title: '热销家电与数码装备',
+            subtitle: '官方正品行货，全国联保与原厂售后质保',
+            badgeText: '智能家电与数码',
+            viewAllLabel: '查看本类全部商品',
+          },
+        };
+
+        if (Array.isArray(data.translations)) {
+          for (const t of data.translations) {
+            if (t.locale === 'ru' || t.locale === 'zh' || t.locale === 'en') {
+              const loc = t.locale as TranslationLocale;
+              if (t.key === 'electronicsSectionTitle' && t.value) loadedTranslations[loc].title = t.value;
+              if (t.key === 'electronicsSectionSubtitle' && t.value) loadedTranslations[loc].subtitle = t.value;
+              if (t.key === 'electronicsSectionBadge' && t.value) loadedTranslations[loc].badgeText = t.value;
+              if (t.key === 'electronicsSectionViewAllLabel' && t.value) loadedTranslations[loc].viewAllLabel = t.value;
+            }
+          }
+        }
+
+        setTextTranslations(loadedTranslations);
 
         if (s.electronicsSectionCategoryIds) {
           const ids = s.electronicsSectionCategoryIds.split(',').map((id: string) => id.trim()).filter(Boolean);
@@ -107,19 +167,91 @@ export default function ElectronicsSectionSettingsPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  // Auto translate across all locales
+  const handleAutoTranslate = async () => {
+    setIsTranslating(true);
+    try {
+      const sourceLocale = activeLocaleTab;
+      const sourceValues = textTranslations[sourceLocale];
+
+      if (!sourceValues.title.trim()) {
+        showToast('error', 'Please enter a Section Title before translating');
+        return;
+      }
+
+      const targetLocales: TranslationLocale[] = (['en', 'ru', 'zh'] as TranslationLocale[]).filter(
+        (l) => l !== sourceLocale
+      );
+
+      const res = await fetch('/api/admin/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            title: sourceValues.title,
+            subtitle: sourceValues.subtitle,
+            badgeText: sourceValues.badgeText,
+            viewAllLabel: sourceValues.viewAllLabel,
+          },
+          targetLocales,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast('error', data?.error || 'Translation request failed');
+        return;
+      }
+
+      const incoming: Record<string, Record<string, string>> = data.translations || {};
+
+      setTextTranslations((prev) => {
+        const next = { ...prev };
+        for (const loc of targetLocales) {
+          if (incoming[loc]) {
+            next[loc] = {
+              title: incoming[loc].title || prev[loc].title,
+              subtitle: incoming[loc].subtitle || prev[loc].subtitle,
+              badgeText: incoming[loc].badgeText || prev[loc].badgeText,
+              viewAllLabel: incoming[loc].viewAllLabel || prev[loc].viewAllLabel,
+            };
+          }
+        }
+        return next;
+      });
+
+      showToast('success', 'Successfully translated to all languages! Click Save Settings to apply.');
+    } catch (err: any) {
+      console.error('Auto-translate error:', err);
+      showToast('error', 'Failed to translate texts. Please try again.');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   // Save Settings
   const handleSave = async () => {
     setSaving(true);
     try {
+      const apiTranslations: Array<{ locale: string; key: string; value: string }> = [];
+      (['en', 'ru', 'zh'] as TranslationLocale[]).forEach((loc) => {
+        const row = textTranslations[loc];
+        if (row.title) apiTranslations.push({ locale: loc, key: 'electronicsSectionTitle', value: row.title.trim() });
+        if (row.subtitle) apiTranslations.push({ locale: loc, key: 'electronicsSectionSubtitle', value: row.subtitle.trim() });
+        if (row.badgeText) apiTranslations.push({ locale: loc, key: 'electronicsSectionBadge', value: row.badgeText.trim() });
+        if (row.viewAllLabel) apiTranslations.push({ locale: loc, key: 'electronicsSectionViewAllLabel', value: row.viewAllLabel.trim() });
+      });
+
       const payload = {
         electronicsSectionEnabled: enabled,
-        electronicsSectionTitle: title,
-        electronicsSectionSubtitle: subtitle,
-        electronicsSectionBadge: badgeText,
-        electronicsSectionViewAllLabel: viewAllLabel,
+        electronicsSectionTitle: textTranslations.en.title.trim() || textTranslations[activeLocaleTab].title.trim(),
+        electronicsSectionSubtitle: textTranslations.en.subtitle.trim() || textTranslations[activeLocaleTab].subtitle.trim(),
+        electronicsSectionBadge: textTranslations.en.badgeText.trim() || textTranslations[activeLocaleTab].badgeText.trim(),
+        electronicsSectionViewAllLabel: textTranslations.en.viewAllLabel.trim() || textTranslations[activeLocaleTab].viewAllLabel.trim(),
         electronicsSectionCategoryIds: selectedCategoryIds.join(','),
         electronicsSectionPinnedProductIds: pinnedProducts.map((p) => p.id).join(','),
         electronicsSectionMaxProducts: Number(maxProducts),
+        translations: apiTranslations,
       };
 
       const res = await fetch('/api/admin/settings/electronics-section', {
@@ -348,14 +480,14 @@ export default function ElectronicsSectionSettingsPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
                   <span className="text-[11px] font-black uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
-                    {badgeText || 'ELECTRONICS & APPLIANCES'}
+                    {textTranslations[activeLocaleTab].badgeText || 'ELECTRONICS & APPLIANCES'}
                   </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  {title || 'Popular in Electronics & Appliances'}
+                  {textTranslations[activeLocaleTab].title || 'Popular in Electronics & Appliances'}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  {subtitle || 'Official manufacturer equipment with factory guarantee'}
+                  {textTranslations[activeLocaleTab].subtitle || 'Official manufacturer equipment with factory guarantee'}
                 </p>
               </div>
 
@@ -367,7 +499,7 @@ export default function ElectronicsSectionSettingsPage() {
                 <span className="px-3 py-1.5 text-slate-600 font-bold text-xs">Ceiling Lights</span>
                 <span className="px-3 py-1.5 text-slate-600 font-bold text-xs">Floor & Table Lamps</span>
                 <span className="text-xs font-bold text-blue-800 flex items-center gap-1 px-3 py-1.5 ml-1">
-                  {viewAllLabel || 'View all in category'}
+                  {textTranslations[activeLocaleTab].viewAllLabel || 'View all in category'}
                   <ArrowRight className="w-3 h-3" />
                 </span>
               </div>
@@ -396,63 +528,180 @@ export default function ElectronicsSectionSettingsPage() {
         {/* Left Column: Text & Configuration */}
         <div className="space-y-6">
           <Card className="border-slate-200 shadow-xs">
-            <CardHeader>
-              <CardTitle className="text-base font-bold text-slate-900">
-                Header Texts & Labels
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500">
-                Customize titles, badges, and button labels displayed on the storefront.
-              </CardDescription>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base font-bold text-slate-900">
+                    Header Texts & Multi-Language Translations
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500">
+                    Configure titles, taglines, and badges in English, Russian, and Chinese. Click Translate to auto-fill all languages.
+                  </CardDescription>
+                </div>
+                {/* Auto Translate Button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAutoTranslate}
+                  disabled={isTranslating}
+                  className="bg-blue-50/70 border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800 text-xs font-bold gap-1.5 rounded-xl h-8 shadow-2xs shrink-0 cursor-pointer"
+                >
+                  {isTranslating ? (
+                    <div className="w-3.5 h-3.5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                  )}
+                  <span>{isTranslating ? 'Translating...' : 'Translate to All'}</span>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Section Title
-                </label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Popular in Electronics & Appliances"
-                  className="font-medium"
-                />
+              {/* Language Selector Tabs */}
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 rounded-xl border border-slate-200/80">
+                {(
+                  [
+                    { code: 'en', label: 'English', flag: '🇬🇧' },
+                    { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+                    { code: 'zh', label: '中文', flag: '🇨🇳' },
+                  ] as const
+                ).map((item) => {
+                  const isSelected = activeLocaleTab === item.code;
+                  const hasValues = Boolean(
+                    textTranslations[item.code].title?.trim() &&
+                    textTranslations[item.code].subtitle?.trim()
+                  );
+
+                  return (
+                    <button
+                      key={item.code}
+                      type="button"
+                      onClick={() => setActiveLocaleTab(item.code)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                      }`}
+                    >
+                      <span className="text-sm">{item.flag}</span>
+                      <span>{item.label}</span>
+                      {hasValues && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Completed" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                  Subtitle / Tagline
-                </label>
-                <Textarea
-                  value={subtitle}
-                  onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="Official manufacturer equipment with factory guarantee"
-                  rows={2}
-                  className="font-medium text-xs resize-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              {/* Input Fields for Current Language */}
+              <div className="space-y-3.5 pt-1">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                    Badge Text
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700">
+                      Section Title ({activeLocaleTab.toUpperCase()})
+                    </label>
+                    <span className="text-[10px] text-slate-400">
+                      {activeLocaleTab === 'en'
+                        ? 'Main headline'
+                        : `Headline in ${activeLocaleTab === 'ru' ? 'Russian' : 'Chinese'}`}
+                    </span>
+                  </div>
                   <Input
-                    value={badgeText}
-                    onChange={(e) => setBadgeText(e.target.value)}
-                    placeholder="ELECTRONICS & APPLIANCES"
-                    className="font-medium text-xs"
+                    value={textTranslations[activeLocaleTab].title}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setTextTranslations((prev) => ({
+                        ...prev,
+                        [activeLocaleTab]: { ...prev[activeLocaleTab], title: val },
+                      }));
+                    }}
+                    placeholder={
+                      activeLocaleTab === 'ru'
+                        ? 'Популярное в электронике и технике'
+                        : activeLocaleTab === 'zh'
+                        ? '热销家电与数码装备'
+                        : 'Popular in Electronics & Appliances'
+                    }
+                    className="font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                    View All Button Label
-                  </label>
-                  <Input
-                    value={viewAllLabel}
-                    onChange={(e) => setViewAllLabel(e.target.value)}
-                    placeholder="View all in category"
-                    className="font-medium text-xs"
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700">
+                      Subtitle / Tagline ({activeLocaleTab.toUpperCase()})
+                    </label>
+                    <span className="text-[10px] text-slate-400">Supporting promotional copy</span>
+                  </div>
+                  <Textarea
+                    value={textTranslations[activeLocaleTab].subtitle}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setTextTranslations((prev) => ({
+                        ...prev,
+                        [activeLocaleTab]: { ...prev[activeLocaleTab], subtitle: val },
+                      }));
+                    }}
+                    placeholder={
+                      activeLocaleTab === 'ru'
+                        ? 'Официальная техника от производителей с заводской гарантией'
+                        : activeLocaleTab === 'zh'
+                        ? '官方正品行货，全国联保与原厂售后质保'
+                        : 'Official manufacturer equipment with factory guarantee'
+                    }
+                    rows={2}
+                    className="font-medium text-xs resize-none"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                      Badge Text ({activeLocaleTab.toUpperCase()})
+                    </label>
+                    <Input
+                      value={textTranslations[activeLocaleTab].badgeText}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTextTranslations((prev) => ({
+                          ...prev,
+                          [activeLocaleTab]: { ...prev[activeLocaleTab], badgeText: val },
+                        }));
+                      }}
+                      placeholder={
+                        activeLocaleTab === 'ru'
+                          ? 'ЭЛЕКТРОНИКА И ТЕХНИКА'
+                          : activeLocaleTab === 'zh'
+                          ? '智能家电与数码'
+                          : 'ELECTRONICS & APPLIANCES'
+                      }
+                      className="font-medium text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                      View All Button Label ({activeLocaleTab.toUpperCase()})
+                    </label>
+                    <Input
+                      value={textTranslations[activeLocaleTab].viewAllLabel}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTextTranslations((prev) => ({
+                          ...prev,
+                          [activeLocaleTab]: { ...prev[activeLocaleTab], viewAllLabel: val },
+                        }));
+                      }}
+                      placeholder={
+                        activeLocaleTab === 'ru'
+                          ? 'Смотреть всю категорию'
+                          : activeLocaleTab === 'zh'
+                          ? '查看本类全部商品'
+                          : 'View all in category'
+                      }
+                      className="font-medium text-xs"
+                    />
+                  </div>
                 </div>
               </div>
 

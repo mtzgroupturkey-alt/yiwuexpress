@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     // 1. Fetch settings from SystemSettings singleton
     const settings = await prisma.systemSettings.findFirst({
       select: {
+        id: true,
         electronicsSectionEnabled: true,
         electronicsSectionTitle: true,
         electronicsSectionSubtitle: true,
@@ -31,6 +32,41 @@ export async function GET(req: NextRequest) {
         enabled: false,
         data: [],
       });
+    }
+
+    // Resolve localized titles if locale !== 'en'
+    let localizedTitle = settings?.electronicsSectionTitle || 'Popular in Electronics & Appliances';
+    let localizedSubtitle =
+      settings?.electronicsSectionSubtitle ||
+      'Official manufacturer equipment with factory guarantee';
+    let localizedBadge = settings?.electronicsSectionBadge || 'ELECTRONICS & APPLIANCES';
+    let localizedViewAll = settings?.electronicsSectionViewAllLabel || 'View all in category';
+
+    if (settings?.id && locale !== 'en') {
+      try {
+        const translations = await prisma.systemSettingTranslation.findMany({
+          where: {
+            systemSettingId: settings.id,
+            locale,
+            key: {
+              in: [
+                'electronicsSectionTitle',
+                'electronicsSectionSubtitle',
+                'electronicsSectionBadge',
+                'electronicsSectionViewAllLabel',
+              ],
+            },
+          },
+        });
+        for (const row of translations) {
+          if (row.key === 'electronicsSectionTitle' && row.value?.trim()) localizedTitle = row.value.trim();
+          if (row.key === 'electronicsSectionSubtitle' && row.value?.trim()) localizedSubtitle = row.value.trim();
+          if (row.key === 'electronicsSectionBadge' && row.value?.trim()) localizedBadge = row.value.trim();
+          if (row.key === 'electronicsSectionViewAllLabel' && row.value?.trim()) localizedViewAll = row.value.trim();
+        }
+      } catch (err) {
+        console.error('Failed to load electronics section localized texts:', err);
+      }
     }
 
     const maxProducts = limitParam
@@ -185,12 +221,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       enabled: isEnabled,
-      title: settings?.electronicsSectionTitle || 'Popular in Electronics & Appliances',
-      subtitle:
-        settings?.electronicsSectionSubtitle ||
-        'Official manufacturer equipment with factory guarantee',
-      badgeText: settings?.electronicsSectionBadge || 'ELECTRONICS & APPLIANCES',
-      viewAllText: settings?.electronicsSectionViewAllLabel || 'View all in category',
+      title: localizedTitle,
+      subtitle: localizedSubtitle,
+      badgeText: localizedBadge,
+      viewAllText: localizedViewAll,
       maxProducts,
       data: formattedProducts,
     });

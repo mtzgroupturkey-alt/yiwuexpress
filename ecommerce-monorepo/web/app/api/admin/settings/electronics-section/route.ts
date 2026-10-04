@@ -58,6 +58,33 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // Fetch existing multilingual translations from system_setting_translations
+    let translations: Array<{ locale: string; key: string; value: string }> = [];
+    if (settings?.id) {
+      try {
+        translations = await prisma.systemSettingTranslation.findMany({
+          where: {
+            systemSettingId: settings.id,
+            key: {
+              in: [
+                'electronicsSectionTitle',
+                'electronicsSectionSubtitle',
+                'electronicsSectionBadge',
+                'electronicsSectionViewAllLabel',
+              ],
+            },
+          },
+          select: {
+            locale: true,
+            key: true,
+            value: true,
+          },
+        });
+      } catch (err) {
+        console.error('Failed to load electronics section translations:', err);
+      }
+    }
+
     // Fetch all categories for selection
     const categories = await prisma.category.findMany({
       select: { id: true, name: true, slug: true },
@@ -90,6 +117,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       settings,
+      translations,
       categories,
       pinnedProducts,
     });
@@ -117,6 +145,7 @@ export async function PUT(req: NextRequest) {
       electronicsSectionCategoryIds,
       electronicsSectionPinnedProductIds,
       electronicsSectionMaxProducts,
+      translations,
     } = body;
 
     const existing = await prisma.systemSettings.findFirst({ select: { id: true } });
@@ -142,6 +171,40 @@ export async function PUT(req: NextRequest) {
       updated = await prisma.systemSettings.create({
         data,
       });
+    }
+
+    // Upsert multilingual translations if provided
+    if (Array.isArray(translations) && updated?.id) {
+      const validRows = translations.filter(
+        (t: any) =>
+          t &&
+          t.locale &&
+          t.key &&
+          ['electronicsSectionTitle', 'electronicsSectionSubtitle', 'electronicsSectionBadge', 'electronicsSectionViewAllLabel'].includes(t.key) &&
+          typeof t.value === 'string' &&
+          t.value.trim().length > 0
+      );
+
+      for (const row of validRows) {
+        await prisma.systemSettingTranslation.upsert({
+          where: {
+            systemSettingId_locale_key: {
+              systemSettingId: updated.id,
+              locale: row.locale,
+              key: row.key,
+            },
+          },
+          create: {
+            systemSettingId: updated.id,
+            locale: row.locale,
+            key: row.key,
+            value: row.value.trim(),
+          },
+          update: {
+            value: row.value.trim(),
+          },
+        });
+      }
     }
 
     return NextResponse.json({ success: true, settings: updated });
