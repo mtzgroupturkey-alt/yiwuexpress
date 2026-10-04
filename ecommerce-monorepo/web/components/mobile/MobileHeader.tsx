@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft, X, TrendingUp } from 'lucide-react'
+import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft, X, TrendingUp, Camera } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useSettings } from '@/components/SettingsProvider'
 import { useMobile } from '@/components/MobileProvider'
@@ -14,6 +14,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher'
 import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher'
+import { VisualSearchModal } from '@/components/search/VisualSearchModal'
 
 const POPULAR_SEARCH_TAGS: Record<string, string[]> = {
   en: ['Electronics', 'Kitchenware', 'Tools & Hardware', 'Industrial Parts', 'Home Decor', 'Smart Appliances'],
@@ -73,6 +74,7 @@ export function MobileHeader({
 
   const [localQuery, setLocalQuery] = useState(searchValue || '')
   const [isSearchExpanded, setIsSearchExpanded] = useState(false)
+  const [isVisualSearchOpen, setIsVisualSearchOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -220,6 +222,7 @@ export function MobileHeader({
   // ─── BROWSER MODE: E-Commerce Website Mobile Header (2 Rows) ─────────────
   if (!isStandalone) {
     return (
+      <>
       <header
         data-testid="mobile-header"
         className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white/98 dark:bg-[#0f172a]/98 backdrop-blur-md border-b border-gray-200/80 dark:border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.07)] transition-colors ${className}`}
@@ -366,18 +369,28 @@ export function MobileHeader({
                   onFocus={() => setIsSearchExpanded(true)}
                   onKeyDown={handleKeyDown}
                   placeholder={searchPlaceholder}
-                  className="w-full h-10 pl-9 pr-8 text-xs sm:text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs [&::-webkit-search-cancel-button]:appearance-none cursor-pointer focus:cursor-text"
+                  className="w-full h-10 pl-9 pr-16 text-xs sm:text-sm bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white rounded-xl border border-slate-200/80 dark:border-slate-700/80 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-[#00407a] dark:focus:border-blue-400 focus:ring-2 focus:ring-[#00407a]/15 transition-all shadow-2xs [&::-webkit-search-cancel-button]:appearance-none cursor-pointer focus:cursor-text"
                 />
-                {localQuery ? (
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                  {localQuery ? (
+                    <button
+                      type="button"
+                      onClick={handleClearInput}
+                      aria-label="Clear search"
+                      className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60 cursor-pointer min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  ) : null}
                   <button
                     type="button"
-                    onClick={handleClearInput}
-                    aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60 cursor-pointer"
+                    onClick={() => setIsVisualSearchOpen(true)}
+                    aria-label="Search by image"
+                    className="p-1.5 text-slate-500 hover:text-[#00407a] dark:text-slate-400 dark:hover:text-blue-400 touch-manipulation rounded-full hover:bg-slate-200/60 dark:hover:bg-slate-700/60 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <Camera className="w-4 h-4" />
                   </button>
-                ) : null}
+                </div>
               </div>
 
               {isSearchExpanded && (
@@ -437,11 +450,19 @@ export function MobileHeader({
           />
         )}
       </header>
+
+      {/* Visual Search Modal */}
+      <VisualSearchModal
+        isOpen={isVisualSearchOpen}
+        onClose={() => setIsVisualSearchOpen(false)}
+      />
+      </>
     )
   }
 
   // ─── STANDALONE / PWA MODE: Native App Header (1 Row, 56px) ───────────────
   return (
+    <>
     <header
       data-testid="mobile-header"
       className={`md:hidden fixed top-0 left-0 right-0 z-40 w-full bg-white dark:bg-[#0f172a] border-b border-gray-200/80 dark:border-slate-800 shadow-sm transition-colors ${className}`}
@@ -562,5 +583,12 @@ export function MobileHeader({
         </div>
       </div>
     </header>
+
+    {/* Visual Search Modal */}
+    <VisualSearchModal
+      isOpen={isVisualSearchOpen}
+      onClose={() => setIsVisualSearchOpen(false)}
+    />
+  </>
   )
 }
