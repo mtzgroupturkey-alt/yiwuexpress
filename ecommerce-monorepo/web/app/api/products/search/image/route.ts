@@ -105,6 +105,7 @@ async function analyzeImageWithVisionAI(imageBase64: string, mimeType: string): 
       });
 
       const parsed = parseVisionJson(zaiResponse.content);
+      console.log('[Visual Search] Z.ai raw response:', zaiResponse.content?.substring(0, 150), 'parsed:', !!parsed);
       if (parsed) return parsed;
     } catch (zaiErr: any) {
       console.warn('[Visual Search] Z.ai vision call failed, falling back:', zaiErr?.message);
