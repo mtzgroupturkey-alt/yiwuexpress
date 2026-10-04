@@ -25,12 +25,24 @@ async function main() {
   console.log(`Current products in target DB: ${currentProducts}`);
 
   const isForce = process.argv.includes('--force');
-  if (currentProducts >= snapshot.productsCount && !isForce) {
-    console.log(`Target DB already has ${currentProducts} products (>= ${snapshot.productsCount}). Skipping restore.`);
-    console.log('Use --force to overwrite.');
-    return;
+  const confirmForce = process.env.CONFIRM_FORCE === 'yes';
+
+  if (isForce && !confirmForce) {
+    console.error('❌ ERROR: Destructive --force restore requires CONFIRM_FORCE=yes environment variable.');
+    console.error('Aborting to protect production catalog.');
+    process.exit(1);
   }
 
+  if (!isForce) {
+    if (currentProducts > 0) {
+      console.log(`✅ Target DB already contains ${currentProducts} products. Skipping restore to protect existing data.`);
+      console.log('To intentionally overwrite all catalog data, pass --force with CONFIRM_FORCE=yes.');
+      return;
+    }
+    console.log('Database is empty. Proceeding with initial catalog seeding...');
+  }
+
+  console.warn('⚠️ WARNING: Executing destructive full catalog replacement...');
   console.log('Clearing old catalog tables with TRUNCATE CASCADE...');
   await prisma.$executeRawUnsafe('TRUNCATE TABLE "product_translations", "products", "category_translations", "categories" CASCADE;');
   console.log('Cleared tables.');

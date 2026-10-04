@@ -41,8 +41,14 @@ node -e "
     .catch(e => { console.warn('Schema patch note:', e.message); process.exit(0); });
 " || true
 
-echo "=== 6. Checking Product Catalog (Seeding only if database is empty) ==="
-node scripts/restore-catalog-snapshot.js || true
+echo "=== 6. Checking Database Data Strategy ==="
+COMMIT_MSG=$(git log -1 --pretty=%B 2>/dev/null || true)
+if [[ "$COMMIT_MSG" == *"[replace-catalog]"* ]]; then
+  echo "⚠️ Option C explicitly requested in commit tag: Restoring Catalog Snapshot..."
+  CONFIRM_FORCE=yes node scripts/restore-catalog-snapshot.js --force || true
+else
+  echo "✅ Option A/B active: Preserving online catalog (snapshot restore skipped)."
+fi
 
 echo "=== 6b. Ensuring Admin Credentials ==="
 node scripts/setup-admin.js || true
