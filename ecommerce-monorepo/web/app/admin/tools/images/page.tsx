@@ -175,11 +175,14 @@ export default function ImageMigrationPage() {
         await new Promise((r) => setTimeout(r, 400));
       } catch (err: any) {
         consecutiveErrors++;
-        if (consecutiveErrors >= 3) {
-          toast.error('Network communication issue. Pausing migration.');
+        console.warn(`[ImageMigration] Batch network/server error (${consecutiveErrors}/10):`, err);
+        if (consecutiveErrors >= 10) {
+          toast.error('Network communication issue after 10 retries. Pausing migration.');
           break;
         }
-        await new Promise((r) => setTimeout(r, 1500));
+        // Exponential-like backoff retry delay up to 10 seconds
+        const waitMs = Math.min(consecutiveErrors * 2000, 10000);
+        await new Promise((r) => setTimeout(r, waitMs));
       }
     }
 
