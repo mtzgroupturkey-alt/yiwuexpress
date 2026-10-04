@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { getApiKeys, getDefaultOpenRouterFallbackKey } from '@/lib/api-keys';
 import { callZaiChatCompletion, DEFAULT_ZAI_VISION_MODEL } from '@/lib/ai/providers/zai';
 import { getAuthUser } from '@/lib/auth';
+import { setVisualSearchCache } from '@/lib/search/visualSearchCache';
 
 // In-memory rate limiting: 10 requests per minute per IP
 interface RateLimitRecord {
@@ -465,24 +466,39 @@ export async function POST(request: NextRequest) {
     // 8. Log visual search to database (privacy: sha256 hash only)
     const authUser = await getAuthUser(request);
     try {
-      await prisma.visualSearchLog.create({
-        data: {
-          userId: authUser?.id || null,
-          imageHash,
-          detected: detected as any,
-          resultCount: topResults.length,
-          ipHash,
-        },
-      });
+      if ((prisma as any).visualSearchLog) {
+        await (prisma as any).visualSearchLog.create({
+          data: {
+            userId: authUser?.id || null,
+            imageHash,
+            detected: detected as any,
+            resultCount: topResults.length,
+            ipHash,
+          },
+        });
+      }
     } catch (logErr: any) {
       console.warn('[Visual Search] Log creation skipped:', logErr?.message);
     }
 
-    return NextResponse.json({
-      success: true,
+    // 9. Store in 10-minute cache for Store page navigation
+    const previewDataUrl = `data:image/jpeg;base64,${processedBuffer.toString('base64')}`;
+    setVisualSearchCache(imageHash, {
+      hash: imageHash,
       detected,
       results: topResults,
       count: topResults.length,
+      imagePreview: previewDataUrl,
+    });
+
+    return NextResponse.json({
+      success: true,
+      hash: imageHash,
+      imageHash,
+      detected,
+      results: topResults,
+      count: topResults.length,
+      imagePreview: previewDataUrl,
     });
   } catch (error: any) {
     console.error('[Visual Search] Unexpected error:', error);

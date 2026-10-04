@@ -176,13 +176,24 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                   product.tagBadge.type === 'hot'
                     ? 'bg-[#FEF3C7] text-[#B45309]'
                     : product.tagBadge.type === 'bestseller'
-                    ? 'bg-[#DCFCE7] text-emerald-800'
-                    : product.tagBadge.type === 'warranty'
-                    ? 'bg-purple-100 text-purple-800'
+                    ? 'bg-[#FEF08A] text-[#854D0E]'
                     : 'bg-[#DBEAFE] text-[#00407a]'
                 }`}
               >
                 {tBadge(product.tagBadge.text, product.tagBadge.type)}
+              </span>
+            )}
+            {typeof product.similarity === 'number' && (
+              <span
+                className={`text-[10px] font-black px-1.5 py-0.5 rounded-sm tracking-tight text-white shadow-xs ${
+                  Math.round(product.similarity * 100) >= 90
+                    ? 'bg-emerald-600'
+                    : Math.round(product.similarity * 100) >= 70
+                    ? 'bg-amber-600'
+                    : 'bg-slate-500'
+                }`}
+              >
+                {Math.round(product.similarity * 100)}% match
               </span>
             )}
           </div>
