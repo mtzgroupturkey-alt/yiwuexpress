@@ -70,10 +70,13 @@ export async function POST(request: NextRequest) {
     let commitHash = '';
     let finalCommitMsg = '';
 
+    const modeTag = dataMode === 'C' ? ' [replace-catalog]' : dataMode === 'B' ? ' [migrate-data]' : '';
     if (dirty && (rawCommitMessage || autoCommit)) {
-      const modeTag = dataMode === 'C' ? ' [replace-catalog]' : dataMode === 'B' ? ' [migrate-data]' : '';
-      const defaultMsg = `chore(deploy): sync code and catalog snapshot to ${branch}${modeTag}`;
-      const msg = rawCommitMessage || defaultMsg;
+      const defaultMsg = `chore(deploy): sync code to ${branch}`;
+      let msg = rawCommitMessage || defaultMsg;
+      if (modeTag && !msg.includes(modeTag.trim())) {
+        msg = `${msg}${modeTag}`;
+      }
       addLog(`Staging all working directory changes (git add -A)...`);
       await execAsync('git add -A');
       addLog(`Creating commit: "${msg}"...`);
@@ -81,8 +84,19 @@ export async function POST(request: NextRequest) {
       await execAsync(`git commit -m "${sanitizedMsg}"`);
       steps.push({ step: 'Commit Changes', status: 'completed', detail: msg });
     } else if (rawCommitMessage && !dirty) {
-      addLog(`Working tree is clean; deploying existing HEAD commit.`);
-      steps.push({ step: 'Commit Verification', status: 'completed', detail: 'Clean working tree' });
+      let msg = rawCommitMessage;
+      if (modeTag && !msg.includes(modeTag.trim())) {
+        msg = `${msg}${modeTag}`;
+        await execAsync('git commit --allow-empty -m "' + msg.replace(/"/g, '\\"') + '"');
+      }
+      addLog(`Working tree is clean; deploying HEAD commit.`);
+      steps.push({ step: 'Commit Verification', status: 'completed', detail: msg });
+    } else if (dataMode === 'C' && !dirty) {
+      // Force empty commit with [replace-catalog] tag so server knows Option C was chosen
+      const msg = `chore(deploy): trigger catalog replacement on ${branch} [replace-catalog]`;
+      await execAsync(`git commit --allow-empty -m "${msg}"`);
+      addLog(`Created marker commit for Option C: "${msg}"`);
+      steps.push({ step: 'Commit Verification', status: 'completed', detail: msg });
     } else {
       steps.push({ step: 'Working Tree Check', status: 'completed', detail: 'Clean working tree' });
     }

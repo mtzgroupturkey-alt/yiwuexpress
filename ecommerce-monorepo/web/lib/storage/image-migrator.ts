@@ -99,11 +99,38 @@ export async function downloadExternalImage(url: string): Promise<Buffer> {
     headers['Origin'] = 'https://www.ikea.com';
   }
 
-  const response = await fetch(cleanUrl, {
-    headers,
-    signal: AbortSignal.timeout(15000),
-    redirect: 'follow',
-  });
+  let response: Response;
+  try {
+    response = await fetch(cleanUrl, {
+      headers,
+      signal: AbortSignal.timeout(10000),
+      redirect: 'follow',
+    });
+  } catch (directErr: any) {
+    // If direct fetch times out or fails on network, attempt proxy fallback
+    response = { ok: false, status: 500, statusText: directErr?.message || 'Network Error' } as any;
+  }
+
+  // Fallback to proxy route if direct download is blocked (e.g. Cloudflare 403 on IKEA images)
+  if (!response.ok || (response.status === 403 || response.status === 401)) {
+    try {
+      const proxyDomain = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? 'http://127.0.0.1:3001' : 'https://www.dromkok.com');
+      const fallbackProxyUrl = `${proxyDomain.replace(/\/$/, '')}/api/proxy/image?url=${encodeURIComponent(cleanUrl)}`;
+      const proxyRes = await fetch(fallbackProxyUrl, {
+        signal: AbortSignal.timeout(12000),
+        headers: { 'User-Agent': headers['User-Agent'] },
+      });
+
+      if (proxyRes.ok && !proxyRes.headers.get('x-image-fallback')) {
+        const arrayBuffer = await proxyRes.arrayBuffer();
+        if (arrayBuffer.byteLength > 200) {
+          return Buffer.from(arrayBuffer);
+        }
+      }
+    } catch {
+      // Proceed to normal error handling below
+    }
+  }
 
   if (!response.ok) {
     const error: any = new Error(`HTTP ${response.status} ${response.statusText}`);

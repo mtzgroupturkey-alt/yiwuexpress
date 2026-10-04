@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
             { images: { isEmpty: false } },
           ],
         },
-        take: batchSize * 3,
+        take: Math.max(batchSize * 10, 100),
         orderBy: { updatedAt: 'asc' }, // Prioritize least recently updated, advancing queue automatically
         select: { id: true, sku: true, thumbnail: true, images: true },
       });

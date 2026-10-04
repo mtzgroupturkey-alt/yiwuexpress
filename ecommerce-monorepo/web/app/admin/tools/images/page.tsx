@@ -54,7 +54,7 @@ export default function ImageMigrationPage() {
   const [stats, setStats] = useState<MigrationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [batchSize, setBatchSize] = useState<number>(50);
+  const [batchSize, setBatchSize] = useState<number>(20);
   const [previewData, setPreviewData] = useState<PreviewResult | null>(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [copiedLog, setCopiedLog] = useState(false);
@@ -349,7 +349,7 @@ export default function ImageMigrationPage() {
             <label className="text-sm text-gray-600 font-medium">Batch Size:</label>
             <input
               type="number"
-              min={10}
+              min={5}
               max={50}
               value={batchSize}
               onChange={(e) => setBatchSize(Number(e.target.value))}

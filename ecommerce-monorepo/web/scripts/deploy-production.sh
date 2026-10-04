@@ -41,8 +41,8 @@ node -e "
     .catch(e => { console.warn('Schema patch note:', e.message); process.exit(0); });
 " || true
 
-echo "=== 6. Restoring Complete Product Catalog Snapshot (6,743 products & 122 categories) ==="
-node scripts/restore-catalog-snapshot.js --force || true
+echo "=== 6. Checking Product Catalog (Seeding only if database is empty) ==="
+node scripts/restore-catalog-snapshot.js || true
 
 echo "=== 6b. Ensuring Admin Credentials ==="
 node scripts/setup-admin.js || true
