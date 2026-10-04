@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     // 1. Fetch system settings for kitchen section
     const settings = await prisma.systemSettings.findFirst({
       select: {
+        id: true,
         kitchenSectionEnabled: true,
         kitchenSectionTitle: true,
         kitchenSectionSubtitle: true,
@@ -28,6 +29,39 @@ export async function GET(request: NextRequest) {
 
     if (settings && settings.kitchenSectionEnabled === false) {
       return NextResponse.json({ success: true, enabled: false, data: [] });
+    }
+
+    // Resolve localized titles if locale !== 'en'
+    let localizedTitle = settings?.kitchenSectionTitle || undefined;
+    let localizedSubtitle = settings?.kitchenSectionSubtitle || undefined;
+    let localizedBadge = settings?.kitchenSectionBadge || undefined;
+    let localizedViewAll = settings?.kitchenSectionViewAllLabel || undefined;
+
+    if (settings?.id && locale !== 'en') {
+      try {
+        const translations = await prisma.systemSettingTranslation.findMany({
+          where: {
+            systemSettingId: settings.id,
+            locale,
+            key: {
+              in: [
+                'kitchenSectionTitle',
+                'kitchenSectionSubtitle',
+                'kitchenSectionBadge',
+                'kitchenSectionViewAllLabel',
+              ],
+            },
+          },
+        });
+        for (const row of translations) {
+          if (row.key === 'kitchenSectionTitle' && row.value?.trim()) localizedTitle = row.value.trim();
+          if (row.key === 'kitchenSectionSubtitle' && row.value?.trim()) localizedSubtitle = row.value.trim();
+          if (row.key === 'kitchenSectionBadge' && row.value?.trim()) localizedBadge = row.value.trim();
+          if (row.key === 'kitchenSectionViewAllLabel' && row.value?.trim()) localizedViewAll = row.value.trim();
+        }
+      } catch (err) {
+        console.error('Failed to load kitchen section localized texts:', err);
+      }
     }
 
     const effectiveLimit = settings?.kitchenSectionMaxProducts || limit;
@@ -168,10 +202,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       enabled: true,
-      title: settings?.kitchenSectionTitle || undefined,
-      subtitle: settings?.kitchenSectionSubtitle || undefined,
-      badgeText: settings?.kitchenSectionBadge || undefined,
-      viewAllText: settings?.kitchenSectionViewAllLabel || undefined,
+      title: localizedTitle,
+      subtitle: localizedSubtitle,
+      badgeText: localizedBadge,
+      viewAllText: localizedViewAll,
       maxProducts: effectiveLimit,
       data: mapped,
     });
