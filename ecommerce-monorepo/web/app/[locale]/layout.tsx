@@ -18,6 +18,7 @@ import { isMobile as checkIsMobile, isIOS as checkIsIOS, isAndroid as checkIsAnd
 import { MobileProvider } from '@/components/MobileProvider'
 import { MobileLayoutContainer } from '@/components/mobile/MobileLayoutContainer'
 import { BottomNav } from '@/components/mobile/BottomNav'
+import { MobileDrawer } from '@/components/mobile/MobileDrawer'
 import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 import { LocaleCurrencyAutoDetect } from '@/components/i18n/LocaleCurrencyAutoDetect'
 import { PushNotificationPrompt } from '@/components/pwa/PushNotificationPrompt'
@@ -226,6 +227,7 @@ export default async function LocaleLayout({
                         <InstallPrompt />
                         <PushNotificationPrompt />
                         <BottomNav />
+                        <MobileDrawer />
                         <BackToTop />
                       </MobileProvider>
                     </CurrencyProvider>
