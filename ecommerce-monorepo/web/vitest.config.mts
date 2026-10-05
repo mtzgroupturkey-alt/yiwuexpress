@@ -14,6 +14,7 @@ export default defineConfig({
     jsxImportSource: 'react',
   },
   resolve: {
+    preserveSymlinks: true,
     alias: {
       '@': path.resolve(__dirname, '.'),
       '@monorepo/shared': path.resolve(__dirname, '../../packages/shared/src/index.ts'),

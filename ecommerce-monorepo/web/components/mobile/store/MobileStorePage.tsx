@@ -22,6 +22,7 @@ interface MobileStorePageProps {
   onPageChange?: (page: number) => void
   totalPages?: number
   serverTotalCount?: number
+  isLoading?: boolean
 }
 
 export function MobileStorePage({
@@ -39,6 +40,7 @@ export function MobileStorePage({
   onPageChange,
   totalPages,
   serverTotalCount,
+  isLoading = false,
 }: MobileStorePageProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
@@ -247,6 +249,7 @@ export function MobileStorePage({
       {/* 2-Column Product Grid */}
       <MobileProductGrid
         products={filteredProducts}
+        isLoading={isLoading}
         onAddToCart={onAddToCart}
         onSelectProduct={onSelectProduct}
         favoriteIds={favoriteIds}

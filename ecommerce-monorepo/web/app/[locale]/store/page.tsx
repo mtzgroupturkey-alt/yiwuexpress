@@ -53,6 +53,27 @@ function StoreCatalogInner() {
   const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
   const [currentPage, setCurrentPage] = useState(isNaN(pageParam) || pageParam < 1 ? 1 : pageParam);
+
+  // Sync state if URL searchParams change (e.g. browser back/forward button)
+  React.useEffect(() => {
+    const p = parseInt(searchParams.get('page') || '1', 10);
+    const validPage = isNaN(p) || p < 1 ? 1 : p;
+    setCurrentPage(validPage);
+  }, [searchParams]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    const params = new URLSearchParams(searchParams.toString());
+    if (newPage > 1) {
+      params.set('page', String(newPage));
+    } else {
+      params.delete('page');
+    }
+    const queryString = params.toString();
+    const newUrl = `/${locale}/store${queryString ? `?${queryString}` : ''}`;
+    router.push(newUrl, { scroll: false });
+  };
+
   const visualParam = searchParams.get('visual');
   const visualHash = searchParams.get('hash');
   const isVisualSearch = visualParam === '1' && Boolean(visualHash);
@@ -88,10 +109,22 @@ function StoreCatalogInner() {
   };
 
   // Fetch real products from DB with active locale and server-side pagination
+  const categoryParam = searchParams.get('category') || searchParams.get('cat') || '';
+  const searchParam = searchParams.get('search') || searchParams.get('q') || '';
+  const sortParam = searchParams.get('sort') || '';
+
   const { data: productsData, isLoading: isCatalogLoading } = useQuery({
-    queryKey: ['products', 'store-catalog', locale, currentPage],
+    queryKey: ['products', 'store-catalog', locale, currentPage, categoryParam, searchParam, sortParam],
     queryFn: async () => {
-      const res = await fetch(`/api/products?page=${currentPage}&limit=24&locale=${locale}`);
+      const qp = new URLSearchParams({
+        page: String(currentPage),
+        limit: '24',
+        locale,
+      });
+      if (categoryParam) qp.set('category', categoryParam);
+      if (searchParam) qp.set('search', searchParam);
+      if (sortParam) qp.set('sort', sortParam);
+      const res = await fetch(`/api/products?${qp.toString()}`);
       if (!res.ok) return null;
       return res.json();
     },
@@ -364,10 +397,10 @@ function StoreCatalogInner() {
         </div>
       )}
 
-      {isLoading ? (
+      {isVisualSearch && isVisualLoading ? (
         <div className="min-h-[400px] flex items-center justify-center gap-2 text-slate-500 text-sm font-semibold">
           <Loader2 className="w-6 h-6 animate-spin text-[#00407a]" />
-          <span>{isVisualSearch ? tVisual('analyzing') : 'Loading catalog...'}</span>
+          <span>{tVisual('analyzing')}</span>
         </div>
       ) : isVisualError ? (
         /* Visual Search Expired or Not Found State */
@@ -476,11 +509,12 @@ function StoreCatalogInner() {
               initialSearch={initialSearch}
               currentPage={currentPage}
               onPageChange={(page) => {
-                setCurrentPage(page);
+                handlePageChange(page);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               totalPages={productsData?.pagination?.pages || 1}
               serverTotalCount={productsData?.pagination?.total}
+              isLoading={isLoading}
             />
           </div>
 
@@ -503,7 +537,7 @@ function StoreCatalogInner() {
               onBackToHome={() => router.push(`/${locale}`)}
               currentPage={currentPage}
               onPageChange={(page) => {
-                setCurrentPage(page);
+                handlePageChange(page);
                 const el = document.getElementById('shop-products-main-grid');
                 if (el) {
                   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -513,6 +547,7 @@ function StoreCatalogInner() {
               }}
               totalPages={productsData?.pagination?.pages || 1}
               serverTotalCount={productsData?.pagination?.total}
+              isLoading={isLoading}
             />
           </div>
         </>

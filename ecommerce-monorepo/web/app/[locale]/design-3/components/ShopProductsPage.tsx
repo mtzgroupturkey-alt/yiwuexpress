@@ -22,7 +22,7 @@ import {
   FileText
 } from 'lucide-react';
 import { Product, Category } from '../types';
-import { UnifiedProductCard } from './UnifiedProductCard';
+import { UnifiedProductCard, ProductCardSkeleton } from './UnifiedProductCard';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -52,6 +52,7 @@ interface ShopProductsPageProps {
   onPageChange?: (page: number) => void;
   totalPages?: number;
   serverTotalCount?: number;
+  isLoading?: boolean;
 }
 
 export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
@@ -71,6 +72,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   onPageChange: propOnPageChange,
   totalPages: propTotalPages,
   serverTotalCount,
+  isLoading = false,
 }) => {
   const locale = useLocale();
   const { tShop, tPdp, tBadge } = useStorefrontTranslation();
@@ -1188,7 +1190,14 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
             </div>
 
             {/* 3. Product Cards Rendering */}
-            {sortedProducts.length === 0 ? (
+            {isLoading ? (
+              /* SKELETON LOADING GRID */
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : sortedProducts.length === 0 ? (
               /* EMPTY STATE */
               <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-xs">
                 <div className="w-16 h-16 rounded-full bg-blue-50 text-[#00407a] flex items-center justify-center mx-auto mb-4">
