@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { User, Lock, ArrowRight } from 'lucide-react';
 
 // Vertex shader source code
@@ -84,8 +84,8 @@ export function SmokeyBackground({
   className = "",
 }: SmokeyBackgroundProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
+  const mousePositionRef = useRef({ x: 0, y: 0 });
+  const isHoveringRef = useRef(false);
 
   // Helper to convert hex color to RGB (0-1 range)
   const hexToRgb = (hex: string): [number, number, number] => {
@@ -152,29 +152,48 @@ export function SmokeyBackground({
     const [r, g, b] = hexToRgb(color);
     gl.uniform3f(uColorLocation, r, g, b);
 
-    const render = () => {
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      canvas.width = width;
-      canvas.height = height;
-      gl.viewport(0, 0, width, height);
+    let animationFrameId: number;
+    let isCancelled = false;
 
+    const render = () => {
+      if (isCancelled) return;
+      const width = canvas.clientWidth || 300;
+      const height = canvas.clientHeight || 150;
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        gl.viewport(0, 0, width, height);
+      }
+
+      gl.useProgram(program);
       const currentTime = (Date.now() - startTime) / 1000;
 
-      gl.uniform2f(iResolutionLocation, width, height);
-      gl.uniform1f(iTimeLocation, currentTime);
-      gl.uniform2f(iMouseLocation, isHovering ? mousePosition.x : width / 2, isHovering ? height - mousePosition.y : height / 2);
+      if (iResolutionLocation) {
+        gl.uniform2f(iResolutionLocation, width, height);
+      }
+      if (iTimeLocation) {
+        gl.uniform1f(iTimeLocation, currentTime);
+      }
+      if (iMouseLocation) {
+        const mouseX = isHoveringRef.current ? mousePositionRef.current.x : width / 2;
+        const mouseY = isHoveringRef.current ? height - mousePositionRef.current.y : height / 2;
+        gl.uniform2f(iMouseLocation, mouseX, mouseY);
+      }
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      requestAnimationFrame(render);
+      animationFrameId = requestAnimationFrame(render);
     };
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      setMousePosition({ x: event.clientX - rect.left, y: event.clientY - rect.top });
+      mousePositionRef.current = { x: event.clientX - rect.left, y: event.clientY - rect.top };
     };
-    const handleMouseEnter = () => setIsHovering(true);
-    const handleMouseLeave = () => setIsHovering(false);
+    const handleMouseEnter = () => {
+      isHoveringRef.current = true;
+    };
+    const handleMouseLeave = () => {
+      isHoveringRef.current = false;
+    };
 
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseenter", handleMouseEnter);
@@ -183,11 +202,19 @@ export function SmokeyBackground({
     render();
 
     return () => {
+      isCancelled = true;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseenter", handleMouseEnter);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
+      gl.deleteBuffer(positionBuffer);
+      gl.deleteProgram(program);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
     };
-  }, [isHovering, mousePosition, color]);
+  }, [color]);
 
   const finalBlurClass = blurClassMap[backdropBlurAmount as BlurSize] || blurClassMap["sm"];
 
