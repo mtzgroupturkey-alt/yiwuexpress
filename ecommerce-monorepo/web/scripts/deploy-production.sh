@@ -41,6 +41,9 @@ node -e "
     .catch(e => { console.warn('Schema patch note:', e.message); process.exit(0); });
 " || true
 
+echo "=== 5b. Applying High-Performance Database Indexes ==="
+node scripts/add-production-indexes.js || true
+
 echo "=== 6. Checking Database Data Strategy ==="
 COMMIT_MSG=$(git log -1 --pretty=%B 2>/dev/null || true)
 if [[ "$COMMIT_MSG" == *"[replace-catalog]"* ]]; then
