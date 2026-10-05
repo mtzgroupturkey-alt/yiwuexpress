@@ -48,6 +48,10 @@ interface ShopProductsPageProps {
   initialDepartment?: string | null;
   initialSearch?: string;
   onBackToHome: () => void;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  totalPages?: number;
+  serverTotalCount?: number;
 }
 
 export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
@@ -63,6 +67,10 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   initialDepartment = null,
   initialSearch = '',
   onBackToHome,
+  currentPage: propCurrentPage,
+  onPageChange: propOnPageChange,
+  totalPages: propTotalPages,
+  serverTotalCount,
 }) => {
   const locale = useLocale();
   const { tShop, tPdp, tBadge } = useStorefrontTranslation();
@@ -140,8 +148,18 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const [expandedDepts, setExpandedDepts] = useState<Set<string>>(new Set());
   
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const isServerPaged = typeof propCurrentPage === 'number' && typeof propOnPageChange === 'function';
+  const currentPage = isServerPaged ? propCurrentPage : internalCurrentPage;
+  const setCurrentPage = (pageOrUpdater: number | ((prev: number) => number)) => {
+    if (isServerPaged) {
+      const next = typeof pageOrUpdater === 'function' ? pageOrUpdater(currentPage) : pageOrUpdater;
+      propOnPageChange(next);
+    } else {
+      setInternalCurrentPage(pageOrUpdater);
+    }
+  };
+  const [itemsPerPage, setItemsPerPage] = useState(24);
 
   // Build recursive Category Tree with live product counts and lookup map
   interface CategoryTreeNode {
@@ -504,11 +522,17 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   }, [filteredProducts, sortBy]);
 
   // Pagination calculation
-  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage) || 1;
+  const totalPages = isServerPaged && typeof propTotalPages === 'number'
+    ? Math.max(1, propTotalPages)
+    : (Math.ceil(sortedProducts.length / itemsPerPage) || 1);
   const paginatedProducts = useMemo(() => {
+    if (isServerPaged) {
+      // Products passed from server are already sliced for the current page
+      return sortedProducts;
+    }
     const start = (currentPage - 1) * itemsPerPage;
     return sortedProducts.slice(start, start + itemsPerPage);
-  }, [sortedProducts, currentPage, itemsPerPage]);
+  }, [isServerPaged, sortedProducts, currentPage, itemsPerPage]);
 
   const scrollToGridTop = () => {
     const el = document.getElementById('shop-products-main-grid');
@@ -604,7 +628,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                     {currentCategoryName || currentDepartmentName || tPdp('catalog')}
                   </h1>
                   <p className="text-xs text-slate-500">
-                    {tShop('showingProducts', { count: sortedProducts.length })}
+                    {tShop('showingProducts', { count: typeof serverTotalCount === 'number' ? serverTotalCount : sortedProducts.length })}
                   </p>
                 </div>
               </div>
@@ -1480,8 +1504,12 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                 <div className="text-xs text-slate-500">
                   {tShop('showingItems', {
                     start: (currentPage - 1) * itemsPerPage + 1,
-                    end: Math.min(currentPage * itemsPerPage, sortedProducts.length),
-                    total: sortedProducts.length,
+                    end: isServerPaged && typeof serverTotalCount === 'number'
+                      ? Math.min(currentPage * itemsPerPage, serverTotalCount)
+                      : Math.min(currentPage * itemsPerPage, sortedProducts.length),
+                    total: isServerPaged && typeof serverTotalCount === 'number'
+                      ? serverTotalCount
+                      : sortedProducts.length,
                   })}
                 </div>
 

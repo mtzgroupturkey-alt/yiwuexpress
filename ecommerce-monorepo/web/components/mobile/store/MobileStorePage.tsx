@@ -18,6 +18,10 @@ interface MobileStorePageProps {
   initialDepartment?: string | null
   initialSearch?: string
   className?: string
+  currentPage?: number
+  onPageChange?: (page: number) => void
+  totalPages?: number
+  serverTotalCount?: number
 }
 
 export function MobileStorePage({
@@ -31,6 +35,10 @@ export function MobileStorePage({
   initialDepartment,
   initialSearch = '',
   className = '',
+  currentPage,
+  onPageChange,
+  totalPages,
+  serverTotalCount,
 }: MobileStorePageProps) {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
@@ -230,7 +238,9 @@ export function MobileStorePage({
       {/* Product Results Count & Status */}
       <div className="flex items-center justify-between px-4 py-2 text-xs text-gray-500 dark:text-slate-400">
         <span>
-          Showing <strong className="text-gray-900 dark:text-white">{filteredProducts.length}</strong> products
+          Showing <strong className="text-gray-900 dark:text-white">
+            {typeof serverTotalCount === 'number' ? serverTotalCount : filteredProducts.length}
+          </strong> products
         </span>
       </div>
 
@@ -243,6 +253,29 @@ export function MobileStorePage({
         onToggleFavorite={onToggleFavorite}
         onResetFilters={handleClearAll}
       />
+
+      {/* Mobile Pagination Controls */}
+      {typeof totalPages === 'number' && totalPages > 1 && typeof onPageChange === 'function' && typeof currentPage === 'number' && (
+        <div className="flex items-center justify-between px-4 py-4 mt-2 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800">
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs font-semibold text-gray-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-800"
+          >
+            Previous
+          </button>
+          <span className="text-xs font-medium text-gray-500 dark:text-slate-400">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            disabled={currentPage >= totalPages}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs font-semibold text-gray-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-slate-800"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Bottom Sheet Filter Dialog */}
       <MobileFilters

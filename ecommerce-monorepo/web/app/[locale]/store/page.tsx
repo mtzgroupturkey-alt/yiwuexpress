@@ -51,6 +51,8 @@ function StoreCatalogInner() {
   const initialCategory = searchParams.get('category') || searchParams.get('cat') || null;
   const initialDepartment = searchParams.get('department') || searchParams.get('dept') || null;
   const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
+  const pageParam = parseInt(searchParams.get('page') || '1', 10);
+  const [currentPage, setCurrentPage] = useState(isNaN(pageParam) || pageParam < 1 ? 1 : pageParam);
   const visualParam = searchParams.get('visual');
   const visualHash = searchParams.get('hash');
   const isVisualSearch = visualParam === '1' && Boolean(visualHash);
@@ -85,16 +87,17 @@ function StoreCatalogInner() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Fetch real products from DB with active locale
+  // Fetch real products from DB with active locale and server-side pagination
   const { data: productsData, isLoading: isCatalogLoading } = useQuery({
-    queryKey: ['products', 'store-catalog', locale],
+    queryKey: ['products', 'store-catalog', locale, currentPage],
     queryFn: async () => {
-      const res = await fetch(`/api/products?limit=all&locale=${locale}`);
+      const res = await fetch(`/api/products?page=${currentPage}&limit=24&locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },
     enabled: !isVisualSearch,
-    staleTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    staleTime: 60 * 1000,
   });
 
   const isLoading = isVisualSearch ? isVisualLoading : isCatalogLoading;
@@ -471,6 +474,13 @@ function StoreCatalogInner() {
               initialCategory={initialCategory}
               initialDepartment={initialDepartment}
               initialSearch={initialSearch}
+              currentPage={currentPage}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              totalPages={productsData?.pagination?.pages || 1}
+              serverTotalCount={productsData?.pagination?.total}
             />
           </div>
 
@@ -491,6 +501,18 @@ function StoreCatalogInner() {
               initialDepartment={initialDepartment}
               initialSearch={initialSearch}
               onBackToHome={() => router.push(`/${locale}`)}
+              currentPage={currentPage}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                const el = document.getElementById('shop-products-main-grid');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                  window.scrollTo({ top: 180, behavior: 'smooth' });
+                }
+              }}
+              totalPages={productsData?.pagination?.pages || 1}
+              serverTotalCount={productsData?.pagination?.total}
             />
           </div>
         </>
