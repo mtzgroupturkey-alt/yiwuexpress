@@ -69,6 +69,7 @@ jobs:
               --exclude='node_modules' \
               --exclude='.next' \
               --exclude='.env*' \
+              --exclude='public/uploads' \
               -e "ssh -p $PORT -o ConnectTimeout=30 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o IPQoS=throughput" \
               ecommerce-monorepo/web/ ${SERVER_USER}@${SERVER_HOST}:${TARGET}/; then
               echo "✅ Files synced successfully."

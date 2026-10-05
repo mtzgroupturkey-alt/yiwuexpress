@@ -137,29 +137,42 @@ export async function GET(
       const isFavicon = lower.includes('favicon');
       const isLogo = lower.includes('logo');
       const isHero = lower.includes('hero');
+      const isGeneral = lower.includes('general') || relativeSubPath.includes('general');
+      const isBannerOrAd = lower.includes('ad') || lower.includes('serving') || lower.includes('banner');
 
       if (isFavicon) {
         const faviconCandidates = [
           path.join(cwd, 'public', 'favicon.ico'),
-          path.join(cwd, 'web', 'public', 'favicon.ico'),
           path.join(cwd, 'public', 'favicon.png'),
+          path.join(cwd, 'public', 'favicon.svg'),
+          path.join(cwd, 'web', 'public', 'favicon.ico'),
           path.join(cwd, 'web', 'public', 'favicon.png'),
           '/www/wwwroot/www.dromkok.com/web/public/favicon.ico',
         ];
         foundFile = await findExistingFile(faviconCandidates);
-      } else if (isLogo) {
+      } else if (isLogo || lower.includes('wechat') || (isGeneral && lower.includes('photoroom'))) {
         const logoCandidates = [
           path.join(cwd, 'public', 'logo.png'),
-          path.join(cwd, 'web', 'public', 'logo.png'),
           path.join(cwd, 'public', 'logo.svg'),
+          path.join(cwd, 'public', 'uploads', 'general', '1789807106178-1787644810312-logo_pixian_ai.png'),
+          path.join(cwd, 'public', 'uploads', 'general', 'logo_pixian_ai.png'),
+          path.join(cwd, 'public', 'uploads', 'general', 'logo-login.png'),
+          path.join(cwd, 'public', 'uploads', 'general', 'logo.svg'),
+          path.join(cwd, 'web', 'public', 'logo.png'),
           path.join(cwd, 'web', 'public', 'logo.svg'),
           '/www/wwwroot/www.dromkok.com/web/public/logo.png',
+          '/www/wwwroot/www.dromkok.com/web/public/logo.svg',
+          '/www/wwwroot/www.dromkok.com/web/public/uploads/general/logo_pixian_ai.png',
         ];
         foundFile = await findExistingFile(logoCandidates);
-      } else if (isHero) {
+      } else if (isHero || isBannerOrAd) {
         const heroCandidates = [
           path.join(cwd, 'public', 'images', 'hero', 'hero-1.jpg'),
+          path.join(cwd, 'public', 'images', 'hero', 'hero-2.jpg'),
+          path.join(cwd, 'public', 'uploads', 'hero', 'hero-1.jpg'),
+          path.join(cwd, 'public', 'uploads', 'general', 'Gemini_Generated_Image_8e9wy08e9wy08e9w.jpg'),
           path.join(cwd, 'web', 'public', 'images', 'hero', 'hero-1.jpg'),
+          '/www/wwwroot/www.dromkok.com/web/public/images/hero/hero-1.jpg',
           '/www/wwwroot/www.dromkok.com/web/public/images/hero',
         ];
         foundFile = await findExistingFile(heroCandidates);

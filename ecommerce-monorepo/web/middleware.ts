@@ -123,6 +123,13 @@ async function authMiddleware(request: NextRequest) {
     }
   }
 
+  // Bulletproof uploads rewrite: forward directly to /api/uploads handler
+  if (pathname.startsWith('/uploads/')) {
+    const uploadApiUrl = request.nextUrl.clone()
+    uploadApiUrl.pathname = pathname.replace(/^\/uploads\//, '/api/uploads/')
+    return NextResponse.rewrite(uploadApiUrl)
+  }
+
   const isPublicRoute = publicRoutes.some(route => 
     routeToCheck === route || routeToCheck.startsWith(route + '/') ||
     pathname === route || pathname.startsWith(route + '/')

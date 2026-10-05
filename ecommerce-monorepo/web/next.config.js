@@ -183,14 +183,24 @@ const nextConfig = {
   },
   async rewrites() {
     return {
-      beforeFiles: [],
+      beforeFiles: [
+        {
+          source: '/uploads/:path*',
+          destination: '/api/uploads/:path*',
+        },
+      ],
       afterFiles: [
         {
           source: '/uploads/:path*',
           destination: '/api/uploads/:path*',
         },
       ],
-      fallback: [],
+      fallback: [
+        {
+          source: '/uploads/:path*',
+          destination: '/api/uploads/:path*',
+        },
+      ],
     };
   },
   // Add CORS headers and security headers to all routes
