@@ -61,6 +61,85 @@ async function calculateImageCounts() {
   };
 }
 
+// Helper to efficiently fetch only products that actually have external images
+async function getProductsWithExternalImages(
+  limit: number
+): Promise<Array<{ id: string; sku: string; thumbnail: string | null; images: string[] }>> {
+  const r2Public = (process.env.R2_PUBLIC_URL || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+  // 1. Direct PostgreSQL query targeting only products with genuine external URLs
+  try {
+    const sql = `
+      SELECT id, sku, thumbnail, images
+      FROM "products"
+      WHERE (
+        (
+          thumbnail ILIKE 'http%'
+          AND thumbnail NOT ILIKE '%dromkok.com%'
+          AND thumbnail NOT ILIKE '%localhost%'
+          AND thumbnail NOT ILIKE '%127.0.0.1%'
+          ${r2Public ? `AND thumbnail NOT ILIKE '%${r2Public}%'` : ''}
+        )
+        OR EXISTS (
+          SELECT 1 FROM unnest(images) AS img
+          WHERE img ILIKE 'http%'
+            AND img NOT ILIKE '%dromkok.com%'
+            AND img NOT ILIKE '%localhost%'
+            AND img NOT ILIKE '%127.0.0.1%'
+            ${r2Public ? `AND img NOT ILIKE '%${r2Public}%'` : ''}
+        )
+      )
+      ORDER BY "updatedAt" ASC
+      LIMIT ${limit}
+    `;
+    const rows: any[] = await prisma.$queryRawUnsafe(sql);
+    if (rows && rows.length > 0) {
+      const mapped = rows.map((r) => ({
+        id: r.id,
+        sku: r.sku,
+        thumbnail: r.thumbnail,
+        images: Array.isArray(r.images) ? r.images : [],
+      }));
+      const verified = mapped.filter((p) => {
+        const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
+        return allUrls.some(isExternalImageUrl);
+      });
+      if (verified.length > 0) {
+        return verified;
+      }
+    }
+  } catch (sqlErr) {
+    console.warn('[ImageMigrator] Direct SQL external query error, falling back to paginated search:', sqlErr);
+  }
+
+  // 2. Fallback: Paginated search across all products if raw SQL fails
+  const batchScanSize = 250;
+  let skip = 0;
+  const maxScan = 15000;
+  const found: Array<{ id: string; sku: string; thumbnail: string | null; images: string[] }> = [];
+
+  while (skip < maxScan && found.length < limit) {
+    const chunk = await prisma.product.findMany({
+      skip,
+      take: batchScanSize,
+      orderBy: { updatedAt: 'asc' },
+      select: { id: true, sku: true, thumbnail: true, images: true },
+    });
+    if (!chunk.length) break;
+
+    for (const p of chunk) {
+      const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
+      if (allUrls.some(isExternalImageUrl)) {
+        found.push(p);
+        if (found.length >= limit) break;
+      }
+    }
+    skip += batchScanSize;
+  }
+
+  return found;
+}
+
 export async function GET(request: NextRequest) {
   const auth = await verifyAdminAuth(request);
   if (!auth.authorized) {
@@ -163,32 +242,15 @@ export async function POST(request: NextRequest) {
 
     // ── DIRECT BATCH PROCESSING ACTION (Robust & Real-Time) ─────────────────────
     if (action === 'batch') {
-      // Find products that currently have external images
-      const candidateProducts = await prisma.product.findMany({
-        where: {
-          OR: [
-            { thumbnail: { startsWith: 'http' } },
-            { images: { isEmpty: false } },
-          ],
-        },
-        take: Math.max(batchSize * 10, 100),
-        orderBy: { updatedAt: 'asc' }, // Prioritize least recently updated, advancing queue automatically
-        select: { id: true, sku: true, thumbnail: true, images: true },
-      });
-
-      const productsToProcess = candidateProducts
-        .filter((p) => {
-          const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
-          return allUrls.some(isExternalImageUrl);
-        })
-        .slice(0, batchSize);
+      const productsToProcess = await getProductsWithExternalImages(batchSize);
 
       if (productsToProcess.length === 0) {
         // Double check overall counts
         const counts = await calculateImageCounts();
+        const reallyFinished = counts.productsWithExternalCount === 0 && counts.externalCount === 0;
         return NextResponse.json({
           success: true,
-          finished: true,
+          finished: reallyFinished,
           batchProcessed: 0,
           batchFailed: 0,
           updatedProducts: 0,
@@ -391,8 +453,9 @@ export async function POST(request: NextRequest) {
 
       // Calculate remaining external counts
       const counts = await calculateImageCounts();
+      const isFinished = counts.productsWithExternalCount === 0 && counts.externalCount === 0;
 
-      if (counts.productsWithExternalCount === 0) {
+      if (isFinished && activeJob) {
         await prisma.imageMigrationJob.update({
           where: { id: activeJob.id },
           data: {
@@ -405,7 +468,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        finished: counts.productsWithExternalCount === 0,
+        finished: isFinished,
         batchProcessed,
         batchFailed,
         updatedProducts: productsToProcess.length,

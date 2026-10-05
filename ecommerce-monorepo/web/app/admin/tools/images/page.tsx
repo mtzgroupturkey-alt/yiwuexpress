@@ -168,8 +168,13 @@ export default function ImageMigrationPage() {
           logs: data.logs || prev?.logs || [],
         }));
 
-        if (data.finished || data.remainingProductsWithExternal === 0) {
+        if (data.remainingExternalImages === 0 || (data.finished && (data.remainingProductsWithExternal ?? 0) === 0)) {
           toast.success('🎉 Image migration finished! All external images have been re-hosted.');
+          break;
+        }
+
+        if (data.batchProcessed === 0 && data.batchFailed === 0 && data.remainingExternalImages > 0) {
+          toast.error(`Queue paused: ${data.remainingExternalImages} external URLs remaining. Check server logs.`);
           break;
         }
 
