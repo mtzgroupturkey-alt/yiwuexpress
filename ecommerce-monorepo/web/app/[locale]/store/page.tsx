@@ -114,14 +114,23 @@ function StoreCatalogInner() {
   const sortParam = searchParams.get('sort') || '';
 
   const { data: productsData, isLoading: isCatalogLoading } = useQuery({
-    queryKey: ['products', 'store-catalog', locale],
+    queryKey: ['products', 'store-catalog', locale, currentPage, categoryParam, searchParam, sortParam],
     queryFn: async () => {
-      const res = await fetch(`/api/products?limit=all&locale=${locale}`);
+      const qp = new URLSearchParams({
+        page: String(currentPage),
+        limit: '24',
+        locale,
+      });
+      if (categoryParam) qp.set('category', categoryParam);
+      if (searchParam) qp.set('search', searchParam);
+      if (sortParam) qp.set('sort', sortParam);
+      const res = await fetch(`/api/products?${qp.toString()}`);
       if (!res.ok) return null;
       return res.json();
     },
     enabled: !isVisualSearch,
-    staleTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+    staleTime: 60 * 1000,
   });
 
   const isLoading = isVisualSearch ? isVisualLoading : isCatalogLoading;

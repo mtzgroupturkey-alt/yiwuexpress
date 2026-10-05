@@ -27,6 +27,7 @@ import { ProductImage } from '@/components/ui/ProductImage';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from 'next-intl';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { mapDbCategoryToDesign3 } from '@/lib/adapters/design3ProductAdapter';
 import { useSettings } from '@/components/SettingsProvider';
@@ -75,6 +76,9 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   isLoading = false,
 }) => {
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { tShop, tPdp, tBadge } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
 
@@ -153,6 +157,38 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const [internalCurrentPage, setInternalCurrentPage] = useState(1);
   const isServerPaged = typeof propCurrentPage === 'number' && typeof propOnPageChange === 'function';
   const currentPage = isServerPaged ? propCurrentPage : internalCurrentPage;
+
+  // Sync state to URL for server-side filtering
+  useEffect(() => {
+    if (!isServerPaged) return;
+    const params = new URLSearchParams(searchParams.toString());
+    
+    let changed = false;
+    
+    if (selectedCategory && selectedCategory !== 'all') {
+      if (params.get('category') !== selectedCategory) { params.set('category', selectedCategory); changed = true; }
+    } else {
+      if (params.has('category')) { params.delete('category'); changed = true; }
+    }
+    
+    if (catalogSearch && catalogSearch.trim()) {
+      if (params.get('search') !== catalogSearch) { params.set('search', catalogSearch); changed = true; }
+    } else {
+      if (params.has('search')) { params.delete('search'); changed = true; }
+    }
+    
+    if (sortBy && sortBy !== 'popular') {
+      if (params.get('sort') !== sortBy) { params.set('sort', sortBy); changed = true; }
+    } else {
+      if (params.has('sort')) { params.delete('sort'); changed = true; }
+    }
+    
+    if (changed) {
+      params.delete('page'); // Reset to page 1 on filter change
+      router.push(`${pathname}?${params.toString()}`);
+    }
+  }, [selectedCategory, catalogSearch, sortBy, isServerPaged, pathname, router, searchParams]);
+
   const setCurrentPage = (pageOrUpdater: number | ((prev: number) => number)) => {
     if (isServerPaged) {
       const next = typeof pageOrUpdater === 'function' ? pageOrUpdater(currentPage) : pageOrUpdater;
@@ -195,18 +231,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
 
     const buildNode = (cat: Category): CategoryTreeNode => {
       const matchKeys = collectSubtreeKeys(cat);
-      let count = 0;
-      for (const p of products) {
-        const catIdMatch = p.categoryId && matchKeys.has(p.categoryId);
-        const catSlugMatch = p.categorySlug && matchKeys.has(p.categorySlug.toLowerCase());
-        const catNameMatch = p.category && matchKeys.has(p.category.toLowerCase());
-        const deptIdMatch = p.departmentId && matchKeys.has(p.departmentId);
-        const deptSlugMatch = p.departmentSlug && matchKeys.has(p.departmentSlug.toLowerCase());
-        const deptNameMatch = p.department && matchKeys.has(p.department.toLowerCase());
-        if (catIdMatch || catSlugMatch || catNameMatch || deptIdMatch || deptSlugMatch || deptNameMatch) {
-          count++;
-        }
-      }
+      const count = cat.itemCount || 0;
 
       const childNodes: CategoryTreeNode[] = Array.isArray(cat.children)
         ? cat.children.map(buildNode)
@@ -769,7 +794,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                     <span>{tShop('allDepartments')}</span>
                   </span>
                   <span className="text-[10px] font-bold text-slate-400 px-1.5 py-0.5 rounded bg-slate-100">
-                    {products.length}
+                    {departmentTree.reduce((sum, n) => sum + (n.count || 0), 0)}
                   </span>
                 </button>
 
