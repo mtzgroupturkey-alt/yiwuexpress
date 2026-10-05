@@ -1,26 +1,22 @@
 export const dynamic = 'force-dynamic';
-/**
- * ============================================
- * DATABASE CONNECTION TEST ENDPOINT
- * ============================================
- * 
- * Test endpoint to verify database connection and environment detection
- * 
- * Usage: GET /api/test-db
- */
 
 import { NextResponse } from 'next/server';
 import { testDatabaseConnection, getDatabaseInfo } from '@/lib/db-detector';
+import { requireRole, createAuthErrorResponse } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Test database connection
-    const connectionTest = await testDatabaseConnection();
+    // SEC-10: Disable database connection diagnosis in production environments
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({ error: 'Endpoint not available in production' }, { status: 404 });
+    }
 
-    // Get database info (without password)
+    // Require ADMIN role even in development/staging
+    await requireRole(request, ['ADMIN']);
+
+    const connectionTest = await testDatabaseConnection();
     const dbInfo = getDatabaseInfo();
 
-    // Return comprehensive info
     return NextResponse.json({
       success: connectionTest.success,
       environment: connectionTest.environment,
@@ -34,12 +30,14 @@ export async function GET() {
       },
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error);
+    }
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
+        error: 'Database test error',
       },
       { status: 500 }
     );

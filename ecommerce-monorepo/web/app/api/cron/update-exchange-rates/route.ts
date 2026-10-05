@@ -19,11 +19,11 @@ import { exchangeRateService } from '@/lib/exchange-rate-service'
 
 export async function GET(req: NextRequest) {
   try {
-    // Optional: Add authorization check
     const authHeader = req.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    // Security (SEC-11): Fail closed - require CRON_SECRET authorization
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized' },
         { status: 401 }

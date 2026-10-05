@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
+
 // Valid wholesale status transitions (12-state workflow)
 const WHOLESALE_STATUS_TRANSITIONS: Record<string, string[]> = {
   'INQUIRY_SUBMITTED': ['UNDER_REVIEW', 'REJECTED'],
@@ -24,7 +26,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Add authentication check for admin
+    await requireRole(request, ['ADMIN'])
     const body = await request.json()
     const { status, notes } = body
 
@@ -99,7 +101,10 @@ export async function PUT(
       data: updatedInquiry,
       message: `Status updated to ${status}`
     })
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error updating wholesale status:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to update wholesale status' },

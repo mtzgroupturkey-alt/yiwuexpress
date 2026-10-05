@@ -242,8 +242,12 @@ export async function GET(request: Request) {
     const MAX_LIMIT = 100
     const DEFAULT_LIMIT = 24
 
+    let isFetchAll = false
     let parsedLimit = DEFAULT_LIMIT
-    if (limitParam && limitParam !== 'all' && limitParam !== 'unlimited' && limitParam !== '-1' && limitParam !== '0') {
+    
+    if (limitParam === 'all' || limitParam === 'unlimited' || limitParam === '-1' || limitParam === '0') {
+      isFetchAll = true
+    } else if (limitParam) {
       const n = parseInt(limitParam, 10)
       if (!isNaN(n) && n > 0) {
         parsedLimit = Math.min(n, MAX_LIMIT)
@@ -251,8 +255,8 @@ export async function GET(request: Request) {
     }
 
     const limit = parsedLimit
-    const skip = (page - 1) * limit
-    const take = limit
+    const skip = isFetchAll ? 0 : (page - 1) * limit
+    const take = isFetchAll ? undefined : limit
     const locale = searchParams.get('locale') || 'en'
     const sort = searchParams.get('sort') || 'relevance'
 
@@ -550,12 +554,9 @@ export async function GET(request: Request) {
               : null
           }
         : product.category
-      return {
-        ...product,
-        name,
-        description,
-        category
-      }
+      const { translations, ...rest } = product;
+if (rest.images && Array.isArray(rest.images)) { rest.images = rest.images.slice(0, 3); }
+return { ...rest, name, description, category }
     })
 
     // Check caller wholesale access permissions

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { localizeCategory } from '@/lib/utils/localize'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // GET /api/categories - Get all categories
 export async function GET(request: Request) {
@@ -182,7 +183,7 @@ export async function GET(request: Request) {
 // POST /api/categories - Create a new category (Admin only)
 export async function POST(request: Request) {
   try {
-    // TODO: Add authentication check for admin
+    await requireRole(request, ['ADMIN'])
     const body = await request.json()
 
     // Validate required fields
@@ -205,15 +206,29 @@ export async function POST(request: Request) {
       )
     }
 
+    const { name, slug, description, image, icon, parentId, displayOrder, isActive, isFeatured } = body
     const category = await prisma.category.create({
-      data: body
+      data: {
+        name,
+        slug,
+        description: description || null,
+        image: image || null,
+        icon: icon || null,
+        parentId: parentId || null,
+        displayOrder: displayOrder !== undefined ? displayOrder : 0,
+        isActive: isActive !== undefined ? isActive : true,
+        isFeatured: isFeatured !== undefined ? isFeatured : false,
+      }
     })
 
     return NextResponse.json({
       success: true,
       data: category
     }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error creating category:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create category' },

@@ -1,32 +1,8 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import jwt from 'jsonwebtoken'
 import { z } from 'zod'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-
-// Verify user authentication
-async function verifyUser(request: NextRequest) {
-  try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return null
-    }
-
-    const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
-    
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, email: true, name: true }
-    })
-
-    return user
-  } catch (error) {
-    return null
-  }
-}
+import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
 
 const returnRequestSchema = z.object({
   reason: z.enum([
@@ -54,11 +30,14 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  let user
   try {
-    const user = await verifyUser(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    user = await requireAuth(request)
+  } catch (authError: any) {
+    return createAuthErrorResponse(authError)
+  }
+
+  try {
 
     const { id } = params
     const body = await request.json()
@@ -186,9 +165,8 @@ export async function POST(
       }
     }).catch(err => console.error('Failed to log activity:', err))
 
-    // TODO: Send notification email to customer and admin
-    console.log(`📧 Send return request confirmation to: ${user.email}`)
-    console.log(`📧 Send return alert to admin for return: ${returnNumber}`)
+    // Sanitized log without email or raw PII
+    console.info('[orders/return] Return request created successfully', { orderId: id, returnNumber })
 
     return NextResponse.json({
       success: true,
@@ -217,11 +195,14 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  let user
   try {
-    const user = await verifyUser(request)
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    user = await requireAuth(request)
+  } catch (authError: any) {
+    return createAuthErrorResponse(authError)
+  }
+
+  try {
 
     const { id } = params
 

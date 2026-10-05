@@ -49,10 +49,14 @@ export async function GET(
 
     // IDOR Protection: User can view if:
     // 1. Authenticated as the order owner or ADMIN
-    // 2. Or provided matching orderNumber / customerEmail (guest verification)
-    const isOwnerOrAdmin = user && (order.userId === user.id || user.role === 'ADMIN')
-    const isGuestVerified = (orderNumberParam && orderNumberParam.trim() === order.orderNumber.trim()) ||
-      (emailParam && emailParam.toLowerCase().trim() === order.customerEmail.toLowerCase().trim())
+    // 2. Or provided BOTH matching orderNumber AND customerEmail (guest verification)
+    const isOwnerOrAdmin = Boolean(user && (order.userId === user.id || user.role === 'ADMIN'))
+    const isGuestVerified = Boolean(
+      orderNumberParam &&
+      emailParam &&
+      orderNumberParam.trim().toLowerCase() === order.orderNumber.trim().toLowerCase() &&
+      emailParam.trim().toLowerCase() === order.customerEmail.trim().toLowerCase()
+    )
 
     if (!isOwnerOrAdmin && !isGuestVerified) {
       if (!user) {

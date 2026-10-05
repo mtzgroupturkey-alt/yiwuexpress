@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 import { activateKillSwitch } from '@/lib/autopilot/actions/kill-switch';
+import { requireRole, createAuthErrorResponse } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    // Require ADMIN role
+    const admin = await requireRole(request, ['ADMIN']);
+
     const body = await request.json().catch(() => ({}));
-    const { scope, reason, actor } = body;
+    const { scope, reason } = body;
 
     if (!reason) {
       return NextResponse.json(
@@ -18,7 +22,7 @@ export async function POST(request: Request) {
     const status = await activateKillSwitch({
       scope: scope || 'global',
       reason,
-      actor: actor || 'admin:api',
+      actor: `admin:${admin.id}`,
     });
 
     return NextResponse.json({
@@ -27,8 +31,11 @@ export async function POST(request: Request) {
       status,
     });
   } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to activate kill switch' },
+      { success: false, error: 'Failed to activate kill switch' },
       { status: 500 }
     );
   }

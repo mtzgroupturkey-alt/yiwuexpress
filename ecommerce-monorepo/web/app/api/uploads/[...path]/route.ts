@@ -79,6 +79,13 @@ export async function GET(
     const sanitizedSegments = rawSegments.map((s) => s.replace(/\.\./g, '').replace(/[/\\]/g, ''));
     const relativeSubPath = sanitizedSegments.join('/');
     const fileName = sanitizedSegments[sanitizedSegments.length - 1] || '';
+    const ext = path.extname(fileName).toLowerCase();
+
+    // Security: only allow explicit media extensions from MIME_MAP
+    if (!ext || !MIME_MAP[ext]) {
+      return new NextResponse('Not found', { status: 404 });
+    }
+
     const cwd = process.cwd();
 
     // Potential absolute upload root directories on production and local
@@ -91,13 +98,9 @@ export async function GET(
       '/www/wwwroot/www.dromkok.com/public/uploads',
       '/www/wwwroot/dromkok.com/public/uploads',
       '/www/wwwroot/www.dromkok.com/uploads',
-      '/www/wwwroot/dromkok.com/uploads',
       '/var/www/dromkok/ecommerce-monorepo/web/public/uploads',
       '/var/www/dromkok/uploads',
       '/var/www/uploads',
-      path.join(cwd, 'public'),
-      path.join(cwd, 'web'),
-      path.join(cwd, 'web', 'public'),
     ];
 
     // 1. Direct candidate paths

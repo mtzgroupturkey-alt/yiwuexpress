@@ -1,35 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
-
-// Verify admin authentication
-async function verifyAdmin(request: NextRequest) {
-  try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return null
-    }
-
-    const token = authHeader.substring(7)
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
-    
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-      select: { id: true, role: true }
-    })
-
-    if (user?.role !== 'ADMIN') {
-      return null
-    }
-
-    return user
-  } catch (error) {
-    return null
-  }
-}
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // Generate all combinations of attributes
 function generateCombinations(attributes: Array<{ name: string; values: string[] }>): Array<Record<string, string>> {
@@ -68,10 +40,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const admin = await verifyAdmin(request)
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    await requireRole(request, ['ADMIN'])
 
     const { id } = params
     const body = await request.json()
@@ -180,7 +149,10 @@ export async function POST(
         errorDetails: errors
       }
     }, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Bulk create variants error:', error)
     return NextResponse.json(
       { error: 'Failed to create variants' },

@@ -1,16 +1,18 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
-// POST /api/wholesale/[id]/quote - Create quote for wholesale inquiry (Admin)
+// POST /api/wholesale/[id]/quote - Create quote for wholesale inquiry (Admin only)
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Add authentication check for admin
+    const admin = await requireRole(request, ['ADMIN'])
+
     const body = await request.json()
-    const { quotedPrice, quoteNotes, quoteValidDays, quotedBy } = body
+    const { quotedPrice, quoteNotes, quoteValidDays } = body
 
     if (!quotedPrice) {
       return NextResponse.json(
@@ -54,7 +56,7 @@ export async function POST(
       data: {
         status: 'QUOTED',
         quotedPrice,
-        quotedBy,
+        quotedBy: admin.name || admin.email,
         quotedAt: new Date(),
         quoteValidUntil,
         quoteNotes,
@@ -67,19 +69,20 @@ export async function POST(
             name: true,
             email: true
           }
-        }
+        },
+        shippingCountry: true
       }
     })
-
-    // TODO: Send email notification to customer
-    // TODO: Create in-app notification
 
     return NextResponse.json({
       success: true,
       data: updatedInquiry,
       message: 'Quote created successfully'
     })
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error creating quote:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to create quote' },
