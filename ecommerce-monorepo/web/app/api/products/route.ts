@@ -237,12 +237,22 @@ export async function GET(request: Request) {
     const newArrivals = searchParams.get('new')
     const colors = searchParams.getAll('color') // Get color filters
     const limitParam = searchParams.get('limit')
-    const isAll = limitParam === 'all' || limitParam === 'unlimited' || limitParam === '0' || limitParam === '-1'
-    const page = parseInt(searchParams.get('page') || '1')
-    const parsedLimit = limitParam ? parseInt(limitParam) : 20
-    const limit = isAll ? 0 : (isNaN(parsedLimit) || parsedLimit <= 0 ? 20 : parsedLimit)
-    const skip = isAll ? undefined : (page - 1) * limit
-    const take = isAll ? undefined : limit
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
+
+    const MAX_LIMIT = 100
+    const DEFAULT_LIMIT = 24
+
+    let parsedLimit = DEFAULT_LIMIT
+    if (limitParam && limitParam !== 'all' && limitParam !== 'unlimited' && limitParam !== '-1' && limitParam !== '0') {
+      const n = parseInt(limitParam, 10)
+      if (!isNaN(n) && n > 0) {
+        parsedLimit = Math.min(n, MAX_LIMIT)
+      }
+    }
+
+    const limit = parsedLimit
+    const skip = (page - 1) * limit
+    const take = limit
     const locale = searchParams.get('locale') || 'en'
     const sort = searchParams.get('sort') || 'relevance'
 
@@ -561,10 +571,10 @@ export async function GET(request: Request) {
       success: true,
       data: safeProducts,
       pagination: {
-        page: isAll ? 1 : page,
-        limit: isAll ? total : limit,
+        page,
+        limit,
         total,
-        pages: isAll ? 1 : Math.ceil(total / (limit || 1))
+        pages: Math.ceil(total / (limit || 1))
       },
       filters: filterMetadata
     })

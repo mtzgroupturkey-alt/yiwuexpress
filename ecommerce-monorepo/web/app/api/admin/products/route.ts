@@ -15,9 +15,20 @@ export async function GET(request: Request) {
     const includeVariants = searchParams.get('includeVariants') === 'true'
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
     const limitParam = searchParams.get('limit')
-    const isFetchAll = limitParam === 'all' || limitParam === '-1'
-    const limit = isFetchAll ? -1 : Math.max(1, parseInt(limitParam || '20', 10))
-    const skip = isFetchAll ? 0 : (page - 1) * limit
+    
+    const MAX_LIMIT = 100
+    const DEFAULT_LIMIT = 20
+
+    let parsedLimit = DEFAULT_LIMIT
+    if (limitParam && limitParam !== 'all' && limitParam !== 'unlimited' && limitParam !== '-1' && limitParam !== '0') {
+      const n = parseInt(limitParam, 10)
+      if (!isNaN(n) && n > 0) {
+        parsedLimit = Math.min(n, MAX_LIMIT)
+      }
+    }
+
+    const limit = parsedLimit
+    const skip = (page - 1) * limit
 
     const where: any = {}
 
@@ -123,7 +134,8 @@ export async function GET(request: Request) {
         orderBy: {
           createdAt: 'desc'
         },
-        ...(isFetchAll ? {} : { skip, take: limit })
+        skip,
+        take: limit
       }),
       prisma.product.count({ where }),
       prisma.product.count({ where: { ...where, isActive: true } }),
@@ -136,9 +148,9 @@ export async function GET(request: Request) {
       data: products,
       pagination: {
         page,
-        limit: isFetchAll ? total : limit,
+        limit,
         total,
-        pages: isFetchAll ? 1 : Math.max(1, Math.ceil(total / limit))
+        pages: Math.max(1, Math.ceil(total / limit))
       },
       metrics: {
         total,
