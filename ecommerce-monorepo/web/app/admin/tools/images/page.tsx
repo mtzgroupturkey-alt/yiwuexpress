@@ -395,7 +395,7 @@ export default function ImageMigrationPage() {
             </button>
           )}
 
-          {stats?.lastRunStatus === 'failed' && !isRunning && (
+          {(stats?.lastRunStatus === 'failed' || stats?.lastRunStatus === 'cancelled') && !isRunning && (stats?.external ?? 0) > 0 && (
             <button
               onClick={() => handleStartMigration('resume')}
               disabled={actionLoading}

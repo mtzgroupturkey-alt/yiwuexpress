@@ -10,6 +10,7 @@ import {
   convertToWebP,
   generateImageFilename,
   saveToStorage,
+  getStoredImageForUrl,
   appendRollbackLog,
   addInMemoryLog,
   getInMemoryLogs,
@@ -207,44 +208,61 @@ export async function POST(request: NextRequest) {
 
         // 1. Process thumbnail
         if (product.thumbnail && isExternalImageUrl(product.thumbnail)) {
-          try {
-            const buffer = await downloadExternalImage(product.thumbnail);
-            const webp = await convertToWebP(buffer);
-            const filename = generateImageFilename(product.id, product.thumbnail);
-            const savedUrl = await saveToStorage(webp, filename);
-
+          const existingStoredUrl = await getStoredImageForUrl(product.thumbnail, product.id);
+          if (existingStoredUrl) {
             rollbackLog.push({
               productId: product.id,
               field: 'thumbnail',
               oldUrl: product.thumbnail,
-              newUrl: savedUrl,
+              newUrl: existingStoredUrl,
               status: 'success',
               timestamp: new Date().toISOString(),
             });
 
-            newThumbnail = savedUrl;
+            newThumbnail = existingStoredUrl;
             productUpdated = true;
             batchProcessed++;
-            addInMemoryLog(`✅ Sku: ${product.sku} [thumbnail] -> ${savedUrl}`);
-          } catch (err: any) {
-            batchFailed++;
-            const isDead = err.status === 404 || err.status === 410 || err.message?.includes('404');
-            rollbackLog.push({
-              productId: product.id,
-              field: 'thumbnail',
-              oldUrl: product.thumbnail,
-              status: 'failed',
-              error: err.message,
-              timestamp: new Date().toISOString(),
-            });
+            addInMemoryLog(`⚡ Sku: ${product.sku} [thumbnail] -> Reused existing local WebP (download skipped)`);
+          } else {
+            try {
+              const buffer = await downloadExternalImage(product.thumbnail);
+              const webp = await convertToWebP(buffer);
+              const filename = generateImageFilename(product.id, product.thumbnail);
+              const savedUrl = await saveToStorage(webp, filename, product.thumbnail);
 
-            if (isDead) {
-              // Clean out dead 404 thumbnail link from database so it doesn't retry
-              newThumbnail = null;
+              rollbackLog.push({
+                productId: product.id,
+                field: 'thumbnail',
+                oldUrl: product.thumbnail,
+                newUrl: savedUrl,
+                status: 'success',
+                timestamp: new Date().toISOString(),
+              });
+
+              newThumbnail = savedUrl;
               productUpdated = true;
-              addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] 404 Not Found (cleaned from DB)`);
-            } else {
-              addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] error: ${err.message}`);
+              batchProcessed++;
+              addInMemoryLog(`✅ Sku: ${product.sku} [thumbnail] -> ${savedUrl}`);
+            } catch (err: any) {
+              batchFailed++;
+              const isDead = err.status === 404 || err.status === 410 || err.message?.includes('404');
+              rollbackLog.push({
+                productId: product.id,
+                field: 'thumbnail',
+                oldUrl: product.thumbnail,
+                status: 'failed',
+                error: err.message,
+                timestamp: new Date().toISOString(),
+              });
+
+              if (isDead) {
+                // Clean out dead 404 thumbnail link from database so it doesn't retry
+                newThumbnail = null;
+                productUpdated = true;
+                addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] 404 Not Found (cleaned from DB)`);
+              } else {
+                addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] error: ${err.message}`);
+              }
             }
           }
         }
@@ -256,45 +274,62 @@ export async function POST(request: NextRequest) {
           if (!rawUrl) continue;
 
           if (isExternalImageUrl(rawUrl)) {
-            try {
-              const buffer = await downloadExternalImage(rawUrl);
-              const webp = await convertToWebP(buffer);
-              const filename = generateImageFilename(`${product.id}-${imgIdx}`, rawUrl);
-              const savedUrl = await saveToStorage(webp, filename);
-
+            const existingStoredUrl = await getStoredImageForUrl(rawUrl, `${product.id}-${imgIdx}`);
+            if (existingStoredUrl) {
               rollbackLog.push({
                 productId: product.id,
                 field: 'image',
                 oldUrl: rawUrl,
-                newUrl: savedUrl,
+                newUrl: existingStoredUrl,
                 status: 'success',
                 timestamp: new Date().toISOString(),
               });
 
-              finalGalleryImages.push(savedUrl);
+              finalGalleryImages.push(existingStoredUrl);
               productUpdated = true;
               batchProcessed++;
-              addInMemoryLog(`✅ Sku: ${product.sku} [img ${imgIdx + 1}] -> ${savedUrl}`);
-            } catch (err: any) {
-              batchFailed++;
-              const isDead = err.status === 404 || err.status === 410 || err.message?.includes('404');
-              rollbackLog.push({
-                productId: product.id,
-                field: 'image',
-                oldUrl: rawUrl,
-                status: 'failed',
-                error: err.message,
-                timestamp: new Date().toISOString(),
-              });
+              addInMemoryLog(`⚡ Sku: ${product.sku} [img ${imgIdx + 1}] -> Reused existing local WebP (download skipped)`);
+            } else {
+              try {
+                const buffer = await downloadExternalImage(rawUrl);
+                const webp = await convertToWebP(buffer);
+                const filename = generateImageFilename(`${product.id}-${imgIdx}`, rawUrl);
+                const savedUrl = await saveToStorage(webp, filename, rawUrl);
 
-              if (isDead) {
-                // Remove dead 404 image from product gallery array
+                rollbackLog.push({
+                  productId: product.id,
+                  field: 'image',
+                  oldUrl: rawUrl,
+                  newUrl: savedUrl,
+                  status: 'success',
+                  timestamp: new Date().toISOString(),
+                });
+
+                finalGalleryImages.push(savedUrl);
                 productUpdated = true;
-                addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] 404 Not Found (removed dead link)`);
-              } else {
-                // Keep temporary failure URL for later retry
-                finalGalleryImages.push(rawUrl);
-                addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] error: ${err.message}`);
+                batchProcessed++;
+                addInMemoryLog(`✅ Sku: ${product.sku} [img ${imgIdx + 1}] -> ${savedUrl}`);
+              } catch (err: any) {
+                batchFailed++;
+                const isDead = err.status === 404 || err.status === 410 || err.message?.includes('404');
+                rollbackLog.push({
+                  productId: product.id,
+                  field: 'image',
+                  oldUrl: rawUrl,
+                  status: 'failed',
+                  error: err.message,
+                  timestamp: new Date().toISOString(),
+                });
+
+                if (isDead) {
+                  // Remove dead 404 image from product gallery array
+                  productUpdated = true;
+                  addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] 404 Not Found (removed dead link)`);
+                } else {
+                  // Keep temporary failure URL for later retry
+                  finalGalleryImages.push(rawUrl);
+                  addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] error: ${err.message}`);
+                }
               }
             }
           } else {
@@ -450,19 +485,26 @@ export async function POST(request: NextRequest) {
 
           // Thumbnail
           if (product.thumbnail && isExternalImageUrl(product.thumbnail)) {
-            try {
-              const buffer = await downloadExternalImage(product.thumbnail);
-              const webp = await convertToWebP(buffer);
-              const filename = generateImageFilename(product.id, product.thumbnail);
-              const savedUrl = await saveToStorage(webp, filename);
-              newThumbnail = savedUrl;
+            const existingStoredUrl = await getStoredImageForUrl(product.thumbnail, product.id);
+            if (existingStoredUrl) {
+              newThumbnail = existingStoredUrl;
               processedTotal++;
-              addInMemoryLog(`✅ Sku: ${product.sku} [thumbnail] -> ${savedUrl}`);
-            } catch (err: any) {
-              failedTotal++;
-              if (err.status === 404 || err.message?.includes('404')) {
-                newThumbnail = null;
-                addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] 404 Not Found (cleaned)`);
+              addInMemoryLog(`⚡ Sku: ${product.sku} [thumbnail] -> Reused existing local WebP (download skipped)`);
+            } else {
+              try {
+                const buffer = await downloadExternalImage(product.thumbnail);
+                const webp = await convertToWebP(buffer);
+                const filename = generateImageFilename(product.id, product.thumbnail);
+                const savedUrl = await saveToStorage(webp, filename, product.thumbnail);
+                newThumbnail = savedUrl;
+                processedTotal++;
+                addInMemoryLog(`✅ Sku: ${product.sku} [thumbnail] -> ${savedUrl}`);
+              } catch (err: any) {
+                failedTotal++;
+                if (err.status === 404 || err.message?.includes('404')) {
+                  newThumbnail = null;
+                  addInMemoryLog(`⚠️ Sku: ${product.sku} [thumbnail] 404 Not Found (cleaned)`);
+                }
               }
             }
           }
@@ -474,20 +516,27 @@ export async function POST(request: NextRequest) {
             if (!rawUrl) continue;
 
             if (isExternalImageUrl(rawUrl)) {
-              try {
-                const buffer = await downloadExternalImage(rawUrl);
-                const webp = await convertToWebP(buffer);
-                const filename = generateImageFilename(`${product.id}-${imgIdx}`, rawUrl);
-                const savedUrl = await saveToStorage(webp, filename);
-                finalImages.push(savedUrl);
+              const existingStoredUrl = await getStoredImageForUrl(rawUrl, `${product.id}-${imgIdx}`);
+              if (existingStoredUrl) {
+                finalImages.push(existingStoredUrl);
                 processedTotal++;
-                addInMemoryLog(`✅ Sku: ${product.sku} [img ${imgIdx + 1}] -> ${savedUrl}`);
-              } catch (err: any) {
-                failedTotal++;
-                if (err.status === 404 || err.message?.includes('404')) {
-                  addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] 404 Not Found (removed)`);
-                } else {
-                  finalImages.push(rawUrl);
+                addInMemoryLog(`⚡ Sku: ${product.sku} [img ${imgIdx + 1}] -> Reused existing local WebP (download skipped)`);
+              } else {
+                try {
+                  const buffer = await downloadExternalImage(rawUrl);
+                  const webp = await convertToWebP(buffer);
+                  const filename = generateImageFilename(`${product.id}-${imgIdx}`, rawUrl);
+                  const savedUrl = await saveToStorage(webp, filename, rawUrl);
+                  finalImages.push(savedUrl);
+                  processedTotal++;
+                  addInMemoryLog(`✅ Sku: ${product.sku} [img ${imgIdx + 1}] -> ${savedUrl}`);
+                } catch (err: any) {
+                  failedTotal++;
+                  if (err.status === 404 || err.message?.includes('404')) {
+                    addInMemoryLog(`⚠️ Sku: ${product.sku} [img ${imgIdx + 1}] 404 Not Found (removed)`);
+                  } else {
+                    finalImages.push(rawUrl);
+                  }
                 }
               }
             } else {

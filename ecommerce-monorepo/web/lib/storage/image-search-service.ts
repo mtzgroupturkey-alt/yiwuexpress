@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { convertToWebP, generateImageFilename, saveToStorage } from './image-migrator';
+import { convertToWebP, generateImageFilename, saveToStorage, getStoredImageForUrl } from './image-migrator';
 
 export interface CandidateResult {
   id?: string;
@@ -519,29 +519,36 @@ export async function downloadAndAssignMultipleCandidates(params: {
         throw new Error('Copyright confirmation is required before downloading this image.');
       }
 
-      // Download
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 20000);
-      const res = await fetch(c.sourceUrl, {
-        signal: controller.signal,
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-        },
-      });
-      clearTimeout(timeout);
+      // Check if image already exists locally or in R2
+      const existing = await getStoredImageForUrl(c.sourceUrl, product.sku || 'prod');
+      let newUrl = existing;
 
-      if (!res.ok) {
-        errors.push(`Failed to download ${c.sourceUrl}: HTTP ${res.status}`);
-        continue;
+      if (!newUrl) {
+        // Download
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 20000);
+        const res = await fetch(c.sourceUrl, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          },
+        });
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+          errors.push(`Failed to download ${c.sourceUrl}: HTTP ${res.status}`);
+          continue;
+        }
+
+        const arrayBuffer = await res.arrayBuffer();
+        const rawBuffer = Buffer.from(arrayBuffer);
+        const webpBuffer = await convertToWebP(rawBuffer);
+        const filename = generateImageFilename(product.sku || 'prod', c.sourceUrl);
+        newUrl = await saveToStorage(webpBuffer, filename, c.sourceUrl);
       }
 
-      const arrayBuffer = await res.arrayBuffer();
-      const rawBuffer = Buffer.from(arrayBuffer);
-      const webpBuffer = await convertToWebP(rawBuffer);
-      const filename = generateImageFilename(product.sku || 'prod', c.sourceUrl);
-      const newUrl = await saveToStorage(webpBuffer, filename);
       newUrls.push(newUrl);
 
       // Update candidate status
