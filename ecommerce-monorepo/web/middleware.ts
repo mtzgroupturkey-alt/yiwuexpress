@@ -278,6 +278,13 @@ async function authMiddleware(request: NextRequest) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Handle uploaded assets immediately: rewrite directly to /api/uploads
+  if (pathname.startsWith('/uploads/')) {
+    const uploadApiUrl = request.nextUrl.clone()
+    uploadApiUrl.pathname = pathname.replace(/^\/uploads\//, '/api/uploads/')
+    return NextResponse.rewrite(uploadApiUrl)
+  }
+
   // Canonical redirect: /products -> /store (preserves query params, excludes /products/[slug])
   if (pathname === '/products') {
     const url = request.nextUrl.clone()
