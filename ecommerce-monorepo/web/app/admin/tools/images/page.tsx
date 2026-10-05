@@ -18,6 +18,8 @@ import {
   Layers,
   FileText,
   ExternalLink,
+  Trash2,
+  Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAdminLocale } from '../../contexts/AdminLocaleContext';
@@ -242,6 +244,43 @@ export default function ImageMigrationPage() {
     }
   };
 
+  const handleDeduplicate = async () => {
+    const confirmMsg =
+      dict.tools?.confirmDeduplicate ||
+      'Scan all downloaded photos, unify product database references to canonical files, and delete redundant duplicate photos from disk?';
+
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+
+    setActionLoading(true);
+    toast.loading('Scanning & removing duplicate downloaded photos...', { id: 'dedup-toast' });
+    try {
+      const res = await fetch('/api/admin/images/duplicates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dryRun: false }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success(
+          data.message ||
+            `Deduplication complete! Cleaned ${data.cleanedDuplicatesCount} duplicate files.`,
+          { id: 'dedup-toast', duration: 5000 }
+        );
+        fetchStats();
+      } else {
+        toast.error(data.message || data.error || 'Failed to clean duplicates', {
+          id: 'dedup-toast',
+        });
+      }
+    } catch {
+      toast.error('Network error during deduplication', { id: 'dedup-toast' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const copyLogs = () => {
     if (stats?.logs) {
       navigator.clipboard.writeText(stats.logs.join('\n'));
@@ -410,6 +449,16 @@ export default function ImageMigrationPage() {
               {dict.tools.resumeJob || 'Resume Interrupted Job'}
             </button>
           )}
+
+          <button
+            onClick={handleDeduplicate}
+            disabled={actionLoading || isRunning}
+            title={dict.tools.deduplicateDesc || 'Detect identical downloaded photos, update products in database to the canonical file, and delete duplicate files.'}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-800 border border-emerald-300 text-sm font-semibold rounded-lg hover:bg-emerald-100 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            {dict.tools.deduplicatePhotos || 'Find & Clean Duplicates'}
+          </button>
 
           <button
             onClick={handleRollback}
