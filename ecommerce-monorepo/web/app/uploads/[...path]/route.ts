@@ -113,17 +113,23 @@ export async function GET(
 
     // Self-healing fallback if requested file is missing from disk
     if (!foundFile) {
-      // 1. Logo fallback: if requested file is a logo
-      if (fileName.includes('logo') || relativeSubPath.includes('logo')) {
+      // 1. Logo fallback: if requested file is a logo or WeChat or photoroom image
+      if (fileName.includes('logo') || relativeSubPath.includes('logo') || fileName.includes('wechat') || fileName.includes('photoroom')) {
         const logoCandidates = [
           path.join(cwd, 'public', 'logo.png'),
+          path.join(cwd, 'public', 'logo.svg'),
+          path.join(cwd, 'public', 'uploads', 'general', '1789807106178-1787644810312-logo_pixian_ai.png'),
+          path.join(cwd, 'public', 'uploads', 'general', 'logo_pixian_ai.png'),
+          path.join(cwd, 'public', 'uploads', 'general', 'logo-login.png'),
+          path.join(cwd, 'public', 'uploads', 'general', 'logo.svg'),
           path.join(cwd, 'web', 'public', 'logo.png'),
+          path.join(cwd, 'web', 'public', 'logo.svg'),
+          '/www/wwwroot/www.dromkok.com/web/public/logo.png',
+          '/www/wwwroot/www.dromkok.com/web/public/logo.svg',
+          '/www/wwwroot/www.dromkok.com/web/public/uploads/general/logo_pixian_ai.png',
           path.join(cwd, 'public', 'uploads', 'general', '1789563604789-1787644810312-logo_pixian_ai.png'),
           path.join(cwd, 'web', 'public', 'uploads', 'general', '1789563604789-1787644810312-logo_pixian_ai.png'),
-          '/www/wwwroot/www.dromkok.com/web/public/logo.png',
           '/www/wwwroot/www.dromkok.com/web/public/uploads/general/1789563604789-1787644810312-logo_pixian_ai.png',
-          path.join(cwd, 'public', 'logo.svg'),
-          path.join(cwd, 'web', 'public', 'logo.svg'),
         ]
         foundFile = await findExistingFile(logoCandidates)
       }
@@ -132,18 +138,25 @@ export async function GET(
       if (!foundFile && (fileName.includes('favicon') || relativeSubPath.includes('favicon'))) {
         const faviconCandidates = [
           path.join(cwd, 'public', 'favicon.ico'),
+          path.join(cwd, 'public', 'favicon.png'),
+          path.join(cwd, 'public', 'favicon.svg'),
           path.join(cwd, 'web', 'public', 'favicon.ico'),
+          path.join(cwd, 'web', 'public', 'favicon.png'),
           path.join(cwd, 'public', 'uploads', 'favicons', 'favicon-1789563607224.png'),
           path.join(cwd, 'web', 'public', 'uploads', 'favicons', 'favicon-1789563607224.png'),
+          '/www/wwwroot/www.dromkok.com/web/public/favicon.ico',
           '/www/wwwroot/www.dromkok.com/web/public/uploads/favicons/favicon-1789563607224.png',
         ]
         foundFile = await findExistingFile(faviconCandidates)
       }
 
-      // 3. Hero fallback: if requested file is a hero banner
-      if (!foundFile && (fileName.includes('hero') || relativeSubPath.includes('hero'))) {
+      // 3. Hero & Ad/Banner fallback: if requested file is a hero banner or ad
+      if (!foundFile && (fileName.includes('hero') || relativeSubPath.includes('hero') || fileName.includes('ad') || fileName.includes('serving') || fileName.includes('banner'))) {
         const heroCandidates = [
           path.join(cwd, 'public', 'images', 'hero', 'hero-1.jpg'),
+          path.join(cwd, 'public', 'images', 'hero', 'hero-2.jpg'),
+          path.join(cwd, 'public', 'uploads', 'hero', 'hero-1.jpg'),
+          path.join(cwd, 'public', 'uploads', 'general', 'Gemini_Generated_Image_8e9wy08e9wy08e9w.jpg'),
           path.join(cwd, 'web', 'public', 'images', 'hero', 'hero-1.jpg'),
           '/www/wwwroot/www.dromkok.com/web/public/images/hero/hero-1.jpg',
         ]
@@ -154,41 +167,75 @@ export async function GET(
       if (!foundFile) {
         const productFallbackCandidates = [
           path.join(cwd, 'public', 'images', 'product-placeholder.webp'),
-          path.join(cwd, 'web', 'public', 'images', 'product-placeholder.webp'),
-          path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'product-placeholder.webp'),
-          '/www/wwwroot/www.dromkok.com/web/public/images/product-placeholder.webp',
-          path.join(cwd, 'public', 'images', 'product-placeholder.svg'),
-          path.join(cwd, 'web', 'public', 'images', 'product-placeholder.svg'),
+          path.join(cwd, 'public', 'images', 'products', 'placeholder.jpg'),
           path.join(cwd, 'public', 'images', 'placeholder.png'),
-          path.join(cwd, 'web', 'public', 'images', 'placeholder.png'),
+          path.join(cwd, 'web', 'public', 'images', 'product-placeholder.webp'),
+          path.join(cwd, 'web', 'public', 'images', 'products', 'placeholder.jpg'),
+          path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'product-placeholder.webp'),
+          path.join(cwd, 'ecommerce-monorepo', 'web', 'public', 'images', 'products', 'placeholder.jpg'),
+          '/www/wwwroot/www.dromkok.com/web/public/images/product-placeholder.webp',
+          '/www/wwwroot/www.dromkok.com/web/public/images/products/placeholder.jpg',
+          '/www/wwwroot/dromkok.com/web/public/images/product-placeholder.webp',
         ]
         foundFile = await findExistingFile(productFallbackCandidates)
       }
     }
 
     if (!foundFile) {
-      return new NextResponse('Not Found', { status: 404 })
+      // Clean SVG fallback returned with 200 OK so images never break or cause layout shifts
+      const svgFallback = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" fill="none"><rect width="400" height="400" fill="#f8fafc"/><path d="M160 180a20 20 0 100-40 20 20 0 000 40zm80 70H160l40-50 25 31 15-18 40 37z" fill="#cbd5e1"/><text x="200" y="290" text-anchor="middle" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500">Global Trade</text></svg>`
+      return new NextResponse(svgFallback, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'X-Media-Served-By': 'dromkok-uploads-fallback-svg',
+        },
+      })
     }
 
     const fileBuffer = await fs.readFile(foundFile)
-    const mimeType = getMimeType(foundFile)
+    let mimeType = getMimeType(foundFile)
 
-    const isFallback = foundFile.includes('product-placeholder') || foundFile.includes('placeholder')
-    const cacheHeader = isFallback
-      ? 'public, max-age=60, stale-while-revalidate=300'
-      : 'public, max-age=31536000, immutable'
+    // Bulletproof Content-Type Sniffing:
+    const headText = fileBuffer.slice(0, 100).toString('utf8').trim().toLowerCase()
+    if (headText.startsWith('<svg') || headText.startsWith('<?xml')) {
+      mimeType = 'image/svg+xml; charset=utf-8'
+    } else if (fileBuffer.length >= 3 && fileBuffer[0] === 0xff && fileBuffer[1] === 0xd8 && fileBuffer[2] === 0xff) {
+      mimeType = 'image/jpeg'
+    } else if (fileBuffer.length >= 8 && fileBuffer[0] === 0x89 && fileBuffer[1] === 0x50 && fileBuffer[2] === 0x4e && fileBuffer[3] === 0x47) {
+      mimeType = 'image/png'
+    } else if (fileBuffer.length >= 12 && fileBuffer.slice(0, 4).toString('ascii') === 'RIFF' && fileBuffer.slice(8, 12).toString('ascii') === 'WEBP') {
+      mimeType = 'image/webp'
+    }
 
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
         'Content-Type': mimeType,
-        'Cache-Control': cacheHeader,
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
         'Content-Length': fileBuffer.length.toString(),
-        'X-Media-Served-By': 'dromkok-uploads-handler',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Accept, Range',
+        'X-Media-Served-By': 'dromkok-uploads-api',
       },
     })
   } catch (error) {
     console.error('[uploads/route] Error serving uploaded file:', error)
     return new NextResponse('Internal Server Error', { status: 500 })
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept, Range',
+    },
+  })
 }

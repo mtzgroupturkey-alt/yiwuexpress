@@ -88,6 +88,14 @@ export const getSystemSettings = safeCache(
       let resolvedLogo = settings.companyLogo || '/logo.png'
       if (resolvedLogo.includes('1789808619686')) {
         resolvedLogo = '/logo.png'
+      } else if (resolvedLogo.startsWith('/uploads/')) {
+        // Direct /uploads/:path* URL rewritten to /api/uploads/:path* for reliable serving
+        resolvedLogo = `/api${resolvedLogo}`
+      }
+
+      let resolvedFavicon = settings.companyFavicon || '/favicon.ico'
+      if (resolvedFavicon.startsWith('/uploads/')) {
+        resolvedFavicon = `/api${resolvedFavicon}`
       }
 
       return {

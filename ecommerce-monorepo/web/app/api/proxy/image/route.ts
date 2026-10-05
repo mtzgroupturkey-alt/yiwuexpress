@@ -86,11 +86,13 @@ export async function GET(request: NextRequest) {
 
     const contentType = response.headers.get('content-type') || 'image/jpeg';
     const buffer = await response.arrayBuffer();
+    const nodeBuffer = Buffer.from(buffer);
 
-    return new NextResponse(Buffer.from(buffer), {
+    return new NextResponse(nodeBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
+        'Content-Length': nodeBuffer.length.toString(),
         'Cache-Control': 'public, max-age=2592000, immutable',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
@@ -98,7 +100,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.warn('[proxy/image] Error fetching remote image:', targetUrl.toString(), error instanceof Error ? error.message : error);
+    console.warn('[proxy/image] Error fetching remote image, serving fallback:', targetUrl.toString(), error instanceof Error ? error.message : error);
     return getFallbackImageResponse();
   }
 }
