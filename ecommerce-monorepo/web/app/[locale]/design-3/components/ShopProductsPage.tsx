@@ -144,7 +144,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const [onSaleOnly, setOnSaleOnly] = useState<boolean>(false);
   const [expressOnly, setExpressOnly] = useState<boolean>(false);
   const [catalogSearch, setCatalogSearch] = useState<string>(initialSearch);
-  const [sortBy, setSortBy] = useState<'popular' | 'price-asc' | 'price-desc' | 'rating' | 'discount'>('popular');
+  const [sortBy, setSortBy] = useState<'popular' | 'price-asc' | 'price-desc' | 'rating' | 'discount'>((searchParams.get('sort') as any) || 'popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
   // Mobile filter drawer
