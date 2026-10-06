@@ -586,11 +586,11 @@ export function Design3Storefront() {
       <CatalogModal
         isOpen={isCatalogOpen}
         onClose={() => setIsCatalogOpen(false)}
-        onSelectDepartment={(deptName, subcategory) => {
-          const searchKeyword = subcategory ? subcategory.split('&')[0].trim().split(' ')[0] : '';
+        onSelectDepartment={(deptName, subcategory, categorySlugOrId) => {
+          const cat = categorySlugOrId || subcategory || deptName;
           handleNavigateView('shop', { 
             department: deptName,
-            search: searchKeyword
+            category: cat
           });
           setIsCatalogOpen(false);
           showToast(`Browsing ${subcategory || deptName} in Catalog`);

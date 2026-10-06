@@ -655,7 +655,7 @@ export default function Home() {
     if (dept === 'All Departments' || dept === 'all') {
       router.push(`/${locale}/store`);
     } else {
-      router.push(`/${locale}/store?department=${encodeURIComponent(dept)}`);
+      router.push(`/${locale}/store?category=${encodeURIComponent(dept)}`);
     }
   };
 
@@ -1102,13 +1102,14 @@ export default function Home() {
         isOpen={isCatalogOpen}
         onClose={() => setIsCatalogOpen(false)}
         categories={headerNavCategories}
-        onSelectDepartment={(deptName, subcategory) => {
+        onSelectDepartment={(deptName, subcategory, categorySlugOrId) => {
           setIsCatalogOpen(false);
-          router.push(
-            `/${locale}/store?department=${encodeURIComponent(deptName)}${
-              subcategory ? `&sub=${encodeURIComponent(subcategory)}` : ''
-            }`
-          );
+          if (deptName === 'All Departments' || deptName === 'all') {
+            router.push(`/${locale}/store`);
+            return;
+          }
+          const cat = categorySlugOrId || subcategory || deptName;
+          router.push(`/${locale}/store?category=${encodeURIComponent(cat)}`);
         }}
       />
 

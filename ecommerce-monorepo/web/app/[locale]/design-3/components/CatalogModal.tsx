@@ -24,7 +24,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
   interface CatalogModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSelectDepartment: (deptName: string, subcategory?: string) => void;
+    onSelectDepartment: (deptName: string, subcategory?: string, categorySlugOrId?: string) => void;
     categories?: CatalogCategory[];
   }
 
@@ -46,7 +46,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
             : ['All ' + c.name, 'Best Sellers', 'New Arrivals', 'Special Offers'],
           children: c.children,
         }))
-      : DEPARTMENTS.map((d) => ({ ...d, children: undefined as CatalogChildCategory[] | undefined }));
+      : DEPARTMENTS.map((d) => ({ ...d, slug: (d as any).slug || d.name.toLowerCase().replace(/\s+/g, '-'), children: undefined as CatalogChildCategory[] | undefined }));
 
   const [activeDeptId, setActiveDeptId] = useState(departmentsList[0]?.id || DEPARTMENTS[0].id);
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
@@ -193,7 +193,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
                 </div>
                 <button
                   onClick={() => {
-                    onSelectDepartment(currentDept.name);
+                    onSelectDepartment(currentDept.name, undefined, currentDept.slug || currentDept.id);
                     onClose();
                   }}
                   className="bg-slate-100 hover:bg-[#00407a] text-slate-800 hover:text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
@@ -218,7 +218,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
                           <button
                             type="button"
                             onClick={() => {
-                              onSelectDepartment(child.name);
+                              onSelectDepartment(child.name, undefined, child.slug || child.id);
                               onClose();
                             }}
                             className="flex items-center gap-2 text-left cursor-pointer flex-1 min-w-0"
@@ -237,7 +237,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
                             <button
                               type="button"
                               onClick={() => {
-                                onSelectDepartment(child.name);
+                                onSelectDepartment(child.name, undefined, child.slug || child.id);
                                 onClose();
                               }}
                               className="text-slate-300 group-hover:text-[#00407a] p-0.5 cursor-pointer shrink-0 transition-colors"
@@ -257,7 +257,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  onSelectDepartment(sub.name);
+                                  onSelectDepartment(sub.name, undefined, sub.slug || sub.id);
                                   onClose();
                                 }}
                                 className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#00407a] hover:font-bold font-medium transition-colors cursor-pointer border border-slate-200/70 hover:border-blue-200 flex items-center gap-1"
@@ -312,7 +312,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 
               <button
                 onClick={() => {
-                  onSelectDepartment(currentDept.name);
+                  onSelectDepartment(currentDept.name, undefined, currentDept.slug || currentDept.id);
                   onClose();
                 }}
                 className="bg-[#00407a] hover:bg-[#003366] text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer shrink-0 shadow-xs active:scale-[0.98] text-center"

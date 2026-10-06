@@ -366,7 +366,7 @@ export function Design3LayoutHeader() {
   const handleSelectDepartment = (dept: string) => {
     setSelectedDepartment(dept);
     if (dept !== 'All Departments' && dept !== 'all') {
-      router.push(`/${locale}/store?department=${encodeURIComponent(dept)}`);
+      router.push(`/${locale}/store?category=${encodeURIComponent(dept)}`);
     } else {
       router.push(`/${locale}/store`);
     }
@@ -412,13 +412,14 @@ export function Design3LayoutHeader() {
         isOpen={isCatalogOpen}
         onClose={() => setIsCatalogOpen(false)}
         categories={headerCategories}
-        onSelectDepartment={(deptName, subcategory) => {
+        onSelectDepartment={(deptName, subcategory, categorySlugOrId) => {
           setIsCatalogOpen(false);
-          router.push(
-            `/${locale}/store?department=${encodeURIComponent(deptName)}${
-              subcategory ? `&sub=${encodeURIComponent(subcategory)}` : ''
-            }`
-          );
+          if (deptName === 'All Departments' || deptName === 'all') {
+            router.push(`/${locale}/store`);
+            return;
+          }
+          const cat = categorySlugOrId || subcategory || deptName;
+          router.push(`/${locale}/store?category=${encodeURIComponent(cat)}`);
         }}
       />
 
