@@ -202,9 +202,9 @@ export default function ImageFinderPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch products
-  const fetchProducts = async () => {
-    setLoading(true);
+  // Fetch products (supports silent refresh to preserve table scroll position)
+  const fetchProducts = async (silent: boolean = false) => {
+    if (!silent) setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -226,7 +226,7 @@ export default function ImageFinderPage() {
     } catch (err: any) {
       showToast('error', err.message || 'Error fetching products');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -517,7 +517,11 @@ export default function ImageFinderPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to download and re-host photo');
 
       showToast('success', `✅ Downloaded & converted photo for "${product.name}" to local WebP!`);
-      fetchProducts();
+      const savedScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+      await fetchProducts(true);
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+      }
     } catch (err: any) {
       showToast('error', err.message || 'Failed to download photo');
     } finally {
@@ -606,6 +610,7 @@ export default function ImageFinderPage() {
 
   const handleAutoFetchIkeaProduct = async (product: ProductItem) => {
     setFetchingIkeaId(product.id);
+    const savedScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
     try {
       const res = await fetch(`/api/admin/products/${product.id}/fetch-ikea-photo`, {
         method: 'POST',
@@ -614,7 +619,33 @@ export default function ImageFinderPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to auto-fetch from IKEA.com');
 
       showToast('success', `✨ Successfully downloaded authentic IKEA photo for "${product.name}"!`);
-      fetchProducts();
+
+      // Optimistic in-place update so row updates immediately with zero layout shift or scroll jump
+      if (data.newThumbnail) {
+        setProducts((prev) =>
+          prev.map((item) =>
+            item.id === product.id
+              ? {
+                  ...item,
+                  thumbnail: data.newThumbnail,
+                  images: [data.newThumbnail],
+                  hasRealImage: true,
+                  isPlaceholder: false,
+                  isMissingOnDisk: false,
+                  analysisReason: 'Genuine local photo (IKEA official)',
+                }
+              : item
+          )
+        );
+      }
+
+      // Silent refresh to ensure accurate background sync without remounting table or scrolling
+      await fetchProducts(true);
+
+      // Restore scroll position just in case
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+      }
     } catch (err: any) {
       showToast('error', err.message || 'Auto-fetch from IKEA failed');
     } finally {
@@ -775,7 +806,7 @@ export default function ImageFinderPage() {
               {dict.tools.imageMigrationTitle || 'Image Migration Tool'}
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={fetchProducts} disabled={loading} className="gap-2">
+          <Button variant="outline" size="sm" onClick={() => fetchProducts()} disabled={loading} className="gap-2">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             {dict.tools.refreshStats || 'Refresh'}
           </Button>
@@ -908,27 +939,39 @@ export default function ImageFinderPage() {
       </div>
 
       {/* Filters and Controls */}
-      <Card className="shadow-xs border-gray-200">
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+      <Card className="shadow-xs border-gray-200 bg-white">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+            {/* Expanded Prominent Search Input */}
+            <div className="relative flex-1 min-w-[280px]">
+              <Search className="w-5 h-5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <Input
                 placeholder={dict.tools.searchProductsPlaceholder || 'Search products by name, SKU, or slug...'}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-white"
+                className="pl-11 pr-10 h-11 bg-gray-50/70 hover:bg-gray-50 focus:bg-white text-sm sm:text-base rounded-xl border-gray-300 transition-colors shadow-2xs font-normal placeholder:text-gray-400"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 rounded-full hover:bg-gray-200/60 transition-colors"
+                  title="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            {/* Filter Dropdowns & Batch Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
               <select
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setPage(1);
                 }}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-xl px-3.5 h-11 text-sm bg-white hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-700 shadow-2xs transition-colors cursor-pointer max-w-[200px]"
               >
                 <option value="">{dict.tools.allCategories || 'All Categories'}</option>
                 {categories.map((c) => (
@@ -944,7 +987,7 @@ export default function ImageFinderPage() {
                   setFilterType(e.target.value);
                   setPage(1);
                 }}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-800"
+                className="border border-gray-300 rounded-xl px-3.5 h-11 text-sm bg-white hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-semibold text-gray-800 shadow-2xs transition-colors cursor-pointer"
               >
                 <option value="placeholder_photo">🖼️ Detected Placeholder Photo</option>
                 <option value="missing_on_disk">⚠️ Missing from Disk / Null Photo</option>
@@ -960,7 +1003,7 @@ export default function ImageFinderPage() {
                   setLimit(parseInt(e.target.value, 10));
                   setPage(1);
                 }}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-xl px-3 h-11 text-sm bg-white hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-700 shadow-2xs transition-colors cursor-pointer"
               >
                 <option value="10">10 / page</option>
                 <option value="15">15 / page</option>
@@ -973,10 +1016,10 @@ export default function ImageFinderPage() {
                 variant="default"
                 onClick={handleBatchAutoFetchIkeaCurrentPage}
                 disabled={batchFetchingIkea || loading || products.length === 0}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 gap-1.5 shadow-xs"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm h-11 px-3.5 rounded-xl gap-2 shadow-xs transition-all"
                 title="Automatically search and download genuine IKEA photos for all placeholder products on this page"
               >
-                <Sparkles className={`w-3.5 h-3.5 ${batchFetchingIkea ? 'animate-spin' : ''}`} />
+                <Sparkles className={`w-4 h-4 ${batchFetchingIkea ? 'animate-spin' : ''}`} />
                 {batchFetchingIkea ? 'Fetching IKEA...' : 'Auto-Fetch IKEA for Page'}
               </Button>
 
@@ -985,10 +1028,10 @@ export default function ImageFinderPage() {
                 variant="default"
                 onClick={handleBatchMigrateCurrentPage}
                 disabled={batchMigrating || loading || products.length === 0}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-9 gap-1.5 shadow-xs"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm h-11 px-3.5 rounded-xl gap-2 shadow-xs transition-all"
                 title="Download and re-host all external/IKEA images for all products visible on this page"
               >
-                <Download className={`w-3.5 h-3.5 ${batchMigrating ? 'animate-bounce' : ''}`} />
+                <Download className={`w-4 h-4 ${batchMigrating ? 'animate-bounce' : ''}`} />
                 {batchMigrating ? 'Downloading Page...' : 'Download & Re-host Page'}
               </Button>
             </div>
