@@ -134,7 +134,20 @@ function StoreCatalogInner() {
       return res.json();
     },
     enabled: !isVisualSearch,
-    placeholderData: (previousData) => previousData,
+    placeholderData: (previousData, previousQuery) => {
+      if (!previousQuery) return undefined;
+      const prevKey = previousQuery.queryKey;
+      const prevCategory = prevKey[4];
+      const prevSearch = prevKey[5];
+      const prevSort = prevKey[6];
+
+      // Only keep previous data if we are just paginating (same category, search, and sort filters)
+      if (prevCategory === categoryParam && prevSearch === searchParam && prevSort === sortParam) {
+        return previousData;
+      }
+      // Otherwise, clear the old category/filter's data
+      return undefined;
+    },
     staleTime: 60 * 1000,
   });
 
