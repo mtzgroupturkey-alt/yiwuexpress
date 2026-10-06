@@ -158,46 +158,40 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const isServerPaged = typeof propCurrentPage === 'number' && typeof propOnPageChange === 'function';
   const currentPage = isServerPaged ? propCurrentPage : internalCurrentPage;
 
-  // Sync state to URL for server-side filtering
-  useEffect(() => {
-    if (!isServerPaged) return;
+  // Category Click Handler — URL is the single source of truth
+  const handleCategoryClick = (categorySlugOrAll: string, deptSlugOrAll?: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
-    let changed = false;
-    
-    // Category or Department filter sync
-    const activeCategoryParam = (selectedCategory && selectedCategory !== 'all')
-      ? (categoryLookupMap.get(selectedCategory)?.slug || selectedCategory)
-      : ((selectedDepartment && selectedDepartment !== 'all') ? (categoryLookupMap.get(selectedDepartment)?.slug || selectedDepartment) : null);
-
-    if (activeCategoryParam) {
-      if (params.get('category') !== activeCategoryParam) { params.set('category', activeCategoryParam); changed = true; }
+    if (!categorySlugOrAll || categorySlugOrAll === 'all') {
+      params.delete('category');
     } else {
-      if (params.has('category')) { params.delete('category'); changed = true; }
+      params.set('category', categorySlugOrAll);
     }
 
-    if (params.has('sub')) { params.delete('sub'); changed = true; }
-    if (params.has('dept')) { params.delete('dept'); changed = true; }
-    if (params.has('cat')) { params.delete('cat'); changed = true; }
-    if (params.has('department')) { params.delete('department'); changed = true; }
-    
-    if (catalogSearch && catalogSearch.trim()) {
-      if (params.get('search') !== catalogSearch) { params.set('search', catalogSearch); changed = true; }
-    } else {
-      if (params.has('search')) { params.delete('search'); changed = true; }
+    if (deptSlugOrAll && deptSlugOrAll !== 'all') {
+      params.set('department', deptSlugOrAll);
+    } else if (deptSlugOrAll === 'all') {
+      params.delete('department');
     }
-    
-    if (sortBy && sortBy !== 'popular') {
-      if (params.get('sort') !== sortBy) { params.set('sort', sortBy); changed = true; }
-    } else {
-      if (params.has('sort')) { params.delete('sort'); changed = true; }
-    }
-    
-    if (changed) {
-      params.delete('page'); // Reset to page 1 on filter change
-      router.push(`${pathname}?${params.toString()}`);
-    }
-  }, [selectedCategory, selectedDepartment, catalogSearch, sortBy, isServerPaged, pathname, router, searchParams]);
+
+    // Clean up legacy/conflicting query params
+    params.delete('sub');
+    params.delete('dept');
+    params.delete('cat');
+    params.delete('page'); // Reset to page 1 on filter change
+
+    const newQuery = params.toString();
+    router.push(`${pathname}${newQuery ? `?${newQuery}` : ''}`);
+  };
+
+  // Read-only synchronization from URL → state (Unidirectional)
+  useEffect(() => {
+    const urlCategory = searchParams.get('category') || 'all';
+    const urlDepartment = searchParams.get('department') || searchParams.get('dept') || 'all';
+    const urlSearch = searchParams.get('search') || searchParams.get('q') || '';
+    if (urlCategory !== selectedCategory) setSelectedCategory(urlCategory);
+    if (urlDepartment !== selectedDepartment) setSelectedDepartment(urlDepartment);
+    if (urlSearch !== catalogSearch) setCatalogSearch(urlSearch);
+  }, [searchParams]);
 
   const setCurrentPage = (pageOrUpdater: number | ((prev: number) => number)) => {
     if (isServerPaged) {
@@ -395,8 +389,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
 
   // Reset all filters
   const handleResetFilters = () => {
-    setSelectedCategory('all');
-    setSelectedDepartment('all');
+    handleCategoryClick('all', 'all');
     setSelectedBrands([]);
     setPriceRange([minCatalogPrice, maxCatalogPrice]);
     setMinRating(0);
@@ -405,7 +398,6 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     setExpressOnly(false);
     setCatalogSearch('');
     setSortBy('popular');
-    setCurrentPage(1);
   };
 
   // Active filters count
@@ -624,11 +616,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
             </button>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <button
-              onClick={() => {
-                setSelectedCategory('all');
-                setSelectedDepartment('all');
-                setCurrentPage(1);
-              }}
+              onClick={() => handleCategoryClick('all', 'all')}
               className={`hover:text-[#00407a] font-medium transition-colors cursor-pointer ${
                 selectedCategory === 'all' && selectedDepartment === 'all'
                   ? 'text-[#00407a] font-bold'
@@ -641,10 +629,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
               <>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                 <button
-                  onClick={() => {
-                    setSelectedCategory('all');
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => handleCategoryClick('all', selectedDepartment)}
                   className="font-semibold text-slate-800 hover:text-[#00407a] transition-colors cursor-pointer"
                 >
                   {currentDepartmentName || selectedDepartment}
@@ -779,11 +764,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                 </div>
                 {(selectedDepartment !== 'all' || selectedCategory !== 'all') && (
                   <button
-                    onClick={() => {
-                      setSelectedDepartment('all');
-                      setSelectedCategory('all');
-                      setCurrentPage(1);
-                    }}
+                    onClick={() => handleCategoryClick('all', 'all')}
                     className="text-[11px] text-[#00407a] hover:underline font-bold cursor-pointer"
                   >
                     {tShop('resetAll')}
@@ -794,11 +775,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
               <div className="space-y-1 max-h-[380px] overflow-y-auto pr-1">
                 {/* All Departments Option */}
                 <button
-                  onClick={() => {
-                    setSelectedDepartment('all');
-                    setSelectedCategory('all');
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => handleCategoryClick('all', 'all')}
                   className={`w-full text-left px-2.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-between ${
                     selectedDepartment === 'all' && selectedCategory === 'all'
                       ? 'bg-blue-50 text-[#00407a] font-bold border border-blue-200'
@@ -847,14 +824,11 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                         <button
                           onClick={() => {
                             if (isDeptActiveHighlight) {
-                              setSelectedDepartment('all');
-                              setSelectedCategory('all');
+                              handleCategoryClick('all', 'all');
                             } else {
-                              setSelectedDepartment(dept.slug || dept.id);
-                              setSelectedCategory('all');
+                              handleCategoryClick('all', dept.slug || dept.id);
                               setExpandedDepts((prev) => new Set([...prev, dept.id]));
                             }
-                            setCurrentPage(1);
                           }}
                           className="flex-1 text-left flex items-center gap-2 truncate cursor-pointer"
                         >
@@ -903,12 +877,10 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                                   <button
                                     onClick={() => {
                                       if (isSubSelected) {
-                                        setSelectedCategory('all');
+                                        handleCategoryClick('all', dept.slug || dept.id);
                                       } else {
-                                        setSelectedCategory(sub.slug || sub.id);
-                                        setSelectedDepartment(dept.slug || dept.id);
+                                        handleCategoryClick(sub.slug || sub.id, dept.slug || dept.id);
                                       }
-                                      setCurrentPage(1);
                                     }}
                                     className="flex-1 text-left truncate cursor-pointer flex items-center gap-1.5"
                                   >
@@ -933,12 +905,10 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                                           key={k3.id}
                                           onClick={() => {
                                             if (isK3Selected) {
-                                              setSelectedCategory(sub.slug || sub.id);
+                                              handleCategoryClick(sub.slug || sub.id, dept.slug || dept.id);
                                             } else {
-                                              setSelectedCategory(k3.slug || k3.id);
-                                              setSelectedDepartment(dept.slug || dept.id);
+                                              handleCategoryClick(k3.slug || k3.id, dept.slug || dept.id);
                                             }
-                                            setCurrentPage(1);
                                           }}
                                           className={`w-full flex items-center justify-between px-1.5 py-0.5 rounded text-[10px] transition-colors cursor-pointer ${
                                             isK3Selected
@@ -1172,7 +1142,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                   {selectedDepartment !== 'all' && (
                     <span className="inline-flex items-center gap-1 bg-blue-50 text-[#00407a] border border-blue-200 text-[11px] font-bold px-2 py-0.5 rounded-full">
                       {currentDepartmentName || selectedDepartment}
-                      <button onClick={() => setSelectedDepartment('all')} className="cursor-pointer hover:text-red-500">
+                      <button onClick={() => handleCategoryClick(selectedCategory, 'all')} className="cursor-pointer hover:text-red-500">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -1181,7 +1151,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                   {selectedCategory !== 'all' && (
                     <span className="inline-flex items-center gap-1 bg-blue-50 text-[#00407a] border border-blue-200 text-[11px] font-bold px-2 py-0.5 rounded-full">
                       {currentCategoryName}
-                      <button onClick={() => setSelectedCategory('all')} className="cursor-pointer hover:text-red-500">
+                      <button onClick={() => handleCategoryClick('all', selectedDepartment)} className="cursor-pointer hover:text-red-500">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -1711,8 +1681,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                 <select
                   value={selectedDepartment}
                   onChange={(e) => {
-                    setSelectedDepartment(e.target.value);
-                    setSelectedCategory('all');
+                    handleCategoryClick('all', e.target.value);
                   }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-800"
                 >
@@ -1730,7 +1699,9 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                 <div className="text-xs font-bold text-slate-900 uppercase mb-2">{tShop('allCategories')}</div>
                 <select
                   value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  onChange={(e) => {
+                    handleCategoryClick(e.target.value, selectedDepartment);
+                  }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-bold text-slate-800"
                 >
                   <option value="all">{tShop('allCategories')}</option>
