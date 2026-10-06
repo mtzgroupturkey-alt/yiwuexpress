@@ -59,6 +59,8 @@ interface ProductItem {
   price: number;
   category: { id: string; name: string } | null;
   imageCandidates: Candidate[];
+  isMissingOnDisk?: boolean;
+  isHotlinked?: boolean;
 }
 
 export default function ImageFinderPage() {
@@ -94,7 +96,7 @@ export default function ImageFinderPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [filterType, setFilterType] = useState('missing_or_external');
+  const [filterType, setFilterType] = useState('missing_on_disk');
 
   // Active Search Modal state
   const [activeProduct, setActiveProduct] = useState<ProductItem | null>(null);
@@ -258,15 +260,46 @@ export default function ImageFinderPage() {
     const initialQuery = suggestions[0] || clean || raw;
     setSearchQuery(initialQuery);
 
-    // Reset candidates so we always fetch fresh images for the active search domain
-    setCandidates([]);
-    setSelectedCandidateKeys(new Set());
+    // Initial candidates: if product already has valid external/IKEA URLs in its gallery or database,
+    // pre-populate them as the first available candidates for instant one-click download!
+    const existingCandidates: Candidate[] = [];
+    const allUrls = [product.thumbnail, ...(product.images || [])].filter(Boolean) as string[];
+    const seenUrls = new Set<string>();
+
+    for (const u of allUrls) {
+      if (u.startsWith('http://') || u.startsWith('https://')) {
+        if (!seenUrls.has(u)) {
+          seenUrls.add(u);
+          const isIkea = u.includes('ikea.com');
+          existingCandidates.push({
+            source: isIkea ? 'external' : 'manual',
+            sourceUrl: u,
+            thumbnail: u,
+            title: isIkea ? `${product.name} (Official IKEA Photo)` : `${product.name} (Catalog Photo)`,
+            author: isIkea ? 'ikea.com' : 'Catalog Source',
+            license: 'copyrighted',
+            isCompetitor: isIkea,
+            status: 'PENDING',
+            targetSite: isIkea ? 'ikea.com' : 'external',
+          });
+        }
+      }
+    }
+
+    setCandidates(existingCandidates);
+    if (existingCandidates.length > 0) {
+      setSelectedCandidateKeys(new Set([existingCandidates[0].sourceUrl]));
+    } else {
+      setSelectedCandidateKeys(new Set());
+    }
     setConfirmRights(false);
     setCustomUrl('');
 
-    // Trigger fresh search on the active target site
+    // Trigger fresh search on the active target site if no existing candidates
     setTimeout(() => {
-      executeSearch(product.id, initialQuery, 'target_site', activeTargetSite);
+      if (existingCandidates.length === 0) {
+        executeSearch(product.id, initialQuery, 'target_site', activeTargetSite);
+      }
     }, 50);
   };
 
@@ -691,8 +724,9 @@ export default function ImageFinderPage() {
                   setFilterType(e.target.value);
                   setPage(1);
                 }}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-800"
               >
+                <option value="missing_on_disk">⚠️ Missing from Disk / Placeholder Only</option>
                 <option value="missing_or_external">{dict.tools.missingOrExternal || 'Missing or External (IKEA)'}</option>
                 <option value="no_thumbnail">{dict.tools.noThumbnailOnly || 'No Thumbnail Only'}</option>
                 <option value="all">{dict.tools.allProductsFilter || 'All Products'}</option>
@@ -800,16 +834,22 @@ export default function ImageFinderPage() {
 
                       {/* Status */}
                       <td className="py-3 px-4">
-                        {isMissing ? (
+                        {p.isMissingOnDisk ? (
+                          <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-300 font-semibold text-xs flex items-center gap-1 w-fit">
+                            <AlertTriangle className="w-3 h-3 text-rose-500" />
+                            Missing from Disk
+                          </Badge>
+                        ) : isMissing ? (
                           <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 text-xs">
                             {dict.tools.missingImageBadge || 'Missing Image'}
                           </Badge>
-                        ) : hasExternal ? (
+                        ) : hasExternal || p.isHotlinked ? (
                           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
                             {dict.tools.hotlinkedBadge || 'Hotlinked (IKEA)'}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs flex items-center gap-1 w-fit">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                             {dict.tools.selfHostedBadge || 'Self-Hosted'}
                           </Badge>
                         )}
