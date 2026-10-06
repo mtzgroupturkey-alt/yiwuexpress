@@ -1,50 +1,57 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
+import { unstable_cache, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
-// GET /api/settings - Get system settings
-export async function GET(request: Request) {
-  try {
-    // SystemSettings is a singleton addressed by singletonKey.
-    const settings = await prisma.systemSettings.findUnique({
+const DEFAULT_SETTINGS = {
+  companyName: 'Global Trade',
+  companyAddress: 'China, Zhejiang, China',
+  companyPhone: '+86 579 8555 1234',
+  companyEmail: 'info@globaltrade.com',
+  companyWebsite: 'https://globaltrade.com',
+  companyLogo: '/logo.png',
+  companyFavicon: '/favicon.svg',
+  primaryColor: '#1a3a5c',
+  accentColor: '#c9a84c',
+  currency: 'USD',
+  timezone: 'Asia/Shanghai',
+  language: 'en',
+  facebookUrl: '',
+  twitterUrl: '',
+  linkedinUrl: '',
+  instagramUrl: '',
+  wechatId: '',
+  whatsappNumber: '',
+  translations: [],
+}
+
+const getSettings = unstable_cache(
+  async () => {
+    return prisma.systemSettings.findUnique({
       where: { singletonKey: 'SINGLETON' },
-      include: { translations: true }, // Include translations
+      include: { translations: true },
     })
+  },
+  ['site-settings'],
+  { revalidate: 3600, tags: ['settings'] }
+)
 
-    if (!settings) {
-      // Return default settings if none exist
-      return NextResponse.json({
+// GET /api/settings - Get system settings (Cached for 1 hour)
+export async function GET() {
+  try {
+    const settings = await getSettings()
+
+    return NextResponse.json(
+      {
         success: true,
-        settings: {
-          companyName: 'Global Trade',
-          companyAddress: 'China, Zhejiang, China',
-          companyPhone: '+86 579 8555 1234',
-          companyEmail: 'info@globaltrade.com',
-          companyWebsite: 'https://globaltrade.com',
-          companyLogo: '/logo.png',
-          companyFavicon: '/favicon.svg',
-          primaryColor: '#1a3a5c',
-          accentColor: '#c9a84c',
-          currency: 'USD',
-          timezone: 'Asia/Shanghai',
-          language: 'en',
-          // Contact and social media fallbacks
-          facebookUrl: '',
-          twitterUrl: '',
-          linkedinUrl: '',
-          instagramUrl: '',
-          wechatId: '',
-          whatsappNumber: '',
-          translations: []
-        }
-      })
-    }
-
-    return NextResponse.json({
-      success: true,
-      settings: settings
-    })
+        settings: settings || DEFAULT_SETTINGS,
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
+      }
+    )
   } catch (error) {
     console.error('Error fetching system settings:', error)
     return NextResponse.json(
@@ -70,13 +77,21 @@ export async function PUT(request: Request) {
       create: { ...body, singletonKey: 'SINGLETON' },
     })
 
+    // Bust the settings cache
+    revalidateTag('settings')
+
     return NextResponse.json({
       success: true,
       settings: settings,
-      message: 'Settings updated successfully'
+      message: 'Settings updated successfully',
     })
   } catch (error) {
-    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+    if (
+      error instanceof Error &&
+      (error.message === 'Unauthorized' ||
+        error.message === 'Forbidden' ||
+        error.message === 'Account is disabled')
+    ) {
       return createAuthErrorResponse(error)
     }
     console.error('Error updating system settings:', error)
