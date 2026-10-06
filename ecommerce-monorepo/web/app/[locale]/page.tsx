@@ -59,11 +59,11 @@ export default function Home() {
   const { addToQuote } = useQuoteCart();
   const queryClient = useQueryClient();
 
-  // 0. Live Database Queries
+  // 0. Live Database Queries (Dedicated slim homepage products endpoint)
   const { data: productsData, isLoading: isProductsLoading } = useQuery({
     queryKey: ['products', 'design3-home', locale],
     queryFn: async () => {
-      const res = await fetch(`/api/products?limit=60&locale=${locale}`);
+      const res = await fetch(`/api/homepage/products?locale=${locale}`);
       if (!res.ok) return null;
       return res.json();
     },

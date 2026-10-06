@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
@@ -270,6 +271,11 @@ export async function PUT(
       }
     })
 
+    try {
+      revalidateTag('homepage-products')
+      revalidateTag('products')
+    } catch {}
+
     return NextResponse.json({
       success: true,
       data: productWithAttributes,
@@ -314,6 +320,11 @@ export async function DELETE(
     await prisma.product.delete({
       where: { id }
     })
+
+    try {
+      revalidateTag('homepage-products')
+      revalidateTag('products')
+    } catch {}
 
     return NextResponse.json({
       success: true,
