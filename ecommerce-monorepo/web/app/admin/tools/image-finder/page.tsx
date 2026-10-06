@@ -600,6 +600,63 @@ export default function ImageFinderPage() {
     }
   };
 
+  // Auto-fetch genuine photo from IKEA.com for a single product
+  const [fetchingIkeaId, setFetchingIkeaId] = useState<string | null>(null);
+  const [batchFetchingIkea, setBatchFetchingIkea] = useState(false);
+
+  const handleAutoFetchIkeaProduct = async (product: ProductItem) => {
+    setFetchingIkeaId(product.id);
+    try {
+      const res = await fetch(`/api/admin/products/${product.id}/fetch-ikea-photo`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to auto-fetch from IKEA.com');
+
+      showToast('success', `✨ Successfully downloaded authentic IKEA photo for "${product.name}"!`);
+      fetchProducts();
+    } catch (err: any) {
+      showToast('error', err.message || 'Auto-fetch from IKEA failed');
+    } finally {
+      setFetchingIkeaId(null);
+    }
+  };
+
+  // Batch auto-fetch genuine IKEA photos for all placeholder products on current page
+  const handleBatchAutoFetchIkeaCurrentPage = async () => {
+    const targetProducts = products.filter(
+      (p) => p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage
+    );
+
+    if (targetProducts.length === 0) {
+      showToast('error', 'No placeholder or missing-image products found on this page.');
+      return;
+    }
+
+    setBatchFetchingIkea(true);
+    try {
+      const res = await fetch('/api/admin/images/auto-fetch-ikea-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productIds: targetProducts.map((p) => p.id),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Batch IKEA fetch failed');
+
+      showToast(
+        'success',
+        `🎉 Successfully fetched & updated ${data.updated} of ${data.total} products from IKEA.com!`
+      );
+      fetchProducts();
+    } catch (err: any) {
+      showToast('error', err.message || 'Batch IKEA fetch failed');
+    } finally {
+      setBatchFetchingIkea(false);
+    }
+  };
+
   // Device file upload
   const handleTriggerUpload = (productId: string) => {
     setUploadTargetProductId(productId);
@@ -889,8 +946,9 @@ export default function ImageFinderPage() {
                 }}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-800"
               >
+                <option value="placeholder_photo">🖼️ Detected Placeholder Photo</option>
+                <option value="missing_on_disk">⚠️ Missing from Disk / Null Photo</option>
                 <option value="external_ikea">{dict.tools.externalOnly || 'External / IKEA Images Only'}</option>
-                <option value="missing_on_disk">⚠️ Missing from Disk / Placeholder Only</option>
                 <option value="missing_or_external">{dict.tools.missingOrExternal || 'Missing or External (IKEA)'}</option>
                 <option value="no_thumbnail">{dict.tools.noThumbnailOnly || 'No Thumbnail Only'}</option>
                 <option value="all">{dict.tools.allProductsFilter || 'All Products'}</option>
@@ -909,6 +967,18 @@ export default function ImageFinderPage() {
                 <option value="25">25 / page</option>
                 <option value="50">50 / page</option>
               </select>
+
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleBatchAutoFetchIkeaCurrentPage}
+                disabled={batchFetchingIkea || loading || products.length === 0}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-9 gap-1.5 shadow-xs"
+                title="Automatically search and download genuine IKEA photos for all placeholder products on this page"
+              >
+                <Sparkles className={`w-3.5 h-3.5 ${batchFetchingIkea ? 'animate-spin' : ''}`} />
+                {batchFetchingIkea ? 'Fetching IKEA...' : 'Auto-Fetch IKEA for Page'}
+              </Button>
 
               <Button
                 size="sm"
@@ -1049,6 +1119,20 @@ export default function ImageFinderPage() {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {(p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage) && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleAutoFetchIkeaProduct(p)}
+                              disabled={fetchingIkeaId === p.id}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1 h-8 text-xs font-semibold shadow-xs"
+                              title="Search ikea.com for this exact product name/model, download original high-res photo, convert to WebP, and set as real photo"
+                            >
+                              <Sparkles className={`w-3.5 h-3.5 ${fetchingIkeaId === p.id ? 'animate-spin' : ''}`} />
+                              {fetchingIkeaId === p.id ? 'Fetching...' : 'Auto-Fetch IKEA'}
+                            </Button>
+                          )}
+
                           {(hasExternal || p.isHotlinked || !!p.catalogImageUrl || (p.imageCandidates && p.imageCandidates.length > 0)) && (
                             <Button
                               size="sm"

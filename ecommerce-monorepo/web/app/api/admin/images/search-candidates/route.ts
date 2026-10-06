@@ -73,6 +73,15 @@ export async function GET(request: NextRequest) {
           { images: { hasSome: ['http://', 'https://', 'ikea.com'] } },
         ],
       });
+    } else if (filterType === 'placeholder_photo') {
+      // Specifically products detected or flagged as having placeholder images or no real photo
+      andConditions.push({
+        OR: [
+          { hasRealImage: false },
+          { thumbnail: null },
+          { thumbnail: { contains: 'placeholder' } },
+        ],
+      });
     } else if (filterType === 'missing_on_disk') {
       // Products with null thumbnail OR placeholder OR marked hasRealImage: false
       andConditions.push({

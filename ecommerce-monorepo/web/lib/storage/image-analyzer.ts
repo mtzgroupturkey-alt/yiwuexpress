@@ -19,12 +19,20 @@ export interface ImageAnalysisResult {
 // Known candidate directories for uploads on local and production Ubuntu server
 export const UPLOAD_DIR_CANDIDATES = [
   path.join(process.cwd(), 'public', 'uploads', 'products'),
+  path.join(process.cwd(), 'public', 'uploads', 'general'),
+  path.join(process.cwd(), 'public', 'uploads'),
   path.join(process.cwd(), 'web', 'public', 'uploads', 'products'),
+  path.join(process.cwd(), 'web', 'public', 'uploads', 'general'),
   path.join(process.cwd(), 'ecommerce-monorepo', 'web', 'public', 'uploads', 'products'),
+  path.join(process.cwd(), 'ecommerce-monorepo', 'web', 'public', 'uploads', 'general'),
   '/www/wwwroot/www.dromkok.com/web/public/uploads/products',
+  '/www/wwwroot/www.dromkok.com/web/public/uploads/general',
   '/www/wwwroot/dromkok.com/web/public/uploads/products',
+  '/www/wwwroot/dromkok.com/web/public/uploads/general',
   '/www/wwwroot/www.dromkok.com/public/uploads/products',
+  '/www/wwwroot/www.dromkok.com/public/uploads/general',
   '/www/wwwroot/dromkok.com/public/uploads/products',
+  '/www/wwwroot/dromkok.com/public/uploads/general',
 ];
 
 /**
@@ -45,6 +53,14 @@ export function resolveLocalProductImagePath(imagePathOrUrl: string): string | n
       // directory might not exist
     }
   }
+
+  // Also check direct path relative to public/
+  try {
+    const relToPublic = path.join(process.cwd(), 'public', imagePathOrUrl.replace(/^\/+/, ''));
+    if (fs.existsSync(relToPublic)) {
+      return relToPublic;
+    }
+  } catch {}
 
   return null;
 }
@@ -84,6 +100,18 @@ export async function analyzeImageBuffer(buffer: Buffer): Promise<ImageAnalysisR
     };
   }
 
+  // Exact match for 3,980 bytes user-uploaded "Product Image" placeholder (MD5: dce29966f4bb32518f85fbb59bd41315)
+  if (sizeBytes === 3980) {
+    return {
+      isPlaceholder: true,
+      isMissing: false,
+      isReal: false,
+      sizeBytes,
+      reason: 'Exact match for Product Image placeholder (3,980 bytes)',
+      confidence: 'high',
+    };
+  }
+
   // Check if buffer is SVG fallback
   const headStr = buffer.slice(0, 300).toString('utf-8').toLowerCase();
   if (headStr.includes('<svg') || headStr.includes('global trade') || headStr.includes('product image')) {
@@ -98,14 +126,14 @@ export async function analyzeImageBuffer(buffer: Buffer): Promise<ImageAnalysisR
     };
   }
 
-  // Files <= 3,600 bytes are almost certainly placeholders or broken icons
-  if (sizeBytes <= 3600) {
+  // Files <= 4,200 bytes are almost certainly placeholders or broken icons
+  if (sizeBytes <= 4200) {
     return {
       isPlaceholder: true,
       isMissing: false,
       isReal: false,
       sizeBytes,
-      reason: `File size too small for genuine product photo (${sizeBytes} bytes <= 3,600 bytes)`,
+      reason: `File size too small for genuine product photo (${sizeBytes} bytes <= 4,200 bytes)`,
       confidence: 'high',
     };
   }
@@ -233,16 +261,6 @@ export async function analyzeProductImage(imageUrlOrPath: string | null | undefi
   if (localFile) {
     try {
       const stat = await fs.promises.stat(localFile);
-      if (stat.size <= 3600) {
-        return {
-          isPlaceholder: true,
-          isMissing: false,
-          isReal: false,
-          sizeBytes: stat.size,
-          reason: `Local file size is placeholder (${stat.size} bytes <= 3,600 bytes)`,
-          confidence: 'high',
-        };
-      }
       if (stat.size === 3534) {
         return {
           isPlaceholder: true,
@@ -250,6 +268,26 @@ export async function analyzeProductImage(imageUrlOrPath: string | null | undefi
           isReal: false,
           sizeBytes: stat.size,
           reason: 'Local file matches 3,534 bytes product-placeholder.webp',
+          confidence: 'high',
+        };
+      }
+      if (stat.size === 3980) {
+        return {
+          isPlaceholder: true,
+          isMissing: false,
+          isReal: false,
+          sizeBytes: stat.size,
+          reason: 'Local file matches 3,980 bytes Product Image placeholder',
+          confidence: 'high',
+        };
+      }
+      if (stat.size <= 4200) {
+        return {
+          isPlaceholder: true,
+          isMissing: false,
+          isReal: false,
+          sizeBytes: stat.size,
+          reason: `Local file size is placeholder (${stat.size} bytes <= 4,200 bytes)`,
           confidence: 'high',
         };
       }
