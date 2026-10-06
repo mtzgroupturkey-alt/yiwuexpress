@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Upload,
+  Download,
   RefreshCw,
   ExternalLink,
   ShieldAlert,
@@ -437,6 +438,107 @@ export default function ImageFinderPage() {
     }
   };
 
+  // State for one-click re-hosting
+  const [downloadingProductId, setDownloadingProductId] = useState<string | null>(null);
+  const [batchMigrating, setBatchMigrating] = useState(false);
+
+  // Quick 1-click Download & Re-host single product
+  const handleQuickRehostProduct = async (product: ProductItem) => {
+    // Find the original external / IKEA photo URL
+    const allUrls = [product.thumbnail, ...(product.images || [])].filter(Boolean) as string[];
+    const externalUrl = allUrls.find((u) => u.startsWith('http://') || u.startsWith('https://'));
+
+    if (!externalUrl) {
+      // If no external URL found, open search modal directly
+      handleOpenSearchModal(product);
+      return;
+    }
+
+    setDownloadingProductId(product.id);
+    try {
+      const isIkea = externalUrl.includes('ikea.com');
+      const res = await fetch('/api/admin/images/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          candidates: [
+            {
+              sourceUrl: externalUrl,
+              source: isIkea ? 'external' : 'manual',
+              author: isIkea ? 'ikea.com' : 'Catalog',
+              license: 'copyrighted',
+            },
+          ],
+          mode: 'replace',
+          confirmRights: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to download and re-host photo');
+
+      showToast('success', `✅ Downloaded & converted photo for "${product.name}" to local WebP!`);
+      fetchProducts();
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to download photo');
+    } finally {
+      setDownloadingProductId(null);
+    }
+  };
+
+  // Batch migrate all products on current page
+  const handleBatchMigrateCurrentPage = async () => {
+    const productsWithExternal = products.filter((p) => {
+      const allUrls = [p.thumbnail, ...(p.images || [])].filter(Boolean) as string[];
+      return allUrls.some((u) => u.startsWith('http://') || u.startsWith('https://'));
+    });
+
+    if (productsWithExternal.length === 0) {
+      showToast('error', 'No products with external URLs found on this page.');
+      return;
+    }
+
+    setBatchMigrating(true);
+    let successCount = 0;
+    try {
+      for (const prod of productsWithExternal) {
+        const allUrls = [prod.thumbnail, ...(prod.images || [])].filter(Boolean) as string[];
+        const externalUrl = allUrls.find((u) => u.startsWith('http://') || u.startsWith('https://'));
+        if (!externalUrl) continue;
+
+        const isIkea = externalUrl.includes('ikea.com');
+        const res = await fetch('/api/admin/images/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: prod.id,
+            candidates: [
+              {
+                sourceUrl: externalUrl,
+                source: isIkea ? 'external' : 'manual',
+                author: isIkea ? 'ikea.com' : 'Catalog',
+                license: 'copyrighted',
+              },
+            ],
+            mode: 'replace',
+            confirmRights: true,
+          }),
+        });
+
+        if (res.ok) {
+          successCount++;
+        }
+      }
+      showToast('success', `🎉 Successfully downloaded and re-hosted photos for ${successCount} product(s)!`);
+      fetchProducts();
+    } catch (err: any) {
+      showToast('error', err.message || 'Batch migration error');
+    } finally {
+      setBatchMigrating(false);
+    }
+  };
+
   // Reject candidate
   const handleRejectCandidate = async (candidateId?: string) => {
     if (!candidateId) return;
@@ -745,6 +847,18 @@ export default function ImageFinderPage() {
                 <option value="25">25 / page</option>
                 <option value="50">50 / page</option>
               </select>
+
+              <Button
+                size="sm"
+                variant="default"
+                onClick={handleBatchMigrateCurrentPage}
+                disabled={batchMigrating || loading || products.length === 0}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-9 gap-1.5 shadow-xs"
+                title="Download and re-host all external/IKEA images for all products visible on this page"
+              >
+                <Download className={`w-3.5 h-3.5 ${batchMigrating ? 'animate-bounce' : ''}`} />
+                {batchMigrating ? 'Downloading Page...' : 'Download & Re-host Page'}
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -863,6 +977,20 @@ export default function ImageFinderPage() {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {(hasExternal || p.isHotlinked) && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => handleQuickRehostProduct(p)}
+                              disabled={downloadingProductId === p.id}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 h-8 text-xs font-semibold shadow-xs"
+                              title="Download official IKEA photo, convert to WebP, host locally and remove all external links"
+                            >
+                              <Download className={`w-3.5 h-3.5 ${downloadingProductId === p.id ? 'animate-bounce' : ''}`} />
+                              {downloadingProductId === p.id ? 'Saving...' : 'Download & Host'}
+                            </Button>
+                          )}
+
                           <Button
                             size="sm"
                             variant="default"
