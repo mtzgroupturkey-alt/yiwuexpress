@@ -6,6 +6,8 @@ import { Product, Category } from '@/app/[locale]/design-3/types'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => '/en/store',
 }))
 
 vi.mock('next-intl', () => ({

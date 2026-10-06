@@ -61,8 +61,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   categories: propCategories,
   onAddToCart,
   onUpdateQuantity,
-  cartQuantities,
-  favoriteIds,
+  cartQuantities = {},
+  favoriteIds = new Set(),
   onToggleFavorite,
   onSelectProduct,
   initialCategory = null,
@@ -571,9 +571,9 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
 
   const scrollToGridTop = () => {
     const el = document.getElementById('shop-products-main-grid');
-    if (el) {
+    if (el && typeof el.scrollIntoView === 'function') {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
+    } else if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
       window.scrollTo({ top: 180, behavior: 'smooth' });
     }
   };
@@ -826,7 +826,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                             if (isDeptActiveHighlight) {
                               handleCategoryClick('all', 'all');
                             } else {
-                              handleCategoryClick('all', dept.slug || dept.id);
+                              handleCategoryClick(dept.slug || dept.id, dept.slug || dept.id);
                               setExpandedDepts((prev) => new Set([...prev, dept.id]));
                             }
                           }}
