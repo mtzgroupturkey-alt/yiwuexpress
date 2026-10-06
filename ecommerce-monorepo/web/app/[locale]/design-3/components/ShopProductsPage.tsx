@@ -165,8 +165,13 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     
     let changed = false;
     
-    if (selectedCategory && selectedCategory !== 'all') {
-      if (params.get('category') !== selectedCategory) { params.set('category', selectedCategory); changed = true; }
+    // Category or Department filter sync
+    const activeCategoryParam = (selectedCategory && selectedCategory !== 'all')
+      ? (categoryLookupMap.get(selectedCategory)?.slug || selectedCategory)
+      : ((selectedDepartment && selectedDepartment !== 'all') ? (categoryLookupMap.get(selectedDepartment)?.slug || selectedDepartment) : null);
+
+    if (activeCategoryParam) {
+      if (params.get('category') !== activeCategoryParam) { params.set('category', activeCategoryParam); changed = true; }
     } else {
       if (params.has('category')) { params.delete('category'); changed = true; }
     }
@@ -422,8 +427,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   // Main filtering logic
   const filteredProducts = useMemo(() => {
     return products.filter((item) => {
-      // 1. Search Query
-      if (catalogSearch.trim()) {
+      // 1. Search Query (skip if server-paged because server already filtered)
+      if (!isServerPaged && catalogSearch.trim()) {
         const q = catalogSearch.toLowerCase();
         const matchName = item.name.toLowerCase().includes(q);
         const matchBrand = item.brand.toLowerCase().includes(q);
@@ -434,8 +439,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
         }
       }
 
-      // 2. Category Filter
-      if (selectedCategory !== 'all') {
+      // 2. Category Filter (skip if server-paged because server already filtered)
+      if (!isServerPaged && selectedCategory !== 'all') {
         const catNode = categoryLookupMap.get(selectedCategory) || categoryLookupMap.get(selectedCategory.toLowerCase());
         if (catNode) {
           const match =
@@ -457,8 +462,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
         }
       }
 
-      // 3. Department Filter
-      if (selectedDepartment !== 'all') {
+      // 3. Department Filter (skip if server-paged because server already filtered)
+      if (!isServerPaged && selectedDepartment !== 'all') {
         const deptNode = categoryLookupMap.get(selectedDepartment) || categoryLookupMap.get(selectedDepartment.toLowerCase());
         if (deptNode) {
           const match =
@@ -822,7 +827,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                             if (isDeptSelected && selectedCategory === 'all') {
                               setSelectedDepartment('all');
                             } else {
-                              setSelectedDepartment(dept.id);
+                              setSelectedDepartment(dept.slug || dept.id);
                               setSelectedCategory('all');
                               setExpandedDepts((prev) => new Set([...prev, dept.id]));
                             }
@@ -877,8 +882,8 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                                       if (isSubSelected) {
                                         setSelectedCategory('all');
                                       } else {
-                                        setSelectedCategory(sub.id);
-                                        setSelectedDepartment(dept.id);
+                                        setSelectedCategory(sub.slug || sub.id);
+                                        setSelectedDepartment(dept.slug || dept.id);
                                       }
                                       setCurrentPage(1);
                                     }}
@@ -905,10 +910,10 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                                           key={k3.id}
                                           onClick={() => {
                                             if (isK3Selected) {
-                                              setSelectedCategory(sub.id);
+                                              setSelectedCategory(sub.slug || sub.id);
                                             } else {
-                                              setSelectedCategory(k3.id);
-                                              setSelectedDepartment(dept.id);
+                                              setSelectedCategory(k3.slug || k3.id);
+                                              setSelectedDepartment(dept.slug || dept.id);
                                             }
                                             setCurrentPage(1);
                                           }}

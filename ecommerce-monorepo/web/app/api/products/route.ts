@@ -20,9 +20,15 @@ interface FilterMetadata {
 // an empty array when the slug matches no category. Hoisted so the GET handler
 // computes descendants exactly once and reuses them for both the product query
 // and the filter-metadata aggregation.
-async function getCategoryDescendantIds(categorySlug: string): Promise<string[]> {
-  const category = await prisma.category.findUnique({
-    where: { slug: categorySlug },
+async function getCategoryDescendantIds(categoryIdentifier: string): Promise<string[]> {
+  const category = await prisma.category.findFirst({
+    where: {
+      OR: [
+        { id: categoryIdentifier },
+        { slug: categoryIdentifier },
+        { slug: categoryIdentifier.toLowerCase() }
+      ]
+    },
     include: {
       children: {
         include: {
@@ -231,7 +237,7 @@ async function fetchFilterMetadata(categoryIds: string[] | null, locale: string)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const categorySlug = searchParams.get('category')
+    const categoryParam = searchParams.get('category') || searchParams.get('cat') || searchParams.get('categoryId')
     const search = searchParams.get('search')
     const featured = searchParams.get('featured')
     const newArrivals = searchParams.get('new')
@@ -276,11 +282,14 @@ export async function GET(request: Request) {
     // Resolve the selected category (and all descendants) once; reused for both
     // the product query filter and the filter-metadata aggregation below.
     let categoryIds: string[] = []
-    if (categorySlug) {
-      categoryIds = await getCategoryDescendantIds(categorySlug)
+    if (categoryParam) {
+      categoryIds = await getCategoryDescendantIds(categoryParam)
       if (categoryIds.length > 0) {
         // Filter by category and all its descendants
         where.categoryId = { in: categoryIds }
+      } else {
+        // Parameter was supplied but matched 0 categories -> return empty set
+        where.categoryId = '__NO_MATCHING_CATEGORY__'
       }
     }
 
