@@ -366,7 +366,11 @@ export function Design3LayoutHeader() {
   const handleSelectDepartment = (dept: string) => {
     setSelectedDepartment(dept);
     if (dept !== 'All Departments' && dept !== 'all') {
-      router.push(`/${locale}/store?category=${encodeURIComponent(dept)}`);
+      const matched = headerCategories.find(
+        (c: any) => c.name === dept || c.id === dept || c.slug === dept
+      );
+      const targetParam = matched?.slug || matched?.id || dept;
+      router.push(`/${locale}/store?category=${encodeURIComponent(targetParam)}`);
     } else {
       router.push(`/${locale}/store`);
     }

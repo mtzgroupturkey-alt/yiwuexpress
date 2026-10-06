@@ -717,10 +717,10 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <button
                   onClick={() => {
-                    onSelectDepartment(dept.name);
                     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
                     setActiveDropdown(null);
-                    router.push(`/${currentLocale}/store?category=${encodeURIComponent(dept.slug || dept.id || dept.name)}`);
+                    const targetCategory = dept.slug || dept.id || dept.name;
+                    router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
                   }}
                   className={`px-3 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1 shrink-0 ${
                     isActive
@@ -808,11 +808,11 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={() => {
-                onSelectDepartment(activeDropdown.category.name);
                 if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
                 setActiveDropdown(null);
                 setActiveChildId(null);
-                router.push(`/${currentLocale}/store?category=${encodeURIComponent(activeDropdown.category.slug || activeDropdown.category.id || activeDropdown.category.name)}`);
+                const targetCategory = activeDropdown.category.slug || activeDropdown.category.id || activeDropdown.category.name;
+                router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
               }}
               className="w-full text-left px-3 py-1.5 font-bold text-[#00407a] hover:bg-blue-50 flex items-center justify-between transition-colors cursor-pointer"
             >
@@ -838,11 +838,11 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      onSelectDepartment(child.name);
                       if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
                       setActiveDropdown(null);
                       setActiveChildId(null);
-                      router.push(`/${currentLocale}/store?category=${encodeURIComponent(child.slug || child.id || child.name)}`);
+                      const targetCategory = child.slug || child.id || child.name;
+                      router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
                     }}
                     className={`w-full text-left px-3 py-1.5 font-medium transition-colors flex items-center justify-between group cursor-pointer ${
                       isChildActive && childHasL3
@@ -896,11 +896,11 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          onSelectDepartment(child.name);
                           if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
                           setActiveDropdown(null);
                           setActiveChildId(null);
-                          router.push(`/${currentLocale}/store?category=${encodeURIComponent(child.slug || child.id || child.name)}`);
+                          const targetCategory = child.slug || child.id || child.name;
+                          router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
                         }}
                         className="w-full text-left px-3 py-1.5 font-bold text-slate-800 hover:bg-slate-50 hover:text-[#00407a] flex items-center justify-between transition-colors cursor-pointer"
                       >
@@ -916,11 +916,11 @@ export const Header: React.FC<HeaderProps> = ({
                           key={sub.id || sub.slug}
                           type="button"
                           onClick={() => {
-                            onSelectDepartment(sub.name);
                             if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
                             setActiveDropdown(null);
                             setActiveChildId(null);
-                            router.push(`/${currentLocale}/store?category=${encodeURIComponent(sub.slug || sub.id || sub.name)}`);
+                            const targetCategory = sub.slug || sub.id || sub.name;
+                            router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
                           }}
                           className="w-full text-left px-3 py-1.5 text-slate-600 hover:bg-blue-50 hover:text-[#00407a] hover:font-bold font-medium transition-colors flex items-center gap-2 group cursor-pointer"
                         >
