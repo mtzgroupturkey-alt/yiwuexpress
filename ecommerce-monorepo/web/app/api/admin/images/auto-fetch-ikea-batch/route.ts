@@ -52,15 +52,34 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const results = [];
+    const results: any[] = [];
     let updatedCount = 0;
 
-    // Process sequentially or with slight concurrency to be polite to external CDN
-    for (const id of targetProductIds) {
-      const res = await autoFetchIkeaProductPhoto(id);
-      results.push(res);
-      if (res.success) {
-        updatedCount++;
+    // Process in polite concurrent chunks of 3 for fast execution without CDN rate-limiting
+    const CHUNK_SIZE = 3;
+    for (let i = 0; i < targetProductIds.length; i += CHUNK_SIZE) {
+      const chunk = targetProductIds.slice(i, i + CHUNK_SIZE);
+      const chunkResults = await Promise.allSettled(
+        chunk.map((id) => autoFetchIkeaProductPhoto(id))
+      );
+
+      for (let j = 0; j < chunkResults.length; j++) {
+        const itemResult = chunkResults[j];
+        if (itemResult.status === 'fulfilled') {
+          results.push(itemResult.value);
+          if (itemResult.value.success) {
+            updatedCount++;
+          }
+        } else {
+          results.push({
+            success: false,
+            productId: chunk[j],
+            name: '',
+            isReal: false,
+            previousWasPlaceholder: true,
+            error: itemResult.reason?.message || 'Processing error',
+          });
+        }
       }
     }
 

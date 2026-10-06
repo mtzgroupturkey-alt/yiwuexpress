@@ -653,18 +653,28 @@ export default function ImageFinderPage() {
     }
   };
 
-  // Batch auto-fetch genuine IKEA photos for all placeholder products on current page
+  // Batch auto-fetch genuine IKEA photos for products on current page
   const handleBatchAutoFetchIkeaCurrentPage = async () => {
-    const targetProducts = products.filter(
+    if (products.length === 0) {
+      showToast('error', 'No products on this page to fetch photos for.');
+      return;
+    }
+
+    // Determine target products:
+    // If under placeholder or missing filters, target all visible products on page.
+    // Otherwise, prioritize items with placeholder, missing photo, or not marked hasRealImage.
+    // If all happen to have hasRealImage but user clicked the page button, fetch for all visible items.
+    let targetProducts = products.filter(
       (p) => p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage
     );
 
     if (targetProducts.length === 0) {
-      showToast('error', 'No placeholder or missing-image products found on this page.');
-      return;
+      // User explicitly clicked the button on current page (e.g. In "All" or "External IKEA" filter)
+      targetProducts = products;
     }
 
     setBatchFetchingIkea(true);
+    const savedScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
     try {
       const res = await fetch('/api/admin/images/auto-fetch-ikea-batch', {
         method: 'POST',
@@ -676,11 +686,51 @@ export default function ImageFinderPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Batch IKEA fetch failed');
 
-      showToast(
-        'success',
-        `🎉 Successfully fetched & updated ${data.updated} of ${data.total} products from IKEA.com!`
-      );
-      fetchProducts();
+      // Optimistically update products state from batch results
+      if (Array.isArray(data.results)) {
+        const resultMap = new Map<string, any>();
+        data.results.forEach((r: any) => {
+          if (r.productId && r.success) resultMap.set(r.productId, r);
+        });
+
+        setProducts((prev) =>
+          prev.map((item) => {
+            const r = resultMap.get(item.id);
+            if (r && r.newThumbnail) {
+              return {
+                ...item,
+                thumbnail: r.newThumbnail,
+                images: [r.newThumbnail],
+                hasRealImage: true,
+                isPlaceholder: false,
+                isMissingOnDisk: false,
+                analysisReason: 'Genuine local photo (IKEA official)',
+              };
+            }
+            return item;
+          })
+        );
+      }
+
+      if (data.updated > 0) {
+        showToast(
+          'success',
+          `🎉 Successfully fetched & updated ${data.updated} of ${data.total} products from IKEA.com!`
+        );
+      } else {
+        showToast(
+          'error',
+          `Checked ${data.total} products, but could not find official IKEA matching photos.`
+        );
+      }
+
+      // Silent refresh to sync stats and background data without resetting table scroll
+      await fetchProducts(true);
+
+      // Preserve scroll position
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+      }
     } catch (err: any) {
       showToast('error', err.message || 'Batch IKEA fetch failed');
     } finally {
