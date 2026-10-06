@@ -58,41 +58,46 @@ export async function GET(request: NextRequest) {
   const skip = (page - 1) * limit;
 
   try {
-    // Build where clause
-    const where: any = {};
+    // Build where conditions array (AND combination)
+    const andConditions: any[] = [];
 
     if (categoryId) {
-      where.categoryId = categoryId;
+      andConditions.push({ categoryId });
     }
 
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { sku: { contains: search, mode: 'insensitive' } },
-        { slug: { contains: search, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { sku: { contains: search, mode: 'insensitive' } },
+          { slug: { contains: search, mode: 'insensitive' } },
+        ],
+      });
     }
 
     if (filterType === 'no_thumbnail') {
-      where.thumbnail = null;
+      andConditions.push({ thumbnail: null });
     } else if (filterType === 'missing_or_external') {
-      // Missing thumbnail OR containing ikea.com
-      where.OR = [
-        ...(where.OR || []),
-        { thumbnail: null },
-        { thumbnail: { contains: 'ikea.com' } },
-        { images: { isEmpty: true } },
-      ];
+      // Missing thumbnail OR containing ikea.com OR no images
+      andConditions.push({
+        OR: [
+          { thumbnail: null },
+          { thumbnail: { contains: 'placeholder' } },
+          { thumbnail: { contains: 'ikea.com' } },
+          { images: { isEmpty: true } },
+        ],
+      });
     } else if (filterType === 'missing_on_disk') {
-      // Products with null thumbnail OR pointing to local uploads / placeholder
-      where.OR = [
-        ...(where.OR || []),
-        { thumbnail: null },
-        { thumbnail: { contains: 'placeholder' } },
-        { thumbnail: { contains: '/uploads/products/' } },
-        { thumbnail: { contains: 'ikea.com' } },
-      ];
+      // Products with null thumbnail OR placeholder
+      andConditions.push({
+        OR: [
+          { thumbnail: null },
+          { thumbnail: { contains: 'placeholder' } },
+        ],
+      });
     }
+
+    const where: any = andConditions.length > 0 ? { AND: andConditions } : {};
 
     const [products, totalCount, totalProducts, nullThumbCount] = await Promise.all([
       prisma.product.findMany({
@@ -154,15 +159,9 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    // If filterType is missing_on_disk, prioritize products that are truly missing on disk
-    let finalProducts = annotatedProducts;
-    if (filterType === 'missing_on_disk') {
-      finalProducts = annotatedProducts.filter(p => p.isMissingOnDisk);
-    }
-
     return NextResponse.json({
       success: true,
-      products: finalProducts,
+      products: annotatedProducts,
       pagination: {
         page,
         limit,
@@ -172,7 +171,7 @@ export async function GET(request: NextRequest) {
       stats: {
         totalProducts,
         nullThumbCount,
-        ikeaOrExternalCount: 6657,
+        ikeaOrExternalCount: 6392,
         hasUnsplashKey: !!process.env.UNSPLASH_ACCESS_KEY,
         hasPexelsKey: !!process.env.PEXELS_API_KEY,
         hasPixabayKey: !!process.env.PIXABAY_API_KEY,
