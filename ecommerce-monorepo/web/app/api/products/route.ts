@@ -21,12 +21,18 @@ interface FilterMetadata {
 // computes descendants exactly once and reuses them for both the product query
 // and the filter-metadata aggregation.
 async function getCategoryDescendantIds(categoryIdentifier: string): Promise<string[]> {
+  const trimmed = categoryIdentifier.trim();
+  const slugified = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
   const category = await prisma.category.findFirst({
     where: {
       OR: [
-        { id: categoryIdentifier },
-        { slug: categoryIdentifier },
-        { slug: categoryIdentifier.toLowerCase() }
+        { id: trimmed },
+        { slug: trimmed },
+        { slug: trimmed.toLowerCase() },
+        { slug: slugified },
+        { name: { equals: trimmed, mode: 'insensitive' } },
+        { translations: { some: { name: { equals: trimmed, mode: 'insensitive' } } } }
       ]
     },
     include: {
@@ -237,7 +243,7 @@ async function fetchFilterMetadata(categoryIds: string[] | null, locale: string)
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const categoryParam = searchParams.get('category') || searchParams.get('cat') || searchParams.get('categoryId')
+    const categoryParam = searchParams.get('category') || searchParams.get('cat') || searchParams.get('categoryId') || searchParams.get('sub') || searchParams.get('department') || searchParams.get('dept')
     const search = searchParams.get('search')
     const featured = searchParams.get('featured')
     const newArrivals = searchParams.get('new')

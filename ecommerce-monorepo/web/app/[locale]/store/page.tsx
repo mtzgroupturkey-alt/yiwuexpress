@@ -48,8 +48,13 @@ function StoreCatalogInner() {
 
   const tVisual = useTranslations('VisualSearch');
 
-  const initialCategory = searchParams.get('category') || searchParams.get('cat') || null;
-  const initialDepartment = searchParams.get('department') || searchParams.get('dept') || null;
+  const subParam = searchParams.get('sub') || '';
+  const deptParam = searchParams.get('department') || searchParams.get('dept') || '';
+  const catParam = searchParams.get('category') || searchParams.get('cat') || '';
+  const activeCategoryParam = subParam || catParam || deptParam || '';
+
+  const initialCategory = subParam || catParam || (deptParam ? deptParam : null);
+  const initialDepartment = deptParam || null;
   const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
   const [currentPage, setCurrentPage] = useState(isNaN(pageParam) || pageParam < 1 ? 1 : pageParam);
@@ -109,7 +114,7 @@ function StoreCatalogInner() {
   };
 
   // Fetch real products from DB with active locale and server-side pagination
-  const categoryParam = searchParams.get('category') || searchParams.get('cat') || '';
+  const categoryParam = activeCategoryParam;
   const searchParam = searchParams.get('search') || searchParams.get('q') || '';
   const sortParam = searchParams.get('sort') || '';
 
