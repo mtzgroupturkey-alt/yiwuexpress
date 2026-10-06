@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Save, Trash2, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, ExternalLink, Sparkles, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react'
 import { ProductAttributesSection } from '@/components/admin/ProductAttributesSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
@@ -74,6 +74,14 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [media, setMedia] = useState<MediaItem[]>([])
   const [deleting, setDeleting] = useState(false)
   const [translations, setTranslations] = useState<TranslationPayload | null>(null)
+  const [photoStatus, setPhotoStatus] = useState<{
+    isPlaceholder: boolean;
+    isReal: boolean;
+    reason: string;
+    hasCatalogIkeaPhoto: boolean;
+    catalogIkeaUrl: string | null;
+  } | null>(null)
+  const [fetchingIkea, setFetchingIkea] = useState(false)
 
   const {
     register,
@@ -88,9 +96,52 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
   const selectedCategoryId = watch('categoryId')
 
+  const fetchPhotoStatus = async () => {
+    try {
+      const res = await fetch(`/api/admin/products/${params.id}/photo-status`)
+      if (res.ok) {
+        const data = await res.json()
+        setPhotoStatus(data)
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const handleAutoFetchIkea = async () => {
+    setFetchingIkea(true)
+    try {
+      const res = await fetch(`/api/admin/products/${params.id}/fetch-ikea-photo`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch IKEA photo')
+      }
+
+      if (data.newThumbnail) {
+        setMedia((prev) => {
+          const filtered = prev.filter(
+            (m) => m.url !== data.newThumbnail && !m.url.includes('placeholder')
+          )
+          return [{ url: data.newThumbnail, type: 'image' }, ...filtered]
+        })
+        setValue('thumbnail', data.newThumbnail)
+      }
+
+      await fetchPhotoStatus()
+      alert('✅ Official IKEA.com photo successfully downloaded, converted to WebP, and applied!')
+    } catch (err: any) {
+      alert(`❌ ${err.message || 'Error fetching IKEA photo'}`)
+    } finally {
+      setFetchingIkea(false)
+    }
+  }
+
   useEffect(() => {
     fetchCategories()
     fetchProduct()
+    fetchPhotoStatus()
   }, [params.id])
 
   const fetchCategories = async () => {
@@ -537,7 +588,69 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
             {/* Images & Videos */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.imagesVideos}</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
+                <h2 className="text-lg font-bold text-[#1a3a5c]">{dict.products.imagesVideos}</h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAutoFetchIkea}
+                  disabled={fetchingIkea}
+                  className="rounded-xl border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 gap-1.5 text-xs font-semibold shadow-2xs"
+                  title="Automatically look up and download the official photo from IKEA.com for this product"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 ${fetchingIkea ? 'animate-spin' : 'text-blue-600'}`} />
+                  {fetchingIkea ? 'Fetching from IKEA...' : 'Auto-Fetch from IKEA.com'}
+                </Button>
+              </div>
+
+              {/* Photo Quality / Placeholder Diagnostic Banner */}
+              {photoStatus && (photoStatus.isPlaceholder || !photoStatus.isReal) && (
+                <div className="bg-amber-50/80 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-amber-900 text-sm">
+                        Placeholder / Non-Authentic Image Detected
+                      </div>
+                      <div className="text-xs text-amber-700 mt-0.5">
+                        {photoStatus.reason || 'This product is currently displaying a placeholder image.'}
+                        {photoStatus.hasCatalogIkeaPhoto && ' Official IKEA.com catalog photo is available!'}
+                      </div>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleAutoFetchIkea}
+                    disabled={fetchingIkea}
+                    className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-xs shrink-0 gap-1.5"
+                  >
+                    <Sparkles className={`w-3.5 h-3.5 ${fetchingIkea ? 'animate-spin' : ''}`} />
+                    {fetchingIkea ? 'Downloading...' : 'Replace with Real IKEA Photo'}
+                  </Button>
+                </div>
+              )}
+
+              {photoStatus && photoStatus.isReal && (
+                <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-emerald-800">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span className="font-semibold">Verified Real Product Photo</span>
+                    <span className="text-emerald-600">({photoStatus.reason})</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAutoFetchIkea}
+                    disabled={fetchingIkea}
+                    className="text-blue-600 hover:underline font-semibold"
+                  >
+                    Re-sync from IKEA.com
+                  </button>
+                </div>
+              )}
+
               <ProductMediaUpload
                 media={media}
                 onChange={setMedia}

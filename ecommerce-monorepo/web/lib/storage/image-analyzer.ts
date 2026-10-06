@@ -110,20 +110,35 @@ export async function analyzeImageBuffer(buffer: Buffer): Promise<ImageAnalysisR
     };
   }
 
-  // For files up to 15 KB, perform Sharp statistical analysis to detect low-entropy flat placeholders
-  if (sizeBytes < 15360) {
+  // For small files (< 7 KB) or 800x800 images, perform Sharp statistical analysis to detect low-entropy flat placeholders
+  if (sizeBytes < 7168 || (sizeBytes < 12288)) {
     try {
       const img = sharp(buffer);
       const meta = await img.metadata();
       const stats = await img.stats();
+
+      // High-resolution images (>= 1000px) that exceed 7 KB are genuine product photos (e.g. white furniture)
+      if ((meta.width && meta.width >= 1000) && sizeBytes >= 7000) {
+        return {
+          isPlaceholder: false,
+          isMissing: false,
+          isReal: true,
+          sizeBytes,
+          width: meta.width,
+          height: meta.height,
+          format: meta.format,
+          reason: `Genuine high-res product photo (${Math.round(sizeBytes / 1024)} KB, ${meta.width}x${meta.height})`,
+          confidence: 'high',
+        };
+      }
 
       const channels = stats.channels || [];
       if (channels.length > 0) {
         const avgMean = channels.reduce((acc, c) => acc + c.mean, 0) / channels.length;
         const avgStdev = channels.reduce((acc, c) => acc + c.stdev, 0) / channels.length;
 
-        // Solid/near-solid light gray or white placeholder (mean > 210, stdev < 18)
-        if (avgStdev < 18 && avgMean > 200) {
+        // Solid/near-solid light gray or white placeholder (mean > 210, stdev < 15, size < 7 KB or dimensions <= 800)
+        if (sizeBytes < 7000 && avgStdev < 15 && avgMean > 200) {
           return {
             isPlaceholder: true,
             isMissing: false,
