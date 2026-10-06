@@ -459,6 +459,7 @@ model Product {
   images                String[]
   videos                String[]               @default([])
   thumbnail             String?
+  hasRealImage          Boolean                @default(false)
   stock                 Int                    @default(0)
   lowStockThreshold     Int                    @default(10)
   hsCode                String?
@@ -511,6 +512,7 @@ model Product {
   productQuoteItems     ProductQuoteItem[]
   imageCandidates       ImageSearchCandidate[]
 
+  @@index([hasRealImage])
   @@map("products")
 }
 

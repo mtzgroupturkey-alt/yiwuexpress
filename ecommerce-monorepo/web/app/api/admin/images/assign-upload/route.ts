@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       data: {
         thumbnail: asThumbnail ? uploadedUrl : (product.thumbnail || uploadedUrl),
         images: updatedImages,
+        hasRealImage: true,
       },
     });
 

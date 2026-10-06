@@ -230,6 +230,8 @@ export async function GET(
       mimeType = 'image/webp';
     }
 
+    const isFallback = foundFile.includes('product-placeholder') || foundFile.includes('placeholder');
+
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
@@ -239,7 +241,8 @@ export async function GET(
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Accept, Range',
-        'X-Media-Served-By': 'dromkok-uploads-api',
+        'X-Media-Served-By': isFallback ? 'dromkok-uploads-fallback' : 'dromkok-uploads-api',
+        ...(isFallback ? { 'X-Is-Fallback': 'true' } : {}),
       },
     });
   } catch (error) {

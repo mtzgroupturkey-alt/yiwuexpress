@@ -61,7 +61,11 @@ interface ProductItem {
   category: { id: string; name: string } | null;
   imageCandidates: Candidate[];
   isMissingOnDisk?: boolean;
+  isPlaceholder?: boolean;
+  hasRealImage?: boolean;
   isHotlinked?: boolean;
+  catalogImageUrl?: string | null;
+  analysisReason?: string;
 }
 
 export default function ImageFinderPage() {
@@ -69,9 +73,11 @@ export default function ImageFinderPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [auditing, setAuditing] = useState(false);
   const [stats, setStats] = useState({
     totalProducts: 0,
     nullThumbCount: 0,
+    placeholderOrMissingCount: 0,
     ikeaOrExternalCount: 0,
     hasUnsplashKey: false,
     hasPexelsKey: false,
@@ -438,6 +444,29 @@ export default function ImageFinderPage() {
     }
   };
 
+  // Audit and detect placeholders across catalog
+  const handleAuditPlaceholders = async () => {
+    setAuditing(true);
+    try {
+      const res = await fetch('/api/admin/images/audit-placeholders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applyFix: true, limit: 1000 }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Audit failed');
+      showToast(
+        'success',
+        `Audited ${data.audited} products: ${data.realCount} verified real, ${data.placeholderCount} placeholders, ${data.missingCount} missing`
+      );
+      fetchProducts();
+    } catch (err: any) {
+      showToast('error', err.message || 'Audit failed');
+    } finally {
+      setAuditing(false);
+    }
+  };
+
   // State for one-click re-hosting
   const [downloadingProductId, setDownloadingProductId] = useState<string | null>(null);
   const [batchMigrating, setBatchMigrating] = useState(false);
@@ -446,7 +475,16 @@ export default function ImageFinderPage() {
   const handleQuickRehostProduct = async (product: ProductItem) => {
     // Find the original external / IKEA photo URL
     const allUrls = [product.thumbnail, ...(product.images || [])].filter(Boolean) as string[];
-    const externalUrl = allUrls.find((u) => u.startsWith('http://') || u.startsWith('https://'));
+    let externalUrl = allUrls.find((u) => u.startsWith('http://') || u.startsWith('https://'));
+
+    // Check if catalog snapshot photo or candidate is available
+    if (!externalUrl && product.catalogImageUrl) {
+      externalUrl = product.catalogImageUrl;
+    }
+    if (!externalUrl && product.imageCandidates && product.imageCandidates.length > 0) {
+      const cand = product.imageCandidates.find((c) => c.sourceUrl?.startsWith('http'));
+      if (cand) externalUrl = cand.sourceUrl;
+    }
 
     if (!externalUrl) {
       // If no external URL found, open search modal directly
@@ -663,6 +701,17 @@ export default function ImageFinderPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAuditPlaceholders}
+            disabled={auditing || loading}
+            className="gap-2 border-rose-200 text-rose-700 hover:bg-rose-50"
+            title="Scan database and detect placeholder images"
+          >
+            <Sparkles className={`w-4 h-4 ${auditing ? 'animate-spin' : 'text-rose-500'}`} />
+            {auditing ? 'Auditing...' : 'Audit Placeholders'}
+          </Button>
           <Link href="/admin/tools/images">
             <Button variant="outline" size="sm" className="gap-2">
               <Layers className="w-4 h-4" />
@@ -768,14 +817,14 @@ export default function ImageFinderPage() {
         </Card>
 
         <Card 
-          onClick={() => { setFilterType('no_thumbnail'); setPage(1); }}
-          className={`shadow-xs border-gray-200 cursor-pointer transition-all hover:shadow-md hover:border-rose-300 ${filterType === 'no_thumbnail' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}
+          onClick={() => { setFilterType('missing_on_disk'); setPage(1); }}
+          className={`shadow-xs border-gray-200 cursor-pointer transition-all hover:shadow-md hover:border-rose-300 ${filterType === 'missing_on_disk' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}
         >
           <CardHeader className="pb-2">
-            <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.missingThumbnails || 'Missing Thumbnails'}</CardDescription>
-            <CardTitle className="text-2xl font-black text-rose-600">{stats.nullThumbCount.toLocaleString()}</CardTitle>
+            <CardDescription className="text-xs uppercase font-bold text-gray-500">Missing / Placeholders</CardDescription>
+            <CardTitle className="text-2xl font-black text-rose-600">{(stats.placeholderOrMissingCount || stats.nullThumbCount).toLocaleString()}</CardTitle>
           </CardHeader>
-          <CardContent className="text-xs text-gray-500">{dict.tools.missingThumbnailsSub || 'Products with no primary thumbnail set'}</CardContent>
+          <CardContent className="text-xs text-gray-500">Products with placeholder or missing photos</CardContent>
         </Card>
 
         <Card 
@@ -915,7 +964,9 @@ export default function ImageFinderPage() {
                     <tr key={p.id} className="hover:bg-gray-50/80 transition-colors">
                       {/* Thumbnail Preview */}
                       <td className="py-3 px-4 w-16">
-                        <div className="w-14 h-14 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center relative">
+                        <div className={`w-14 h-14 rounded-lg bg-gray-100 border overflow-hidden flex items-center justify-center relative ${
+                          (p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage) ? 'border-rose-300 ring-2 ring-rose-200' : 'border-gray-200'
+                        }`}>
                           {p.thumbnail ? (
                             <img
                               src={p.thumbnail}
@@ -929,6 +980,11 @@ export default function ImageFinderPage() {
                             <div className="flex flex-col items-center justify-center text-[10px] text-gray-400">
                               <ImageIcon className="w-5 h-5 text-gray-300" />
                               <span className="font-bold text-rose-500">{dict.common?.none || 'None'}</span>
+                            </div>
+                          )}
+                          {(p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage) && (
+                            <div className="absolute top-0.5 right-0.5 bg-rose-600 text-white rounded-full p-0.5" title="Placeholder or missing image">
+                              <AlertTriangle className="w-2.5 h-2.5" />
                             </div>
                           )}
                         </div>
@@ -961,15 +1017,18 @@ export default function ImageFinderPage() {
 
                       {/* Status */}
                       <td className="py-3 px-4">
-                        {p.isMissingOnDisk ? (
-                          <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-300 font-semibold text-xs flex items-center gap-1 w-fit">
-                            <AlertTriangle className="w-3 h-3 text-rose-500" />
-                            Missing from Disk
-                          </Badge>
-                        ) : isMissing ? (
-                          <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 text-xs">
-                            {dict.tools.missingImageBadge || 'Missing Image'}
-                          </Badge>
+                        {p.isMissingOnDisk || p.isPlaceholder || !p.hasRealImage ? (
+                          <div className="space-y-1">
+                            <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-300 font-semibold text-xs flex items-center gap-1 w-fit">
+                              <AlertTriangle className="w-3 h-3 text-rose-500" />
+                              {p.isMissingOnDisk ? 'Missing from Disk' : 'Placeholder Image'}
+                            </Badge>
+                            {p.analysisReason && (
+                              <div className="text-[10px] text-rose-600 font-normal">
+                                {p.analysisReason}
+                              </div>
+                            )}
+                          </div>
                         ) : hasExternal || p.isHotlinked ? (
                           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
                             {dict.tools.hotlinkedBadge || 'Hotlinked (IKEA)'}
@@ -977,7 +1036,7 @@ export default function ImageFinderPage() {
                         ) : (
                           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs flex items-center gap-1 w-fit">
                             <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                            {dict.tools.selfHostedBadge || 'Self-Hosted'}
+                            {dict.tools.selfHostedBadge || 'Self-Hosted (Verified)'}
                           </Badge>
                         )}
                         {p.imageCandidates && p.imageCandidates.length > 0 && (
@@ -990,14 +1049,14 @@ export default function ImageFinderPage() {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {(hasExternal || p.isHotlinked) && (
+                          {(hasExternal || p.isHotlinked || !!p.catalogImageUrl || (p.imageCandidates && p.imageCandidates.length > 0)) && (
                             <Button
                               size="sm"
                               variant="default"
                               onClick={() => handleQuickRehostProduct(p)}
                               disabled={downloadingProductId === p.id}
                               className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 h-8 text-xs font-semibold shadow-xs"
-                              title="Download official IKEA photo, convert to WebP, host locally and remove all external links"
+                              title="Download official photo from IKEA / catalog, convert to WebP, and host locally"
                             >
                               <Download className={`w-3.5 h-3.5 ${downloadingProductId === p.id ? 'animate-bounce' : ''}`} />
                               {downloadingProductId === p.id ? 'Saving...' : 'Download & Host'}

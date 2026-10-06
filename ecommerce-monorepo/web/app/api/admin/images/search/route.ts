@@ -12,6 +12,7 @@ import {
   checkRateLimit,
   CandidateResult,
 } from '@/lib/storage/image-search-service';
+import { getCatalogImages } from '@/lib/storage/catalog-matcher';
 
 async function verifyAdmin(req: NextRequest) {
   const token = req.cookies.get('auth_token')?.value;
@@ -79,6 +80,26 @@ export async function POST(request: NextRequest) {
     const results = await Promise.all(searchTasks);
     for (const r of results) {
       candidates.push(...r);
+    }
+
+    // Include authentic official photos from catalog snapshot if available
+    const catalogData = getCatalogImages({ id: product.id, sku: product.sku });
+    if (catalogData && catalogData.images.length > 0) {
+      for (const imgUrl of catalogData.images) {
+        if (!candidates.some((c) => c.sourceUrl === imgUrl)) {
+          candidates.unshift({
+            source: 'external',
+            sourceUrl: imgUrl,
+            thumbnail: imgUrl,
+            title: `${product.name} (Official IKEA Catalog Photo)`,
+            author: 'ikea.com',
+            license: 'copyrighted',
+            isCompetitor: true,
+            status: 'PENDING',
+            targetSite: 'ikea.com',
+          });
+        }
+      }
     }
 
     // Handle optional direct custom URL provided by admin

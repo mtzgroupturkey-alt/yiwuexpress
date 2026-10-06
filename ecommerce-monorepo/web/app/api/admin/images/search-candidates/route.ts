@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { analyzeProductImage } from '@/lib/storage/image-analyzer';
+import { getCatalogImages } from '@/lib/storage/catalog-matcher';
 
 async function verifyAdmin(req: NextRequest) {
   const token = req.cookies.get('auth_token')?.value;
@@ -10,36 +12,6 @@ async function verifyAdmin(req: NextRequest) {
   const payload = verifyToken(token);
   if (!payload || payload.role !== 'ADMIN') return null;
   return payload;
-}
-
-import { promises as fs } from 'fs';
-import path from 'path';
-
-// Helper to check if image physically exists on disk and is larger than placeholder
-const uploadsDirCandidates = [
-  path.join(process.cwd(), 'public', 'uploads', 'products'),
-  path.join(process.cwd(), 'web', 'public', 'uploads', 'products'),
-  '/www/wwwroot/www.dromkok.com/web/public/uploads/products',
-  '/www/wwwroot/dromkok.com/web/public/uploads/products',
-  '/www/wwwroot/www.dromkok.com/public/uploads/products',
-  '/www/wwwroot/dromkok.com/public/uploads/products',
-];
-
-async function checkFileExistsOnDisk(filename: string): Promise<boolean> {
-  const cleanName = path.basename(filename).toLowerCase();
-  for (const dir of uploadsDirCandidates) {
-    try {
-      const fullPath = path.join(dir, cleanName);
-      const stat = await fs.stat(fullPath);
-      // Valid product photos are larger than 3,600 bytes (product-placeholder.webp is exactly 3,534 bytes)
-      if (stat.isFile() && stat.size > 3600) {
-        return true;
-      }
-    } catch {
-      // try next candidate dir
-    }
-  }
-  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -53,7 +25,7 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(100, Math.max(5, parseInt(searchParams.get('limit') || '20', 10)));
   const categoryId = searchParams.get('categoryId') || undefined;
   const search = searchParams.get('search')?.trim() || '';
-  const filterType = searchParams.get('filter') || 'missing_or_external'; // 'missing_on_disk' | 'missing_or_external' | 'no_thumbnail' | 'all'
+  const filterType = searchParams.get('filter') || 'external_ikea'; // 'missing_on_disk' | 'missing_or_external' | 'no_thumbnail' | 'all'
 
   const skip = (page - 1) * limit;
 
@@ -88,11 +60,12 @@ export async function GET(request: NextRequest) {
         ],
       });
     } else if (filterType === 'missing_or_external') {
-      // Missing thumbnail OR placeholder OR containing ikea.com/http OR empty images
+      // Missing thumbnail OR placeholder OR marked without real image OR external IKEA
       andConditions.push({
         OR: [
           { thumbnail: null },
           { thumbnail: { contains: 'placeholder' } },
+          { hasRealImage: false },
           { thumbnail: { contains: 'ikea.com' } },
           { thumbnail: { startsWith: 'http://' } },
           { thumbnail: { startsWith: 'https://' } },
@@ -101,18 +74,19 @@ export async function GET(request: NextRequest) {
         ],
       });
     } else if (filterType === 'missing_on_disk') {
-      // Products with null thumbnail OR placeholder
+      // Products with null thumbnail OR placeholder OR marked hasRealImage: false
       andConditions.push({
         OR: [
           { thumbnail: null },
           { thumbnail: { contains: 'placeholder' } },
+          { hasRealImage: false },
         ],
       });
     }
 
     const where: any = andConditions.length > 0 ? { AND: andConditions } : {};
 
-    const [products, totalCount, totalProducts, nullThumbCount] = await Promise.all([
+    const [products, totalCount, totalProducts, nullThumbCount, placeholderOrMissingCount] = await Promise.all([
       prisma.product.findMany({
         where,
         skip,
@@ -126,6 +100,7 @@ export async function GET(request: NextRequest) {
           thumbnail: true,
           images: true,
           price: true,
+          hasRealImage: true,
           category: {
             select: { id: true, name: true },
           },
@@ -138,6 +113,15 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where }),
       prisma.product.count(),
       prisma.product.count({ where: { thumbnail: null } }),
+      prisma.product.count({
+        where: {
+          OR: [
+            { thumbnail: null },
+            { thumbnail: { contains: 'placeholder' } },
+            { hasRealImage: false },
+          ],
+        },
+      }),
     ]);
 
     // Fetch categories for filtering
@@ -146,28 +130,50 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
-    // Annotate products with physical disk presence status
+    // Annotate products with physical disk presence status, placeholder detection, and catalog image candidates
     const annotatedProducts = await Promise.all(
       products.map(async (p) => {
-        let isMissingOnDisk = false;
-        let isHotlinked = (p.thumbnail && p.thumbnail.includes('ikea.com')) || 
-          (Array.isArray(p.images) && p.images.some(img => img.includes('ikea.com')));
+        const analysis = await analyzeProductImage(p.thumbnail);
+        const isMissingOnDisk = analysis.isMissing;
+        const isPlaceholder = analysis.isPlaceholder;
+        const isHotlinked =
+          (p.thumbnail && p.thumbnail.includes('ikea.com')) ||
+          (Array.isArray(p.images) && p.images.some((img) => img.includes('ikea.com')));
 
-        if (!p.thumbnail) {
-          isMissingOnDisk = true;
-        } else if (p.thumbnail.includes('placeholder')) {
-          isMissingOnDisk = true;
-        } else if (p.thumbnail.includes('/uploads/products/')) {
-          const exists = await checkFileExistsOnDisk(p.thumbnail);
-          if (!exists) {
-            isMissingOnDisk = true;
+        // Check if authentic catalog IKEA photo is available in catalog snapshot
+        const catalogData = getCatalogImages({ id: p.id, sku: p.sku, slug: p.slug });
+        const existingCandidates = [...(p.imageCandidates || [])];
+
+        // If product is missing/placeholder or hotlinked, and catalog photo exists, make sure it is available as a candidate
+        if (catalogData && catalogData.thumbnail) {
+          const alreadyHasCatalogCandidate = existingCandidates.some(
+            (c) => c.sourceUrl === catalogData.thumbnail
+          );
+          if (!alreadyHasCatalogCandidate) {
+            existingCandidates.unshift({
+              id: `catalog-${p.id}`,
+              source: 'external',
+              sourceUrl: catalogData.thumbnail,
+              thumbnail: catalogData.thumbnail,
+              title: `${p.name} (Official IKEA Catalog Photo)`,
+              author: 'ikea.com',
+              license: 'copyrighted',
+              isCompetitor: true,
+              status: 'PENDING',
+              targetSite: 'ikea.com',
+            } as any);
           }
         }
 
         return {
           ...p,
           isMissingOnDisk,
+          isPlaceholder,
+          hasRealImage: p.hasRealImage && analysis.isReal && !analysis.isPlaceholder,
           isHotlinked,
+          catalogImageUrl: catalogData?.thumbnail || null,
+          analysisReason: analysis.reason,
+          imageCandidates: existingCandidates,
         };
       })
     );
@@ -184,6 +190,7 @@ export async function GET(request: NextRequest) {
       stats: {
         totalProducts,
         nullThumbCount,
+        placeholderOrMissingCount,
         ikeaOrExternalCount: 6392,
         hasUnsplashKey: !!process.env.UNSPLASH_ACCESS_KEY,
         hasPexelsKey: !!process.env.PEXELS_API_KEY,

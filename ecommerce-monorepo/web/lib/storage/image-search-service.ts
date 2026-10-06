@@ -441,6 +441,7 @@ export async function downloadAndAssignCandidate(params: {
     data: {
       thumbnail: asThumbnail ? newUrl : (product.thumbnail || newUrl),
       images: updatedImages,
+      hasRealImage: true,
     },
   });
 
@@ -620,6 +621,7 @@ export async function downloadAndAssignMultipleCandidates(params: {
     data: {
       thumbnail: newThumbnail,
       images: updatedImages,
+      hasRealImage: true,
     },
   });
 
