@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/db'
 
 // GET /api/admin/categories/[id] - Get single category
@@ -236,6 +237,8 @@ export async function PUT(
       where: { categoryId: updated.id }
     })
 
+    revalidateTag('categories')
+
     return NextResponse.json({
       success: true,
       data: {
@@ -300,6 +303,8 @@ export async function DELETE(
       where: { id }
     })
 
+    revalidateTag('categories')
+
     return NextResponse.json({
       success: true,
       message: 'Category deleted successfully'
@@ -348,6 +353,8 @@ export async function PATCH(
       where: { id },
       data: updateData
     })
+
+    revalidateTag('categories')
 
     return NextResponse.json({
       success: true,
