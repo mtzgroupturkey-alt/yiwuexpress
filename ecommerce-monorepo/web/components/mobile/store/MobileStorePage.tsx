@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Product, Category } from '@/app/[locale]/design-3/types'
 import { MobileFilterChips } from './MobileFilterChips'
 import { MobileFilters, FilterValues } from './MobileFilters'
@@ -42,6 +43,10 @@ export function MobileStorePage({
   serverTotalCount,
   isLoading = false,
 }: MobileStorePageProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
   const [sortOption, setSortOption] = useState<SortOptionId>('popular')
@@ -55,19 +60,57 @@ export function MobileStorePage({
         : undefined,
   })
 
-  // Synchronize when initialCategory or initialDepartment changes externally
-  React.useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      category: initialCategory || undefined,
-      department:
-        initialDepartment &&
-        initialDepartment !== 'All Departments' &&
-        initialDepartment !== 'all'
-          ? initialDepartment
-          : undefined,
-    }))
-  }, [initialCategory, initialDepartment])
+  // URL -> State read-only sync
+  useEffect(() => {
+    const urlCategory = searchParams.get('category') || undefined
+    const urlDepartment =
+      searchParams.get('department') || searchParams.get('dept') || undefined
+    const cleanedDept =
+      urlDepartment &&
+      urlDepartment !== 'All Departments' &&
+      urlDepartment !== 'all'
+        ? urlDepartment
+        : undefined
+
+    setFilters((prev) => {
+      if (prev.category === urlCategory && prev.department === cleanedDept) {
+        return prev
+      }
+      return {
+        ...prev,
+        category: urlCategory,
+        department: cleanedDept,
+      }
+    })
+  }, [searchParams])
+
+  // Centralized URL navigation for Category/Department changes
+  const handleCategoryNavigate = useCallback(
+    (newCatSlugOrId?: string, newDept?: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+
+      if (!newCatSlugOrId || newCatSlugOrId === 'all') {
+        params.delete('category')
+      } else {
+        params.set('category', newCatSlugOrId)
+      }
+
+      if (newDept && newDept !== 'all' && newDept !== 'All Departments') {
+        params.set('department', newDept)
+      } else {
+        params.delete('department')
+      }
+
+      params.delete('sub')
+      params.delete('dept')
+      params.delete('cat')
+      params.delete('page') // Reset page on category/department change
+
+      const queryString = params.toString()
+      router.push(`${pathname}${queryString ? `?${queryString}` : ''}`)
+    },
+    [pathname, router, searchParams]
+  )
 
   // Filtering products
   const filteredProducts = useMemo(() => {
@@ -195,10 +238,17 @@ export function MobileStorePage({
   }, [filters, categories])
 
   const handleRemoveFilter = (filterId: string) => {
+    if (filterId === 'category') {
+      handleCategoryNavigate(undefined, filters.department)
+      return
+    }
+    if (filterId === 'department') {
+      handleCategoryNavigate(filters.category, undefined)
+      return
+    }
+
     setFilters((prev) => {
       const next = { ...prev }
-      if (filterId === 'category') next.category = undefined
-      if (filterId === 'department') next.department = undefined
       if (filterId === 'price') {
         next.minPrice = undefined
         next.maxPrice = undefined
@@ -211,8 +261,21 @@ export function MobileStorePage({
   }
 
   const handleClearAll = () => {
+    if (filters.category || filters.department) {
+      handleCategoryNavigate(undefined, undefined)
+    }
     setFilters({})
     setSortOption('popular')
+  }
+
+  const handleApplyFilters = (newFilters: FilterValues) => {
+    if (
+      newFilters.category !== filters.category ||
+      newFilters.department !== filters.department
+    ) {
+      handleCategoryNavigate(newFilters.category, newFilters.department)
+    }
+    setFilters(newFilters)
   }
 
   const sortLabelMap: Record<SortOptionId, string> = {
@@ -288,7 +351,7 @@ export function MobileStorePage({
         onClose={() => setIsFiltersOpen(false)}
         categories={categories}
         currentFilters={filters}
-        onApplyFilters={(newFilters) => setFilters(newFilters)}
+        onApplyFilters={handleApplyFilters}
         onResetFilters={handleClearAll}
       />
 
