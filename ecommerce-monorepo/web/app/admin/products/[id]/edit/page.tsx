@@ -120,17 +120,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       }
 
       if (data.newThumbnail) {
-        setMedia((prev) => {
-          const filtered = prev.filter(
-            (m) => m.url !== data.newThumbnail && !m.url.includes('placeholder')
-          )
-          return [{ url: data.newThumbnail, type: 'image' }, ...filtered]
-        })
+        // Completely replace media list with the newly downloaded real IKEA photo (discarding the old placeholder)
+        setMedia([{ url: data.newThumbnail, type: 'image' }])
         setValue('thumbnail', data.newThumbnail)
       }
 
       await fetchPhotoStatus()
-      alert('✅ Official IKEA.com photo successfully downloaded, converted to WebP, and applied!')
+      alert('✅ Official IKEA.com photo successfully downloaded, converted to WebP, and applied! Old placeholder removed.')
     } catch (err: any) {
       alert(`❌ ${err.message || 'Error fetching IKEA photo'}`)
     } finally {

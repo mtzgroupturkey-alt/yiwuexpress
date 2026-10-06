@@ -3,7 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import sharp from 'sharp';
 import { prisma } from '@/lib/db';
-import { analyzeProductImage } from './image-analyzer';
+import { analyzeProductImage, resolveLocalProductImagePath } from './image-analyzer';
 import { getCatalogImages } from './catalog-matcher';
 import { searchTargetWebsite } from './image-search-service';
 
@@ -140,13 +140,46 @@ export async function autoFetchIkeaProductPhoto(productId: string): Promise<Auto
     const filename = generateWebpFilename(product.sku, ikeaUrl);
     const localUrl = await downloadAndSaveWebp(ikeaUrl, filename);
 
-    // 4. Update product in database
+    // 4. Delete old placeholder file(s) from disk if they were placeholders
+    const oldUrls = [product.thumbnail, ...(product.images || [])].filter(Boolean) as string[];
+    for (const oldUrl of oldUrls) {
+      if (oldUrl !== localUrl) {
+        try {
+          const oldAnalysis = await analyzeProductImage(oldUrl);
+          if (oldAnalysis.isPlaceholder && !oldAnalysis.isMissing) {
+            const diskPath = resolveLocalProductImagePath(oldUrl);
+            if (diskPath && fs.existsSync(diskPath)) {
+              // Only delete if it's not a global static placeholder like product-placeholder.webp
+              const baseName = path.basename(diskPath).toLowerCase();
+              if (!baseName.includes('placeholder.webp') && !baseName.includes('product-placeholder')) {
+                fs.unlinkSync(diskPath);
+                console.log(`[AutoIkeaPhoto] Deleted obsolete placeholder from disk: ${diskPath}`);
+              }
+            }
+          }
+        } catch {
+          // Ignore disk deletion errors
+        }
+      }
+    }
+
+    // 5. Update product in database: replace images array completely if previous was placeholder
+    // or keep only valid non-placeholder images
     const existingImages = product.images || [];
-    // Filter out old placeholders and duplicate URLs
-    const updatedImages = [
-      localUrl,
-      ...existingImages.filter((u) => u !== localUrl && !u.includes('placeholder') && !u.includes('ikea.com')),
-    ];
+    let updatedImages: string[] = [localUrl];
+
+    if (!previousWasPlaceholder) {
+      // If previous wasn't a placeholder, keep other non-placeholder, non-duplicate images
+      const nonPlaceholders = await Promise.all(
+        existingImages.map(async (u) => {
+          if (u === localUrl || u.includes('placeholder') || u.includes('ikea.com')) return null;
+          const a = await analyzeProductImage(u);
+          return a.isPlaceholder ? null : u;
+        })
+      );
+      const validKept = nonPlaceholders.filter(Boolean) as string[];
+      updatedImages = [localUrl, ...validKept];
+    }
 
     await prisma.product.update({
       where: { id: product.id },
