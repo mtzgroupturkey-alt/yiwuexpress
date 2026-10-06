@@ -239,10 +239,15 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           )}
         </Link>
 
-        {/* Brand & Origin */}
-        <div className="text-[11px] text-slate-500 font-medium mb-1 truncate">
-          <strong className="text-slate-800 font-bold">{product.brand}</strong>
-          {product.originOrType && <span> • {product.originOrType}</span>}
+        {/* Category & Brand */}
+        <div className="text-[11px] text-slate-500 font-medium mb-1 truncate flex items-center gap-1.5">
+          {product.category && (
+            <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
+              {product.category}
+            </span>
+          )}
+          <strong className="text-slate-800 font-bold truncate">{product.brand}</strong>
+          {product.originOrType && !product.category && <span> • {product.originOrType}</span>}
         </div>
 
         {/* Title */}

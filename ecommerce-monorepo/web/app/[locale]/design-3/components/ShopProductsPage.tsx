@@ -303,6 +303,41 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     ? currentCategoryNode.name 
     : (selectedCategory !== 'all' ? selectedCategory : null);
 
+  // Compute relevant subcategories pills to show above the product catalog
+  const subcategoryPills = useMemo(() => {
+    // If a category node is selected and has children, show its children
+    if (currentCategoryNode && currentCategoryNode.children && currentCategoryNode.children.length > 0) {
+      return {
+        parentLabel: currentCategoryNode.name,
+        parentNode: currentCategoryNode,
+        isViewingParent: true,
+        items: currentCategoryNode.children,
+      };
+    }
+    // If a category node is selected and has a parent, show its sibling subcategories under that parent
+    if (currentCategoryNode && currentCategoryNode.parentId) {
+      const parentNode = categoryLookupMap.get(currentCategoryNode.parentId);
+      if (parentNode && parentNode.children && parentNode.children.length > 0) {
+        return {
+          parentLabel: parentNode.name,
+          parentNode: parentNode,
+          isViewingParent: false,
+          items: parentNode.children,
+        };
+      }
+    }
+    // If a department is selected and no subcategory is selected, show the department's children
+    if (currentDepartmentNode && currentDepartmentNode.children && currentDepartmentNode.children.length > 0) {
+      return {
+        parentLabel: currentDepartmentNode.name,
+        parentNode: currentDepartmentNode,
+        isViewingParent: true,
+        items: currentDepartmentNode.children,
+      };
+    }
+    return null;
+  }, [currentCategoryNode, currentDepartmentNode, categoryLookupMap]);
+
   // Sync initial props when changed externally (e.g. clicking 'All Home Products' or switching categories)
   useEffect(() => {
     setSelectedCategory(initialCategory || 'all');
@@ -1208,6 +1243,88 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                   >
                     {tShop('clearAll')}
                   </button>
+                </div>
+              )}
+
+              {/* Subcategories Horizontal Pills Bar */}
+              {subcategoryPills && subcategoryPills.items.length > 0 && (
+                <div className="pt-3 mt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      {subcategoryPills.parentLabel} Subcategories
+                    </span>
+                    {selectedCategory !== 'all' && (
+                      <button
+                        onClick={() => {
+                          if (subcategoryPills.parentNode) {
+                            handleCategoryClick(subcategoryPills.parentNode.slug || subcategoryPills.parentNode.id, selectedDepartment);
+                          } else {
+                            handleCategoryClick('all', selectedDepartment);
+                          }
+                        }}
+                        className="text-[11px] text-[#00407a] hover:underline font-semibold"
+                      >
+                        View All in {subcategoryPills.parentLabel} ({subcategoryPills.parentNode?.count || 0})
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar flex-wrap sm:flex-nowrap">
+                    {/* "All" pill */}
+                    <button
+                      onClick={() => {
+                        if (subcategoryPills.parentNode) {
+                          handleCategoryClick(subcategoryPills.parentNode.slug || subcategoryPills.parentNode.id, selectedDepartment);
+                        } else {
+                          handleCategoryClick('all', selectedDepartment);
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                        selectedCategory === (subcategoryPills.parentNode?.slug || subcategoryPills.parentNode?.id)
+                          ? 'bg-[#00407a] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      All ({subcategoryPills.parentNode?.count || 0})
+                    </button>
+
+                    {/* Individual subcategory pills */}
+                    {subcategoryPills.items.map((subItem) => {
+                      const isSubActive =
+                        selectedCategory === subItem.id ||
+                        selectedCategory === subItem.slug ||
+                        selectedCategory === subItem.slug.toLowerCase() ||
+                        selectedCategory === subItem.name;
+
+                      return (
+                        <button
+                          key={subItem.id}
+                          onClick={() => {
+                            if (isSubActive) {
+                              if (subcategoryPills.parentNode) {
+                                handleCategoryClick(subcategoryPills.parentNode.slug || subcategoryPills.parentNode.id, selectedDepartment);
+                              } else {
+                                handleCategoryClick('all', selectedDepartment);
+                              }
+                            } else {
+                              handleCategoryClick(subItem.slug || subItem.id, selectedDepartment);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                            isSubActive
+                              ? 'bg-[#00407a] text-white font-bold shadow-xs'
+                              : 'bg-slate-100 text-slate-700 hover:bg-blue-50 hover:text-[#00407a]'
+                          }`}
+                        >
+                          <span>{subItem.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                            isSubActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'
+                          }`}>
+                            {subItem.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
