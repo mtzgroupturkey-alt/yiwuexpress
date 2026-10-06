@@ -9,6 +9,45 @@ import { Badge } from '@/components/ui/badge'
 import { Star, GripVertical, ArrowLeft, Package } from 'lucide-react'
 import Link from 'next/link'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
+import { normalizeProductImageUrl, DEFAULT_PLACEHOLDER } from '@/lib/image-utils'
+
+const DEFAULT_PRODUCT_IMAGE = DEFAULT_PLACEHOLDER || '/images/product-placeholder.webp'
+const INLINE_FALLBACK_SVG =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f1f5f9'/%3E%3Cpath d='M160 180a20 20 0 100-40 20 20 0 000 40zm80 70H160l40-50 25 31 15-18 40 37z' fill='%23cbd5e1'/%3E%3Ctext x='200' y='290' text-anchor='middle' fill='%2394a3b8' font-family='system-ui, sans-serif' font-size='16' font-weight='500'%3ENo Photo%3C/text%3E%3C/svg%3E"
+
+function FeaturedProductPhoto({
+  src,
+  alt,
+  category,
+  name,
+  className = '',
+}: {
+  src?: string | null
+  alt: string
+  category?: string | null
+  name?: string
+  className?: string
+}) {
+  const resolved = src ? normalizeProductImageUrl(src, category, name) : DEFAULT_PRODUCT_IMAGE
+  const [imgSrc, setImgSrc] = useState<string>(resolved)
+
+  useEffect(() => {
+    setImgSrc(src ? normalizeProductImageUrl(src, category, name) : DEFAULT_PRODUCT_IMAGE)
+  }, [src, category, name])
+
+  return (
+    <img
+      src={imgSrc}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className={`w-full h-full object-cover ${className}`}
+      onError={() => {
+        setImgSrc((current) => (current !== DEFAULT_PRODUCT_IMAGE ? DEFAULT_PRODUCT_IMAGE : INLINE_FALLBACK_SVG))
+      }}
+    />
+  )
+}
 
 interface Product {
   id: string
@@ -190,17 +229,12 @@ export default function FeaturedProductsSettings() {
                   <GripVertical className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0" />
                   
                   <div className="w-16 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
-                    {product.thumbnail ? (
-                      <img
-                        src={product.thumbnail}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl">
-                        📦
-                      </div>
-                    )}
+                    <FeaturedProductPhoto
+                      src={product.thumbnail}
+                      alt={product.name}
+                      category={product.category?.name}
+                      name={product.name}
+                    />
                   </div>
 
                   <div className="flex-1 min-w-0">
