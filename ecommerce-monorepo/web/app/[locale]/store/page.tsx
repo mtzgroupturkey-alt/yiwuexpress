@@ -48,12 +48,12 @@ function StoreCatalogInner() {
 
   const tVisual = useTranslations('VisualSearch');
 
+  const catParam = searchParams.get('category') || searchParams.get('cat') || '';
   const subParam = searchParams.get('sub') || '';
   const deptParam = searchParams.get('department') || searchParams.get('dept') || '';
-  const catParam = searchParams.get('category') || searchParams.get('cat') || '';
-  const activeCategoryParam = subParam || catParam || deptParam || '';
+  const activeCategoryParam = catParam || subParam || deptParam || '';
 
-  const initialCategory = subParam || catParam || (deptParam ? deptParam : null);
+  const initialCategory = catParam || subParam || (deptParam ? deptParam : null);
   const initialDepartment = deptParam || null;
   const initialSearch = searchParams.get('search') || searchParams.get('q') || '';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);

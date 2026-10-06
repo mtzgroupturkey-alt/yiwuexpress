@@ -89,6 +89,7 @@ export function MobileStorePage({
       const catLower = filters.category.toLowerCase().trim()
       list = list.filter(
         (p) =>
+          p.categoryId === filters.category ||
           (p.category && p.category.toLowerCase().trim() === catLower) ||
           (p.department && p.department.toLowerCase().trim() === catLower) ||
           (p.categorySlug && p.categorySlug.toLowerCase().trim() === catLower) ||
@@ -101,6 +102,7 @@ export function MobileStorePage({
       const deptLower = filters.department.toLowerCase().trim()
       list = list.filter(
         (p) =>
+          p.departmentId === filters.department ||
           (p.department && p.department.toLowerCase().trim() === deptLower) ||
           (p.category && p.category.toLowerCase().trim() === deptLower)
       )

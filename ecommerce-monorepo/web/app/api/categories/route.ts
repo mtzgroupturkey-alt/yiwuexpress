@@ -37,7 +37,7 @@ const getCachedCategories = unstable_cache(
       where.level = levelNum
     }
 
-    const [categories, productGroups] = await Promise.all([
+    const [categories, productGroups, allCategoriesHierarchy] = await Promise.all([
       prisma.category.findMany({
         where,
         select: {
@@ -94,6 +94,33 @@ const getCachedCategories = unstable_cache(
                   translations: {
                     where: { locale: { in: [locale, 'en'] } },
                     select: { locale: true, name: true, description: true }
+                  },
+                  children: {
+                    where: activeOnly ? { isActive: true } : undefined,
+                    orderBy: [
+                      { menuOrder: 'asc' },
+                      { displayOrder: 'asc' },
+                      { name: 'asc' }
+                    ],
+                    select: {
+                      id: true,
+                      name: true,
+                      slug: true,
+                      description: true,
+                      image: true,
+                      icon: true,
+                      parentId: true,
+                      level: true,
+                      displayOrder: true,
+                      menuOrder: true,
+                      isActive: true,
+                      isFeatured: true,
+                      showInMenu: true,
+                      translations: {
+                        where: { locale: { in: [locale, 'en'] } },
+                        select: { locale: true, name: true, description: true }
+                      }
+                    }
                   }
                 }
               }
@@ -110,52 +137,52 @@ const getCachedCategories = unstable_cache(
         by: ['categoryId'],
         where: { isActive: true },
         _count: { id: true }
+      }),
+      prisma.category.findMany({
+        select: { id: true, parentId: true }
       })
     ])
 
-    const countMap = new Map<string, number>()
+    const directCountMap = new Map<string, number>()
     for (const item of productGroups) {
       if (item.categoryId) {
-        countMap.set(item.categoryId, item._count.id)
+        directCountMap.set(item.categoryId, item._count.id)
       }
     }
 
-    // Attach recursive product counts (direct products + direct subcategory products)
-    const attachRecursiveCount = (node: any): number => {
-      const direct = countMap.get(node.id) || 0
-      let subTotal = 0
-      if (Array.isArray(node.children) && node.children.length > 0) {
-        for (const child of node.children) {
-          const childCount = countMap.get(child.id) || 0
-          child.directProductCount = childCount
-          child.itemCount = childCount
-          child.productCount = childCount
-          child._count = { products: childCount }
-          subTotal += childCount
-        }
+    const childrenMap = new Map<string, string[]>()
+    for (const c of allCategoriesHierarchy) {
+      if (c.parentId) {
+        if (!childrenMap.has(c.parentId)) childrenMap.set(c.parentId, [])
+        childrenMap.get(c.parentId)!.push(c.id)
       }
-      const total = direct + subTotal
-      node.directProductCount = direct
-      node.itemCount = total
-      node.productCount = total
-      node._count = { products: total }
+    }
+
+    const memoTotal = new Map<string, number>()
+    const getTotalCount = (catId: string): number => {
+      if (memoTotal.has(catId)) return memoTotal.get(catId)!
+      let total = directCountMap.get(catId) || 0
+      const kids = childrenMap.get(catId) || []
+      for (const kid of kids) {
+        total += getTotalCount(kid)
+      }
+      memoTotal.set(catId, total)
       return total
-    }
-
-    for (const cat of categories) {
-      attachRecursiveCount(cat)
     }
 
     // Localize category labels according to active locale with English fallback
     const localizeNode = (node: any): any => {
       const localized = localizeCategory(node, locale)
+      const count = getTotalCount(node.id)
+      const directCount = directCountMap.get(node.id) || 0
       const out = {
         ...node,
         name: localized.name,
         description: localized.description,
-        itemCount: node.itemCount ?? 0,
-        productCount: node.productCount ?? 0,
-        _count: { products: node.itemCount ?? 0 }
+        itemCount: count,
+        productCount: count,
+        directProductCount: directCount,
+        _count: { products: count }
       }
       if (Array.isArray(node.children)) {
         out.children = node.children.map(localizeNode)
@@ -168,7 +195,7 @@ const getCachedCategories = unstable_cache(
 
     return categories.map(localizeNode)
   },
-  ['categories-tree-v2'],
+  ['categories-tree-v4'],
   { revalidate: 3600, tags: ['categories'] }
 )
 

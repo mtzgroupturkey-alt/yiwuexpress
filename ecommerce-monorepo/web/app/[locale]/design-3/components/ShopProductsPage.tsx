@@ -175,6 +175,11 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     } else {
       if (params.has('category')) { params.delete('category'); changed = true; }
     }
+
+    if (params.has('sub')) { params.delete('sub'); changed = true; }
+    if (params.has('dept')) { params.delete('dept'); changed = true; }
+    if (params.has('cat')) { params.delete('cat'); changed = true; }
+    if (params.has('department')) { params.delete('department'); changed = true; }
     
     if (catalogSearch && catalogSearch.trim()) {
       if (params.get('search') !== catalogSearch) { params.set('search', catalogSearch); changed = true; }
@@ -192,7 +197,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
       params.delete('page'); // Reset to page 1 on filter change
       router.push(`${pathname}?${params.toString()}`);
     }
-  }, [selectedCategory, catalogSearch, sortBy, isServerPaged, pathname, router, searchParams]);
+  }, [selectedCategory, selectedDepartment, catalogSearch, sortBy, isServerPaged, pathname, router, searchParams]);
 
   const setCurrentPage = (pageOrUpdater: number | ((prev: number) => number)) => {
     if (isServerPaged) {
@@ -236,11 +241,13 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
 
     const buildNode = (cat: Category): CategoryTreeNode => {
       const matchKeys = collectSubtreeKeys(cat);
-      const count = cat.itemCount || 0;
-
       const childNodes: CategoryTreeNode[] = Array.isArray(cat.children)
         ? cat.children.map(buildNode)
         : [];
+
+      const count = typeof cat.itemCount === 'number' && cat.itemCount > 0
+        ? cat.itemCount
+        : (childNodes.length > 0 ? childNodes.reduce((sum, ch) => sum + ch.count, 0) : (cat.itemCount || 0));
 
       const node: CategoryTreeNode = {
         id: cat.id,
@@ -332,15 +339,19 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     }
     if (selectedCategory !== 'all') {
       const catNode = categoryLookupMap.get(selectedCategory) || categoryLookupMap.get(selectedCategory.toLowerCase());
-      if (catNode && catNode.parentId) {
-        let curr = catNode;
-        while (curr.parentId) {
-          const parent = categoryLookupMap.get(curr.parentId);
-          if (parent) {
-            setExpandedDepts((prev) => new Set([...prev, parent.id]));
-            curr = parent;
-          } else {
-            break;
+      if (catNode) {
+        if (!catNode.parentId) {
+          setExpandedDepts((prev) => new Set([...prev, catNode.id]));
+        } else {
+          let curr: CategoryTreeNode | undefined = catNode;
+          while (curr && curr.parentId) {
+            const parent = categoryLookupMap.get(curr.parentId);
+            if (parent) {
+              setExpandedDepts((prev) => new Set([...prev, parent.id]));
+              curr = parent;
+            } else {
+              break;
+            }
           }
         }
       }
@@ -805,27 +816,39 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
 
                 {/* Root Departments */}
                 {departmentTree.map((dept) => {
-                  const isDeptSelected =
+                  const isDeptExactSelected =
                     selectedDepartment === dept.id ||
                     selectedDepartment === dept.name ||
-                    selectedDepartment === dept.slug;
+                    selectedDepartment === dept.slug ||
+                    selectedCategory === dept.id ||
+                    selectedCategory === dept.name ||
+                    selectedCategory === dept.slug;
+                  const isDeptSelected = isDeptExactSelected;
                   const isExpanded = expandedDepts.has(dept.id) || isDeptSelected;
                   const hasChildren = dept.children && dept.children.length > 0;
+
+                  const isDeptActiveHighlight =
+                    isDeptSelected &&
+                    (selectedCategory === 'all' ||
+                      selectedCategory === dept.id ||
+                      selectedCategory === dept.name ||
+                      selectedCategory === dept.slug);
 
                   return (
                     <div key={dept.id} className="space-y-0.5">
                       {/* Department Row */}
                       <div
                         className={`group w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
-                          isDeptSelected && selectedCategory === 'all'
+                          isDeptActiveHighlight
                             ? 'bg-blue-50 text-[#00407a] font-bold border border-blue-200'
                             : 'text-slate-700 hover:bg-slate-100'
                         }`}
                       >
                         <button
                           onClick={() => {
-                            if (isDeptSelected && selectedCategory === 'all') {
+                            if (isDeptActiveHighlight) {
                               setSelectedDepartment('all');
+                              setSelectedCategory('all');
                             } else {
                               setSelectedDepartment(dept.slug || dept.id);
                               setSelectedCategory('all');
