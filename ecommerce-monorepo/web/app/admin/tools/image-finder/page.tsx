@@ -18,6 +18,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Info,
   Layers,
   Globe,
@@ -104,6 +105,29 @@ export default function ImageFinderPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [filterType, setFilterType] = useState('external_ikea');
+
+  // Searchable Category Dropdown state
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close category dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setCategoryDropdownOpen(false);
+      }
+    }
+    if (categoryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [categoryDropdownOpen]);
 
   // Active Search Modal state
   const [activeProduct, setActiveProduct] = useState<ProductItem | null>(null);
@@ -1015,21 +1039,127 @@ export default function ImageFinderPage() {
 
             {/* Filter Dropdowns & Batch Action Buttons */}
             <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={selectedCategory}
-                onChange={(e) => {
-                  setSelectedCategory(e.target.value);
-                  setPage(1);
-                }}
-                className="border border-gray-300 rounded-xl px-3.5 h-11 text-sm bg-white hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-700 shadow-2xs transition-colors cursor-pointer max-w-[200px]"
-              >
-                <option value="">{dict.tools.allCategories || 'All Categories'}</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              {/* Searchable Category Combobox Dropdown */}
+              <div className="relative" ref={categoryDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setCategoryDropdownOpen((prev) => !prev)}
+                  className={`flex items-center justify-between gap-2 border rounded-xl px-3.5 h-11 text-sm bg-white hover:border-gray-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-700 shadow-2xs transition-colors cursor-pointer min-w-[190px] max-w-[260px] ${
+                    selectedCategory ? 'border-blue-500 bg-blue-50/30 text-blue-900 font-semibold' : 'border-gray-300'
+                  }`}
+                  title="Filter by category"
+                >
+                  <span className="truncate text-left">
+                    {selectedCategory
+                      ? categories.find((c) => c.id === selectedCategory)?.name || (dict.tools.allCategories || 'All Categories')
+                      : dict.tools.allCategories || 'All Categories'}
+                  </span>
+                  <div className="flex items-center gap-1 shrink-0 text-gray-400">
+                    {selectedCategory && (
+                      <span
+                        role="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCategory('');
+                          setPage(1);
+                        }}
+                        className="hover:text-rose-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+                        title="Clear category filter"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </span>
+                    )}
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${categoryDropdownOpen ? 'rotate-180 text-blue-600' : ''}`} />
+                  </div>
+                </button>
+
+                {/* Popover Menu */}
+                {categoryDropdownOpen && (
+                  <div className="absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                    {/* Search inside categories */}
+                    <div className="p-2 border-b border-gray-100 bg-gray-50/70">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <Input
+                          autoFocus
+                          placeholder="Search categories..."
+                          value={categorySearchQuery}
+                          onChange={(e) => setCategorySearchQuery(e.target.value)}
+                          className="h-8 pl-8 pr-7 text-xs bg-white rounded-lg border-gray-200 focus:border-blue-500"
+                        />
+                        {categorySearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setCategorySearchQuery('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Category List */}
+                    <div className="max-h-64 overflow-y-auto p-1 text-sm divide-y divide-gray-50">
+                      {/* "All Categories" option */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedCategory('');
+                          setPage(1);
+                          setCategoryDropdownOpen(false);
+                          setCategorySearchQuery('');
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left ${
+                          selectedCategory === ''
+                            ? 'bg-blue-50 text-blue-700 font-bold'
+                            : 'hover:bg-gray-100 text-gray-700 font-medium'
+                        }`}
+                      >
+                        <span>{dict.tools.allCategories || 'All Categories'}</span>
+                        {selectedCategory === '' && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                      </button>
+
+                      {/* Filtered categories list */}
+                      {categories
+                        .filter((c) =>
+                          c.name.toLowerCase().includes(categorySearchQuery.toLowerCase().trim())
+                        )
+                        .map((c) => {
+                          const isSelected = selectedCategory === c.id;
+                          return (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedCategory(c.id);
+                                setPage(1);
+                                setCategoryDropdownOpen(false);
+                                setCategorySearchQuery('');
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-colors text-left ${
+                                isSelected
+                                  ? 'bg-blue-50 text-blue-700 font-bold'
+                                  : 'hover:bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              <span className="truncate">{c.name}</span>
+                              {isSelected && <Check className="w-3.5 h-3.5 text-blue-600 shrink-0 ml-2" />}
+                            </button>
+                          );
+                        })}
+
+                      {categories.filter((c) =>
+                        c.name.toLowerCase().includes(categorySearchQuery.toLowerCase().trim())
+                      ).length === 0 && (
+                        <div className="py-4 px-3 text-center text-xs text-gray-400">
+                          No category matching &quot;{categorySearchQuery}&quot;
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <select
                 value={filterType}
