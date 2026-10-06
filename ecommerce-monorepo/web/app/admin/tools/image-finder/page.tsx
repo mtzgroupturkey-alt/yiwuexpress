@@ -28,6 +28,7 @@ import {
   Square,
   ArrowRight,
   SlidersHorizontal,
+  Link2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,6 +156,13 @@ export default function ImageFinderPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTargetProductId, setUploadTargetProductId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  // Batch Set Single URL Modal state
+  const [batchUrlModalOpen, setBatchUrlModalOpen] = useState(false);
+  const [batchInputUrl, setBatchInputUrl] = useState('');
+  const [batchUrlMode, setBatchUrlMode] = useState<'replace' | 'thumbnail' | 'gallery'>('replace');
+  const [batchUrlSubmitting, setBatchUrlSubmitting] = useState(false);
+  const [batchTargetScope, setBatchTargetScope] = useState<'current_page' | 'placeholders_only'>('current_page');
 
   // Load saved target websites from localStorage
   useEffect(() => {
@@ -762,6 +770,89 @@ export default function ImageFinderPage() {
     }
   };
 
+  // Batch assign a single custom URL to filtered products
+  const handleBatchSetSingleUrl = async () => {
+    const cleanUrl = batchInputUrl.trim();
+    if (!cleanUrl) {
+      showToast('error', 'Please enter a valid image URL');
+      return;
+    }
+
+    let target = products;
+    if (batchTargetScope === 'placeholders_only') {
+      target = products.filter((p) => p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage);
+      if (target.length === 0) {
+        showToast('error', 'No placeholder or missing-photo products found on this page.');
+        return;
+      }
+    }
+
+    if (target.length === 0) {
+      showToast('error', 'No products available to update.');
+      return;
+    }
+
+    setBatchUrlSubmitting(true);
+    const savedScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+    try {
+      const res = await fetch('/api/admin/images/batch-set-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: cleanUrl,
+          productIds: target.map((p) => p.id),
+          mode: batchUrlMode,
+          confirmRights: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to batch assign photo');
+
+      showToast(
+        'success',
+        `🎉 Successfully applied photo to ${data.updatedCount} products & converted to local WebP!`
+      );
+
+      // Optimistically update products on current page
+      if (data.assignedImageUrl) {
+        const targetIds = new Set(target.map((p) => p.id));
+        setProducts((prev) =>
+          prev.map((item) =>
+            targetIds.has(item.id)
+              ? {
+                  ...item,
+                  thumbnail: data.assignedImageUrl,
+                  images:
+                    batchUrlMode === 'replace'
+                      ? [data.assignedImageUrl]
+                      : Array.from(new Set([data.assignedImageUrl, ...(item.images || [])])),
+                  hasRealImage: true,
+                  isPlaceholder: false,
+                  isMissingOnDisk: false,
+                  analysisReason: 'Assigned verified photo',
+                }
+              : item
+          )
+        );
+      }
+
+      setBatchUrlModalOpen(false);
+      setBatchInputUrl('');
+
+      // Silent refresh
+      await fetchProducts(true);
+
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+      }
+    } catch (err: any) {
+      showToast('error', err.message || 'Failed to batch set photo');
+    } finally {
+      setBatchUrlSubmitting(false);
+    }
+  };
+
   // Device file upload
   const handleTriggerUpload = (productId: string) => {
     setUploadTargetProductId(productId);
@@ -1201,6 +1292,18 @@ export default function ImageFinderPage() {
               >
                 <Sparkles className={`w-4 h-4 ${batchFetchingIkea ? 'animate-spin' : ''}`} />
                 {batchFetchingIkea ? 'Fetching IKEA...' : 'Auto-Fetch IKEA for Page'}
+              </Button>
+
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => setBatchUrlModalOpen(true)}
+                disabled={loading || products.length === 0}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm h-11 px-3.5 rounded-xl gap-2 shadow-xs transition-all"
+                title="Set one image URL at once for all filtered products on this page"
+              >
+                <Link2 className="w-4 h-4" />
+                Set 1 Photo URL for Page
               </Button>
 
               <Button
@@ -1863,6 +1966,166 @@ export default function ImageFinderPage() {
                     : (dict.tools.btnApplyImages || 'Apply {count} Image(s) to Product').replace('{count}', String(selectedCandidateKeys.size))}
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BATCH SET ONE PHOTO URL MODAL */}
+      {batchUrlModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-indigo-50 to-white">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
+                  <Link2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-base">Set 1 Photo URL for Filtered Products</h3>
+                  <p className="text-xs text-gray-500">Apply a single image URL across multiple products at once</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBatchUrlModalOpen(false)}
+                className="text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4 text-sm">
+              {/* Scope Selection */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Target Products</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBatchTargetScope('current_page')}
+                    className={`px-3 py-2 text-xs rounded-xl border text-left font-semibold transition-all ${
+                      batchTargetScope === 'current_page'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-2xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    All on Page ({products.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBatchTargetScope('placeholders_only')}
+                    className={`px-3 py-2 text-xs rounded-xl border text-left font-semibold transition-all ${
+                      batchTargetScope === 'placeholders_only'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-2xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Placeholders Only ({products.filter((p) => p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage).length})
+                  </button>
+                </div>
+              </div>
+
+              {/* URL Input */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">
+                  Image Source URL (HTTP/HTTPS)
+                </label>
+                <Input
+                  autoFocus
+                  placeholder="https://www.ikea.com/... or any high-res image URL"
+                  value={batchInputUrl}
+                  onChange={(e) => setBatchInputUrl(e.target.value)}
+                  className="h-10 text-xs sm:text-sm bg-gray-50 focus:bg-white rounded-xl"
+                />
+                <p className="text-[11px] text-gray-500 mt-1">
+                  The image will be downloaded to your server, converted to local WebP, and assigned automatically.
+                </p>
+              </div>
+
+              {/* Image Preview if valid */}
+              {batchInputUrl.trim().startsWith('http') && (
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-lg bg-white border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
+                    <img
+                      src={batchInputUrl.trim()}
+                      alt="Preview"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-semibold text-gray-800 block truncate">Image Preview</span>
+                    <span className="text-[11px] text-gray-500 break-all line-clamp-2">{batchInputUrl.trim()}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Assignment Mode */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-gray-500 mb-1.5">Assignment Mode</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBatchUrlMode('replace')}
+                    className={`px-3 py-2 text-xs rounded-xl border font-semibold transition-all ${
+                      batchUrlMode === 'replace'
+                        ? 'border-rose-600 bg-rose-50 text-rose-700 shadow-2xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title="Replace old placeholder files and set as primary thumbnail"
+                  >
+                    Replace All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBatchUrlMode('thumbnail')}
+                    className={`px-3 py-2 text-xs rounded-xl border font-semibold transition-all ${
+                      batchUrlMode === 'thumbnail'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-2xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title="Set as main thumbnail and keep other existing gallery images"
+                  >
+                    Primary Thumbnail
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBatchUrlMode('gallery')}
+                    className={`px-3 py-2 text-xs rounded-xl border font-semibold transition-all ${
+                      batchUrlMode === 'gallery'
+                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-2xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    title="Add to product gallery"
+                  >
+                    Add to Gallery
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+              <Button variant="ghost" size="sm" onClick={() => setBatchUrlModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleBatchSetSingleUrl}
+                disabled={!batchInputUrl.trim() || batchUrlSubmitting}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2 font-semibold text-xs shadow-sm h-10 px-5 rounded-xl"
+              >
+                <CheckCircle2 className={`w-4 h-4 ${batchUrlSubmitting ? 'animate-spin' : ''}`} />
+                {batchUrlSubmitting
+                  ? 'Downloading & Applying...'
+                  : `Apply to ${
+                      batchTargetScope === 'current_page'
+                        ? products.length
+                        : products.filter((p) => p.isPlaceholder || p.isMissingOnDisk || !p.hasRealImage).length
+                    } Product(s)`}
+              </Button>
             </div>
           </div>
         </div>
