@@ -97,7 +97,7 @@ export default function ImageFinderPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [filterType, setFilterType] = useState('missing_on_disk');
+  const [filterType, setFilterType] = useState('external_ikea');
 
   // Active Search Modal state
   const [activeProduct, setActiveProduct] = useState<ProductItem | null>(null);
@@ -756,7 +756,10 @@ export default function ImageFinderPage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="shadow-xs border-gray-200">
+        <Card 
+          onClick={() => { setFilterType('all'); setPage(1); }}
+          className={`shadow-xs border-gray-200 cursor-pointer transition-all hover:shadow-md hover:border-amber-300 ${filterType === 'all' ? 'ring-2 ring-amber-500 bg-amber-50/20' : ''}`}
+        >
           <CardHeader className="pb-2">
             <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.filteredProducts || 'Filtered Products'}</CardDescription>
             <CardTitle className="text-2xl font-black text-amber-600">{totalCount.toLocaleString()}</CardTitle>
@@ -764,7 +767,10 @@ export default function ImageFinderPage() {
           <CardContent className="text-xs text-gray-500">{dict.tools.filteredProductsSub || 'In current filtered search view'}</CardContent>
         </Card>
 
-        <Card className="shadow-xs border-gray-200">
+        <Card 
+          onClick={() => { setFilterType('no_thumbnail'); setPage(1); }}
+          className={`shadow-xs border-gray-200 cursor-pointer transition-all hover:shadow-md hover:border-rose-300 ${filterType === 'no_thumbnail' ? 'ring-2 ring-rose-500 bg-rose-50/20' : ''}`}
+        >
           <CardHeader className="pb-2">
             <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.missingThumbnails || 'Missing Thumbnails'}</CardDescription>
             <CardTitle className="text-2xl font-black text-rose-600">{stats.nullThumbCount.toLocaleString()}</CardTitle>
@@ -772,7 +778,10 @@ export default function ImageFinderPage() {
           <CardContent className="text-xs text-gray-500">{dict.tools.missingThumbnailsSub || 'Products with no primary thumbnail set'}</CardContent>
         </Card>
 
-        <Card className="shadow-xs border-gray-200">
+        <Card 
+          onClick={() => { setFilterType('external_ikea'); setPage(1); }}
+          className={`shadow-xs border-gray-200 cursor-pointer transition-all hover:shadow-md hover:border-blue-300 ${filterType === 'external_ikea' ? 'ring-2 ring-blue-500 bg-blue-50/20' : ''}`}
+        >
           <CardHeader className="pb-2">
             <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.externalImages || 'External / IKEA Images'}</CardDescription>
             <CardTitle className="text-2xl font-black text-blue-600">{stats.ikeaOrExternalCount.toLocaleString()}</CardTitle>
@@ -780,7 +789,10 @@ export default function ImageFinderPage() {
           <CardContent className="text-xs text-gray-500">{dict.tools.externalImagesSub || 'Hotlinked images subject to blocking'}</CardContent>
         </Card>
 
-        <Card className="shadow-xs border-gray-200">
+        <Card 
+          onClick={() => { setFilterType('all'); setSearch(''); setSelectedCategory(''); setPage(1); }}
+          className="shadow-xs border-gray-200 cursor-pointer transition-all hover:shadow-md hover:border-gray-400"
+        >
           <CardHeader className="pb-2">
             <CardDescription className="text-xs uppercase font-bold text-gray-500">{dict.tools.totalProductsCatalog || 'Total Products'}</CardDescription>
             <CardTitle className="text-2xl font-black text-gray-800">{stats.totalProducts.toLocaleString()}</CardTitle>
@@ -828,6 +840,7 @@ export default function ImageFinderPage() {
                 }}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500 font-medium text-gray-800"
               >
+                <option value="external_ikea">{dict.tools.externalOnly || 'External / IKEA Images Only'}</option>
                 <option value="missing_on_disk">⚠️ Missing from Disk / Placeholder Only</option>
                 <option value="missing_or_external">{dict.tools.missingOrExternal || 'Missing or External (IKEA)'}</option>
                 <option value="no_thumbnail">{dict.tools.noThumbnailOnly || 'No Thumbnail Only'}</option>

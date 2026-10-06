@@ -1622,6 +1622,7 @@ export const adminRu: AdminDictionary = {
     searchProductsPlaceholder: 'Поиск по наименованию, артикулу или слагу...',
     allCategories: 'Все категории',
     missingOrExternal: 'Отсутствует или внешнее (IKEA)',
+    externalOnly: 'Только внешние фото / IKEA',
     noThumbnailOnly: 'Только без обложки',
     allProductsFilter: 'Все товары',
     thImage: 'Фото',

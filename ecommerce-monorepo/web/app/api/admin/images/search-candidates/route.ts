@@ -77,14 +77,27 @@ export async function GET(request: NextRequest) {
 
     if (filterType === 'no_thumbnail') {
       andConditions.push({ thumbnail: null });
+    } else if (filterType === 'external_ikea') {
+      // Products with external/IKEA URLs (in thumbnail OR images array)
+      andConditions.push({
+        OR: [
+          { thumbnail: { contains: 'ikea.com' } },
+          { thumbnail: { startsWith: 'http://' } },
+          { thumbnail: { startsWith: 'https://' } },
+          { images: { hasSome: ['http://', 'https://', 'ikea.com'] } },
+        ],
+      });
     } else if (filterType === 'missing_or_external') {
-      // Missing thumbnail OR containing ikea.com OR no images
+      // Missing thumbnail OR placeholder OR containing ikea.com/http OR empty images
       andConditions.push({
         OR: [
           { thumbnail: null },
           { thumbnail: { contains: 'placeholder' } },
           { thumbnail: { contains: 'ikea.com' } },
+          { thumbnail: { startsWith: 'http://' } },
+          { thumbnail: { startsWith: 'https://' } },
           { images: { isEmpty: true } },
+          { images: { hasSome: ['http://', 'https://', 'ikea.com'] } },
         ],
       });
     } else if (filterType === 'missing_on_disk') {

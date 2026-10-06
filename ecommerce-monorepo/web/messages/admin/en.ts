@@ -1620,6 +1620,7 @@ export const adminEn = {
     searchProductsPlaceholder: 'Search products by name, SKU, or slug...',
     allCategories: 'All Categories',
     missingOrExternal: 'Missing or External (IKEA)',
+    externalOnly: 'External / IKEA Images Only',
     noThumbnailOnly: 'No Thumbnail Only',
     allProductsFilter: 'All Products',
     thImage: 'Image',

@@ -1622,6 +1622,7 @@ export const adminZh: AdminDictionary = {
     searchProductsPlaceholder: '按品名、SKU 编码或别名搜索...',
     allCategories: '全部分类',
     missingOrExternal: '缺失或仍在使用外部外链 (宜家)',
+    externalOnly: '仅显示外链引用图 / 宜家图',
     noThumbnailOnly: '仅显示无缩略图商品',
     allProductsFilter: '全部商品',
     thImage: '图片',
