@@ -86,18 +86,32 @@ export default async function RootLayout({
             __html: `(function(){
               function handleChunkError(msg) {
                 if (typeof msg !== 'string') return;
-                if (msg.indexOf('Loading chunk') !== -1 || msg.indexOf('ChunkLoadError') !== -1 || msg.indexOf('Refused to execute script') !== -1) {
+                var isStale = msg.indexOf('Loading chunk') !== -1 ||
+                              msg.indexOf('ChunkLoadError') !== -1 ||
+                              msg.indexOf('Refused to execute script') !== -1 ||
+                              msg.indexOf('Refused to apply style') !== -1 ||
+                              msg.indexOf('not a supported stylesheet MIME type') !== -1;
+                if (isStale) {
                   var k = '_chunk_reload_retry';
                   var now = Date.now();
                   var last = parseInt(sessionStorage.getItem(k) || '0', 10);
                   if (now - last > 8000) {
                     sessionStorage.setItem(k, now);
-                    window.location.reload();
+                    if ('serviceWorker' in navigator) {
+                      navigator.serviceWorker.getRegistrations().then(function(regs) {
+                        regs.forEach(function(r) { r.unregister(); });
+                      }).finally(function() {
+                        window.location.reload();
+                      });
+                    } else {
+                      window.location.reload();
+                    }
                   }
                 }
               }
               window.addEventListener('error', function(e) {
-                if (e && e.message) handleChunkError(e.message);
+                var msg = (e && e.message) || (e && e.target && e.target.src) || (e && e.target && e.target.href) || '';
+                handleChunkError(msg);
               }, true);
               window.addEventListener('unhandledrejection', function(e) {
                 if (e && e.reason) {
