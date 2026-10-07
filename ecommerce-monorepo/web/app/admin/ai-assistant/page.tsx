@@ -50,7 +50,7 @@ export default function AiAssistantPage() {
     statusCancelled: 'Cancelled',
     quickPrompts: {
       translateCategories: 'Translate all missing categories to Russian and Chinese',
-      sliders: 'Review and update hero sliders & homepage banners',
+      cleanEmptyCategories: 'Find and delete empty categories with 0 products',
       tools: 'Add missing categories for tools & auto parts',
       attributes: 'Create attributes for clothing: Size, Color, Material, Season',
       translate: 'Translate untranslated product names & descriptions to Russian and Chinese',
@@ -71,6 +71,7 @@ export default function AiAssistantPage() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [activePendingAction, setActivePendingAction] = useState<PendingAction | null>(null)
+  const [typedConfirmation, setTypedConfirmation] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -182,6 +183,7 @@ export default function AiAssistantPage() {
         body: JSON.stringify({
           action,
           locale,
+          confirmationPhrase: action.type === 'deleteEmptyCategories' ? typedConfirmation : undefined,
         }),
       })
 
@@ -191,12 +193,28 @@ export default function AiAssistantPage() {
         throw new Error(data.error || 'Execution failed.')
       }
 
-      const successText =
-        locale === 'ru'
-          ? `✅ **Подтверждено и выполнено!**\n\nОперация «${action.summary}» успешно завершена.`
-          : locale === 'zh'
-          ? `✅ **已确认并成功执行！**\n\n操作 “${action.summary}” 已写入数据库。`
-          : `✅ **Confirmed and applied!**\n\nOperation "${action.summary}" was executed successfully.`
+      const rowsAffected = typeof data.rowsAffected === 'number' ? data.rowsAffected : 0
+
+      let successText = ''
+      if (locale === 'ru') {
+        if (rowsAffected > 0) {
+          successText = `✅ **Выполнено и подтверждено!**\n\nОперация «${action.summary}» завершена. Затронуто записей: **${rowsAffected}**.`
+        } else {
+          successText = `⚠️ **Операция завершена, но изменений нет.**\n\nИзменено записей: **0**.`
+        }
+      } else if (locale === 'zh') {
+        if (rowsAffected > 0) {
+          successText = `✅ **已确认并成功执行！**\n\n操作 “${action.summary}” 已写入数据库。受影响行数：**${rowsAffected}**。`
+        } else {
+          successText = `⚠️ **操作完成，但未做任何更改。**\n\n受影响行数：**0**。`
+        }
+      } else {
+        if (rowsAffected > 0) {
+          successText = `✅ **Confirmed and applied!**\n\nOperation "${action.summary}" was executed successfully. Rows affected: **${rowsAffected}**.`
+        } else {
+          successText = `⚠️ **Completed, but 0 items were changed.**\n\nDatabase verified with 0 rows affected.`
+        }
+      }
 
       const confirmationMessage: ChatMessage = {
         id: `msg_${Date.now()}_exec`,
@@ -213,6 +231,7 @@ export default function AiAssistantPage() {
 
       setMessages((prev) => [...prev, confirmationMessage])
       setActivePendingAction(null)
+      setTypedConfirmation('')
       toast.success(action.summary)
     } catch (err: any) {
       toast.error(err.message || 'Execution failed.')
@@ -318,14 +337,14 @@ export default function AiAssistantPage() {
               </button>
 
               <button
-                onClick={() => handleSendMessage(t.quickPrompts.sliders)}
+                onClick={() => handleSendMessage((t.quickPrompts as any).cleanEmptyCategories || 'Find and delete empty categories with 0 products')}
                 className="p-3 rounded-lg border border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50/40 transition-all text-xs text-slate-700 font-medium flex items-center justify-between group shadow-2xs"
               >
                 <span className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-indigo-600" />
-                  {t.quickPrompts.sliders}
+                  <Trash2 className="w-4 h-4 text-rose-600" />
+                  {(t.quickPrompts as any).cleanEmptyCategories || 'Find and delete empty categories'}
                 </span>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-600 transition-transform group-hover:translate-x-0.5" />
               </button>
 
               <button
@@ -534,39 +553,26 @@ export default function AiAssistantPage() {
                       </div>
                     )}
 
-                    {/* Sliders preview list */}
-                    {msg.pendingAction.payload.sliders && (
-                      <div className="bg-white/80 rounded-lg p-2.5 border border-amber-200/60 max-h-56 overflow-y-auto space-y-2 text-xs text-slate-700">
-                        {msg.pendingAction.payload.sliders.map((s, i) => (
-                          <div key={i} className="flex items-start gap-2.5 py-1.5 border-b border-slate-100 last:border-0">
-                            {s.imageUrl ? (
-                              <img
-                                src={s.imageUrl}
-                                alt={s.title}
-                                className="w-14 h-9 object-cover rounded-md border border-slate-200 shrink-0 bg-slate-50"
-                                onError={(e) => {
-                                  ;(e.target as HTMLImageElement).src = '/images/placeholder.jpg'
-                                }}
-                              />
-                            ) : (
-                              <div className="w-14 h-9 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-2xs text-slate-400">
-                                Banner
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-1">
-                                <span className="font-bold text-slate-900 truncate">{s.title}</span>
-                                {s.badgeText && (
-                                  <Badge className="bg-indigo-100 text-indigo-700 text-2xs py-0 h-4">{s.badgeText}</Badge>
-                                )}
-                              </div>
-                              {s.subtitle && <p className="text-2xs text-slate-500 truncate">{s.subtitle}</p>}
-                              <div className="flex items-center gap-2 mt-0.5 text-2xs text-slate-400">
-                                <span>CTA: {s.ctaText} → {s.ctaLink}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                    {/* Empty categories deletion preview */}
+                    {msg.pendingAction.type === 'deleteEmptyCategories' && (
+                      <div className="bg-rose-50/80 rounded-lg p-3 border border-rose-200 space-y-2 text-xs text-rose-900">
+                        <div className="flex items-center gap-2 font-bold text-rose-700">
+                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                          <span>Destructive Action: Pruning Empty Categories</span>
+                        </div>
+                        <p className="text-2xs text-rose-600">
+                          This operation will permanently delete categories with 0 products and 0 subcategories.
+                          To prevent accidental deletion, you must type <strong className="font-mono bg-white px-1 py-0.5 rounded border border-rose-300">DELETE-EMPTY</strong> to confirm.
+                        </p>
+                        <div className="pt-1">
+                          <input
+                            type="text"
+                            placeholder="Type DELETE-EMPTY to confirm"
+                            value={typedConfirmation}
+                            onChange={(e) => setTypedConfirmation(e.target.value)}
+                            className="w-full text-xs font-mono p-2 border border-rose-300 rounded bg-white text-rose-950 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -584,12 +590,19 @@ export default function AiAssistantPage() {
                       </Button>
                       <Button
                         size="sm"
-                        disabled={isLoading}
+                        disabled={
+                          isLoading ||
+                          (msg.pendingAction.type === 'deleteEmptyCategories' && typedConfirmation !== 'DELETE-EMPTY')
+                        }
                         onClick={() => handleDirectExecuteAction(msg.pendingAction!)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs"
+                        className={`font-bold text-xs shadow-xs text-white ${
+                          msg.pendingAction.type === 'deleteEmptyCategories'
+                            ? 'bg-rose-600 hover:bg-rose-700 disabled:opacity-40'
+                            : 'bg-emerald-600 hover:bg-emerald-700'
+                        }`}
                       >
                         <Check className="w-3.5 h-3.5 mr-1" />
-                        {t.confirmAction}
+                        {msg.pendingAction.type === 'deleteEmptyCategories' ? 'Delete Empty Categories' : t.confirmAction}
                       </Button>
                     </div>
                   </Card>

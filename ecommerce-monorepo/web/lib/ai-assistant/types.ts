@@ -7,8 +7,7 @@ export type PendingActionType =
   | 'bulkTranslate'
   | 'createProducts'
   | 'updateProducts'
-  | 'createSliders'
-  | 'updateSliders'
+  | 'deleteEmptyCategories'
 
 export interface PendingCategoryItem {
   name: string

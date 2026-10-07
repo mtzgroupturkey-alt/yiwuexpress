@@ -4,7 +4,6 @@ import {
   PendingCategoryUpdateItem,
   PendingProductItem,
   PendingProductUpdateItem,
-  PendingSliderItem,
   PendingAttributeItem,
   PendingTranslationItem,
   AdminChatLocale,
@@ -366,12 +365,13 @@ export async function createCategories(
     actionType: 'createCategories',
     summary: `Created ${results.length} categories with translations`,
     payload: items,
-    result: results,
+    result: { categories: results, createdCount: results.length, rowsAffected: results.length },
     status: 'SUCCESS',
   })
 
   return {
     success: true,
+    rowsAffected: results.length,
     createdCount: results.length,
     categories: results,
   }
@@ -650,12 +650,13 @@ export async function createAttributes(
     actionType: 'createAttributes',
     summary: `Created ${results.length} attributes with translations and category associations`,
     payload: items,
-    result: results,
+    result: { attributes: results, createdCount: results.length, rowsAffected: results.length },
     status: 'SUCCESS',
   })
 
   return {
     success: true,
+    rowsAffected: results.length,
     createdCount: results.length,
     attributes: results,
   }
@@ -1169,73 +1170,6 @@ export async function bulkTranslate(
         details.push({ id: cat.id, name: cat.name, error: err.message })
       }
     }
-  } else if (type === 'sliders') {
-    let targetIds = itemIds.filter(id => id && id !== 'all')
-    if (targetIds.length === 0) {
-      const allSlides = await prisma.heroSlide.findMany({
-        where: { isActive: true },
-        select: { id: true, translations: { select: { locale: true } } },
-      })
-      targetIds = allSlides
-        .filter((s) => {
-          const locs = new Set(s.translations.map((t) => t.locale))
-          return targetLocales.some((l) => !locs.has(l))
-        })
-        .map((s) => s.id)
-    }
-
-    const slides = await prisma.heroSlide.findMany({
-      where: { id: { in: targetIds } },
-    })
-
-    for (const slide of slides) {
-      try {
-        const fieldsToTranslate: Record<string, string> = {
-          title: slide.title,
-          ctaText: slide.ctaText,
-        }
-        if (slide.subtitle) fieldsToTranslate.subtitle = slide.subtitle
-        if (slide.description) fieldsToTranslate.description = slide.description
-        if (slide.badgeText) fieldsToTranslate.badgeText = slide.badgeText
-
-        const translations = await translateWithAiGateway(fieldsToTranslate, targetLocales)
-
-        for (const loc of targetLocales) {
-          const locData = translations[loc]
-          if (locData && locData.title) {
-            await prisma.heroSlideTranslation.upsert({
-              where: {
-                heroSlideId_locale: {
-                  heroSlideId: slide.id,
-                  locale: loc,
-                },
-              },
-              update: {
-                title: locData.title,
-                subtitle: locData.subtitle || null,
-                description: locData.description || null,
-                ctaText: locData.ctaText || slide.ctaText,
-                badgeText: locData.badgeText || null,
-              },
-              create: {
-                heroSlideId: slide.id,
-                locale: loc,
-                title: locData.title,
-                subtitle: locData.subtitle || null,
-                description: locData.description || null,
-                ctaText: locData.ctaText || slide.ctaText,
-                badgeText: locData.badgeText || null,
-              },
-            })
-          }
-        }
-        translatedCount.success++
-        details.push({ id: slide.id, title: slide.title, status: 'TRANSLATED' })
-      } catch (err: any) {
-        translatedCount.failed++
-        details.push({ id: slide.id, title: slide.title, error: err.message })
-      }
-    }
   } else if (type === 'products') {
     let targetIds = itemIds.filter(id => id && id !== 'all')
     if (targetIds.length === 0) {
@@ -1379,17 +1313,19 @@ export async function bulkTranslate(
   }
 
   // Log to audit
+  const rowsAffected = translatedCount.success
   await logAiAction({
     adminId,
     actionType: 'bulkTranslate',
     summary: `Bulk translated ${translatedCount.success} ${type} into ${targetLocales.join(', ')}`,
     payload: { type, itemIds, targetLocales },
-    result: { translatedCount, details },
-    status: translatedCount.success > 0 ? 'SUCCESS' : 'FAILED',
+    result: { translatedCount, details, rowsAffected },
+    status: translatedCount.success > 0 || (translatedCount.failed === 0 && translatedCount.success === 0) ? 'SUCCESS' : 'FAILED',
   })
 
   return {
-    success: true,
+    success: translatedCount.failed === 0 || translatedCount.success > 0,
+    rowsAffected,
     translatedCount,
     details,
   }
@@ -1641,12 +1577,13 @@ export async function createProducts(
     actionType: 'createProducts',
     summary: `Created ${results.length} products with category links, images, and translations`,
     payload: items,
-    result: results,
+    result: { products: results, createdCount: results.length, rowsAffected: results.length },
     status: 'SUCCESS',
   })
 
   return {
     success: true,
+    rowsAffected: results.length,
     createdCount: results.length,
     products: results,
   }
@@ -1764,12 +1701,13 @@ export async function updateCategories(
     actionType: 'updateCategories',
     summary: `Updated ${results.length} categories`,
     payload: items,
-    result: results,
+    result: { categories: results, updatedCount: results.length, rowsAffected: results.length },
     status: 'SUCCESS',
   })
 
   return {
     success: true,
+    rowsAffected: results.length,
     updatedCount: results.length,
     categories: results,
   }
@@ -1873,269 +1811,91 @@ export async function updateProducts(
     actionType: 'updateProducts',
     summary: `Updated ${results.length} products`,
     payload: items,
-    result: results,
+    result: { products: results, updatedCount: results.length, rowsAffected: results.length },
     status: 'SUCCESS',
   })
 
   return {
     success: true,
+    rowsAffected: results.length,
     updatedCount: results.length,
     products: results,
   }
 }
 
 /**
- * 12. getExistingSliders
- * Retrieves current hero slides and their multilingual translations.
+ * 12. deleteEmptyCategories
+ * DESTRUCTIVE OPERATION: Deletes categories that have 0 products and 0 subcategories.
+ * Requires explicit confirmation phrase (e.g. DELETE-EMPTY).
  */
-export async function getExistingSliders() {
-  const slides = await prisma.heroSlide.findMany({
-    include: {
-      translations: true,
+export async function deleteEmptyCategories(
+  adminId: string,
+  confirmationPhrase: string,
+  categoryIds?: string[]
+) {
+  if (confirmationPhrase !== 'DELETE-EMPTY') {
+    throw new Error('Destructive operation requires confirmation phrase: DELETE-EMPTY')
+  }
+
+  // Find categories that have 0 products and 0 children
+  const whereClause: any = {
+    products: { none: {} },
+    children: { none: {} },
+  }
+
+  if (Array.isArray(categoryIds) && categoryIds.length > 0) {
+    whereClause.id = { in: categoryIds }
+  }
+
+  const emptyCategories = await prisma.category.findMany({
+    where: whereClause,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
     },
-    orderBy: { displayOrder: 'asc' },
   })
-  return {
-    total: slides.length,
-    slides: slides.map((s) => ({
-      id: s.id,
-      title: s.title,
-      subtitle: s.subtitle,
-      ctaText: s.ctaText,
-      ctaLink: s.ctaLink,
-      imageUrl: s.imageUrl,
-      badgeText: s.badgeText,
-      displayOrder: s.displayOrder,
-      isActive: s.isActive,
-      translations: s.translations.map((t) => ({
-        locale: t.locale,
-        title: t.title,
-        subtitle: t.subtitle,
-        ctaText: t.ctaText,
-      })),
-    })),
-  }
-}
 
-/**
- * 13. createSliders
- * Creates new hero slides with multilingual translations.
- */
-export async function createSliders(
-  items: PendingSliderItem[],
-  adminId: string,
-  locale: AdminChatLocale = 'en'
-) {
-  if (!items || items.length === 0) {
-    throw new Error('No sliders specified for creation.')
-  }
-
-  const results: any[] = []
-
-  await prisma.$transaction(async (tx) => {
-    for (const item of items) {
-      const created = await tx.heroSlide.create({
-        data: {
-          title: item.title,
-          subtitle: item.subtitle || null,
-          description: item.description || null,
-          imageUrl: item.imageUrl || '/images/hero-default.jpg',
-          mobileImageUrl: item.mobileImageUrl || null,
-          productImageUrl: item.productImageUrl || null,
-          badgeText: item.badgeText || null,
-          badgeColor: item.badgeColor || null,
-          ctaText: item.ctaText || 'Shop Now',
-          ctaLink: item.ctaLink || '/products',
-          secondaryCtaText: item.secondaryCtaText || null,
-          secondaryCtaLink: item.secondaryCtaLink || null,
-          alignment: item.alignment || 'left',
-          displayOrder: item.displayOrder ?? 0,
-          isActive: item.isActive ?? true,
-          slideDuration: item.slideDuration ?? 5,
-        },
-      })
-
-      const trs = [
-        {
-          locale: 'en',
-          title: item.translations?.en?.title || item.title,
-          subtitle: item.translations?.en?.subtitle || item.subtitle || null,
-          description: item.translations?.en?.description || item.description || null,
-          ctaText: item.translations?.en?.ctaText || item.ctaText || 'Shop Now',
-          badgeText: item.translations?.en?.badgeText || item.badgeText || null,
-        },
-      ]
-      if (item.translations?.ru?.title) {
-        trs.push({
-          locale: 'ru',
-          title: item.translations.ru.title,
-          subtitle: item.translations.ru.subtitle || null,
-          description: item.translations.ru.description || null,
-          ctaText: item.translations.ru.ctaText || 'Подробнее',
-          badgeText: item.translations.ru.badgeText || null,
-        })
-      }
-      if (item.translations?.zh?.title) {
-        trs.push({
-          locale: 'zh',
-          title: item.translations.zh.title,
-          subtitle: item.translations.zh.subtitle || null,
-          description: item.translations.zh.description || null,
-          ctaText: item.translations.zh.ctaText || '立即查看',
-          badgeText: item.translations.zh.badgeText || null,
-        })
-      }
-
-      for (const t of trs) {
-        await tx.heroSlideTranslation.upsert({
-          where: {
-            heroSlideId_locale: {
-              heroSlideId: created.id,
-              locale: t.locale,
-            },
-          },
-          update: {
-            title: t.title,
-            subtitle: t.subtitle,
-            description: t.description,
-            ctaText: t.ctaText,
-            badgeText: t.badgeText,
-          },
-          create: {
-            heroSlideId: created.id,
-            locale: t.locale,
-            title: t.title,
-            subtitle: t.subtitle,
-            description: t.description,
-            ctaText: t.ctaText,
-            badgeText: t.badgeText,
-          },
-        })
-      }
-
-      results.push({
-        id: created.id,
-        title: created.title,
-        ctaLink: created.ctaLink,
-        isActive: created.isActive,
-      })
+  if (emptyCategories.length === 0) {
+    return {
+      success: true,
+      rowsAffected: 0,
+      deletedCount: 0,
+      categories: [],
+      message: 'No empty categories found to delete.',
     }
+  }
+
+  const idsToDelete = emptyCategories.map((c) => c.id)
+
+  // Delete category translations and attributes first, then the categories
+  await prisma.$transaction(async (tx) => {
+    await tx.categoryTranslation.deleteMany({
+      where: { categoryId: { in: idsToDelete } },
+    })
+    await tx.categoryAttribute.deleteMany({
+      where: { categoryId: { in: idsToDelete } },
+    })
+    await tx.category.deleteMany({
+      where: { id: { in: idsToDelete } },
+    })
   })
 
   await logAiAction({
     adminId,
-    actionType: 'createSliders',
-    summary: `Created ${results.length} hero slides with translations`,
-    payload: items,
-    result: results,
+    actionType: 'deleteEmptyCategories',
+    summary: `Deleted ${idsToDelete.length} empty categories`,
+    payload: { categoryIds: idsToDelete, confirmationPhrase },
+    result: { deletedCount: idsToDelete.length, categories: emptyCategories, rowsAffected: idsToDelete.length },
     status: 'SUCCESS',
   })
 
   return {
     success: true,
-    createdCount: results.length,
-    sliders: results,
+    rowsAffected: idsToDelete.length,
+    deletedCount: idsToDelete.length,
+    categories: emptyCategories,
   }
 }
 
-/**
- * 14. updateSliders
- * Updates existing hero slides (copy, links, badges, order, and translations).
- */
-export async function updateSliders(
-  items: PendingSliderItem[],
-  adminId: string,
-  locale: AdminChatLocale = 'en'
-) {
-  if (!items || items.length === 0) {
-    throw new Error('No sliders specified for update.')
-  }
-
-  const results: any[] = []
-
-  await prisma.$transaction(async (tx) => {
-    for (const item of items) {
-      const existing = await tx.heroSlide.findFirst({
-        where: {
-          OR: [
-            item.id ? { id: item.id } : undefined,
-            item.title ? { title: { equals: item.title, mode: 'insensitive' } } : undefined,
-          ].filter(Boolean) as any,
-        },
-      })
-
-      if (!existing) continue
-
-      const updateData: any = { updatedAt: new Date() }
-      if (item.title) updateData.title = item.title
-      if (item.subtitle !== undefined) updateData.subtitle = item.subtitle
-      if (item.description !== undefined) updateData.description = item.description
-      if (item.imageUrl) updateData.imageUrl = item.imageUrl
-      if (item.ctaText) updateData.ctaText = item.ctaText
-      if (item.ctaLink) updateData.ctaLink = item.ctaLink
-      if (item.badgeText !== undefined) updateData.badgeText = item.badgeText
-      if (item.displayOrder !== undefined) updateData.displayOrder = item.displayOrder
-      if (item.isActive !== undefined) updateData.isActive = item.isActive
-
-      const updated = await tx.heroSlide.update({
-        where: { id: existing.id },
-        data: updateData,
-      })
-
-      if (item.translations) {
-        for (const loc of ['en', 'ru', 'zh'] as const) {
-          const tr = item.translations[loc]
-          if (tr?.title?.trim()) {
-            await tx.heroSlideTranslation.upsert({
-              where: {
-                heroSlideId_locale: {
-                  heroSlideId: updated.id,
-                  locale: loc,
-                },
-              },
-              update: {
-                title: tr.title.trim(),
-                subtitle: tr.subtitle?.trim() || null,
-                description: tr.description?.trim() || null,
-                ctaText: tr.ctaText?.trim() || updated.ctaText,
-                badgeText: tr.badgeText?.trim() || null,
-              },
-              create: {
-                heroSlideId: updated.id,
-                locale: loc,
-                title: tr.title.trim(),
-                subtitle: tr.subtitle?.trim() || null,
-                description: tr.description?.trim() || null,
-                ctaText: tr.ctaText?.trim() || updated.ctaText,
-                badgeText: tr.badgeText?.trim() || null,
-              },
-            })
-          }
-        }
-      }
-
-      results.push({
-        id: updated.id,
-        title: updated.title,
-        ctaLink: updated.ctaLink,
-        isActive: updated.isActive,
-      })
-    }
-  })
-
-  await logAiAction({
-    adminId,
-    actionType: 'updateSliders',
-    summary: `Updated ${results.length} hero slides`,
-    payload: items,
-    result: results,
-    status: 'SUCCESS',
-  })
-
-  return {
-    success: true,
-    updatedCount: results.length,
-    sliders: results,
-  }
-}
 

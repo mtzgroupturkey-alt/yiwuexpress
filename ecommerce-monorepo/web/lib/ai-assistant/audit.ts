@@ -39,7 +39,7 @@ export async function logAiAction(params: LogAiActionParams) {
       return null
     }
 
-    return await prisma.adminActivityLog.create({
+    const activityLog = await prisma.adminActivityLog.create({
       data: {
         adminId,
         action: `AI_${actionType.toUpperCase()}`,
@@ -56,8 +56,42 @@ export async function logAiAction(params: LogAiActionParams) {
         userAgent: userAgent || 'Dromkok-AI-Assistant',
       },
     })
+
+    // Also record into dedicated AssistantLog table
+    try {
+      const rowsAffected =
+        typeof result?.rowsAffected === 'number'
+          ? result.rowsAffected
+          : typeof result?.createdCount === 'number'
+          ? result.createdCount
+          : typeof result?.updatedCount === 'number'
+          ? result.updatedCount
+          : typeof result?.deletedCount === 'number'
+          ? result.deletedCount
+          : typeof result?.translatedCount?.success === 'number'
+          ? result.translatedCount.success
+          : status === 'SUCCESS' ? 1 : 0
+
+      await (prisma as any).assistantLog.create({
+        data: {
+          userId: adminId,
+          actionId: actionType,
+          input: payload || {},
+          result: result || null,
+          success: status === 'SUCCESS',
+          rowsAffected,
+          errorMessage: status === 'FAILED' ? (result?.error || summary) : null,
+          durationMs: result?.durationMs || 0,
+        },
+      })
+    } catch (logErr) {
+      console.error('[AI Audit] Failed to record in AssistantLog:', logErr)
+    }
+
+    return activityLog
   } catch (error) {
     console.error('[AI Audit] Failed to record AI action log:', error)
     return null
   }
 }
+

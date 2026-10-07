@@ -10,8 +10,7 @@ import {
   bulkTranslate,
   createProducts,
   updateProducts,
-  createSliders,
-  updateSliders,
+  deleteEmptyCategories,
 } from '@/lib/ai-assistant/tools'
 
 export async function POST(request: NextRequest) {
@@ -140,37 +139,11 @@ export async function POST(request: NextRequest) {
         break
       }
 
-      case 'createSliders': {
+      case 'deleteEmptyCategories': {
         const payload = action.payload || {}
-        const sliders =
-          payload.sliders ||
-          (Array.isArray(payload) ? payload : null) ||
-          []
-
-        if (!Array.isArray(sliders) || sliders.length === 0) {
-          return NextResponse.json(
-            { success: false, error: 'No sliders found in action payload.' },
-            { status: 400 }
-          )
-        }
-        result = await createSliders(sliders, user.id, locale)
-        break
-      }
-
-      case 'updateSliders': {
-        const payload = action.payload || {}
-        const sliders =
-          payload.sliders ||
-          (Array.isArray(payload) ? payload : null) ||
-          []
-
-        if (!Array.isArray(sliders) || sliders.length === 0) {
-          return NextResponse.json(
-            { success: false, error: 'No sliders found for update in action payload.' },
-            { status: 400 }
-          )
-        }
-        result = await updateSliders(sliders, user.id, locale)
+        const confirmationPhrase = (payload as any).confirmationPhrase || ''
+        const categoryIds = (payload as any).categoryIds || []
+        result = await deleteEmptyCategories(user.id, confirmationPhrase, categoryIds)
         break
       }
 

@@ -27,9 +27,7 @@ import {
   bulkTranslate,
   createProducts,
   updateProducts,
-  getExistingSliders,
-  createSliders,
-  updateSliders,
+  deleteEmptyCategories,
 } from '@/lib/ai-assistant/tools'
 import { generateAssistantResponse } from '@/lib/ai-assistant/gateway'
 
@@ -318,20 +316,22 @@ export async function POST(request: NextRequest) {
             })
           }
 
-          if (pendingAction.type === 'createSliders') {
-            const sliders = pendingAction.payload.sliders || (pendingAction.payload as any) || []
-            executionResult = await createSliders(sliders, user.id, locale)
+          if (pendingAction.type === 'deleteEmptyCategories') {
+            const payload = pendingAction.payload || {}
+            const confirmationPhrase = (payload as any).confirmationPhrase || 'DELETE-EMPTY'
+            const categoryIds = (payload as any).categoryIds || []
+            executionResult = await deleteEmptyCategories(user.id, confirmationPhrase, categoryIds)
 
             const successMessages: Record<AdminChatLocale, string> = {
-              en: `✅ **Successfully created ${executionResult.createdCount} hero slides with translations!**\n\n` +
-                executionResult.sliders.map((s: any) => `- **${s.title}** (Link: \`${s.ctaLink}\`)`).join('\n') +
-                `\n\nSlides are now active on the storefront.`,
-              ru: `✅ **Успешно создано ${executionResult.createdCount} слайдов с переводами!**\n\n` +
-                executionResult.sliders.map((s: any) => `- **${s.title}** (Ссылка: \`${s.ctaLink}\`)`).join('\n') +
-                `\n\nСлайды теперь активны на главной странице витрины.`,
-              zh: `✅ **已成功创建 ${executionResult.createdCount} 个轮播图横幅及多语言翻译！**\n\n` +
-                executionResult.sliders.map((s: any) => `- **${s.title}** (链接: \`${s.ctaLink}\`)`).join('\n') +
-                `\n\n横幅已在商城首页展示。`,
+              en: `✅ **Successfully deleted ${executionResult.deletedCount} empty categories.**\n\n` +
+                executionResult.categories.map((c: any) => `- **${c.name}** (\`${c.slug}\`)`).join('\n') +
+                `\n\nCatalog tree cleaned up.`,
+              ru: `✅ **Успешно удалено ${executionResult.deletedCount} пустых категорий.**\n\n` +
+                executionResult.categories.map((c: any) => `- **${c.name}** (\`${c.slug}\`)`).join('\n') +
+                `\n\nСтруктура каталога очищена.`,
+              zh: `✅ **已成功清理 ${executionResult.deletedCount} 个空分类。**\n\n` +
+                executionResult.categories.map((c: any) => `- **${c.name}** (\`${c.slug}\`)`).join('\n') +
+                `\n\n分类目录已整理。`,
             }
 
             return NextResponse.json({
@@ -339,37 +339,7 @@ export async function POST(request: NextRequest) {
               role: 'assistant',
               content: successMessages[locale] || successMessages.en,
               actionExecuted: {
-                type: 'createSliders',
-                status: 'SUCCESS',
-                summary: pendingAction.summary,
-                details: executionResult,
-              },
-              pendingAction: null,
-            })
-          }
-
-          if (pendingAction.type === 'updateSliders') {
-            const sliders = pendingAction.payload.sliders || (pendingAction.payload as any) || []
-            executionResult = await updateSliders(sliders, user.id, locale)
-
-            const successMessages: Record<AdminChatLocale, string> = {
-              en: `✅ **Successfully updated ${executionResult.updatedCount} hero slides!**\n\n` +
-                executionResult.sliders.map((s: any) => `- **${s.title}** (Link: \`${s.ctaLink}\`)`).join('\n') +
-                `\n\nChanges are now live on the storefront.`,
-              ru: `✅ **Успешно обновлено ${executionResult.updatedCount} слайдов!**\n\n` +
-                executionResult.sliders.map((s: any) => `- **${s.title}** (Ссылка: \`${s.ctaLink}\`)`).join('\n') +
-                `\n\nИзменения применены на витрине.`,
-              zh: `✅ **已成功更新 ${executionResult.updatedCount} 个轮播图横幅！**\n\n` +
-                executionResult.sliders.map((s: any) => `- **${s.title}** (链接: \`${s.ctaLink}\`)`).join('\n') +
-                `\n\n首页横幅已更新。`,
-            }
-
-            return NextResponse.json({
-              success: true,
-              role: 'assistant',
-              content: successMessages[locale] || successMessages.en,
-              actionExecuted: {
-                type: 'updateSliders',
+                type: 'deleteEmptyCategories',
                 status: 'SUCCESS',
                 summary: pendingAction.summary,
                 details: executionResult,

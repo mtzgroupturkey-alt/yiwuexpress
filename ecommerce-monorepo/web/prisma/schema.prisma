@@ -2684,4 +2684,23 @@ model AutoPilotNotification {
   @@map("autopilot_notifications")
 }
 
+// AI Assistant Action & Execution Audit Log
+model AssistantLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  actionId     String
+  input        Json
+  result       Json?
+  success      Boolean
+  rowsAffected Int      @default(0)
+  errorMessage String?
+  durationMs   Int
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([actionId])
+  @@index([createdAt])
+  @@map("assistant_logs")
+}
+
 
