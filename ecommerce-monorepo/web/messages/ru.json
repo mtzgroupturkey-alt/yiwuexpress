@@ -1810,7 +1810,10 @@
       "express60min": "Экспресс 60 мин",
       "apply": "Применить ({count})",
       "gridView": "Сетка",
-      "listView": "Список"
+      "listView": "Список",
+      "subcategoriesTitle": "Подкатегории: {category}",
+      "viewAllIn": "Показать все в «{category}» ({count})",
+      "allSubcategoryPill": "Все ({count})"
     },
     "pdp": {
       "home": "Главная",

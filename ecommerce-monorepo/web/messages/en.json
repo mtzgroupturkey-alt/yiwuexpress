@@ -1810,7 +1810,10 @@
       "express60min": "Express 60 min",
       "apply": "Apply ({count})",
       "gridView": "Grid View",
-      "listView": "List View"
+      "listView": "List View",
+      "subcategoriesTitle": "{category} Subcategories",
+      "viewAllIn": "View All in {category} ({count})",
+      "allSubcategoryPill": "All ({count})"
     },
     "pdp": {
       "home": "Home",

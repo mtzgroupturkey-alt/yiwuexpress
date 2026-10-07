@@ -1251,7 +1251,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                 <div className="pt-3 mt-3 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                      {subcategoryPills.parentLabel} Subcategories
+                      {tShop('subcategoriesTitle', { category: subcategoryPills.parentLabel })}
                     </span>
                     {selectedCategory !== 'all' && (
                       <button
@@ -1264,7 +1264,10 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                         }}
                         className="text-[11px] text-[#00407a] hover:underline font-semibold"
                       >
-                        View All in {subcategoryPills.parentLabel} ({subcategoryPills.parentNode?.count || 0})
+                        {tShop('viewAllIn', {
+                          category: subcategoryPills.parentLabel,
+                          count: subcategoryPills.parentNode?.count || 0,
+                        })}
                       </button>
                     )}
                   </div>
@@ -1284,7 +1287,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                     >
-                      All ({subcategoryPills.parentNode?.count || 0})
+                      {tShop('allSubcategoryPill', { count: subcategoryPills.parentNode?.count || 0 })}
                     </button>
 
                     {/* Individual subcategory pills */}
