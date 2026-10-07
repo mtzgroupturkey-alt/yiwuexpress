@@ -243,7 +243,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   };
 
   const handleSecondaryClick = () => {
-    const link = currentSlide.secondaryBtnLink;
+    const link = currentSlide.secondaryBtnLink || currentSlide.secondaryCtaLink;
     if (link && link !== '#') {
       if (link.startsWith('#')) {
         const el = document.getElementById(link.slice(1));
@@ -364,16 +364,18 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.96 }}
-                id="hero-view-drops-btn"
-                onClick={handleSecondaryClick}
-                className="bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold px-4 py-2.5 rounded-lg text-sm flex items-center gap-2 transition-colors cursor-pointer backdrop-blur-md shadow-xs"
-              >
-                <Clock className="w-4 h-4 text-amber-300" />
-                <span>{currentSlide.secondaryBtnText || currentSlide.secondaryCtaText || tHeroBanner('viewFlashDrops')}</span>
-              </motion.button>
+              {(currentSlide.secondaryBtnText || currentSlide.secondaryCtaText) && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
+                  id="hero-view-drops-btn"
+                  onClick={handleSecondaryClick}
+                  className="bg-white/15 hover:bg-white/25 border border-white/30 text-white font-semibold px-4 py-2.5 rounded-lg text-sm flex items-center gap-2 transition-colors cursor-pointer backdrop-blur-md shadow-xs"
+                >
+                  <Clock className="w-4 h-4 text-amber-300" />
+                  <span>{currentSlide.secondaryBtnText || currentSlide.secondaryCtaText}</span>
+                </motion.button>
+              )}
             </div>
 
             {/* Pagination Controls with Prev/Next Arrows */}

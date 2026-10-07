@@ -232,6 +232,8 @@ export interface LocalizedHeroSlide {
   image: string
   btnText: string
   btnLink: string
+  secondaryBtnText?: string | null
+  secondaryBtnLink?: string | null
   overlayGradient: string
   duration: number
 }
@@ -300,6 +302,8 @@ export function localizeHeroSlide(
     image: rawImage,
     btnText: resolvedCta,
     btnLink: ctaLink,
+    secondaryBtnText: resolvedSecCta,
+    secondaryBtnLink: slide.secondaryCtaLink ?? null,
     overlayGradient: overlayGradient,
     duration: duration,
   }
