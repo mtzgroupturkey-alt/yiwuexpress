@@ -718,47 +718,6 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </div>
       </div>
-
-      {/* 4. USP / Flash Announcement Ticker Ribbon */}
-      <div className="bg-[#EFF6FF] border-y border-blue-100 text-[11px] text-blue-900 py-1.5 relative z-10 overflow-x-auto no-scrollbar">
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6 flex items-center justify-between gap-6 whitespace-nowrap font-medium">
-          <div className="flex items-center gap-6">
-            <span className="flex items-center gap-1 text-amber-700 font-bold">
-              <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-              {tHeader('expressDelivery')}
-            </span>
-            <span className="flex items-center gap-1 text-blue-800 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block"></span>
-              {tHeader('qualityGuaranteed')}
-            </span>
-            {settings?.announcementTicker ? (
-              <span className="text-slate-700 font-semibold">{settings.announcementTicker}</span>
-            ) : (
-              <>
-                <span className="text-slate-600 hover:text-blue-800 cursor-pointer">{tHeader('modernFurniture')}</span>
-                <span className="text-slate-600 hover:text-blue-800 cursor-pointer">{tHeader('professionalCookware')}</span>
-                <span className="text-slate-600 hover:text-blue-800 cursor-pointer">{tHeader('directFactoryPricing')}</span>
-                <span className="text-slate-600 hover:text-blue-800 cursor-pointer">{tHeader('verifiedManufacturers')}</span>
-              </>
-            )}
-          </div>
-          <div className="text-slate-700 font-medium shrink-0">
-            {isWholesaleOnly || storeMode === 'WHOLESALE' ? (
-              <span className="flex items-center gap-1.5 text-slate-800 font-semibold" suppressHydrationWarning>
-                <Truck className="w-3.5 h-3.5 text-[#00407a]" />
-                {tHeader('wholesaleLogisticsNotice')}
-              </span>
-            ) : (
-              <span suppressHydrationWarning>
-                {tHeader('freeDeliveryStarts')}{' '}
-                <strong className="text-slate-900 font-bold">
-                  {formatPrice(typeof settings?.freeShippingThreshold === 'number' ? settings.freeShippingThreshold : (parseFloat(String(settings?.freeShippingThreshold)) || 35))}
-                </strong>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
     </header>
 
     {/* Teleported Category Submenu Dropdown (Guaranteed on top of everything) */}
