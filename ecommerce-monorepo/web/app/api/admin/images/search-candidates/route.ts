@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = andConditions.length > 0 ? { AND: andConditions } : {};
 
-    const [products, totalCount, totalProducts, nullThumbCount, placeholderOrMissingCount] = await Promise.all([
+    const [products, totalCount, totalProducts, nullThumbCount, placeholderOrMissingCount, ikeaOrExternalCount] = await Promise.all([
       prisma.product.findMany({
         where,
         skip,
@@ -128,6 +128,15 @@ export async function GET(request: NextRequest) {
             { thumbnail: null },
             { thumbnail: { contains: 'placeholder' } },
             { hasRealImage: false },
+          ],
+        },
+      }),
+      prisma.product.count({
+        where: {
+          OR: [
+            { thumbnail: { contains: 'ikea.com' } },
+            { thumbnail: { startsWith: 'http://' } },
+            { thumbnail: { startsWith: 'https://' } },
           ],
         },
       }),
@@ -200,7 +209,7 @@ export async function GET(request: NextRequest) {
         totalProducts,
         nullThumbCount,
         placeholderOrMissingCount,
-        ikeaOrExternalCount: 6392,
+        ikeaOrExternalCount,
         hasUnsplashKey: !!process.env.UNSPLASH_ACCESS_KEY,
         hasPexelsKey: !!process.env.PEXELS_API_KEY,
         hasPixabayKey: !!process.env.PIXABAY_API_KEY,

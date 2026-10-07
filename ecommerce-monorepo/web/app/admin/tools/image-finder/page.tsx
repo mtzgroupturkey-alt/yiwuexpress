@@ -105,7 +105,7 @@ export default function ImageFinderPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [filterType, setFilterType] = useState('external_ikea');
+  const [filterType, setFilterType] = useState('all');
 
   // Searchable Category Dropdown state
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
@@ -1345,8 +1345,51 @@ export default function ImageFinderPage() {
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-gray-400">
-                    {dict.tools.noProductsMatch || 'No products matching current filter.'}
+                  <td colSpan={5} className="py-16 text-center text-gray-500">
+                    {filterType === 'external_ikea' ? (
+                      <div className="max-w-md mx-auto space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                          <CheckCircle2 className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-bold text-gray-900">
+                          No External or Hotlinked Images!
+                        </h3>
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          All external and IKEA product photos have already been successfully migrated and re-hosted locally as WebP files. No hotlinks remain subject to blocking.
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setFilterType('all');
+                            setPage(1);
+                          }}
+                          className="text-xs font-semibold mt-2"
+                        >
+                          View All Products ({stats.totalProducts.toLocaleString()})
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <ImageIcon className="w-8 h-8 text-gray-300 mx-auto" />
+                        <div className="font-medium text-gray-600">
+                          {dict.tools.noProductsMatch || 'No products matching current filter.'}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setFilterType('all');
+                            setSearch('');
+                            setSelectedCategory('');
+                            setPage(1);
+                          }}
+                          className="text-xs text-blue-600"
+                        >
+                          Reset filters
+                        </Button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ) : (
