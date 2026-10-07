@@ -62,6 +62,35 @@ export async function GET(request: NextRequest) {
       } catch (err) {
         console.error('Failed to load kitchen section localized texts:', err);
       }
+
+      // If translation wasn't explicitly saved in DB, apply standard locale fallbacks
+      if (locale === 'ru') {
+        if (!localizedTitle || localizedTitle === 'Kitchenware, Cookware & Dining Essentials') {
+          localizedTitle = 'Посуда, кухонная утварь и сервировка';
+        }
+        if (!localizedSubtitle || localizedSubtitle.includes('Granite frying pans')) {
+          localizedSubtitle = 'Гранитные сковороды, наборы ножей, фарфоровые сервизы и кофеварки';
+        }
+        if (!localizedBadge || localizedBadge === 'KITCHEN & DINING') {
+          localizedBadge = 'КУХНЯ И СТОЛОВАЯ';
+        }
+        if (!localizedViewAll || localizedViewAll === 'View all Kitchen & Dining') {
+          localizedViewAll = 'Смотреть всю категорию';
+        }
+      } else if (locale === 'zh') {
+        if (!localizedTitle || localizedTitle === 'Kitchenware, Cookware & Dining Essentials') {
+          localizedTitle = '厨房用品、烹饪锅具与餐具精选';
+        }
+        if (!localizedSubtitle || localizedSubtitle.includes('Granite frying pans')) {
+          localizedSubtitle = '花岗岩不粘锅、厨师刀具套装、骨瓷餐具及意式咖啡器具';
+        }
+        if (!localizedBadge || localizedBadge === 'KITCHEN & DINING') {
+          localizedBadge = '品质餐厨生活';
+        }
+        if (!localizedViewAll || localizedViewAll === 'View all Kitchen & Dining') {
+          localizedViewAll = '查看全部餐厨商品';
+        }
+      }
     }
 
     const effectiveLimit = settings?.kitchenSectionMaxProducts || limit;

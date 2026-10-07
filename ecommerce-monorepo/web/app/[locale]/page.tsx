@@ -945,10 +945,10 @@ export default function Home() {
             {settings?.kitchenSectionEnabled !== false && kitchenSectionData?.enabled !== false && (
               <MotionReveal direction="up">
                 <FreshSupermarketSection
-                  title={kitchenSectionData?.title || settings?.kitchenSectionTitle || undefined}
-                  subtitle={kitchenSectionData?.subtitle || settings?.kitchenSectionSubtitle || undefined}
-                  badgeText={kitchenSectionData?.badgeText || settings?.kitchenSectionBadge || undefined}
-                  viewAllText={kitchenSectionData?.viewAllText || settings?.kitchenSectionViewAllLabel || undefined}
+                  title={kitchenSectionData?.title || (locale === 'en' ? settings?.kitchenSectionTitle : undefined)}
+                  subtitle={kitchenSectionData?.subtitle || (locale === 'en' ? settings?.kitchenSectionSubtitle : undefined)}
+                  badgeText={kitchenSectionData?.badgeText || (locale === 'en' ? settings?.kitchenSectionBadge : undefined)}
+                  viewAllText={kitchenSectionData?.viewAllText || (locale === 'en' ? settings?.kitchenSectionViewAllLabel : undefined)}
                   maxProducts={kitchenSectionData?.maxProducts || settings?.kitchenSectionMaxProducts || 12}
                   products={activeKitchenProducts}
                   isLoading={isKitchenSectionLoading && activeKitchenProducts.length === 0}
