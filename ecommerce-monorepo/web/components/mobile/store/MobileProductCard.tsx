@@ -8,8 +8,7 @@ import { useLocale } from 'next-intl'
 import { Star, Plus, Heart, Package, ClipboardList, Check } from 'lucide-react'
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
-import { useSessionMode } from '@/contexts/SessionModeContext'
-import { useStoreMode } from '@/contexts/StoreModeContext'
+import { useCustomerView } from '@/hooks/useCustomerView'
 import { useSettings } from '@/components/SettingsProvider'
 
 interface MobileProductCardProps {
@@ -32,16 +31,12 @@ export function MobileProductCard({
   const router = useRouter()
   const locale = useLocale()
   const { formatPrice } = useCurrency()
-  const { isWholesaleSession } = useSessionMode()
-  const { storeMode } = useStoreMode()
+  const customerView = useCustomerView()
   const { settings } = useSettings()
 
   const [justAdded, setJustAdded] = useState(false)
 
-  const isWholesaleActive =
-    isWholesaleSession !== undefined
-      ? isWholesaleSession
-      : storeMode === 'WHOLESALE'
+  const isWholesaleActive = customerView.isWholesale
 
   const rfqModel = settings?.rfqModel || 'RFQ'
   const isInstantWholesale = rfqModel === 'INSTANT'

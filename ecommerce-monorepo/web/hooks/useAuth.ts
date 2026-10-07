@@ -16,6 +16,9 @@ export interface User {
   createdAt?: string
   profilePhoto?: string
   avatar?: string
+  userType?: 'RETAIL' | 'WHOLESALE' | 'BOTH'
+  verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'DOCUMENTS_REQUIRED'
+  isVerified?: boolean
   supplierProfile?: {
     id: string
     companyName: string

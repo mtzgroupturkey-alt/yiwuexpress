@@ -15,6 +15,7 @@ import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 interface Product {
   id: string
@@ -55,10 +56,10 @@ export default function ProductCard({
   const { tBadge } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const router = useRouter()
-  const { isWholesale, isRetail, storeMode } = useStoreMode()
   const { settings } = useSettings()
+  const customerView = useCustomerView()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
-  const { sessionMode, isWholesaleSession, enableWholesaleSession } = useSessionMode()
+  const { enableWholesaleSession } = useSessionMode()
   const { addToQuote } = useQuoteCart()
   const [imageError, setImageError] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -69,11 +70,9 @@ export default function ProductCard({
   const isInstantWholesale = rfqModel === 'INSTANT'
   const moq = product.moq || product.minOrder || product.minOrderQty || settings?.wholesaleDefaultMoq || 1
 
-  const isWholesaleActive =
-    storeMode === 'WHOLESALE' ||
-    (storeMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
-  const showRetailCart = isRetail && !isWholesaleActive
-  const hasWholesale = Boolean(product.wholesalePrice || isWholesaleActive)
+  const isWholesaleActive = customerView.isWholesale
+  const showRetailCart = customerView.isRetail || customerView.isGuest
+  const hasWholesale = Boolean(product.wholesalePrice && isWholesaleActive)
 
   const addWholesaleToCart = (p: Product) => {
     setIsAddingToCart(true)
@@ -337,7 +336,7 @@ export default function ProductCard({
           )}
 
           {/* Wholesale B2B Button - RFQ Mode */}
-          {isWholesale && hasWholesale && !isInstantWholesale && (
+          {isWholesaleActive && hasWholesale && !isInstantWholesale && (
             <button
               onClick={handleAddToQuoteList}
               disabled={isAddingToQuote || (product.stock !== undefined && product.stock === 0)}
@@ -364,7 +363,7 @@ export default function ProductCard({
           )}
 
           {/* Wholesale B2B Button - INSTANT Mode */}
-          {isWholesale && hasWholesale && isInstantWholesale && (
+          {isWholesaleActive && hasWholesale && isInstantWholesale && (
             <button
               onClick={(e) => {
                 e.preventDefault()

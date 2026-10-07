@@ -42,6 +42,8 @@ export async function POST(request: NextRequest) {
         country: true,
         isActive: true,
         isVerified: true,
+        userType: true,
+        verificationStatus: true,
         supplierId: true,
         supplierProfile: {
           select: {
@@ -84,6 +86,8 @@ export async function POST(request: NextRequest) {
             country: true,
             isActive: true,
             isVerified: true,
+            userType: true,
+            verificationStatus: true,
             supplierId: true,
             supplierProfile: {
               select: {
@@ -156,6 +160,9 @@ export async function POST(request: NextRequest) {
         phone: activeUser.phone,
         country: activeUser.country,
         isActive: activeUser.isActive,
+        isVerified: activeUser.isVerified,
+        userType: activeUser.userType,
+        verificationStatus: activeUser.verificationStatus,
         supplierProfile: activeUser.supplierProfile,
       },
     })

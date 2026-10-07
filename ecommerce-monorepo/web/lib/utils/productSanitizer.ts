@@ -6,12 +6,20 @@ import { normalizeProductImageUrl } from '@/lib/image-utils'
  * are never leaked to unauthenticated visitors or unverified retail customers.
  * Also normalizes image paths so uploaded photos load reliably across devices.
  */
+export type SanitizedProduct<T> = T & {
+  isWholesaleGated: boolean
+  tieredPrices?: any[]
+  moq?: number
+  minOrderQty?: number
+  wholesalePrice?: number | null
+}
+
 export function sanitizeProductForClient<T extends Record<string, any>>(
   product: T,
   canViewWholesale: boolean,
   isAdmin: boolean = false
-): T & { isWholesaleGated: boolean } {
-  if (!product) return product as T & { isWholesaleGated: boolean }
+): SanitizedProduct<T> {
+  if (!product) return product as SanitizedProduct<T>
 
   // 1. Strip sensitive backend/supplier margin fields from all non-admins
   const safe: Record<string, any> = { ...product }
@@ -38,6 +46,9 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
   // 2. Gate wholesale price & tiered quantity discounts
   if (!canViewWholesale) {
     safe.wholesalePrice = null
+    delete safe.minOrderQty
+    delete safe.moq
+    safe.tieredPrices = []
     safe.isWholesaleGated = true
 
     if (Array.isArray(safe.variants)) {
@@ -46,6 +57,8 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
         if (!isAdmin) {
           delete vSafe.costPrice
         }
+        delete vSafe.minOrderQty
+        delete vSafe.moq
         vSafe.tieredPrices = [] // Hide volume discount tiers from public/retail
         return vSafe
       })

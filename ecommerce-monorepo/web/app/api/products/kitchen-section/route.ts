@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse, NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth';
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer';
 import { mapDbProductToDesign3 } from '@/lib/adapters/design3ProductAdapter';
 import { GROCERY_CATALOG_PRODUCTS } from '@/app/[locale]/design-3/data/groceryCatalogData';
 
@@ -228,6 +230,13 @@ export async function GET(request: NextRequest) {
       mapped = [...mapped, ...fallbacks].slice(0, Math.max(6, effectiveLimit));
     }
 
+    // 6. Check caller wholesale access permissions and sanitize products
+    const currentUser = await getAuthUser(request);
+    const canViewWholesale = isApprovedWholesaleUser(currentUser);
+    const isAdmin = currentUser?.role === 'ADMIN';
+
+    const safeMapped = mapped.map((p) => sanitizeProductForClient(p, canViewWholesale, isAdmin));
+
     return NextResponse.json({
       success: true,
       enabled: true,
@@ -236,14 +245,20 @@ export async function GET(request: NextRequest) {
       badgeText: localizedBadge,
       viewAllText: localizedViewAll,
       maxProducts: effectiveLimit,
-      data: mapped,
+      data: safeMapped,
     });
   } catch (error) {
     console.error('Error fetching kitchen section products:', error);
+    const currentUser = await getAuthUser(request).catch(() => null);
+    const canViewWholesale = isApprovedWholesaleUser(currentUser);
+    const isAdmin = currentUser?.role === 'ADMIN';
+    const safeFallbacks = GROCERY_CATALOG_PRODUCTS.map((p) =>
+      sanitizeProductForClient(p, canViewWholesale, isAdmin)
+    );
     return NextResponse.json({
       success: true,
       enabled: true,
-      data: GROCERY_CATALOG_PRODUCTS,
+      data: safeFallbacks,
     });
   }
 }

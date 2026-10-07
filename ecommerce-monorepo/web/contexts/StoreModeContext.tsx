@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import React, { createContext, useContext, ReactNode } from 'react'
 import { useStoreSessionStore, StoreMode } from '@/stores/storeSessionStore'
@@ -84,15 +84,19 @@ export function useStoreMode() {
 export function getDisplayPrice(
   price: number,
   wholesalePrice: number | null | undefined,
-  storeMode: StoreMode
+  storeMode: StoreMode,
+  isWholesaleActive?: boolean
 ): { displayPrice: number; priceType: 'retail' | 'wholesale' | 'both' } {
-  if (storeMode === 'WHOLESALE' && wholesalePrice) {
+  if ((storeMode === 'WHOLESALE' || isWholesaleActive) && wholesalePrice && wholesalePrice > 0) {
     return { displayPrice: wholesalePrice, priceType: 'wholesale' }
   }
   if (storeMode === 'RETAIL') {
     return { displayPrice: price, priceType: 'retail' }
   }
   if (storeMode === 'BOTH') {
+    if (isWholesaleActive && wholesalePrice && wholesalePrice > 0) {
+      return { displayPrice: wholesalePrice, priceType: 'wholesale' }
+    }
     return { displayPrice: price, priceType: 'both' }
   }
   return { displayPrice: price, priceType: 'retail' }

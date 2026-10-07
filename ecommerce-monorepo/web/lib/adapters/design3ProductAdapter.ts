@@ -10,7 +10,9 @@ export function mapDbProductToDesign3(dbItem: any): Product {
   let discountBadge: string | undefined = undefined;
   if (compareAtPrice && compareAtPrice > price) {
     const pct = Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
-    discountBadge = `-${pct}%`;
+    if (pct > 0) {
+      discountBadge = `-${pct}%`;
+    }
   }
 
   const categoryName = dbItem.category?.name || dbItem.categoryName || 'General';

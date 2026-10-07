@@ -28,6 +28,33 @@ vi.mock('@/contexts/SessionModeContext', () => ({
   }),
 }))
 
+vi.mock('@/hooks/useCustomerView', () => ({
+  useCustomerView: () => ({
+    get view() {
+      return mockIsWholesaleSession ? 'wholesale' : 'retail'
+    },
+    get isGuest() {
+      return false
+    },
+    get isRetail() {
+      return !mockIsWholesaleSession
+    },
+    get isWholesale() {
+      return mockIsWholesaleSession
+    },
+    get canSeeWholesalePrice() {
+      return mockIsWholesaleSession
+    },
+    get canRequestQuote() {
+      return mockIsWholesaleSession
+    },
+    get canAddToWholesaleCart() {
+      return mockIsWholesaleSession
+    },
+    isLoading: false,
+  }),
+}))
+
 describe('MobileProductCard (components/mobile/store/MobileProductCard.tsx)', () => {
   beforeEach(() => {
     mockIsWholesaleSession = false

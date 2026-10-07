@@ -6,7 +6,8 @@ import sharp from 'sharp';
 import { prisma } from '@/lib/db';
 import { getApiKeys, getDefaultOpenRouterFallbackKey } from '@/lib/api-keys';
 import { callZaiChatCompletion, DEFAULT_ZAI_VISION_MODEL } from '@/lib/ai/providers/zai';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth';
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer';
 import { setVisualSearchCache } from '@/lib/search/visualSearchCache';
 
 // In-memory rate limiting: 10 requests per minute per IP
@@ -462,10 +463,18 @@ export async function POST(request: NextRequest) {
 
     // Sort by highest similarity / score
     scoredProducts.sort((a, b) => b.score - a.score || b.similarity - a.similarity);
-    const topResults = scoredProducts.slice(0, 20);
+    const topRawResults = scoredProducts.slice(0, 20);
 
-    // 8. Log visual search to database (privacy: sha256 hash only)
+    // 8. Check auth & permissions and sanitize results
     const authUser = await getAuthUser(request);
+    const canViewWholesale = isApprovedWholesaleUser(authUser);
+    const isAdmin = authUser?.role === 'ADMIN';
+
+    const topResults = topRawResults.map((p) =>
+      sanitizeProductForClient(p, canViewWholesale, isAdmin)
+    );
+
+    // 9. Log visual search to database (privacy: sha256 hash only)
     try {
       if ((prisma as any).visualSearchLog) {
         await (prisma as any).visualSearchLog.create({

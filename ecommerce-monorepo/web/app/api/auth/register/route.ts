@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
         country: true,
         role: true,
         isActive: true,
+        isVerified: true,
+        userType: true,
+        verificationStatus: true,
         // DO NOT SELECT PASSWORD
       },
     })

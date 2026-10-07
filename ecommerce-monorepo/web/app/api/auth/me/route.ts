@@ -42,6 +42,8 @@ async function getProfileHandler(request: any) {
       taxId: user.taxId,
       isActive: user.isActive,
       isVerified: user.isVerified,
+      userType: user.userType,
+      verificationStatus: user.verificationStatus,
       supplierProfile: user.supplierProfile ? {
         id: user.supplierProfile.id,
         companyName: user.supplierProfile.companyName,
@@ -94,6 +96,10 @@ async function updateProfileHandler(request: any) {
       companyName: updatedUser.companyName,
       businessType: updatedUser.businessType,
       taxId: updatedUser.taxId,
+      isActive: updatedUser.isActive,
+      isVerified: updatedUser.isVerified,
+      userType: updatedUser.userType,
+      verificationStatus: updatedUser.verificationStatus,
       supplierProfile: updatedUser.supplierProfile ? {
         id: updatedUser.supplierProfile.id,
         companyName: updatedUser.supplierProfile.companyName,

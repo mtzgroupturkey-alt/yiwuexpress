@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 
 // GET /api/auth/status - Check authentication status (no auth required)
 export async function GET(request: NextRequest) {
@@ -28,12 +29,53 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // Fetch full user details needed for storefront and wholesale checks
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        phone: true,
+        country: true,
+        isActive: true,
+        isVerified: true,
+        userType: true,
+        verificationStatus: true,
+        profilePhoto: true,
+        supplierProfile: {
+          select: {
+            id: true,
+            companyName: true,
+            businessType: true,
+          },
+        },
+      },
+    })
+
+    if (!user || !user.isActive) {
+      return NextResponse.json({
+        authenticated: false,
+        user: null
+      })
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {
-        id: payload.userId,
-        email: payload.email,
-        role: payload.role
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        phone: user.phone,
+        country: user.country,
+        isActive: user.isActive,
+        isVerified: user.isVerified,
+        userType: user.userType,
+        verificationStatus: user.verificationStatus,
+        profilePhoto: user.profilePhoto,
+        supplierProfile: user.supplierProfile,
       }
     })
   } catch (error) {

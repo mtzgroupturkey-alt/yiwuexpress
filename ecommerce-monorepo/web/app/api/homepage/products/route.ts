@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { localizeEntity, getLocalField } from '@/lib/utils/localize'
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
+import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 
 export const revalidate = 300 // 5 minutes
 
@@ -144,15 +146,24 @@ export async function GET(request: Request) {
 
     const products = await getCachedHomepageProducts(locale)
 
+    // Check caller wholesale access permissions
+    const currentUser = await getAuthUser(request)
+    const canViewWholesale = isApprovedWholesaleUser(currentUser)
+    const isAdmin = currentUser?.role === 'ADMIN'
+
+    const safeProducts = products.map((p: any) =>
+      sanitizeProductForClient(p, canViewWholesale, isAdmin)
+    )
+
     return NextResponse.json(
       {
         success: true,
-        data: products,
-        count: products.length,
+        data: safeProducts,
+        count: safeProducts.length,
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          'Cache-Control': 'private, no-cache, no-store, must-revalidate',
         },
       }
     )

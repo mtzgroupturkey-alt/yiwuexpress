@@ -213,7 +213,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
                     <span className="bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs flex items-center gap-1">
                       {currentProduct.discountBadge}
                     </span>
-                  ) : currentProduct.oldPrice && currentProduct.oldPrice > currentProduct.price ? (
+                  ) : currentProduct.oldPrice && currentProduct.oldPrice > currentProduct.price && Math.round(((currentProduct.oldPrice - currentProduct.price) / currentProduct.oldPrice) * 100) > 0 ? (
                     <span className="bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider shadow-xs flex items-center gap-1">
                       -{Math.round(((currentProduct.oldPrice - currentProduct.price) / currentProduct.oldPrice) * 100)}%
                     </span>

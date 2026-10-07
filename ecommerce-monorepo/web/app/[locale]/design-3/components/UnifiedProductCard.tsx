@@ -24,6 +24,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
+import { useCustomerView } from '@/hooks/useCustomerView';
 
 interface UnifiedProductCardProps {
   product: Product;
@@ -75,16 +76,13 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
   const isFavorite = favoriteIds.has(product.id);
   const [justAdded, setJustAdded] = useState(false);
 
-  const { settings, storeMode: systemStoreMode } = useSettings();
-  const { storeMode } = useStoreMode();
-  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { settings } = useSettings();
+  const customerView = useCustomerView();
   const { items: quoteItems, addToQuote, updateQuantity: updateQuoteQuantity, removeFromQuote } = useQuoteCart();
   const { addItem: addInquiryItem } = useWholesaleInquiry();
 
-  const currentStoreMode = storeMode || systemStoreMode || 'WHOLESALE';
-  const isWholesaleActive =
-    currentStoreMode === 'WHOLESALE' ||
-    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+  // Conditioned strictly by customer view:
+  const isWholesaleActive = customerView.isWholesale;
 
   const rfqModel = settings?.rfqModel || 'RFQ';
   const isInstantWholesale = rfqModel === 'INSTANT';

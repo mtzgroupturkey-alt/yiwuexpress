@@ -25,6 +25,7 @@ import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
 import { useStoreMode, getDisplayPrice, getEffectiveMinOrderQty } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useCustomerView } from '@/hooks/useCustomerView'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
@@ -129,20 +130,30 @@ export default function ProductDetailView({
   const navigate = useLocaleNav()
   const { refreshCartCount } = useCart()
   const { formatPrice } = useCurrency()
-  const { tBadge } = useStorefrontTranslation()
+  const { tBadge, tPdp } = useStorefrontTranslation()
   const t = useTranslations('Product')
   const tCart = useTranslations('Cart')
   const tProducts = useTranslations('Products') as unknown as (key: string, values?: any) => string
 
   // Store settings & mode integration
-  const { settings } = useSettings()
-  const { storeMode, isWholesale, isRetail, isBoth } = useStoreMode()
-  const { enableWholesaleSession } = useSessionMode()
+  const { settings, storeMode: systemStoreMode } = useSettings()
+  const { storeMode: ctxStoreMode, storeMode, isWholesale, isRetail, isBoth } = useStoreMode()
+  const customerView = useCustomerView()
+  const isWholesaleCustomer = customerView.isWholesale
+  const { sessionMode, isWholesaleSession, enableWholesaleSession } = useSessionMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { addToQuote } = useQuoteCart()
 
+  const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE'
+  const isWholesaleActive =
+    customerView.isWholesale ||
+    currentStoreMode === 'WHOLESALE' ||
+    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
+
   const rfqModel = settings?.rfqModel || 'RFQ'
   const isInstantWholesale = rfqModel === 'INSTANT'
+  const moq = product.minOrderQty || (product as any).moq || settings?.wholesaleDefaultMoq || 1
+  const effectiveMinQty = isWholesaleActive ? moq : 1
 
   // Variant Management
   const variants = useMemo(() => product.variants || [], [product.variants])
@@ -311,10 +322,25 @@ export default function ProductDetailView({
   const currentCompareAtPrice = selectedVariant?.comparePrice ?? product.compareAtPrice
   const currentStock = selectedVariant?.stock ?? product.stock
   const currentSku = selectedVariant?.sku ?? product.sku
-  const { displayPrice, priceType } = useMemo(
-    () => getDisplayPrice(currentPrice, product.wholesalePrice, storeMode),
-    [currentPrice, product.wholesalePrice, storeMode]
-  )
+
+  const effectiveWholesalePrice =
+    (selectedVariant as any)?.wholesalePrice ?? product.wholesalePrice ?? currentPrice
+
+  const hasWholesalePrice = Boolean(product.wholesalePrice && product.wholesalePrice > 0)
+  const isWholesalePricing = isWholesaleActive && hasWholesalePrice
+
+  const displayPrice = isWholesalePricing ? effectiveWholesalePrice : currentPrice
+  const priceType: 'retail' | 'wholesale' | 'both' = isWholesalePricing
+    ? 'wholesale'
+    : isBoth
+    ? 'both'
+    : 'retail'
+
+  const showOriginalPrice = isWholesalePricing && effectiveWholesalePrice < currentPrice
+    ? currentPrice
+    : currentCompareAtPrice && currentCompareAtPrice > displayPrice
+    ? currentCompareAtPrice
+    : null
   const currentImages = useMemo(() => {
     const list: string[] = []
     // If selected variant has specific photos, show them first
@@ -942,9 +968,14 @@ export default function ProductDetailView({
     navigate(`/quotes?product=${slug}`)
   }
 
-  const discount = currentCompareAtPrice
-    ? Math.round(((currentCompareAtPrice - currentPrice) / currentCompareAtPrice) * 100)
-    : 0
+  const discount =
+    showOriginalPrice && showOriginalPrice > displayPrice
+      ? Math.round(((showOriginalPrice - displayPrice) / showOriginalPrice) * 100)
+      : 0
+  const catalogDiscount =
+    currentCompareAtPrice && currentCompareAtPrice > currentPrice
+      ? Math.round(((currentCompareAtPrice - currentPrice) / currentCompareAtPrice) * 100)
+      : discount
 
   // Expand-and-Contract Phase 3: resolve localized name/description with
   // en fallback safety. Keeps legacy product fields for pricing/stock/etc.
@@ -1368,10 +1399,10 @@ export default function ProductDetailView({
           variants={variants}
           selectedVariant={selectedVariant}
           displayPrice={displayPrice}
-          compareAtPrice={currentCompareAtPrice}
+          compareAtPrice={showOriginalPrice}
           stock={currentStock}
           allImages={currentImages}
-          isWholesale={isWholesale}
+          isWholesale={isWholesaleActive}
           isInstantWholesale={isInstantWholesale}
         />
       </div>
@@ -1460,7 +1491,7 @@ export default function ProductDetailView({
                 <ProductImageGallery
                   images={currentImages}
                   productName={localized.name}
-                  badgeText={currentCompareAtPrice && currentCompareAtPrice > currentPrice ? `-${discount}%` : undefined}
+                  badgeText={currentCompareAtPrice && catalogDiscount > 0 ? `-${catalogDiscount}%` : undefined}
                 />
 
                 {/* Desktop-only: Reassurance, Frequently Bought Together Bundle & Key Specs */}
@@ -1585,14 +1616,16 @@ export default function ProductDetailView({
                           {t('wholesalePrice')}
                         </span>
                       )}
-                      {currentCompareAtPrice && (
+                      {showOriginalPrice && showOriginalPrice > displayPrice && (
                         <>
                           <span className="text-sm text-slate-400 line-through font-medium">
-                            {formatPrice(currentCompareAtPrice)}
+                            {formatPrice(showOriginalPrice)}
                           </span>
-                          <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-black px-2 py-0.5 rounded-md">
-                            -{discount}%
-                          </span>
+                          {discount > 0 && (
+                            <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-black px-2 py-0.5 rounded-md">
+                              -{discount}%
+                            </span>
+                          )}
                         </>
                       )}
                     </div>
@@ -1831,7 +1864,9 @@ export default function ProductDetailView({
                         <span className="text-slate-600">
                           {locale === 'ru' ? 'Всего:' : locale === 'zh' ? '总数:' : 'Total:'}
                           <span className="font-bold font-mono ml-1 text-slate-900">{totalMatrixUnits}</span>
-                          <span className="text-[10px] text-slate-400 ml-1">(MOQ: {product.minOrderQty || 1})</span>
+                          {isWholesaleCustomer && (
+                            <span className="text-[10px] text-slate-400 ml-1">(MOQ: {product.minOrderQty || 1})</span>
+                          )}
                         </span>
                         <span className="font-black text-sm text-[#00407a]">
                           {formatPrice(totalMatrixPrice)}
@@ -1856,7 +1891,7 @@ export default function ProductDetailView({
 
                   {/* Stock Status & Quantity Stepper */}
                   {(() => {
-                    const effectiveMinQty = getEffectiveMinOrderQty(product.minOrderQty, storeMode)
+                    const effectiveMinQty = isWholesaleActive ? moq : 1
 
                     return (
                       <div className="space-y-2 pt-0.5">
@@ -1871,7 +1906,7 @@ export default function ProductDetailView({
                             )}
                           </div>
                           <span className="text-slate-400 text-[11px]">
-                            {effectiveMinQty > 1 ? `MOQ: ${effectiveMinQty}` : (locale === 'ru' ? 'Макс. 10 шт.' : locale === 'zh' ? '限购10件' : 'Max 10 units')}
+                            {isWholesaleActive ? `${tPdp('wholesaleMoq', { moq })}` : (locale === 'ru' ? 'Макс. 10 шт.' : locale === 'zh' ? '限购10件' : 'Max 10 units')}
                           </span>
                         </div>
 
@@ -1909,7 +1944,7 @@ export default function ProductDetailView({
                           <div className="flex-1 text-right">
                             <span className="text-[11px] text-slate-400 block leading-tight">{t('subtotal')}</span>
                             <span className="font-black text-lg text-[#00407a]">
-                              {formatPrice(currentPrice * quantity)}
+                              {formatPrice(displayPrice * quantity)}
                             </span>
                           </div>
                         </div>
@@ -1919,8 +1954,29 @@ export default function ProductDetailView({
 
                   {/* Primary Call to Action Buttons */}
                   <div id="pdp-main-buy-box" className="space-y-2 pt-1">
-                    {/* Retail Flow CTAs */}
-                    {isRetail && (
+                    {/* Wholesale RFQ Flow CTA */}
+                    {isWholesaleActive && !isInstantWholesale ? (
+                      <button
+                        type="button"
+                        onClick={handleAddToQuoteList}
+                        disabled={currentStock === 0}
+                        className="w-full h-11 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>{t('addToQuoteList')} ({tPdp('wholesaleMoq', { moq })})</span>
+                      </button>
+                    ) : isWholesaleActive && isInstantWholesale ? (
+                      <button
+                        type="button"
+                        onClick={handleAddToCart}
+                        disabled={currentStock === 0 || adding}
+                        className="w-full h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        <span>{adding ? t('addingToCart') : ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart')} ({tPdp('wholesaleMoq', { moq })})</span>
+                      </button>
+                    ) : (
+                      /* Retail Flow CTAs */
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <button
                           type="button"
@@ -1944,20 +2000,31 @@ export default function ProductDetailView({
                       </div>
                     )}
 
-                    {/* Wholesale Flow CTA */}
-                    <button
-                      type="button"
-                      onClick={handleAddToQuoteList}
-                      disabled={currentStock === 0}
-                      className={`w-full h-11 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98] ${
-                        isWholesale && !isRetail
-                          ? 'bg-[#00407a] hover:bg-[#003366] text-white shadow-xs'
-                          : 'border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF]'
-                      }`}
-                    >
-                      <FileText className="w-4 h-4" />
-                      <span>{isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart') : t('addToQuoteList')}</span>
-                    </button>
+                    {/* Secondary option: If wholesale is active and store is BOTH, allow retail purchase */}
+                    {isWholesaleActive && isBoth && (
+                      <button
+                        type="button"
+                        onClick={handleAddToCart}
+                        disabled={currentStock === 0 || adding}
+                        className="w-full h-10 rounded-xl text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{locale === 'ru' ? 'Купить в розницу' : locale === 'zh' ? '以零售价购买' : 'Buy at Retail Price'} ({formatPrice(currentPrice)})</span>
+                      </button>
+                    )}
+
+                    {/* Secondary option: If retail is active and store is BOTH, allow quote request */}
+                    {!isWholesaleActive && isBoth && (
+                      <button
+                        type="button"
+                        onClick={handleAddToQuoteList}
+                        disabled={currentStock === 0}
+                        className="w-full h-10 rounded-xl text-xs font-bold border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>{isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart') : t('addToQuoteList')}</span>
+                      </button>
+                    )}
 
                     {moqError && (
                       <p className="text-xs font-medium text-rose-600 text-center">{moqError}</p>
@@ -2218,7 +2285,7 @@ export default function ProductDetailView({
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Торговая защита' : locale === 'zh' ? '安全托管' : 'Trade Protection'}</dt>
                         <dd className="sm:col-span-2 font-semibold text-[#00407a] text-xs sm:text-sm">{locale === 'ru' ? '100% Эскроу платежей + QC проверка' : locale === 'zh' ? '100%资金托管与出厂全检' : '100% Escrow & Pre-Shipment Inspection'}</dd>
                       </div>
-                      {product.minOrderQty > 1 && (
+                      {isWholesaleCustomer && product.minOrderQty && product.minOrderQty > 1 && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                           <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Мин. партия (MOQ)' : locale === 'zh' ? '起订量 (MOQ)' : 'Minimum Order'}</dt>
                           <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.minOrderQty} {locale === 'ru' ? 'шт.' : locale === 'zh' ? '件' : 'units'}</dd>
@@ -2632,14 +2699,14 @@ export default function ProductDetailView({
         <StickyBuyBar
           isVisible={showStickyBuyBar && isStandalone}
           price={displayPrice}
-          compareAtPrice={currentCompareAtPrice}
+          compareAtPrice={showOriginalPrice}
           quantity={quantity}
           onQuantityChange={(newQty) => setQuantity(newQty)}
-          onAddToCart={isWholesale && !isRetail ? handleAddToQuoteList : handleAddToCart}
-          isWholesale={isWholesale && !isRetail}
+          onAddToCart={isWholesaleActive && !isInstantWholesale ? handleAddToQuoteList : handleAddToCart}
+          isWholesale={isWholesaleActive}
           isInstantWholesale={isInstantWholesale}
           isAdding={adding}
-          minQty={getEffectiveMinOrderQty(product.minOrderQty, storeMode)}
+          minQty={effectiveMinQty}
           maxQty={currentStock}
           productName={localized.name}
           productImage={currentImages[0]}

@@ -33,8 +33,8 @@ const productSchema = z.object({
   description: z.string().optional(),
   categoryId: z.string().optional(),
   price: z.number().min(0, 'Price must be positive'),
-  compareAtPrice: z.number().optional(),
-  costPrice: z.number().optional(),
+  compareAtPrice: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
+  costPrice: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
   stock: z.number().int().min(0, 'Stock must be positive'),
   lowStockThreshold: z.number().int().min(0).default(10),
   thumbnail: z.string().optional(),
@@ -43,16 +43,16 @@ const productSchema = z.object({
   countryOfOrigin: z.string().default('China'),
   material: z.string().optional(),
   minOrderQty: z.number().int().min(1).default(1),
-  wholesalePrice: z.number().optional(),
+  wholesalePrice: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
   isFlashSale: z.boolean().default(false),
-  flashSalePrice: z.number().optional(),
+  flashSalePrice: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
   flashSaleStart: z.string().optional(),
   flashSaleEnd: z.string().optional(),
-  flashSaleStock: z.number().int().optional(),
+  flashSaleStock: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseInt(val) : val), z.number().int().min(0).optional()),
   fragile: z.boolean().default(false),
   exportRestricted: z.boolean().default(false),
   dangerousGoods: z.boolean().default(false),
@@ -155,18 +155,18 @@ export default function NewProductPage() {
         videos,
         thumbnail: images[0] || null,
         price: parseFloat(data.price.toString()),
-        compareAtPrice: data.compareAtPrice ? parseFloat(data.compareAtPrice.toString()) : null,
-        costPrice: data.costPrice ? parseFloat(data.costPrice.toString()) : null,
-        wholesalePrice: data.wholesalePrice ? parseFloat(data.wholesalePrice.toString()) : null,
+        compareAtPrice: data.compareAtPrice !== undefined && data.compareAtPrice !== null && !isNaN(Number(data.compareAtPrice)) ? parseFloat(data.compareAtPrice.toString()) : null,
+        costPrice: data.costPrice !== undefined && data.costPrice !== null && !isNaN(Number(data.costPrice)) ? parseFloat(data.costPrice.toString()) : null,
+        wholesalePrice: data.wholesalePrice !== undefined && data.wholesalePrice !== null && !isNaN(Number(data.wholesalePrice)) ? parseFloat(data.wholesalePrice.toString()) : null,
         weightKg: parseFloat(data.weightKg.toString()),
         stock: parseInt(data.stock.toString()),
         lowStockThreshold: parseInt((data.lowStockThreshold ?? 10).toString()),
         minOrderQty: parseInt((data.minOrderQty ?? 1).toString()),
         isFlashSale: data.isFlashSale,
-        flashSalePrice: data.flashSalePrice ? parseFloat(data.flashSalePrice.toString()) : null,
+        flashSalePrice: data.flashSalePrice !== undefined && data.flashSalePrice !== null && !isNaN(Number(data.flashSalePrice)) ? parseFloat(data.flashSalePrice.toString()) : null,
         flashSaleStart: data.flashSaleStart ? new Date(data.flashSaleStart).toISOString() : null,
         flashSaleEnd: data.flashSaleEnd ? new Date(data.flashSaleEnd).toISOString() : null,
-        flashSaleStock: data.flashSaleStock ? parseInt(data.flashSaleStock.toString()) : null,
+        flashSaleStock: data.flashSaleStock !== undefined && data.flashSaleStock !== null && !isNaN(Number(data.flashSaleStock)) ? parseInt(data.flashSaleStock.toString()) : null,
         attributes: attributeValues, // Add attribute values to product data
         attributeTranslations,
       }
@@ -332,8 +332,12 @@ export default function NewProductPage() {
               <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.inventory}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.stockQuantity} *</Label>
+                  <div className="flex items-baseline justify-between">
+                    <Label htmlFor="stock" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.stockQuantity} *</Label>
+                    <span className="text-[11px] text-amber-600 font-medium">Stock &gt; 15 qualifies for ⚡ EXPRESS badge</span>
+                  </div>
                   <Input id="stock" type="number" {...register('stock', { valueAsNumber: true })} className="rounded-xl" />
+                  <p className="text-[11px] text-gray-400">Products with stock greater than 15 automatically display the ⚡ EXPRESS delivery badge on cards.</p>
                   {errors.stock && <p className="text-red-600 text-sm mt-1">{errors.stock.message}</p>}
                 </div>
                 <div className="space-y-2">
@@ -428,9 +432,12 @@ export default function NewProductPage() {
                   <input type="checkbox" {...register('isActive')} className="w-5 h-5 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
                   <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.activeVisible}</span>
                 </label>
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <input type="checkbox" {...register('isFeatured')} className="w-5 h-5 rounded text-amber-500 focus:ring-amber-500" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.featured}</span>
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input type="checkbox" {...register('isFeatured')} className="w-5 h-5 rounded text-amber-500 focus:ring-amber-500 mt-0.5" />
+                  <div>
+                    <span className="text-sm font-medium group-hover:text-gray-900 block">{dict.products.featured} (BESTSELLER Badge)</span>
+                    <span className="text-[11px] text-gray-400">Enabling this awards the product the BESTSELLER badge on product cards and features it prominently across the store.</span>
+                  </div>
                 </label>
               </div>
             </div>
