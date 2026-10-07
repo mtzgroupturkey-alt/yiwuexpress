@@ -163,7 +163,6 @@ export const navigationConfig: NavGroup[] = [
     translationKey: 'autopilot',
     icon: Bot,
     items: [
-      { label: 'Auto-Pilot Center', translationKey: 'autopilotCenter', href: '/admin/autopilot', icon: Bot },
       { label: 'Neural Cockpit (The Brain)', translationKey: 'neuralCockpit', href: '/admin/autopilot/orb', icon: Brain },
       { label: 'Classic Cockpit', translationKey: 'classicCockpit', href: '/admin/autopilot/classic', icon: Cpu },
       { label: 'Approvals Inbox', translationKey: 'approvals', href: '/admin/autopilot/approvals', icon: Bell },
@@ -171,6 +170,7 @@ export const navigationConfig: NavGroup[] = [
       { label: 'Insights & Retrospective', translationKey: 'insights', href: '/admin/autopilot/insights', icon: Sparkles },
       { label: 'Policy Rules', translationKey: 'policies', href: '/admin/autopilot/policies', icon: Shield },
       { label: 'Audit Trail', translationKey: 'audit', href: '/admin/autopilot/audit', icon: FileText },
+      { label: 'System Settings', translationKey: 'settings', href: '/admin/autopilot/settings', icon: Settings },
     ]
   },
 ]
