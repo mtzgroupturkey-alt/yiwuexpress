@@ -169,6 +169,21 @@ export async function GET(request: NextRequest) {
     const pdpEscrowTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpEscrowTitle', locale === 'ru' ? 'Безопасная сделка' : locale === 'zh' ? '贸易资金担保' : 'Trade Assurance Escrow', locale)
     const pdpEscrowDesc = localizeSystemSetting(effectiveSettings.translations, 'pdpEscrowDesc', locale === 'ru' ? 'Оплата защищена до получения и проверки' : locale === 'zh' ? '验货通过后支付尾款安全有保障' : 'Funds protected until inspection passes', locale)
 
+    // Localize Buyer Q&A / FAQ
+    const pdpFaqTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpFaqTitle', locale === 'ru' ? 'Часто задаваемые вопросы' : locale === 'zh' ? '买家常见问答 / FAQ' : 'Frequently Asked Questions', locale)
+    const pdpFaqSubtitle = localizeSystemSetting(effectiveSettings.translations, 'pdpFaqSubtitle', locale === 'ru' ? 'Быстрые ответы на распространённые вопросы покупателей' : locale === 'zh' ? '关于起订量、物流运输、定制和质保的常见疑问解答' : 'Get quick answers to common questions', locale)
+    const pdpFaqAskBtn = localizeSystemSetting(effectiveSettings.translations, 'pdpFaqAskBtn', locale === 'ru' ? 'Задать вопрос' : locale === 'zh' ? '在线咨询 / 提问' : 'Ask a Question', locale)
+    const pdpFaq1Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq1Q', locale === 'ru' ? 'Каков минимальный объём заказа (MOQ)?' : locale === 'zh' ? '本商品的最小起订量（MOQ）是多少？' : 'What is the minimum order quantity?', locale)
+    const pdpFaq1A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq1A', locale === 'ru' ? 'Минимальный заказ для этого товара — {moq} шт. Для крупных партий действуют специальные оптовые цены.' : locale === 'zh' ? '该商品最小起订量为 {moq} 件。批量采购可享阶梯批发底价。' : 'The minimum order quantity for this product is {moq} units. Wholesale pricing is available for larger orders.', locale)
+    const pdpFaq2Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq2Q', locale === 'ru' ? 'Каковы сроки доставки и таможни?' : locale === 'zh' ? '国际运输需要多长时间？' : 'What is the shipping time?', locale)
+    const pdpFaq2A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq2A', locale === 'ru' ? 'Авиа доставка занимает 5–8 дней, ж/д экспресс 14–20 дней. Предоставляется доставка с полной таможенной очисткой.' : locale === 'zh' ? '空运双清包税专线 5–8 个工作日，中欧班列铁路集运 14–20 个工作日，海运 20–35 天。' : 'Standard shipping takes 7-14 business days. Express door-to-door shipping options are available at checkout.', locale)
+    const pdpFaq3Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq3Q', locale === 'ru' ? 'Предоставляете ли вы оптовые скидки на объем?' : locale === 'zh' ? '大批量采购有阶梯折扣吗？' : 'Do you offer bulk wholesale discounts?', locale)
+    const pdpFaq3A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq3A', locale === 'ru' ? 'Да! Мы предлагаем прогрессивную шкалу скидок для оптовых заказов. Свяжитесь с нами для точного расчета партии.' : locale === 'zh' ? '支持整柜及大批量批发折扣！我们的贸易经理可为您提供实时离岸价（FOB）或到门包税价（DDP）。' : 'Yes! We offer tiered wholesale pricing for bulk orders. Contact our trade managers for custom container rates.', locale)
+    const pdpFaq4Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq4Q', locale === 'ru' ? 'Каковы условия гарантии и возврата?' : locale === 'zh' ? '售后退换与质检保障政策是怎样的？' : 'What is your return & inspection policy?', locale)
+    const pdpFaq4A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq4A', locale === 'ru' ? 'Все товары проходят проверку качества перед отправкой. Действует 30-дневная гарантия на заводские дефекты.' : locale === 'zh' ? '出货前由专业质检团队进行实物验货并提供检测报告；正品质量问题享受全面售后保障。' : 'We offer full pre-shipment quality inspection and 30-day return coverage for any verified manufacturing defects.', locale)
+    const pdpFaq5Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq5Q', locale === 'ru' ? 'Возможно ли брендирование и производство под заказ (OEM/ODM)?' : locale === 'zh' ? '是否支持贴牌定制与打样（OEM / ODM）？' : 'Can I customize this product or add my logo (OEM/ODM)?', locale)
+    const pdpFaq5A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq5A', locale === 'ru' ? 'Да, нанесение логотипа и индивидуальная упаковка доступны для партий от 500 шт. Напишите нам детали заказа.' : locale === 'zh' ? '支持定制包装、印刷 Logo 和模具开发。订单量达到定制门槛即可联系客服沟通打样与生产周期。' : 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.', locale)
+
     const { translations, ...publicSettings } = effectiveSettings
 
 
@@ -268,6 +283,20 @@ export async function GET(request: NextRequest) {
         pdpLogisticsDesc,
         pdpEscrowTitle,
         pdpEscrowDesc,
+        // Buyer Q&A / FAQ
+        pdpFaqTitle,
+        pdpFaqSubtitle,
+        pdpFaqAskBtn,
+        pdpFaq1Q,
+        pdpFaq1A,
+        pdpFaq2Q,
+        pdpFaq2A,
+        pdpFaq3Q,
+        pdpFaq3A,
+        pdpFaq4Q,
+        pdpFaq4A,
+        pdpFaq5Q,
+        pdpFaq5A,
       }
     })
   } catch (error) {

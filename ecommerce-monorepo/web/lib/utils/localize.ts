@@ -636,11 +636,12 @@ export function localizeSystemSetting(
   locale: string
 ): string {
   const target = String(locale)
-  if (target === FALLBACK_LOCALE) return fallbackEn ?? ''
   const list = (translations || []).filter((t) => t.key === key)
   const row =
     list.find((t) => t.locale === target && t.value && t.value.trim().length > 0) ??
-    list.find((t) => t.locale === FALLBACK_LOCALE && t.value && t.value.trim().length > 0)
+    (target !== FALLBACK_LOCALE
+      ? list.find((t) => t.locale === FALLBACK_LOCALE && t.value && t.value.trim().length > 0)
+      : undefined)
   return row?.value ?? fallbackEn ?? ''
 }
 

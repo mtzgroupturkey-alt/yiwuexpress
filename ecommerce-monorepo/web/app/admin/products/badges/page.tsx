@@ -44,7 +44,7 @@ export default function ProductBadgesSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [activeLocaleTab, setActiveLocaleTab] = useState<TranslationLocale>('en');
-  const [activeSectionTab, setActiveSectionTab] = useState<'reassurance' | 'delivery' | 'trust'>('delivery');
+  const [activeSectionTab, setActiveSectionTab] = useState<'reassurance' | 'delivery' | 'trust' | 'faq'>('delivery');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Multilingual values map
@@ -274,6 +274,18 @@ export default function ProductBadgesSettingsPage() {
           >
             <Award className="w-3.5 h-3.5" />
             <span>Factory & QC Trust Badges</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSectionTab('faq')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              activeSectionTab === 'faq'
+                ? 'bg-white text-blue-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>Buyer Q&amp;A / FAQ</span>
           </button>
         </div>
 
@@ -821,6 +833,152 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* SECTION TAB 4: BUYER Q&A / FAQ */}
+      {activeSectionTab === 'faq' && (
+        <div className="space-y-6">
+          <Card className="rounded-2xl border-slate-200 shadow-2xs">
+            <CardHeader className="border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-blue-600" />
+                <div>
+                  <CardTitle className="text-base font-bold text-slate-900">
+                    Product Detail Page Buyer Q&amp;A / FAQ
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500">
+                    Configure the questions and answers displayed under the &quot;Buyer Q&amp;A / FAQ&quot; tab on every product page. Supports variable placeholder <code className="bg-slate-100 text-blue-600 px-1 py-0.5 rounded font-mono text-[11px]">&#123;moq&#125;</code> for automatic product minimum order quantity insertion.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+              {/* Header Titles */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border border-blue-100 bg-blue-50/40">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-800">Tab Heading Title</Label>
+                  <Input
+                    value={currentValues.pdpFaqTitle || ''}
+                    onChange={(e) => updateField('pdpFaqTitle', e.target.value)}
+                    placeholder="Frequently Asked Questions"
+                    className="rounded-lg text-xs bg-white"
+                  />
+                  <p className="text-[10px] text-slate-400">Section title displayed above the questions list.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-800">Tab Subtitle</Label>
+                  <Input
+                    value={currentValues.pdpFaqSubtitle || ''}
+                    onChange={(e) => updateField('pdpFaqSubtitle', e.target.value)}
+                    placeholder="Get quick answers to common questions"
+                    className="rounded-lg text-xs bg-white"
+                  />
+                  <p className="text-[10px] text-slate-400">Helpful explanation displayed beneath heading.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-800">Inquiry Button Text</Label>
+                  <Input
+                    value={currentValues.pdpFaqAskBtn || ''}
+                    onChange={(e) => updateField('pdpFaqAskBtn', e.target.value)}
+                    placeholder="Ask a Question"
+                    className="rounded-lg text-xs bg-white"
+                  />
+                  <p className="text-[10px] text-slate-400">Button to trigger custom question form.</p>
+                </div>
+              </div>
+
+              {/* Questions 1 to 5 List */}
+              <div className="space-y-4">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">
+                  Standard Questions &amp; Answers (1 – 5)
+                </h4>
+
+                {[
+                  {
+                    num: 1,
+                    qKey: 'pdpFaq1Q',
+                    aKey: 'pdpFaq1A',
+                    defaultQ: 'What is the minimum order quantity?',
+                    defaultA: 'The minimum order quantity for this product is {moq} units. Wholesale pricing is available for larger orders.',
+                    hint: 'Supports {moq} variable for automatic MOQ quantity replacement.',
+                  },
+                  {
+                    num: 2,
+                    qKey: 'pdpFaq2Q',
+                    aKey: 'pdpFaq2A',
+                    defaultQ: 'What is the shipping time?',
+                    defaultA: 'Standard shipping takes 7-14 business days. Express door-to-door shipping options are available at checkout.',
+                    hint: 'Explain shipping speed and door-to-door transit.',
+                  },
+                  {
+                    num: 3,
+                    qKey: 'pdpFaq3Q',
+                    aKey: 'pdpFaq3A',
+                    defaultQ: 'Do you offer bulk wholesale discounts?',
+                    defaultA: 'Yes! We offer tiered wholesale pricing for bulk orders. Contact our trade managers for custom container rates.',
+                    hint: 'Explain volume wholesale discounts or container rates.',
+                  },
+                  {
+                    num: 4,
+                    qKey: 'pdpFaq4Q',
+                    aKey: 'pdpFaq4A',
+                    defaultQ: 'What is your return & inspection policy?',
+                    defaultA: 'We offer full pre-shipment quality inspection and 30-day return coverage for any verified manufacturing defects.',
+                    hint: 'Provide reassurance on factory defects and returns.',
+                  },
+                  {
+                    num: 5,
+                    qKey: 'pdpFaq5Q',
+                    aKey: 'pdpFaq5A',
+                    defaultQ: 'Can I customize this product or add my logo (OEM/ODM)?',
+                    defaultA: 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.',
+                    hint: 'Cover custom logo printing, OEM packaging, and ODM molds.',
+                  },
+                ].map(({ num, qKey, aKey, defaultQ, defaultA, hint }) => (
+                  <div
+                    key={num}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 transition-colors hover:border-blue-200"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center">
+                          {num}
+                        </span>
+                        <span className="font-bold text-xs text-slate-900">
+                          Question #{num}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-400">{hint}</span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] text-slate-600 font-semibold">Question</Label>
+                      <Input
+                        value={currentValues[qKey] || ''}
+                        onChange={(e) => updateField(qKey, e.target.value)}
+                        placeholder={defaultQ}
+                        className="rounded-lg text-xs bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px] text-slate-600 font-semibold">Answer</Label>
+                      <textarea
+                        value={currentValues[aKey] || ''}
+                        onChange={(e) => updateField(aKey, e.target.value)}
+                        placeholder={defaultA}
+                        rows={2}
+                        className="w-full border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y"
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>

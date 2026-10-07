@@ -1984,10 +1984,10 @@ export default function ProductDetailView({
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           <span>
                             {locale === 'ru'
-                              ? `Закажите в течение ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')}`
+                              ? `Закажите в течение ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} для быстрой отправки`
                               : locale === 'zh'
-                              ? `在 ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} 内下单明天发货`
-                              : `Order within ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} for delivery tomorrow`}
+                              ? `在 ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} 内下单即刻排单发货`
+                              : `Order within ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} for fastest dispatch`}
                           </span>
                         </p>
                       </div>
@@ -2447,9 +2447,11 @@ export default function ProductDetailView({
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                       <HelpCircle className="w-5 h-5 text-blue-600" />
-                      {t('faqTitle')}
+                      {settings?.pdpFaqTitle || t('faqTitle')}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-500">{t('faqSubtitle')}</p>
+                    <p className="text-xs sm:text-sm text-slate-500">
+                      {settings?.pdpFaqSubtitle || t('faqSubtitle')}
+                    </p>
                   </div>
                   <Button
                     variant="outline"
@@ -2458,7 +2460,7 @@ export default function ProductDetailView({
                     className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 text-xs"
                   >
                     <MessageCircle className="w-4 h-4 mr-1.5" />
-                    {t('askAQuestion')}
+                    {settings?.pdpFaqAskBtn || t('askAQuestion')}
                   </Button>
                 </div>
 
@@ -2483,24 +2485,41 @@ export default function ProductDetailView({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { q: t('faq1q'), a: t('faq1a', { n: product.minOrderQty }) },
-                    { q: t('faq2q'), a: t('faq2a') },
-                    { q: t('faq3q'), a: t('faq3a') },
-                    { q: t('faq4q'), a: t('faq4a') },
-                    { q: t('faq5q'), a: t('faq5a') },
-                  ].map((faq, index) => (
-                    <div key={index} className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/80 hover:border-blue-200 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <div className="bg-blue-100 rounded-xl p-2 flex-shrink-0 mt-0.5">
-                          <HelpCircle className="w-4 h-4 text-blue-700" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 mb-1 text-sm">{faq.q}</h4>
-                          <p className="text-slate-600 leading-relaxed text-xs">{faq.a}</p>
+                    {
+                      q: settings?.pdpFaq1Q || t('faq1q'),
+                      a: (settings?.pdpFaq1A || t('faq1a', { n: product.minOrderQty })).replace(/\{moq\}/gi, String(product.minOrderQty || 1)),
+                    },
+                    {
+                      q: settings?.pdpFaq2Q || t('faq2q'),
+                      a: settings?.pdpFaq2A || t('faq2a'),
+                    },
+                    {
+                      q: settings?.pdpFaq3Q || t('faq3q'),
+                      a: settings?.pdpFaq3A || t('faq3a'),
+                    },
+                    {
+                      q: settings?.pdpFaq4Q || t('faq4q'),
+                      a: settings?.pdpFaq4A || t('faq4a'),
+                    },
+                    {
+                      q: settings?.pdpFaq5Q || t('faq5q'),
+                      a: settings?.pdpFaq5A || t('faq5a'),
+                    },
+                  ]
+                    .filter((faq) => Boolean(faq.q && faq.a))
+                    .map((faq, index) => (
+                      <div key={index} className="bg-slate-50/70 rounded-2xl p-4 border border-slate-200/80 hover:border-blue-200 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <div className="bg-blue-100 rounded-xl p-2 flex-shrink-0 mt-0.5">
+                            <HelpCircle className="w-4 h-4 text-blue-700" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-900 mb-1 text-sm">{faq.q}</h4>
+                            <p className="text-slate-600 leading-relaxed text-xs">{faq.a}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             )}

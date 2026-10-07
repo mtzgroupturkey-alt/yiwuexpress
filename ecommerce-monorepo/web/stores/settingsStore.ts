@@ -91,6 +91,20 @@ export interface CompanySettings {
   pdpLogisticsDesc?: string | null
   pdpEscrowTitle?: string | null
   pdpEscrowDesc?: string | null
+  // Buyer Q&A / FAQ
+  pdpFaqTitle?: string | null
+  pdpFaqSubtitle?: string | null
+  pdpFaqAskBtn?: string | null
+  pdpFaq1Q?: string | null
+  pdpFaq1A?: string | null
+  pdpFaq2Q?: string | null
+  pdpFaq2A?: string | null
+  pdpFaq3Q?: string | null
+  pdpFaq3A?: string | null
+  pdpFaq4Q?: string | null
+  pdpFaq4A?: string | null
+  pdpFaq5Q?: string | null
+  pdpFaq5A?: string | null
 }
 
 export interface SettingsState {
@@ -176,6 +190,20 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   pdpLogisticsDesc: 'Air, rail & sea freight with customs clearance',
   pdpEscrowTitle: 'Trade Assurance Escrow',
   pdpEscrowDesc: 'Funds protected until inspection passes',
+  // Buyer Q&A / FAQ
+  pdpFaqTitle: 'Frequently Asked Questions',
+  pdpFaqSubtitle: 'Get quick answers to common questions',
+  pdpFaqAskBtn: 'Ask a Question',
+  pdpFaq1Q: 'What is the minimum order quantity?',
+  pdpFaq1A: 'The minimum order quantity for this product is {moq} units. Wholesale pricing is available for larger orders.',
+  pdpFaq2Q: 'What is the shipping time?',
+  pdpFaq2A: 'Standard shipping takes 7-14 business days. Express door-to-door shipping options are available at checkout.',
+  pdpFaq3Q: 'Do you offer bulk wholesale discounts?',
+  pdpFaq3A: 'Yes! We offer tiered wholesale pricing for bulk orders. Contact our trade managers for custom container rates.',
+  pdpFaq4Q: 'What is your return & inspection policy?',
+  pdpFaq4A: 'We offer full pre-shipment quality inspection and 30-day return coverage for any verified manufacturing defects.',
+  pdpFaq5Q: 'Can I customize this product or add my logo (OEM/ODM)?',
+  pdpFaq5A: 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.',
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
