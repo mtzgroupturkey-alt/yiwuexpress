@@ -970,10 +970,10 @@ export default function Home() {
             {settings?.electronicsSectionEnabled !== false && electronicsSectionData?.enabled !== false && (
               <MotionReveal direction="up">
                 <PopularElectronics
-                  title={electronicsSectionData?.title || settings?.electronicsSectionTitle || undefined}
-                  subtitle={electronicsSectionData?.subtitle || settings?.electronicsSectionSubtitle || undefined}
-                  badgeText={electronicsSectionData?.badgeText || settings?.electronicsSectionBadge || undefined}
-                  viewAllText={electronicsSectionData?.viewAllText || settings?.electronicsSectionViewAllLabel || undefined}
+                  title={electronicsSectionData?.title || (locale === 'en' ? settings?.electronicsSectionTitle : undefined)}
+                  subtitle={electronicsSectionData?.subtitle || (locale === 'en' ? settings?.electronicsSectionSubtitle : undefined)}
+                  badgeText={electronicsSectionData?.badgeText || (locale === 'en' ? settings?.electronicsSectionBadge : undefined)}
+                  viewAllText={electronicsSectionData?.viewAllText || (locale === 'en' ? settings?.electronicsSectionViewAllLabel : undefined)}
                   maxProducts={electronicsSectionData?.maxProducts || settings?.electronicsSectionMaxProducts || 8}
                   products={activeElectronicsProducts}
                   isLoading={isElectronicsSectionLoading && activeElectronicsProducts.length === 0}

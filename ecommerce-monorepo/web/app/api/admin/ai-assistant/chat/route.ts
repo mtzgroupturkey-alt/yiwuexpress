@@ -404,67 +404,9 @@ export async function POST(request: NextRequest) {
     }
 
     // =========================================================================
-    // DIRECT COMMAND / INTENT INTERCEPTION FOR TRANSLATING MISSING CATEGORIES
-    // =========================================================================
-    const lowerUserText = userText.toLowerCase()
-    const isCategoryTranslationDirectCmd =
-      (lowerUserText.includes('categor') || lowerUserText.includes('категор') || lowerUserText.includes('分类')) &&
-      (lowerUserText.includes('miss') || lowerUserText.includes('пропущ') || lowerUserText.includes('неперевед') || lowerUserText.includes('未翻译') || lowerUserText.includes('translat') || lowerUserText.includes('перевод') || lowerUserText.includes('翻译')) &&
-      (isConfirmation(userText) || lowerUserText.includes('correct') || lowerUserText.includes('fix') || lowerUserText.includes('сделай') || lowerUserText.includes('исправ') || lowerUserText.includes('执行') || lowerUserText.includes('修复'))
-
-    const isDirectConfirmationWithoutPending =
-      !pendingAction &&
-      isConfirmation(userText) &&
-      messages.length > 1 &&
-      messages.slice(-3).some((m) => {
-        const text = m.content.toLowerCase()
-        return (
-          text.includes('categor') ||
-          text.includes('категор') ||
-          text.includes('translat') ||
-          text.includes('перевод') ||
-          text.includes('missed')
-        )
-      })
-
-    if (isCategoryTranslationDirectCmd || isDirectConfirmationWithoutPending) {
-      try {
-        const executionResult = await bulkTranslate('categories', [], ['ru', 'zh'], user.id)
-        const successMessages: Record<AdminChatLocale, string> = {
-          en: `✅ **Successfully updated missing category translations!**\n\n` +
-            `- **${executionResult.translatedCount.success}** categories were translated into Russian (RU) and Chinese (ZH).\n` +
-            `- All category translations have been saved to the database.\n\n` +
-            `Storefront menus and filters now display complete multilingual category names.`,
-          ru: `✅ **Пропущенные переводы категорий успешно добавлены!**\n\n` +
-            `- **${executionResult.translatedCount.success}** категорий переведено на русский (RU) и китайский (ZH).\n` +
-            `- Все переводы сохранены в базу данных.\n\n` +
-            `Меню и фильтры каталога теперь отображаются на всех поддерживаемых языках.`,
-          zh: `✅ **已成功补充所有缺失的分类多语言翻译！**\n\n` +
-            `- 共为 **${executionResult.translatedCount.success}** 个分类生成俄语 (RU) 和中文 (ZH) 翻译。\n` +
-            `- 数据已正式写入数据库。\n\n` +
-            `商城前台菜单与分类筛选现已支持完整多语言显示。`,
-        }
-
-        return NextResponse.json({
-          success: true,
-          role: 'assistant',
-          content: successMessages[locale] || successMessages.en,
-          actionExecuted: {
-            type: 'bulkTranslate',
-            status: 'SUCCESS',
-            summary: 'Translate all missing categories to Russian and Chinese',
-            details: executionResult,
-          },
-          pendingAction: null,
-        })
-      } catch (err: any) {
-        console.error('[Direct Category Translation Error]:', err)
-      }
-    }
-
-    // =========================================================================
     // INTENT & CONTEXT ENRICHMENT: Run read tools to supply real catalog data
     // =========================================================================
+    const lowerUserText = userText.toLowerCase()
     let contextData = ''
 
     // 1. Category Context
@@ -506,26 +448,12 @@ export async function POST(request: NextRequest) {
       lowerUserText.includes('missed') ||
       lowerUserText.includes('пропущ')
     ) {
-      const [untranslatedProds, untranslatedCats, untranslatedSlides] = await Promise.all([
+      const [untranslatedProds, untranslatedCats, untranslatedAttrs] = await Promise.all([
         getUntranslatedContent('products', 10),
         getUntranslatedContent('categories', 150),
-        getUntranslatedContent('sliders', 10),
+        getUntranslatedContent('attributes', 10),
       ])
-      contextData += `\n[UNTRANSLATED CONTENT DATA]:\nUntranslated Products Count: ${untranslatedProds.totalUntranslated}\nUntranslated Categories Count: ${untranslatedCats.totalUntranslated}\nSample Untranslated Categories (IDs & Names):\n${JSON.stringify(untranslatedCats.sampleItems.map(c => ({ id: c.id, name: c.name })), null, 2)}\nUntranslated Hero Sliders Count: ${untranslatedSlides.totalUntranslated}\n`
-    }
-
-    // 4. Hero Slider / Banner Context
-    if (
-      lowerUserText.includes('slider') ||
-      lowerUserText.includes('slide') ||
-      lowerUserText.includes('banner') ||
-      lowerUserText.includes('слайдер') ||
-      lowerUserText.includes('баннер') ||
-      lowerUserText.includes('轮播') ||
-      lowerUserText.includes('幻灯片')
-    ) {
-      const sliders = await getExistingSliders()
-      contextData += `\n[HERO SLIDERS DATA]:\nTotal Slides: ${sliders.total}\nExisting Slides:\n${JSON.stringify(sliders.slides, null, 2)}\n`
+      contextData += `\n[UNTRANSLATED CONTENT DATA]:\nUntranslated Products Count: ${untranslatedProds.totalUntranslated}\nUntranslated Categories Count: ${untranslatedCats.totalUntranslated}\nSample Untranslated Categories (IDs & Names):\n${JSON.stringify(untranslatedCats.sampleItems.map(c => ({ id: c.id, name: c.name })), null, 2)}\nUntranslated Attributes Count: ${untranslatedAttrs.totalUntranslated}\n`
     }
 
     // 5. Product Context

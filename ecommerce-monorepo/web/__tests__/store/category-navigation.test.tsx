@@ -21,8 +21,12 @@ vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }))
 
-// Mock next-intl
+// Mock next-intl & use-intl
 vi.mock('next-intl', () => ({
+  useLocale: () => 'en',
+  useTranslations: () => (key: string, params?: any) => key,
+}))
+vi.mock('use-intl', () => ({
   useLocale: () => 'en',
   useTranslations: () => (key: string, params?: any) => key,
 }))

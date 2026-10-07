@@ -67,6 +67,35 @@ export async function GET(req: NextRequest) {
       } catch (err) {
         console.error('Failed to load electronics section localized texts:', err);
       }
+
+      // If translation wasn't explicitly saved in DB, apply standard locale fallbacks
+      if (locale === 'ru') {
+        if (!localizedTitle || localizedTitle === 'Popular in Electronics & Appliances') {
+          localizedTitle = 'Популярное в электронике и технике';
+        }
+        if (!localizedSubtitle || localizedSubtitle.includes('Official manufacturer equipment')) {
+          localizedSubtitle = 'Официальная техника от производителей с заводской гарантией';
+        }
+        if (!localizedBadge || localizedBadge === 'ELECTRONICS & APPLIANCES') {
+          localizedBadge = 'ЭЛЕКТРОНИКА И ТЕХНИКА';
+        }
+        if (!localizedViewAll || localizedViewAll === 'View all in category') {
+          localizedViewAll = 'Смотреть всю категорию';
+        }
+      } else if (locale === 'zh') {
+        if (!localizedTitle || localizedTitle === 'Popular in Electronics & Appliances') {
+          localizedTitle = '热销家电与数码装备';
+        }
+        if (!localizedSubtitle || localizedSubtitle.includes('Official manufacturer equipment')) {
+          localizedSubtitle = '官方正品行货，全国联保与原厂售后质保';
+        }
+        if (!localizedBadge || localizedBadge === 'ELECTRONICS & APPLIANCES') {
+          localizedBadge = '智能家电与数码';
+        }
+        if (!localizedViewAll || localizedViewAll === 'View all in category') {
+          localizedViewAll = '查看本类全部商品';
+        }
+      }
     }
 
     const maxProducts = limitParam
