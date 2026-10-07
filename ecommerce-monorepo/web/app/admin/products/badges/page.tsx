@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
-import { DEFAULT_PRODUCT_BADGES, ProductBadgeKey } from '@/app/api/admin/settings/product-badges/route';
+import { DEFAULT_PRODUCT_BADGES, ProductBadgeKey } from '@/lib/constants/productBadges';
 
 type TranslationLocale = 'en' | 'ru' | 'zh';
 
@@ -39,7 +39,8 @@ const LOCALES: Array<{ code: TranslationLocale; label: string; flag: string }> =
 
 export default function ProductBadgesSettingsPage() {
   const { dict } = useAdminLocale();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [activeLocaleTab, setActiveLocaleTab] = useState<TranslationLocale>('en');
@@ -65,7 +66,7 @@ export default function ProductBadgesSettingsPage() {
 
   const fetchBadges = async () => {
     try {
-      setLoading(true);
+      setFetching(true);
       const res = await fetch('/api/admin/settings/product-badges');
       if (res.ok) {
         const data = await res.json();
@@ -79,9 +80,8 @@ export default function ProductBadgesSettingsPage() {
       }
     } catch (err) {
       console.error('Failed to load product badges:', err);
-      showToast('error', 'Failed to load settings from server');
     } finally {
-      setLoading(false);
+      setFetching(false);
     }
   };
 
@@ -165,15 +165,6 @@ export default function ProductBadgesSettingsPage() {
   };
 
   const currentValues = badgesState[activeLocaleTab] || badgesState.en;
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
-        <div className="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-slate-500 font-medium">Loading Delivery & Badges configuration...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20">
