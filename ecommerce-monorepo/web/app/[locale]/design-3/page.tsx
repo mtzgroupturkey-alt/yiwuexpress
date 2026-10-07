@@ -10,7 +10,6 @@ import { PopularElectronics } from './components/PopularElectronics';
 import { FreshSupermarketSection } from './components/FreshSupermarketSection';
 import { BestSellersSection } from './components/BestSellersSection';
 import { WeeklyBargainsSection } from './components/WeeklyBargainsSection';
-import { BrandZones } from './components/BrandZones';
 import { MemberClubBanner } from './components/MemberClubBanner';
 import { NewsletterBar } from './components/NewsletterBar';
 import { Footer } from './components/Footer';
@@ -232,11 +231,6 @@ export default function App() {
   const handleSelectCategory = (categoryId: string) => {
     setSelectedCategory((prev) => (prev === categoryId ? null : categoryId));
     handleNavigateView('shop', { category: categoryId });
-  };
-
-  const handleSelectBrand = (brandName: string) => {
-    setSearchQuery(brandName);
-    handleNavigateView('shop', { search: brandName });
   };
 
   return (
@@ -508,14 +502,6 @@ export default function App() {
                   handleNavigateView('product', { product });
                 }}
                 onViewAllBestSellers={() => handleNavigateView('shop')}
-              />
-            </MotionReveal>
-
-            {/* 9. Official Brand Zones */}
-            <MotionReveal direction="up">
-              <BrandZones
-                onSelectBrand={handleSelectBrand}
-                onViewAllBrands={() => handleNavigateView('shop')}
               />
             </MotionReveal>
 

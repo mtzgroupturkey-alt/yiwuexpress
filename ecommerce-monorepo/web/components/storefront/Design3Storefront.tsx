@@ -10,7 +10,6 @@ import { PopularElectronics } from '@/app/[locale]/design-3/components/PopularEl
 import { FreshSupermarketSection } from '@/app/[locale]/design-3/components/FreshSupermarketSection';
 import { BestSellersSection } from '@/app/[locale]/design-3/components/BestSellersSection';
 import { WeeklyBargainsSection } from '@/app/[locale]/design-3/components/WeeklyBargainsSection';
-import { BrandZones } from '@/app/[locale]/design-3/components/BrandZones';
 import { MemberClubBanner } from '@/app/[locale]/design-3/components/MemberClubBanner';
 import { NewsletterBar } from '@/app/[locale]/design-3/components/NewsletterBar';
 import { Footer } from '@/app/[locale]/design-3/components/Footer';
@@ -228,11 +227,6 @@ export function Design3Storefront() {
   const handleSelectCategory = (categoryId: string) => {
     setSelectedCategory((prev) => (prev === categoryId ? null : categoryId));
     handleNavigateView('shop', { category: categoryId });
-  };
-
-  const handleSelectBrand = (brandName: string) => {
-    setSearchQuery(brandName);
-    handleNavigateView('shop', { search: brandName });
   };
 
   return (
@@ -502,12 +496,6 @@ export function Design3Storefront() {
                 handleNavigateView('product', { product });
               }}
               onViewAllBestSellers={() => handleNavigateView('shop')}
-            />
-
-            {/* 9. Official Brand Zones */}
-            <BrandZones
-              onSelectBrand={handleSelectBrand}
-              onViewAllBrands={() => handleNavigateView('shop')}
             />
 
             {/* 10. Weekly Hypermarket Clearance & Super Deals */}
