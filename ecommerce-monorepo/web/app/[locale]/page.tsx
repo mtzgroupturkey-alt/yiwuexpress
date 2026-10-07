@@ -841,7 +841,9 @@ export default function Home() {
                                 className="object-contain mix-blend-multiply p-2"
                               />
                             </div>
-                            <div className="text-[10px] text-slate-500 uppercase font-bold">{product.brand}</div>
+                            {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+                              <div className="text-[10px] text-slate-500 uppercase font-bold">{product.brand}</div>
+                            )}
                             <h4 
                               onClick={() => {
                                 setSelectedProductForPDP(product);

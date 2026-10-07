@@ -328,10 +328,14 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
             {/* Brand & Title Block */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-[#00407a]">
-                  {currentProduct.brand}
-                </span>
-                <span className="text-slate-300">•</span>
+                {currentProduct.brand && currentProduct.brand.toLowerCase() !== 'official sourcing' && (
+                  <>
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-[#00407a]">
+                      {currentProduct.brand}
+                    </span>
+                    <span className="text-slate-300">•</span>
+                  </>
+                )}
                 <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   {tPdp('inStockHub', { count: currentProduct.stockLeft || 28 })}

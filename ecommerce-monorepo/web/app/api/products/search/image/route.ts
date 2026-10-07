@@ -453,7 +453,7 @@ export async function POST(request: NextRequest) {
         categorySlug: p.category?.slug,
         department: p.category?.parent?.name,
         departmentSlug: p.category?.parent?.slug,
-        brand: 'Official Sourcing',
+        brand: (p as any).brand || '',
         material: p.material,
         similarity,
         score,

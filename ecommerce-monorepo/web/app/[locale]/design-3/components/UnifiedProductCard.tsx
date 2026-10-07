@@ -246,9 +246,11 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
               {product.category}
             </span>
           )}
-          <strong className="text-slate-800 font-bold truncate">
-            {tOriginAndBrand(product.brand)}
-          </strong>
+          {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+            <strong className="text-slate-800 font-bold truncate">
+              {tOriginAndBrand(product.brand)}
+            </strong>
+          )}
           {product.originOrType && !product.category && (
             <span> • {tOriginAndBrand(product.originOrType)}</span>
           )}

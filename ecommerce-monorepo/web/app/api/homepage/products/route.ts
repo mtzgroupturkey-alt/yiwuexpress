@@ -120,7 +120,7 @@ const getCachedHomepageProducts = unstable_cache(
         stock: product.stock,
         rating: 4.9,
         reviewsCount: 15,
-        brand: 'Official Sourcing',
+        brand: product.brand || '',
         countryOfOrigin: product.countryOfOrigin,
         thumbnail: primaryImage,
         images,

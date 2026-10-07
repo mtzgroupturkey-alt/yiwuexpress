@@ -70,7 +70,9 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[10px] text-slate-400 font-semibold uppercase">{product.brand}</div>
+                  {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">{product.brand}</div>
+                  )}
                   <h4 className="text-xs font-bold text-slate-900 truncate" title={product.name}>
                     {product.name}
                   </h4>

@@ -41,7 +41,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     categorySlug,
     departmentId,
     departmentSlug,
-    brand: dbItem.brand || 'Official Sourcing',
+    brand: dbItem.brand || '',
     originOrType: dbItem.countryOfOrigin || 'China Factory',
     rating: dbItem.rating || 4.9,
     reviewsCount: dbItem.reviewsCount || Math.floor(Math.random() * 40) + 5,

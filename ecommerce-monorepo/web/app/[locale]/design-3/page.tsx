@@ -375,7 +375,9 @@ export default function App() {
                                 className="w-full h-full object-contain mix-blend-multiply"
                               />
                             </div>
-                            <div className="text-[10px] text-slate-500 uppercase font-bold">{product.brand}</div>
+                            {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+                              <div className="text-[10px] text-slate-500 uppercase font-bold">{product.brand}</div>
+                            )}
                             <h4 
                               onClick={() => {
                                 setSelectedProductForPDP(product);

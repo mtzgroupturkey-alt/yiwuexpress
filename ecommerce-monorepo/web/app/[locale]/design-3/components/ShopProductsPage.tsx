@@ -405,7 +405,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     const brandCounts: Record<string, number> = {};
     products.forEach((p) => {
       const b = (p.brand || '').trim();
-      if (b) {
+      if (b && b.toLowerCase() !== 'official sourcing') {
         brandCounts[b] = (brandCounts[b] || 0) + 1;
       }
     });
@@ -1417,9 +1417,11 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                       {/* Content details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                            {tOriginAndBrand(product.brand)}
-                          </span>
+                          {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                              {tOriginAndBrand(product.brand)}
+                            </span>
+                          )}
                           {product.originOrType && (
                             <span className="text-[11px] text-slate-400 font-medium">
                               {tOriginAndBrand(product.originOrType)}

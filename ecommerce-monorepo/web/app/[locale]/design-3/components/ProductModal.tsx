@@ -179,10 +179,17 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             <div>
               {/* Brand & Category */}
               <div className="text-xs text-slate-500 font-medium mb-1">
-                <strong className="text-slate-800 font-bold">
-                  {tOriginAndBrand(product.brand)}
-                </strong>
-                {product.originOrType && <span> • {tOriginAndBrand(product.originOrType)}</span>}
+                {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+                  <strong className="text-slate-800 font-bold mr-1">
+                    {tOriginAndBrand(product.brand)}
+                  </strong>
+                )}
+                {product.originOrType && (
+                  <span>
+                    {product.brand && product.brand.toLowerCase() !== 'official sourcing' ? '• ' : ''}
+                    {tOriginAndBrand(product.originOrType)}
+                  </span>
+                )}
               </div>
 
               {/* Title */}
