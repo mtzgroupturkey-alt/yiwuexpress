@@ -7,7 +7,6 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { MOTION_TOKENS } from '@/lib/motion';
 import { 
   Zap, 
-  ShieldCheck, 
   ArrowRight, 
   Clock, 
   Store, 
@@ -309,8 +308,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           ))}
 
           {/* Top Badges */}
-          <div className="flex flex-wrap items-center gap-2.5 z-10">
-            {currentSlide.tag && (
+          {currentSlide.tag && (
+            <div className="flex flex-wrap items-center gap-2.5 z-10">
               <span
                 className="inline-flex items-center gap-1.5 text-slate-950 px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase shadow-md"
                 style={{ backgroundColor: currentSlide.badgeColor || '#F5A602' }}
@@ -318,12 +317,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 <Zap className="w-3.5 h-3.5 fill-slate-950" />
                 {tBadge(currentSlide.tag)}
               </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 bg-black/40 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              {tHeroBanner('officialDistributor')}
-            </span>
-          </div>
+            </div>
+          )}
 
           {/* Center Copy with Staggered Kinetic Motion */}
           <AnimatePresence mode="wait">
