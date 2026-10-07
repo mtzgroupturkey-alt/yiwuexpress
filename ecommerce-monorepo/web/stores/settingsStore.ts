@@ -68,6 +68,29 @@ export interface CompanySettings {
   memberClubActivateLink?: string | null
   memberClubHowPointsWork?: string | null
   memberClubHowPointsLink?: string | null
+  // Product Details Reassurance Badges & Delivery Timings
+  pdpWarrantyTitle?: string | null
+  pdpWarrantySubtitle?: string | null
+  pdpDeliveryTitle?: string | null
+  pdpDeliverySubtitle?: string | null
+  pdpReturnsTitle?: string | null
+  pdpReturnsSubtitle?: string | null
+  pdpCutoffHour?: string | null
+  pdpDeliveryMinsk?: string | null
+  pdpDeliveryBelarusRegion?: string | null
+  pdpDeliveryChinaLocal?: string | null
+  pdpDeliveryChinaNationwide?: string | null
+  pdpAirFreightDays?: string | null
+  pdpRailFreightDays?: string | null
+  pdpSeaFreightDays?: string | null
+  pdpFactoryTitle?: string | null
+  pdpFactoryDesc?: string | null
+  pdpQcTitle?: string | null
+  pdpQcDesc?: string | null
+  pdpLogisticsTitle?: string | null
+  pdpLogisticsDesc?: string | null
+  pdpEscrowTitle?: string | null
+  pdpEscrowDesc?: string | null
 }
 
 export interface SettingsState {
@@ -130,6 +153,29 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   memberClubActivateLink: '',
   memberClubHowPointsWork: 'How points work',
   memberClubHowPointsLink: '',
+  // PDP Reassurance Badges & Delivery Timings
+  pdpWarrantyTitle: '2-Year Warranty',
+  pdpWarrantySubtitle: 'Full factory coverage',
+  pdpDeliveryTitle: 'Express Delivery',
+  pdpDeliverySubtitle: 'Free over $50+',
+  pdpReturnsTitle: '14-Day Returns',
+  pdpReturnsSubtitle: 'Hassle-free guarantee',
+  pdpCutoffHour: '18',
+  pdpDeliveryMinsk: 'Tomorrow (1 business day)',
+  pdpDeliveryBelarusRegion: '1 – 3 business days',
+  pdpDeliveryChinaLocal: '24 – 48 hours',
+  pdpDeliveryChinaNationwide: '2 – 3 days',
+  pdpAirFreightDays: '5 – 8 business days',
+  pdpRailFreightDays: '14 – 20 business days',
+  pdpSeaFreightDays: '20 – 35 days',
+  pdpFactoryTitle: 'Direct Verified Factory',
+  pdpFactoryDesc: 'Zero middleman markup directly from manufacturer',
+  pdpQcTitle: 'Rigorous Quality Inspection',
+  pdpQcDesc: 'Full physical check before shipment',
+  pdpLogisticsTitle: 'Door-to-Door Logistics',
+  pdpLogisticsDesc: 'Air, rail & sea freight with customs clearance',
+  pdpEscrowTitle: 'Trade Assurance Escrow',
+  pdpEscrowDesc: 'Funds protected until inspection passes',
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({

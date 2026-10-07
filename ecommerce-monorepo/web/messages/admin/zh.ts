@@ -10,6 +10,7 @@ export const adminZh: AdminDictionary = {
     allCategories: '全部分类',
     menuManager: '菜单导航管理',
     attributes: '规格属性',
+    productBadges: '配送时效与服务保障',
     suppliers: '供应商管理',
     purchaseOrders: '采购订单',
     allPurchaseOrders: '全部采购单',

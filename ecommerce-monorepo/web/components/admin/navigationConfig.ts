@@ -47,6 +47,7 @@ export const navigationConfig: NavGroup[] = [
       { label: 'All Products', translationKey: 'allProducts', href: '/admin/products', icon: Package },
       { label: 'Categories', translationKey: 'categories', href: '/admin/categories', icon: FolderTree },
       { label: 'Attributes', translationKey: 'attributes', href: '/admin/attributes', icon: Tag },
+      { label: 'Delivery & Badges', translationKey: 'productBadges', href: '/admin/products/badges', icon: Shield },
       { label: 'Reviews', translationKey: 'reviews', href: '/admin/reviews', icon: Star },
     ]
   },

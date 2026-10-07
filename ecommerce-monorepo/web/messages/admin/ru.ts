@@ -10,6 +10,7 @@ export const adminRu: AdminDictionary = {
     allCategories: 'Все категории',
     menuManager: 'Управление меню',
     attributes: 'Атрибуты',
+    productBadges: 'Доставка и гарантии',
     suppliers: 'Поставщики',
     purchaseOrders: 'Заказы на закупку',
     allPurchaseOrders: 'Все закупки',

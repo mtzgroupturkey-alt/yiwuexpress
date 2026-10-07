@@ -145,6 +145,30 @@ export async function GET(request: NextRequest) {
     const memberClubHowPointsWork = localizeSystemSetting(effectiveSettings.translations, 'memberClubHowPointsWork', '', locale)
     const memberClubHowPointsLink = localizeSystemSetting(effectiveSettings.translations, 'memberClubHowPointsLink', '', locale)
 
+    // Localize Product Badges & Delivery Timings
+    const pdpWarrantyTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpWarrantyTitle', locale === 'ru' ? '2 года гарантии' : locale === 'zh' ? '2年原厂质保' : '2-Year Warranty', locale)
+    const pdpWarrantySubtitle = localizeSystemSetting(effectiveSettings.translations, 'pdpWarrantySubtitle', locale === 'ru' ? 'Официальная заводская гарантия' : locale === 'zh' ? '官方正品全国联保' : 'Full factory coverage', locale)
+    const pdpDeliveryTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryTitle', locale === 'ru' ? 'Экспресс-доставка' : locale === 'zh' ? '极速直达物流' : 'Express Delivery', locale)
+    const pdpDeliverySubtitle = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliverySubtitle', locale === 'ru' ? 'От $50 бесплатно' : locale === 'zh' ? '满额免费包邮' : 'Free over $50+', locale)
+    const pdpReturnsTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpReturnsTitle', locale === 'ru' ? '14 дней возврат' : locale === 'zh' ? '14天无忧退换' : '14-Day Returns', locale)
+    const pdpReturnsSubtitle = localizeSystemSetting(effectiveSettings.translations, 'pdpReturnsSubtitle', locale === 'ru' ? 'Легкий и быстрый возврат' : locale === 'zh' ? '支持极速退款换货' : 'Hassle-free guarantee', locale)
+    const pdpCutoffHour = localizeSystemSetting(effectiveSettings.translations, 'pdpCutoffHour', '18', locale)
+    const pdpDeliveryMinsk = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryMinsk', locale === 'ru' ? 'Завтра (1 рабочий день)' : locale === 'zh' ? '次日达（明斯克专线1个工作日）' : 'Tomorrow (1 business day)', locale)
+    const pdpDeliveryBelarusRegion = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryBelarusRegion', locale === 'ru' ? '1 – 3 рабочих дня' : locale === 'zh' ? '白俄罗斯各州（1 – 3个工作日）' : '1 – 3 business days', locale)
+    const pdpDeliveryChinaLocal = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryChinaLocal', locale === 'ru' ? '24 – 48 часов' : locale === 'zh' ? '中国核心仓现货（24 – 48小时）' : '24 – 48 hours', locale)
+    const pdpDeliveryChinaNationwide = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryChinaNationwide', locale === 'ru' ? '2 – 3 дня' : locale === 'zh' ? '中国全国陆运（2 – 3天）' : '2 – 3 days', locale)
+    const pdpAirFreightDays = localizeSystemSetting(effectiveSettings.translations, 'pdpAirFreightDays', locale === 'ru' ? '5 – 8 рабочих дней' : locale === 'zh' ? '5 – 8个工作日（空运专线含税到门）' : '5 – 8 business days', locale)
+    const pdpRailFreightDays = localizeSystemSetting(effectiveSettings.translations, 'pdpRailFreightDays', locale === 'ru' ? '14 – 20 рабочих дней' : locale === 'zh' ? '14 – 20个工作日（中欧班列铁路集运）' : '14 – 20 business days', locale)
+    const pdpSeaFreightDays = localizeSystemSetting(effectiveSettings.translations, 'pdpSeaFreightDays', locale === 'ru' ? '20 – 35 дней' : locale === 'zh' ? '20 – 35天（国际海运整柜/拼箱）' : '20 – 35 days', locale)
+    const pdpFactoryTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpFactoryTitle', locale === 'ru' ? 'Прямой производитель' : locale === 'zh' ? '源头工厂直供' : 'Direct Verified Factory', locale)
+    const pdpFactoryDesc = localizeSystemSetting(effectiveSettings.translations, 'pdpFactoryDesc', locale === 'ru' ? 'Без наценок посредников напрямую с завода' : locale === 'zh' ? '无中间商一手出厂底价' : 'Zero middleman markup directly from manufacturer', locale)
+    const pdpQcTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpQcTitle', locale === 'ru' ? 'Контроль качества (QC)' : locale === 'zh' ? '专业验厂与品控' : 'Rigorous Quality Inspection', locale)
+    const pdpQcDesc = localizeSystemSetting(effectiveSettings.translations, 'pdpQcDesc', locale === 'ru' ? 'Проверка товара перед отправкой' : locale === 'zh' ? '出货前实物检测严格把关' : 'Full physical check before shipment', locale)
+    const pdpLogisticsTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpLogisticsTitle', locale === 'ru' ? 'Таможенная очистка DDP' : locale === 'zh' ? '双清包税物流专线' : 'Door-to-Door Logistics', locale)
+    const pdpLogisticsDesc = localizeSystemSetting(effectiveSettings.translations, 'pdpLogisticsDesc', locale === 'ru' ? 'Авиа, ж/д и морская доставка до двери' : locale === 'zh' ? '海运空运铁路全链路门到门' : 'Air, rail & sea freight with customs clearance', locale)
+    const pdpEscrowTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpEscrowTitle', locale === 'ru' ? 'Безопасная сделка' : locale === 'zh' ? '贸易资金担保' : 'Trade Assurance Escrow', locale)
+    const pdpEscrowDesc = localizeSystemSetting(effectiveSettings.translations, 'pdpEscrowDesc', locale === 'ru' ? 'Оплата защищена до получения и проверки' : locale === 'zh' ? '验货通过后支付尾款安全有保障' : 'Funds protected until inspection passes', locale)
+
     const { translations, ...publicSettings } = effectiveSettings
 
 
@@ -221,6 +245,29 @@ export async function GET(request: NextRequest) {
         memberClubActivateLink: memberClubActivateLink || null,
         memberClubHowPointsWork: memberClubHowPointsWork || null,
         memberClubHowPointsLink: memberClubHowPointsLink || null,
+        // Product Badges & Delivery Timings
+        pdpWarrantyTitle,
+        pdpWarrantySubtitle,
+        pdpDeliveryTitle,
+        pdpDeliverySubtitle,
+        pdpReturnsTitle,
+        pdpReturnsSubtitle,
+        pdpCutoffHour,
+        pdpDeliveryMinsk,
+        pdpDeliveryBelarusRegion,
+        pdpDeliveryChinaLocal,
+        pdpDeliveryChinaNationwide,
+        pdpAirFreightDays,
+        pdpRailFreightDays,
+        pdpSeaFreightDays,
+        pdpFactoryTitle,
+        pdpFactoryDesc,
+        pdpQcTitle,
+        pdpQcDesc,
+        pdpLogisticsTitle,
+        pdpLogisticsDesc,
+        pdpEscrowTitle,
+        pdpEscrowDesc,
       }
     })
   } catch (error) {

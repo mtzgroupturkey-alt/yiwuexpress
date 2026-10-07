@@ -3,6 +3,7 @@
 import React from 'react'
 import { ShieldCheck, Truck, Factory, Award } from 'lucide-react'
 import { useLocale } from 'next-intl'
+import { useSettings } from '@/components/SettingsProvider'
 
 interface MobileTrustBadgesProps {
   className?: string
@@ -10,27 +11,28 @@ interface MobileTrustBadgesProps {
 
 export function MobileTrustBadges({ className = '' }: MobileTrustBadgesProps) {
   const locale = useLocale()
+  const { settings } = useSettings()
 
   const badges = [
     {
       icon: <Factory className="w-4 h-4 text-primary-600 dark:text-primary-400" />,
-      title: locale === 'zh' ? '源头工厂直供' : locale === 'ru' ? 'Прямой производитель' : 'Direct Verified Factory',
-      desc: locale === 'zh' ? '无中间商一手出厂底价' : locale === 'ru' ? 'Без наценок посредников' : 'Zero middleman markup',
+      title: settings?.pdpFactoryTitle || (locale === 'zh' ? '源头工厂直供' : locale === 'ru' ? 'Прямой производитель' : 'Direct Verified Factory'),
+      desc: settings?.pdpFactoryDesc || (locale === 'zh' ? '无中间商一手出厂底价' : locale === 'ru' ? 'Без наценок посредников' : 'Zero middleman markup'),
     },
     {
       icon: <Award className="w-4 h-4 text-amber-500" />,
-      title: locale === 'zh' ? '专业验厂与品控' : locale === 'ru' ? 'Контроль качества' : 'Rigorous Quality Inspection',
-      desc: locale === 'zh' ? '出货前实物检测把关' : locale === 'ru' ? 'Проверка перед отправкой' : 'Pre-shipment inspection',
+      title: settings?.pdpQcTitle || (locale === 'zh' ? '专业验厂与品控' : locale === 'ru' ? 'Контроль качества' : 'Rigorous Quality Inspection'),
+      desc: settings?.pdpQcDesc || (locale === 'zh' ? '出货前实物检测把关' : locale === 'ru' ? 'Проверка перед отправкой' : 'Pre-shipment inspection'),
     },
     {
       icon: <Truck className="w-4 h-4 text-blue-500" />,
-      title: locale === 'zh' ? '双清包税物流专线' : locale === 'ru' ? 'Таможенная очистка' : 'Door-to-Door Logistics',
-      desc: locale === 'zh' ? '海运空运拼箱极速清关' : locale === 'ru' ? 'Авиа и морская доставка' : 'Air & ocean freight cleared',
+      title: settings?.pdpLogisticsTitle || (locale === 'zh' ? '双清包税物流专线' : locale === 'ru' ? 'Таможенная очистка' : 'Door-to-Door Logistics'),
+      desc: settings?.pdpLogisticsDesc || (locale === 'zh' ? '海运空运拼箱极速清关' : locale === 'ru' ? 'Авиа и морская доставка' : 'Air & ocean freight cleared'),
     },
     {
       icon: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
-      title: locale === 'zh' ? '贸易资金担保' : locale === 'ru' ? 'Безопасная сделка' : 'Trade Assurance Protected',
-      desc: locale === 'zh' ? '验货通过后支付尾款' : locale === 'ru' ? 'Гарантия сохранности средств' : 'Escrow payment security',
+      title: settings?.pdpEscrowTitle || (locale === 'zh' ? '贸易资金担保' : locale === 'ru' ? 'Безопасная сделка' : 'Trade Assurance Protected'),
+      desc: settings?.pdpEscrowDesc || (locale === 'zh' ? '验货通过后支付尾款' : locale === 'ru' ? 'Гарантия сохранности средств' : 'Escrow payment security'),
     },
   ]
 

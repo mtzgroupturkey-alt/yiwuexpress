@@ -8,6 +8,7 @@ export const adminEn = {
     allCategories: 'All Categories',
     menuManager: 'Menu Manager',
     attributes: 'Attributes',
+    productBadges: 'Delivery & Badges',
     suppliers: 'Suppliers',
     purchaseOrders: 'Purchase Orders',
     allPurchaseOrders: 'All Purchase Orders',

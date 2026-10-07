@@ -8,7 +8,7 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart } from 'lucide-react'
 import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { NewsletterBar } from '@/app/[locale]/design-3/components/NewsletterBar'
@@ -19,6 +19,7 @@ import { motion } from 'framer-motion'
 import { ReviewSection } from '@/components/products/ReviewSection'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { WishlistButton } from '@/components/products/WishlistButton'
+import { IkeaSpecificationsAccordion } from '@/components/products/IkeaSpecificationsAccordion'
 import { useCart } from '@/components/CartContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
@@ -34,6 +35,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { StickyBuyBar } from '@/components/mobile/StickyBuyBar'
 import { MobileProductDetailView } from '@/components/mobile/product/MobileProductDetailView'
 import { useMobile } from '@/components/MobileProvider'
+import { useDeliveryLocation } from '@/hooks/useDeliveryLocation'
 
 // A serializable subset of the product API payload (mirrors the page-level
 // projection). Extra fields are tolerated via index signature.
@@ -567,11 +569,42 @@ export default function ProductDetailView({
     return () => observer.disconnect()
   }, [])
 
+  // Delivery destination from IP/User selection
+  const { deliveryAddress } = useDeliveryLocation()
+
+  // Calculate dynamic delivery estimate based on user address and settings
+  const deliveryTimingEstimate = useMemo(() => {
+    const addr = (deliveryAddress || '').toLowerCase()
+    const isBelarus = addr.includes('belarus') || addr.includes('беларусь') || addr.includes('рб') || addr.includes('minsk') || addr.includes('минск') || addr.includes('brest') || addr.includes('брест') || addr.includes('grodno') || addr.includes('гродно') || addr.includes('gomel') || addr.includes('гомель') || addr.includes('vitebsk') || addr.includes('витебск') || addr.includes('mogilev') || addr.includes('могилев')
+    const isMinsk = addr.includes('minsk') || addr.includes('минск')
+    const isChina = addr.includes('china') || addr.includes('китай') || addr.includes('中国') || addr.includes('yiwu') || addr.includes('иу') || addr.includes('义乌') || addr.includes('zhejiang') || addr.includes('浙江') || addr.includes('shanghai') || addr.includes('上海')
+
+    if (isBelarus) {
+      if (isMinsk) {
+        return settings?.pdpDeliveryMinsk || (locale === 'ru' ? 'Завтра (1 рабочий день)' : locale === 'zh' ? '次日达（明斯克专线1个工作日）' : 'Tomorrow (1 business day)')
+      }
+      return settings?.pdpDeliveryBelarusRegion || (locale === 'ru' ? '1 – 3 рабочих дня' : locale === 'zh' ? '白俄罗斯各州（1 – 3个工作日）' : '1 – 3 business days')
+    }
+
+    if (isChina) {
+      const isHub = addr.includes('yiwu') || addr.includes('иу') || addr.includes('义乌') || addr.includes('zhejiang') || addr.includes('浙江')
+      if (isHub) {
+        return settings?.pdpDeliveryChinaLocal || (locale === 'ru' ? '24 – 48 часов' : locale === 'zh' ? '中国核心仓现货（24 – 48小时）' : '24 – 48 hours')
+      }
+      return settings?.pdpDeliveryChinaNationwide || (locale === 'ru' ? '2 – 3 дня' : locale === 'zh' ? '中国全国陆运（2 – 3天）' : '2 – 3 days')
+    }
+
+    // Default cross-border delivery estimate or fallback
+    return settings?.pdpDeliveryMinsk || (locale === 'ru' ? 'Завтра' : locale === 'zh' ? '次日达' : 'Tomorrow')
+  }, [deliveryAddress, settings?.pdpDeliveryMinsk, settings?.pdpDeliveryBelarusRegion, settings?.pdpDeliveryChinaLocal, settings?.pdpDeliveryChinaNationwide, locale])
+
   useEffect(() => {
+    const cutoffHour = parseInt(settings?.pdpCutoffHour || '18', 10) || 18
+
     const calculateTimeLeft = () => {
       const now = new Date()
       const target = new Date()
-      target.setHours(18, 0, 0, 0)
+      target.setHours(cutoffHour, 0, 0, 0)
       if (now > target) {
         target.setDate(target.getDate() + 1)
       }
@@ -586,9 +619,19 @@ export default function ProductDetailView({
       setTimeLeft(calculateTimeLeft())
     }, 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [settings?.pdpCutoffHour])
 
   const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'logistics' | 'faq' | 'reviews'>('overview')
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
+    tips: true,
+    dimensions: true,
+    care: true,
+    documents: true,
+  })
+
+  const toggleAccordion = (section: string) => {
+    setOpenAccordions((prev) => ({ ...prev, [section]: !prev[section] }))
+  }
 
   const handleRelatedAddToCart = async (target: any) => {
     if (isWholesale && !isRetail) {
@@ -1023,10 +1066,10 @@ export default function ProductDetailView({
         </div>
         <div>
           <span className="font-bold text-xs text-slate-900 block leading-tight">
-            {locale === 'ru' ? '2 года гарантии' : locale === 'zh' ? '2年原厂质保' : '2-Year Warranty'}
+            {settings?.pdpWarrantyTitle || (locale === 'ru' ? '2 года гарантии' : locale === 'zh' ? '2年原厂质保' : '2-Year Warranty')}
           </span>
           <span className="text-[11px] text-slate-500">
-            {locale === 'ru' ? 'Официальная' : locale === 'zh' ? '官方正品联保' : 'Full factory coverage'}
+            {settings?.pdpWarrantySubtitle || (locale === 'ru' ? 'Официальная' : locale === 'zh' ? '官方正品联保' : 'Full factory coverage')}
           </span>
         </div>
       </div>
@@ -1037,10 +1080,10 @@ export default function ProductDetailView({
         </div>
         <div>
           <span className="font-bold text-xs text-slate-900 block leading-tight">
-            {locale === 'ru' ? 'Экспресс-доставка' : locale === 'zh' ? '极速直达物流' : 'Express Delivery'}
+            {settings?.pdpDeliveryTitle || (locale === 'ru' ? 'Экспресс-доставка' : locale === 'zh' ? '极速直达物流' : 'Express Delivery')}
           </span>
           <span className="text-[11px] text-slate-500">
-            {locale === 'ru' ? 'От $50 бесплатно' : locale === 'zh' ? '满额免费包邮' : 'Free over $50+'}
+            {settings?.pdpDeliverySubtitle || (locale === 'ru' ? 'От $50 бесплатно' : locale === 'zh' ? '满额免费包邮' : 'Free over $50+')}
           </span>
         </div>
       </div>
@@ -1051,10 +1094,10 @@ export default function ProductDetailView({
         </div>
         <div>
           <span className="font-bold text-xs text-slate-900 block leading-tight">
-            {locale === 'ru' ? '14 дней возврат' : locale === 'zh' ? '14天无忧退换' : '14-Day Returns'}
+            {settings?.pdpReturnsTitle || (locale === 'ru' ? '14 дней возврат' : locale === 'zh' ? '14天无忧退换' : '14-Day Returns')}
           </span>
           <span className="text-[11px] text-slate-500">
-            {locale === 'ru' ? 'Легкий возврат' : locale === 'zh' ? '支持退款换货' : 'Hassle-free guarantee'}
+            {settings?.pdpReturnsSubtitle || (locale === 'ru' ? 'Легкий возврат' : locale === 'zh' ? '支持退款换货' : 'Hassle-free guarantee')}
           </span>
         </div>
       </div>
@@ -1933,8 +1976,8 @@ export default function ProductDetailView({
                           <span className="font-bold text-slate-900">
                             {locale === 'ru' ? 'Курьерская доставка' : locale === 'zh' ? '特快专递送达' : 'Courier Delivery'}
                           </span>
-                          <span className="font-bold text-emerald-600">
-                            {locale === 'ru' ? 'Завтра' : locale === 'zh' ? '次日达' : 'Tomorrow'}
+                          <span className="font-bold text-emerald-600 text-right ml-2">
+                            {deliveryTimingEstimate}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1 font-medium">
@@ -2052,6 +2095,15 @@ export default function ProductDetailView({
                     {localized.description || t('noDescription')}
                   </div>
                 </div>
+
+                {/* Structured IKEA Specifications & Information Accordions */}
+                <IkeaSpecificationsAccordion
+                  product={product}
+                  locale={locale}
+                  currentSku={currentSku}
+                  openAccordions={openAccordions}
+                  toggleAccordion={toggleAccordion}
+                />
 
                 {/* Additional Feature Badges / Guarantees */}
                 <div className={`grid grid-cols-1 ${isApparelCategory ? 'lg:grid-cols-2' : 'sm:grid-cols-2'} gap-4`}>
@@ -2190,46 +2242,54 @@ export default function ProductDetailView({
                     </div>
                     <dl className="divide-y divide-slate-100">
                       {/* Product Material */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {getLocalizedMaterial(product.material || product.attributes?.material || 'Heavy-Duty Carbon Steel', locale)}
-                        </dd>
-                      </div>
+                      {(product.material || product.attributes?.material || product.attributes?.cookware_material) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {getLocalizedMaterial(product.material || product.attributes?.material || product.attributes?.cookware_material || '', locale)}
+                          </dd>
+                        </div>
+                      )}
 
                       {/* Coating / Tech */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '涂层工艺' : 'Coating / Finish'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {getLocalizedOptionLabel(
-                            'coating',
-                            product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick (PFOA Free)',
-                            locale
-                          )}
-                        </dd>
-                      </div>
+                      {(product.attributes?.coating || product.attributes?.pan_coating || product.attributes?.surface_treatment) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '涂层工艺' : 'Coating / Finish'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {getLocalizedOptionLabel(
+                              'coating',
+                              product.attributes?.coating || product.attributes?.pan_coating || product.attributes?.surface_treatment || '',
+                              locale
+                            )}
+                          </dd>
+                        </div>
+                      )}
 
                       {/* Capacity / Count */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вместимость' : locale === 'zh' ? '杯量规格' : 'Capacity'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {getLocalizedOptionLabel(
-                            'capacity',
-                            product.attributes?.capacity || '24 Standard Size Cups',
-                            locale
-                          )}
-                        </dd>
-                      </div>
+                      {product.attributes?.capacity && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вместимость' : locale === 'zh' ? '容量规格' : 'Capacity'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {getLocalizedOptionLabel(
+                              'capacity',
+                              product.attributes.capacity,
+                              locale
+                            )}
+                          </dd>
+                        </div>
+                      )}
 
                       {/* Dimensions */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specDimensions')}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {product.dimensions
-                            ? `${product.dimensions.length} × ${product.dimensions.width} × ${product.dimensions.height} cm`
-                            : (product.attributes?.dimensions || '38 × 26 × 3.2 cm')}
-                        </dd>
-                      </div>
+                      {(product.dimensions || product.attributes?.dimensions) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specDimensions')}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {product.dimensions
+                              ? `${product.dimensions.length} × ${product.dimensions.width} × ${product.dimensions.height} cm`
+                              : product.attributes?.dimensions}
+                          </dd>
+                        </div>
+                      )}
 
                       {/* Weight */}
                       {product.weightKg > 0 && (
@@ -2242,22 +2302,24 @@ export default function ProductDetailView({
                       )}
 
                       {/* Max Oven Safe Temp */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '最高耐温' : 'Max Oven Temp'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {getLocalizedOptionLabel(
-                            'temperature',
-                            product.attributes?.temperature || product.attributes?.heat_resistance || '230°C / 450°F',
-                            locale
-                          )}
-                        </dd>
-                      </div>
+                      {(product.attributes?.temperature || product.attributes?.heat_resistance) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '最高耐温' : 'Max Oven Temp'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {getLocalizedOptionLabel(
+                              'temperature',
+                              product.attributes?.temperature || product.attributes?.heat_resistance,
+                              locale
+                            )}
+                          </dd>
+                        </div>
+                      )}
 
                       {/* Dishwasher & Care */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Уход и мытье' : locale === 'zh' ? '清洁与保养' : 'Dishwasher Safe'}</dt>
                         <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {locale === 'ru' ? 'Да (рекомендуется ручная мойка)' : locale === 'zh' ? '可洗碗机清洗（手洗寿命更长）' : 'Yes (Hand wash recommended for maximum coating life)'}
+                          {locale === 'ru' ? 'Да (рекомендуется ручная мойка)' : locale === 'zh' ? '可洗碗机清洗（建议手洗）' : 'Yes (Hand wash recommended)'}
                         </dd>
                       </div>
                     </dl>
@@ -2345,11 +2407,15 @@ export default function ProductDetailView({
                       </div>
                       <div className="flex justify-between py-2.5">
                         <dt className="text-slate-500">{locale === 'ru' ? 'Авиа доставка (DDP)' : locale === 'zh' ? '空运专线 (含税到门)' : 'Air Express (DDP)'}</dt>
-                        <dd className="font-semibold text-emerald-700">5 – 8 {locale === 'ru' ? 'дней' : locale === 'zh' ? '个工作日' : 'days'}</dd>
+                        <dd className="font-semibold text-emerald-700">{settings?.pdpAirFreightDays || (locale === 'ru' ? '5 – 8 рабочих дней' : locale === 'zh' ? '5 – 8个工作日' : '5 – 8 days')}</dd>
+                      </div>
+                      <div className="flex justify-between py-2.5">
+                        <dt className="text-slate-500">{locale === 'ru' ? 'Ж/Д доставка (CR Express)' : locale === 'zh' ? '中欧班列铁路集运' : 'CR Express Railway'}</dt>
+                        <dd className="font-semibold text-indigo-700">{settings?.pdpRailFreightDays || (locale === 'ru' ? '14 – 20 рабочих дней' : locale === 'zh' ? '14 – 20个工作日' : '14 – 20 days')}</dd>
                       </div>
                       <div className="flex justify-between py-2.5">
                         <dt className="text-slate-500">{locale === 'ru' ? 'Морской фрахт (FCL/LCL)' : locale === 'zh' ? '海运整柜/拼箱' : 'Sea Freight (FCL/LCL)'}</dt>
-                        <dd className="font-semibold text-slate-900">20 – 35 {locale === 'ru' ? 'дней' : locale === 'zh' ? '天' : 'days'}</dd>
+                        <dd className="font-semibold text-slate-900">{settings?.pdpSeaFreightDays || (locale === 'ru' ? '20 – 35 дней' : locale === 'zh' ? '20 – 35天' : '20 – 35 days')}</dd>
                       </div>
                       <div className="flex justify-between py-2.5">
                         <dt className="text-slate-500">{locale === 'ru' ? 'Таможенное оформление' : locale === 'zh' ? '报关与清关' : 'Export Clearance'}</dt>
