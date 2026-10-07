@@ -1,7 +1,7 @@
 {
-  "name": "Dromkok - Global Trade & Wholesale Marketplace",
-  "short_name": "Dromkok",
-  "description": "Dromkok - Global Trade & Wholesale Marketplace",
+  "name": "dromkok - Global Trade & Wholesale Marketplace",
+  "short_name": "dromkok",
+  "description": "Leading logistics and trade services provider connecting China to the world.",
   "start_url": "/en",
   "scope": "/",
   "display": "standalone",

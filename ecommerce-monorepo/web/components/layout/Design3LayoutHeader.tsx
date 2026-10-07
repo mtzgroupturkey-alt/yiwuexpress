@@ -19,6 +19,7 @@ import { useSettings } from '@/components/SettingsProvider';
 
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 
 export function Design3LayoutHeader() {
   const locale = useLocale();
@@ -27,88 +28,11 @@ export function Design3LayoutHeader() {
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { settings } = useSettings();
   const { wishlistCount, favoritesList, toggleWishlist } = useWishlist();
-
-  const DELIVERY_LOCATION_KEY = 'delivery_location';
-
-  // Use static fallback for SSR — localStorage is read in a post-hydration effect
-  // to avoid server/client HTML mismatch (hydration error).
-  const [deliveryAddress, setDeliveryAddress] = useState<string>(
-    settings?.companyAddress || 'Worldwide Shipping'
-  );
-
-  // Persist every change to localStorage
-  const persistDelivery = useCallback((addr: string) => {
-    setDeliveryAddress(addr);
-    try { localStorage.setItem(DELIVERY_LOCATION_KEY, addr); } catch {}
-  }, []);
-
-  // After hydration: restore the last selected delivery location from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(DELIVERY_LOCATION_KEY);
-      if (saved) setDeliveryAddress(saved);
-    } catch {}
-  // Run only once after mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Sync from settings when they arrive (only if still using fallback)
-  useEffect(() => {
-    if (settings?.companyAddress && deliveryAddress === 'Worldwide Shipping') {
-      persistDelivery(settings.companyAddress);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings?.companyAddress]);
-
-  // Fetch user's saved addresses from DB
-  const [userAddresses, setUserAddresses] = useState<UserAddressOption[]>([]);
-
-  const fetchUserAddresses = useCallback(async () => {
-    if (!isAuthenticated || !isInitialized) {
-      setUserAddresses([]);
-      return;
-    }
-    try {
-      const res = await fetch('/api/addresses', { credentials: 'include' });
-      if (!res.ok) return;
-      const data = await res.json();
-      const addrs: UserAddressOption[] = (data.data || []).map((a: any) => ({
-        id: a.id,
-        city: a.city,
-        country: a.country,
-        addressLine1: a.addressLine1,
-        isDefault: a.isDefault,
-        label: a.label ?? null,
-      }));
-      setUserAddresses(addrs);
-
-      // Auto-set delivery to default address city+country (only if using generic fallback)
-      const defaultAddr = addrs.find((a) => a.isDefault) ?? addrs[0];
-      if (defaultAddr) {
-        const currentSaved = (() => {
-          try { return localStorage.getItem(DELIVERY_LOCATION_KEY); } catch { return null; }
-        })();
-        if (!currentSaved || currentSaved === 'Worldwide Shipping' || currentSaved === settings?.companyAddress) {
-          const locStr = [defaultAddr.city, defaultAddr.country].filter(Boolean).join(', ');
-          if (locStr) persistDelivery(locStr);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch user addresses:', err);
-    }
-  }, [isAuthenticated, isInitialized, settings?.companyAddress, persistDelivery]);
-
-  useEffect(() => {
-    fetchUserAddresses();
-  }, [fetchUserAddresses]);
-
-  // Re-fetch when dashboard addresses page fires this event
-  useEffect(() => {
-    const handler = () => fetchUserAddresses();
-    window.addEventListener('addresses-updated', handler);
-    return () => window.removeEventListener('addresses-updated', handler);
-
-  }, [fetchUserAddresses]);
+  const {
+    deliveryAddress,
+    setDeliveryAddress: persistDelivery,
+    userAddresses,
+  } = useDeliveryLocation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');

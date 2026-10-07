@@ -352,20 +352,6 @@ export const Header: React.FC<HeaderProps> = ({
               <Clock className="w-3.5 h-3.5 text-slate-400" />
               <span>{tHeader('expressDeliveryDaily')}: <strong className="text-slate-800 font-semibold">{settings?.storeHours || '08:00 – 23:00'}</strong></span>
             </div>
-
-            {/* Clickable Customer Service Hotline */}
-            <div className="hidden lg:flex items-center gap-1.5 text-slate-500">
-              <span className="h-3 w-px bg-slate-300" />
-              <Phone className="w-3.5 h-3.5 text-emerald-600 ml-1" />
-              <a 
-                href={`tel:${settings?.companyPhone || '+86 579 8555 1234'}`}
-                className="text-slate-700 hover:text-[#00407a] transition-colors"
-                title="Call Customer Support"
-              >
-                <strong className="font-bold text-slate-900">{settings?.companyPhone ? settings.companyPhone : '+86 579 8555 1234'}</strong>
-                <span className="text-slate-500 text-[11px] ml-1">({tHeader('freeHotline')})</span>
-              </a>
-            </div>
           </div>
 
           {/* Right Side: Track / B2B Corporate / Currency & Language Switchers */}

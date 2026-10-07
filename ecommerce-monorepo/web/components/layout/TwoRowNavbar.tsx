@@ -199,11 +199,6 @@ export function TwoRowNavbar() {
                 <LocaleLink href="/track" className="hover:text-white transition flex items-center gap-1">
                   <span>{t('trackOrder' as any) || (locale === 'ru' ? 'Отследить заказ' : 'Track Order')}</span>
                 </LocaleLink>
-                <span>•</span>
-                <a href="tel:+8657985551234" className="hover:text-[#c9a84c] transition flex items-center gap-1 font-mono">
-                  <PhoneCall className="w-3 h-3 text-[#c9a84c]" />
-                  <span>+86 579 8555 1234</span>
-                </a>
               </div>
             </div>
 

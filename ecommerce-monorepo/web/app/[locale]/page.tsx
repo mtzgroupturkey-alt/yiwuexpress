@@ -45,6 +45,7 @@ import { MotionReveal } from '@/components/motion/MotionReveal';
 import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
+import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 
 export default function Home() {
   const locale = useLocale();
@@ -358,15 +359,11 @@ export default function Home() {
   const [shopInitialCategory, setShopInitialCategory] = useState<string | null>(null);
   const [shopInitialDepartment, setShopInitialDepartment] = useState<string | null>(null);
 
-  const [deliveryAddress, setDeliveryAddress] = useState(
-    settings?.companyAddress || 'China, Yiwu Trade Center'
-  );
-
-  React.useEffect(() => {
-    if (settings?.companyAddress && (!deliveryAddress || deliveryAddress === 'China, Yiwu Trade Center')) {
-      setDeliveryAddress(settings.companyAddress);
-    }
-  }, [settings?.companyAddress]);
+  const {
+    deliveryAddress,
+    setDeliveryAddress,
+    userAddresses,
+  } = useDeliveryLocation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
@@ -1117,6 +1114,8 @@ export default function Home() {
         isOpen={isLocationOpen}
         onClose={() => setIsLocationOpen(false)}
         currentAddress={deliveryAddress}
+        userAddresses={userAddresses}
+        isAuthenticated={isAuthenticated}
         onSelectAddress={(addr) => {
           setDeliveryAddress(addr);
           showToast(`Delivery updated to: ${addr}`);
