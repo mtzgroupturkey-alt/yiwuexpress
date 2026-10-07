@@ -86,6 +86,7 @@ export default function SettingsLayout({
     '/admin/settings/flash-sales',
     '/admin/settings/kitchen-section',
     '/admin/settings/electronics-section',
+    '/admin/settings/ads-manager',
     '/admin/settings/permissions', 
     '/admin/settings/backup',
     '/admin/settings/notifications',

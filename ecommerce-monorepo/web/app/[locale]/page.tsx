@@ -1000,30 +1000,34 @@ export default function Home() {
             </MotionReveal>
 
             {/* 10. Weekly Hypermarket Clearance & Super Deals */}
-            <MotionReveal direction="up">
-              <WeeklyBargainsSection
-                products={allCatalogProducts}
-                isLoading={isProductsLoading || dbProducts.length === 0}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-                cartQuantities={cartQuantities}
-                favoriteIds={favoriteIds}
-                onToggleFavorite={toggleWishlist}
-                onSelectProduct={(product) => {
-                  setSelectedProductForPDP(product);
-                  handleNavigateView('product', { product });
-                }}
-                onViewAllDeals={() => handleNavigateView('shop')}
-              />
-            </MotionReveal>
+            {settings?.weeklyBargainsEnabled !== false && (
+              <MotionReveal direction="up">
+                <WeeklyBargainsSection
+                  products={allCatalogProducts}
+                  isLoading={isProductsLoading || dbProducts.length === 0}
+                  onAddToCart={handleAddToCart}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  cartQuantities={cartQuantities}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={toggleWishlist}
+                  onSelectProduct={(product) => {
+                    setSelectedProductForPDP(product);
+                    handleNavigateView('product', { product });
+                  }}
+                  onViewAllDeals={() => handleNavigateView('shop')}
+                />
+              </MotionReveal>
+            )}
 
             {/* 11. Exclusive Member Club Banner */}
-            <MotionReveal direction="up">
-              <MemberClubBanner
-                onActivateMembership={() => setIsMemberModalOpen(true)}
-                onHowPointsWork={() => setIsMemberModalOpen(true)}
-              />
-            </MotionReveal>
+            {settings?.memberClubEnabled !== false && (
+              <MotionReveal direction="up">
+                <MemberClubBanner
+                  onActivateMembership={() => setIsMemberModalOpen(true)}
+                  onHowPointsWork={() => setIsMemberModalOpen(true)}
+                />
+              </MotionReveal>
+            )}
 
             {/* 12. Newsletter Subscription Section */}
             <MotionReveal direction="up">

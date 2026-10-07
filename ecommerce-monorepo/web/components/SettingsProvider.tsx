@@ -46,6 +46,8 @@ export function SettingsProvider({ initialSettings, children }: SettingsProvider
     if (initialSettings) {
       initializeSettings(initialSettings)
     }
+    // Also fetch fresh settings in background on mount to ensure updated favicon and branding
+    fetchSettings()
   }, [initialSettings, initializeSettings])
 
   const fetchSettings = async () => {
@@ -92,7 +94,9 @@ export function SettingsProvider({ initialSettings, children }: SettingsProvider
 
   return (
     <SettingsContext.Provider value={value}>
-      {settings?.companyFavicon && <DynamicFavicon faviconUrl={settings.companyFavicon} />}
+      {effectiveSettings?.companyFavicon && (
+        <DynamicFavicon faviconUrl={effectiveSettings.companyFavicon} />
+      )}
       {children}
     </SettingsContext.Provider>
   )

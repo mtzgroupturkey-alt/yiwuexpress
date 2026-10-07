@@ -50,6 +50,24 @@ export interface CompanySettings {
   electronicsSectionCategoryIds?: string | null
   electronicsSectionPinnedProductIds?: string | null
   electronicsSectionMaxProducts?: number
+  // Weekly Mega Bargains & Clearance Ad Banner
+  weeklyBargainsEnabled?: boolean
+  weeklyBargainsBadge?: string | null
+  weeklyBargainsTag?: string | null
+  weeklyBargainsTitle?: string | null
+  weeklyBargainsSubtitle?: string | null
+  weeklyBargainsButtonText?: string | null
+  weeklyBargainsButtonLink?: string | null
+  // Exclusive Member Club & Loyalty Ad Banner
+  memberClubEnabled?: boolean
+  memberClubBadge?: string | null
+  memberClubMembersCount?: string | null
+  memberClubTitle?: string | null
+  memberClubDescription?: string | null
+  memberClubActivateBtn?: string | null
+  memberClubActivateLink?: string | null
+  memberClubHowPointsWork?: string | null
+  memberClubHowPointsLink?: string | null
 }
 
 export interface SettingsState {
@@ -94,6 +112,24 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   electronicsSectionCategoryIds: null,
   electronicsSectionPinnedProductIds: null,
   electronicsSectionMaxProducts: 8,
+  // Weekly Mega Bargains Defaults
+  weeklyBargainsEnabled: true,
+  weeklyBargainsBadge: 'UP TO -40%',
+  weeklyBargainsTag: 'Weekly Price Drop',
+  weeklyBargainsTitle: 'Weekly Mega Bargains & Clearance',
+  weeklyBargainsSubtitle: 'Limited stock discounts up to 50% off retail pricing across home and garden collections',
+  weeklyBargainsButtonText: 'View all deals',
+  weeklyBargainsButtonLink: '',
+  // Exclusive Member Club Defaults
+  memberClubEnabled: true,
+  memberClubBadge: 'EXCLUSIVE MEMBER CLUB',
+  memberClubMembersCount: 'Over 420,000 active members',
+  memberClubTitle: 'Earn 3% Instant Cashback + Free Express Delivery',
+  memberClubDescription: 'Join the {name} Club for free today. Spend points directly at checkout on furniture, kitchenware, and smart home appliances (1 point = $1).',
+  memberClubActivateBtn: 'Activate Free Membership',
+  memberClubActivateLink: '',
+  memberClubHowPointsWork: 'How points work',
+  memberClubHowPointsLink: '',
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({

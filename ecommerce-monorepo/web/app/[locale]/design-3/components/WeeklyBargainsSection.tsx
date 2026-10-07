@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { Tag, Sparkles, ChevronRight, Percent } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Product } from '../types';
 import { UnifiedProductCard, ProductCardSkeleton } from './UnifiedProductCard';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useSettings } from '@/components/SettingsProvider';
 
 interface WeeklyBargainsSectionProps {
   products: Product[];
@@ -29,7 +31,21 @@ export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
   onViewAllDeals,
   isLoading = false,
 }) => {
+  const router = useRouter();
+  const { settings } = useSettings();
   const { tWeekly } = useStorefrontTranslation();
+
+  if (settings?.weeklyBargainsEnabled === false) {
+    return null;
+  }
+
+  const handleDealsClick = () => {
+    if (settings?.weeklyBargainsButtonLink) {
+      router.push(settings.weeklyBargainsButtonLink);
+    } else if (onViewAllDeals) {
+      onViewAllDeals();
+    }
+  };
 
   // Filter products that have discount badges or oldPrice
   const discountedProducts = products
@@ -56,27 +72,27 @@ export const WeeklyBargainsSection: React.FC<WeeklyBargainsSectionProps> = ({
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-sm uppercase tracking-wider shadow-xs">
-                UP TO -40%
+                {settings?.weeklyBargainsBadge || 'UP TO -40%'}
               </span>
               <span className="text-red-200 text-xs font-semibold">
-                • {tWeekly('badge')}
+                • {settings?.weeklyBargainsTag || tWeekly('badge')}
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white drop-shadow-xs">
-              {tWeekly('title')}
+              {settings?.weeklyBargainsTitle || tWeekly('title')}
             </h2>
             <p className="text-xs sm:text-sm text-red-100/90 mt-0.5 max-w-[650px] leading-relaxed">
-              {tWeekly('subtitle')}
+              {settings?.weeklyBargainsSubtitle || tWeekly('subtitle')}
             </p>
           </div>
         </div>
 
-        {onViewAllDeals && (
+        {(onViewAllDeals || settings?.weeklyBargainsButtonLink) && (
           <button
-            onClick={onViewAllDeals}
+            onClick={handleDealsClick}
             className="self-start md:self-auto bg-[#F5A602] hover:bg-[#E09500] text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap relative z-10 active:scale-95"
           >
-            <span>{tWeekly('viewAll')}</span>
+            <span>{settings?.weeklyBargainsButtonText || tWeekly('viewAll')}</span>
             <ChevronRight className="w-4 h-4 stroke-[2.5]" />
           </button>
         )}

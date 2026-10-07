@@ -101,6 +101,7 @@ export const getSystemSettings = safeCache(
       return {
         ...settings,
         companyLogo: resolvedLogo,
+        companyFavicon: resolvedFavicon,
         companyName: localizedName || settings.companyName,
         siteTagline: localizedTagline || settings.siteTagline,
         companyDescription: localizedDescription || settings.companyDescription,

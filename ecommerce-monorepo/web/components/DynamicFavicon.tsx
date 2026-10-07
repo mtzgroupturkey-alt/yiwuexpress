@@ -10,22 +10,30 @@ export default function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
   useEffect(() => {
     if (!faviconUrl) return
 
-    const mimeType = faviconUrl.endsWith('.svg')
+    // Ensure upload URLs route through /api/uploads/
+    let resolvedUrl = faviconUrl
+    if (resolvedUrl.startsWith('/uploads/')) {
+      resolvedUrl = `/api${resolvedUrl}`
+    } else if (resolvedUrl.startsWith('uploads/')) {
+      resolvedUrl = `/api/${resolvedUrl}`
+    }
+
+    const mimeType = resolvedUrl.includes('.svg')
       ? 'image/svg+xml'
-      : faviconUrl.endsWith('.png')
+      : resolvedUrl.includes('.png')
       ? 'image/png'
-      : faviconUrl.endsWith('.ico')
+      : resolvedUrl.includes('.ico')
       ? 'image/x-icon'
       : undefined
 
     // Find and update all existing favicon links
     const existingIcons = document.querySelectorAll<HTMLLinkElement>(
-      'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel*="icon"]'
+      'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel*="icon"]'
     )
 
     if (existingIcons.length > 0) {
-      existingIcons.forEach(link => {
-        link.href = faviconUrl
+      existingIcons.forEach((link) => {
+        link.href = resolvedUrl
         if (mimeType) {
           link.type = mimeType
         }
@@ -35,13 +43,20 @@ export default function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
       const iconLink = document.createElement('link')
       iconLink.rel = 'icon'
       if (mimeType) iconLink.type = mimeType
-      iconLink.href = faviconUrl
+      iconLink.href = resolvedUrl
       iconLink.setAttribute('data-dynamic-favicon', 'true')
       document.head.appendChild(iconLink)
 
+      const shortcutLink = document.createElement('link')
+      shortcutLink.rel = 'shortcut icon'
+      if (mimeType) shortcutLink.type = mimeType
+      shortcutLink.href = resolvedUrl
+      shortcutLink.setAttribute('data-dynamic-favicon', 'true')
+      document.head.appendChild(shortcutLink)
+
       const appleLink = document.createElement('link')
       appleLink.rel = 'apple-touch-icon'
-      appleLink.href = faviconUrl
+      appleLink.href = resolvedUrl
       appleLink.setAttribute('data-dynamic-favicon', 'true')
       document.head.appendChild(appleLink)
     }

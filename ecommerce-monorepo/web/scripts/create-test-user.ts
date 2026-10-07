@@ -55,8 +55,8 @@ async function createTestUser() {
         data: {
           email: 'admin@dromkok.com',
           password: adminPassword,
-          name: 'YIWU Express Admin',
-          companyName: 'YIWU EXPRESS',
+          name: 'Admin',
+          companyName: 'Global Trade',
           businessType: 'logistics_provider',
           role: 'ADMIN',
           country: 'China',

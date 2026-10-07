@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   Building, Building2, MapPin, Sliders, Truck, Mail, Shield, Database,
   KeyRound, Server, ShoppingBag, TrendingUp, Package, Image as ImageIcon,
-  ArrowRight, Settings as SettingsIcon, Sparkles
+  ArrowRight, Settings as SettingsIcon, Sparkles, Megaphone
 } from 'lucide-react'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
 import { useSettings } from '@/components/SettingsProvider'
@@ -47,6 +47,13 @@ export default function AdminSettingsHubPage() {
           desc: 'Time-limited discounted deals and countdown timers',
           icon: TrendingUp,
           color: 'from-rose-500 to-red-600',
+        },
+        {
+          href: '/admin/settings/ads-manager',
+          title: 'Homepage Ads & Banners',
+          desc: 'Weekly clearance mega bargains and exclusive member club loyalty banner',
+          icon: Megaphone,
+          color: 'from-emerald-500 to-teal-600',
         },
         {
           href: '/admin/settings/breadcrumb',

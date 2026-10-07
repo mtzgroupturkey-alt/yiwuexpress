@@ -124,6 +124,27 @@ export async function GET(request: NextRequest) {
     const localizedTagline = localizeSystemSetting(effectiveSettings.translations, 'siteTagline', effectiveSettings.siteTagline, locale)
     const localizedDescription = localizeSystemSetting(effectiveSettings.translations, 'companyDescription', effectiveSettings.companyDescription, locale)
 
+    // Localize Homepage Ads & Promo Banners (Weekly Mega Bargains & Member Club)
+    const rawWbEnabled = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsEnabled', 'true', locale)
+    const weeklyBargainsEnabled = rawWbEnabled !== 'false'
+    const weeklyBargainsBadge = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsBadge', 'UP TO -40%', locale)
+    const weeklyBargainsTag = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsTag', '', locale)
+    const weeklyBargainsTitle = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsTitle', '', locale)
+    const weeklyBargainsSubtitle = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsSubtitle', '', locale)
+    const weeklyBargainsButtonText = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsButtonText', '', locale)
+    const weeklyBargainsButtonLink = localizeSystemSetting(effectiveSettings.translations, 'weeklyBargainsButtonLink', '', locale)
+
+    const rawMcEnabled = localizeSystemSetting(effectiveSettings.translations, 'memberClubEnabled', 'true', locale)
+    const memberClubEnabled = rawMcEnabled !== 'false'
+    const memberClubBadge = localizeSystemSetting(effectiveSettings.translations, 'memberClubBadge', '', locale)
+    const memberClubMembersCount = localizeSystemSetting(effectiveSettings.translations, 'memberClubMembersCount', '', locale)
+    const memberClubTitle = localizeSystemSetting(effectiveSettings.translations, 'memberClubTitle', '', locale)
+    const memberClubDescription = localizeSystemSetting(effectiveSettings.translations, 'memberClubDescription', '', locale)
+    const memberClubActivateBtn = localizeSystemSetting(effectiveSettings.translations, 'memberClubActivateBtn', '', locale)
+    const memberClubActivateLink = localizeSystemSetting(effectiveSettings.translations, 'memberClubActivateLink', '', locale)
+    const memberClubHowPointsWork = localizeSystemSetting(effectiveSettings.translations, 'memberClubHowPointsWork', '', locale)
+    const memberClubHowPointsLink = localizeSystemSetting(effectiveSettings.translations, 'memberClubHowPointsLink', '', locale)
+
     const { translations, ...publicSettings } = effectiveSettings
 
 
@@ -184,6 +205,22 @@ export async function GET(request: NextRequest) {
         companyName: localizedName,
         siteTagline: localizedTagline || publicSettings.siteTagline,
         companyDescription: localizedDescription,
+        weeklyBargainsEnabled,
+        weeklyBargainsBadge: weeklyBargainsBadge || 'UP TO -40%',
+        weeklyBargainsTag: weeklyBargainsTag || null,
+        weeklyBargainsTitle: weeklyBargainsTitle || null,
+        weeklyBargainsSubtitle: weeklyBargainsSubtitle || null,
+        weeklyBargainsButtonText: weeklyBargainsButtonText || null,
+        weeklyBargainsButtonLink: weeklyBargainsButtonLink || null,
+        memberClubEnabled,
+        memberClubBadge: memberClubBadge || null,
+        memberClubMembersCount: memberClubMembersCount || null,
+        memberClubTitle: memberClubTitle || null,
+        memberClubDescription: memberClubDescription || null,
+        memberClubActivateBtn: memberClubActivateBtn || null,
+        memberClubActivateLink: memberClubActivateLink || null,
+        memberClubHowPointsWork: memberClubHowPointsWork || null,
+        memberClubHowPointsLink: memberClubHowPointsLink || null,
       }
     })
   } catch (error) {
