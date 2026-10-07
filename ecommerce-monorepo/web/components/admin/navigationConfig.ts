@@ -225,8 +225,17 @@ export function isItemActive(
     return true
   }
 
-  if (itemPath !== '/admin' && pathname.startsWith(itemPath)) {
-    return true
+  // Prefix matching for nested routes (e.g. /admin/products/123 -> /admin/products),
+  // ensuring boundary match (with slash) and not matching parent if a more specific sibling exists
+  if (itemPath !== '/admin' && (pathname === itemPath || pathname.startsWith(`${itemPath}/`))) {
+    // If there is another navigation item whose path is longer and also matches the pathname, don't activate this shorter one
+    const hasMoreSpecificSibling = ADMIN_NAV_ITEMS.some(nav => {
+      const p = nav.href.split('?')[0]
+      return p !== itemPath && p.startsWith(itemPath) && (pathname === p || pathname.startsWith(`${p}/`))
+    })
+    if (!hasMoreSpecificSibling) {
+      return true
+    }
   }
 
   return false
