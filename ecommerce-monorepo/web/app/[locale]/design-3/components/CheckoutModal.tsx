@@ -150,7 +150,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 1. {tModals('deliveryMethod')}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {/* Express 60 min */}
+                {/* Express Delivery */}
                 <button
                   type="button"
                   onClick={() => setSelectedSlot('express')}

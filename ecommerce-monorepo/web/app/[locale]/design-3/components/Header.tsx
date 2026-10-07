@@ -18,8 +18,6 @@ import {
   Zap, 
   X,
   Sparkles,
-  Building2,
-  PackageCheck,
   User as UserIcon,
   Coins,
   Menu,
@@ -346,35 +344,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Right Side: Track / B2B Corporate / Currency & Language Switchers */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Track Orders Quick Action */}
-            <button
-              onClick={onOpenOrders}
-              className="hover:text-[#00407a] transition-colors cursor-pointer font-medium text-slate-700 hidden sm:flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100"
-            >
-              <PackageCheck className="w-3.5 h-3.5 text-slate-500" />
-              <span>{tHeader('trackOrders')}</span>
-            </button>
-
-            {/* Corporate B2B Wholesale */}
-            <button 
-              id="b2b-link-btn"
-              onClick={() => onNavigateView && onNavigateView('shop')}
-              className="hover:text-[#00407a] transition-colors hidden sm:flex items-center gap-1.5 px-2 py-1 rounded hover:bg-slate-100 cursor-pointer font-medium text-slate-700"
-              title="Corporate Sales & Volume Pricing"
-            >
-              <Building2 className="w-3.5 h-3.5 text-slate-500" />
-              <span>{tHeader('corporateB2B')}</span>
-            </button>
-
-            <span className="h-3 w-px bg-slate-300 hidden sm:inline-block" />
-
-            {/* Standard Discoverable Language & Currency Selectors (R1) */}
-            <div className="flex items-center gap-1.5 pl-1">
-              <LanguageSwitcher variant="header-dropdown" />
-              <CurrencySwitcher variant="header-dropdown" />
-            </div>
+          {/* Right Side: Currency & Language Switchers */}
+          <div className="flex items-center gap-1.5 pl-1">
+            <LanguageSwitcher variant="header-dropdown" />
+            <CurrencySwitcher variant="header-dropdown" />
           </div>
         </div>
       </div>
