@@ -145,10 +145,8 @@ export default function ProductDetailView({
   const { addToQuote } = useQuoteCart()
 
   const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE'
-  const isWholesaleActive =
-    customerView.isWholesale ||
-    currentStoreMode === 'WHOLESALE' ||
-    (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
+  // Strictly conditioned on customer view:
+  const isWholesaleActive = customerView.isWholesale
 
   const rfqModel = settings?.rfqModel || 'RFQ'
   const isInstantWholesale = rfqModel === 'INSTANT'

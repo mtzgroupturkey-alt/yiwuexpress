@@ -70,8 +70,12 @@ export default function ProductCard({
   const isInstantWholesale = rfqModel === 'INSTANT'
   const moq = product.moq || product.minOrder || product.minOrderQty || settings?.wholesaleDefaultMoq || 1
 
-  const isWholesaleActive = customerView.isWholesale
-  const showRetailCart = customerView.isRetail || customerView.isGuest
+  const {
+    isWholesale: isWholesaleActive,
+    canRequestQuote,
+    canAddToWholesaleCart,
+  } = useCustomerView()
+  const showRetailCart = !canRequestQuote && !canAddToWholesaleCart
   const hasWholesale = Boolean(product.wholesalePrice && isWholesaleActive)
 
   const addWholesaleToCart = (p: Product) => {
@@ -336,7 +340,7 @@ export default function ProductCard({
           )}
 
           {/* Wholesale B2B Button - RFQ Mode */}
-          {isWholesaleActive && hasWholesale && !isInstantWholesale && (
+          {canRequestQuote && hasWholesale && !isInstantWholesale && (
             <button
               onClick={handleAddToQuoteList}
               disabled={isAddingToQuote || (product.stock !== undefined && product.stock === 0)}
@@ -363,7 +367,7 @@ export default function ProductCard({
           )}
 
           {/* Wholesale B2B Button - INSTANT Mode */}
-          {isWholesaleActive && hasWholesale && isInstantWholesale && (
+          {canAddToWholesaleCart && hasWholesale && isInstantWholesale && (
             <button
               onClick={(e) => {
                 e.preventDefault()

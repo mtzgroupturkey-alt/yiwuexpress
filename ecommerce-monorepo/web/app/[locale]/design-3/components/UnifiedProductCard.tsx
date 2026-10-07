@@ -321,7 +321,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
         )}
 
         {/* Cart Button or Rapid Stepper */}
-        {isWholesaleActive && !isInstantWholesale ? (
+        {canRequestQuote && !isInstantWholesale ? (
           // Wholesale RFQ Mode: "Request Quote (MOQ: X)" -> QuoteCartContext
           qtyInQuote === 0 ? (
             <motion.button
@@ -393,7 +393,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
               </motion.button>
             </div>
           )
-        ) : isWholesaleActive && isInstantWholesale ? (
+        ) : canAddToWholesaleCart && isInstantWholesale ? (
           // Wholesale INSTANT Mode: "Add to Cart" with wholesale price + MOQ
           qtyInCart === 0 ? (
             <motion.button

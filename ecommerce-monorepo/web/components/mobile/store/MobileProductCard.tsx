@@ -37,10 +37,11 @@ export function MobileProductCard({
   const [justAdded, setJustAdded] = useState(false)
 
   const isWholesaleActive = customerView.isWholesale
+  const canRequestQuote = customerView.canRequestQuote
 
   const rfqModel = settings?.rfqModel || 'RFQ'
   const isInstantWholesale = rfqModel === 'INSTANT'
-  const isRfqMode = isWholesaleActive && !isInstantWholesale
+  const isRfqMode = canRequestQuote && !isInstantWholesale
 
   const moq =
     product.minOrderQty ||
