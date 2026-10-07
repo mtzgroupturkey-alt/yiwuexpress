@@ -215,7 +215,13 @@ export default function AdminDashboard() {
   const recentShipments = stats?.recentShipments || stats?.data?.recentShipments || []
   const recentQuotes = stats?.recentQuotes || stats?.data?.recentQuotes || []
 
-  const displayName = user?.name || user?.email?.split('@')[0] || 'Admin'
+  const headerTitle = settings?.siteTagline
+    ? `${companyName} · ${settings.siteTagline}`
+    : `${companyName} ${dict.nav.dashboard}`
+
+  const userCleanName = user?.name && !user.name.toLowerCase().includes('yiwu')
+    ? user.name
+    : user?.email?.split('@')[0] || 'Administrator'
 
   if (loading) {
     return (
@@ -262,8 +268,13 @@ export default function AdminDashboard() {
           </div>
 
           <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight mt-1">
-            {displayName}
+            {headerTitle}
           </h1>
+          {userCleanName && (
+            <p className="text-xs text-slate-500 mt-0.5 font-medium">
+              {dict.header.profile}: <span className="text-slate-700 font-semibold">{userCleanName}</span>
+            </p>
+          )}
         </div>
 
         <div className="flex items-center gap-2 shrink-0">

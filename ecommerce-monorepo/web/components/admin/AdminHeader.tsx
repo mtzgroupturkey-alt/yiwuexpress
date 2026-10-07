@@ -428,10 +428,10 @@ export function AdminHeader({
           )}
           <div className="hidden sm:block">
             <p className="text-xs font-semibold text-gray-800 leading-tight">
-              {user?.name || user?.email?.split('@')[0] || 'Admin'}
+              {user?.name && !user.name.toLowerCase().includes('yiwu') ? user.name : (user?.email?.split('@')[0] || 'Administrator')}
             </p>
             <p className="text-[11px] text-gray-400 leading-tight">
-              {user?.email || 'admin@globaltrade.com'}
+              {user?.email || `admin@${companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'dromkok'}.com`}
             </p>
           </div>
         </div>
