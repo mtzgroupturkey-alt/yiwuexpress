@@ -8,8 +8,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   MapPin, 
-  Clock, 
-  Phone, 
   ChevronDown, 
   ChevronRight,
   Search, 
@@ -346,12 +344,6 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
               <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-slate-600" />
             </button>
-
-            {/* Live Working Hours */}
-            <div className="hidden md:flex items-center gap-1.5 text-slate-600 whitespace-nowrap">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>{tHeader('expressDeliveryDaily')}: <strong className="text-slate-800 font-semibold">{settings?.storeHours || '08:00 – 23:00'}</strong></span>
-            </div>
           </div>
 
           {/* Right Side: Track / B2B Corporate / Currency & Language Switchers */}
