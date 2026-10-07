@@ -113,6 +113,8 @@ export default function GeneralSettingsPage() {
     }
   }
 
+  const t = (dict?.settings as any)?.generalSettings || {}
+
   const handleSave = async () => {
     setSaving(true)
     setError('')
@@ -131,13 +133,13 @@ export default function GeneralSettingsPage() {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        setSuccess('Sales channels & RFQ configuration updated successfully!')
+        setSuccess(t.saveSuccess || 'Sales channels & RFQ configuration updated successfully!')
         setTimeout(() => setSuccess(''), 4000)
       } else {
-        setError(data.error || 'Failed to update settings')
+        setError(data.error || t.saveError || 'Failed to update settings')
       }
     } catch (err) {
-      setError('Network error saving settings')
+      setError(t.networkError || 'Network error saving settings')
     } finally {
       setSaving(false)
     }
@@ -148,7 +150,7 @@ export default function GeneralSettingsPage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">Authenticating...</p>
+          <p className="text-sm text-gray-500">{t.authenticating || 'Authenticating...'}</p>
         </div>
       </div>
     )
@@ -163,7 +165,7 @@ export default function GeneralSettingsPage() {
       <div className="flex items-center justify-center h-64">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: '#1a3a5c' }}></div>
-          <p className="text-sm text-gray-500">{dict.common?.loading || 'Loading settings...'}</p>
+          <p className="text-sm text-gray-500">{t.loadingSettings || dict.common?.loading || 'Loading settings...'}</p>
         </div>
       </div>
     )
@@ -178,8 +180,8 @@ export default function GeneralSettingsPage() {
             <Settings size={22} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Sales & Fulfillment Channels</h2>
-            <p className="text-sm text-gray-500">Configure retail, wholesale B2B, RFQ workflows, and warehouse fulfillment routing</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t.pageTitle || 'Sales & Fulfillment Channels'}</h2>
+            <p className="text-sm text-gray-500">{t.pageSubtitle || 'Configure retail, wholesale B2B, RFQ workflows, and warehouse fulfillment routing'}</p>
           </div>
         </div>
         <button
@@ -192,7 +194,7 @@ export default function GeneralSettingsPage() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 shadow-sm disabled:opacity-50 transition"
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          {dict.common?.reset || 'Refresh'}
+          {t.refreshBtn || dict.common?.reset || 'Refresh'}
         </button>
       </div>
 
@@ -215,34 +217,34 @@ export default function GeneralSettingsPage() {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center gap-2 mb-2">
           <Store size={20} className="text-blue-600" />
-          <h3 className="text-lg font-bold text-gray-900">Storefront Operational Mode</h3>
+          <h3 className="text-lg font-bold text-gray-900">{t.storefrontModeTitle || 'Storefront Operational Mode'}</h3>
         </div>
         <p className="text-sm text-gray-500 mb-6">
-          Controls how the storefront presents itself to public visitors and which commerce channels are accessible.
+          {t.storefrontModeDesc || 'Controls how the storefront presents itself to public visitors and which commerce channels are accessible.'}
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
               value: 'WHOLESALE',
-              label: 'Wholesale Only (B2B)',
-              description: 'Exclusively tailored for commercial buyers, bulk orders, and RFQ quotations.',
+              label: t.wholesaleLabel || 'Wholesale Only (B2B)',
+              description: t.wholesaleDesc || 'Exclusively tailored for commercial buyers, bulk orders, and RFQ quotations.',
               icon: Store,
-              badge: 'B2B Enterprise',
+              badge: t.wholesaleBadge || 'B2B Enterprise',
             },
             {
               value: 'RETAIL',
-              label: 'Retail Only (B2C)',
-              description: 'Standard direct-to-consumer shop with instant checkout, retail pricing, and parcel delivery.',
+              label: t.retailLabel || 'Retail Only (B2C)',
+              description: t.retailDesc || 'Standard direct-to-consumer shop with instant checkout, retail pricing, and parcel delivery.',
               icon: ShoppingBag,
-              badge: 'B2C Storefront',
+              badge: t.retailBadge || 'B2C Storefront',
             },
             {
               value: 'BOTH',
-              label: 'Hybrid Mode (Both)',
-              description: 'Supports both retail consumer purchases and wholesale B2B quotes with an active header toggle.',
+              label: t.hybridLabel || 'Hybrid Mode (Both)',
+              description: t.hybridDesc || 'Supports both retail consumer purchases and wholesale B2B quotes with an active header toggle.',
               icon: Users,
-              badge: 'Hybrid Dual-Mode',
+              badge: t.hybridBadge || 'Hybrid Dual-Mode',
             }
           ].map((mode) => {
             const Icon = mode.icon
@@ -291,25 +293,25 @@ export default function GeneralSettingsPage() {
         <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
           <Building2 size={20} className="text-indigo-600" />
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Multi-Warehouse Routing & Stock Contracts</h3>
-            <p className="text-xs text-gray-500">Designate the physical distribution centers responsible for domestic order fulfillment vs source procurement.</p>
+            <h3 className="text-lg font-bold text-gray-900">{t.warehouseRoutingTitle || 'Multi-Warehouse Routing & Stock Contracts'}</h3>
+            <p className="text-xs text-gray-500">{t.warehouseRoutingDesc || 'Designate the physical distribution centers responsible for domestic order fulfillment vs source procurement.'}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-1">
-              Default Sales Warehouse (Domestic Fulfillment)
+              {t.salesWarehouseLabel || 'Default Sales Warehouse (Domestic Fulfillment)'}
             </label>
             <p className="text-xs text-gray-500 mb-2">
-              Primary regional distribution center from which storefront orders are reserved and dispatched.
+              {t.salesWarehouseDesc || 'Primary regional distribution center from which storefront orders are reserved and dispatched.'}
             </p>
             <select
               value={settings.defaultSalesWarehouseId || ''}
               onChange={(e) => setSettings(prev => ({ ...prev, defaultSalesWarehouseId: e.target.value || null }))}
               className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
             >
-              <option value="">-- Select Fulfillment Warehouse --</option>
+              <option value="">{t.salesWarehousePlaceholder || '-- Select Fulfillment Warehouse --'}</option>
               {warehouses.map((wh) => (
                 <option key={wh.id} value={wh.id}>
                   {wh.country === 'Belarus' ? '🇧🇾' : wh.country === 'China' ? '🇨🇳' : '🏢'} {wh.name} ({wh.code}) {wh.city ? `— ${wh.city}` : ''}
@@ -320,17 +322,17 @@ export default function GeneralSettingsPage() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-800 mb-1">
-              Default Procurement Hub (Source Factory Hub)
+              {t.procurementHubLabel || 'Default Procurement Hub (Source Factory Hub)'}
             </label>
             <p className="text-xs text-gray-500 mb-2">
-              Origin warehouse for purchase orders, factory consolidation, and export container loading.
+              {t.procurementHubDesc || 'Origin warehouse for purchase orders, factory consolidation, and export container loading.'}
             </p>
             <select
               value={settings.defaultProcurementWarehouseId || ''}
               onChange={(e) => setSettings(prev => ({ ...prev, defaultProcurementWarehouseId: e.target.value || null }))}
               className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
             >
-              <option value="">-- Select Procurement Hub --</option>
+              <option value="">{t.procurementHubPlaceholder || '-- Select Procurement Hub --'}</option>
               {warehouses.map((wh) => (
                 <option key={wh.id} value={wh.id}>
                   {wh.country === 'China' ? '🇨🇳' : wh.country === 'Belarus' ? '🇧🇾' : '🏢'} {wh.name} ({wh.code}) {wh.city ? `— ${wh.city}` : ''}
@@ -343,10 +345,10 @@ export default function GeneralSettingsPage() {
         <div className="pt-2 border-t border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="max-w-xl">
             <label className="block text-sm font-semibold text-gray-800">
-              Inventory Hold Reservation Window (Hours)
+              {t.reservationWindowLabel || 'Inventory Hold Reservation Window (Hours)'}
             </label>
             <p className="text-xs text-gray-500">
-              Duration that physical inventory remains reserved for pending orders/quotes before automated release worker returns stock to the available pool.
+              {t.reservationWindowDesc || 'Duration that physical inventory remains reserved for pending orders/quotes before automated release worker returns stock to the available pool.'}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -358,7 +360,7 @@ export default function GeneralSettingsPage() {
               onChange={(e) => setSettings(prev => ({ ...prev, reservationExpiryHours: parseInt(e.target.value) || 24 }))}
               className="w-24 px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm text-center font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 shadow-sm"
             />
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Hours</span>
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t.hoursUnit || 'Hours'}</span>
           </div>
         </div>
       </div>
@@ -368,16 +370,16 @@ export default function GeneralSettingsPage() {
         <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
           <ShoppingBag size={20} className="text-emerald-600" />
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Retail Channel (B2C) Configuration</h3>
-            <p className="text-xs text-gray-500">Settings governing consumer checkout, parcel shipping, and cross-border backorders.</p>
+            <h3 className="text-lg font-bold text-gray-900">{t.retailChannelTitle || 'Retail Channel (B2C) Configuration'}</h3>
+            <p className="text-xs text-gray-500">{t.retailChannelDesc || 'Settings governing consumer checkout, parcel shipping, and cross-border backorders.'}</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50/70 border border-gray-200">
             <div>
-              <p className="text-sm font-bold text-gray-900">Enable Retail Sales</p>
-              <p className="text-xs text-gray-500">Allow individual consumers to browse and purchase items at retail MSRP.</p>
+              <p className="text-sm font-bold text-gray-900">{t.enableRetailLabel || 'Enable Retail Sales'}</p>
+              <p className="text-xs text-gray-500">{t.enableRetailDesc || 'Allow individual consumers to browse and purchase items at retail MSRP.'}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -392,8 +394,8 @@ export default function GeneralSettingsPage() {
 
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50/70 border border-gray-200">
             <div>
-              <p className="text-sm font-bold text-gray-900">Allow Backorders from China Procurement Hub</p>
-              <p className="text-xs text-gray-500">When regional sales warehouse stock is 0, allow customers to backorder directly from the China hub.</p>
+              <p className="text-sm font-bold text-gray-900">{t.allowBackordersLabel || 'Allow Backorders from China Procurement Hub'}</p>
+              <p className="text-xs text-gray-500">{t.allowBackordersDesc || 'When regional sales warehouse stock is 0, allow customers to backorder directly from the China hub.'}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -410,10 +412,10 @@ export default function GeneralSettingsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-emerald-50/40 border border-emerald-100">
               <div>
                 <label className="block text-sm font-semibold text-gray-800">
-                  Backorder Delivery SLA Display (Days)
+                  {t.backorderSlaLabel || 'Backorder Delivery SLA Display (Days)'}
                 </label>
                 <p className="text-xs text-gray-600">
-                  Estimated lead time shown on storefront product cards for backordered sea/rail items (e.g. 28 days).
+                  {t.backorderSlaDesc || 'Estimated lead time shown on storefront product cards for backordered sea/rail items (e.g. 28 days).'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -425,7 +427,7 @@ export default function GeneralSettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, backorderLeadTimeDays: parseInt(e.target.value) || 28 }))}
                   className="w-24 px-3 py-2 bg-white border border-gray-300 rounded-xl text-sm text-center font-bold text-gray-900 focus:ring-2 focus:ring-emerald-500 shadow-sm"
                 />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Days</span>
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{t.daysUnit || 'Days'}</span>
               </div>
             </div>
           )}
@@ -437,8 +439,8 @@ export default function GeneralSettingsPage() {
         <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
           <Layers size={20} className="text-blue-600" />
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Wholesale Channel (B2B) & Request for Quote (RFQ)</h3>
-            <p className="text-xs text-gray-500">Industry-standard B2B quotation workflows, quotation cart isolation, and volume pricing controls.</p>
+            <h3 className="text-lg font-bold text-gray-900">{t.wholesaleChannelTitle || 'Wholesale Channel (B2B) & Request for Quote (RFQ)'}</h3>
+            <p className="text-xs text-gray-500">{t.wholesaleChannelDesc || 'Industry-standard B2B quotation workflows, quotation cart isolation, and volume pricing controls.'}</p>
           </div>
         </div>
 
@@ -446,8 +448,8 @@ export default function GeneralSettingsPage() {
           {/* Wholesale enabled toggle */}
           <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50/70 border border-gray-200">
             <div>
-              <p className="text-sm font-bold text-gray-900">Enable Wholesale Channel</p>
-              <p className="text-xs text-gray-500">Activates wholesale catalog views, volume pricing tiers, and commercial quotation flows.</p>
+              <p className="text-sm font-bold text-gray-900">{t.enableWholesaleLabel || 'Enable Wholesale Channel'}</p>
+              <p className="text-xs text-gray-500">{t.enableWholesaleDesc || 'Activates wholesale catalog views, volume pricing tiers, and commercial quotation flows.'}</p>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -463,10 +465,10 @@ export default function GeneralSettingsPage() {
           {/* Purchasing Model Radio */}
           <div className="p-5 rounded-xl border border-gray-200 bg-gray-50/40">
             <label className="block text-sm font-bold text-gray-900 mb-1">
-              Wholesale Purchasing Model
+              {t.purchasingModelLabel || 'Wholesale Purchasing Model'}
             </label>
             <p className="text-xs text-gray-500 mb-3">
-              Choose how wholesale customers interact with your catalog and finalize commercial purchases.
+              {t.purchasingModelDesc || 'Choose how wholesale customers interact with your catalog and finalize commercial purchases.'}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div
@@ -485,9 +487,9 @@ export default function GeneralSettingsPage() {
                   className="mt-1 text-blue-600 focus:ring-blue-500"
                 />
                 <div>
-                  <p className="text-sm font-bold text-gray-900">Request for Quote (RFQ) — Recommended</p>
+                  <p className="text-sm font-bold text-gray-900">{t.modelRfqLabel || 'Request for Quote (RFQ) — Recommended'}</p>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    Customers submit quote requests via a separate Quote Cart; sales admin reviews warehouse stock, sets custom prices, freight, and sends signed offer.
+                    {t.modelRfqDesc || 'Customers submit quote requests via a separate Quote Cart; sales admin reviews warehouse stock, sets custom prices, freight, and sends signed offer.'}
                   </p>
                 </div>
               </div>
@@ -508,9 +510,9 @@ export default function GeneralSettingsPage() {
                   className="mt-1 text-blue-600 focus:ring-blue-500"
                 />
                 <div>
-                  <p className="text-sm font-bold text-gray-900">Instant Cart Checkout</p>
+                  <p className="text-sm font-bold text-gray-900">{t.modelInstantLabel || 'Instant Cart Checkout'}</p>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    Wholesale buyers checkout immediately with fixed catalog wholesale prices and enforced MOQs without manual sales quotation.
+                    {t.modelInstantDesc || 'Wholesale buyers checkout immediately with fixed catalog wholesale prices and enforced MOQs without manual sales quotation.'}
                   </p>
                 </div>
               </div>
@@ -521,8 +523,8 @@ export default function GeneralSettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50/70 border border-gray-200">
               <div>
-                <p className="text-sm font-bold text-gray-900">Allow Guest RFQ Submissions</p>
-                <p className="text-xs text-gray-500">Unregistered buyers can request quotes by providing company name & Tax ID.</p>
+                <p className="text-sm font-bold text-gray-900">{t.allowGuestRfqLabel || 'Allow Guest RFQ Submissions'}</p>
+                <p className="text-xs text-gray-500">{t.allowGuestRfqDesc || 'Unregistered buyers can request quotes by providing company name & Tax ID.'}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -537,8 +539,8 @@ export default function GeneralSettingsPage() {
 
             <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50/70 border border-gray-200">
               <div>
-                <p className="text-sm font-bold text-gray-900">Require Account Verification</p>
-                <p className="text-xs text-gray-500">Only verified B2B customer accounts can submit quotations.</p>
+                <p className="text-sm font-bold text-gray-900">{t.requireVerificationLabel || 'Require Account Verification'}</p>
+                <p className="text-xs text-gray-500">{t.requireVerificationDesc || 'Only verified B2B customer accounts can submit quotations.'}</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -556,9 +558,9 @@ export default function GeneralSettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
             <div className="p-4 rounded-xl border border-gray-200 bg-white">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Default Fallback MOQ
+                {t.defaultMoqLabel || 'Default Fallback MOQ'}
               </label>
-              <p className="text-[11px] text-gray-500 mb-2">Used when a product has no custom MOQ configured.</p>
+              <p className="text-[11px] text-gray-500 mb-2">{t.defaultMoqDesc || 'Used when a product has no custom MOQ configured.'}</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -568,15 +570,15 @@ export default function GeneralSettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, wholesaleDefaultMoq: parseInt(e.target.value) || 10 }))}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-xs font-semibold text-gray-500 uppercase">Units</span>
+                <span className="text-xs font-semibold text-gray-500 uppercase">{t.unitsUnit || 'Units'}</span>
               </div>
             </div>
 
             <div className="p-4 rounded-xl border border-gray-200 bg-white">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Quote Validity Period
+                {t.quoteValidityLabel || 'Quote Validity Period'}
               </label>
-              <p className="text-[11px] text-gray-500 mb-2">Default validUntil duration set on newly issued quotations.</p>
+              <p className="text-[11px] text-gray-500 mb-2">{t.quoteValidityDesc || 'Default validUntil duration set on newly issued quotations.'}</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -586,15 +588,15 @@ export default function GeneralSettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, rfqDefaultExpiryDays: parseInt(e.target.value) || 7 }))}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-xs font-semibold text-gray-500 uppercase">Days</span>
+                <span className="text-xs font-semibold text-gray-500 uppercase">{t.daysUnit || 'Days'}</span>
               </div>
             </div>
 
             <div className="p-4 rounded-xl border border-gray-200 bg-white">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                Suggested Baseline Discount
+                {t.suggestedDiscountLabel || 'Suggested Baseline Discount'}
               </label>
-              <p className="text-[11px] text-gray-500 mb-2">Pre-fills admin quote pricing when catalog wholesale price is blank.</p>
+              <p className="text-[11px] text-gray-500 mb-2">{t.suggestedDiscountDesc || 'Pre-fills admin quote pricing when catalog wholesale price is blank.'}</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -605,7 +607,7 @@ export default function GeneralSettingsPage() {
                   onChange={(e) => setSettings(prev => ({ ...prev, wholesaleDiscountPercent: parseFloat(e.target.value) || 0 }))}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-xl text-sm font-bold text-gray-900 focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-xs font-semibold text-gray-500 uppercase">% Off</span>
+                <span className="text-xs font-semibold text-gray-500 uppercase">{t.percentOffUnit || '% Off'}</span>
               </div>
             </div>
           </div>
@@ -616,7 +618,7 @@ export default function GeneralSettingsPage() {
       <div className="sticky bottom-4 z-10 flex items-center justify-between p-4 rounded-2xl bg-white/95 backdrop-blur shadow-lg border border-gray-200">
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <HelpCircle size={16} className="text-gray-400" />
-          <span>Changes take effect immediately on storefront routing and the admin RFQ pricing workspace.</span>
+          <span>{t.footerNote || 'Changes take effect immediately on storefront routing and the admin RFQ pricing workspace.'}</span>
         </div>
         <button
           type="button"
@@ -626,7 +628,7 @@ export default function GeneralSettingsPage() {
           style={{ background: 'linear-gradient(135deg, #1e40af, #2563eb)' }}
         >
           <Save size={18} />
-          {saving ? 'Saving Settings...' : 'Save Configuration'}
+          {saving ? (t.savingBtn || 'Saving Settings...') : (t.saveBtn || 'Save Configuration')}
         </button>
       </div>
     </div>

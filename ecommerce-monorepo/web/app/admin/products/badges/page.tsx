@@ -54,6 +54,8 @@ export default function ProductBadgesSettingsPage() {
     zh: { ...DEFAULT_PRODUCT_BADGES.zh },
   });
 
+  const t = (dict as any)?.badges || {};
+
   const showToast = (type: 'success' | 'error', text: string) => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 4000);
@@ -130,13 +132,13 @@ export default function ProductBadgesSettingsPage() {
           });
           return next;
         });
-        showToast('success', 'Translations generated successfully! Click "Save Settings" to apply.');
+        showToast('success', t.translateSuccess || 'Translations generated successfully! Click "Save Settings" to apply.');
       } else {
         showToast('error', 'No translation data returned');
       }
     } catch (err: any) {
       console.error('Auto-translate error:', err);
-      showToast('error', 'Failed to auto-translate. Please try again.');
+      showToast('error', t.translateError || 'Failed to auto-translate. Please try again.');
     } finally {
       setIsTranslating(false);
     }
@@ -155,10 +157,10 @@ export default function ProductBadgesSettingsPage() {
         throw new Error('Failed to save settings');
       }
 
-      showToast('success', 'Delivery rules & Product Badges saved successfully!');
+      showToast('success', t.saveSuccess || 'Delivery rules & Product Badges saved successfully!');
     } catch (err: any) {
       console.error('Save badges error:', err);
-      showToast('error', 'Failed to save settings. Please try again.');
+      showToast('error', t.saveError || 'Failed to save settings. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -194,11 +196,11 @@ export default function ProductBadgesSettingsPage() {
               <Shield className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Delivery Timing & Reassurance Badges
+              {t.pageTitle || 'Delivery Timing & Reassurance Badges'}
             </h1>
           </div>
           <p className="text-sm text-slate-500 mt-1">
-            Configure country/city delivery rules (Belarus & China), warranty, express shipping badges, returns guarantee, and factory trust signals across Desktop and Mobile product detail pages.
+            {t.pageSubtitle || 'Configure country/city delivery rules (Belarus & China), warranty, express shipping badges, returns guarantee, and factory trust signals across Desktop and Mobile product detail pages.'}
           </p>
         </div>
 
@@ -208,27 +210,27 @@ export default function ProductBadgesSettingsPage() {
             variant="outline"
             size="sm"
             onClick={fetchBadges}
-            disabled={saving}
-            className="rounded-xl h-9 text-xs font-semibold"
+            disabled={saving || fetching}
+            className="rounded-xl h-9 text-xs font-semibold cursor-pointer"
           >
-            <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-            Reset
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${fetching ? 'animate-spin' : ''}`} />
+            {t.resetBtn || 'Reset'}
           </Button>
           <Button
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-9 text-xs font-bold px-4 shadow-xs"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-9 text-xs font-bold px-4 shadow-xs cursor-pointer"
           >
             {saving ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5" />
-                Saving...
+                {t.saving || 'Saving...'}
               </>
             ) : (
               <>
                 <Save className="w-3.5 h-3.5 mr-1.5" />
-                Save Settings
+                {t.saveBtn || 'Save Settings'}
               </>
             )}
           </Button>
@@ -249,7 +251,7 @@ export default function ProductBadgesSettingsPage() {
             }`}
           >
             <Truck className="w-3.5 h-3.5" />
-            <span>Delivery Timings by City</span>
+            <span>{t.tabDelivery || 'Delivery Timings by City'}</span>
           </button>
           <button
             type="button"
@@ -261,7 +263,7 @@ export default function ProductBadgesSettingsPage() {
             }`}
           >
             <Shield className="w-3.5 h-3.5" />
-            <span>3-Card Reassurance Strip</span>
+            <span>{t.tabReassurance || '3-Card Reassurance Strip'}</span>
           </button>
           <button
             type="button"
@@ -273,7 +275,7 @@ export default function ProductBadgesSettingsPage() {
             }`}
           >
             <Award className="w-3.5 h-3.5" />
-            <span>Factory & QC Trust Badges</span>
+            <span>{t.tabTrust || 'Factory & QC Trust Badges'}</span>
           </button>
           <button
             type="button"
@@ -285,7 +287,7 @@ export default function ProductBadgesSettingsPage() {
             }`}
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>Buyer Q&amp;A / FAQ</span>
+            <span>{t.tabFaq || 'Buyer Q&A / FAQ'}</span>
           </button>
         </div>
 
@@ -322,7 +324,7 @@ export default function ProductBadgesSettingsPage() {
             ) : (
               <Sparkles className="w-3.5 h-3.5 mr-1 text-purple-600" />
             )}
-            Auto-Translate
+            {isTranslating ? (t.translating || 'Translating...') : (t.autoTranslate || 'Auto-Translate')}
           </Button>
         </div>
       </div>
@@ -338,15 +340,15 @@ export default function ProductBadgesSettingsPage() {
                   <span className="text-xl">🇧🇾</span>
                   <div>
                     <CardTitle className="text-base font-bold text-slate-900">
-                      Belarus Delivery Timing Rules
+                      {t.belarusRulesTitle || 'Belarus Delivery Timing Rules'}
                     </CardTitle>
                     <CardDescription className="text-xs text-slate-500">
-                      Displayed automatically when customer IP or chosen delivery location is inside Belarus (Minsk vs Regional Cities).
+                      {t.belarusRulesDesc || 'Displayed automatically when customer IP or chosen delivery location is inside Belarus (Minsk vs Regional Cities).'}
                     </CardDescription>
                   </div>
                 </div>
                 <span className="text-[11px] font-bold px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
-                  IP-Aware Active
+                  {t.ipAwareBadge || 'IP-Aware Active'}
                 </span>
               </div>
             </CardHeader>
@@ -355,32 +357,32 @@ export default function ProductBadgesSettingsPage() {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                    Minsk Metro Area (Local Hub)
+                    {t.minskMetroLabel || 'Minsk Metro Area (Local Hub)'}
                   </Label>
                   <Input
                     value={currentValues.pdpDeliveryMinsk || ''}
                     onChange={(e) => updateField('pdpDeliveryMinsk', e.target.value)}
-                    placeholder="e.g. Tomorrow (1 business day)"
+                    placeholder={t.minskMetroPlaceholder || 'e.g. Tomorrow (1 business day)'}
                     className="rounded-xl text-xs font-medium"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Shown when delivery address contains Minsk / Минск.
+                    {t.minskMetroDesc || 'Shown when delivery address contains Minsk / Минск.'}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                    Belarus Regional Cities (Brest, Grodno, Gomel, Vitebsk, Mogilev)
+                    {t.belarusRegionLabel || 'Belarus Regional Cities (Brest, Grodno, Gomel, Vitebsk, Mogilev)'}
                   </Label>
                   <Input
                     value={currentValues.pdpDeliveryBelarusRegion || ''}
                     onChange={(e) => updateField('pdpDeliveryBelarusRegion', e.target.value)}
-                    placeholder="e.g. 1 – 3 business days"
+                    placeholder={t.belarusRegionPlaceholder || 'e.g. 1 – 3 business days'}
                     className="rounded-xl text-xs font-medium"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Shown when delivery address is in regional Belarus oblasťs or regional centers.
+                    {t.belarusRegionDesc || 'Shown when delivery address is in regional Belarus oblasťs or regional centers.'}
                   </p>
                 </div>
               </div>
@@ -390,10 +392,10 @@ export default function ProductBadgesSettingsPage() {
                 <div className="space-y-0.5">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-blue-600" />
-                    Daily Order Cutoff Hour (24-Hour Format)
+                    {t.cutoffHourTitle || 'Daily Order Cutoff Hour (24-Hour Format)'}
                   </span>
                   <p className="text-[11px] text-slate-500">
-                    Calculates countdown timer: &quot;Order within XX:XX:XX for delivery tomorrow&quot;.
+                    {t.cutoffHourDesc || 'Calculates countdown timer: "Order within XX:XX:XX for delivery tomorrow".'}
                   </p>
                 </div>
                 <div className="w-32 shrink-0">
@@ -418,10 +420,10 @@ export default function ProductBadgesSettingsPage() {
                 <span className="text-xl">🇨🇳</span>
                 <div>
                   <CardTitle className="text-base font-bold text-slate-900">
-                    China Domestic & Sourcing Hub Timing
+                    {t.chinaLogisticsTitle || 'China Domestic & Sourcing Hub Timing'}
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500">
-                    Displayed when customer delivery destination is within China (Local warehouse vs nationwide express).
+                    {t.chinaLogisticsDesc || 'Displayed when customer delivery destination is within China (Local warehouse vs nationwide express).'}
                   </CardDescription>
                 </div>
               </div>
@@ -431,32 +433,32 @@ export default function ProductBadgesSettingsPage() {
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5 text-emerald-600" />
-                    China Warehouse / Sourcing Hub Local Delivery
+                    {t.chinaLocalLabel || 'China Warehouse / Sourcing Hub Local Delivery'}
                   </Label>
                   <Input
                     value={currentValues.pdpDeliveryChinaLocal || ''}
                     onChange={(e) => updateField('pdpDeliveryChinaLocal', e.target.value)}
-                    placeholder="e.g. 24 – 48 hours"
+                    placeholder={t.chinaLocalPlaceholder || 'e.g. 24 – 48 hours'}
                     className="rounded-xl text-xs font-medium"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Same-city or Zhejiang / nearby province dispatch.
+                    {t.chinaLocalDesc || 'Same-city or Zhejiang / nearby province dispatch.'}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                     <Truck className="w-3.5 h-3.5 text-blue-600" />
-                    China Nationwide Domestic Express
+                    {t.chinaNationwideLabel || 'China Nationwide Domestic Express'}
                   </Label>
                   <Input
                     value={currentValues.pdpDeliveryChinaNationwide || ''}
                     onChange={(e) => updateField('pdpDeliveryChinaNationwide', e.target.value)}
-                    placeholder="e.g. 2 – 3 days"
+                    placeholder={t.chinaNationwidePlaceholder || 'e.g. 2 – 3 days'}
                     className="rounded-xl text-xs font-medium"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Inter-provincial standard express shipping.
+                    {t.chinaNationwideDesc || 'Inter-provincial standard express shipping.'}
                   </p>
                 </div>
               </div>
@@ -472,10 +474,10 @@ export default function ProductBadgesSettingsPage() {
                 </span>
                 <div>
                   <CardTitle className="text-base font-bold text-slate-900">
-                    International Cross-Border Shipping Lines (China ➔ Belarus & Global)
+                    {t.intlLinesTitle || 'International Cross-Border Shipping Lines (China ➔ Belarus & Global)'}
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500">
-                    Configures transit times shown in the &quot;Shipping &amp; Trade Terms&quot; tab on Product Detail pages.
+                    {t.intlLinesDesc || 'Configures transit times shown in the "Shipping & Trade Terms" tab on Product Detail pages.'}
                   </CardDescription>
                 </div>
               </div>
@@ -485,48 +487,48 @@ export default function ProductBadgesSettingsPage() {
                 <div className="space-y-1.5 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
                   <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Plane className="w-3.5 h-3.5 text-sky-600" />
-                    Air Express (DDP)
+                    {t.airFreightLabel || 'Air Express (DDP)'}
                   </Label>
                   <Input
                     value={currentValues.pdpAirFreightDays || ''}
                     onChange={(e) => updateField('pdpAirFreightDays', e.target.value)}
-                    placeholder="e.g. 5 – 8 business days"
+                    placeholder={t.airFreightPlaceholder || 'e.g. 5 – 8 business days'}
                     className="rounded-xl text-xs font-medium bg-white"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Fast air cargo line including customs duty.
+                    {t.airFreightDesc || 'Fast air cargo line including customs duty.'}
                   </p>
                 </div>
 
                 <div className="space-y-1.5 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
                   <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Train className="w-3.5 h-3.5 text-indigo-600" />
-                    CR Express Railway
+                    {t.railFreightLabel || 'CR Express Railway'}
                   </Label>
                   <Input
                     value={currentValues.pdpRailFreightDays || ''}
                     onChange={(e) => updateField('pdpRailFreightDays', e.target.value)}
-                    placeholder="e.g. 14 – 20 business days"
+                    placeholder={t.railFreightPlaceholder || 'e.g. 14 – 20 business days'}
                     className="rounded-xl text-xs font-medium bg-white"
                   />
                   <p className="text-[11px] text-slate-500">
-                    China-Europe regular container rail transit.
+                    {t.railFreightDesc || 'China-Europe regular container rail transit.'}
                   </p>
                 </div>
 
                 <div className="space-y-1.5 p-3 rounded-xl bg-slate-50/70 border border-slate-200/80">
                   <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <Ship className="w-3.5 h-3.5 text-emerald-600" />
-                    Sea Freight (FCL / LCL)
+                    {t.seaFreightLabel || 'Sea Freight (FCL / LCL)'}
                   </Label>
                   <Input
                     value={currentValues.pdpSeaFreightDays || ''}
                     onChange={(e) => updateField('pdpSeaFreightDays', e.target.value)}
-                    placeholder="e.g. 20 – 35 days"
+                    placeholder={t.seaFreightPlaceholder || 'e.g. 20 – 35 days'}
                     className="rounded-xl text-xs font-medium bg-white"
                   />
                   <p className="text-[11px] text-slate-500">
-                    Ocean container freight via Ningbo/Shanghai.
+                    {t.seaFreightDesc || 'Ocean container freight via Ningbo/Shanghai.'}
                   </p>
                 </div>
               </div>
@@ -547,15 +549,15 @@ export default function ProductBadgesSettingsPage() {
                   </span>
                   <div>
                     <CardTitle className="text-base font-bold text-slate-900">
-                      Product Detail Reassurance Badges
+                      {t.reassuranceTitle || 'Product Detail Reassurance Badges'}
                     </CardTitle>
                     <CardDescription className="text-xs text-slate-500">
-                      Edit the three highlighted guarantee cards displayed directly under product gallery on desktop and mobile.
+                      {t.reassuranceDesc || 'Edit the three highlighted guarantee cards displayed directly under product gallery on desktop and mobile.'}
                     </CardDescription>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-slate-500">
-                  Editing: {LOCALES.find((l) => l.code === activeLocaleTab)?.label}
+                  {t.editingBadge ? t.editingBadge.replace('{locale}', LOCALES.find((l) => l.code === activeLocaleTab)?.label || '') : `Editing: ${LOCALES.find((l) => l.code === activeLocaleTab)?.label}`}
                 </span>
               </div>
             </CardHeader>
@@ -566,11 +568,11 @@ export default function ProductBadgesSettingsPage() {
                   <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
                     1
                   </div>
-                  <h3 className="font-bold text-sm text-slate-900">Warranty Card</h3>
+                  <h3 className="font-bold text-sm text-slate-900">{t.warrantyCardTitle || 'Warranty Card'}</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Title</Label>
+                    <Label className="text-xs font-semibold text-slate-700">{t.badgeTitleLabel || 'Badge Title'}</Label>
                     <Input
                       value={currentValues.pdpWarrantyTitle || ''}
                       onChange={(e) => updateField('pdpWarrantyTitle', e.target.value)}
@@ -579,7 +581,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Subtitle</Label>
+                    <Label className="text-xs font-semibold text-slate-700">{t.badgeSubtitleLabel || 'Badge Subtitle'}</Label>
                     <Input
                       value={currentValues.pdpWarrantySubtitle || ''}
                       onChange={(e) => updateField('pdpWarrantySubtitle', e.target.value)}
@@ -596,11 +598,11 @@ export default function ProductBadgesSettingsPage() {
                   <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
                     2
                   </div>
-                  <h3 className="font-bold text-sm text-slate-900">Express Delivery Card</h3>
+                  <h3 className="font-bold text-sm text-slate-900">{t.expressDeliveryCardTitle || 'Express Delivery Card'}</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Title</Label>
+                    <Label className="text-xs font-semibold text-slate-700">{t.badgeTitleLabel || 'Badge Title'}</Label>
                     <Input
                       value={currentValues.pdpDeliveryTitle || ''}
                       onChange={(e) => updateField('pdpDeliveryTitle', e.target.value)}
@@ -609,7 +611,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Subtitle</Label>
+                    <Label className="text-xs font-semibold text-slate-700">{t.badgeSubtitleLabel || 'Badge Subtitle'}</Label>
                     <Input
                       value={currentValues.pdpDeliverySubtitle || ''}
                       onChange={(e) => updateField('pdpDeliverySubtitle', e.target.value)}
@@ -626,11 +628,11 @@ export default function ProductBadgesSettingsPage() {
                   <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
                     3
                   </div>
-                  <h3 className="font-bold text-sm text-slate-900">Returns &amp; Replacement Card</h3>
+                  <h3 className="font-bold text-sm text-slate-900">{t.returnsCardTitle || 'Returns & Replacement Card'}</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Title</Label>
+                    <Label className="text-xs font-semibold text-slate-700">{t.badgeTitleLabel || 'Badge Title'}</Label>
                     <Input
                       value={currentValues.pdpReturnsTitle || ''}
                       onChange={(e) => updateField('pdpReturnsTitle', e.target.value)}
@@ -639,7 +641,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Subtitle</Label>
+                    <Label className="text-xs font-semibold text-slate-700">{t.badgeSubtitleLabel || 'Badge Subtitle'}</Label>
                     <Input
                       value={currentValues.pdpReturnsSubtitle || ''}
                       onChange={(e) => updateField('pdpReturnsSubtitle', e.target.value)}
@@ -653,7 +655,7 @@ export default function ProductBadgesSettingsPage() {
               {/* Live Preview Strip */}
               <div className="pt-2">
                 <span className="text-xs font-bold text-slate-500 block mb-2 uppercase tracking-wider">
-                  Live Preview (As rendered on Product Page)
+                  {t.livePreviewTitle || 'Live Preview (As rendered on Product Page)'}
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-slate-50 rounded-2xl border border-slate-200 p-3">
                   <div className="flex items-center gap-2.5 bg-white p-2.5 rounded-xl border border-slate-100">
@@ -716,15 +718,15 @@ export default function ProductBadgesSettingsPage() {
                   </span>
                   <div>
                     <CardTitle className="text-base font-bold text-slate-900">
-                      Factory Assurance &amp; Quality Control Trust Badges
+                      {t.factoryTrustTitle || 'Factory Assurance & Quality Control Trust Badges'}
                     </CardTitle>
                     <CardDescription className="text-xs text-slate-500">
-                      Displayed on the mobile product sheet and buyer reassurance section.
+                      {t.factoryTrustDesc || 'Displayed on the mobile product sheet and buyer reassurance section.'}
                     </CardDescription>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-slate-500">
-                  Editing: {LOCALES.find((l) => l.code === activeLocaleTab)?.label}
+                  {t.editingBadge ? t.editingBadge.replace('{locale}', LOCALES.find((l) => l.code === activeLocaleTab)?.label || '') : `Editing: ${LOCALES.find((l) => l.code === activeLocaleTab)?.label}`}
                 </span>
               </div>
             </CardHeader>
@@ -734,10 +736,10 @@ export default function ProductBadgesSettingsPage() {
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Factory className="w-4 h-4 text-blue-600" />
-                    <span className="font-bold text-xs text-slate-900">1. Factory Direct Supply</span>
+                    <span className="font-bold text-xs text-slate-900">{t.trustDirectFactory || '1. Factory Direct Supply'}</span>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Title</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.titleLabel || 'Title'}</Label>
                     <Input
                       value={currentValues.pdpFactoryTitle || ''}
                       onChange={(e) => updateField('pdpFactoryTitle', e.target.value)}
@@ -746,7 +748,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Description</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.descLabel || 'Description'}</Label>
                     <Input
                       value={currentValues.pdpFactoryDesc || ''}
                       onChange={(e) => updateField('pdpFactoryDesc', e.target.value)}
@@ -760,10 +762,10 @@ export default function ProductBadgesSettingsPage() {
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4 text-amber-600" />
-                    <span className="font-bold text-xs text-slate-900">2. Quality Inspection (QC)</span>
+                    <span className="font-bold text-xs text-slate-900">{t.trustQc || '2. Quality Inspection (QC)'}</span>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Title</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.titleLabel || 'Title'}</Label>
                     <Input
                       value={currentValues.pdpQcTitle || ''}
                       onChange={(e) => updateField('pdpQcTitle', e.target.value)}
@@ -772,7 +774,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Description</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.descLabel || 'Description'}</Label>
                     <Input
                       value={currentValues.pdpQcDesc || ''}
                       onChange={(e) => updateField('pdpQcDesc', e.target.value)}
@@ -786,10 +788,10 @@ export default function ProductBadgesSettingsPage() {
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Truck className="w-4 h-4 text-emerald-600" />
-                    <span className="font-bold text-xs text-slate-900">3. Customs Clearance &amp; Logistics</span>
+                    <span className="font-bold text-xs text-slate-900">{t.trustLogistics || '3. Customs Clearance & Logistics'}</span>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Title</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.titleLabel || 'Title'}</Label>
                     <Input
                       value={currentValues.pdpLogisticsTitle || ''}
                       onChange={(e) => updateField('pdpLogisticsTitle', e.target.value)}
@@ -798,7 +800,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Description</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.descLabel || 'Description'}</Label>
                     <Input
                       value={currentValues.pdpLogisticsDesc || ''}
                       onChange={(e) => updateField('pdpLogisticsDesc', e.target.value)}
@@ -812,10 +814,10 @@ export default function ProductBadgesSettingsPage() {
                 <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4 text-purple-600" />
-                    <span className="font-bold text-xs text-slate-900">4. Trade Assurance Escrow</span>
+                    <span className="font-bold text-xs text-slate-900">{t.trustEscrow || '4. Trade Assurance Escrow'}</span>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Title</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.titleLabel || 'Title'}</Label>
                     <Input
                       value={currentValues.pdpEscrowTitle || ''}
                       onChange={(e) => updateField('pdpEscrowTitle', e.target.value)}
@@ -824,7 +826,7 @@ export default function ProductBadgesSettingsPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] text-slate-600 font-medium">Description</Label>
+                    <Label className="text-[11px] text-slate-600 font-medium">{t.descLabel || 'Description'}</Label>
                     <Input
                       value={currentValues.pdpEscrowDesc || ''}
                       onChange={(e) => updateField('pdpEscrowDesc', e.target.value)}
@@ -848,10 +850,10 @@ export default function ProductBadgesSettingsPage() {
                 <HelpCircle className="w-5 h-5 text-blue-600" />
                 <div>
                   <CardTitle className="text-base font-bold text-slate-900">
-                    Product Detail Page Buyer Q&amp;A / FAQ
+                    {t.faqTitle || 'Product Detail Page Buyer Q&A / FAQ'}
                   </CardTitle>
                   <CardDescription className="text-xs text-slate-500">
-                    Configure the questions and answers displayed under the &quot;Buyer Q&amp;A / FAQ&quot; tab on every product page. Supports variable placeholder <code className="bg-slate-100 text-blue-600 px-1 py-0.5 rounded font-mono text-[11px]">&#123;moq&#125;</code> for automatic product minimum order quantity insertion.
+                    {t.faqDesc || 'Configure the questions and answers displayed under the "Buyer Q&A / FAQ" tab on every product page. Supports variable placeholder {moq} for automatic product minimum order quantity insertion.'}
                   </CardDescription>
                 </div>
               </div>
@@ -860,43 +862,43 @@ export default function ProductBadgesSettingsPage() {
               {/* Header Titles */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border border-blue-100 bg-blue-50/40">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-800">Tab Heading Title</Label>
+                  <Label className="text-xs font-bold text-slate-800">{t.faqHeadingLabel || 'Tab Heading Title'}</Label>
                   <Input
                     value={currentValues.pdpFaqTitle || ''}
                     onChange={(e) => updateField('pdpFaqTitle', e.target.value)}
-                    placeholder="Frequently Asked Questions"
+                    placeholder={t.faqHeadingPlaceholder || 'Frequently Asked Questions'}
                     className="rounded-lg text-xs bg-white"
                   />
-                  <p className="text-[10px] text-slate-400">Section title displayed above the questions list.</p>
+                  <p className="text-[10px] text-slate-400">{t.faqHeadingSub || 'Section title displayed above the questions list.'}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-800">Tab Subtitle</Label>
+                  <Label className="text-xs font-bold text-slate-800">{t.faqSubtitleLabel || 'Tab Subtitle'}</Label>
                   <Input
                     value={currentValues.pdpFaqSubtitle || ''}
                     onChange={(e) => updateField('pdpFaqSubtitle', e.target.value)}
-                    placeholder="Get quick answers to common questions"
+                    placeholder={t.faqSubtitlePlaceholder || 'Get quick answers to common questions'}
                     className="rounded-lg text-xs bg-white"
                   />
-                  <p className="text-[10px] text-slate-400">Helpful explanation displayed beneath heading.</p>
+                  <p className="text-[10px] text-slate-400">{t.faqSubtitleSub || 'Helpful explanation displayed beneath heading.'}</p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-800">Inquiry Button Text</Label>
+                  <Label className="text-xs font-bold text-slate-800">{t.faqBtnLabel || 'Inquiry Button Text'}</Label>
                   <Input
                     value={currentValues.pdpFaqAskBtn || ''}
                     onChange={(e) => updateField('pdpFaqAskBtn', e.target.value)}
-                    placeholder="Ask a Question"
+                    placeholder={t.faqBtnPlaceholder || 'Ask a Question'}
                     className="rounded-lg text-xs bg-white"
                   />
-                  <p className="text-[10px] text-slate-400">Button to trigger custom question form.</p>
+                  <p className="text-[10px] text-slate-400">{t.faqBtnSub || 'Button to trigger custom question form.'}</p>
                 </div>
               </div>
 
               {/* Questions 1 to 5 List */}
               <div className="space-y-4">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-slate-500">
-                  Standard Questions &amp; Answers (1 – 5)
+                  {t.standardQuestionsTitle || 'Standard Questions & Answers (1 – 5)'}
                 </h4>
 
                 {[
@@ -951,14 +953,14 @@ export default function ProductBadgesSettingsPage() {
                           {num}
                         </span>
                         <span className="font-bold text-xs text-slate-900">
-                          Question #{num}
+                          {t.questionNumber ? t.questionNumber.replace('{num}', num.toString()) : `Question #${num}`}
                         </span>
                       </div>
                       <span className="text-[11px] text-slate-400">{hint}</span>
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-[11px] text-slate-600 font-semibold">Question</Label>
+                      <Label className="text-[11px] text-slate-600 font-semibold">{t.questionLabel || 'Question'}</Label>
                       <Input
                         value={currentValues[qKey] || ''}
                         onChange={(e) => updateField(qKey, e.target.value)}
@@ -968,7 +970,7 @@ export default function ProductBadgesSettingsPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-[11px] text-slate-600 font-semibold">Answer</Label>
+                      <Label className="text-[11px] text-slate-600 font-semibold">{t.answerLabel || 'Answer'}</Label>
                       <textarea
                         value={currentValues[aKey] || ''}
                         onChange={(e) => updateField(aKey, e.target.value)}
@@ -990,7 +992,7 @@ export default function ProductBadgesSettingsPage() {
         <div className="flex items-center gap-2 text-xs text-slate-500">
           <HelpCircle className="w-4 h-4 text-blue-600" />
           <span>
-            Changes saved here update both Desktop &amp; Mobile storefronts instantly.
+            {t.footerNote || 'Changes saved here update both Desktop & Mobile storefronts instantly.'}
           </span>
         </div>
         <Button
@@ -1002,12 +1004,12 @@ export default function ProductBadgesSettingsPage() {
           {saving ? (
             <>
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-              Saving Settings...
+              {t.savingSettings || 'Saving Settings...'}
             </>
           ) : (
             <>
               <Save className="w-4 h-4 mr-2" />
-              Save All Changes
+              {t.saveAllBtn || 'Save All Changes'}
             </>
           )}
         </Button>
