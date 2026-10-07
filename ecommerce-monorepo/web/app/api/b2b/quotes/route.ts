@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth';
 import crypto from 'crypto';
 
 // Helper to generate human-readable Quote Number (e.g. QUO-2026-0123)
@@ -17,6 +17,23 @@ async function generateQuoteNumber(): Promise<string> {
 export async function POST(req: NextRequest) {
   try {
     const user = await getAuthUser(req);
+
+    // STRICT: Only authenticated users
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // STRICT: Only approved wholesale users (userType = WHOLESALE or BOTH + APPROVED) or ADMIN
+    if (!isApprovedWholesaleUser(user)) {
+      return NextResponse.json(
+        { success: false, error: 'Wholesale account required. Please apply for a B2B account.' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
 
     const {
@@ -43,36 +60,6 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Wholesale quotation service is currently disabled.' },
         { status: 403 }
       );
-    }
-
-    // Policy check: Guest submissions
-    if (!user) {
-      if (settings && settings.rfqAllowGuestSubmissions === false) {
-        return NextResponse.json(
-          { success: false, error: 'Quote requests require a registered business account.' },
-          { status: 401 }
-        );
-      }
-      if (!guestInfo?.email || !guestInfo?.name) {
-        return NextResponse.json(
-          { success: false, error: 'Guest contact name and email are required.' },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Policy check: Account verification requirement
-    if (settings?.wholesaleApprovalRequired && user) {
-      const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { verificationStatus: true },
-      });
-      if (dbUser?.verificationStatus !== 'APPROVED') {
-        return NextResponse.json(
-          { success: false, error: 'Your account is pending B2B verification by an administrator.' },
-          { status: 403 }
-        );
-      }
     }
 
     // Verify product IDs and fetch catalog snapshots
@@ -198,6 +185,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Authentication required to view quote history.' },
         { status: 401 }
+      );
+    }
+
+    if (!isApprovedWholesaleUser(user)) {
+      return NextResponse.json(
+        { success: false, error: 'Wholesale account required.' },
+        { status: 403 }
       );
     }
 

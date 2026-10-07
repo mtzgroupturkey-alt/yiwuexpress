@@ -16,6 +16,7 @@ import { useQuoteCart } from '@/components/QuoteCartContext'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useAuth } from '@/hooks/useAuth'
+import { useCustomerView } from '@/hooks/useCustomerView'
 import { MobileQuoteCartPage } from '@/components/mobile/cart/MobileQuoteCartPage'
 import { CompactQuoteAttributeSelector } from '@/components/cart/CompactQuoteAttributeSelector'
 
@@ -24,7 +25,15 @@ export default function QuoteCartPage() {
   const navigate = useLocaleNav()
   const t = useTranslations('QuoteCart')
   const { user } = useAuth()
+  const { canRequestQuote, isLoading } = useCustomerView()
   const { items, quoteCount, totalUnits, updateQuantity, updateItem, removeFromQuote, clearQuoteCart } = useQuoteCart()
+
+  // Guard: Redirect guests and retail users to login
+  React.useEffect(() => {
+    if (!isLoading && !canRequestQuote) {
+      router.replace('/login?redirect=/quote-cart')
+    }
+  }, [canRequestQuote, isLoading, router])
 
   const [submitting, setSubmitting] = useState(false)
   const [guestInfo, setGuestInfo] = useState({
@@ -59,6 +68,20 @@ export default function QuoteCartPage() {
       }))
     }
   }, [user])
+
+  if (isLoading) {
+    return (
+      <SharedLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </SharedLayout>
+    )
+  }
+
+  if (!canRequestQuote) {
+    return null
+  }
 
   const handleQuantityChange = (productId: string, newQty: number, moq: number, selectedOptions?: Record<string, string> | null) => {
     const validQty = Math.max(moq || 1, newQty)

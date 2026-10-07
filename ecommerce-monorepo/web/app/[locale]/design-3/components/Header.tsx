@@ -26,6 +26,7 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useCustomerView } from '@/hooks/useCustomerView';
 import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
@@ -106,16 +107,11 @@ export const Header: React.FC<HeaderProps> = ({
   const [showScopeDropdown, setShowScopeDropdown] = useState(false);
 
   const companyName = useCompanyName();
-  const { settings, storeMode, isWholesaleOnly } = useSettings();
-  const { storeMode: ctxStoreMode } = useStoreMode();
-  const { sessionMode, isWholesaleSession } = useSessionMode();
+  const { settings } = useSettings();
+  const { isWholesale: isWholesaleActive, canRequestQuote } = useCustomerView();
   const { quoteCount } = useQuoteCart();
   const { isStandalone, openDrawer } = useMobile();
 
-  const effectiveStoreMode = ctxStoreMode || storeMode || 'WHOLESALE';
-  const isWholesaleActive =
-    effectiveStoreMode === 'WHOLESALE' ||
-    (effectiveStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
   const rfqModel = settings?.rfqModel || 'RFQ';
   const isInstantWholesale = rfqModel === 'INSTANT';
 
@@ -508,7 +504,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {/* Smart Morphing Cart Button */}
-          {isWholesaleActive && !isInstantWholesale ? (
+          {canRequestQuote && !isInstantWholesale ? (
             <Link
               id="header-cart-btn"
               href={`/${currentLocale}/quote-cart`}

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 export interface QuoteCartItem {
   productId: string
@@ -51,11 +52,23 @@ const QuoteCartContext = createContext<QuoteCartContextType | undefined>(undefin
 const STORAGE_KEY = 'b2b_quote_cart'
 
 export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
+  const { canRequestQuote, isLoading } = useCustomerView()
   const [items, setItems] = useState<QuoteCartItem[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Load from LocalStorage on mount
+  // Load from LocalStorage on mount (only if allowed)
   useEffect(() => {
+    if (isLoading) return
+
+    if (!canRequestQuote) {
+      setItems([])
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+      } catch (e) {}
+      setIsLoaded(true)
+      return
+    }
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
@@ -69,17 +82,23 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoaded(true)
     }
-  }, [])
+  }, [canRequestQuote, isLoading])
 
-  // Persist to LocalStorage whenever items change
+  // Persist to LocalStorage whenever items change (only if authorized)
   useEffect(() => {
-    if (!isLoaded) return
+    if (!isLoaded || isLoading) return
+    if (!canRequestQuote) {
+      try {
+        localStorage.removeItem(STORAGE_KEY)
+      } catch (e) {}
+      return
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
     } catch (e) {
       console.error('Error saving quote cart to storage:', e)
     }
-  }, [items, isLoaded])
+  }, [items, isLoaded, canRequestQuote, isLoading])
 
   const addToQuote = useCallback((newItem: {
     productId: string
@@ -93,6 +112,10 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     selectedOptions?: Record<string, string> | null
     variantId?: string | null
   }) => {
+    if (isLoading || !canRequestQuote) {
+      return // STRICT: Block unverified/guest users from adding items to quote cart
+    }
+
     setItems((prev) => {
       const existingIndex = prev.findIndex(
         (i) => i.productId === newItem.productId && areOptionsEqual(i.selectedOptions, newItem.selectedOptions)
@@ -128,7 +151,7 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
         },
       ]
     })
-  }, [])
+  }, [canRequestQuote, isLoading])
 
   const updateQuantity = useCallback((productId: string, quantity: number, selectedOptions?: Record<string, string> | null) => {
     setItems((prev) =>

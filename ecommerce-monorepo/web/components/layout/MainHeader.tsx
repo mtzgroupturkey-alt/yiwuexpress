@@ -14,6 +14,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
+import { useCustomerView } from '@/hooks/useCustomerView'
 import { SimpleTypingText } from '@/components/ui/SimpleTypingText'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { WholesaleInquirySlideover } from '@/components/wholesale/WholesaleInquirySlideover'
@@ -72,8 +73,8 @@ export function MainHeader() {
   // Effective cart display mode. When the store is purely wholesale or retail
   // the icon reflects the admin-configured store mode. In hybrid (BOTH) mode
   // the visitor's session toggle drives the morph (defaulting to retail).
-  const showWholesaleIcon =
-    storeMode === 'WHOLESALE' ? true : storeMode === 'RETAIL' ? false : isWholesaleSession
+  const { canRequestQuote } = useCustomerView()
+  const showWholesaleIcon = canRequestQuote
   const canToggle = isBoth
 
   useEffect(() => {

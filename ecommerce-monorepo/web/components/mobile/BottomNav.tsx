@@ -13,6 +13,7 @@ import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 export interface BottomNavProps {
   forceVisible?: boolean
@@ -48,8 +49,8 @@ export function BottomNav({ forceVisible }: BottomNavProps = {}) {
   }
 
   // Determine if wholesale or retail
-  const isWholesale =
-    storeMode === 'WHOLESALE' ? true : storeMode === 'RETAIL' ? false : isWholesaleSession
+  const { canRequestQuote } = useCustomerView()
+  const isWholesale = canRequestQuote
 
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)

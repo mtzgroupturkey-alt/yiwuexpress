@@ -77,12 +77,14 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
   const [justAdded, setJustAdded] = useState(false);
 
   const { settings } = useSettings();
-  const customerView = useCustomerView();
+  const {
+    isWholesale: isWholesaleActive,
+    canRequestQuote,
+    canAddToWholesaleCart,
+    isLoading: isCustomerLoading,
+  } = useCustomerView();
   const { items: quoteItems, addToQuote, updateQuantity: updateQuoteQuantity, removeFromQuote } = useQuoteCart();
   const { addItem: addInquiryItem } = useWholesaleInquiry();
-
-  // Conditioned strictly by customer view:
-  const isWholesaleActive = customerView.isWholesale;
 
   const rfqModel = settings?.rfqModel || 'RFQ';
   const isInstantWholesale = rfqModel === 'INSTANT';

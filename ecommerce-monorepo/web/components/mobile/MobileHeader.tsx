@@ -12,6 +12,7 @@ import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useCustomerView } from '@/hooks/useCustomerView'
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher'
 import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher'
 import { VisualSearchModal } from '@/components/search/VisualSearchModal'
@@ -83,8 +84,8 @@ export function MobileHeader({
     }
   }, [searchValue])
 
-  const isWholesale =
-    storeMode === 'WHOLESALE' ? true : storeMode === 'RETAIL' ? false : isWholesaleSession
+  const { canRequestQuote } = useCustomerView()
+  const isWholesale = canRequestQuote
 
   const cartHref = isWholesale ? '/quote-cart' : '/cart'
   const effectiveCartCount = isWholesale ? (quoteCount || inquiryCount || 0) : (cartCount || 0)
