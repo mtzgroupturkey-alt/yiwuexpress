@@ -1909,7 +1909,9 @@
       "wholesaleMoq": "Wholesale (MOQ: {moq})",
       "requestQuoteMoq": "Request Quote (MOQ: {moq})",
       "addedToQuote": "Added to Quote",
-      "addToCartMoq": "Add to Cart (MOQ: {moq})"
+      "addToCartMoq": "Add to Cart (MOQ: {moq})",
+      "officialSourcing": "Official Sourcing",
+      "chinaFactory": "China Factory"
     }
   },
   "QuoteCart": {

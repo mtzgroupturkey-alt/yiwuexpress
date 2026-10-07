@@ -41,7 +41,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onToggleFavorite,
   onViewFullPDP,
 }) => {
-  const { tModals, tPdp, tBadge } = useStorefrontTranslation();
+  const { tModals, tPdp, tBadge, tOriginAndBrand } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
   const { settings, storeMode: systemStoreMode } = useSettings();
   const { storeMode: ctxStoreMode } = useStoreMode();
@@ -179,7 +179,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             <div>
               {/* Brand & Category */}
               <div className="text-xs text-slate-500 font-medium mb-1">
-                <strong className="text-slate-800 font-bold">{product.brand}</strong> • {product.originOrType}
+                <strong className="text-slate-800 font-bold">
+                  {tOriginAndBrand(product.brand)}
+                </strong>
+                {product.originOrType && <span> • {tOriginAndBrand(product.originOrType)}</span>}
               </div>
 
               {/* Title */}

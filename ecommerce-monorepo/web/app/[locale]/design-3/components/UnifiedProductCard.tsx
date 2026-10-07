@@ -69,7 +69,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
   variant = 'standard',
 }) => {
   const locale = useLocale();
-  const { tFlash, tBadge, tPdp } = useStorefrontTranslation();
+  const { tFlash, tBadge, tPdp, tOriginAndBrand } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
   const qtyInCart = cartQuantities[product.id] || 0;
   const isFavorite = favoriteIds.has(product.id);
@@ -246,8 +246,12 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
               {product.category}
             </span>
           )}
-          <strong className="text-slate-800 font-bold truncate">{product.brand}</strong>
-          {product.originOrType && !product.category && <span> • {product.originOrType}</span>}
+          <strong className="text-slate-800 font-bold truncate">
+            {tOriginAndBrand(product.brand)}
+          </strong>
+          {product.originOrType && !product.category && (
+            <span> • {tOriginAndBrand(product.originOrType)}</span>
+          )}
         </div>
 
         {/* Title */}

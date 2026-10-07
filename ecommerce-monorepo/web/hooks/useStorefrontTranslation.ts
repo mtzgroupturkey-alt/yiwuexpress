@@ -80,6 +80,10 @@ const BADGE_MAP: Record<string, string> = {
   'dual zone 9.5l': 'dualZone',
   'p.e.p. system': 'pepSystem',
   'alpha 9 ai gen7': 'alpha9Gen7',
+
+  // Sourcing & Factory Origins
+  'official sourcing': 'officialSourcing',
+  'china factory': 'chinaFactory',
 };
 
 function resolveBadge(
@@ -186,6 +190,16 @@ export function useStorefrontTranslation() {
       tShop: safeTranslateWithPrefix('shop'),
       tPdp: safeTranslateWithPrefix('pdp'),
       tHeroBanner: safeTranslateWithPrefix('heroBanner'),
+      tOriginAndBrand: (text?: string) => {
+        if (!text) return '';
+        const trimmed = text.trim();
+        const lower = trimmed.toLowerCase();
+        if (BADGE_MAP[lower]) {
+          const trans = safeTranslateWithPrefix('badges')(BADGE_MAP[lower]);
+          if (trans && trans !== BADGE_MAP[lower]) return trans;
+        }
+        return trimmed;
+      },
     };
   } catch (error) {
     // Graceful fallback for non-intl contexts
@@ -212,6 +226,7 @@ export function useStorefrontTranslation() {
       tShop: fallbackFn,
       tPdp: fallbackFn,
       tHeroBanner: fallbackFn,
+      tOriginAndBrand: (text?: string) => text || '',
     };
   }
 }

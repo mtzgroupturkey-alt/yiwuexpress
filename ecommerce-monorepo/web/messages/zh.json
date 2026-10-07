@@ -1926,7 +1926,9 @@
       "wholesaleMoq": "批发 (起订: {moq})",
       "requestQuoteMoq": "询价 (起订: {moq})",
       "addedToQuote": "已加入询价单",
-      "addToCartMoq": "加入购物车 (起订: {moq})"
+      "addToCartMoq": "加入购物车 (起订: {moq})",
+      "officialSourcing": "官方严选代采",
+      "chinaFactory": "中国源头工厂"
     }
   },
   "QuoteCart": {

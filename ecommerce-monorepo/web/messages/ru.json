@@ -1909,7 +1909,9 @@
       "wholesaleMoq": "Опт (Мин: {moq})",
       "requestQuoteMoq": "Запросить цену (Мин: {moq})",
       "addedToQuote": "Добавлено в запрос",
-      "addToCartMoq": "В корзину (Мин: {moq})"
+      "addToCartMoq": "В корзину (Мин: {moq})",
+      "officialSourcing": "Официальные поставки",
+      "chinaFactory": "Фабрика в Китае"
     }
   },
   "QuoteCart": {

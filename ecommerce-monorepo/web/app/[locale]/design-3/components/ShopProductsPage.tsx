@@ -79,7 +79,7 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { tShop, tPdp, tBadge } = useStorefrontTranslation();
+  const { tShop, tPdp, tBadge, tOriginAndBrand } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
 
   const { settings, storeMode: systemStoreMode } = useSettings();
@@ -1415,11 +1415,13 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                            {product.brand}
+                            {tOriginAndBrand(product.brand)}
                           </span>
-                          <span className="text-[11px] text-slate-400 font-medium">
-                            {product.originOrType}
-                          </span>
+                          {product.originOrType && (
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              {tOriginAndBrand(product.originOrType)}
+                            </span>
+                          )}
                           {product.isExpressDelivery && (
                             <span className="ml-auto text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
                               <Zap className="w-3 h-3 fill-emerald-600 text-emerald-600" />
