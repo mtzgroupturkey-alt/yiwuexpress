@@ -6,7 +6,7 @@ import {
   ArrowLeftRight, AlertTriangle, Ship, UserCheck, ShoppingBag,
   MessageSquare, Building2, User, FolderTree, Tag, Star,
   PieChart, ArrowUpCircle, ArrowDownCircle, TrendingUp, Image as ImageIcon,
-  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon, Search, UtensilsCrossed, Tv, Bot, Cpu, Brain
+  Building, Globe2, Shield, BarChart3, Server, Bell, Sparkles, Zap, LucideIcon, Search, UtensilsCrossed, Tv, Bot, Cpu, Brain, Megaphone
 } from 'lucide-react'
 
 export interface NavItem {
@@ -28,22 +28,6 @@ export interface NavGroup {
 
 export const navigationConfig: NavGroup[] = [
   {
-    id: 'autopilot',
-    label: 'Auto-Pilot',
-    translationKey: 'autopilot',
-    icon: Bot,
-    items: [
-      { label: 'Neural Cockpit (The Brain)', translationKey: 'neuralCockpit', href: '/admin/autopilot/orb', icon: Brain },
-      { label: 'Classic Cockpit', translationKey: 'classicCockpit', href: '/admin/autopilot/classic', icon: Cpu },
-      { label: 'Approvals Inbox', translationKey: 'approvals', href: '/admin/autopilot/approvals', icon: Bell },
-      { label: 'Predictions & Radar', translationKey: 'predictions', href: '/admin/autopilot/predictions', icon: TrendingUp },
-      { label: 'Insights & Retrospective', translationKey: 'insights', href: '/admin/autopilot/insights', icon: Sparkles },
-      { label: 'Policy Rules', translationKey: 'policies', href: '/admin/autopilot/policies', icon: Shield },
-      { label: 'Audit Trail', translationKey: 'audit', href: '/admin/autopilot/audit', icon: FileText },
-      { label: 'System Settings', translationKey: 'settings', href: '/admin/autopilot/settings', icon: Settings },
-    ],
-  },
-  {
     id: 'dashboard',
     label: 'Dashboard',
     translationKey: 'dashboard',
@@ -55,6 +39,18 @@ export const navigationConfig: NavGroup[] = [
     ]
   },
   {
+    id: 'products',
+    label: 'Products',
+    translationKey: 'products',
+    icon: Package,
+    items: [
+      { label: 'All Products', translationKey: 'allProducts', href: '/admin/products', icon: Package },
+      { label: 'Categories', translationKey: 'categories', href: '/admin/categories', icon: FolderTree },
+      { label: 'Attributes', translationKey: 'attributes', href: '/admin/attributes', icon: Tag },
+      { label: 'Reviews', translationKey: 'reviews', href: '/admin/reviews', icon: Star },
+    ]
+  },
+  {
     id: 'buying',
     label: 'Buying',
     translationKey: 'buying',
@@ -63,6 +59,18 @@ export const navigationConfig: NavGroup[] = [
       { label: 'Purchase Orders', translationKey: 'purchaseOrders', href: '/admin/purchase-orders', icon: FileText },
       { label: 'Suppliers', translationKey: 'suppliers', href: '/admin/suppliers', icon: Factory },
       { label: 'Returns to Supplier', translationKey: 'returnsToSupplier', href: '/admin/returns-to-supplier', icon: RotateCcw },
+    ]
+  },
+  {
+    id: 'selling',
+    label: 'Selling',
+    translationKey: 'selling',
+    icon: DollarSign,
+    items: [
+      { label: 'Orders', translationKey: 'orders', href: '/admin/orders', icon: ShoppingBag, badgeKey: 'pendingOrders' },
+      { label: 'Wholesale Inquiries', translationKey: 'wholesaleInquiries', href: '/admin/wholesale', icon: MessageSquare, badgeKey: 'newInquiries' },
+      { label: 'Quotes', translationKey: 'quotes', href: '/admin/quotes', icon: FileText, badgeKey: 'pendingQuotes' },
+      { label: 'Returns', translationKey: 'returns', href: '/admin/returns', icon: RotateCcw },
     ]
   },
   {
@@ -90,41 +98,6 @@ export const navigationConfig: NavGroup[] = [
     ]
   },
   {
-    id: 'selling',
-    label: 'Selling',
-    translationKey: 'selling',
-    icon: DollarSign,
-    items: [
-      { label: 'Orders', translationKey: 'orders', href: '/admin/orders', icon: ShoppingBag, badgeKey: 'pendingOrders' },
-      { label: 'Wholesale Inquiries', translationKey: 'wholesaleInquiries', href: '/admin/wholesale', icon: MessageSquare, badgeKey: 'newInquiries' },
-      { label: 'Quotes', translationKey: 'quotes', href: '/admin/quotes', icon: FileText, badgeKey: 'pendingQuotes' },
-      { label: 'Returns', translationKey: 'returns', href: '/admin/returns', icon: RotateCcw },
-    ]
-  },
-  {
-    id: 'customers',
-    label: 'Customers',
-    translationKey: 'customers',
-    icon: Users,
-    items: [
-      { label: 'All Customers', translationKey: 'allCustomers', href: '/admin/customers', icon: Users },
-      { label: 'B2B Customers', translationKey: 'b2bCustomers', href: '/admin/customers?type=b2b', icon: Building2 },
-      { label: 'B2C Customers', translationKey: 'b2cCustomers', href: '/admin/customers?type=b2c', icon: User },
-    ]
-  },
-  {
-    id: 'products',
-    label: 'Products',
-    translationKey: 'products',
-    icon: Package,
-    items: [
-      { label: 'All Products', translationKey: 'allProducts', href: '/admin/products', icon: Package },
-      { label: 'Categories', translationKey: 'categories', href: '/admin/categories', icon: FolderTree },
-      { label: 'Attributes', translationKey: 'attributes', href: '/admin/attributes', icon: Tag },
-      { label: 'Reviews', translationKey: 'reviews', href: '/admin/reviews', icon: Star },
-    ]
-  },
-  {
     id: 'money',
     label: 'Money',
     translationKey: 'money',
@@ -134,6 +107,17 @@ export const navigationConfig: NavGroup[] = [
       { label: 'Accounts Payable', translationKey: 'accountsPayable', href: '/admin/finance/accounts-payable', icon: ArrowUpCircle },
       { label: 'Accounts Receivable', translationKey: 'accountsReceivable', href: '/admin/finance/accounts-receivable', icon: ArrowDownCircle },
       { label: 'Profit & Loss', translationKey: 'profitLoss', href: '/admin/finance/profit-loss', icon: TrendingUp },
+    ]
+  },
+  {
+    id: 'customers',
+    label: 'Customer Hub',
+    translationKey: 'customers',
+    icon: Users,
+    items: [
+      { label: 'All Customers', translationKey: 'allCustomers', href: '/admin/customers', icon: Users },
+      { label: 'B2B Customers', translationKey: 'b2bCustomers', href: '/admin/customers?type=b2b', icon: Building2 },
+      { label: 'B2C Customers', translationKey: 'b2cCustomers', href: '/admin/customers?type=b2c', icon: User },
     ]
   },
   {
@@ -147,6 +131,7 @@ export const navigationConfig: NavGroup[] = [
       { label: 'Flash & Seasonal Deals', translationKey: 'flashDeals', href: '/admin/settings/flash-sales', icon: Zap },
       { label: 'Kitchen & Dining Block', translationKey: 'kitchenSection', href: '/admin/settings/kitchen-section', icon: UtensilsCrossed },
       { label: 'Electronics & Appliances Block', translationKey: 'electronicsSection', href: '/admin/settings/electronics-section', icon: Tv },
+      { label: 'Homepage Ads & Banners', translationKey: 'adsManager', href: '/admin/settings/ads-manager', icon: Megaphone },
       { label: 'Push Notifications', translationKey: 'notifications', href: '/admin/notifications', icon: Bell },
       { label: 'Content Pages', translationKey: 'contentPages', href: '/admin/content/pages', icon: FileText },
       { label: 'Testimonials', translationKey: 'testimonials', href: '/admin/testimonials', icon: Star },
@@ -159,6 +144,14 @@ export const navigationConfig: NavGroup[] = [
     icon: Settings,
     items: [
       { label: 'Store Mode & Sales', translationKey: 'storeMode', href: '/admin/settings/general', icon: Store },
+      { label: 'Auto-Pilot Center', translationKey: 'autopilot', href: '/admin/autopilot', icon: Bot },
+      { label: 'Neural Cockpit (The Brain)', translationKey: 'neuralCockpit', href: '/admin/autopilot/orb', icon: Brain },
+      { label: 'Classic Cockpit', translationKey: 'classicCockpit', href: '/admin/autopilot/classic', icon: Cpu },
+      { label: 'Approvals Inbox', translationKey: 'approvals', href: '/admin/autopilot/approvals', icon: Bell },
+      { label: 'Predictions & Radar', translationKey: 'predictions', href: '/admin/autopilot/predictions', icon: TrendingUp },
+      { label: 'Insights & Retrospective', translationKey: 'insights', href: '/admin/autopilot/insights', icon: Sparkles },
+      { label: 'Policy Rules', translationKey: 'policies', href: '/admin/autopilot/policies', icon: Shield },
+      { label: 'Audit Trail', translationKey: 'audit', href: '/admin/autopilot/audit', icon: FileText },
       { label: 'Company Info', translationKey: 'companyInfo', href: '/admin/settings/company', icon: Building },
       { label: 'Warehouses', translationKey: 'warehouses', href: '/admin/settings/warehouses', icon: Warehouse },
       { label: 'Countries', translationKey: 'countries', href: '/admin/countries', icon: Globe2 },

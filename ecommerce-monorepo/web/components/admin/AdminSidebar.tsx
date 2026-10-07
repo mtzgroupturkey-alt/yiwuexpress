@@ -57,7 +57,7 @@ function AdminSidebarContent({
         if (saved) return JSON.parse(saved)
       } catch (e) {}
     }
-    return ['dashboard', 'buying', 'warehouses', 'shipping', 'selling', 'customers', 'products', 'money', 'website', 'settings']
+    return ['dashboard', 'products', 'buying', 'selling', 'warehouses', 'shipping', 'money', 'customers', 'website', 'settings']
   })
   const [searchQuery, setSearchQuery] = useState('')
 
