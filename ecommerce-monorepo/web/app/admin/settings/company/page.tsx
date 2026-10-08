@@ -113,11 +113,24 @@ export default function CompanyInfoPage() {
     }
   }, [authLoading, isAdmin])
 
+  const getAuthHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {}
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token')
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    }
+    return headers
+  }
+
   const fetchSettings = async () => {
     try {
       setLoading(true)
       const response = await fetch('/api/admin/settings/company', {
+        headers: getAuthHeaders(),
         credentials: 'include',
+        cache: 'no-store',
       })
 
       const data = await response.json()
@@ -275,6 +288,7 @@ export default function CompanyInfoPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...getAuthHeaders(),
         },
         credentials: 'include',
         body: JSON.stringify({ ...payloadSettings, translations: apiTranslations }),
@@ -288,7 +302,7 @@ export default function CompanyInfoPage() {
         await fetchSettings()
         setTimeout(() => setSuccess(''), 3000)
       } else {
-        setError(data.error || 'Failed to update settings')
+        setError(data.error || data.detail || 'Failed to update settings')
       }
     } catch (err) {
       setError('Network error')
@@ -326,6 +340,7 @@ export default function CompanyInfoPage() {
 
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: formData,
       })
@@ -368,6 +383,7 @@ export default function CompanyInfoPage() {
 
       const response = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: getAuthHeaders(),
         credentials: 'include',
         body: formData,
       })
