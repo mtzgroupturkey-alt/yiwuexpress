@@ -181,6 +181,7 @@ export default function CheckoutPage() {
           selectedOptions: item.selectedOptions || undefined,
           quantity: item.quantity
         })),
+        mode: isWholesaleActive ? 'WHOLESALE' : 'RETAIL',
         shippingFee,
         tax: 0,
         discount: 0
@@ -219,7 +220,9 @@ export default function CheckoutPage() {
     }
   }
 
-  if (isWholesaleActive) {
+  const rfqModel = settings?.rfqModel || 'RFQ'
+
+  if (isWholesaleActive && rfqModel === 'RFQ') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center space-y-4">

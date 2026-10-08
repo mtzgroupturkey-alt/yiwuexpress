@@ -26,11 +26,14 @@ interface Cart {
     variantId?: string | null
     selectedOptions?: Record<string, any> | null
     quantity: number
+    mode?: string
     product: {
       id: string
       name: string
       slug: string
       price: number
+      wholesalePrice?: number | null
+      minOrderQty?: number | null
       thumbnail?: string | null
       stock: number
       weightKg: number
@@ -65,12 +68,13 @@ export default function CartPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (isWholesaleActive) {
+    const rfqModel = settings?.rfqModel || 'RFQ'
+    if (isWholesaleActive && rfqModel === 'RFQ') {
       navigate('/quote-cart')
       return
     }
     fetchCart()
-  }, [isWholesaleActive])
+  }, [isWholesaleActive, settings?.rfqModel])
 
   const fetchCart = async () => {
     setLoading(true)
