@@ -159,7 +159,7 @@ export function IkeaSpecificationsAccordion({
                 <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 block mb-1">
                   {locale === 'ru' ? 'Артикул' : locale === 'zh' ? '货号' : 'Item #'}
                 </span>
-                <span className="text-sm font-mono font-bold text-blue-800">{product.dromkokItemNo || currentSku}</span>
+                <span className="text-sm font-mono font-bold text-blue-800">{product.dromkokItemNo || '—'}</span>
               </div>
             </div>
           </div>
