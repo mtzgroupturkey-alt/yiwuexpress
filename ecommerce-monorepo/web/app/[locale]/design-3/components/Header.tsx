@@ -12,7 +12,6 @@ import {
   ChevronRight,
   Search, 
   Heart, 
-  ClipboardList, 
   ShoppingCart, 
   LayoutGrid, 
   Zap, 
@@ -61,7 +60,7 @@ interface HeaderProps {
   onSearchChange: (query: string) => void;
   onOpenCart: () => void;
   onOpenFavorites: () => void;
-  onOpenOrders: () => void;
+  onOpenOrders?: () => void;
   onOpenCatalog: () => void;
   onOpenLocation: () => void;
   onOpenMemberModal: () => void;
@@ -491,16 +490,6 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
             <span className="text-[11px] font-medium mt-0.5 text-slate-600">{tHeader('favorites')}</span>
-          </button>
-
-          {/* Orders */}
-          <button
-            id="header-orders-btn"
-            onClick={onOpenOrders}
-            className="flex flex-col items-center justify-center p-1.5 text-slate-700 hover:text-[#00407a] transition-colors cursor-pointer"
-          >
-            <ClipboardList className="w-5 h-5 text-slate-600" />
-            <span className="text-[11px] font-medium mt-0.5 text-slate-600">{tHeader('orders')}</span>
           </button>
 
           {/* Smart Morphing Cart Button */}

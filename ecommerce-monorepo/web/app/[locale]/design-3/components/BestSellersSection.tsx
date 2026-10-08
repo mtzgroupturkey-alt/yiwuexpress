@@ -92,8 +92,8 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
     ? products
     : products.filter(selectedTabObj.match);
 
-  // Take top 6 items
-  const displayProducts = filteredProducts.slice(0, 6);
+  // Take top 12 items (two full 6-col rows)
+  const displayProducts = filteredProducts.slice(0, 12);
 
   return (
     <section className="w-full max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
@@ -145,7 +145,7 @@ export const BestSellersSection: React.FC<BestSellersSectionProps> = ({
         </div>
       </div>
 
-      {/* Grid of 6 items */}
+      {/* Grid of items */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {isLoading || displayProducts.length === 0 ? (
           Array.from({ length: 6 }).map((_, i) => (
