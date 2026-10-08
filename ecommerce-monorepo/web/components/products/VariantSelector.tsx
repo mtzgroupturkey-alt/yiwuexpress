@@ -139,7 +139,6 @@ export function VariantSelector({ variants, selectedVariant, onSelect }: Variant
         <div className="pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">SKU: {selectedVariant.sku}</p>
               <p className={`text-sm font-medium ${
                 selectedVariant.stock > 0 ? 'text-green-600' : 'text-red-600'
               }`}>
