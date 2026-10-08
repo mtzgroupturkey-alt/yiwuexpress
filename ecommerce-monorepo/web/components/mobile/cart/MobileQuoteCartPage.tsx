@@ -205,7 +205,7 @@ export function MobileQuoteCartPage({
                       </div>
 
                       <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">
-                        SKU: {item.productSku}
+                        Item #: {item.dromkokItemNo || '—'}
                       </p>
 
                       {/* Compact Attribute Selection */}
