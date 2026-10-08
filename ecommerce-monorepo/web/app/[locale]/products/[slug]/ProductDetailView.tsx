@@ -1517,7 +1517,6 @@ export default function ProductDetailView({
                           {t('inHighDemand')}
                         </span>
                       )}
-                      <span className="text-xs text-slate-400 font-mono font-medium">{t('skuLabel')}{currentSku}</span>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-xs font-semibold">
@@ -1810,7 +1809,9 @@ export default function ProductDetailView({
                             >
                               <div className="truncate min-w-0">
                                 <span className="font-semibold text-slate-800 block truncate text-xs">{item.label}</span>
-                                <span className="text-[10px] font-mono text-slate-400">{item.sku}</span>
+                                <span className="text-[10px] font-mono text-slate-400">
+                                  Item #: {(product as any).dromkokItemNo || '—'}
+                                </span>
                               </div>
 
                               <div className="flex items-center gap-2 flex-shrink-0">
@@ -2270,10 +2271,6 @@ export default function ProductDetailView({
                           <dd className="sm:col-span-2 font-mono font-bold text-blue-700 text-xs sm:text-sm">{(product as any).dromkokItemNo}</dd>
                         </div>
                       )}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('skuLabel').replace(':', '') || 'SKU'}</dt>
-                        <dd className="sm:col-span-2 font-mono font-bold text-slate-900 text-xs sm:text-sm">{currentSku}</dd>
-                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Категория' : locale === 'zh' ? '商品分类' : 'Category'}</dt>
                         <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{localizedCategoryName || 'Commercial Bakeware'}</dd>
