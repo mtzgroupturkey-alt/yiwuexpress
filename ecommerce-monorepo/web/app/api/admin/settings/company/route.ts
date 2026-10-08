@@ -113,6 +113,8 @@ const DEFAULT_COMPANY_SETTINGS = {
   storeHours: '08:00 – 23:00',
   freeShippingThreshold: 35.00,
   announcementTicker: '',
+  mapProvider: 'yandex',
+  yandexMapsApiKey: '',
   translations: [],
 }
 
@@ -180,6 +182,8 @@ export async function GET(request: Request) {
       storeHours: settings.storeHours || DEFAULT_COMPANY_SETTINGS.storeHours,
       freeShippingThreshold: settings.freeShippingThreshold !== undefined && settings.freeShippingThreshold !== null ? settings.freeShippingThreshold : DEFAULT_COMPANY_SETTINGS.freeShippingThreshold,
       announcementTicker: settings.announcementTicker || DEFAULT_COMPANY_SETTINGS.announcementTicker,
+      mapProvider: settings.mapProvider || DEFAULT_COMPANY_SETTINGS.mapProvider,
+      yandexMapsApiKey: settings.yandexMapsApiKey || DEFAULT_COMPANY_SETTINGS.yandexMapsApiKey,
       translations,
     }
 
@@ -251,6 +255,8 @@ export async function PUT(request: Request) {
             storeHours: body.storeHours !== undefined ? body.storeHours : undefined,
             freeShippingThreshold,
             announcementTicker: body.announcementTicker !== undefined ? body.announcementTicker : undefined,
+            mapProvider: body.mapProvider !== undefined ? body.mapProvider : undefined,
+            yandexMapsApiKey: body.yandexMapsApiKey !== undefined ? body.yandexMapsApiKey : undefined,
           },
         })
       } catch (updateErr: any) {
@@ -282,6 +288,8 @@ export async function PUT(request: Request) {
               instagramUrl: body.instagramUrl,
               wechatId: body.wechatId,
               whatsappNumber: body.whatsappNumber,
+              mapProvider: body.mapProvider !== undefined ? body.mapProvider : undefined,
+              yandexMapsApiKey: body.yandexMapsApiKey !== undefined ? body.yandexMapsApiKey : undefined,
             },
           })
         } catch {
@@ -350,6 +358,8 @@ export async function PUT(request: Request) {
           storeHours: body.storeHours || '08:00 – 23:00',
           freeShippingThreshold: body.freeShippingThreshold !== undefined ? parseFloat(body.freeShippingThreshold) || 35.0 : 35.0,
           announcementTicker: body.announcementTicker || null,
+          mapProvider: body.mapProvider || 'yandex',
+          yandexMapsApiKey: body.yandexMapsApiKey || null,
         },
       })
 

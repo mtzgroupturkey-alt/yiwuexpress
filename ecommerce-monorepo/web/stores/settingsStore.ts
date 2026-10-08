@@ -25,6 +25,8 @@ export interface CompanySettings {
   rfqEnabled?: boolean
   wholesaleEnabled?: boolean
   retailEnabled?: boolean
+  mapProvider?: 'yandex' | 'leaflet'
+  yandexMapsApiKey?: string
   storeHours?: string
   freeShippingThreshold?: number
   announcementTicker?: string
@@ -137,6 +139,8 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   retailEnabled: true,
   storeHours: '08:00 – 23:00',
   freeShippingThreshold: 35.0,
+  mapProvider: 'yandex',
+  yandexMapsApiKey: '',
   kitchenSectionEnabled: true,
   kitchenSectionTitle: 'Kitchenware, Cookware & Dining Essentials',
   kitchenSectionSubtitle: 'Granite frying pans, chef cutlery sets, porcelain dinner sets, and Italian espresso barware',

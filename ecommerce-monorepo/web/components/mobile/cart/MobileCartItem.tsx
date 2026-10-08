@@ -18,6 +18,7 @@ export interface MobileCartItemData {
   quantity: number
   weightKg?: number
   variantName?: string
+  mode?: string
   moq?: number
   isActive?: boolean
 }
@@ -40,7 +41,10 @@ export function MobileCartItem({
   const { formatPrice } = useCurrency()
 
   const maxStock = item.stock !== undefined ? Math.max(1, item.stock) : 9999
-  const minQty = item.moq || 1
+  const isWholesale = item.mode === 'WHOLESALE'
+  const minQty = item.mode === 'WHOLESALE'
+    ? (item.moq && item.moq > 0 ? item.moq : 1)
+    : (item.mode === 'RETAIL' ? 1 : (item.moq || 1))
 
   return (
     <div
@@ -112,6 +116,18 @@ export function MobileCartItem({
               <p className="text-[10px] text-gray-400">
                 {formatPrice(item.price)} / unit
               </p>
+              {isWholesale && (
+                <div className="flex items-center gap-1 mt-1">
+                  <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded">
+                    Wholesale
+                  </span>
+                  {minQty > 1 && (
+                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 px-1.5 py-0.5 rounded">
+                      MOQ: {minQty}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             <MobileQuantityStepper

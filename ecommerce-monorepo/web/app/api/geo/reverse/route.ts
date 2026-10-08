@@ -49,8 +49,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, address: cached.data });
     }
 
-    // 1. Try Yandex Geocoder if API Key is configured
-    const yandexApiKey = process.env.YANDEX_GEOCODER_API_KEY || process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY;
+    // 1. Fetch system settings for custom Yandex API key & provider preference
+    let dbSettings: any = null;
+    try {
+      const { prisma } = await import('@/lib/db');
+      dbSettings = await prisma.systemSettings.findFirst({
+        select: { mapProvider: true, yandexMapsApiKey: true }
+      });
+    } catch {}
+
+    const yandexApiKey =
+      dbSettings?.yandexMapsApiKey?.trim() ||
+      process.env.YANDEX_GEOCODER_API_KEY ||
+      process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY;
+
+    // Try Yandex Geocoder if provider is yandex (or default) and API key exists
     if (yandexApiKey) {
       try {
         const yandexLang = locale === 'zh' ? 'en_US' : locale === 'en' ? 'en_US' : 'ru_RU';

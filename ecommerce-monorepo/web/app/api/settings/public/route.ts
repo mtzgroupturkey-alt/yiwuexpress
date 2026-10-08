@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
         storeHours: true,
         freeShippingThreshold: true,
         announcementTicker: true,
+        mapProvider: true,
+        yandexMapsApiKey: true,
         kitchenSectionEnabled: true,
         kitchenSectionTitle: true,
         kitchenSectionSubtitle: true,
@@ -69,7 +71,7 @@ export async function GET(request: NextRequest) {
     })
 
     // If no settings exist, use defaults
-    const effectiveSettings = settings ?? {
+    const effectiveSettings: any = settings ?? {
       companyName: 'Global Trade',
       siteTagline: 'Global Trade & Logistics Platform',
       companyAddress: 'China',
@@ -263,6 +265,9 @@ export async function GET(request: NextRequest) {
         memberClubActivateLink: memberClubActivateLink || null,
         memberClubHowPointsWork: memberClubHowPointsWork || null,
         memberClubHowPointsLink: memberClubHowPointsLink || null,
+        // Map Provider Configuration
+        mapProvider: (effectiveSettings as any)?.mapProvider || 'yandex',
+        yandexMapsApiKey: (effectiveSettings as any)?.yandexMapsApiKey || process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY || '',
         // Product Badges & Delivery Timings
         pdpWarrantyTitle,
         pdpWarrantySubtitle,
@@ -328,6 +333,8 @@ export async function GET(request: NextRequest) {
       storeHours: '08:00 – 23:00',
       freeShippingThreshold: 35.00,
       announcementTicker: null,
+      mapProvider: 'yandex',
+      yandexMapsApiKey: process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY || '',
     }
 
     return NextResponse.json({ settings: defaultSettings })

@@ -38,6 +38,8 @@ interface CompanySettings {
   storeHours: string
   freeShippingThreshold: number
   announcementTicker: string
+  mapProvider: string
+  yandexMapsApiKey: string
 }
 
 export default function CompanyInfoPage() {
@@ -77,6 +79,8 @@ export default function CompanyInfoPage() {
     storeHours: '08:00 – 23:00',
     freeShippingThreshold: 35.0,
     announcementTicker: '',
+    mapProvider: 'yandex',
+    yandexMapsApiKey: '',
   })
 
   // Helper function to safely convert null to empty string
@@ -146,6 +150,8 @@ export default function CompanyInfoPage() {
             storeHours: safeString(data.settings.storeHours) || '08:00 – 23:00',
             freeShippingThreshold: typeof data.settings.freeShippingThreshold === 'number' ? data.settings.freeShippingThreshold : (parseFloat(data.settings.freeShippingThreshold) || 35.0),
             announcementTicker: safeString(data.settings.announcementTicker),
+            mapProvider: safeString(data.settings.mapProvider) || 'yandex',
+            yandexMapsApiKey: safeString(data.settings.yandexMapsApiKey),
           })
         }
         setError('')
@@ -737,6 +743,52 @@ export default function CompanyInfoPage() {
                 placeholder="e.g. Spring Mega Sale: Up to 50% Off Selected Living & Electronics | Express 60-min delivery"
               />
               <p className="text-xs text-gray-400 mt-1">Leave empty to use automatic store features (Express Delivery, Quality Products, etc.).</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Map & Address Geocoding Configuration */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <MapPin size={18} className="text-blue-600" />
+            Delivery Map & Address Geocoding
+          </h3>
+          <p className="text-sm text-gray-500 mb-5">
+            Configure the interactive map picker provider used by customers during checkout and profile address management.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Map Provider
+              </label>
+              <select
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                value={settings.mapProvider}
+                onChange={(e) => handleInputChange('mapProvider', e.target.value)}
+              >
+                <option value="yandex">Yandex Maps API (Recommended for RU / BY / CIS)</option>
+                <option value="leaflet">Leaflet & OpenStreetMap (Global Open Source)</option>
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                Yandex provides highest address accuracy and building outlines across Russia and Belarus.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Yandex Maps JavaScript API Key (Optional)
+              </label>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                value={settings.yandexMapsApiKey}
+                onChange={(e) => handleInputChange('yandexMapsApiKey', e.target.value)}
+                placeholder="e.g. 52c...-....-....-....-.........."
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Developer API key from Yandex Developer Console. Overrides default server environment keys if provided.
+              </p>
             </div>
           </div>
         </div>

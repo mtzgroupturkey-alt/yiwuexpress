@@ -243,18 +243,25 @@ export default function CartPage() {
 
     const mobileCartItems = (cart?.items || [])
       .filter((it: any) => it && it.product)
-      .map((it: any) => ({
-        id: it.id,
-        productId: it.productId,
-        name: it.product.name,
-        slug: it.product.slug,
-        price: it.product.price,
-        image: it.product.thumbnail,
-        stock: it.product.stock,
-        quantity: it.quantity,
-        weightKg: it.product.weightKg || 0,
-        isActive: it.product.isActive,
-      }))
+      .map((it: any) => {
+        const isWholesale = it.mode === 'WHOLESALE'
+        return {
+          id: it.id,
+          productId: it.productId,
+          name: it.product.name,
+          slug: it.product.slug,
+          price: isWholesale && typeof it.product.wholesalePrice === 'number'
+            ? it.product.wholesalePrice
+            : it.product.price,
+          image: it.product.thumbnail,
+          stock: it.product.stock,
+          quantity: it.quantity,
+          weightKg: it.product.weightKg || 0,
+          isActive: it.product.isActive,
+          mode: it.mode,
+          moq: isWholesale ? (it.product.minOrderQty ?? 1) : 1,
+        }
+      })
 
     return (
       <>

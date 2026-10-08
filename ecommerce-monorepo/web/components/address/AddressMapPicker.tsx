@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
+import { useSettings } from '@/components/SettingsProvider';
 
 export interface StructuredAddress {
   formattedAddress: string;
@@ -43,6 +44,7 @@ export interface AddressMapPickerProps {
   initialLng?: number;
   initialAddress?: string;
   locale?: string;
+  provider?: 'yandex' | 'leaflet';
 }
 
 // Sensible default coordinates based on locale / country
@@ -60,8 +62,12 @@ export function AddressMapPicker({
   initialLng,
   initialAddress,
   locale: propLocale,
+  provider: propProvider,
 }: AddressMapPickerProps) {
   const currentLocale = useLocale() || propLocale || 'ru';
+  const { settings } = useSettings();
+  const configuredProvider = propProvider || (settings?.mapProvider as 'yandex' | 'leaflet') || 'yandex';
+  const customYandexApiKey = settings?.yandexMapsApiKey?.trim() || '';
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   // Picked coordinates & structured address state
@@ -247,7 +253,7 @@ export function AddressMapPicker({
 
     const initYandex = async () => {
       setActiveProvider('loading');
-      const yandexApiKey = process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY || '';
+      const yandexApiKey = customYandexApiKey || process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY || '';
       const yLang = currentLocale === 'zh' ? 'en_US' : currentLocale === 'en' ? 'en_US' : 'ru_RU';
 
       // Load Yandex Maps script
@@ -326,8 +332,12 @@ export function AddressMapPicker({
       });
     };
 
-    // Try Yandex first, then fallback
-    initYandex();
+    // Route initialization based on configured provider (from admin setting or prop)
+    if (configuredProvider === 'leaflet') {
+      initLeaflet();
+    } else {
+      initYandex();
+    }
 
     return () => {
       isCancelled = true;
@@ -344,7 +354,7 @@ export function AddressMapPicker({
         leafletMapRef.current = null;
       }
     };
-  }, [isOpen, reverseGeocode]);
+  }, [isOpen, configuredProvider, customYandexApiKey, currentLocale, reverseGeocode]);
 
   // 4. Reposition Map and Placemark when coords change via search or GPS
   const moveMapTo = useCallback((lat: number, lng: number) => {

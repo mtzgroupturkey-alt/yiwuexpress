@@ -35,6 +35,7 @@ interface CartItemProps {
 export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartItemProps) {
   const t = useTranslations('Cart')
   const isWholesale = item.mode === 'WHOLESALE'
+  const minQty = isWholesale ? (item.product.minOrderQty && item.product.minOrderQty > 0 ? item.product.minOrderQty : 1) : 1
   const unitPrice = isWholesale && typeof item.product.wholesalePrice === 'number'
     ? item.product.wholesalePrice
     : item.product.price
@@ -96,6 +97,11 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
               Wholesale
             </span>
           )}
+          {isWholesale && minQty > 1 && (
+            <span className="ml-2 text-xs font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+              MOQ: {minQty}
+            </span>
+          )}
         </p>
         
         <p className="text-xs text-gray-400 mt-1">
@@ -107,17 +113,32 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-            disabled={item.quantity <= 1 || updating}
+            onClick={() => onUpdateQuantity(item.id, Math.max(minQty, item.quantity - 1))}
+            disabled={item.quantity <= minQty || updating}
+            aria-label="Decrease quantity"
           >
             <Minus className="w-3 h-3" />
           </Button>
-          <span className="text-sm font-medium w-8 text-center">{item.quantity}</span>
+          <input
+            type="number"
+            min={minQty}
+            max={item.product.stock}
+            value={item.quantity}
+            onChange={(e) => {
+              const v = parseInt(e.target.value, 10)
+              if (!isNaN(v) && v >= minQty && v <= item.product.stock) {
+                onUpdateQuantity(item.id, v)
+              }
+            }}
+            className="text-sm font-medium w-12 text-center border border-gray-200 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            aria-label="Item quantity"
+          />
           <Button
             variant="outline"
             size="sm"
             onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
             disabled={item.quantity >= item.product.stock || updating}
+            aria-label="Increase quantity"
           >
             <Plus className="w-3 h-3" />
           </Button>
@@ -138,17 +159,32 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
         <Button
           variant="outline"
           size="icon"
-          onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-          disabled={item.quantity <= 1 || updating}
+          onClick={() => onUpdateQuantity(item.id, Math.max(minQty, item.quantity - 1))}
+          disabled={item.quantity <= minQty || updating}
+          aria-label="Decrease quantity"
         >
           <Minus className="w-4 h-4" />
         </Button>
-        <span className="font-medium w-12 text-center">{item.quantity}</span>
+        <input
+          type="number"
+          min={minQty}
+          max={item.product.stock}
+          value={item.quantity}
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10)
+            if (!isNaN(v) && v >= minQty && v <= item.product.stock) {
+              onUpdateQuantity(item.id, v)
+            }
+          }}
+          className="font-medium w-14 text-center border border-gray-200 rounded px-1 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          aria-label="Item quantity"
+        />
         <Button
           variant="outline"
           size="icon"
           onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
           disabled={item.quantity >= item.product.stock || updating}
+          aria-label="Increase quantity"
         >
           <Plus className="w-4 h-4" />
         </Button>

@@ -24,8 +24,20 @@ export async function GET(req: NextRequest) {
     const trimmed = query.trim();
     const acceptLang = locale === 'ru' ? 'ru,en;q=0.8' : locale === 'zh' ? 'zh,en;q=0.8' : 'en';
 
-    // 1. Try Yandex Geocode Search if key is present
-    const yandexApiKey = process.env.YANDEX_GEOCODER_API_KEY || process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY;
+    // 1. Fetch system settings for custom Yandex API key
+    let dbSettings: any = null;
+    try {
+      const { prisma } = await import('@/lib/db');
+      dbSettings = await prisma.systemSettings.findFirst({
+        select: { mapProvider: true, yandexMapsApiKey: true }
+      });
+    } catch {}
+
+    const yandexApiKey =
+      dbSettings?.yandexMapsApiKey?.trim() ||
+      process.env.YANDEX_GEOCODER_API_KEY ||
+      process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY;
+
     if (yandexApiKey) {
       try {
         const yandexLang = locale === 'zh' ? 'en_US' : locale === 'en' ? 'en_US' : 'ru_RU';

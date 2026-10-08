@@ -49,6 +49,20 @@ export async function PUT(
       )
     }
 
+    // Validate MOQ for WHOLESALE mode
+    if (cartItem.mode === 'WHOLESALE') {
+      const minQty = cartItem.product?.minOrderQty || 1
+      if (quantity < minQty) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Minimum order quantity is ${minQty} units for wholesale mode`
+          },
+          { status: 400 }
+        )
+      }
+    }
+
     // Check stock
     if (cartItem.product && cartItem.product.stock < quantity) {
       return NextResponse.json(
