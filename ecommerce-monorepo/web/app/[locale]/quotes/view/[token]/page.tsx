@@ -15,6 +15,9 @@ interface QuoteItem {
   productId: string
   productName: string
   productSku: string
+  product?: {
+    dromkokItemNo?: string | null
+  }
   productImage: string | null
   quantity: number
   unitPriceQuoted: number | null
@@ -396,7 +399,7 @@ export default function PublicQuoteViewPage({ params }: { params: { token: strin
               <thead>
                 <tr className="border-b-2 border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                   <th className="py-3 px-2">#</th>
-                  <th className="py-3 px-3">Product Description / SKU</th>
+                  <th className="py-3 px-3">Product Description / Item #</th>
                   <th className="py-3 px-3 text-center">Qty</th>
                   <th className="py-3 px-3 text-right">Quoted Unit</th>
                   <th className="py-3 px-3 text-right">Discount</th>
@@ -409,7 +412,7 @@ export default function PublicQuoteViewPage({ params }: { params: { token: strin
                     <td className="py-3.5 px-2 text-gray-400 font-mono">{idx + 1}</td>
                     <td className="py-3.5 px-3">
                       <p className="font-bold text-gray-900">{item.productName}</p>
-                      <p className="font-mono text-[10px] text-gray-500">SKU: {item.productSku}</p>
+                      <p className="font-mono text-[10px] text-gray-500">Item #: {item.product?.dromkokItemNo || '—'}</p>
                       {(() => {
                         let opts = item.selectedOptions
                         if (typeof opts === 'string') {

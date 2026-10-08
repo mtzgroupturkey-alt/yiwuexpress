@@ -17,6 +17,13 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       include: {
         items: {
           orderBy: { sortOrder: 'asc' },
+          include: {
+            product: {
+              select: {
+                dromkokItemNo: true,
+              },
+            },
+          },
         },
         statusHistory: {
           orderBy: { createdAt: 'desc' },
