@@ -98,11 +98,6 @@ export async function POST(request: NextRequest) {
       where: { email: validated.email.toLowerCase() },
     });
 
-    // 6. Hash Password (12 salt rounds)
-    const hashedPassword = await hashPassword(validated.password);
-
-    let user;
-
     if (existingUser) {
       // Allow re-apply ONLY if the existing user is REJECTED wholesale
       const canReapply =
@@ -115,60 +110,14 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      // Update existing rejected user: reset status to PENDING, clear old rejection reason
-      user = await prisma.user.update({
-        where: { id: existingUser.id },
-        data: {
-          password: hashedPassword,
-          name: validated.contactName,
-          companyName: validated.companyName,
-          businessType: validated.businessType,
-          taxId: validated.taxId,
-          country: `${validated.country}, ${validated.city}`,
-          phone: validated.phone,
-          verificationStatus: 'PENDING',
-          isVerified: false,
-          verifiedAt: null,
-          verificationNotes: validated.notes ? `Re-applied: ${validated.notes}` : null,
-          isActive: true,
-        },
-      });
-
-      // Mark older documents as superseded
-      try {
-        await prisma.verificationDocument.updateMany({
-          where: { userId: user.id },
-          data: { status: 'REJECTED' },
-        });
-      } catch (docErr) {
-        console.warn('[B2B Register] Failed to update older verification docs:', docErr);
-      }
-    } else {
-      // 7. Create User Record in Database
-      // Note: Starts strictly as PENDING, isVerified = false, userType = WHOLESALE
-      user = await prisma.user.create({
-        data: {
-          email: validated.email.toLowerCase(),
-          password: hashedPassword,
-          name: validated.contactName,
-          companyName: validated.companyName,
-          businessType: validated.businessType,
-          taxId: validated.taxId,
-          country: `${validated.country}, ${validated.city}`,
-          phone: validated.phone,
-          role: 'USER',
-          userType: 'WHOLESALE',
-          verificationStatus: 'PENDING',
-          verificationNotes: validated.notes ? `Applicant Notes: ${validated.notes}` : null,
-          isVerified: false,
-          isActive: true,
-        },
-      });
     }
 
-    // 8. File name sanitization & Disk Persistence (Secure storage outside public web root)
-    const sanitizedName = `${user.id}_${Date.now()}.${extension}`;
+    // 6. Hash Password (12 salt rounds)
+    const hashedPassword = await hashPassword(validated.password);
+
+    // 7. Write file to disk first (using unique identifier prefix)
+    const filePrefix = existingUser ? existingUser.id : Date.now().toString(36);
+    const sanitizedName = `${filePrefix}_${Date.now()}.${extension}`;
     const storageDir = path.join(process.cwd(), 'storage', 'licenses');
     await fs.promises.mkdir(storageDir, { recursive: true });
 
@@ -177,23 +126,88 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
     await fs.promises.writeFile(filePath, buffer);
 
-    // 9. Create VerificationDocument Record
-    const verDoc = await prisma.verificationDocument.create({
-      data: {
-        userId: user.id,
-        type: 'BUSINESS_LICENSE',
-        fileName: sanitizedName,
-        fileUrl: '',
-        fileSize: licenseFile.size,
-        status: 'PENDING',
-        notes: `Submitted during B2B registration for ${validated.companyName}`,
-      },
-    });
+    let user: any;
 
-    await prisma.verificationDocument.update({
-      where: { id: verDoc.id },
-      data: { fileUrl: `/api/admin/licenses/${verDoc.id}` },
-    });
+    try {
+      // 8. Atomic Database Transaction: User creation/update + Document record creation
+      user = await prisma.$transaction(async (tx) => {
+        let u: any;
+
+        if (existingUser) {
+          // Update existing rejected user: reset status to PENDING, clear old rejection reason
+          u = await tx.user.update({
+            where: { id: existingUser.id },
+            data: {
+              password: hashedPassword,
+              name: validated.contactName,
+              companyName: validated.companyName,
+              businessType: validated.businessType,
+              taxId: validated.taxId,
+              country: `${validated.country}, ${validated.city}`,
+              phone: validated.phone,
+              verificationStatus: 'PENDING',
+              isVerified: false,
+              verifiedAt: null,
+              verificationNotes: validated.notes ? `Re-applied: ${validated.notes}` : null,
+              isActive: true,
+              role: 'USER', // Ensure role cannot be forged
+            },
+          });
+
+          // Mark older documents as superseded
+          await tx.verificationDocument.updateMany({
+            where: { userId: existingUser.id },
+            data: { status: 'REJECTED' },
+          });
+        } else {
+          // Create new B2B user
+          u = await tx.user.create({
+            data: {
+              email: validated.email.toLowerCase(),
+              password: hashedPassword,
+              name: validated.contactName,
+              companyName: validated.companyName,
+              businessType: validated.businessType,
+              taxId: validated.taxId,
+              country: `${validated.country}, ${validated.city}`,
+              phone: validated.phone,
+              role: 'USER',
+              userType: 'WHOLESALE',
+              verificationStatus: 'PENDING',
+              verificationNotes: validated.notes ? `Applicant Notes: ${validated.notes}` : null,
+              isVerified: false,
+              isActive: true,
+            },
+          });
+        }
+
+        // Create VerificationDocument record
+        const verDoc = await tx.verificationDocument.create({
+          data: {
+            userId: u.id,
+            type: 'BUSINESS_LICENSE',
+            fileName: sanitizedName,
+            fileUrl: '',
+            fileSize: licenseFile.size,
+            status: 'PENDING',
+            notes: `Submitted during B2B registration for ${validated.companyName}`,
+          },
+        });
+
+        await tx.verificationDocument.update({
+          where: { id: verDoc.id },
+          data: { fileUrl: `/api/admin/licenses/${verDoc.id}` },
+        });
+
+        return u;
+      });
+    } catch (txError) {
+      // Clean up orphaned physical file if database transaction aborts
+      if (fs.existsSync(filePath)) {
+        await fs.promises.unlink(filePath).catch(() => {});
+      }
+      throw txError;
+    }
 
     // 10. Record Admin Notification if model exists
     try {
