@@ -266,6 +266,8 @@
       "contact": "Связаться с командой"
     },
     "header": {
+      "forBusiness": "DRÖMKÖK ДЛЯ БИЗНЕСА",
+      "forBusinessTooltip": "Создать оптовый аккаунт",
       "openNow": "Открыто:",
       "story3d": "3D история",
       "trackOrders": "Отследить заказы",
@@ -2020,7 +2022,8 @@
   "business": {
     "title": "Dromkok для бизнеса",
     "subtitle": "Оптовые цены, контейнерные поставки и персональная поддержка",
-    "headerLink": "Dromkok для бизнеса",
+    "headerLink": "DRÖMKÖK ДЛЯ БИЗНЕСА",
+    "forBusiness": "DRÖMKÖK ДЛЯ БИЗНЕСА",
     "benefit": {
       "wholesalePrice": "Оптовые цены напрямую от фабрик",
       "wholesalePriceDesc": "Специальные многоуровневые скидки напрямую от проверенных производителей.",

@@ -175,4 +175,19 @@ describe('MobileProductDetailView (components/mobile/product/MobileProductDetail
     expect(handleRequestQuote).toHaveBeenCalledWith(sampleProduct, 1)
     expect(handleAddToCart).not.toHaveBeenCalled()
   })
+
+  it('hides add to cart and shows sign in link when guest (isLoggedIn=false)', () => {
+    const handleAddToCart = vi.fn()
+
+    render(
+      <MobileProductDetailView
+        product={sampleProduct}
+        onAddToCart={handleAddToCart}
+        isLoggedIn={false}
+      />
+    )
+
+    expect(screen.queryByRole('button', { name: /add to shopping cart/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/sign in to order \/ add to cart/i)).toBeInTheDocument()
+  })
 })

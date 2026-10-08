@@ -118,4 +118,20 @@ describe('StickyBuyBar (components/mobile/StickyBuyBar.tsx)', () => {
 
     expect(container.firstChild).toBeNull()
   })
+
+  it('renders Sign In link instead of Add to Cart when user is not logged in (isLoggedIn=false)', () => {
+    render(
+      <StickyBuyBar
+        isVisible={true}
+        price={25.00}
+        quantity={1}
+        onQuantityChange={vi.fn()}
+        onAddToCart={vi.fn()}
+        isLoggedIn={false}
+      />
+    )
+
+    expect(screen.queryByRole('button', { name: /add to cart/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/sign in/i)).toBeInTheDocument()
+  })
 })

@@ -266,6 +266,8 @@
       "contact": "Contact Our Team"
     },
     "header": {
+      "forBusiness": "DRÖMKÖK FOR BUSINESS",
+      "forBusinessTooltip": "Create a wholesale account",
       "openNow": "Open now:",
       "story3d": "3D Story",
       "trackOrders": "Track Orders",
@@ -2021,6 +2023,7 @@
     "title": "DRÖMKÖK for Business",
     "subtitle": "Wholesale pricing, bulk orders, and dedicated support",
     "headerLink": "DRÖMKÖK FOR BUSINESS",
+    "forBusiness": "DRÖMKÖK FOR BUSINESS",
     "benefit": {
       "wholesalePrice": "Factory-Direct Wholesale Pricing",
       "wholesalePriceDesc": "Unlock tiered volume discounts directly from verified manufacturers.",
