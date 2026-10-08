@@ -112,12 +112,6 @@ export function MobileTabs({ product, className = '' }: MobileTabsProps) {
                   <span className="font-bold font-mono text-blue-700 dark:text-blue-400">{product.dromkokItemNo}</span>
                 </div>
               )}
-              {product.sku && (
-                <div className="py-2 flex justify-between">
-                  <span className="text-gray-400">SKU / Model</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{product.sku}</span>
-                </div>
-              )}
               {(product as any).material && (
                 <div className="py-2 flex justify-between">
                   <span className="text-gray-400">Material</span>
