@@ -1731,6 +1731,8 @@
       "statusProcessing": "仓库配货中",
       "statusPlaced": "订单已提交",
       "selectAddress": "选择收货地址",
+      "selectOnMap": "在地图上选择",
+      "selectOnMapDesc": "在互动地图上精准定位您的收货地址",
       "savedLocations": "常用收货地址与自提点",
       "enterCustomAddress": "或输入新收货地址",
       "addressPlaceholder": "街道、门牌号、楼层...",

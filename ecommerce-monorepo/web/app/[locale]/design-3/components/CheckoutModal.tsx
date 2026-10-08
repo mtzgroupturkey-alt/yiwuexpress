@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   MapPin, 
@@ -16,6 +16,7 @@ import { useCompanyName } from '@/hooks/useCompanyName';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
+import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -45,7 +46,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [orderNumber, setOrderNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderError, setOrderError] = useState('');
+  const [activeAddress, setActiveAddress] = useState(deliveryAddress);
+  const [structuredAddress, setStructuredAddress] = useState<StructuredAddress | null>(null);
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const companyName = useCompanyName();
+
+  // Sync prop changes
+  useEffect(() => {
+    if (deliveryAddress && !activeAddress) {
+      setActiveAddress(deliveryAddress);
+    }
+  }, [deliveryAddress, activeAddress]);
 
   if (!isOpen) return null;
 
@@ -74,14 +85,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         paymentMethod === 'cash_pos' ? 'CASH_ON_DELIVERY' :
         paymentMethod === 'bank_transfer' ? 'BANK_TRANSFER' : 'TRADE_ASSURANCE';
 
+      const finalAddress = activeAddress || deliveryAddress || '1 Global Trade Way';
       const orderPayload = {
         customerName: recipientName.trim() || 'Valued Customer',
         customerEmail: recipientEmail.trim() || 'customer@example.com',
         customerPhone: recipientPhone.trim() || '+1 555 0199',
-        shippingAddress: deliveryAddress || '1 Global Trade Way',
-        shippingCity: 'International Hub',
-        shippingPostalCode: '100001',
-        shippingCountryId: 'CN',
+        shippingAddress: finalAddress,
+        shippingCity: structuredAddress?.city || 'Central Hub',
+        shippingPostalCode: structuredAddress?.postalCode || '100001',
+        shippingCountryId: structuredAddress?.countryCode || 'RU',
         paymentMethod: mappedMethod,
         shippingFee: deliveryFee,
         discount: bonusDiscount,
@@ -89,7 +101,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           productId: item.product.id,
           quantity: item.quantity,
         })),
-        customerNotes: `Fulfillment slot: ${selectedSlot}. Fast checkout submission.`
+        customerNotes: `Fulfillment slot: ${selectedSlot}. Fast checkout submission.${structuredAddress?.lat ? ` GPS: ${structuredAddress.lat},${structuredAddress.lng}` : ''}`
       };
 
       const res = await fetch('/api/orders', {
@@ -207,14 +219,41 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
             {/* 2. Destination Address */}
             <div>
-              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">
-                2. {tModals('deliveryDetails')}
-              </label>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                <MapPin className="w-5 h-5 text-[#00407a] shrink-0" />
-                <div className="flex-1">
-                  <div className="font-bold text-slate-900">{deliveryAddress}</div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                  2. {tModals('deliveryDetails')}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsMapPickerOpen(true)}
+                  className="text-xs font-bold text-[#00407a] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>{tModals('selectOnMap')}</span>
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <MapPin className="w-5 h-5 text-[#00407a] shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-bold text-slate-900 truncate">
+                      {activeAddress || deliveryAddress}
+                    </div>
+                    {structuredAddress?.lat && (
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        GPS: {structuredAddress.lat.toFixed(4)}, {structuredAddress.lng.toFixed(4)}
+                      </div>
+                    )}
+                  </div>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsMapPickerOpen(true)}
+                  className="px-2.5 py-1 text-[11px] font-bold text-[#00407a] bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors shrink-0 cursor-pointer"
+                >
+                  {tModals('selectOnMap')}
+                </button>
               </div>
             </div>
 
@@ -449,6 +488,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
           </div>
         )}
       </div>
+
+      {/* Interactive Map Picker Modal */}
+      <AddressMapPicker
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onConfirm={(addr) => {
+          setActiveAddress(addr.formattedAddress);
+          setStructuredAddress(addr);
+          setIsMapPickerOpen(false);
+          try {
+            localStorage.setItem('delivery_location', addr.formattedAddress);
+            window.dispatchEvent(new CustomEvent('delivery-location-updated', { detail: addr.formattedAddress }));
+          } catch {}
+        }}
+        initialAddress={activeAddress || deliveryAddress}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, MapPin, Check, ExternalLink } from 'lucide-react';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import Link from 'next/link';
+import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker';
 
 export interface UserAddressOption {
   id: string;
@@ -31,6 +32,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
 }) => {
   const { tModals } = useStorefrontTranslation();
   const [customAddress, setCustomAddress] = useState('');
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -41,6 +43,13 @@ export const LocationModal: React.FC<LocationModalProps> = ({
       setCustomAddress('');
       onClose();
     }
+  };
+
+  const handleMapConfirm = (addr: StructuredAddress) => {
+    const chosen = addr.formattedAddress || `${addr.city}, ${addr.country}`;
+    onSelectAddress(chosen);
+    setIsMapPickerOpen(false);
+    onClose();
   };
 
   const formatAddressLabel = (addr: UserAddressOption) => {
@@ -72,6 +81,30 @@ export const LocationModal: React.FC<LocationModalProps> = ({
         </div>
 
         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Interactive Map Picker Button */}
+          <button
+            type="button"
+            onClick={() => setIsMapPickerOpen(true)}
+            className="w-full p-3.5 rounded-xl border-2 border-dashed border-[#00407a]/40 bg-gradient-to-r from-blue-50/80 via-white to-amber-50/40 hover:border-[#00407a] hover:bg-blue-50/90 transition-all text-left flex items-center justify-between group shadow-2xs cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#00407a] text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs sm:text-sm font-bold text-slate-900 block group-hover:text-[#00407a] transition-colors">
+                  {tModals('selectOnMap')}
+                </span>
+                <span className="text-[11px] text-slate-500 block">
+                  {tModals('selectOnMapDesc')}
+                </span>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-[#00407a] bg-white border border-blue-200 px-2.5 py-1 rounded-lg group-hover:bg-[#00407a] group-hover:text-white transition-all shadow-2xs shrink-0 hidden sm:inline-block">
+              &rarr;
+            </span>
+          </button>
+
           {/* Saved Addresses from DB */}
           {userAddresses.length > 0 ? (
             <div>
@@ -163,6 +196,14 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           </form>
         </div>
       </div>
+
+      {/* Interactive Map Picker Modal */}
+      <AddressMapPicker
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onConfirm={handleMapConfirm}
+        initialAddress={currentAddress}
+      />
     </div>
   );
 };

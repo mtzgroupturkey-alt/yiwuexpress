@@ -8,6 +8,8 @@ interface GeoLocationResult {
   countryCode?: string;
   formatted?: string;
   ip?: string;
+  lat?: number;
+  lng?: number;
   source: 'cloudflare' | 'vercel' | 'ip-api' | 'fallback';
 }
 
@@ -32,8 +34,12 @@ export async function GET(request: NextRequest) {
   try {
     const cfCity = request.headers.get('cf-ipcity');
     const cfCountry = request.headers.get('cf-ipcountry');
+    const cfLat = parseFloat(request.headers.get('cf-iplatitude') || '');
+    const cfLng = parseFloat(request.headers.get('cf-iplongitude') || '');
     const vercelCity = request.headers.get('x-vercel-ip-city');
     const vercelCountry = request.headers.get('x-vercel-ip-country');
+    const vercelLat = parseFloat(request.headers.get('x-vercel-ip-latitude') || '');
+    const vercelLng = parseFloat(request.headers.get('x-vercel-ip-longitude') || '');
 
     // 1. Check Cloudflare Edge Headers if present
     if (cfCity || cfCountry) {
@@ -44,6 +50,8 @@ export async function GET(request: NextRequest) {
         country: cfCountry || undefined,
         countryCode: cfCountry || undefined,
         formatted: parts.join(', '),
+        lat: !isNaN(cfLat) ? cfLat : undefined,
+        lng: !isNaN(cfLng) ? cfLng : undefined,
         source: 'cloudflare',
       });
     }
@@ -57,6 +65,8 @@ export async function GET(request: NextRequest) {
         country: vercelCountry || undefined,
         countryCode: vercelCountry || undefined,
         formatted: parts.join(', '),
+        lat: !isNaN(vercelLat) ? vercelLat : undefined,
+        lng: !isNaN(vercelLng) ? vercelLng : undefined,
         source: 'vercel',
       });
     }
@@ -72,10 +82,9 @@ export async function GET(request: NextRequest) {
 
     // 4. Perform IP-based geo lookup
     // If public IP is available, query ip-api.com (or ipwho.is as fallback)
-    // If on localhost / development, query without IP to get the outbound public IP's geo
     const queryUrl = publicIp
-      ? `http://ip-api.com/json/${encodeURIComponent(publicIp)}?fields=status,message,country,city,countryCode`
-      : 'http://ip-api.com/json/?fields=status,message,country,city,countryCode';
+      ? `http://ip-api.com/json/${encodeURIComponent(publicIp)}?fields=status,message,country,city,countryCode,lat,lon`
+      : 'http://ip-api.com/json/?fields=status,message,country,city,countryCode,lat,lon';
 
     try {
       const controller = new AbortController();
@@ -97,6 +106,8 @@ export async function GET(request: NextRequest) {
             country: data.country || undefined,
             countryCode: data.countryCode || undefined,
             formatted: parts.join(', '),
+            lat: data.lat,
+            lng: data.lon,
             ip: publicIp || undefined,
             source: 'ip-api',
           });
@@ -125,31 +136,35 @@ export async function GET(request: NextRequest) {
               country: data2.country || undefined,
               countryCode: data2.country_code || undefined,
               formatted: parts.join(', '),
+              lat: data2.latitude,
+              lng: data2.longitude,
               ip: publicIp || undefined,
               source: 'ipwho.is',
             });
           }
         }
-      } catch {}
+      } catch (fbErr) {
+        console.warn('Fallback IP geo failed:', fbErr);
+      }
     }
 
-    // 5. If all fail, return graceful fallback
+    // Default safe fallback if all geolocation lookups fail
     return NextResponse.json({
       success: true,
-      city: undefined,
-      country: undefined,
-      formatted: 'Worldwide Shipping',
+      city: 'Central Hub',
+      country: 'Global Shipping',
+      countryCode: 'CN',
+      formatted: 'Central Hub, Global Shipping',
+      lat: 29.3069,
+      lng: 120.0754,
       source: 'fallback',
     });
-  } catch (error: any) {
-    console.error('Geo IP route error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: error.message || 'Failed to detect IP location',
-        formatted: 'Worldwide Shipping',
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error('IP Geolocation error:', error);
+    return NextResponse.json({
+      success: false,
+      formatted: 'Worldwide Shipping',
+      source: 'error',
+    });
   }
 }

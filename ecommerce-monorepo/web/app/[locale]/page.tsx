@@ -10,6 +10,7 @@ import { TrustFeatures } from './design-3/components/TrustFeatures';
 import { PopularElectronics } from './design-3/components/PopularElectronics';
 import { FreshSupermarketSection } from './design-3/components/FreshSupermarketSection';
 import { BestSellersSection } from './design-3/components/BestSellersSection';
+import { FeaturedProductsSection } from './design-3/components/FeaturedProductsSection';
 import { WeeklyBargainsSection } from './design-3/components/WeeklyBargainsSection';
 import { MemberClubBanner } from './design-3/components/MemberClubBanner';
 import { NewsletterBar } from './design-3/components/NewsletterBar';
@@ -117,6 +118,18 @@ export default function Home() {
     refetchOnWindowFocus: true,
   });
 
+  // Dedicated Featured Products Section Query (from admin /api/products/featured)
+  const { data: featuredSectionData, isLoading: isFeaturedSectionLoading } = useQuery({
+    queryKey: ['featured-section-products', locale],
+    queryFn: async () => {
+      const res = await fetch(`/api/products/featured?locale=${locale}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+  });
+
   const dbProducts: Product[] = useMemo(() => {
     const rawList = productsData?.data || [];
     if (!Array.isArray(rawList) || rawList.length === 0) return [];
@@ -168,6 +181,14 @@ export default function Home() {
   const isFlashSectionActive = useMemo(() => {
     return Boolean(flashCampaignData?.active && activeFlashDeals.length > 0);
   }, [flashCampaignData?.active, activeFlashDeals.length]);
+
+  // Dedicated Featured Products (products toggled as featured in admin panel)
+  const activeFeaturedProducts = useMemo(() => {
+    if (featuredSectionData?.data && Array.isArray(featuredSectionData.data) && featuredSectionData.data.length > 0) {
+      return featuredSectionData.data.map(mapDbProductToDesign3);
+    }
+    return dbProducts.filter((p) => p.isFeatured || p.tagBadge?.type === 'bestseller');
+  }, [featuredSectionData, dbProducts]);
 
   const activeBestSellers = useMemo(() => {
     if (dbProducts.length === 0) return [];
@@ -769,7 +790,7 @@ export default function Home() {
                 flashDeals={isFlashSectionActive ? activeFlashDeals : []}
                 flashDealsEndDate={flashCampaignData?.endDate}
                 flashDealsTitle={flashCampaignData?.title}
-                bestSellers={activeBestSellers}
+                bestSellers={activeFeaturedProducts.length > 0 ? activeFeaturedProducts : activeBestSellers}
                 newArrivals={activeNewArrivals}
                 trendingProducts={activeTrending}
                 dealsOfTheDay={activeDealsOfTheDay}
@@ -935,11 +956,11 @@ export default function Home() {
               </MotionReveal>
             )}
 
-            {/* 5. Featured Products & Top Rated Best Sellers Across Departments (Shifted directly after Flash Deals) */}
+            {/* 5. Featured Products Section (Directly after Seasonal Discounts & Flash Home Deals) */}
             <MotionReveal direction="up">
-              <BestSellersSection
-                products={activeBestSellers}
-                isLoading={isProductsLoading || dbProducts.length === 0}
+              <FeaturedProductsSection
+                products={activeFeaturedProducts}
+                isLoading={isFeaturedSectionLoading && activeFeaturedProducts.length === 0}
                 onAddToCart={handleAddToCart}
                 onUpdateQuantity={handleUpdateQuantity}
                 cartQuantities={cartQuantities}
@@ -949,7 +970,7 @@ export default function Home() {
                   setSelectedProductForPDP(product);
                   handleNavigateView('product', { product });
                 }}
-                onViewAllBestSellers={() => handleNavigateView('shop')}
+                onViewAll={() => handleNavigateView('shop')}
               />
             </MotionReveal>
 

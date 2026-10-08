@@ -1714,6 +1714,8 @@
       "statusProcessing": "PROCESSING",
       "statusPlaced": "ORDER PLACED",
       "selectAddress": "Select Delivery Address",
+      "selectOnMap": "Select on Map",
+      "selectOnMapDesc": "Pinpoint your exact delivery address on interactive map",
       "savedLocations": "Saved Locations & Warehouses",
       "enterCustomAddress": "Or Enter Custom Address",
       "addressPlaceholder": "Street, building, apartment...",

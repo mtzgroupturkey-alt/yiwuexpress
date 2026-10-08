@@ -8,6 +8,7 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { useTranslations } from 'next-intl'
 import { Container } from '@/components/design-system/Container'
+import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker'
 
 interface Address {
   id: string
@@ -21,6 +22,8 @@ interface Address {
   state?: string | null
   postalCode: string
   country: string
+  latitude?: number | null
+  longitude?: number | null
   isDefault: boolean
 }
 
@@ -35,6 +38,8 @@ interface AddressFormData {
   state: string
   postalCode: string
   country: string
+  latitude?: number | null
+  longitude?: number | null
   isDefault: boolean
 }
 
@@ -49,6 +54,8 @@ const INITIAL_FORM: AddressFormData = {
   state: '',
   postalCode: '',
   country: '',
+  latitude: null,
+  longitude: null,
   isDefault: false,
 }
 
@@ -151,6 +158,7 @@ export default function AddressesPage() {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<AddressFormData>(INITIAL_FORM)
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false)
 
   // Auth guard
   useEffect(() => {
@@ -198,11 +206,44 @@ export default function AddressesPage() {
       state: address.state || '',
       postalCode: address.postalCode,
       country: address.country,
+      latitude: address.latitude ?? null,
+      longitude: address.longitude ?? null,
       isDefault: address.isDefault,
     })
     setEditingId(address.id)
     setIsAdding(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleMapConfirm = (addr: StructuredAddress) => {
+    const matchedCountry = COUNTRIES.find(
+      (c) =>
+        (addr.countryCode && c.code.toUpperCase() === addr.countryCode.toUpperCase()) ||
+        c.name.toLowerCase() === addr.country.toLowerCase()
+    )
+
+    const streetLine = [addr.street, addr.houseNumber].filter(Boolean).join(', ') || addr.formattedAddress
+    const extraLine = [
+      addr.apartment ? `кв. ${addr.apartment}` : '',
+      addr.entrance ? `подъезд ${addr.entrance}` : '',
+      addr.floor ? `этаж ${addr.floor}` : '',
+    ]
+      .filter(Boolean)
+      .join(', ')
+
+    setFormData((prev) => ({
+      ...prev,
+      country: matchedCountry ? matchedCountry.name : addr.country || prev.country,
+      city: addr.city || prev.city,
+      state: addr.state || prev.state,
+      addressLine1: streetLine || prev.addressLine1,
+      addressLine2: extraLine || prev.addressLine2,
+      postalCode: addr.postalCode || prev.postalCode,
+      latitude: addr.lat,
+      longitude: addr.lng,
+    }))
+    setIsMapPickerOpen(false)
+    toast.success('Address auto-filled from map')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -356,6 +397,30 @@ export default function AddressesPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Quick Map Location Button */}
+              <div className="p-3.5 bg-gradient-to-r from-blue-50/90 via-slate-50 to-amber-50/50 rounded-xl border border-blue-200/80 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#00407a] text-white flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">
+                      Select Location on Interactive Map
+                    </div>
+                    <div className="text-[11px] text-slate-500">
+                      Automatically fills country, city, street, and coordinates via Yandex / OSM
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMapPickerOpen(true)}
+                  className="px-3.5 py-2 bg-[#00407a] hover:bg-[#003366] text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer shadow-2xs"
+                >
+                  Choose on Map &rarr;
+                </button>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1.5">{ta('fullName')}</label>
@@ -603,6 +668,14 @@ export default function AddressesPage() {
           </div>
         )}
       </div>
+
+      {/* Interactive Map Picker Modal */}
+      <AddressMapPicker
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onConfirm={handleMapConfirm}
+        initialAddress={formData.addressLine1}
+      />
     </Container>
   )
 }

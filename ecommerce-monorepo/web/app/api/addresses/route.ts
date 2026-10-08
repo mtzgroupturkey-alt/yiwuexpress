@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
       isDefault,
       label,
       company,
+      latitude,
+      longitude,
     } = body
 
     // Support both addressLine and addressLine1 for backwards compatibility
@@ -71,7 +73,10 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const address = await prisma.address.create({
+    const latVal = latitude !== undefined && latitude !== null && !isNaN(Number(latitude)) ? Number(latitude) : null
+    const lngVal = longitude !== undefined && longitude !== null && !isNaN(Number(longitude)) ? Number(longitude) : null
+
+    const address = await (prisma.address.create as any)({
       data: {
         userId: user.id,
         label: label || null,
@@ -84,6 +89,8 @@ export async function POST(req: NextRequest) {
         state: state || null,
         postalCode,
         country,
+        latitude: latVal,
+        longitude: lngVal,
         isDefault: isDefault || false,
       },
     })
@@ -156,6 +163,8 @@ export async function PUT(req: NextRequest) {
       isDefault,
       label,
       company,
+      latitude,
+      longitude,
     } = body
 
     if (!id) {
@@ -191,7 +200,10 @@ export async function PUT(req: NextRequest) {
       })
     }
 
-    const updatedAddress = await prisma.address.update({
+    const latVal = latitude !== undefined && latitude !== null && !isNaN(Number(latitude)) ? Number(latitude) : undefined
+    const lngVal = longitude !== undefined && longitude !== null && !isNaN(Number(longitude)) ? Number(longitude) : undefined
+
+    const updatedAddress = await (prisma.address.update as any)({
       where: { id },
       data: {
         label: label || null,
@@ -204,6 +216,8 @@ export async function PUT(req: NextRequest) {
         state: state || null,
         postalCode,
         country,
+        ...(latVal !== undefined ? { latitude: latVal } : {}),
+        ...(lngVal !== undefined ? { longitude: lngVal } : {}),
         isDefault: isDefault || false,
       },
     })

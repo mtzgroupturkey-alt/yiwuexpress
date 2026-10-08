@@ -1,8 +1,7 @@
-'use client'
-
-import React from 'react'
+import React, { useState } from 'react'
 import { User, Mail, Phone, MapPin, Building, Globe } from 'lucide-react'
 import { useLocale } from 'next-intl'
+import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker'
 
 export interface AddressFormData {
   customerName: string
@@ -15,6 +14,8 @@ export interface AddressFormData {
   shippingPostalCode: string
   shippingCountryId: string
   customerNotes?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface MobileAddressStepProps {
@@ -33,6 +34,35 @@ export function MobileAddressStep({
   className = '',
 }: MobileAddressStepProps) {
   const locale = useLocale()
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false)
+
+  const handleMapConfirm = (addr: StructuredAddress) => {
+    const matchedCountry = countries.find(
+      (c) =>
+        (addr.countryCode && c.code?.toUpperCase() === addr.countryCode.toUpperCase()) ||
+        c.name.toLowerCase() === addr.country.toLowerCase()
+    )
+
+    const streetLine = [
+      addr.street,
+      addr.houseNumber,
+      addr.apartment ? (locale === 'ru' ? `кв. ${addr.apartment}` : `Apt ${addr.apartment}`) : '',
+    ]
+      .filter(Boolean)
+      .join(', ') || addr.formattedAddress
+
+    onChange({
+      shippingCountryId: matchedCountry ? matchedCountry.id : formData.shippingCountryId,
+      shippingCity: addr.city || formData.shippingCity,
+      shippingState: addr.state || formData.shippingState,
+      shippingAddress: streetLine || formData.shippingAddress,
+      shippingPostalCode: addr.postalCode || formData.shippingPostalCode,
+      latitude: addr.lat,
+      longitude: addr.lng,
+      ...(addr.notes ? { customerNotes: addr.notes } : {}),
+    })
+    setIsMapPickerOpen(false)
+  }
 
   return (
     <div
@@ -141,9 +171,41 @@ export function MobileAddressStep({
 
       {/* Shipping Address Container */}
       <div className="bg-white dark:bg-[#0f172a] rounded-2xl border border-gray-200/80 dark:border-slate-800 p-4 space-y-3.5 shadow-2xs">
-        <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-slate-400">
-          {locale === 'zh' ? '目的地收件地址' : locale === 'ru' ? 'Адрес доставки' : 'Delivery Destination'}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-slate-400">
+            {locale === 'zh' ? '目的地收件地址' : locale === 'ru' ? 'Адрес доставки' : 'Delivery Destination'}
+          </h3>
+          <button
+            type="button"
+            onClick={() => setIsMapPickerOpen(true)}
+            className="text-xs font-bold text-[#00407a] dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span>{locale === 'zh' ? '在地图上选择' : locale === 'ru' ? 'Выбрать на карте' : 'Select on map'}</span>
+          </button>
+        </div>
+
+        {/* Quick Map Button Banner */}
+        <button
+          type="button"
+          onClick={() => setIsMapPickerOpen(true)}
+          className="w-full p-3 rounded-xl border border-blue-200 bg-blue-50/70 hover:bg-blue-100/70 text-left flex items-center justify-between transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#00407a] text-white flex items-center justify-center shrink-0">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900">
+                {locale === 'zh' ? '在地图上精准定位' : locale === 'ru' ? 'Указать точку на карте' : 'Pinpoint on interactive map'}
+              </div>
+              <div className="text-[10px] text-slate-500">
+                {locale === 'zh' ? '自动填充国家、城市、街道与门牌' : locale === 'ru' ? 'Автозаполнение города, улицы и дома' : 'Auto-fill city, street & house number'}
+              </div>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-[#00407a] shrink-0">&rarr;</span>
+        </button>
 
         {/* Country Selector */}
         <div>
@@ -263,6 +325,14 @@ export function MobileAddressStep({
           )}
         </div>
       </div>
+
+      {/* Interactive Map Picker Modal */}
+      <AddressMapPicker
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onConfirm={handleMapConfirm}
+        initialAddress={formData.shippingAddress}
+      />
     </div>
   )
 }

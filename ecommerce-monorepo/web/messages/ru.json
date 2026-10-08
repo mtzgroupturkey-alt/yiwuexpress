@@ -1714,6 +1714,8 @@
       "statusProcessing": "В ОБРАБОТКЕ",
       "statusPlaced": "ОФОРМЛЕН",
       "selectAddress": "Выберите адрес доставки",
+      "selectOnMap": "Выбрать на карте",
+      "selectOnMapDesc": "Укажите точную точку доставки на карте",
       "savedLocations": "Сохраненные адреса и склады",
       "enterCustomAddress": "Или введите новый адрес",
       "addressPlaceholder": "Улица, дом, квартира...",
