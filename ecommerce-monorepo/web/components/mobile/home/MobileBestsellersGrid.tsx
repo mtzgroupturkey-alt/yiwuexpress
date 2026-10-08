@@ -12,6 +12,8 @@ import { useSessionMode } from '@/contexts/SessionModeContext'
 
 interface MobileBestsellersGridProps {
   products: Product[]
+  title?: string
+  subtitle?: string
   isLoading?: boolean
   onAddToCart?: (product: Product, quantity?: number) => void
   onSelectProduct?: (product: Product) => void
@@ -24,6 +26,8 @@ interface MobileBestsellersGridProps {
 
 export function MobileBestsellersGrid({
   products,
+  title,
+  subtitle,
   isLoading = false,
   onAddToCart,
   onSelectProduct,
@@ -69,18 +73,18 @@ export function MobileBestsellersGrid({
       <div className="flex items-center justify-between px-1 mb-3">
         <div>
           <h3 className="text-base font-extrabold text-gray-900 dark:text-white tracking-tight">
-            {locale === 'zh'
+            {title || (locale === 'zh'
               ? '热销畅销榜'
               : locale === 'ru'
               ? 'Хиты продаж'
-              : 'Best Selling Products'}
+              : 'Best Selling Products')}
           </h3>
           <p className="text-[11px] text-gray-500 dark:text-slate-400">
-            {locale === 'zh'
+            {subtitle || (locale === 'zh'
               ? '高复购率 · 优质工厂认证'
               : locale === 'ru'
               ? 'Проверенные фабрики и высокое качество'
-              : 'Top re-ordered by global wholesale buyers'}
+              : 'Top re-ordered by global wholesale buyers')}
           </p>
         </div>
 

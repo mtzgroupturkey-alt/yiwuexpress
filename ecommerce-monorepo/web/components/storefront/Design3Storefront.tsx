@@ -41,6 +41,7 @@ import { Product, CartItem } from '@/app/[locale]/design-3/types';
 import { Search, X, CheckCircle2 } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
+import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 
 export function Design3Storefront() {
   const { formatPrice } = useCurrency();
@@ -51,7 +52,12 @@ export function Design3Storefront() {
   const [shopInitialCategory, setShopInitialCategory] = useState<string | null>(null);
   const [shopInitialDepartment, setShopInitialDepartment] = useState<string | null>(null);
 
-  const [deliveryAddress, setDeliveryAddress] = useState('Central International Hub, Port 1');
+  const {
+    deliveryAddress,
+    saveDeliveryAddress,
+    removeSavedDeliveryAddress,
+    userAddresses,
+  } = useDeliveryLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -591,8 +597,10 @@ export function Design3Storefront() {
         isOpen={isLocationOpen}
         onClose={() => setIsLocationOpen(false)}
         currentAddress={deliveryAddress}
-        onSelectAddress={(addr) => {
-          setDeliveryAddress(addr);
+        userAddresses={userAddresses}
+        onRemoveAddress={removeSavedDeliveryAddress}
+        onSelectAddress={(addr, details) => {
+          saveDeliveryAddress(addr, details);
           showToast(`Delivery updated to: ${addr}`);
         }}
       />

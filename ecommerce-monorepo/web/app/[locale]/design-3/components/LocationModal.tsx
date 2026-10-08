@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, MapPin, Check, ExternalLink } from 'lucide-react';
+import { X, MapPin, Check, ExternalLink, Trash2 } from 'lucide-react';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import Link from 'next/link';
 import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker';
@@ -17,7 +17,8 @@ interface LocationModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentAddress: string;
-  onSelectAddress: (address: string) => void;
+  onSelectAddress: (address: string, details?: Partial<UserAddressOption>) => void;
+  onRemoveAddress?: (id: string) => void;
   userAddresses?: UserAddressOption[];
   isAuthenticated?: boolean;
 }
@@ -27,6 +28,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
   onClose,
   currentAddress,
   onSelectAddress,
+  onRemoveAddress,
   userAddresses = [],
   isAuthenticated = false,
 }) => {
@@ -38,8 +40,13 @@ export const LocationModal: React.FC<LocationModalProps> = ({
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (customAddress.trim()) {
-      onSelectAddress(customAddress.trim());
+    const trimmed = customAddress.trim();
+    if (trimmed) {
+      onSelectAddress(trimmed, {
+        addressLine1: trimmed,
+        city: trimmed.split(',')[0]?.trim() || trimmed,
+        country: trimmed.split(',')[1]?.trim() || '',
+      });
       setCustomAddress('');
       onClose();
     }
@@ -47,13 +54,21 @@ export const LocationModal: React.FC<LocationModalProps> = ({
 
   const handleMapConfirm = (addr: StructuredAddress) => {
     const chosen = addr.formattedAddress || `${addr.city}, ${addr.country}`;
-    onSelectAddress(chosen);
+    onSelectAddress(chosen, {
+      city: addr.city,
+      country: addr.country,
+      addressLine1: addr.street ? `${addr.street} ${addr.houseNumber || ''}`.trim() : chosen,
+      label: addr.street || addr.city,
+    });
     setIsMapPickerOpen(false);
     onClose();
   };
 
   const formatAddressLabel = (addr: UserAddressOption) => {
-    return `${addr.city}, ${addr.country}`;
+    if (addr.city && addr.country) {
+      return `${addr.city}, ${addr.country}`;
+    }
+    return addr.city || addr.country || addr.addressLine1;
   };
 
   return (
@@ -75,6 +90,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           <button
             onClick={onClose}
             className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>
@@ -105,57 +121,91 @@ export const LocationModal: React.FC<LocationModalProps> = ({
             </span>
           </button>
 
-          {/* Saved Addresses from DB */}
+          {/* Saved / Recent Delivery Addresses */}
           {userAddresses.length > 0 ? (
             <div>
-              <p className="text-xs text-slate-500 font-medium mb-2">
-                {tModals('savedLocations')}
+              <p className="text-xs text-slate-500 font-semibold mb-2">
+                {isAuthenticated ? tModals('savedLocations') : tModals('recentAddresses')}
               </p>
               <div className="space-y-2">
                 {userAddresses.map((addr) => {
                   const label = formatAddressLabel(addr);
-                  const isSelected = currentAddress === label || currentAddress === addr.city;
+                  const isSelected =
+                    currentAddress === label ||
+                    currentAddress === addr.addressLine1 ||
+                    currentAddress === addr.city;
                   return (
-                    <button
+                    <div
                       key={addr.id}
-                      onClick={() => {
-                        onSelectAddress(label);
-                        onClose();
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left flex items-start justify-between gap-2 text-xs font-semibold transition-all cursor-pointer ${
+                      className={`group w-full p-3 rounded-xl border text-left flex items-center justify-between gap-2 transition-all ${
                         isSelected
                           ? 'bg-blue-50 border-[#00407a] text-[#00407a] shadow-xs'
                           : 'border-slate-200 text-slate-800 hover:bg-slate-50'
                       }`}
                     >
-                      <div className="flex items-start gap-2.5 min-w-0">
-                        <MapPin className={`w-4 h-4 shrink-0 mt-0.5 ${isSelected ? 'text-[#00407a]' : 'text-slate-400'}`} />
-                        <div className="min-w-0">
-                          <p className="font-bold">{label}</p>
-                          <p className="text-xs font-normal text-slate-500 truncate mt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSelectAddress(label, addr);
+                          onClose();
+                        }}
+                        className="flex-1 min-w-0 flex items-start gap-2.5 cursor-pointer text-left"
+                      >
+                        <MapPin
+                          className={`w-4 h-4 shrink-0 mt-0.5 ${
+                            isSelected ? 'text-[#00407a]' : 'text-slate-400'
+                          }`}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold truncate">{label}</p>
+                          <p className="text-[11px] font-normal text-slate-500 truncate mt-0.5">
                             {addr.addressLine1}
-                            {addr.label ? ` · ${addr.label}` : ''}
+                            {addr.label && addr.label !== label ? ` · ${addr.label}` : ''}
                             {addr.isDefault ? ` · ${tModals('defaultBadge')}` : ''}
                           </p>
                         </div>
+                      </button>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isSelected && (
+                          <span className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[#00407a]">
+                            <Check className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                        {/* Allow removing local/guest saved address if handler provided */}
+                        {onRemoveAddress && addr.id.startsWith('local-') && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemoveAddress(addr.id);
+                            }}
+                            className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                            title="Remove from recent"
+                            aria-label="Remove address"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
-                      {isSelected && <Check className="w-4 h-4 text-[#00407a] shrink-0" />}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
 
-              {/* Manage link */}
-              <div className="mt-3 pt-3 border-t border-slate-100">
-                <Link
-                  href="/dashboard/addresses"
-                  onClick={onClose}
-                  className="flex items-center gap-1.5 text-xs text-[#00407a] hover:underline font-medium"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  {tModals('manageSavedAddresses')}
-                </Link>
-              </div>
+              {/* Manage link for authenticated users */}
+              {isAuthenticated && (
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <Link
+                    href="/dashboard/addresses"
+                    onClick={onClose}
+                    className="flex items-center gap-1.5 text-xs text-[#00407a] hover:underline font-medium"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    {tModals('manageSavedAddresses')}
+                  </Link>
+                </div>
+              )}
             </div>
           ) : isAuthenticated ? (
             /* Logged in but no addresses yet */
@@ -174,7 +224,10 @@ export const LocationModal: React.FC<LocationModalProps> = ({
           ) : null}
 
           {/* Custom / manual entry */}
-          <form onSubmit={handleCustomSubmit} className={`${userAddresses.length > 0 ? 'pt-3 border-t border-slate-200' : ''}`}>
+          <form
+            onSubmit={handleCustomSubmit}
+            className={`${userAddresses.length > 0 ? 'pt-3 border-t border-slate-200' : ''}`}
+          >
             <label className="text-xs font-bold text-slate-700 block mb-1.5">
               {tModals('enterCustomAddress')}:
             </label>

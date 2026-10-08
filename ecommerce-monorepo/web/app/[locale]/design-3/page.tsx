@@ -41,6 +41,7 @@ import { Product, CartItem } from './types';
 import { Search, X, CheckCircle2 } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { MotionReveal } from '@/components/motion/MotionReveal';
+import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 
 export default function App() {
   const { formatPrice } = useCurrency();
@@ -50,7 +51,12 @@ export default function App() {
   const [shopInitialCategory, setShopInitialCategory] = useState<string | null>(null);
   const [shopInitialDepartment, setShopInitialDepartment] = useState<string | null>(null);
 
-  const [deliveryAddress, setDeliveryAddress] = useState('Minsk, Pobediteley Ave 12');
+  const {
+    deliveryAddress,
+    saveDeliveryAddress,
+    removeSavedDeliveryAddress,
+    userAddresses,
+  } = useDeliveryLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -605,8 +611,10 @@ export default function App() {
         isOpen={isLocationOpen}
         onClose={() => setIsLocationOpen(false)}
         currentAddress={deliveryAddress}
-        onSelectAddress={(addr) => {
-          setDeliveryAddress(addr);
+        userAddresses={userAddresses}
+        onRemoveAddress={removeSavedDeliveryAddress}
+        onSelectAddress={(addr, details) => {
+          saveDeliveryAddress(addr, details);
           showToast(`Delivery updated to: ${addr}`);
         }}
       />

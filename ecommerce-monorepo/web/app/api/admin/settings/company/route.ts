@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/db'
 import fs from 'fs'
 import path from 'path'
@@ -56,6 +57,81 @@ function updateDiskManifest(name?: string, tagline?: string, desc?: string) {
     }
   } catch (err) {
     console.error('[company/route] Failed to sync manifest.json to disk:', err)
+  }
+}
+
+// Automatically ensures mapProvider, yandexMapsApiKey, yandexGeocoderApiKey columns exist in PostgreSQL
+async function ensureMapColumns() {
+  try {
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "system_settings" 
+        ADD COLUMN IF NOT EXISTS "mapProvider" TEXT DEFAULT 'yandex',
+        ADD COLUMN IF NOT EXISTS "yandexMapsApiKey" TEXT,
+        ADD COLUMN IF NOT EXISTS "yandexGeocoderApiKey" TEXT;
+    `)
+  } catch (err) {
+    console.warn('[company/route] ensureMapColumns warning:', err)
+  }
+}
+
+// Sync uploaded or configured favicon to standard root favicon file locations
+function syncFaviconFiles(faviconUrl?: string) {
+  if (!faviconUrl) return
+  try {
+    let cleanPath = faviconUrl.trim()
+    if (cleanPath.startsWith('/api/')) {
+      cleanPath = cleanPath.replace('/api/', '/')
+    }
+    if (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.slice(1)
+    }
+
+    const candidateSources = [
+      path.join(process.cwd(), cleanPath),
+      path.join(process.cwd(), 'public', cleanPath),
+      path.join(process.cwd(), 'web', 'public', cleanPath),
+      path.join('/www', 'wwwroot', 'www.dromkok.com', cleanPath),
+      path.join('/www', 'wwwroot', 'www.dromkok.com', 'public', cleanPath),
+      path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', cleanPath),
+    ]
+
+    let sourceBuffer: Buffer | null = null
+    for (const src of candidateSources) {
+      try {
+        if (fs.existsSync(src) && fs.statSync(src).isFile()) {
+          sourceBuffer = fs.readFileSync(src)
+          break
+        }
+      } catch {}
+    }
+
+    if (!sourceBuffer) return
+
+    const ext = path.extname(cleanPath).toLowerCase() || '.png'
+    const destinations = [
+      path.join(process.cwd(), 'public', 'favicon.ico'),
+      path.join(process.cwd(), 'public', `favicon${ext}`),
+      path.join(process.cwd(), 'public', 'favicon.png'),
+      path.join(process.cwd(), 'web', 'public', 'favicon.ico'),
+      path.join(process.cwd(), 'web', 'public', `favicon${ext}`),
+      path.join(process.cwd(), 'web', 'public', 'favicon.png'),
+      '/www/wwwroot/www.dromkok.com/public/favicon.ico',
+      `/www/wwwroot/www.dromkok.com/public/favicon${ext}`,
+      '/www/wwwroot/www.dromkok.com/public/favicon.png',
+      '/www/wwwroot/www.dromkok.com/web/public/favicon.ico',
+      `/www/wwwroot/www.dromkok.com/web/public/favicon${ext}`,
+      '/www/wwwroot/www.dromkok.com/web/public/favicon.png',
+    ]
+
+    for (const dest of destinations) {
+      try {
+        if (fs.existsSync(path.dirname(dest))) {
+          fs.writeFileSync(dest, sourceBuffer)
+        }
+      } catch {}
+    }
+  } catch (err) {
+    console.error('[company/route] Failed to sync favicon files:', err)
   }
 }
 
@@ -122,6 +198,7 @@ const DEFAULT_COMPANY_SETTINGS = {
 // GET /api/admin/settings/company - Get company settings (Admin)
 export async function GET(request: Request) {
   try {
+    await ensureMapColumns()
     let settings: any = null
 
     try {
@@ -206,6 +283,7 @@ export async function GET(request: Request) {
 // PUT /api/admin/settings/company - Update company settings (Admin)
 export async function PUT(request: Request) {
   try {
+    await ensureMapColumns()
     const body = await request.json()
 
     let existing: any = null
@@ -296,7 +374,37 @@ export async function PUT(request: Request) {
               yandexGeocoderApiKey: body.yandexGeocoderApiKey !== undefined ? body.yandexGeocoderApiKey : undefined,
             } as any,
           })
-        } catch {
+        } catch (innerErr: any) {
+          console.warn('[company/route] Core update failed, executing parameterized raw SQL update:', innerErr?.message)
+          try {
+            await prisma.$executeRawUnsafe(
+              `UPDATE "system_settings" 
+               SET "companyName" = COALESCE($1, "companyName"),
+                   "siteTagline" = COALESCE($2, "siteTagline"),
+                   "companyAddress" = COALESCE($3, "companyAddress"),
+                   "companyPhone" = COALESCE($4, "companyPhone"),
+                   "companyEmail" = COALESCE($5, "companyEmail"),
+                   "companyFavicon" = COALESCE($6, "companyFavicon"),
+                   "companyLogo" = COALESCE($7, "companyLogo"),
+                   "mapProvider" = COALESCE($8, "mapProvider"),
+                   "yandexMapsApiKey" = $9,
+                   "yandexGeocoderApiKey" = $10
+               WHERE id = $11`,
+              body.companyName || null,
+              resolvedSiteTagline || null,
+              body.companyAddress || null,
+              body.companyPhone || null,
+              body.companyEmail || null,
+              body.companyFavicon || null,
+              body.companyLogo || null,
+              body.mapProvider || 'yandex',
+              body.yandexMapsApiKey !== undefined ? body.yandexMapsApiKey : null,
+              body.yandexGeocoderApiKey !== undefined ? body.yandexGeocoderApiKey : null,
+              existing.id
+            )
+          } catch (rawErr) {
+            console.error('[company/route] Raw update also failed:', rawErr)
+          }
           settings = { ...existing, ...body, siteTagline: resolvedSiteTagline }
         }
       }
@@ -326,6 +434,14 @@ export async function PUT(request: Request) {
       if (body.companyName) {
         updateDiskManifest(body.companyName, resolvedSiteTagline, body.companyDescription)
       }
+
+      if (body.companyFavicon) {
+        syncFaviconFiles(body.companyFavicon)
+      }
+
+      try {
+        revalidateTag('settings')
+      } catch {}
 
       return NextResponse.json({
         success: true,
@@ -387,6 +503,10 @@ export async function PUT(request: Request) {
       }
 
       updateDiskManifest(body.companyName, resolvedSiteTagline, body.companyDescription)
+
+      try {
+        revalidateTag('settings')
+      } catch {}
 
       return NextResponse.json({
         success: true,

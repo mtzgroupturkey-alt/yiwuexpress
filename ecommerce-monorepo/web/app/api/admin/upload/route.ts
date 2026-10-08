@@ -124,6 +124,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // When a favicon is uploaded, also copy it to standard root favicon file locations
+    if (uploadType === 'favicon') {
+      const rootFaviconPaths = [
+        path.join(process.cwd(), 'public', 'favicon.ico'),
+        path.join(process.cwd(), 'public', `favicon${ext}`),
+        path.join(process.cwd(), 'public', 'favicon.png'),
+        path.join(process.cwd(), 'web', 'public', 'favicon.ico'),
+        path.join(process.cwd(), 'web', 'public', `favicon${ext}`),
+        path.join(process.cwd(), 'web', 'public', 'favicon.png'),
+        '/www/wwwroot/www.dromkok.com/public/favicon.ico',
+        `/www/wwwroot/www.dromkok.com/public/favicon${ext}`,
+        '/www/wwwroot/www.dromkok.com/public/favicon.png',
+        '/www/wwwroot/www.dromkok.com/web/public/favicon.ico',
+        `/www/wwwroot/www.dromkok.com/web/public/favicon${ext}`,
+        '/www/wwwroot/www.dromkok.com/web/public/favicon.png',
+      ]
+      for (const p of rootFaviconPaths) {
+        try {
+          if (require('fs').existsSync(path.dirname(p))) {
+            await writeFile(p, buffer)
+          }
+        } catch {}
+      }
+    }
+
     return NextResponse.json({ 
       success: true,
       url: `/uploads/${subDir}/${filename}`,

@@ -115,6 +115,8 @@ export function MobileHomePage({
 
         {/* 4. Mobile Best Sellers Grid (Shifted directly after Flash Deals) */}
         <MobileBestsellersGrid
+          title="Featured Products"
+          subtitle="Curated products selected for quality, value, and demand."
           products={bestSellers}
           onAddToCart={onAddToCart}
           onSelectProduct={handleSelectProduct}
@@ -165,6 +167,8 @@ export function MobileHomePage({
 
       {/* 4. Mobile Best Sellers Grid (Shifted directly after Flash Deals) */}
       <MobileBestsellersGrid
+        title="Featured Products"
+        subtitle="Curated products selected for quality, value, and demand."
         products={bestSellers}
         limit={10}
         onAddToCart={onAddToCart}

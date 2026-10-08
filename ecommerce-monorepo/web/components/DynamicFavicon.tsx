@@ -26,40 +26,28 @@ export default function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
       ? 'image/x-icon'
       : undefined
 
-    // Find and update all existing favicon links
+    // Remove existing favicon links to force browser tab to re-render icon
     const existingIcons = document.querySelectorAll<HTMLLinkElement>(
       'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel*="icon"]'
     )
+    existingIcons.forEach((el) => el.remove())
 
-    if (existingIcons.length > 0) {
-      existingIcons.forEach((link) => {
-        link.href = resolvedUrl
-        if (mimeType) {
-          link.type = mimeType
-        }
-      })
-    } else {
-      // If no icon tag exists, create them
-      const iconLink = document.createElement('link')
-      iconLink.rel = 'icon'
-      if (mimeType) iconLink.type = mimeType
-      iconLink.href = resolvedUrl
-      iconLink.setAttribute('data-dynamic-favicon', 'true')
-      document.head.appendChild(iconLink)
-
-      const shortcutLink = document.createElement('link')
-      shortcutLink.rel = 'shortcut icon'
-      if (mimeType) shortcutLink.type = mimeType
-      shortcutLink.href = resolvedUrl
-      shortcutLink.setAttribute('data-dynamic-favicon', 'true')
-      document.head.appendChild(shortcutLink)
-
-      const appleLink = document.createElement('link')
-      appleLink.rel = 'apple-touch-icon'
-      appleLink.href = resolvedUrl
-      appleLink.setAttribute('data-dynamic-favicon', 'true')
-      document.head.appendChild(appleLink)
+    const createLink = (rel: string, sizes?: string) => {
+      const link = document.createElement('link')
+      link.rel = rel
+      if (mimeType) link.type = mimeType
+      if (sizes) link.setAttribute('sizes', sizes)
+      link.href = resolvedUrl
+      link.setAttribute('data-dynamic-favicon', 'true')
+      document.head.appendChild(link)
     }
+
+    createLink('icon')
+    createLink('icon', '32x32')
+    createLink('icon', '16x16')
+    createLink('shortcut icon')
+    createLink('apple-touch-icon', '180x180')
+    createLink('apple-touch-icon')
   }, [faviconUrl])
 
   return null

@@ -27,16 +27,20 @@ const DEFAULT_SETTINGS = {
 
 const getSettings = unstable_cache(
   async () => {
-    return prisma.systemSettings.findUnique({
+    const found = await prisma.systemSettings.findUnique({
       where: { singletonKey: 'SINGLETON' },
+      include: { translations: true },
+    })
+    if (found) return found
+    return prisma.systemSettings.findFirst({
       include: { translations: true },
     })
   },
   ['site-settings'],
-  { revalidate: 3600, tags: ['settings'] }
+  { revalidate: 60, tags: ['settings'] }
 )
 
-// GET /api/settings - Get system settings (Cached for 1 hour)
+// GET /api/settings - Get system settings
 export async function GET() {
   try {
     const settings = await getSettings()
@@ -48,7 +52,7 @@ export async function GET() {
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
         },
       }
     )

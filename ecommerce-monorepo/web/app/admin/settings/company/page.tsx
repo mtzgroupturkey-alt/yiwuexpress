@@ -978,7 +978,7 @@ export default function CompanyInfoPage() {
                   <div className="flex flex-col items-center gap-2">
                     <div className="relative w-16 h-16 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
                       <img
-                        src={settings.companyFavicon}
+                        src={settings.companyFavicon.startsWith('/uploads/') ? `/api${settings.companyFavicon}` : settings.companyFavicon}
                         alt="Favicon Preview"
                         className="max-w-full max-h-full object-contain"
                       />
@@ -986,7 +986,7 @@ export default function CompanyInfoPage() {
                     <div className="flex items-center gap-2 text-xs text-gray-500">
                       <div className="w-4 h-4 border border-gray-200 rounded overflow-hidden bg-white flex items-center justify-center">
                         <img
-                          src={settings.companyFavicon}
+                          src={settings.companyFavicon.startsWith('/uploads/') ? `/api${settings.companyFavicon}` : settings.companyFavicon}
                           alt="Small Favicon Preview"
                           className="w-full h-full object-contain"
                         />

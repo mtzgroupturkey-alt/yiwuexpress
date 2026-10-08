@@ -12,64 +12,72 @@ export async function GET(request: NextRequest) {
     const locale = request.nextUrl.searchParams.get('locale') || 'en'
 
     // Get system settings (public information only)
-    const settings = await prisma.systemSettings.findUnique({
+    const selectFields = {
+      companyName: true,
+      siteTagline: true,
+      companyAddress: true,
+      companyPhone: true,
+      companyEmail: true,
+      companyWebsite: true,
+      companyDescription: true,
+      companyLogo: true,
+      companyLogoHeight: true,
+      companyFavicon: true,
+      primaryColor: true,
+      accentColor: true,
+      currency: true,
+      timezone: true,
+      language: true,
+      storeMode: true,
+      rfqModel: true,
+      wholesaleDefaultMoq: true,
+      rfqEnabled: true,
+      wholesaleEnabled: true,
+      retailEnabled: true,
+      facebookUrl: true,
+      twitterUrl: true,
+      linkedinUrl: true,
+      instagramUrl: true,
+      whatsappNumber: true,
+      wechatId: true,
+      storeHours: true,
+      freeShippingThreshold: true,
+      announcementTicker: true,
+      mapProvider: true,
+      yandexMapsApiKey: true,
+      yandexGeocoderApiKey: true,
+      kitchenSectionEnabled: true,
+      kitchenSectionTitle: true,
+      kitchenSectionSubtitle: true,
+      kitchenSectionBadge: true,
+      kitchenSectionViewAllLabel: true,
+      kitchenSectionCategoryIds: true,
+      kitchenSectionPinnedProductIds: true,
+      kitchenSectionMaxProducts: true,
+      electronicsSectionEnabled: true,
+      electronicsSectionTitle: true,
+      electronicsSectionSubtitle: true,
+      electronicsSectionBadge: true,
+      electronicsSectionViewAllLabel: true,
+      electronicsSectionCategoryIds: true,
+      electronicsSectionPinnedProductIds: true,
+      electronicsSectionMaxProducts: true,
+      translations: {
+        where: { locale: { in: [locale, 'en'] } },
+        select: { locale: true, key: true, value: true }
+      }
+    } as any
+
+    let settings = await prisma.systemSettings.findUnique({
       where: { singletonKey: 'SINGLETON' },
-      select: {
-        companyName: true,
-        siteTagline: true,
-        companyAddress: true,
-        companyPhone: true,
-        companyEmail: true,
-        companyWebsite: true,
-        companyDescription: true,
-        companyLogo: true,
-        companyLogoHeight: true,
-        companyFavicon: true,
-        primaryColor: true,
-        accentColor: true,
-        currency: true,
-        timezone: true,
-        language: true,
-        storeMode: true,
-        rfqModel: true,
-        wholesaleDefaultMoq: true,
-        rfqEnabled: true,
-        wholesaleEnabled: true,
-        retailEnabled: true,
-        facebookUrl: true,
-        twitterUrl: true,
-        linkedinUrl: true,
-        instagramUrl: true,
-        whatsappNumber: true,
-        wechatId: true,
-        storeHours: true,
-        freeShippingThreshold: true,
-        announcementTicker: true,
-        mapProvider: true,
-        yandexMapsApiKey: true,
-        yandexGeocoderApiKey: true,
-        kitchenSectionEnabled: true,
-        kitchenSectionTitle: true,
-        kitchenSectionSubtitle: true,
-        kitchenSectionBadge: true,
-        kitchenSectionViewAllLabel: true,
-        kitchenSectionCategoryIds: true,
-        kitchenSectionPinnedProductIds: true,
-        kitchenSectionMaxProducts: true,
-        electronicsSectionEnabled: true,
-        electronicsSectionTitle: true,
-        electronicsSectionSubtitle: true,
-        electronicsSectionBadge: true,
-        electronicsSectionViewAllLabel: true,
-        electronicsSectionCategoryIds: true,
-        electronicsSectionPinnedProductIds: true,
-        electronicsSectionMaxProducts: true,
-        translations: {
-          where: { locale: { in: [locale, 'en'] } },
-          select: { locale: true, key: true, value: true }
-        }
-      } as any
+      select: selectFields,
     })
+
+    if (!settings) {
+      settings = await prisma.systemSettings.findFirst({
+        select: selectFields,
+      })
+    }
 
     // If no settings exist, use defaults
     const effectiveSettings: any = settings ?? {
@@ -196,51 +204,18 @@ export async function GET(request: NextRequest) {
     const { translations, ...publicSettings } = effectiveSettings
 
 
-    // Verify companyLogo file exists on disk; if missing, fall back to /logo.png
+    // Normalize companyLogo URL
     let resolvedLogo = publicSettings.companyLogo || '/logo.png'
     if (resolvedLogo.startsWith('/uploads/')) {
-      const relative = resolvedLogo.replace(/^\/uploads\//, '')
-      const possiblePaths = [
-        path.join(process.cwd(), 'public', 'uploads', relative),
-        path.join(process.cwd(), 'web', 'public', 'uploads', relative),
-        path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
-      ]
-      const exists = possiblePaths.some((p) => {
-        try {
-          return fs.existsSync(p)
-        } catch {
-          return false
-        }
-      })
-      if (!exists) {
-        resolvedLogo = '/logo.png'
-      } else {
-        resolvedLogo = `/api${resolvedLogo}`
-      }
+      resolvedLogo = `/api${resolvedLogo}`
     } else if (resolvedLogo.startsWith('uploads/')) {
       resolvedLogo = `/api/${resolvedLogo}`
     }
 
-    let resolvedFavicon = publicSettings.companyFavicon || '/favicon.svg'
+    // Normalize companyFavicon URL
+    let resolvedFavicon = publicSettings.companyFavicon || '/favicon.png'
     if (resolvedFavicon.startsWith('/uploads/')) {
-      const relative = resolvedFavicon.replace(/^\/uploads\//, '')
-      const possiblePaths = [
-        path.join(process.cwd(), 'public', 'uploads', relative),
-        path.join(process.cwd(), 'web', 'public', 'uploads', relative),
-        path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
-      ]
-      const exists = possiblePaths.some((p) => {
-        try {
-          return fs.existsSync(p)
-        } catch {
-          return false
-        }
-      })
-      if (!exists) {
-        resolvedFavicon = '/favicon.ico'
-      } else {
-        resolvedFavicon = `/api${resolvedFavicon}`
-      }
+      resolvedFavicon = `/api${resolvedFavicon}`
     } else if (resolvedFavicon.startsWith('uploads/')) {
       resolvedFavicon = `/api/${resolvedFavicon}`
     }

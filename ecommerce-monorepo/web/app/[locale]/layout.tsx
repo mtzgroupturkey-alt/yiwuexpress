@@ -22,6 +22,7 @@ import { MobileDrawer } from '@/components/mobile/MobileDrawer'
 import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 import { LocaleCurrencyAutoDetect } from '@/components/i18n/LocaleCurrencyAutoDetect'
 import { PushNotificationPrompt } from '@/components/pwa/PushNotificationPrompt'
+import DynamicFavicon from '@/components/DynamicFavicon'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +43,16 @@ export async function generateMetadata({
   }
   const siteTagline = await getSiteTagline(locale)
   const companyDescription = await getCompanyDescription(locale)
-  const companyFavicon = settings?.companyFavicon || '/favicon.png'
+  let companyFavicon = settings?.companyFavicon || '/favicon.png'
+  if (companyFavicon.startsWith('/uploads/')) {
+    companyFavicon = `/api${companyFavicon}`
+  } else if (companyFavicon.startsWith('uploads/')) {
+    companyFavicon = `/api/${companyFavicon}`
+  }
+
+  const isSvg = companyFavicon.includes('.svg')
+  const isIco = companyFavicon.includes('.ico')
+  const faviconType = isSvg ? 'image/svg+xml' : isIco ? 'image/x-icon' : 'image/png'
 
   const fullTitle = siteTagline ? `${companyName} - ${siteTagline}` : companyName
 
@@ -56,13 +66,13 @@ export async function generateMetadata({
     manifest: '/manifest.json',
     icons: {
       icon: [
-        { url: companyFavicon, type: companyFavicon.endsWith('.svg') ? 'image/svg+xml' : 'image/png' },
-        { url: companyFavicon, sizes: '32x32', type: companyFavicon.endsWith('.svg') ? 'image/svg+xml' : 'image/png' },
-        { url: companyFavicon, sizes: '16x16', type: companyFavicon.endsWith('.svg') ? 'image/svg+xml' : 'image/png' },
+        { url: companyFavicon, type: faviconType },
+        { url: companyFavicon, sizes: '32x32', type: faviconType },
+        { url: companyFavicon, sizes: '16x16', type: faviconType },
       ],
       shortcut: companyFavicon,
       apple: [
-        { url: companyFavicon, sizes: '180x180', type: companyFavicon.endsWith('.svg') ? 'image/svg+xml' : 'image/png' },
+        { url: companyFavicon, sizes: '180x180', type: faviconType },
       ],
     },
     appleWebApp: {
@@ -120,7 +130,15 @@ export default async function LocaleLayout({
     companyName = 'Dromkok'
   }
   const companyLogo = serverSettings.companyLogo || '/logo.png'
-  const companyFavicon = serverSettings.companyFavicon || '/favicon.png'
+  let companyFavicon = serverSettings.companyFavicon || '/favicon.png'
+  if (companyFavicon.startsWith('/uploads/')) {
+    companyFavicon = `/api${companyFavicon}`
+  } else if (companyFavicon.startsWith('uploads/')) {
+    companyFavicon = `/api/${companyFavicon}`
+  }
+  const isSvg = companyFavicon.includes('.svg')
+  const isIco = companyFavicon.includes('.ico')
+  const faviconMime = isSvg ? 'image/svg+xml' : isIco ? 'image/x-icon' : 'image/png'
   const messages = await getMessages()
 
   const cookieStore = cookies()
@@ -146,10 +164,11 @@ export default async function LocaleLayout({
 
   return (
     <>
-      <link rel="icon" href={companyFavicon} />
-      <link rel="icon" type="image/png" sizes="32x32" href={companyFavicon} />
-      <link rel="icon" type="image/png" sizes="16x16" href={companyFavicon} />
-      <link rel="shortcut icon" href={companyFavicon} />
+      <DynamicFavicon faviconUrl={companyFavicon} />
+      <link rel="icon" type={faviconMime} href={companyFavicon} />
+      <link rel="icon" type={faviconMime} sizes="32x32" href={companyFavicon} />
+      <link rel="icon" type={faviconMime} sizes="16x16" href={companyFavicon} />
+      <link rel="shortcut icon" type={faviconMime} href={companyFavicon} />
       <link rel="apple-touch-icon" sizes="180x180" href={companyFavicon} />
       <link rel="apple-touch-icon" href={companyFavicon} />
       <link rel="apple-touch-icon-precomposed" sizes="180x180" href={companyFavicon} />

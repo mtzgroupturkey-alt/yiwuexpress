@@ -387,6 +387,8 @@ export default function Home() {
   const {
     deliveryAddress,
     setDeliveryAddress,
+    saveDeliveryAddress,
+    removeSavedDeliveryAddress,
     userAddresses,
   } = useDeliveryLocation();
 
@@ -1146,8 +1148,9 @@ export default function Home() {
         currentAddress={deliveryAddress}
         userAddresses={userAddresses}
         isAuthenticated={isAuthenticated}
-        onSelectAddress={(addr) => {
-          setDeliveryAddress(addr);
+        onRemoveAddress={removeSavedDeliveryAddress}
+        onSelectAddress={(addr, details) => {
+          saveDeliveryAddress(addr, details);
           showToast(`Delivery updated to: ${addr}`);
         }}
       />

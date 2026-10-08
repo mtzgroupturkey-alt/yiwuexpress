@@ -33,6 +33,8 @@ export function Design3LayoutHeader() {
   const {
     deliveryAddress,
     setDeliveryAddress: persistDelivery,
+    saveDeliveryAddress,
+    removeSavedDeliveryAddress,
     userAddresses,
   } = useDeliveryLocation();
 
@@ -365,8 +367,9 @@ export function Design3LayoutHeader() {
         currentAddress={deliveryAddress}
         userAddresses={userAddresses}
         isAuthenticated={isAuthenticated}
-        onSelectAddress={(addr) => {
-          persistDelivery(addr);
+        onRemoveAddress={removeSavedDeliveryAddress}
+        onSelectAddress={(addr, details) => {
+          saveDeliveryAddress(addr, details);
           setIsLocationOpen(false);
         }}
       />
