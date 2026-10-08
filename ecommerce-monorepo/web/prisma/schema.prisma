@@ -401,6 +401,7 @@ model CountryTranslation {
 
 model Category {
   id                 String                @id @default(cuid())
+  code               String?               @unique
   name               String                @unique
   slug               String                @unique
   description        String?

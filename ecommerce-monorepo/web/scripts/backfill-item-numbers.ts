@@ -13,14 +13,8 @@ export function formatIkeaItemNo(raw: string): string {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 8)}`;
 }
 
-// Format sequence or number into Dromkok dotted format "DK-XXX.XXX.XX"
-export function formatDromkokItemNo(num: number): string {
-  const padded = String(num).padStart(8, '0');
-  return `DK-${padded.slice(0, 3)}.${padded.slice(3, 6)}.${padded.slice(6, 8)}`;
-}
-
 async function main() {
-  console.log('=== STARTING ITEM NUMBER BACKFILL SCRIPT (WITH SNAPSHOT URLS) ===');
+  console.log('=== STARTING HIERARCHICAL ITEM NUMBER BACKFILL SCRIPT ===');
 
   const sqlFilePath = path.join(process.cwd(), 'data', 'import-all-ikea-products.sql');
   const masterJsonPath = path.join(process.cwd(), 'data', 'missing-ikea-catalog', 'missing-catalog-master.json');
@@ -59,32 +53,31 @@ async function main() {
   // 2. Parse missing-catalog-master.json
   if (fs.existsSync(masterJsonPath)) {
     console.log('Parsing missing-catalog-master.json...');
-    const master = JSON.parse(fs.readFileSync(masterJsonPath, 'utf8'));
-    for (const dept of master) {
-      if (dept.subcategories) {
-        for (const sub of dept.subcategories) {
-          if (sub.sampleProductsToInsert) {
-            for (const sp of sub.sampleProductsToInsert) {
-              if (sp.ikeaItemNo && sp.images) {
-                const rawNo = sp.ikeaItemNo.replace(/\D/g, '');
-                if (rawNo.length === 8) {
-                  for (const img of sp.images) {
-                    imgToIkea.set(img, rawNo);
-                    const sm = img.match(/products\/([a-z0-9-]+)__/);
-                    if (sm) {
-                      slugToIkea.set(sm[1], rawNo);
-                    }
-                  }
+    try {
+      const raw = fs.readFileSync(masterJsonPath, 'utf8');
+      const items = JSON.parse(raw);
+      if (Array.isArray(items)) {
+        for (const it of items) {
+          if (it.itemNo) {
+            const rawDigits = it.itemNo.replace(/\D/g, '');
+            if (rawDigits.length === 8) {
+              if (it.slug) slugToIkea.set(it.slug, rawDigits);
+              if (it.images && Array.isArray(it.images)) {
+                for (const img of it.images) {
+                  imgToIkea.set(img, rawDigits);
                 }
               }
             }
           }
         }
       }
+      console.log(`After master JSON: ${imgToIkea.size} image mappings, ${slugToIkea.size} slug mappings.`);
+    } catch (e) {
+      console.warn('Failed parsing missing-catalog-master.json:', e);
     }
   }
 
-  // 3. Load catalog snapshot
+  // 3. Parse snapshot for original un-cached IKEA URLs
   const snapshotById = new Map<string, any>();
   const snapshotBySku = new Map<string, any>();
   if (fs.existsSync(snapshotPath)) {
@@ -98,7 +91,50 @@ async function main() {
     console.log(`Loaded ${snapshotById.size} snapshot records.`);
   }
 
-  // 4. Query all products from database ordered by createdAt asc
+  // 4. Fetch all categories to build hierarchical codes
+  console.log('Fetching category taxonomy...');
+  const allCategories = await prisma.category.findMany({
+    select: {
+      id: true,
+      code: true,
+      level: true,
+      parentId: true,
+      parent: {
+        select: {
+          code: true,
+          parentId: true,
+          parent: {
+            select: {
+              code: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const catCodePrefixMap = new Map<string, { catCode: string; subCode: string }>();
+  for (const cat of allCategories) {
+    let catCode = '999';
+    let subCode = '000';
+
+    if (cat.level === 1 || !cat.parentId) {
+      catCode = cat.code ? String(cat.code).padStart(3, '0') : '999';
+      subCode = '000';
+    } else if (cat.level === 2) {
+      catCode = cat.parent?.code ? String(cat.parent.code).padStart(3, '0') : '999';
+      subCode = cat.code ? String(cat.code).padStart(3, '0') : '000';
+    } else {
+      // Level 3 (or deeper)
+      const rootCode = cat.parent?.parent?.code || cat.parent?.code;
+      catCode = rootCode ? String(rootCode).padStart(3, '0') : '999';
+      subCode = cat.code ? String(cat.code).padStart(3, '0') : '000';
+    }
+
+    catCodePrefixMap.set(cat.id, { catCode, subCode });
+  }
+
+  // 5. Query all products from database ordered by createdAt asc
   console.log('Querying all products from database...');
   const products = await prisma.product.findMany({
     select: {
@@ -107,6 +143,7 @@ async function main() {
       slug: true,
       thumbnail: true,
       images: true,
+      categoryId: true,
       dromkokItemNo: true,
       ikeaItemNo: true,
     },
@@ -115,23 +152,14 @@ async function main() {
 
   console.log(`Found ${products.length} products to process.`);
 
-  let maxSeq = 10000000;
-  for (const p of products) {
-    if (p.dromkokItemNo) {
-      const cleanDigits = parseInt(p.dromkokItemNo.replace(/\D/g, ''), 10);
-      if (!isNaN(cleanDigits) && cleanDigits > maxSeq) {
-        maxSeq = cleanDigits;
-      }
-    }
-  }
-
-  let nextSeq = maxSeq === 10000000 ? 10001001 : maxSeq + 1;
+  // Counters for sequences per prefix: Map<"DK-CCC.SSS.", number>
+  const seqMap = new Map<string, number>();
 
   let ikeaMatched = 0;
   let dromkokAssigned = 0;
   let updatedCount = 0;
 
-  // Process in batches
+  // Process in batches of 100
   const batchSize = 100;
   for (let i = 0; i < products.length; i += batchSize) {
     const chunk = products.slice(i, i + batchSize);
@@ -182,12 +210,17 @@ async function main() {
         const formattedIkea = rawIkea ? formatIkeaItemNo(rawIkea) : p.ikeaItemNo;
         if (formattedIkea && formattedIkea !== p.ikeaItemNo) ikeaMatched++;
 
-        let dkNo = p.dromkokItemNo;
-        if (!dkNo) {
-          dkNo = formatDromkokItemNo(nextSeq++);
-          dromkokAssigned++;
-        }
+        // Calculate hierarchical Dromkok Item No: DK-CCC.SSS.NN
+        const prefixInfo = p.categoryId ? catCodePrefixMap.get(p.categoryId) : null;
+        const cCode = prefixInfo ? prefixInfo.catCode : '999';
+        const sCode = prefixInfo ? prefixInfo.subCode : '000';
+        const prefixKey = `DK-${cCode}.${sCode}.`;
 
+        const currentSeq = (seqMap.get(prefixKey) || 0) + 1;
+        seqMap.set(prefixKey, currentSeq);
+
+        const dkNo = `${prefixKey}${String(currentSeq).padStart(2, '0')}`;
+        dromkokAssigned++;
         updatedCount++;
 
         return prisma.product.update({

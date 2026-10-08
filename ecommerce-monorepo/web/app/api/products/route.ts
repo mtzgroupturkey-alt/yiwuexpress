@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { getLocalField, localizeEntity } from '@/lib/utils/localize'
 import { requireRole, createAuthErrorResponse, getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
 import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
+import { generateDromkokItemNo } from '@/lib/catalog/generate-item-no'
 
 interface FilterMetadata {
   id: string
@@ -672,6 +673,11 @@ export async function POST(request: Request) {
       productData.description = englishEntry.description ?? null
       if (englishEntry.metaTitle) productData.metaTitle = englishEntry.metaTitle
       if (englishEntry.metaDescription) productData.metaDescription = englishEntry.metaDescription
+    }
+
+    // Generate unique Dromkok Item No if not explicitly provided
+    if (!productData.dromkokItemNo) {
+      productData.dromkokItemNo = await generateDromkokItemNo(prisma, productData.categoryId)
     }
 
     // Create product + write all locale rows atomically. If any locale upsert

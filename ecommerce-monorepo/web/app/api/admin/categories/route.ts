@@ -127,6 +127,7 @@ export async function POST(request: Request) {
         isFeatured: body.isFeatured || false,
         level,
         menuOrder: body.menuOrder || 0,
+        code: body.code || null,
       }
     })
 

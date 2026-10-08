@@ -32,6 +32,8 @@ const productSchema = z.object({
   slug: z.string().min(1, 'Slug is required'),
   description: z.string().optional(),
   categoryId: z.string().optional(),
+  dromkokItemNo: z.string().optional(),
+  ikeaItemNo: z.string().optional(),
   price: z.number().min(0, 'Price must be positive'),
   compareAtPrice: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
   costPrice: z.preprocess((val) => (val === '' || val === null || (typeof val === 'number' && isNaN(val)) ? undefined : typeof val === 'string' ? parseFloat(val) : val), z.number().min(0).optional()),
@@ -252,6 +254,41 @@ export default function NewProductPage() {
                     showPath
                     showLevelIndicator
                   />
+                </div>
+              </div>
+
+              {/* Dromkok & IKEA Item Identifiers */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/60 p-4 rounded-2xl border border-slate-200/60">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="dromkokItemNo" className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      Dromkok Item # (Public)
+                    </Label>
+                    <span className="text-[10px] text-slate-500 font-mono">Auto-generated if blank</span>
+                  </div>
+                  <Input
+                    id="dromkokItemNo"
+                    {...register('dromkokItemNo')}
+                    placeholder="DK-CCC.SSS.NN (Auto-generated)"
+                    className="rounded-xl bg-white font-mono text-sm border-slate-200 focus:border-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500">Leave blank to automatically generate hierarchical DK-CCC.SSS.NN number.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="ikeaItemNo" className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+                      IKEA Item # (Admin Only)
+                    </Label>
+                    <span className="text-[10px] text-amber-700 font-mono">e.g. 104.114.96</span>
+                  </div>
+                  <Input
+                    id="ikeaItemNo"
+                    {...register('ikeaItemNo')}
+                    placeholder="XXX.XXX.XX"
+                    className="rounded-xl bg-white font-mono text-sm border-slate-200 focus:border-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500">Internal catalog cross-reference. Hidden from customer storefront.</p>
                 </div>
               </div>
 

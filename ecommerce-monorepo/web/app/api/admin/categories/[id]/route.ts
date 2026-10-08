@@ -161,6 +161,7 @@ export async function PUT(
       isFeatured: body.isFeatured !== undefined ? body.isFeatured : existing.isFeatured,
       menuOrder: body.menuOrder !== undefined ? Number(body.menuOrder) : existing.menuOrder,
       displayOrder: body.displayOrder !== undefined ? Number(body.displayOrder) : existing.displayOrder,
+      ...(body.code !== undefined && { code: body.code || null }),
     }
 
     console.log('[API] Update data being sent to database:', JSON.stringify(updateData, null, 2))
