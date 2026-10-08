@@ -19,6 +19,7 @@ import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useLocale, useTranslations } from 'next-intl'
 import { MobileCheckoutPage } from '@/components/mobile/checkout/MobileCheckoutPage'
+import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker'
 
 
 const buildCheckoutSchema = (t: (key: string, values?: any) => string) => z.object({
@@ -61,12 +62,14 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [agreeTerms, setAgreeTerms] = useState(false)
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false)
 
   const {
     register,
     handleSubmit,
     watch,
     control,
+    setValue,
     formState: { errors }
   } = useForm<CheckoutForm>({
     resolver: zodResolver(buildCheckoutSchema(t))
@@ -396,10 +399,57 @@ export default function CheckoutPage() {
               {/* Step 1: Shipping Address */}
               {step === 1 && (
                 <Card>
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                       <CardTitle>{t('shippingAddress')}</CardTitle>
+                      <button
+                        type="button"
+                        onClick={() => setIsMapPickerOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#00407a] border border-blue-200 rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                      >
+                        <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                        <span>{locale === 'zh' ? '在地图上选择' : locale === 'ru' ? 'Выбрать на карте' : 'Select on map'}</span>
+                      </button>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {/* Map Picker Modal Component */}
+                      <AddressMapPicker
+                        isOpen={isMapPickerOpen}
+                        onClose={() => setIsMapPickerOpen(false)}
+                        onConfirm={(addr: StructuredAddress) => {
+                          const matchedCountry = countries.find(
+                            (c) =>
+                              (addr.countryCode && c.code?.toUpperCase() === addr.countryCode.toUpperCase()) ||
+                              c.name.toLowerCase() === addr.country.toLowerCase()
+                          );
+                          const streetLine = [
+                            addr.street,
+                            addr.houseNumber,
+                            addr.apartment ? (locale === 'ru' ? `кв. ${addr.apartment}` : `Apt ${addr.apartment}`) : '',
+                          ].filter(Boolean).join(', ') || addr.formattedAddress;
+
+                          if (matchedCountry) {
+                            setValue('shippingCountryId', matchedCountry.id, { shouldValidate: true });
+                          }
+                          if (addr.city) {
+                            setValue('shippingCity', addr.city, { shouldValidate: true });
+                          }
+                          if (addr.state) {
+                            setValue('shippingState', addr.state, { shouldValidate: true });
+                          }
+                          if (streetLine) {
+                            setValue('shippingAddress', streetLine, { shouldValidate: true });
+                          }
+                          if (addr.postalCode) {
+                            setValue('shippingPostalCode', addr.postalCode, { shouldValidate: true });
+                          }
+                          if (addr.notes) {
+                            setValue('customerNotes', addr.notes);
+                          }
+                          setIsMapPickerOpen(false);
+                        }}
+                        locale={locale}
+                      />
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="customerName">{t('fullName')} *</Label>

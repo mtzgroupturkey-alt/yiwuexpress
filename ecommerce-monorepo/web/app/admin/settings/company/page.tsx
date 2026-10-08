@@ -40,6 +40,7 @@ interface CompanySettings {
   announcementTicker: string
   mapProvider: string
   yandexMapsApiKey: string
+  yandexGeocoderApiKey: string
 }
 
 export default function CompanyInfoPage() {
@@ -81,6 +82,7 @@ export default function CompanyInfoPage() {
     announcementTicker: '',
     mapProvider: 'yandex',
     yandexMapsApiKey: '',
+    yandexGeocoderApiKey: '',
   })
 
   // Helper function to safely convert null to empty string
@@ -152,6 +154,7 @@ export default function CompanyInfoPage() {
             announcementTicker: safeString(data.settings.announcementTicker),
             mapProvider: safeString(data.settings.mapProvider) || 'yandex',
             yandexMapsApiKey: safeString(data.settings.yandexMapsApiKey),
+            yandexGeocoderApiKey: safeString(data.settings.yandexGeocoderApiKey),
           })
         }
         setError('')
@@ -758,36 +761,52 @@ export default function CompanyInfoPage() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Map Provider
+                Map Provider (mapProvider)
               </label>
               <select
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 value={settings.mapProvider}
                 onChange={(e) => handleInputChange('mapProvider', e.target.value)}
               >
-                <option value="yandex">Yandex Maps API (Recommended for RU / BY / CIS)</option>
-                <option value="leaflet">Leaflet & OpenStreetMap (Global Open Source)</option>
+                <option value="yandex">Yandex Maps API (Default — Best accuracy in RU / BY / CIS)</option>
+                <option value="leaflet">Leaflet + OpenStreetMap (Global Open Source Fallback)</option>
               </select>
               <p className="text-xs text-gray-400 mt-1">
-                Yandex provides highest address accuracy and building outlines across Russia and Belarus.
+                Yandex provides precise building outlines and entrance markers across Russia and Belarus.
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Yandex Maps JavaScript API Key (Optional)
+                Yandex JavaScript Maps API Key (yandexMapsApiKey)
               </label>
               <input
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
                 value={settings.yandexMapsApiKey}
                 onChange={(e) => handleInputChange('yandexMapsApiKey', e.target.value)}
-                placeholder="e.g. 52c...-....-....-....-.........."
+                placeholder="e.g. 52c1e4...-....-...."
               />
               <p className="text-xs text-gray-400 mt-1">
-                Developer API key from Yandex Developer Console. Overrides default server environment keys if provided.
+                Used for frontend map rendering and interactive draggable pins. Stored in DB (no .env edit needed).
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Yandex Geocoder API Key (yandexGeocoderApiKey)
+              </label>
+              <input
+                type="text"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                value={settings.yandexGeocoderApiKey}
+                onChange={(e) => handleInputChange('yandexGeocoderApiKey', e.target.value)}
+                placeholder="Optional (falls back to JavaScript API key if empty)"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Used for server-side reverse geocoding (coordinates → address fields). Leave empty if using the same key.
               </p>
             </div>
           </div>

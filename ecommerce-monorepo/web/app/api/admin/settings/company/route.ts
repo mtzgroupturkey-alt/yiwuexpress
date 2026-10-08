@@ -115,6 +115,7 @@ const DEFAULT_COMPANY_SETTINGS = {
   announcementTicker: '',
   mapProvider: 'yandex',
   yandexMapsApiKey: '',
+  yandexGeocoderApiKey: '',
   translations: [],
 }
 
@@ -184,6 +185,7 @@ export async function GET(request: Request) {
       announcementTicker: settings.announcementTicker || DEFAULT_COMPANY_SETTINGS.announcementTicker,
       mapProvider: settings.mapProvider || DEFAULT_COMPANY_SETTINGS.mapProvider,
       yandexMapsApiKey: settings.yandexMapsApiKey || DEFAULT_COMPANY_SETTINGS.yandexMapsApiKey,
+      yandexGeocoderApiKey: settings.yandexGeocoderApiKey || DEFAULT_COMPANY_SETTINGS.yandexGeocoderApiKey,
       translations,
     }
 
@@ -257,7 +259,8 @@ export async function PUT(request: Request) {
             announcementTicker: body.announcementTicker !== undefined ? body.announcementTicker : undefined,
             mapProvider: body.mapProvider !== undefined ? body.mapProvider : undefined,
             yandexMapsApiKey: body.yandexMapsApiKey !== undefined ? body.yandexMapsApiKey : undefined,
-          },
+            yandexGeocoderApiKey: body.yandexGeocoderApiKey !== undefined ? body.yandexGeocoderApiKey : undefined,
+          } as any,
         })
       } catch (updateErr: any) {
         console.warn('Prisma update on systemSettings failed, attempting core field update:', updateErr?.message)
@@ -290,7 +293,8 @@ export async function PUT(request: Request) {
               whatsappNumber: body.whatsappNumber,
               mapProvider: body.mapProvider !== undefined ? body.mapProvider : undefined,
               yandexMapsApiKey: body.yandexMapsApiKey !== undefined ? body.yandexMapsApiKey : undefined,
-            },
+              yandexGeocoderApiKey: body.yandexGeocoderApiKey !== undefined ? body.yandexGeocoderApiKey : undefined,
+            } as any,
           })
         } catch {
           settings = { ...existing, ...body, siteTagline: resolvedSiteTagline }
@@ -360,7 +364,8 @@ export async function PUT(request: Request) {
           announcementTicker: body.announcementTicker || null,
           mapProvider: body.mapProvider || 'yandex',
           yandexMapsApiKey: body.yandexMapsApiKey || null,
-        },
+          yandexGeocoderApiKey: body.yandexGeocoderApiKey || null,
+        } as any,
       })
 
       if (body.translations && Array.isArray(body.translations)) {

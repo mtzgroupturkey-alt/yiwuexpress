@@ -29,11 +29,12 @@ export async function GET(req: NextRequest) {
     try {
       const { prisma } = await import('@/lib/db');
       dbSettings = await prisma.systemSettings.findFirst({
-        select: { mapProvider: true, yandexMapsApiKey: true }
+        select: { mapProvider: true, yandexMapsApiKey: true, yandexGeocoderApiKey: true } as any
       });
     } catch {}
 
     const yandexApiKey =
+      dbSettings?.yandexGeocoderApiKey?.trim() ||
       dbSettings?.yandexMapsApiKey?.trim() ||
       process.env.YANDEX_GEOCODER_API_KEY ||
       process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY;

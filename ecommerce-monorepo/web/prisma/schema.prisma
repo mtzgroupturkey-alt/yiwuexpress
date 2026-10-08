@@ -177,6 +177,7 @@ model SystemSettings {
   // Map Provider Configuration (yandex | leaflet)
   mapProvider           String?   @default("yandex")
   yandexMapsApiKey      String?
+  yandexGeocoderApiKey  String?
 
   // Store Front & Header Customizations
   storeHours            String? @default("08:00 – 23:00")

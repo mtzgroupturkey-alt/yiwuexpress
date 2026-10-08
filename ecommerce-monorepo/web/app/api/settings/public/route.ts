@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
         announcementTicker: true,
         mapProvider: true,
         yandexMapsApiKey: true,
+        yandexGeocoderApiKey: true,
         kitchenSectionEnabled: true,
         kitchenSectionTitle: true,
         kitchenSectionSubtitle: true,
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
           where: { locale: { in: [locale, 'en'] } },
           select: { locale: true, key: true, value: true }
         }
-      }
+      } as any
     })
 
     // If no settings exist, use defaults
@@ -102,6 +103,9 @@ export async function GET(request: NextRequest) {
       storeHours: '08:00 – 23:00',
       freeShippingThreshold: 35.00,
       announcementTicker: null,
+      mapProvider: 'yandex',
+      yandexMapsApiKey: '',
+      yandexGeocoderApiKey: '',
       kitchenSectionEnabled: true,
       kitchenSectionTitle: 'Kitchenware, Cookware & Dining Essentials',
       kitchenSectionSubtitle: 'Granite frying pans, chef cutlery sets, porcelain dinner sets, and Italian espresso barware',
@@ -330,6 +334,7 @@ export async function GET(request: NextRequest) {
       timezone: 'Asia/Shanghai',
       language: 'en',
       storeMode: 'WHOLESALE',
+      rfqModel: 'INSTANT',
       storeHours: '08:00 – 23:00',
       freeShippingThreshold: 35.00,
       announcementTicker: null,
