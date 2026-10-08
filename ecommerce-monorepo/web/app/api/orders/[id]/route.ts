@@ -25,7 +25,8 @@ export async function GET(
                 id: true,
                 name: true,
                 slug: true,
-                thumbnail: true
+                thumbnail: true,
+                dromkokItemNo: true,
               }
             }
           }
