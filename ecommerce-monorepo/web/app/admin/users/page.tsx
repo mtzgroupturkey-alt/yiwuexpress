@@ -1283,15 +1283,6 @@ export default function AdminUsersPage() {
                               <Eye size={12} />
                               View Document
                             </button>
-                            <a
-                              href={getDocDisplayUrl(doc)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-gray-100"
-                              title="Open in new window"
-                            >
-                              <ExternalLink size={13} />
-                            </a>
                           </div>
                         </div>
                       ))}

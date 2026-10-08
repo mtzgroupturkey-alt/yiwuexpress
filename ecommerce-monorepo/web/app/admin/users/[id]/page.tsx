@@ -759,15 +759,6 @@ export default function UserProfilePage() {
                               <Eye size={13} />
                               View Document
                             </Button>
-                            <a
-                              href={getDocDisplayUrl(doc)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-gray-100"
-                              title="Open in new window"
-                            >
-                              <ExternalLink size={14} />
-                            </a>
                           </div>
                         </div>
                       ))}
@@ -1141,17 +1132,6 @@ export default function UserProfilePage() {
                           <Eye size={13} />
                           View Document
                         </Button>
-
-                        <a
-                          href={getDocDisplayUrl(doc)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-2xs"
-                          title="Open directly in new browser tab"
-                        >
-                          <ExternalLink size={13} />
-                          New Tab
-                        </a>
                       </div>
                     </div>
                   ))}
