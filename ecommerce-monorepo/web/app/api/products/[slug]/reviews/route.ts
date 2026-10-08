@@ -87,50 +87,66 @@ export async function POST(
     const token = getTokenFromRequest(req)
     const payload = token ? verifyToken(token) : null
 
-    if (!payload) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await req.json()
-    const { rating, title, comment, images = [] } = body
+    const { rating, title, comment, reviewerName, images = [] } = body
 
     if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
       return NextResponse.json({ error: 'Rating must be between 1 and 5' }, { status: 400 })
     }
 
-    if (!title || typeof title !== 'string' || title.trim().length < 5) {
-      return NextResponse.json({ error: 'Title must be at least 5 characters' }, { status: 400 })
+    if (!title || typeof title !== 'string' || title.trim().length < 2) {
+      return NextResponse.json({ error: 'Title must be at least 2 characters' }, { status: 400 })
     }
 
-    if (!comment || typeof comment !== 'string' || comment.trim().length < 20) {
-      return NextResponse.json({ error: 'Comment must be at least 20 characters' }, { status: 400 })
+    if (!comment || typeof comment !== 'string' || comment.trim().length < 3) {
+      return NextResponse.json({ error: 'Comment must be at least 3 characters' }, { status: 400 })
     }
 
-    // Check if verified purchase
-    const verifiedOrder = await prisma.order.findFirst({
-      where: {
-        userId: payload.userId,
-        status: { notIn: ['CANCELLED', 'FAILED', 'PENDING'] },
-        items: {
-          some: {
-            productId
+    let userId = payload?.userId
+    let isVerifiedPurchase = false
+
+    if (userId) {
+      // Check if verified purchase for logged in user
+      const verifiedOrder = await prisma.order.findFirst({
+        where: {
+          userId,
+          status: { notIn: ['CANCELLED', 'FAILED', 'PENDING'] },
+          items: {
+            some: {
+              productId
+            }
           }
         }
-      }
-    })
+      })
+      isVerifiedPurchase = !!verifiedOrder
+    } else {
+      // Guest submission: find or create guest user
+      const guestName = (reviewerName && typeof reviewerName === 'string' && reviewerName.trim())
+        ? reviewerName.trim()
+        : 'Guest Customer'
+      const guestEmail = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 7)}@dromkok.com`
 
-    const isVerifiedPurchase = !!verifiedOrder
+      const guestUser = await prisma.user.create({
+        data: {
+          name: guestName,
+          email: guestEmail,
+          password: await hashPassword('guest_' + Math.random().toString(36)),
+          role: 'USER',
+        }
+      })
+      userId = guestUser.id
+    }
 
     const review = await prisma.review.create({
       data: {
         productId,
-        userId: payload.userId,
+        userId,
         rating,
-        title,
-        comment,
+        title: title.trim(),
+        comment: comment.trim(),
         images,
         isVerifiedPurchase,
-        isApproved: false, // Default false for moderation
+        isApproved: true, // Auto-approve so it shows immediately
         helpfulCount: 0
       },
       include: {
