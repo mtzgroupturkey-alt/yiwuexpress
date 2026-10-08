@@ -28,7 +28,7 @@ import { useCustomerView } from '@/hooks/useCustomerView';
 
 interface UnifiedProductCardProps {
   product: Product;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product, quantity?: number, mode?: 'RETAIL' | 'WHOLESALE') => void;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   cartQuantities: Record<string, number>;
   favoriteIds: Set<string>;
@@ -105,7 +105,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAddToCart(product);
+    onAddToCart(product, 1, 'RETAIL');
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };
@@ -137,10 +137,15 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
 
   const handleInstantWholesaleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAddToCart({
-      ...product,
-      price: effectiveWholesalePrice,
-    });
+    const orderQty = Math.max(1, product.minOrderQty || moq || 1);
+    onAddToCart(
+      {
+        ...product,
+        price: effectiveWholesalePrice,
+      },
+      orderQty,
+      'WHOLESALE'
+    );
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1200);
   };

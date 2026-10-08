@@ -658,9 +658,12 @@ export default function ProductDetailView({
     setOpenAccordions((prev) => ({ ...prev, [section]: !prev[section] }))
   }
 
-  const handleRelatedAddToCart = async (target: any) => {
-    if (isWholesale && !isRetail) {
-      const moq = target.moq || (target as any).minOrderQty || 1
+  const handleRelatedAddToCart = async (target: any, qty = 1, mode?: 'RETAIL' | 'WHOLESALE') => {
+    const isInstant = settings?.rfqModel === 'INSTANT'
+    const targetMode = mode || (isWholesaleCustomer && isInstant ? 'WHOLESALE' : isWholesaleCustomer ? 'WHOLESALE' : 'RETAIL')
+    const moq = target.moq || (target as any).minOrderQty || 1
+
+    if (targetMode === 'WHOLESALE' && !isInstant) {
       enableWholesaleSession()
       addInquiryItem({
         productId: target.id,
@@ -685,13 +688,15 @@ export default function ProductDetailView({
     }
 
     try {
+      const orderQty = targetMode === 'WHOLESALE' ? Math.max(qty, moq) : qty
       const response = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           productId: target.id,
-          quantity: 1,
+          quantity: orderQty,
+          mode: targetMode,
         }),
       })
 
@@ -809,7 +814,8 @@ export default function ProductDetailView({
           productId: product.id,
           variantId: selectedVariant?.id,
           selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
-          quantity
+          quantity,
+          mode: isWholesaleActive ? 'WHOLESALE' : 'RETAIL',
         })
       })
 
