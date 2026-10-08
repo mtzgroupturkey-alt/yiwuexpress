@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
-import { requireRole, createAuthErrorResponse } from '@/lib/auth'
+import { requireAuth, requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // Valid wholesale status transitions (12-state workflow)
 const WHOLESALE_STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -119,10 +119,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const user = await requireAuth(request)
+
     const inquiry = await prisma.wholesaleInquiry.findUnique({
       where: { id: params.id },
       select: {
         id: true,
+        userId: true,
         inquiryNumber: true,
         status: true,
         negotiationHistory: true,
@@ -138,6 +141,16 @@ export async function GET(
       )
     }
 
+    const isAdmin = user.role === 'ADMIN'
+    const isOwner = inquiry.userId === user.id
+
+    if (!isAdmin && !isOwner) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -146,7 +159,10 @@ export async function GET(
         inquiryNumber: inquiry.inquiryNumber
       }
     })
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof Error && (error.message === 'Unauthorized' || error.message === 'Forbidden' || error.message === 'Account is disabled')) {
+      return createAuthErrorResponse(error)
+    }
     console.error('Error fetching wholesale status:', error)
     return NextResponse.json(
       { success: false, error: 'Failed to fetch wholesale status' },
