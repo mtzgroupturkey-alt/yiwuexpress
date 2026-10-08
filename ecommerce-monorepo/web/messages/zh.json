@@ -1105,7 +1105,7 @@
     "wholesaleMoq": "批发 (起订: {moq})",
     "requestQuoteMoq": "询价 (起订: {moq})",
     "addedToQuote": "已加入询价单",
-    "addToCartMoq": "加入购物车 (起订: {moq})",
+    "addToCartMoq": "加入购物车",
     "requestQuoteUnits": "申请报价（{quantity} 件）",
     "commercialDurability": "商用级耐用度",
     "commercialDurabilityDesc": "加厚卷边结构，长期高温不易变形。",
@@ -1885,7 +1885,7 @@
       "wholesaleMoq": "批发 (起订: {moq})",
       "requestQuoteMoq": "询价 (起订: {moq})",
       "addedToQuote": "已加入询价单",
-      "addToCartMoq": "加入购物车 (起订: {moq})",
+      "addToCartMoq": "加入购物车",
       "requestQuoteUnits": "申请报价（{quantity} 件）",
       "commercialDurability": "商用级耐用度",
       "commercialDurabilityDesc": "加厚卷边结构，长期高温不易变形。",
@@ -1932,7 +1932,7 @@
       "wholesaleMoq": "批发 (起订: {moq})",
       "requestQuoteMoq": "询价 (起订: {moq})",
       "addedToQuote": "已加入询价单",
-      "addToCartMoq": "加入购物车 (起订: {moq})",
+      "addToCartMoq": "加入购物车",
       "officialSourcing": "官方严选代采",
       "chinaFactory": "中国源头工厂"
     }

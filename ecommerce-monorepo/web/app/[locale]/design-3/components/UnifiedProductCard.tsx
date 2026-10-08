@@ -431,7 +431,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                     className="flex items-center gap-1.5"
                   >
                     <ShoppingCart className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>{tPdp('addToCartMoq', { moq })}</span>
+                    <span>{tFlash('addToCart')}</span>
                   </motion.span>
                 )}
               </AnimatePresence>

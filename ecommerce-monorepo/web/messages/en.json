@@ -1088,7 +1088,7 @@
     "wholesaleMoq": "Wholesale (MOQ: {moq})",
     "requestQuoteMoq": "Request Quote (MOQ: {moq})",
     "addedToQuote": "Added to Quote",
-    "addToCartMoq": "Add to Cart (MOQ: {moq})",
+    "addToCartMoq": "Add to Cart",
     "requestQuoteUnits": "Request Quote ({quantity} units)",
     "commercialDurability": "Commercial Durability",
     "commercialDurabilityDesc": "Reinforced rolled rims prevent warping.",
@@ -1868,7 +1868,7 @@
       "wholesaleMoq": "Wholesale (MOQ: {moq})",
       "requestQuoteMoq": "Request Quote (MOQ: {moq})",
       "addedToQuote": "Added to Quote",
-      "addToCartMoq": "Add to Cart (MOQ: {moq})",
+      "addToCartMoq": "Add to Cart",
       "requestQuoteUnits": "Request Quote ({quantity} units)",
       "commercialDurability": "Commercial Durability",
       "commercialDurabilityDesc": "Reinforced rolled rims prevent warping.",
@@ -1915,7 +1915,7 @@
       "wholesaleMoq": "Wholesale (MOQ: {moq})",
       "requestQuoteMoq": "Request Quote (MOQ: {moq})",
       "addedToQuote": "Added to Quote",
-      "addToCartMoq": "Add to Cart (MOQ: {moq})",
+      "addToCartMoq": "Add to Cart",
       "officialSourcing": "Official Sourcing",
       "chinaFactory": "China Factory"
     }
