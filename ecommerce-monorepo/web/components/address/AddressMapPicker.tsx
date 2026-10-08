@@ -473,7 +473,7 @@ export function AddressMapPicker({
       />
 
       {/* Main Dialog / Mobile Bottom Sheet */}
-      <div className="relative w-full h-full sm:h-[650px] max-w-4xl bg-white sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10">
+      <div className="relative w-full h-full sm:h-[700px] sm:max-h-[92vh] max-w-4xl bg-white sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden z-10">
         
         {/* Top Header */}
         <div className="px-4 py-3 bg-[#F8FAFC] border-b border-slate-200 flex items-center justify-between shrink-0">
@@ -607,125 +607,161 @@ export function AddressMapPicker({
           )}
         </div>
 
-        {/* Bottom Address Confirmation Bar (IKEA Clean UI) */}
-        <div className="bg-white border-t border-slate-200 p-4 shrink-0 space-y-3 shadow-lg">
+        {/* Bottom Address Entry & Confirmation Panel (Modern Clean UX) */}
+        <div className="bg-white border-t border-slate-200 p-3 sm:p-4 shrink-0 space-y-3 shadow-lg">
           
-          {/* Address Summary */}
-          <div className="flex items-start justify-between gap-3 bg-slate-50 rounded-xl p-3 border border-slate-200/80">
-            <div className="flex items-start gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100 mt-0.5">
-                <Building className="w-3.5 h-3.5" />
+          {/* Main Detected Location / City Banner */}
+          <div className="flex items-center justify-between gap-3 bg-slate-50/80 rounded-xl px-3 py-2 border border-slate-200/70">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-6 h-6 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100">
+                <MapPin className="w-3.5 h-3.5" />
               </div>
-              <div className="min-w-0">
-                <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                  {addressDetails.street
-                    ? `${addressDetails.street}${addressDetails.houseNumber ? `, д. ${addressDetails.houseNumber}` : ''}`
-                    : addressDetails.city || addressDetails.formattedAddress || 'Point selected'}
-                </div>
-                <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                  {[addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean).join(', ')}
-                </div>
-                <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-                  GPS: {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-                </div>
+              <div className="min-w-0 truncate text-xs text-slate-700">
+                <span className="font-bold text-slate-900 mr-1.5">
+                  {[addressDetails.city, addressDetails.state, addressDetails.country].filter(Boolean).join(', ') || (currentLocale === 'ru' ? 'Точка на карте' : 'Selected location')}
+                </span>
+                <span className="text-[11px] font-mono text-slate-400">
+                  ({coords.lat.toFixed(5)}, {coords.lng.toFixed(5)})
+                </span>
               </div>
             </div>
 
-            {/* Toggle manual apartment / floor fields */}
-            <button
-              type="button"
-              onClick={() => setShowManualFields(!showManualFields)}
-              className="text-xs font-bold text-[#00407a] hover:underline flex items-center gap-1 shrink-0 p-1"
-            >
-              <span>
-                {currentLocale === 'ru' ? 'Кв./Подъезд' : currentLocale === 'zh' ? '补充门牌号' : '+ Apt/Floor'}
-              </span>
-              {showManualFields ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
+            {isGeocoding && (
+              <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium shrink-0 animate-pulse">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span className="hidden sm:inline">
+                  {currentLocale === 'ru' ? 'Определяем...' : currentLocale === 'zh' ? '解析中...' : 'Detecting...'}
+                </span>
+              </div>
+            )}
           </div>
 
-          {/* Expandable Manual Fields (Apartment, Entrance, Floor, Notes) */}
-          {showManualFields && (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1 animate-in slide-in-from-top-2 duration-150">
+          {/* Structured Address Form Inputs */}
+          <div className="space-y-2.5">
+            {/* Primary Address Row: Street & House Number */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <div className="col-span-2 sm:col-span-3">
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  {currentLocale === 'ru' ? 'Улица / Проспект / Адрес' : currentLocale === 'zh' ? '街道 / 详细地址' : 'Street / Address'}
+                  <span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={addressDetails.street || ''}
+                    onChange={(e) => setAddressDetails((prev) => ({ ...prev, street: e.target.value }))}
+                    placeholder={currentLocale === 'ru' ? 'напр. ул. Ленина' : currentLocale === 'zh' ? '如: 建设路 / 商业街' : 'e.g. Main Street'}
+                    className="w-full text-xs sm:text-sm px-3 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] text-slate-900 transition-all font-medium"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="text-[10px] font-bold text-slate-600 block mb-0.5">
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  {currentLocale === 'ru' ? 'Дом' : currentLocale === 'zh' ? '门牌号' : 'House / No.'}
+                  <span className="text-red-500 ml-0.5">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={addressDetails.houseNumber || ''}
+                  onChange={(e) => setAddressDetails((prev) => ({ ...prev, houseNumber: e.target.value }))}
+                  placeholder={currentLocale === 'ru' ? '12А' : '12'}
+                  className="w-full text-xs sm:text-sm px-3 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00407a]/20 focus:border-[#00407a] text-slate-900 transition-all font-medium"
+                />
+              </div>
+            </div>
+
+            {/* Secondary Address Row: Apt/Suite, Entrance, Floor, Intercom/Notes */}
+            <div className="grid grid-cols-4 gap-2">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-600 block mb-1">
                   {currentLocale === 'ru' ? 'Кв. / Офис' : currentLocale === 'zh' ? '公寓/室' : 'Apt / Suite'}
                 </label>
                 <input
                   type="text"
                   value={apartment}
                   onChange={(e) => setApartment(e.target.value)}
-                  placeholder="12"
-                  className="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-[#00407a]"
+                  placeholder="24"
+                  className="w-full text-xs px-2.5 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-[#00407a] rounded-xl focus:outline-none transition-all text-slate-800"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-600 block mb-0.5">
+                <label className="text-[11px] font-semibold text-slate-600 block mb-1">
                   {currentLocale === 'ru' ? 'Подъезд' : currentLocale === 'zh' ? '单元门' : 'Entrance'}
                 </label>
                 <input
                   type="text"
                   value={entrance}
                   onChange={(e) => setEntrance(e.target.value)}
-                  placeholder="2"
-                  className="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-[#00407a]"
+                  placeholder="1"
+                  className="w-full text-xs px-2.5 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-[#00407a] rounded-xl focus:outline-none transition-all text-slate-800"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-600 block mb-0.5">
+                <label className="text-[11px] font-semibold text-slate-600 block mb-1">
                   {currentLocale === 'ru' ? 'Этаж' : currentLocale === 'zh' ? '楼层' : 'Floor'}
                 </label>
                 <input
                   type="text"
                   value={floor}
                   onChange={(e) => setFloor(e.target.value)}
-                  placeholder="4"
-                  className="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-[#00407a]"
+                  placeholder="3"
+                  className="w-full text-xs px-2.5 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-[#00407a] rounded-xl focus:outline-none transition-all text-slate-800"
                 />
               </div>
 
-              <div className="col-span-3 sm:col-span-1">
-                <label className="text-[10px] font-bold text-slate-600 block mb-0.5">
-                  {currentLocale === 'ru' ? 'Код домофона / Примечание' : currentLocale === 'zh' ? '门禁/备注' : 'Intercom / Notes'}
+              <div>
+                <label className="text-[11px] font-semibold text-slate-600 block mb-1 truncate">
+                  {currentLocale === 'ru' ? 'Домофон' : currentLocale === 'zh' ? '门禁码' : 'Intercom'}
                 </label>
                 <input
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="12K"
-                  className="w-full text-xs px-2.5 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:border-[#00407a]"
+                  placeholder="24K"
+                  className="w-full text-xs px-2.5 py-1.5 sm:py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-[#00407a] rounded-xl focus:outline-none transition-all text-slate-800"
                 />
               </div>
             </div>
-          )}
+          </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              {currentLocale === 'ru' ? 'Отмена' : currentLocale === 'zh' ? '取消' : 'Cancel'}
-            </button>
+          <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100">
+            <div className="text-[11px] text-slate-500 hidden sm:block truncate">
+              {currentLocale === 'ru'
+                ? 'Адрес определился автоматически. Вы можете скорректировать поля.'
+                : currentLocale === 'zh'
+                ? '地图已自动反查地址，您可按需微调修改。'
+                : 'Auto-detected from pin. You can edit any field above.'}
+            </div>
 
-            <button
-              type="button"
-              onClick={handleConfirm}
-              disabled={isGeocoding || !coords.lat}
-              className="px-6 py-2.5 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 text-xs sm:text-sm font-black rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <Check className="w-4 h-4 stroke-[3]" />
-              <span>
-                {currentLocale === 'zh'
-                  ? '确认此收货地址'
-                  : currentLocale === 'ru'
-                  ? 'Подтвердить адрес доставки'
-                  : 'Confirm Delivery Address'}
-              </span>
-            </button>
+            <div className="flex items-center gap-2.5 ml-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                {currentLocale === 'ru' ? 'Отмена' : currentLocale === 'zh' ? '取消' : 'Cancel'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirm}
+                disabled={isGeocoding || !coords.lat}
+                className="px-6 py-2.5 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 text-xs sm:text-sm font-black rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>
+                  {currentLocale === 'zh'
+                    ? '确认此收货地址'
+                    : currentLocale === 'ru'
+                    ? 'Подтвердить адрес доставки'
+                    : 'Confirm Delivery Address'}
+                </span>
+              </button>
+            </div>
           </div>
 
         </div>
