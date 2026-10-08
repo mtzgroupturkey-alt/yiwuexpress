@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { hashPassword, requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { adminRateLimit } from '@/lib/rate-limit'
+import { sendB2BApprovalEmail, sendB2BRejectionEmail } from '@/lib/email'
 import { z } from 'zod'
 
 const updateUserSchema = z.object({
@@ -238,6 +239,24 @@ export async function PUT(
         where: { id: params.id },
         data: updateData,
       })
+    }
+
+    // Dispatch customer notification email on B2B verification status updates (Non-blocking)
+    if (validatedData.verificationStatus === 'APPROVED') {
+      sendB2BApprovalEmail({
+        to: validatedData.email || user.email,
+        companyName: validatedData.companyName || user.companyName,
+        locale: (user as any).locale || 'en',
+      }).catch(err => console.error('[B2B approve email]', err))
+    }
+
+    if (validatedData.verificationStatus === 'REJECTED') {
+      sendB2BRejectionEmail({
+        to: validatedData.email || user.email,
+        companyName: validatedData.companyName || user.companyName,
+        reason: validatedData.verificationNotes,
+        locale: (user as any).locale || 'en',
+      }).catch(err => console.error('[B2B reject email]', err))
     }
 
     // Fetch updated user

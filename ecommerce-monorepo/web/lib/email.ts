@@ -439,3 +439,106 @@ export async function sendAdminB2BNotificationEmail(data: {
   }
 }
 
+// B2B Customer Application Approved Email
+export async function sendB2BApprovalEmail(params: {
+  to: string
+  companyName?: string | null
+  locale?: string
+}) {
+  const companyName = await getCompanyName()
+  const appUrl = process.env.APP_URL || 'http://localhost:3001'
+  const targetLocale = params.locale || 'en'
+  const portalUrl = `${appUrl}/${targetLocale}/business/dashboard`
+  const subject = `Your Wholesale Account Has Been Approved - ${companyName}`
+  const targetCompany = params.companyName || 'Valued Partner'
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #00407a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 22px;">${companyName} B2B Portal</h1>
+      </div>
+      <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #0f172a; margin-top: 0;">Application Approved!</h2>
+        <p>Dear ${targetCompany},</p>
+        <p>Congratulations! Your business wholesale application has been approved by our trade compliance team.</p>
+        <p>Your account now has full access to:</p>
+        <ul>
+          <li>Tier-1 factory wholesale pricing across our entire catalog</li>
+          <li>Direct container procurement (FCL / LCL) & export documentation</li>
+          <li>Instant Request for Quote (RFQ) & Proforma Invoices</li>
+          <li>Your dedicated China trade support manager</li>
+        </ul>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${portalUrl}" style="background: #F5A602; color: #020617; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 8px; display: inline-block;">
+            Access Wholesale Dashboard
+          </a>
+        </p>
+        <p style="font-size: 13px; color: #64748b;">If the button does not work, visit: <a href="${portalUrl}">${portalUrl}</a></p>
+      </div>
+    </div>
+  `
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"${companyName} B2B" <b2b@dromkok.com>`,
+      to: params.to,
+      subject,
+      html,
+    })
+    return { success: true }
+  } catch (err) {
+    console.warn('[Email] B2B approval email skipped/failed:', err)
+    return { success: false, error: err }
+  }
+}
+
+// B2B Customer Application Rejected Email
+export async function sendB2BRejectionEmail(params: {
+  to: string
+  companyName?: string | null
+  reason?: string | null
+  locale?: string
+}) {
+  const companyName = await getCompanyName()
+  const appUrl = process.env.APP_URL || 'http://localhost:3001'
+  const targetLocale = params.locale || 'en'
+  const statusUrl = `${appUrl}/${targetLocale}/business/rejected`
+  const subject = `Update Regarding Your ${companyName} Wholesale Application`
+  const targetCompany = params.companyName || 'Valued Applicant'
+  const reasonText = params.reason || 'The uploaded commercial documentation or registration information could not be verified by our compliance team.'
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #00407a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 22px;">${companyName} B2B Portal</h1>
+      </div>
+      <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #0f172a; margin-top: 0;">Application Status Update</h2>
+        <p>Dear ${targetCompany},</p>
+        <p>Thank you for your interest in opening a wholesale B2B account with ${companyName}.</p>
+        <p>After reviewing your submission, our trade verification team was unable to approve your application at this time.</p>
+        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 12px 16px; margin: 20px 0; border-radius: 4px;">
+          <p style="margin: 0; font-weight: bold; color: #991b1b; font-size: 13px;">Reason from Verification Officer:</p>
+          <p style="margin: 4px 0 0; color: #7f1d1d; font-size: 14px;">${reasonText}</p>
+        </div>
+        <p>You may submit updated or additional business registration documentation by visiting your application status page:</p>
+        <p style="text-align: center; margin: 25px 0;">
+          <a href="${statusUrl}" style="background: #00407a; color: white; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 6px; display: inline-block;">
+            View Details & Re-apply
+          </a>
+        </p>
+        <p style="font-size: 13px; color: #64748b;">If you believe this decision was made in error, please reply to this email.</p>
+      </div>
+    </div>
+  `
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"${companyName} B2B" <b2b@dromkok.com>`,
+      to: params.to,
+      subject,
+      html,
+    })
+    return { success: true }
+  } catch (err) {
+    console.warn('[Email] B2B rejection email skipped/failed:', err)
+    return { success: false, error: err }
+  }
+}
+
