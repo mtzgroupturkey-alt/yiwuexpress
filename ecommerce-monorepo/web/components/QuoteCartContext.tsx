@@ -7,6 +7,7 @@ export interface QuoteCartItem {
   productId: string
   productName: string
   productSku: string
+  dromkokItemNo?: string | null
   productImage?: string | null
   quantity: number
   minOrderQty: number
@@ -33,6 +34,7 @@ interface QuoteCartContextType {
     productId: string
     productName: string
     productSku: string
+    dromkokItemNo?: string | null
     productImage?: string | null
     quantity: number
     minOrderQty?: number
@@ -104,6 +106,7 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
     productId: string
     productName: string
     productSku: string
+    dromkokItemNo?: string | null
     productImage?: string | null
     quantity: number
     minOrderQty?: number
@@ -120,6 +123,7 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
       const existingIndex = prev.findIndex(
         (i) => i.productId === newItem.productId && areOptionsEqual(i.selectedOptions, newItem.selectedOptions)
       )
+
       const moq = newItem.minOrderQty && newItem.minOrderQty > 0 ? newItem.minOrderQty : 1
       const initialQty = Math.max(newItem.quantity, moq)
 
@@ -129,6 +133,7 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
         updated[existingIndex] = {
           ...existing,
           quantity: existing.quantity + initialQty,
+          dromkokItemNo: newItem.dromkokItemNo !== undefined ? newItem.dromkokItemNo : existing.dromkokItemNo,
           targetPrice: newItem.targetPrice !== undefined ? newItem.targetPrice : existing.targetPrice,
           customerNotes: newItem.customerNotes !== undefined ? newItem.customerNotes : existing.customerNotes,
         }
@@ -141,6 +146,7 @@ export function QuoteCartProvider({ children }: { children: React.ReactNode }) {
           productId: newItem.productId,
           productName: newItem.productName,
           productSku: newItem.productSku,
+          dromkokItemNo: newItem.dromkokItemNo || null,
           productImage: newItem.productImage || null,
           quantity: initialQty,
           minOrderQty: moq,

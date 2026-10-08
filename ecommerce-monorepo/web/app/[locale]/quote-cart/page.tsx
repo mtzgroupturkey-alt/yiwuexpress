@@ -264,7 +264,7 @@ export default function QuoteCartPage() {
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <h3 className="font-bold text-gray-900 text-sm">{item.productName}</h3>
-                              <p className="text-[11px] font-mono text-gray-500">SKU: {item.productSku}</p>
+                              <p className="text-[11px] font-mono text-gray-500">Item #: {item.dromkokItemNo || '—'}</p>
                               {/* Compact Attribute Selection */}
                               <CompactQuoteAttributeSelector
                                 productId={item.productId}
