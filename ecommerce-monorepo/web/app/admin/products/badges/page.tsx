@@ -462,6 +462,57 @@ export default function ProductBadgesSettingsPage() {
                   </p>
                 </div>
               </div>
+
+              {/* Warehouse / Hub Self-Pickup Box */}
+              <div className="pt-3 border-t border-slate-100 space-y-3 bg-emerald-50/40 p-3.5 rounded-xl border border-emerald-100/60">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-emerald-700" />
+                    {t.pickupHubTitle || 'Hub / Warehouse Self-Pickup Box (China Central Hub)'}
+                  </span>
+                  <p className="text-[11px] text-slate-500">
+                    {t.pickupHubDesc || 'Configures the self-pickup strip displayed in the product page buy-box (Location title, price/badge, and pickup readiness timing).'}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-700">
+                      {t.pickupLocationTitle || 'Pickup Location Title'}
+                    </Label>
+                    <Input
+                      value={currentValues.pdpPickupTitle || ''}
+                      onChange={(e) => updateField('pdpPickupTitle', e.target.value)}
+                      placeholder="e.g. China Central Hub"
+                      className="rounded-xl text-xs font-medium bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-700">
+                      {t.pickupPriceLabel || 'Pickup Price / Fee Badge'}
+                    </Label>
+                    <Input
+                      value={currentValues.pdpPickupPrice || ''}
+                      onChange={(e) => updateField('pdpPickupPrice', e.target.value)}
+                      placeholder="e.g. Free"
+                      className="rounded-xl text-xs font-medium bg-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-700">
+                      {t.pickupEstimateLabel || 'Pickup Readiness Time'}
+                    </Label>
+                    <Input
+                      value={currentValues.pdpPickupEstimate || ''}
+                      onChange={(e) => updateField('pdpPickupEstimate', e.target.value)}
+                      placeholder="e.g. Ready for pickup in 1 hour"
+                      className="rounded-xl text-xs font-medium bg-white"
+                    />
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 

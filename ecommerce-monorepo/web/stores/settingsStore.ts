@@ -83,6 +83,10 @@ export interface CompanySettings {
   pdpAirFreightDays?: string | null
   pdpRailFreightDays?: string | null
   pdpSeaFreightDays?: string | null
+  // Pickup Hub Rules
+  pdpPickupTitle?: string | null
+  pdpPickupPrice?: string | null
+  pdpPickupEstimate?: string | null
   pdpFactoryTitle?: string | null
   pdpFactoryDesc?: string | null
   pdpQcTitle?: string | null
@@ -182,6 +186,9 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   pdpAirFreightDays: '5 – 8 business days',
   pdpRailFreightDays: '14 – 20 business days',
   pdpSeaFreightDays: '20 – 35 days',
+  pdpPickupTitle: 'China Central Hub',
+  pdpPickupPrice: 'Free',
+  pdpPickupEstimate: 'Ready for pickup in 1 hour',
   pdpFactoryTitle: 'Direct Verified Factory',
   pdpFactoryDesc: 'Zero middleman markup directly from manufacturer',
   pdpQcTitle: 'Rigorous Quality Inspection',

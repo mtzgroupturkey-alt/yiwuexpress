@@ -160,6 +160,9 @@ export async function GET(request: NextRequest) {
     const pdpAirFreightDays = localizeSystemSetting(effectiveSettings.translations, 'pdpAirFreightDays', locale === 'ru' ? '5 – 8 рабочих дней' : locale === 'zh' ? '5 – 8个工作日（空运专线含税到门）' : '5 – 8 business days', locale)
     const pdpRailFreightDays = localizeSystemSetting(effectiveSettings.translations, 'pdpRailFreightDays', locale === 'ru' ? '14 – 20 рабочих дней' : locale === 'zh' ? '14 – 20个工作日（中欧班列铁路集运）' : '14 – 20 business days', locale)
     const pdpSeaFreightDays = localizeSystemSetting(effectiveSettings.translations, 'pdpSeaFreightDays', locale === 'ru' ? '20 – 35 дней' : locale === 'zh' ? '20 – 35天（国际海运整柜/拼箱）' : '20 – 35 days', locale)
+    const pdpPickupTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpPickupTitle', locale === 'ru' ? 'Самовывоз из Хаба' : locale === 'zh' ? '枢纽自提' : 'China Central Hub', locale)
+    const pdpPickupPrice = localizeSystemSetting(effectiveSettings.translations, 'pdpPickupPrice', locale === 'ru' ? 'Бесплатно' : locale === 'zh' ? '免费' : 'Free', locale)
+    const pdpPickupEstimate = localizeSystemSetting(effectiveSettings.translations, 'pdpPickupEstimate', locale === 'ru' ? 'Готов к выдаче через 1 час' : locale === 'zh' ? '下单后1小时可取' : 'Ready for pickup in 1 hour', locale)
     const pdpFactoryTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpFactoryTitle', locale === 'ru' ? 'Прямой производитель' : locale === 'zh' ? '源头工厂直供' : 'Direct Verified Factory', locale)
     const pdpFactoryDesc = localizeSystemSetting(effectiveSettings.translations, 'pdpFactoryDesc', locale === 'ru' ? 'Без наценок посредников напрямую с завода' : locale === 'zh' ? '无中间商一手出厂底价' : 'Zero middleman markup directly from manufacturer', locale)
     const pdpQcTitle = localizeSystemSetting(effectiveSettings.translations, 'pdpQcTitle', locale === 'ru' ? 'Контроль качества (QC)' : locale === 'zh' ? '专业验厂与品控' : 'Rigorous Quality Inspection', locale)
@@ -275,6 +278,9 @@ export async function GET(request: NextRequest) {
         pdpAirFreightDays,
         pdpRailFreightDays,
         pdpSeaFreightDays,
+        pdpPickupTitle,
+        pdpPickupPrice,
+        pdpPickupEstimate,
         pdpFactoryTitle,
         pdpFactoryDesc,
         pdpQcTitle,

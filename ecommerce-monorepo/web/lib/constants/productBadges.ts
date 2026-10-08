@@ -18,6 +18,10 @@ export const PRODUCT_BADGE_KEYS = [
   'pdpAirFreightDays',
   'pdpRailFreightDays',
   'pdpSeaFreightDays',
+  // Pickup Hub Rules
+  'pdpPickupTitle',
+  'pdpPickupPrice',
+  'pdpPickupEstimate',
   // Trust Badges (Mobile & Desktop)
   'pdpFactoryTitle',
   'pdpFactoryDesc',
@@ -61,6 +65,10 @@ export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBa
     pdpAirFreightDays: '5 – 8 business days',
     pdpRailFreightDays: '14 – 20 business days',
     pdpSeaFreightDays: '20 – 35 days',
+    // Pickup Hub Rules
+    pdpPickupTitle: 'China Central Hub',
+    pdpPickupPrice: 'Free',
+    pdpPickupEstimate: 'Ready for pickup in 1 hour',
     pdpFactoryTitle: 'Direct Verified Factory',
     pdpFactoryDesc: 'Zero middleman markup directly from manufacturer',
     pdpQcTitle: 'Rigorous Quality Inspection',
@@ -98,6 +106,10 @@ export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBa
     pdpAirFreightDays: '5 – 8 рабочих дней',
     pdpRailFreightDays: '14 – 20 рабочих дней',
     pdpSeaFreightDays: '20 – 35 дней',
+    // Pickup Hub Rules
+    pdpPickupTitle: 'Самовывоз из Хаба',
+    pdpPickupPrice: 'Бесплатно',
+    pdpPickupEstimate: 'Готов к выдаче через 1 час',
     pdpFactoryTitle: 'Прямой производитель',
     pdpFactoryDesc: 'Без наценок посредников напрямую с завода',
     pdpQcTitle: 'Контроль качества (QC)',
@@ -135,6 +147,10 @@ export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBa
     pdpAirFreightDays: '5 – 8个工作日（空运专线含税到门）',
     pdpRailFreightDays: '14 – 20个工作日（中欧班列铁路集运）',
     pdpSeaFreightDays: '20 – 35天（国际海运整柜/拼箱）',
+    // Pickup Hub Rules
+    pdpPickupTitle: '枢纽自提',
+    pdpPickupPrice: '免费',
+    pdpPickupEstimate: '下单后1小时可取',
     pdpFactoryTitle: '源头工厂直供',
     pdpFactoryDesc: '无中间商一手出厂底价',
     pdpQcTitle: '专业验厂与品控',

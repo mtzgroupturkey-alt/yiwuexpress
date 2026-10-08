@@ -1860,14 +1860,14 @@ export default function ProductDetailView({
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-slate-900">
-                            {locale === 'ru' ? 'Самовывоз из Хаба' : locale === 'zh' ? '枢纽自提' : 'China Central Hub'}
+                            {settings?.pdpPickupTitle || (locale === 'ru' ? 'Самовывоз из Хаба' : locale === 'zh' ? '枢纽自提' : 'China Central Hub')}
                           </span>
                           <span className="font-bold text-slate-600">
-                            {locale === 'ru' ? 'Бесплатно' : locale === 'zh' ? '免费' : 'Free'}
+                            {settings?.pdpPickupPrice || (locale === 'ru' ? 'Бесплатно' : locale === 'zh' ? '免费' : 'Free')}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 mt-0.5">
-                          {locale === 'ru' ? 'Готов к выдаче через 1 час' : locale === 'zh' ? '下单后1小时可取' : 'Ready for pickup in 1 hour'}
+                          {settings?.pdpPickupEstimate || (locale === 'ru' ? 'Готов к выдаче через 1 час' : locale === 'zh' ? '下单后1小时可取' : 'Ready for pickup in 1 hour')}
                         </p>
                       </div>
                     </div>
