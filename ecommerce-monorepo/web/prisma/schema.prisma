@@ -427,6 +427,7 @@ model Category {
   attributes         CategoryAttribute[]
   products           Product[]
   translations       CategoryTranslation[]
+  ikeaCategoryMappings IkeaCategoryMapping[]
 
   @@map("categories")
 }
@@ -454,6 +455,8 @@ model Product {
   sku                   String                 @unique
   dromkokItemNo         String?                @unique
   ikeaItemNo            String?
+  ikeaItemNumber        String?                @unique
+  rawIkeaPayload        Json?
   name                  String
   slug                  String                 @unique
   description           String?
@@ -522,6 +525,7 @@ model Product {
 
   @@index([hasRealImage])
   @@index([ikeaItemNo])
+  @@index([ikeaItemNumber])
   @@index([dromkokItemNo])
   @@map("products")
 }
@@ -958,6 +962,7 @@ model Attribute {
   values       AttributeValue[]
   categories   CategoryAttribute[]
   translations AttributeTranslation[]
+  ikeaMappings IkeaSpecMapping[]
 
   @@map("attributes")
 }
@@ -2713,6 +2718,49 @@ model AssistantLog {
   @@index([actionId])
   @@index([createdAt])
   @@map("assistant_logs")
+}
+
+// ============================================
+// IKEA IMPORT & ATTRIBUTE MAPPING SYSTEM
+// ============================================
+
+model IkeaFetchCache {
+  id         String   @id @default(cuid())
+  itemNumber String   @unique
+  url        String
+  html       String?  @db.Text
+  json       Json?
+  fetchedAt  DateTime @default(now())
+
+  @@index([itemNumber])
+  @@index([fetchedAt])
+  @@map("ikea_fetch_caches")
+}
+
+model IkeaSpecMapping {
+  id          String     @id @default(cuid())
+  ikeaKey     String     @unique // Normalized IKEA spec key (e.g., "width", "materials", "designer")
+  attributeId String?
+  unit        String?    // e.g. "cm", "kg"
+  aliases     Json?      // e.g. ["Width", "Total width", "Breite"]
+  attribute   Attribute? @relation(fields: [attributeId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([attributeId])
+  @@map("ikea_spec_mappings")
+}
+
+model IkeaCategoryMapping {
+  id               String   @id @default(cuid())
+  ikeaCategoryName String   @unique // e.g. "Bed frames", "Mattresses", "Cookware"
+  categoryId       String
+  category         Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([categoryId])
+  @@map("ikea_category_mappings")
 }
 
 

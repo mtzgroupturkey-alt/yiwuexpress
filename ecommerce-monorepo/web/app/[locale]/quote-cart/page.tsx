@@ -24,16 +24,20 @@ export default function QuoteCartPage() {
   const router = useRouter()
   const navigate = useLocaleNav()
   const t = useTranslations('QuoteCart')
-  const { user } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const { canRequestQuote, isLoading } = useCustomerView()
   const { items, quoteCount, totalUnits, updateQuantity, updateItem, removeFromQuote, clearQuoteCart } = useQuoteCart()
 
-  // Guard: Redirect guests and retail users to storefront login
+  // Guard: Redirect guests to login, and authenticated retail/pending-wholesale users to standard cart
   React.useEffect(() => {
     if (!isLoading && !canRequestQuote) {
-      navigate('/login?redirect=/quote-cart', { replace: true })
+      if (!isAuthenticated) {
+        navigate('/login?redirect=/quote-cart', { replace: true })
+      } else {
+        navigate('/cart', { replace: true })
+      }
     }
-  }, [canRequestQuote, isLoading, navigate])
+  }, [canRequestQuote, isLoading, isAuthenticated, navigate])
 
   const [submitting, setSubmitting] = useState(false)
   const [guestInfo, setGuestInfo] = useState({

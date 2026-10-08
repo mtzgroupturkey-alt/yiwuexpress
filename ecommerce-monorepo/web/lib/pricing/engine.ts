@@ -47,6 +47,138 @@ export interface OrderCalculationResult {
   }>
 }
 
+export interface ShippingOption {
+  id: string
+  name: string
+  estimatedDays: string
+  price: number
+  currency: string
+}
+
+export interface ResolveShippingParams {
+  shippingCountryId?: string | null
+  shippingMethod?: string | null
+  totalWeight: number
+  mode?: 'RETAIL' | 'WHOLESALE'
+}
+
+export interface ResolvedShipping {
+  shippingFee: number
+  options: ShippingOption[]
+  selectedMethod?: ShippingOption
+  currency: string
+}
+
+/**
+ * Reusable, authoritative shipping rate calculator.
+ * Queries destination country and database-configured shippingMethods JSON.
+ * Guarantees 100% parity between shipping estimator and order totals.
+ */
+export async function resolveShippingRates(params: ResolveShippingParams): Promise<ResolvedShipping> {
+  const {
+    shippingCountryId,
+    shippingMethod,
+    totalWeight,
+    mode = 'RETAIL',
+  } = params
+
+  const normalizedWeight = Math.max(0, Number(totalWeight) || 0)
+  const fallbackFee = mode === 'WHOLESALE' ? 50.0 : 15.0
+
+  if (!shippingCountryId) {
+    return {
+      shippingFee: 0,
+      options: [],
+      currency: 'USD',
+    }
+  }
+
+  const country = await prisma.country.findFirst({
+    where: {
+      OR: [
+        { id: shippingCountryId },
+        { code: { equals: shippingCountryId, mode: 'insensitive' } },
+      ],
+      isActive: true,
+    },
+  })
+
+  if (!country) {
+    return {
+      shippingFee: fallbackFee,
+      options: [
+        {
+          id: 'standard',
+          name: 'Standard Freight',
+          estimatedDays: '15-25 days',
+          price: fallbackFee,
+          currency: 'USD',
+        },
+      ],
+      currency: 'USD',
+    }
+  }
+
+  const currency = country.currency || 'USD'
+  const rawMethods = (country.shippingMethods as any) || {}
+  const options: ShippingOption[] = []
+
+  const defaultNames: Record<string, string> = {
+    standard: 'Standard Delivery',
+    express: 'Air Express',
+  }
+
+  const defaultDays: Record<string, string> = {
+    standard: '7-14 days',
+    express: '3-5 days',
+  }
+
+  for (const [key, rawConfig] of Object.entries(rawMethods)) {
+    const config = rawConfig as any
+    if (config && config.enabled) {
+      const baseRate = Number(config.baseRate) || 0
+      const ratePerKg = Number(config.ratePerKg) || 0
+      const price = Number((baseRate + normalizedWeight * ratePerKg).toFixed(2))
+      const name = config.name || defaultNames[key.toLowerCase()] || `${key.charAt(0).toUpperCase() + key.slice(1)} Shipping`
+      const estimatedDays = config.estimatedDays || defaultDays[key.toLowerCase()] || '5-10 days'
+
+      options.push({
+        id: key,
+        name,
+        estimatedDays,
+        price,
+        currency,
+      })
+    }
+  }
+
+  if (options.length === 0) {
+    return {
+      shippingFee: fallbackFee,
+      options: [
+        {
+          id: 'standard',
+          name: 'Standard Freight',
+          estimatedDays: '15-25 days',
+          price: fallbackFee,
+          currency,
+        },
+      ],
+      currency,
+    }
+  }
+
+  const methodKey = (shippingMethod || 'standard').toLowerCase()
+  const matchedOption = options.find((opt) => opt.id.toLowerCase() === methodKey) || options[0]
+
+  return {
+    shippingFee: matchedOption.price,
+    options,
+    selectedMethod: matchedOption,
+    currency,
+  }
+}
+
 /**
  * Authoritative Server-Side Pricing Engine
  * Calculates item totals, resolves wholesale/tiered/contract prices,
@@ -211,29 +343,13 @@ export async function calculateOrderTotals(
   // 2. Authoritative Shipping Fee Calculation
   let shippingFee = 0
   if (shippingCountryId) {
-    const country = await prisma.country.findFirst({
-      where: {
-        OR: [
-          { id: shippingCountryId },
-          { code: { equals: shippingCountryId, mode: 'insensitive' } },
-        ],
-        isActive: true,
-      },
+    const shippingResult = await resolveShippingRates({
+      shippingCountryId,
+      shippingMethod,
+      totalWeight,
+      mode: context.mode,
     })
-
-    if (country) {
-      const shippingMethods = (country.shippingMethods as any) || {}
-      const methodKey = shippingMethod || 'standard'
-      const methodConfig = shippingMethods[methodKey] || shippingMethods.standard
-
-      if (methodConfig && methodConfig.enabled) {
-        const baseRate = Number(methodConfig.baseRate) || 0
-        const ratePerKg = Number(methodConfig.ratePerKg) || 0
-        shippingFee = Number((baseRate + totalWeight * ratePerKg).toFixed(2))
-      } else {
-        shippingFee = context.mode === 'WHOLESALE' ? 50.0 : 15.0
-      }
-    }
+    shippingFee = shippingResult.shippingFee
   }
 
   // 3. Authoritative Tax & Discount Calculation

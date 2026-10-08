@@ -21,6 +21,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { MobileCheckoutPage } from '@/components/mobile/checkout/MobileCheckoutPage'
 import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker'
 import { useAuth } from '@/hooks/useAuth'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 
 const buildCheckoutSchema = (t: (key: string, values?: any) => string) => z.object({
@@ -43,6 +44,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const navigate = useLocaleNav()
   const { isAuthenticated, isInitialized } = useAuth()
+  const { canRequestQuote, isLoading: isCustomerViewLoading } = useCustomerView()
   const { storeMode: ctxStoreMode, isRetail } = useStoreMode()
   const { settings, storeMode: systemStoreMode } = useSettings()
   const { sessionMode, isWholesaleSession } = useSessionMode()
@@ -53,6 +55,14 @@ export default function CheckoutPage() {
     (storeMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
   const isWholesale = isWholesaleActive
   const isPureWholesale = (storeMode as string) === 'WHOLESALE'
+
+  const rfqModel = settings?.rfqModel || 'RFQ'
+  const isInstantWholesale = isWholesaleActive && rfqModel === 'INSTANT'
+
+  // Only Approved Wholesale customers who can request quotes, in an active wholesale session,
+  // and when the RFQ model requires quote desk review (not instant checkout), redirect to Quote Cart.
+  // Retail customers and Pending Wholesale customers always proceed to Retail Checkout.
+  const shouldRedirectToQuoteCart = canRequestQuote && isWholesaleActive && !isInstantWholesale
 
   const locale = useLocale()
   const t = useTranslations('Checkout') as unknown as (key: string, values?: any) => string
@@ -84,13 +94,13 @@ export default function CheckoutPage() {
       router.replace(`/${locale}/register?redirect=/${locale}/checkout`)
       return
     }
-    if (isWholesaleActive) {
+    if (!isCustomerViewLoading && shouldRedirectToQuoteCart) {
       navigate('/quote-cart')
       return
     }
     fetchCart()
     fetchCountries()
-  }, [isInitialized, isAuthenticated, isWholesaleActive])
+  }, [isInitialized, isAuthenticated, isCustomerViewLoading, shouldRedirectToQuoteCart])
 
   useEffect(() => {
     if (selectedCountryId && cart) {
@@ -194,7 +204,7 @@ export default function CheckoutPage() {
           selectedOptions: item.selectedOptions || undefined,
           quantity: item.quantity
         })),
-        mode: isWholesaleActive ? 'WHOLESALE' : 'RETAIL',
+        mode: (canRequestQuote && isWholesaleActive) ? 'WHOLESALE' : 'RETAIL',
         shippingFee,
         tax: 0,
         discount: 0
@@ -233,9 +243,7 @@ export default function CheckoutPage() {
     }
   }
 
-  const rfqModel = settings?.rfqModel || 'RFQ'
-
-  if (isWholesaleActive && rfqModel === 'RFQ') {
+  if (!isCustomerViewLoading && shouldRedirectToQuoteCart && rfqModel === 'RFQ') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center space-y-4">

@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { requireAuth, createAuthErrorResponse } from '@/lib/auth'
+import { requireAuth, createAuthErrorResponse, isApprovedWholesaleUser } from '@/lib/auth'
 
 // PUT /api/cart/[itemId] - Update cart item quantity
 export async function PUT(
@@ -11,6 +11,7 @@ export async function PUT(
   try {
     // IDOR Protection: Verify user owns this cart item
     const user = await requireAuth(request)
+    const isWholesaleAllowed = isApprovedWholesaleUser(user)
     
     const { itemId } = params
     const body = await request.json()
@@ -49,8 +50,10 @@ export async function PUT(
       )
     }
 
+    const effectiveMode = isWholesaleAllowed && cartItem.mode === 'WHOLESALE' ? 'WHOLESALE' : 'RETAIL'
+
     // Validate MOQ for WHOLESALE mode
-    if (cartItem.mode === 'WHOLESALE') {
+    if (effectiveMode === 'WHOLESALE') {
       const minQty = cartItem.product?.minOrderQty || 1
       if (quantity < minQty) {
         return NextResponse.json(
@@ -78,9 +81,20 @@ export async function PUT(
       include: { product: true }
     })
 
+    const sanitizedUpdated = {
+      ...updated,
+      mode: effectiveMode,
+      product: updated.product
+        ? {
+            ...updated.product,
+            wholesalePrice: isWholesaleAllowed ? updated.product.wholesalePrice : null,
+          }
+        : null,
+    }
+
     return NextResponse.json({
       success: true,
-      data: updated,
+      data: sanitizedUpdated,
       message: 'Cart item updated'
     })
   } catch (error) {

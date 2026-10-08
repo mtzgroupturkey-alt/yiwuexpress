@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getAuthUser, requireAuth, createAuthErrorResponse } from '@/lib/auth'
+import { getAuthUser, requireAuth, createAuthErrorResponse, isApprovedWholesaleUser } from '@/lib/auth'
 
 // GET /api/cart - Get user's cart (authenticated returns db cart, guest returns 200 with empty cart)
 export async function GET(request: Request) {
@@ -140,10 +140,11 @@ export async function GET(request: Request) {
     let subtotal = 0
     let totalWeight = 0
     let totalQuantity = 0
+    const isWholesaleAllowed = isApprovedWholesaleUser(user)
 
     for (const item of validItems) {
       const qty = typeof item.quantity === 'number' && item.quantity > 0 ? item.quantity : 1
-      const isWholesale = item.mode === 'WHOLESALE'
+      const isWholesale = isWholesaleAllowed && item.mode === 'WHOLESALE'
       const price = isWholesale
         ? (typeof item.product?.wholesalePrice === 'number' && Number.isFinite(item.product.wholesalePrice)
             ? item.product.wholesalePrice
@@ -156,9 +157,9 @@ export async function GET(request: Request) {
             ? item.product.price
             : 0)
       const weight =
-        typeof item.product?.weightKg === 'number' && Number.isFinite(item.product.weightKg)
+        typeof item.product?.weightKg === 'number' && Number.isFinite(item.product.weightKg) && item.product.weightKg > 0
           ? item.product.weightKg
-          : 0
+          : 0.2
 
       subtotal += price * qty
       totalWeight += weight * qty
@@ -168,16 +169,32 @@ export async function GET(request: Request) {
     const safeSubtotal = Number.isFinite(subtotal) ? parseFloat(subtotal.toFixed(2)) : 0
     const safeWeight = Number.isFinite(totalWeight) ? parseFloat(totalWeight.toFixed(2)) : 0
 
+    const sanitizedItems = validItems.map((item: any) => {
+      const isItemWholesale = isWholesaleAllowed && item.mode === 'WHOLESALE'
+      return {
+        ...item,
+        mode: isItemWholesale ? 'WHOLESALE' : 'RETAIL',
+        product: item.product
+          ? {
+              ...item.product,
+              wholesalePrice: isWholesaleAllowed ? item.product.wholesalePrice : null,
+            }
+          : null,
+      }
+    })
+
     return NextResponse.json({
       success: true,
       authenticated: true,
       data: {
         cart: {
           ...cart,
-          items: validItems,
+          mode: isWholesaleAllowed && cart.mode === 'WHOLESALE' ? 'WHOLESALE' : 'RETAIL',
+          items: sanitizedItems,
         },
+        items: sanitizedItems,
         summary: {
-          itemCount: validItems.length,
+          itemCount: sanitizedItems.length,
           totalQuantity,
           subtotal: safeSubtotal,
           totalWeight: safeWeight,
@@ -245,7 +262,9 @@ export async function POST(request: Request) {
     // Fetch store mode
     const settings = await prisma.systemSettings.findFirst()
     const systemStoreMode = settings?.storeMode || 'WHOLESALE'
-    const targetMode = itemMode ? itemMode.toUpperCase() : (systemStoreMode === 'BOTH' ? 'WHOLESALE' : systemStoreMode)
+    const isWholesaleAllowed = isApprovedWholesaleUser(user)
+    const requestedMode = itemMode ? itemMode.toUpperCase() : (systemStoreMode === 'BOTH' ? 'WHOLESALE' : systemStoreMode)
+    const targetMode = (isWholesaleAllowed && requestedMode === 'WHOLESALE') ? 'WHOLESALE' : 'RETAIL'
 
     // Check channel availability
     if (targetMode === 'RETAIL' && !product.availableForRetail) {
@@ -374,9 +393,20 @@ export async function POST(request: Request) {
         }
       })
 
+      const sanitizedUpdatedItem = {
+        ...updatedItem,
+        mode: isWholesaleAllowed && updatedItem.mode === 'WHOLESALE' ? 'WHOLESALE' : 'RETAIL',
+        product: updatedItem.product
+          ? {
+              ...updatedItem.product,
+              wholesalePrice: isWholesaleAllowed ? updatedItem.product.wholesalePrice : null,
+            }
+          : null,
+      }
+
       return NextResponse.json({
         success: true,
-        data: updatedItem,
+        data: sanitizedUpdatedItem,
         message: 'Cart item updated'
       })
     } else {
@@ -395,9 +425,20 @@ export async function POST(request: Request) {
         }
       })
 
+      const sanitizedCartItem = {
+        ...cartItem,
+        mode: isWholesaleAllowed && cartItem.mode === 'WHOLESALE' ? 'WHOLESALE' : 'RETAIL',
+        product: cartItem.product
+          ? {
+              ...cartItem.product,
+              wholesalePrice: isWholesaleAllowed ? cartItem.product.wholesalePrice : null,
+            }
+          : null,
+      }
+
       return NextResponse.json({
         success: true,
-        data: cartItem,
+        data: sanitizedCartItem,
         message: 'Item added to cart'
       }, { status: 201 })
     }
