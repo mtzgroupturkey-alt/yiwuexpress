@@ -19,7 +19,6 @@ import { motion } from 'framer-motion'
 import { ReviewSection } from '@/components/products/ReviewSection'
 import { TrustBadgesMini } from '@/components/TrustBadgesMini'
 import { WishlistButton } from '@/components/products/WishlistButton'
-import { IkeaSpecificationsAccordion } from '@/components/products/IkeaSpecificationsAccordion'
 import { useCart } from '@/components/CartContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
@@ -1774,7 +1773,7 @@ export default function ProductDetailView({
                         className="w-full h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
                         <ShoppingCart className="w-4 h-4" />
-                        <span>{adding ? t('addingToCart') : ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart')} ({tPdp('wholesaleMoq', { moq })})</span>
+                        <span>{adding ? t('addingToCart') : t('addToCart')}</span>
                       </button>
                     ) : (
                       /* Retail Flow CTAs */
@@ -1823,7 +1822,7 @@ export default function ProductDetailView({
                         className="w-full h-10 rounded-xl text-xs font-bold border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                       >
                         <FileText className="w-4 h-4" />
-                        <span>{isInstantWholesale ? ((t as any)('addToWholesaleCart') || 'Add to Wholesale Cart') : t('addToQuoteList')}</span>
+                        <span>{isInstantWholesale ? t('addToCart') : t('addToQuoteList')}</span>
                       </button>
                     )}
 
