@@ -16,6 +16,7 @@ import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
 import { useCustomerView } from '@/hooks/useCustomerView'
+import { useCart } from '@/components/CartContext'
 
 interface Product {
   id: string
@@ -45,7 +46,7 @@ interface Product {
 
 interface ProductCardProps {
   product: Product
-  onAddToCart?: (productId: string) => void
+  onAddToCart?: (productId: string, quantity?: number, mode?: 'RETAIL' | 'WHOLESALE') => void
 }
 
 export default function ProductCard({
@@ -78,19 +79,52 @@ export default function ProductCard({
   const showRetailCart = !canRequestQuote && !canAddToWholesaleCart
   const hasWholesale = Boolean(product.wholesalePrice && isWholesaleActive)
 
-  const addWholesaleToCart = (p: Product) => {
+  const { refreshCartCount } = useCart()
+
+  const addWholesaleToCart = async (p: Product) => {
     setIsAddingToCart(true)
-    enableWholesaleSession()
-    addInquiryItem({
-      productId: p.id,
-      slug: p.slug,
-      name: p.name,
-      image: p.image,
-      wholesalePrice: (p.wholesalePrice || p.price) as number,
-      retailPrice: p.price,
-      quantity: moq,
-      minOrderQty: moq,
-    })
+    const orderQty = Math.max(1, p.minOrderQty || moq || 1)
+    const isInstant = settings?.rfqModel === 'INSTANT'
+
+    if (isWholesaleActive && isInstant) {
+      if (onAddToCart) {
+        onAddToCart(p.id, orderQty, 'WHOLESALE')
+      } else {
+        try {
+          const res = await fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              productId: p.id,
+              quantity: orderQty,
+              mode: 'WHOLESALE',
+            }),
+          })
+          if (res.ok) {
+            refreshCartCount()
+          }
+        } catch (err) {
+          console.error('Error adding wholesale item to cart:', err)
+        }
+      }
+    } else if (isWholesaleActive) {
+      enableWholesaleSession()
+      addInquiryItem({
+        productId: p.id,
+        slug: p.slug,
+        name: p.name,
+        image: p.image,
+        wholesalePrice: (p.wholesalePrice || p.price) as number,
+        retailPrice: p.price,
+        quantity: orderQty,
+        minOrderQty: orderQty,
+      })
+    } else {
+      if (onAddToCart) {
+        onAddToCart(p.id, 1, 'RETAIL')
+      }
+    }
     setTimeout(() => setIsAddingToCart(false), 1200)
   }
   const now = Date.now()

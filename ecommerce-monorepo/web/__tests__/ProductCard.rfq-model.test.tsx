@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import ProductCard from '../components/products/ProductCard'
@@ -39,6 +39,27 @@ vi.mock('@/contexts/SessionModeContext', () => ({
 vi.mock('@/components/QuoteCartContext', () => ({
   useQuoteCart: () => ({
     addToQuote: vi.fn(),
+  }),
+}))
+
+vi.mock('@/components/CartContext', () => ({
+  useCart: () => ({
+    cartCount: 0,
+    refreshCartCount: vi.fn(),
+    clearCart: vi.fn(),
+  }),
+}))
+
+vi.mock('@/hooks/useCustomerView', () => ({
+  useCustomerView: () => ({
+    view: 'wholesale',
+    isGuest: false,
+    isRetail: false,
+    isWholesale: true,
+    canSeeWholesalePrice: true,
+    canRequestQuote: true,
+    canAddToWholesaleCart: true,
+    isLoading: false,
   }),
 }))
 

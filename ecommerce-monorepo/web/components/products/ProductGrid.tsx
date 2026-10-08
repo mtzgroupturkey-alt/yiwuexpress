@@ -40,7 +40,7 @@ interface ProductGridProps {
   columns?: 2 | 3 | 4
   showLoadMore?: boolean
   onLoadMore?: () => void
-  onAddToCart?: (productId: string) => void
+  onAddToCart?: (productId: string, quantity?: number, mode?: 'RETAIL' | 'WHOLESALE') => void
   isLoading?: boolean
   viewMode?: 'grid' | 'list'
 }
@@ -76,10 +76,10 @@ export default function ProductGrid({
     }
   }, [])
 
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string, quantity = 1, mode: 'RETAIL' | 'WHOLESALE' = 'RETAIL') => {
     // Use the parent's onAddToCart if provided
     if (onAddToCart) {
-      onAddToCart(productId)
+      onAddToCart(productId, quantity, mode)
       return
     }
 
@@ -93,7 +93,8 @@ export default function ProductGrid({
         credentials: 'include', // Include cookies for auth
         body: JSON.stringify({
           productId,
-          quantity: 1
+          quantity,
+          mode,
         })
       })
 
@@ -357,7 +358,7 @@ export default function ProductGrid({
                 <ProductCard
                   key={product.id}
                   product={mappedProduct}
-                  onAddToCart={(id) => handleAddToCart(product.id)}
+                  onAddToCart={handleAddToCart}
                 />
               )
             })}
