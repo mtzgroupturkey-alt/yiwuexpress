@@ -1872,25 +1872,6 @@ export default function ProductDetailView({
                       </div>
                     </div>
 
-                    <div className="h-px bg-slate-200/60" />
-
-                    {/* Payment methods and assistance row */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap pt-0.5 text-[10px]">
-                      <div className="flex items-center gap-1 text-slate-500 font-semibold">
-                        <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded">Visa</span>
-                        <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded">Mastercard</span>
-                        <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded">PayPal</span>
-                        <span className="px-1.5 py-0.5 bg-white border border-slate-200 rounded">Escrow</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/contact')}
-                        className="text-xs font-bold text-[#00407a] hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <MessageCircle className="w-3 h-3" />
-                        <span>{locale === 'ru' ? 'Поддержка 24/7' : locale === 'zh' ? '在线客服' : 'Chat 24/7'}</span>
-                      </button>
-                    </div>
                   </div>
                 </div>
 
