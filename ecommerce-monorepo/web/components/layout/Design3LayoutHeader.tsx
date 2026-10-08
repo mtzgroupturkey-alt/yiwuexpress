@@ -169,12 +169,10 @@ export function Design3LayoutHeader() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
-  // Cart calculations
-  const totalItemQuantity = useMemo(() => {
-    return activeCartItems.reduce((sum, item) => sum + item.quantity, 0);
-  }, [activeCartItems]);
+  // Cart calculations - show count of unique products, not total quantity of all
+  const distinctProductCount = activeCartItems.length;
 
-  const displayCartCount = totalItemQuantity > 0 ? totalItemQuantity : realCartCount;
+  const displayCartCount = distinctProductCount > 0 ? distinctProductCount : realCartCount;
 
   const cartTotal = useMemo(() => {
     if (cartResponse?.data?.summary?.subtotal !== undefined && dbCartItems.length > 0 && localCartItems.length === 0) {

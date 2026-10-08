@@ -70,14 +70,13 @@ export function ProductAttributesSection({
       const data = await response.json()
       if (data.data) {
         setCategoryAttributes(data.data || [])
-        if (Object.keys(attributeValues).length === 0) {
-          const initVals: Record<string, any> = {}
-          data.data.forEach((attr: any) => {
-            initVals[attr.slug] = initialValues[attr.slug] ?? defaultForType(attr.type)
-          })
-          setAttributeValues(initVals)
-          onChange(initVals, attrTranslations)
-        }
+        const currentVals = Object.keys(attributeValues).length > 0 ? attributeValues : initialValues
+        const cleanVals: Record<string, any> = {}
+        data.data.forEach((attr: any) => {
+          cleanVals[attr.slug] = currentVals[attr.slug] ?? defaultForType(attr.type)
+        })
+        setAttributeValues(cleanVals)
+        onChange(cleanVals, attrTranslations)
       }
     } catch (err) {
       console.error('Error fetching category attributes:', err)

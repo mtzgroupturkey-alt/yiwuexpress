@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useAuth } from '@/hooks/useAuth'
 
 interface ReviewFormProps {
   productId: string
@@ -25,12 +26,13 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
   const [submitted, setSubmitted] = useState(false)
   const queryClient = useQueryClient()
   const t = useTranslations('Product')
+  const { user } = useAuth()
 
   const reviewSchema = z.object({
-    rating: z.number().min(1, t('errRating')).max(5),
-    title: z.string().min(5, t('errTitle')).max(100),
-    comment: z.string().min(20, t('errComment')).max(1000),
-    reviewerName: z.string().min(2, t('errName')).max(100),
+    rating: z.number().min(1, t('errRating') || 'Please select a rating').max(5),
+    title: z.string().min(2, 'Title must be at least 2 characters').max(100),
+    comment: z.string().min(3, 'Review must be at least 3 characters').max(1000),
+    reviewerName: z.string().min(1, t('errName') || 'Name is required').max(100),
     verifiedPurchase: z.boolean().optional(),
   })
 
@@ -39,14 +41,30 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
   const {
     register,
     handleSubmit,
+    setValue,
+    setError,
     formState: { errors },
     reset,
   } = useForm<ReviewFormData>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
       rating: 0,
+      title: '',
+      comment: '',
+      reviewerName: user?.name || '',
     },
   })
+
+  useEffect(() => {
+    if (user?.name) {
+      setValue('reviewerName', user.name)
+    }
+  }, [user?.name, setValue])
+
+  const handleRatingChange = (newRating: number) => {
+    setRating(newRating)
+    setValue('rating', newRating, { shouldValidate: true })
+  }
 
   const mutation = useMutation({
     mutationFn: async (data: ReviewFormData) => {
@@ -55,16 +73,17 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          rating: data.rating,
+          rating: data.rating || rating,
           title: data.title,
           comment: data.comment,
-          images: [], // can be extended for uploads later
+          reviewerName: data.reviewerName,
+          images: [],
         }),
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to submit review')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || errorData.message || 'Failed to submit review')
       }
 
       return response.json()
@@ -82,7 +101,12 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
   })
 
   const onSubmit = (data: ReviewFormData) => {
-    mutation.mutate({ ...data, rating })
+    const finalRating = data.rating || rating
+    if (!finalRating || finalRating === 0) {
+      setError('rating', { type: 'manual', message: t('errRating') || 'Please select a rating' })
+      return
+    }
+    mutation.mutate({ ...data, rating: finalRating })
   }
 
   if (submitted) {
@@ -113,18 +137,18 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Rating */}
           <div>
-            <Label className="mb-2 block">
+            <Label className="mb-2 block font-medium">
               {t('overallRating')} <span className="text-red-500">*</span>
             </Label>
-            <InteractiveReviewStars value={rating} onChange={setRating} />
-            {rating === 0 && errors.rating && (
+            <InteractiveReviewStars value={rating} onChange={handleRatingChange} />
+            {errors.rating && (
               <p className="text-sm text-red-600 mt-1">{errors.rating.message}</p>
             )}
           </div>
 
           {/* Review Title */}
           <div>
-            <Label htmlFor="title">
+            <Label htmlFor="title" className="font-medium">
               {t('reviewTitle')} <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -140,27 +164,24 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
 
           {/* Review Comment */}
           <div>
-            <Label htmlFor="comment">
+            <Label htmlFor="comment" className="font-medium">
               {t('yourReview')} <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="comment"
               {...register('comment')}
               placeholder={t('reviewCommentPlaceholder')}
-              rows={5}
+              rows={4}
               className="mt-1"
             />
             {errors.comment && (
               <p className="text-sm text-red-600 mt-1">{errors.comment.message}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
-              {t('min20')}
-            </p>
           </div>
 
           {/* Reviewer Name */}
           <div>
-            <Label htmlFor="reviewerName">
+            <Label htmlFor="reviewerName" className="font-medium">
               {t('yourName')} <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -178,8 +199,8 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
           <div className="flex gap-3 pt-4">
             <Button
               type="submit"
-              disabled={mutation.isPending || rating === 0}
-              className="flex-1"
+              disabled={mutation.isPending}
+              className="flex-1 bg-[#00407a] hover:bg-[#003366] text-white font-bold h-11 rounded-xl shadow-xs"
             >
               {mutation.isPending ? (
                 <>

@@ -478,8 +478,8 @@ export default function Home() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Cart helper calculations
-  const cartCount = realCartCount > 0 ? realCartCount : activeCartItems.reduce((sum, item) => sum + item.quantity, 0);
+  // Cart helper calculations - distinct count of products
+  const cartCount = realCartCount > 0 ? realCartCount : activeCartItems.length;
 
   const isWholesaleActive =
     storeMode === 'WHOLESALE' ||

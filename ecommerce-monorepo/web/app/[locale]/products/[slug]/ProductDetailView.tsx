@@ -530,6 +530,48 @@ export default function ProductDetailView({
     }
   }
 
+  const saveToGuestCart = (item: {
+    productId: string
+    product: any
+    quantity: number
+    variantId?: string | null
+    selectedOptions?: Record<string, string> | null
+    mode?: 'RETAIL' | 'WHOLESALE'
+  }) => {
+    try {
+      if (typeof window === 'undefined') return
+      const raw = localStorage.getItem('yiwu_guest_cart')
+      const list = raw ? JSON.parse(raw) : []
+      const productObj = item.product?.category && item.product?.department
+        ? item.product
+        : mapDbProductToDesign3(item.product)
+
+      const existingIdx = list.findIndex(
+        (i: any) =>
+          (i.product?.id || i.productId) === item.productId &&
+          (!item.variantId || i.variantId === item.variantId)
+      )
+      if (existingIdx > -1) {
+        list[existingIdx].quantity = (Number(list[existingIdx].quantity) || 0) + item.quantity
+        if (item.selectedOptions) list[existingIdx].selectedOptions = item.selectedOptions
+        if (!list[existingIdx].product) list[existingIdx].product = productObj
+      } else {
+        list.push({
+          productId: item.productId,
+          product: productObj,
+          variantId: item.variantId || null,
+          selectedOptions: item.selectedOptions || null,
+          quantity: item.quantity,
+          mode: item.mode || 'RETAIL',
+        })
+      }
+      localStorage.setItem('yiwu_guest_cart', JSON.stringify(list))
+      window.dispatchEvent(new CustomEvent('cart-updated', { detail: list }))
+    } catch (e) {
+      console.error('[PDP] Failed to save to local guest cart:', e)
+    }
+  }
+
   const handleMatrixAddToCart = async () => {
     const moq = product.minOrderQty || 1
     if (totalMatrixUnits < moq) {
@@ -543,21 +585,44 @@ export default function ProductDetailView({
         const qty = matrixQuantities[item.id] || 0
         if (qty <= 0) continue
 
-        await fetch('/api/cart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
+        let added = false
+        if (isAuthenticated) {
+          try {
+            const res = await fetch('/api/cart', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                productId: product.id,
+                variantId: item.variantId || undefined,
+                selectedOptions: item.selectedOptions,
+                quantity: qty,
+                mode: 'WHOLESALE',
+              }),
+            })
+            if (res.ok) {
+              const data = await res.json()
+              if (data.success) added = true
+            }
+          } catch (e) {
+            console.warn('[PDP] Matrix add to backend failed, falling back to local', e)
+          }
+        }
+
+        if (!added) {
+          saveToGuestCart({
             productId: product.id,
+            product,
             variantId: item.variantId || undefined,
             selectedOptions: item.selectedOptions,
             quantity: qty,
             mode: 'WHOLESALE',
-          }),
-        })
+          })
+        }
       }
       setShowSuccessMessage(true)
-      refreshCartCount()
+      window.dispatchEvent(new CustomEvent('cart-updated'))
+      await refreshCartCount()
       setTimeout(() => setShowSuccessMessage(false), 3000)
     } catch (err) {
       console.error('Error adding matrix to cart:', err)
@@ -763,6 +828,88 @@ export default function ProductDetailView({
     return fallback
   }, [dimensionsMap, product.dimensions, product.attributes])
 
+  // Category Attributes with filled values (from /admin/attributes)
+  const categoryAttributesWithValues = useMemo(() => {
+    const list: Array<{
+      key: string
+      name: string
+      value: any
+      displayValue: string
+    }> = []
+
+    const catAttrs = product.categoryAttributes || []
+    const prodAttrs = product.attributes || {}
+
+    catAttrs.forEach((ca: any) => {
+      let rawVal = prodAttrs[ca.slug]
+      if (rawVal === undefined && ca.slug === 'material' && product.material) {
+        rawVal = product.material
+      }
+
+      if (rawVal !== undefined && rawVal !== null && rawVal !== '') {
+        if (Array.isArray(rawVal) && rawVal.length === 0) return
+
+        let displayValue = ''
+        if (Array.isArray(rawVal)) {
+          displayValue = rawVal
+            .map((v) => (typeof v === 'object' && v?.label ? v.label : String(v)))
+            .join(', ')
+        } else if (typeof rawVal === 'boolean') {
+          displayValue = rawVal
+            ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes')
+            : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
+        } else if (typeof rawVal === 'object') {
+          displayValue = rawVal.label || rawVal.value || JSON.stringify(rawVal)
+        } else {
+          displayValue = String(rawVal)
+        }
+
+        if (displayValue.trim()) {
+          list.push({
+            key: ca.slug,
+            name: ca.name || ca.slug,
+            value: rawVal,
+            displayValue: displayValue.trim(),
+          })
+        }
+      }
+    })
+
+    return list
+  }, [product.categoryAttributes, product.attributes, product.material, locale])
+
+  const hasCategoryAttributesData = categoryAttributesWithValues.length > 0
+
+  const visibleTabs = useMemo(() => {
+    const tabs: Array<{ id: string; label: string; count: number | null }> = [
+      { id: 'overview', label: locale === 'ru' ? 'Обзор' : locale === 'zh' ? '概览' : 'Overview', count: null },
+      { id: 'product-details', label: locale === 'ru' ? 'Информация о товаре' : locale === 'zh' ? '商品详情' : 'Product details', count: null },
+      { id: 'measurements', label: locale === 'ru' ? 'Размеры' : locale === 'zh' ? '尺寸规格' : 'Measurements', count: null },
+    ]
+
+    if (hasCategoryAttributesData) {
+      tabs.push({
+        id: 'specs',
+        label: t('specifications') || (locale === 'ru' ? 'Характеристики' : locale === 'zh' ? '规格参数' : 'Specifications'),
+        count: null,
+      })
+    }
+
+    tabs.push({
+      id: 'reviews',
+      label: locale === 'ru' ? 'Отзывы' : locale === 'zh' ? '评价' : 'Reviews',
+      count: reviewsCount > 0 ? reviewsCount : 348,
+    })
+
+    return tabs
+  }, [locale, hasCategoryAttributesData, t, reviewsCount])
+
+  useEffect(() => {
+    if (activeTab === 'specs' && !hasCategoryAttributesData) {
+      setActiveTab('overview')
+    }
+  }, [activeTab, hasCategoryAttributesData])
+
   const handleRelatedAddToCart = async (target: any, qty = 1, mode?: 'RETAIL' | 'WHOLESALE') => {
     const isInstant = settings?.rfqModel === 'INSTANT'
     const targetMode = mode || (isWholesaleCustomer && isInstant ? 'WHOLESALE' : isWholesaleCustomer ? 'WHOLESALE' : 'RETAIL')
@@ -794,32 +941,46 @@ export default function ProductDetailView({
 
     try {
       const orderQty = targetMode === 'WHOLESALE' ? Math.max(qty, moq) : qty
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          productId: target.id,
-          quantity: orderQty,
-          mode: targetMode,
-        }),
-      })
+      let added = false
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          alert(t('errors.pleaseLoginCart'))
-          navigate('/login')
-          return
+      if (isAuthenticated) {
+        try {
+          const response = await fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              productId: target.id,
+              quantity: orderQty,
+              mode: targetMode,
+            }),
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.success) {
+              added = true
+            }
+          }
+        } catch (err) {
+          console.warn('[PDP] Failed adding related product to backend cart:', err)
         }
-        throw new Error('Failed to add item')
       }
 
-      const data = await response.json()
-      if (data.success) {
-        refreshCartCount()
+      if (!added) {
+        saveToGuestCart({
+          productId: target.id,
+          product: target,
+          quantity: orderQty,
+          mode: targetMode,
+        })
+        added = true
+      }
+
+      if (added) {
+        window.dispatchEvent(new CustomEvent('cart-updated'))
+        await refreshCartCount()
         setCartQuantities((prev) => ({ ...prev, [target.id]: (prev[target.id] || 0) + 1 }))
-      } else {
-        alert(data.error || tCart('errors.failedAdd'))
       }
     } catch (error) {
       console.error('Error adding to cart:', error)
@@ -908,40 +1069,54 @@ export default function ProductDetailView({
 
     try {
       setAdding(true)
-      // ✅ MIGRATED TO COOKIE-BASED AUTH - userId extracted from cookie on server
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include', // Send httpOnly cookie
-        body: JSON.stringify({
+      let addedSuccessfully = false
+
+      if (isAuthenticated) {
+        try {
+          const response = await fetch('/api/cart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              productId: product.id,
+              variantId: selectedVariant?.id,
+              selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
+              quantity,
+              mode: isWholesaleActive ? 'WHOLESALE' : 'RETAIL',
+            })
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            if (data.success) {
+              addedSuccessfully = true
+            }
+          }
+        } catch (backendErr) {
+          console.warn('[PDP] Backend cart rejected item, falling back to local guest cart', backendErr)
+        }
+      }
+
+      if (!addedSuccessfully) {
+        saveToGuestCart({
           productId: product.id,
+          product,
           variantId: selectedVariant?.id,
           selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
           quantity,
           mode: isWholesaleActive ? 'WHOLESALE' : 'RETAIL',
         })
-      })
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          alert(t('errors.pleaseLoginCart'))
-          navigate('/login')
-          return
-        }
-        throw new Error(tCart('errors.failedAdd'))
+        addedSuccessfully = true
       }
 
-      const data = await response.json()
-
-      if (data.success) {
+      if (addedSuccessfully) {
         setShowSuccessMessage(true)
-        refreshCartCount()
+        window.dispatchEvent(new CustomEvent('cart-updated'))
+        await refreshCartCount()
         // Hide success message after 3 seconds
         setTimeout(() => setShowSuccessMessage(false), 3000)
-      } else {
-        alert(data.error || tCart('errors.failedAdd'))
       }
     } catch (error) {
       console.error('Error adding to cart:', error)
@@ -963,33 +1138,70 @@ export default function ProductDetailView({
   const handleAddBundleToCart = async (bundleItem: any) => {
     try {
       setAdding(true)
-      // 1. Add primary product to cart
-      await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+      let primaryAdded = false
+
+      if (isAuthenticated) {
+        try {
+          const res = await fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              productId: product.id,
+              variantId: selectedVariant?.id,
+              selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
+              quantity: 1,
+            }),
+          })
+          if (res.ok) {
+            const data = await res.json()
+            if (data.success) primaryAdded = true
+          }
+        } catch {}
+      }
+
+      if (!primaryAdded) {
+        saveToGuestCart({
           productId: product.id,
+          product,
           variantId: selectedVariant?.id,
           selectedOptions: Object.keys(selectedOptions).length > 0 ? selectedOptions : undefined,
           quantity: 1,
-        }),
-      })
-
-      // 2. Add bundle accessory/item if real product ID
-      if (bundleItem?.id && bundleItem.id !== 'accessory-fallback') {
-        await fetch('/api/cart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            productId: bundleItem.id,
-            quantity: 1,
-          }),
         })
       }
 
-      refreshCartCount()
+      // 2. Add bundle accessory/item if real product ID
+      if (bundleItem?.id && bundleItem.id !== 'accessory-fallback') {
+        let accessoryAdded = false
+        if (isAuthenticated) {
+          try {
+            const res = await fetch('/api/cart', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                productId: bundleItem.id,
+                quantity: 1,
+              }),
+            })
+            if (res.ok) {
+              const data = await res.json()
+              if (data.success) accessoryAdded = true
+            }
+          } catch {}
+        }
+
+        if (!accessoryAdded) {
+          saveToGuestCart({
+            productId: bundleItem.id,
+            product: bundleItem,
+            quantity: 1,
+          })
+        }
+      }
+
+      window.dispatchEvent(new CustomEvent('cart-updated'))
+      await refreshCartCount()
       setBundleAdded(true)
       setShowSuccessMessage(true)
       setTimeout(() => {
@@ -1398,28 +1610,17 @@ export default function ProductDetailView({
               <div className="lg:sticky lg:top-20 space-y-4">
                 {/* Main Buy Box Container */}
                 <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  {/* Brand Pill & Stock Status */}
+                  {/* Brand Pill */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                       <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                         {localizedCategoryName || 'BAKEWARE PRO'}
                       </span>
                       {currentStock > 100 && (
-                        <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                           {t('inHighDemand')}
                         </span>
                       )}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 text-xs font-semibold">
-                      <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      <span className="text-emerald-700">
-                        {locale === 'ru'
-                          ? `В наличии: Хаб Китай (${currentStock} шт.)`
-                          : locale === 'zh'
-                          ? `现货直发: 中国核心枢纽 (${currentStock} 件)`
-                          : `In Stock: China Central Hub (${currentStock} pcs)`}
-                      </span>
                     </div>
                   </div>
 
@@ -1461,14 +1662,6 @@ export default function ProductDetailView({
                       >
                         {reviewsCount > 0 ? `${reviewsCount} ${t('customerReviews')}` : '348 Reviews'}
                       </a>
-                      <span className="text-slate-300">|</span>
-                      <a
-                        href="#product-tabs"
-                        onClick={() => setActiveTab('faq')}
-                        className="text-xs text-slate-600 hover:text-[#00407a] font-semibold transition-colors underline-offset-2 hover:underline"
-                      >
-                        52 Q&As
-                      </a>
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -1503,7 +1696,7 @@ export default function ProductDetailView({
 
                   {/* Price Section */}
                   <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-200/80">
-                    <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                         {formatPrice(displayPrice)}
                       </span>
@@ -1524,17 +1717,6 @@ export default function ProductDetailView({
                           )}
                         </>
                       )}
-                    </div>
-
-                    {/* Dynamic Loyalty Bonus Points & Installment in compact row */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap pt-1 text-[11px]">
-                      <span className="text-amber-800 font-medium flex items-center gap-1">
-                        <span>🪙</span>
-                        <span>+{Math.round(displayPrice)} {companyName} {locale === 'ru' ? 'баллов' : locale === 'zh' ? '积分' : 'pts'}</span>
-                      </span>
-                      <span className="text-slate-600 font-medium">
-                        <strong className="text-slate-900 font-bold">{formatPrice(displayPrice / 12)}/mo</strong> {locale === 'ru' ? 'рассрочка 0%' : locale === 'zh' ? '0息分期' : '0% Installment'}
-                      </span>
                     </div>
                   </div>
 
@@ -1956,29 +2138,6 @@ export default function ProductDetailView({
                         </p>
                       </div>
                     </div>
-
-                    <div className="h-px bg-slate-200/60" />
-
-                    {/* China Central Hub Pickup */}
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100 mt-0.5">
-                        <Package className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900">
-                            {settings?.pdpPickupTitle || (locale === 'ru' ? 'Самовывоз из Хаба' : locale === 'zh' ? '枢纽自提' : 'China Central Hub')}
-                          </span>
-                          <span className="font-bold text-slate-600">
-                            {settings?.pdpPickupPrice || (locale === 'ru' ? 'Бесплатно' : locale === 'zh' ? '免费' : 'Free')}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
-                          {settings?.pdpPickupEstimate || (locale === 'ru' ? 'Готов к выдаче через 1 час' : locale === 'zh' ? '下单后1小时可取' : 'Ready for pickup in 1 hour')}
-                        </p>
-                      </div>
-                    </div>
-
                   </div>
                 </div>
 
@@ -1995,11 +2154,7 @@ export default function ProductDetailView({
         <div id="product-tabs" className="mt-6 mb-8 scroll-mt-24">
           <div className="border-b border-slate-200 bg-white rounded-t-2xl px-3 sm:px-6 pt-2 shadow-xs">
             <nav className="flex space-x-2 sm:space-x-8 overflow-x-auto scrollbar-none" aria-label="Tabs">
-              {[
-                { id: 'overview', label: locale === 'ru' ? 'Обзор' : locale === 'zh' ? '概览' : 'Overview', count: null },
-                { id: 'product-details', label: locale === 'ru' ? 'Информация о товаре' : locale === 'zh' ? '商品详情' : 'Product details', count: null },
-                { id: 'measurements', label: locale === 'ru' ? 'Размеры' : locale === 'zh' ? '尺寸规格' : 'Measurements', count: null },
-              ].map((tab) => {
+              {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.id
                 return (
                   <button
@@ -2435,204 +2590,41 @@ export default function ProductDetailView({
 
             {/* Hidden Legacy Tabs (Preserved for future step-by-step reactivation) */}
 
-            {/* Tab 2: Technical Specifications */}
-            {activeTab === 'specs' && (
+            {/* Tab 4: Technical Specifications (Managed via /admin/attributes) */}
+            {activeTab === 'specs' && hasCategoryAttributesData && (
               <div className="space-y-6 animate-fade-in">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                    {t('specifications')}
-                  </h3>
-                  <span className="text-xs text-slate-500">
-                    {locale === 'ru' ? 'Официальные фабричные спецификации' : locale === 'zh' ? '官方出厂规格参数' : 'Standard Manufacturer Specs'}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      <FileText className="w-5 h-5 text-[#00407a]" />
+                      {t('specifications') || (locale === 'ru' ? 'Характеристики товара' : locale === 'zh' ? '规格参数' : 'Specifications')}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {locale === 'ru' ? 'Параметры и спецификации' : locale === 'zh' ? '商品属性参数' : 'Product attributes & specifications'}
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md self-start sm:self-auto">
+                    {categoryAttributesWithValues.length} {locale === 'ru' ? 'атрибутов' : locale === 'zh' ? '项属性' : 'attributes'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column: General Parameters */}
-                  <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
-                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
-                        {locale === 'ru' ? 'Общие параметры' : locale === 'zh' ? '基础参数' : 'General Information'}
-                      </h4>
-                    </div>
-                    <dl className="divide-y divide-slate-100">
-                      {(product as any).dromkokItemNo && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">Item #</dt>
-                          <dd className="sm:col-span-2 font-mono font-bold text-blue-700 text-xs sm:text-sm">{(product as any).dromkokItemNo}</dd>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Категория' : locale === 'zh' ? '商品分类' : 'Category'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{localizedCategoryName || 'General Category'}</dd>
-                      </div>
-                      {product.countryOfOrigin && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specOrigin')}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedCountry(product.countryOfOrigin, locale)}</dd>
-                        </div>
-                      )}
-                      {product.hsCode && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specHsCode')}</dt>
-                          <dd className="sm:col-span-2 font-mono font-bold text-slate-900 text-xs sm:text-sm">{product.hsCode}</dd>
-                        </div>
-                      )}
-                      {isWholesaleCustomer && product.minOrderQty && product.minOrderQty > 1 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Мин. партия (MOQ)' : locale === 'zh' ? '起订量 (MOQ)' : 'Minimum Order'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{product.minOrderQty} {locale === 'ru' ? 'шт.' : locale === 'zh' ? '件' : 'units'}</dd>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Статус склада' : locale === 'zh' ? '现货状态' : 'Stock Status'}</dt>
-                        <dd className={`sm:col-span-2 font-semibold text-xs sm:text-sm ${currentStock > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
-                          {currentStock > 0 ? `${currentStock} ${locale === 'ru' ? 'в наличии (Хаб Китай)' : locale === 'zh' ? '件现货（中国枢纽）' : 'in stock (China Central Hub)'}` : t('outOfStock')}
+                {/* Only attributes forms data (from /admin/attributes) - no extra general details */}
+                <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
+                  <dl className="divide-y divide-slate-100">
+                    {categoryAttributesWithValues.map((attr, idx) => (
+                      <div
+                        key={attr.key}
+                        className={`grid grid-cols-1 sm:grid-cols-3 gap-2 py-3.5 px-4 sm:px-6 transition-colors ${
+                          idx % 2 === 0 ? 'bg-white hover:bg-slate-50/80' : 'bg-slate-50/50 hover:bg-slate-50'
+                        }`}
+                      >
+                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{attr.name}</dt>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm whitespace-pre-line">
+                          {attr.displayValue}
                         </dd>
                       </div>
-                    </dl>
-                  </div>
-
-                  {/* Right Column: Dynamic Technical & Product Attributes */}
-                  <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
-                    <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
-                        {locale === 'ru' ? 'Характеристики товара' : locale === 'zh' ? '商品规格参数' : 'Product Specifications'}
-                      </h4>
-                    </div>
-                    <dl className="divide-y divide-slate-100">
-                      {/* Product Material */}
-                      {(product.material || product.attributes?.material || product.attributes?.materials || product.attributes?.cookware_material) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {getLocalizedMaterial(product.material || product.attributes?.material || product.attributes?.materials || product.attributes?.cookware_material || '', locale)}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Care instructions */}
-                      {(product.attributes?.care_instructions || product.attributes?.care) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Инструкции по уходу' : locale === 'zh' ? '保养说明' : 'Care instructions'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm whitespace-pre-line">
-                            {product.attributes?.care_instructions || product.attributes?.care}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Designer */}
-                      {product.attributes?.designer && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Дизайнер' : locale === 'zh' ? '设计师' : 'Designer'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {product.attributes.designer}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Good to know */}
-                      {product.attributes?.good_to_know && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Полезно знать' : locale === 'zh' ? '须知' : 'Good to know'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm whitespace-pre-line">
-                            {product.attributes.good_to_know}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Coating / Tech */}
-                      {(product.attributes?.coating || product.attributes?.pan_coating || product.attributes?.surface_treatment) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '涂层工艺' : 'Coating / Finish'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {getLocalizedOptionLabel(
-                              'coating',
-                              product.attributes?.coating || product.attributes?.pan_coating || product.attributes?.surface_treatment || '',
-                              locale
-                            )}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Capacity / Count */}
-                      {product.attributes?.capacity && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вместимость' : locale === 'zh' ? '容量规格' : 'Capacity'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {getLocalizedOptionLabel('capacity', product.attributes.capacity, locale)}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Dimensions */}
-                      {(product.dimensions || product.attributes?.dimensions) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specDimensions')}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {product.dimensions
-                              ? `${product.dimensions.length} × ${product.dimensions.width} × ${product.dimensions.height} cm`
-                              : product.attributes?.dimensions}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Weight */}
-                      {product.weightKg > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specWeight')}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {product.weightKg} {locale === 'ru' ? 'кг' : locale === 'zh' ? '千克' : 'kg'}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Package Dimensions */}
-                      {(product.attributes?.package_dimensions || product.attributes?.package_width) && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Габариты упаковки' : locale === 'zh' ? '包装尺寸' : 'Package Dimensions'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {product.attributes?.package_dimensions ||
-                              `${product.attributes?.package_length || ''} × ${product.attributes?.package_width || ''} × ${product.attributes?.package_height || ''}`.trim()}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Package Weight */}
-                      {product.attributes?.package_weight && (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вес упаковки' : locale === 'zh' ? '包装重量' : 'Package Weight'}</dt>
-                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {product.attributes.package_weight}
-                          </dd>
-                        </div>
-                      )}
-
-                      {/* Other dynamic category attributes */}
-                      {product.categoryAttributes && product.categoryAttributes
-                        .filter((ca: any) => {
-                          const s = ca.slug
-                          return (
-                            !['material', 'materials', 'care_instructions', 'care', 'designer', 'good_to_know', 'dimensions', 'weight', 'package_dimensions', 'package_weight', 'coating', 'capacity'].includes(s) &&
-                            product.attributes?.[s] !== undefined &&
-                            product.attributes?.[s] !== null &&
-                            product.attributes?.[s] !== ''
-                          )
-                        })
-                        .map((ca: any) => {
-                          const val = product.attributes?.[ca.slug]
-                          const displayVal = Array.isArray(val) ? val.join(', ') : String(val)
-                          return (
-                            <div key={ca.slug} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                              <dt className="text-slate-600 font-medium text-xs sm:text-sm">{ca.name || ca.slug}</dt>
-                              <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{displayVal}</dd>
-                            </div>
-                          )
-                        })
-                      }
-                    </dl>
-                  </div>
+                    ))}
+                  </dl>
                 </div>
               </div>
             )}

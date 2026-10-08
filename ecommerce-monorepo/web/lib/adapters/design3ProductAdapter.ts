@@ -23,7 +23,9 @@ export function mapDbProductToDesign3(dbItem: any): Product {
   const departmentSlug = dbItem.category?.parent?.slug || undefined;
 
   const rawImage = dbItem.thumbnail || 
-    (Array.isArray(dbItem.images) && dbItem.images.length > 0 ? dbItem.images[0] : null);
+    (Array.isArray(dbItem.images) && dbItem.images.length > 0 ? dbItem.images[0] : null) ||
+    dbItem.image ||
+    null;
   const image = normalizeProductImageUrl(rawImage, categoryName, dbItem.name);
 
   const stock = typeof dbItem.stock === 'number' ? dbItem.stock : 10;

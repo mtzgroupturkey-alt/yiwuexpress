@@ -13,6 +13,7 @@ interface Order {
   id: string
   orderNumber: string
   status: string
+  mode?: string
   paymentStatus: string
   paymentMethod: string
   total: number
@@ -314,7 +315,7 @@ export default function OrderDetailPage() {
                     {order.paymentStatus === 'PAID' || order.status === 'PAID' ? 'PAID' : order.paymentStatus}
                   </Badge>
                 </div>
-                {order.paymentStatus === 'UNPAID' && !['PAID', 'CANCELLED', 'FAILED', 'REFUNDED'].includes(order.status) && (
+                {order.paymentStatus === 'UNPAID' && order.mode !== 'WHOLESALE' && !['PAID', 'CANCELLED', 'FAILED', 'REFUNDED'].includes(order.status) && (
                   <Button
                     className="w-full mt-3"
                     onClick={() => navigate(`/payment/${order.id}`)}
@@ -322,6 +323,11 @@ export default function OrderDetailPage() {
                     <CreditCard className="w-4 h-4 mr-2" />
                     Pay Now - ${order.total.toFixed(2)}
                   </Button>
+                )}
+                {order.mode === 'WHOLESALE' && (
+                  <p className="text-xs text-slate-500 mt-3 text-center">
+                    Wholesale order placed. Our team will contact you shortly to confirm fulfillment and payment terms.
+                  </p>
                 )}
               </CardContent>
             </Card>

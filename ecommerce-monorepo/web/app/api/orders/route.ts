@@ -255,7 +255,18 @@ export async function POST(request: Request) {
     const tax = calculation.tax
     const discount = calculation.discount
     const total = calculation.total
-    const orderItems = calculation.items
+    const orderItems = calculation.items.map((it) => ({
+      productId: it.productId,
+      variantId: it.variantId || null,
+      productName: it.productName,
+      productSku: it.productSku,
+      productImage: it.productImage || null,
+      variantAttributes: it.variantAttributes || null,
+      selectedOptions: it.selectedOptions || null,
+      quantity: it.quantity,
+      price: it.price,
+      total: it.total,
+    }))
     const stockDecrements = calculation.stockDecrements
     const orderNumber = `YWE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
 

@@ -7,13 +7,17 @@ import {
   ShoppingBag, 
   Tag, 
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import { Product } from '../types';
 import { ProductImage } from '@/components/ui/ProductImage';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/components/CartContext';
 
 interface CartItem {
   product: Product;
@@ -40,10 +44,73 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const { settings, storeMode, isWholesaleOnly } = useSettings();
   const { tCartDrawer } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
+  const { user, isAuthenticated } = useAuth();
+  const { clearCart, refreshCartCount } = useCart();
+
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submittedOrder, setSubmittedOrder] = useState<{ id: string; orderNumber: string } | null>(null);
 
   if (!isOpen) return null;
+
+  const isApprovedWholesale = isAuthenticated && !!user && (
+    user.role === 'ADMIN' ||
+    ((user.userType === 'WHOLESALE' || user.userType === 'BOTH') && user.verificationStatus === 'APPROVED')
+  );
+
+  const handleClose = () => {
+    if (submittedOrder) {
+      setSubmittedOrder(null);
+    }
+    setError(null);
+    onClose();
+  };
+
+  const handleWholesaleDirectCheckout = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const payload = {
+        mode: 'WHOLESALE',
+        paymentMethod: 'BANK_TRANSFER',
+        items: items.map((it) => ({
+          productId: it.product.id,
+          quantity: it.quantity,
+        })),
+        customerNotes: appliedPromo ? `Promo code applied: ${appliedPromo}` : undefined,
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to place wholesale order');
+      }
+
+      setSubmittedOrder({
+        id: data.data.id,
+        orderNumber: data.data.orderNumber,
+      });
+
+      clearCart();
+      await refreshCartCount();
+    } catch (err: any) {
+      console.error('Error placing wholesale direct order:', err);
+      setError(err.message || 'An error occurred while placing your order. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Wholesale mode check: Free delivery is strictly for retail mode, NOT wholesale mode.
   const isWholesale = storeMode === 'WHOLESALE' || isWholesaleOnly;
@@ -77,7 +144,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Drawer on desktop, BottomSheet on mobile */}
@@ -92,105 +159,137 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#00407a]" />
             <h3 className="text-base font-bold text-slate-900">
-              {tCartDrawer('title')}
+              {submittedOrder ? 'Order Confirmation' : tCartDrawer('title')}
             </h3>
-            <span className="bg-blue-100 text-[#00407a] text-xs font-bold px-2 py-0.5 rounded-full">
-              {items.reduce((acc, item) => acc + item.quantity, 0)}
-            </span>
+            {!submittedOrder && (
+              <span className="bg-blue-100 text-[#00407a] text-xs font-bold px-2 py-0.5 rounded-full">
+                {items.length}
+              </span>
+            )}
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Items List */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {items.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 mb-3">
-                <ShoppingBag className="w-8 h-8" />
-              </div>
-              <h4 className="font-bold text-slate-800 text-sm mb-1">{tCartDrawer('emptyTitle')}</h4>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto mb-4">
-                {tCartDrawer('emptyDesc')}
+        {/* Content Area: Success Confirmation OR Items List */}
+        {submittedOrder ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-lg font-bold text-slate-900">
+                Your order has been successfully placed!
+              </h4>
+              <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
+                Thank you for your order. Our team will contact you shortly to confirm the order details.
               </p>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-lg py-2.5 px-4 inline-block">
+              <span className="text-[11px] text-slate-500 font-medium block">Order Number</span>
+              <span className="text-sm font-mono font-bold text-[#00407a]">
+                #{submittedOrder.orderNumber}
+              </span>
+            </div>
+            <div className="pt-4 w-full">
               <button
-                onClick={onClose}
-                className="bg-[#00407a] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-800 cursor-pointer"
+                onClick={handleClose}
+                className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-3 px-4 rounded-lg text-xs transition-colors cursor-pointer shadow-sm"
               >
-                {tCartDrawer('exploreCatalog')}
+                Continue Shopping
               </button>
             </div>
-          ) : (
-            items.map(({ product, quantity }) => (
-              <div
-                key={product.id}
-                className="flex items-center gap-3 pb-3 border-b border-slate-100"
-              >
-                <div className="w-16 h-16 rounded-md border border-slate-100 p-1 bg-white shrink-0 relative overflow-hidden">
-                  <ProductImage
-                    src={product.image}
-                    alt={product.name || 'Product image'}
-                    fill
-                    sizes="64px"
-                    className="object-contain"
-                  />
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            {items.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400 mb-3">
+                  <ShoppingBag className="w-8 h-8" />
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-bold text-slate-900 truncate" title={product.name}>
-                    {product.name}
-                  </h4>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
-                    {formatPrice(product.price)}
+                <h4 className="font-bold text-slate-800 text-sm mb-1">{tCartDrawer('emptyTitle')}</h4>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto mb-4">
+                  {tCartDrawer('emptyDesc')}
+                </p>
+                <button
+                  onClick={handleClose}
+                  className="bg-[#00407a] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-800 cursor-pointer"
+                >
+                  {tCartDrawer('exploreCatalog')}
+                </button>
+              </div>
+            ) : (
+              items.map(({ product, quantity }) => (
+                <div
+                  key={product.id}
+                  className="flex items-center gap-3 pb-3 border-b border-slate-100"
+                >
+                  <div className="w-16 h-16 rounded-md border border-slate-100 p-1 bg-white shrink-0 relative overflow-hidden">
+                    <ProductImage
+                      src={product.image}
+                      alt={product.name || 'Product image'}
+                      fill
+                      sizes="64px"
+                      className="object-contain"
+                    />
                   </div>
 
-                  <div className="flex items-center justify-between mt-2">
-                    {/* Stepper */}
-                    <div className="flex items-center bg-slate-100 border border-slate-200 rounded-md p-0.5">
-                      <button
-                        onClick={() => onUpdateQuantity(product.id, quantity - 1)}
-                        className="w-6 h-6 rounded bg-white hover:bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="text-xs font-bold text-slate-900 px-2.5">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => onUpdateQuantity(product.id, quantity + 1)}
-                        className="w-6 h-6 rounded bg-[#00407a] hover:bg-[#003366] text-white flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-bold text-slate-900 truncate" title={product.name}>
+                      {product.name}
+                    </h4>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      {formatPrice(product.price)}
                     </div>
 
-                    <div className="text-right">
-                      <div className="text-xs font-extrabold text-slate-900">
-                        {formatPrice(product.price * quantity)}
+                    <div className="flex items-center justify-between mt-2">
+                      {/* Stepper */}
+                      <div className="flex items-center bg-slate-100 border border-slate-200 rounded-md p-0.5">
+                        <button
+                          onClick={() => onUpdateQuantity(product.id, quantity - 1)}
+                          className="w-6 h-6 rounded bg-white hover:bg-slate-200 text-slate-800 flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="text-xs font-bold text-slate-900 px-2.5">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => onUpdateQuantity(product.id, quantity + 1)}
+                          className="w-6 h-6 rounded bg-[#00407a] hover:bg-[#003366] text-white flex items-center justify-center font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-xs font-extrabold text-slate-900">
+                          {formatPrice(product.price * quantity)}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <button
-                  onClick={() => onRemoveItem(product.id)}
-                  className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition-colors"
-                  title={tCartDrawer('removeItem')}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
+                  <button
+                    onClick={() => onRemoveItem(product.id)}
+                    className="text-slate-400 hover:text-red-500 p-1 cursor-pointer transition-colors"
+                    title={tCartDrawer('removeItem')}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         {/* Footer with totals and checkout */}
-        {items.length > 0 && (
+        {items.length > 0 && !submittedOrder && (
           <div className="p-5 border-t border-slate-200 bg-[#F8FAFC]">
             {/* Promo Code Input */}
             <form onSubmit={handleApplyPromo} className="flex gap-2 mb-3.5">
@@ -244,14 +343,32 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               </div>
             </div>
 
+            {/* Error banner if submission failed */}
+            {error && (
+              <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-md flex items-start gap-2 text-red-700 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
+            )}
+
             {/* Checkout Button */}
             <button
               id="cart-proceed-checkout-btn"
-              onClick={onProceedToCheckout}
-              className="w-full bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.99] text-slate-950 font-bold py-3 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
+              onClick={isApprovedWholesale ? handleWholesaleDirectCheckout : onProceedToCheckout}
+              disabled={submitting}
+              className="w-full bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.99] text-slate-950 font-bold py-3 px-4 rounded-lg text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <span>{tCartDrawer('checkout')}</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Submitting Order...</span>
+                </>
+              ) : (
+                <>
+                  <span>{tCartDrawer('checkout')}</span>
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                </>
+              )}
             </button>
           </div>
         )}

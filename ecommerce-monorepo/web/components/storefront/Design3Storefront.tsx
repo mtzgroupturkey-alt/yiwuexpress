@@ -100,9 +100,9 @@ export function Design3Storefront() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Cart helper calculations
+  // Cart helper calculations - distinct count of products
   const cartCount = useMemo(() => {
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    return cartItems.length;
   }, [cartItems]);
 
   const cartTotal = useMemo(() => {

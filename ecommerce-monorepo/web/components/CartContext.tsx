@@ -23,7 +23,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (saved) {
         const items = JSON.parse(saved)
         if (Array.isArray(items)) {
-          return items.reduce((sum: number, item: any) => sum + (Number(item.quantity) || 1), 0)
+          return items.length
         }
       }
     } catch {}
@@ -50,7 +50,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.data?.cart) {
-          const distinctCount = data.data.summary?.itemCount ?? data.data.summary?.totalQuantity ?? 0
+          const distinctCount = data.data.summary?.itemCount ?? 0
           setCartCount(distinctCount + guestQty)
         } else {
           setCartCount(guestQty)

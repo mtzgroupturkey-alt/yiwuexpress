@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { getTokenFromRequest, verifyToken } from '@/lib/auth'
+import { getTokenFromRequest, verifyToken, hashPassword } from '@/lib/auth'
 
 async function getProductByIdOrSlug(idOrSlug: string) {
   return prisma.product.findFirst({

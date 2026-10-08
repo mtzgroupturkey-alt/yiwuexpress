@@ -5,13 +5,16 @@ import { requireRole, createAuthErrorResponse } from '@/lib/auth';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } | Promise<{ id: string }> }
 ) {
   try {
     await requireRole(request, ['ADMIN']);
 
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const orderId = resolvedParams?.id;
+
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id: orderId },
       include: { items: true },
     });
 

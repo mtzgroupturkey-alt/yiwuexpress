@@ -64,6 +64,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (order.mode?.toUpperCase() === 'WHOLESALE') {
+      return NextResponse.json(
+        { success: false, error: 'Online payments are not available for wholesale orders' },
+        { status: 400 }
+      )
+    }
+
     const accessToken = await getPayPalAccessToken()
 
     const captureResponse = await fetch(

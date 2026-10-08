@@ -46,6 +46,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (order.mode?.toUpperCase() === 'WHOLESALE') {
+      return NextResponse.json(
+        { success: false, error: 'Online payments are not available for wholesale orders' },
+        { status: 400 }
+      )
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(order.total * 100),
       currency: (order.currency || 'usd').toLowerCase(),
