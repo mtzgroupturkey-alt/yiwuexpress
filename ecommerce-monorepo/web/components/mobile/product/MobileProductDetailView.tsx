@@ -164,7 +164,6 @@ export function MobileProductDetailView({
         images={activeImages}
         mainImage={activeImages[0] || product.image}
         productName={product.name}
-        discountBadge={product.discountBadge}
         inStock={activeStock > 0}
       />
 

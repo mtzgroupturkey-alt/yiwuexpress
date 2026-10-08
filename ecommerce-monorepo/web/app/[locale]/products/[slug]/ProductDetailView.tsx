@@ -1490,7 +1490,6 @@ export default function ProductDetailView({
                 <ProductImageGallery
                   images={currentImages}
                   productName={localized.name}
-                  badgeText={currentCompareAtPrice && catalogDiscount > 0 ? `-${catalogDiscount}%` : undefined}
                 />
 
                 {/* Desktop-only: Reassurance, Frequently Bought Together Bundle & Key Specs */}
