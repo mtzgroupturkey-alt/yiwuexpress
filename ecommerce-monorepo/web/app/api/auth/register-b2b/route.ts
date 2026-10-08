@@ -93,41 +93,79 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Check Email Uniqueness
+    // 5. Check Email Uniqueness & Handle Re-apply for Rejected Users
     const existingUser = await prisma.user.findUnique({
       where: { email: validated.email.toLowerCase() },
     });
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'An account with this email address already exists. Please sign in or use another email.' },
-        { status: 400 }
-      );
-    }
-
     // 6. Hash Password (12 salt rounds)
     const hashedPassword = await hashPassword(validated.password);
 
-    // 7. Create User Record in Database
-    // Note: Starts strictly as PENDING, isVerified = false, userType = WHOLESALE
-    const user = await prisma.user.create({
-      data: {
-        email: validated.email.toLowerCase(),
-        password: hashedPassword,
-        name: validated.contactName,
-        companyName: validated.companyName,
-        businessType: validated.businessType,
-        taxId: validated.taxId,
-        country: `${validated.country}, ${validated.city}`,
-        phone: validated.phone,
-        role: 'USER',
-        userType: 'WHOLESALE',
-        verificationStatus: 'PENDING',
-        verificationNotes: validated.notes ? `Applicant Notes: ${validated.notes}` : null,
-        isVerified: false,
-        isActive: true,
-      },
-    });
+    let user;
+
+    if (existingUser) {
+      // Allow re-apply ONLY if the existing user is REJECTED wholesale
+      const canReapply =
+        existingUser.userType === 'WHOLESALE' &&
+        existingUser.verificationStatus === 'REJECTED';
+
+      if (!canReapply) {
+        return NextResponse.json(
+          { error: 'An account with this email address already exists. Please sign in or use another email.' },
+          { status: 400 }
+        );
+      }
+
+      // Update existing rejected user: reset status to PENDING, clear old rejection reason
+      user = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          password: hashedPassword,
+          name: validated.contactName,
+          companyName: validated.companyName,
+          businessType: validated.businessType,
+          taxId: validated.taxId,
+          country: `${validated.country}, ${validated.city}`,
+          phone: validated.phone,
+          verificationStatus: 'PENDING',
+          isVerified: false,
+          verifiedAt: null,
+          verificationNotes: validated.notes ? `Re-applied: ${validated.notes}` : null,
+          isActive: true,
+        },
+      });
+
+      // Mark older documents as superseded
+      try {
+        await prisma.verificationDocument.updateMany({
+          where: { userId: user.id },
+          data: { status: 'REJECTED' },
+        });
+      } catch (docErr) {
+        console.warn('[B2B Register] Failed to update older verification docs:', docErr);
+      }
+    } else {
+      // 7. Create User Record in Database
+      // Note: Starts strictly as PENDING, isVerified = false, userType = WHOLESALE
+      user = await prisma.user.create({
+        data: {
+          email: validated.email.toLowerCase(),
+          password: hashedPassword,
+          name: validated.contactName,
+          companyName: validated.companyName,
+          businessType: validated.businessType,
+          taxId: validated.taxId,
+          country: `${validated.country}, ${validated.city}`,
+          phone: validated.phone,
+          role: 'USER',
+          userType: 'WHOLESALE',
+          verificationStatus: 'PENDING',
+          verificationNotes: validated.notes ? `Applicant Notes: ${validated.notes}` : null,
+          isVerified: false,
+          isActive: true,
+        },
+      });
+    }
 
     // 8. File name sanitization & Disk Persistence (Secure storage outside public web root)
     const sanitizedName = `${user.id}_${Date.now()}.${extension}`;
