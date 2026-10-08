@@ -21,9 +21,10 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
 ): SanitizedProduct<T> {
   if (!product) return product as SanitizedProduct<T>
 
-  // 1. Strip sensitive backend/supplier margin fields from all non-admins
+  // 1. Strip sensitive backend/supplier margin fields & internal IKEA item numbers from all non-admins
   const safe: Record<string, any> = { ...product }
   if (!isAdmin) {
+    delete safe.ikeaItemNo
     delete safe.costPrice
     delete safe.purchaseCost
     delete safe.profit

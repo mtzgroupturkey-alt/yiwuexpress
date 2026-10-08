@@ -28,6 +28,8 @@ interface MediaItem {
 
 const productSchema = z.object({
   sku: z.string().min(1, 'SKU is required'),
+  dromkokItemNo: z.string().optional(),
+  ikeaItemNo: z.string().optional(),
   name: z.string().min(2, 'Name is required'),
   slug: z.string().min(1, 'Slug is required'),
   description: z.string().optional(),
@@ -165,6 +167,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         // Reset form with product data
         reset({
           sku: product.sku,
+          dromkokItemNo: product.dromkokItemNo || '',
+          ikeaItemNo: product.ikeaItemNo || '',
           name: product.name,
           slug: product.slug,
           description: product.description || '',
@@ -445,6 +449,71 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     showPath
                     showLevelIndicator
                   />
+                </div>
+              </div>
+
+              {/* Dromkok & IKEA Item Identifiers */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/60 p-4 rounded-2xl border border-slate-200/60">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="dromkokItemNo" className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                      Dromkok Item # (Public)
+                    </Label>
+                    <span className="text-[10px] text-slate-500 font-mono">e.g. DK-100.010.87</span>
+                  </div>
+                  <Input
+                    id="dromkokItemNo"
+                    {...register('dromkokItemNo')}
+                    placeholder="DK-XXX.XXX.XX"
+                    className="rounded-xl bg-white font-mono text-sm border-slate-200 focus:border-blue-500"
+                  />
+                  <p className="text-[11px] text-slate-500">Public customer item number visible on product pages and invoices.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="ikeaItemNo" className="text-xs font-bold text-amber-800 uppercase tracking-wider">
+                      IKEA Item # (Admin Only)
+                    </Label>
+                    {watch('ikeaItemNo') && (
+                      <a
+                        href={`https://www.ikea.com/us/en/p/-${watch('ikeaItemNo')?.replace(/\D/g, '')}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                        title="Open on IKEA.com"
+                      >
+                        <ExternalLink size={12} />
+                        View on IKEA
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      id="ikeaItemNo"
+                      {...register('ikeaItemNo')}
+                      placeholder="XXX.XXX.XX (e.g. 104.114.96)"
+                      className="rounded-xl bg-white font-mono text-sm border-amber-200/80 focus:border-amber-500 flex-1"
+                    />
+                    {watch('ikeaItemNo') && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const digits = watch('ikeaItemNo')?.replace(/\D/g, '');
+                          if (digits) {
+                            window.open(`https://www.ikea.com/us/en/p/-${digits}/`, '_blank');
+                          }
+                        }}
+                        className="rounded-xl border-amber-300 text-amber-800 bg-amber-50/70 hover:bg-amber-100 text-xs shrink-0"
+                      >
+                        <ExternalLink size={13} className="mr-1" />
+                        IKEA
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-amber-700/80 font-medium">Internal supplier reference. Hidden from customers and public APIs.</p>
                 </div>
               </div>
 

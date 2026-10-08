@@ -28,6 +28,8 @@ import { useAdminLocale } from '../contexts/AdminLocaleContext'
 interface Product {
   id: string
   sku: string
+  dromkokItemNo?: string | null
+  ikeaItemNo?: string | null
   name: string
   slug: string
   price: number
@@ -720,9 +722,32 @@ export default function AdminProductsPage() {
                           </div>
                         </td>
 
-                        {/* SKU */}
-                        <td className="py-4 px-4 font-mono text-[11px] text-gray-600 font-medium">
-                          {product.sku || '—'}
+                        {/* Identifiers (SKU, Dromkok #, IKEA #) */}
+                        <td className="py-4 px-4 font-mono text-[11px] text-gray-600">
+                          <div className="flex flex-col gap-1">
+                            {product.dromkokItemNo ? (
+                              <span className="font-bold text-blue-700 bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200/50 inline-block w-fit">
+                                {product.dromkokItemNo}
+                              </span>
+                            ) : null}
+                            <span className="text-gray-500 text-[10px]">SKU: {product.sku || '—'}</span>
+                            {product.ikeaItemNo ? (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[10px] bg-amber-50 text-amber-800 font-semibold px-1 py-0.5 rounded border border-amber-200/60">
+                                  IKEA: {product.ikeaItemNo}
+                                </span>
+                                <a
+                                  href={`https://www.ikea.com/us/en/p/-${product.ikeaItemNo.replace(/\D/g, '')}/`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 p-0.5 hover:bg-blue-50 rounded transition-colors"
+                                  title={`Open original item ${product.ikeaItemNo} on IKEA.com`}
+                                >
+                                  <ExternalLink size={11} />
+                                </a>
+                              </div>
+                            ) : null}
+                          </div>
                         </td>
 
                         {/* Price */}

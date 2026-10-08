@@ -37,6 +37,8 @@ export async function GET(request: Request) {
       where.OR = [
         { name: { contains: q, mode: 'insensitive' } },
         { sku: { contains: q, mode: 'insensitive' } },
+        { dromkokItemNo: { contains: q, mode: 'insensitive' } },
+        { ikeaItemNo: { contains: q, mode: 'insensitive' } },
         { slug: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
         { category: { name: { contains: q, mode: 'insensitive' } } },

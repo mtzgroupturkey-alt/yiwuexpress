@@ -43,6 +43,7 @@ import { useDeliveryLocation } from '@/hooks/useDeliveryLocation'
 interface ProductData {
   id: string
   sku: string
+  dromkokItemNo?: string | null
   name: string
   slug: string
   description?: string | null
@@ -1517,6 +1518,11 @@ export default function ProductDetailView({
                           {t('inHighDemand')}
                         </span>
                       )}
+                      {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (
+                        <span className="bg-blue-50 text-blue-800 border border-blue-200 font-bold text-xs px-2.5 py-0.5 rounded-full font-mono tracking-wide shadow-2xs">
+                          Item #: {(selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo}
+                        </span>
+                      )}
                       <span className="text-xs text-slate-400 font-mono font-medium">{t('skuLabel')}{currentSku}</span>
                     </div>
 
@@ -2257,6 +2263,12 @@ export default function ProductDetailView({
                       </h4>
                     </div>
                     <dl className="divide-y divide-slate-100">
+                      {(product as any).dromkokItemNo && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">Item #</dt>
+                          <dd className="sm:col-span-2 font-mono font-bold text-blue-700 text-xs sm:text-sm">{(product as any).dromkokItemNo}</dd>
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('skuLabel').replace(':', '') || 'SKU'}</dt>
                         <dd className="sm:col-span-2 font-mono font-bold text-slate-900 text-xs sm:text-sm">{currentSku}</dd>

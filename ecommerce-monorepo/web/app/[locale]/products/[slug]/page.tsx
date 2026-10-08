@@ -239,6 +239,7 @@ async function getProductFromDB(slug: string, locale: string) {
   return {
     id: product.id,
     sku: product.sku,
+    dromkokItemNo: product.dromkokItemNo,
     name: localized.name,
     slug: product.slug,
     description: localized.description,
