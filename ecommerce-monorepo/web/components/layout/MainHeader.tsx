@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ShoppingCart, ClipboardList, Menu, X, ChevronDown, Heart, ArrowLeftRight } from 'lucide-react'
+import { Search, ShoppingCart, ClipboardList, Menu, X, ChevronDown, Heart, ArrowLeftRight, Building2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Container } from '@/components/ui/Container'
 import { useSettings } from '@/components/SettingsProvider'
+import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/components/CartContext'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useStoreMode } from '@/contexts/StoreModeContext'
@@ -43,6 +44,16 @@ export function MainHeader() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSticky, setIsSticky] = useState(false)
   const [isInquiryOpen, setIsInquiryOpen] = useState(false)
+
+  const { user } = useAuth()
+  const isWholesaleUser = Boolean(
+    user &&
+    (user.userType === 'WHOLESALE' ||
+     user.userType === 'BOTH' ||
+     user.verificationStatus === 'PENDING' ||
+     user.verificationStatus === 'APPROVED') &&
+    user.role !== 'ADMIN'
+  )
 
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
@@ -113,6 +124,15 @@ export function MainHeader() {
               />
             </div>
             <div className="flex items-center space-x-6">
+              {!isWholesaleUser && (
+                <LocaleLink
+                  href="/business"
+                  className="hover:text-[#c9a84c] text-amber-300 font-bold transition-colors uppercase tracking-wider text-[10px] flex items-center gap-1"
+                >
+                  <Building2 className="w-3 h-3 text-amber-400" />
+                  <span>Dromkok for Business</span>
+                </LocaleLink>
+              )}
               {TOP_BAR_LINKS.map((item) => (
                 <LocaleLink
                   key={item.name}
@@ -292,6 +312,16 @@ export function MainHeader() {
                   </LocaleLink>
                 )}
               </div>
+
+              {!isWholesaleUser && (
+                <LocaleLink
+                  href="/business"
+                  className="hidden md:flex text-xs font-bold text-[#00407a] hover:text-[#003060] items-center gap-1.5 py-1.5 px-3 rounded-lg border border-blue-200 bg-blue-50/60 hover:bg-blue-100/60 transition-colors shrink-0"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Dromkok for Business</span>
+                </LocaleLink>
+              )}
 
               {/* Account / User Menu */}
               <UserMenu />

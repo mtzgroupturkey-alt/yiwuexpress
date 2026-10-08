@@ -18,6 +18,11 @@ export interface User {
   avatar?: string
   userType?: 'RETAIL' | 'WHOLESALE' | 'BOTH'
   verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'DOCUMENTS_REQUIRED'
+  verificationNotes?: string | null
+  verifiedAt?: string | null
+  companyName?: string | null
+  businessType?: string | null
+  taxId?: string | null
   isVerified?: boolean
   supplierProfile?: {
     id: string

@@ -1734,6 +1734,7 @@
       "selectOnMap": "在地图上选择",
       "selectOnMapDesc": "在互动地图上精准定位您的收货地址",
       "savedLocations": "常用收货地址与自提点",
+      "recentAddresses": "最近选择的配送地址",
       "enterCustomAddress": "或输入新收货地址",
       "addressPlaceholder": "街道、门牌号、楼层...",
       "saveAddress": "保存并使用",
@@ -2016,5 +2017,69 @@
     "errorInvalidFormat": "不支持的文件格式，请使用 JPEG、PNG 或 WebP",
     "errorFailed": "图片处理失败，请更换照片重试。",
     "privacyNotice": "所有图片均在内存中即时处理完成，系统绝不保留或泄露您的原始图片。"
+  },
+  "business": {
+    "title": "Dromkok 商业采购 (B2B)",
+    "subtitle": "源头工厂批发底价、批量集运出海与专属外贸客服",
+    "headerLink": "Dromkok 企业采购",
+    "benefit": {
+      "wholesalePrice": "源头工厂批发底价",
+      "wholesalePriceDesc": "直连认证中国源头制造企业，解锁阶梯采购折扣。",
+      "moq": "灵活起订量 (MOQ)",
+      "moqDesc": "支持成长型企业与大型采购商定制灵活的起订标准。",
+      "shipping": "集约直发与跨境拼箱",
+      "shippingDesc": "支持整柜海运 (FCL)、拼箱 (LCL) 及国际空运快速送达。",
+      "manager": "专属一对一外贸经理",
+      "managerDesc": "配备多语言专业外贸跟单经理，全流程协调选品、质检与清关。"
+    },
+    "cta": {
+      "apply": "申请 B2B 批发账户",
+      "signIn": "已有账户？立即登录"
+    },
+    "register": {
+      "title": "申请 B2B 批发企业账户",
+      "subtitle": "注册您的企业以解锁批发产品目录、批发价格与商业合作账期条款",
+      "step1": "企业基本信息",
+      "step2": "账号与资质证明",
+      "companyName": "企业/机构名称",
+      "taxId": "统一社会信用代码 / 税号 / 注册编号",
+      "businessType": "主营业务类型",
+      "country": "所在国家/地区",
+      "city": "所在城市",
+      "address": "注册地址 / 经营场所",
+      "contactName": "业务联系人全名",
+      "email": "企业工作邮箱",
+      "phone": "联系电话 / 微信 / WhatsApp",
+      "password": "账户密码",
+      "confirmPassword": "确认密码",
+      "license": "营业执照 / 商业登记文件 (PDF、JPG、PNG，最大 5MB)",
+      "notes": "采购品类需求或特殊说明 (选填)",
+      "submit": "提交 B2B 申请",
+      "back": "返回上一页",
+      "next": "下一步：联系方式与资质"
+    },
+    "pending": {
+      "title": "您的申请正在审核中",
+      "body": "感谢您提交 B2B 企业批发账户申请。我们的合规与外贸商务团队将在 24 小时内完成企业资质审核。",
+      "contactSupport": "如需加急开通，请联系在线商务客服",
+      "signOut": "退出登录"
+    },
+    "rejected": {
+      "title": "您的申请未通过审核",
+      "body": "很抱歉，您的企业批发账户申请未能通过审核。",
+      "reapply": "重新提交申请"
+    },
+    "dashboard": {
+      "welcome": "欢迎进入 B2B 企业批发门户",
+      "stats": {
+        "orders": "商业采购订单",
+        "quotes": "询价单 (RFQ)",
+        "cart": "待发询盘清单",
+        "wishlist": "已保存产品"
+      },
+      "recentOrders": "近期采购订单",
+      "downloadPriceList": "下载全品类批发价格表",
+      "accountManager": "您的专属外贸经理"
+    }
   }
 }

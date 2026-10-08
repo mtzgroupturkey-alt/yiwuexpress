@@ -145,3 +145,33 @@ export function adminRateLimit(req: NextRequest): NextResponse | null {
     keyPrefix: 'admin',
   })
 }
+
+/**
+ * Flexible key-based rate limiter (e.g. for B2B registration)
+ */
+export async function checkRateLimit(
+  key: string,
+  options: { windowSeconds: number; maxRequests: number }
+): Promise<{ allowed: boolean; remaining: number; retryAfter?: number }> {
+  const windowMs = options.windowSeconds * 1000
+  const now = Date.now()
+  let entry = store.get(key)
+
+  if (!entry || entry.resetAt < now) {
+    entry = {
+      count: 1,
+      resetAt: now + windowMs,
+    }
+    store.set(key, entry)
+    return { allowed: true, remaining: options.maxRequests - 1 }
+  }
+
+  if (entry.count >= options.maxRequests) {
+    const retryAfter = Math.ceil((entry.resetAt - now) / 1000)
+    return { allowed: false, remaining: 0, retryAfter }
+  }
+
+  entry.count++
+  store.set(key, entry)
+  return { allowed: true, remaining: options.maxRequests - entry.count }
+}

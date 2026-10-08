@@ -162,7 +162,7 @@
     },
     "featured": {
       "title": "Featured Products",
-      "subtitle": "Our handpicked selection of premium industrial machinery & precision equipment",
+      "subtitle": "Curated products selected for quality, value, and demand.",
       "viewAll": "View All"
     },
     "newArrivals": {
@@ -1717,6 +1717,7 @@
       "selectOnMap": "Select on Map",
       "selectOnMapDesc": "Pinpoint your exact delivery address on interactive map",
       "savedLocations": "Saved Locations & Warehouses",
+      "recentAddresses": "Recently Selected Addresses",
       "enterCustomAddress": "Or Enter Custom Address",
       "addressPlaceholder": "Street, building, apartment...",
       "saveAddress": "Save Address",
@@ -1999,5 +2000,69 @@
     "errorInvalidFormat": "Unsupported image format. Please use JPEG, PNG, or WebP",
     "errorFailed": "Failed to process image. Please try again with another photo.",
     "privacyNotice": "Images are processed in-memory for visual matching and are never permanently stored."
+  },
+  "business": {
+    "title": "Dromkok for Business",
+    "subtitle": "Wholesale pricing, bulk orders, and dedicated support",
+    "headerLink": "Dromkok for Business",
+    "benefit": {
+      "wholesalePrice": "Factory-Direct Wholesale Pricing",
+      "wholesalePriceDesc": "Unlock tiered volume discounts directly from verified manufacturers.",
+      "moq": "Flexible MOQs",
+      "moqDesc": "Order tailored minimum quantities suitable for growing businesses and bulk buyers.",
+      "shipping": "Consolidated Direct Shipping",
+      "shippingDesc": "Full container load (FCL), less than container load (LCL), and express air freight.",
+      "manager": "Dedicated Account Manager",
+      "managerDesc": "Personal multilingual trade representative to coordinate sourcing and logistics."
+    },
+    "cta": {
+      "apply": "Apply for B2B Account",
+      "signIn": "Already have an account? Sign in"
+    },
+    "register": {
+      "title": "Apply for B2B Account",
+      "subtitle": "Register your company to access wholesale catalog pricing and commercial terms",
+      "step1": "Business Information",
+      "step2": "Account & Credentials",
+      "companyName": "Company Name",
+      "taxId": "Tax ID / Registration Number",
+      "businessType": "Business Type",
+      "country": "Country",
+      "city": "City",
+      "address": "Registered Address",
+      "contactName": "Contact Person Full Name",
+      "email": "Business Email Address",
+      "phone": "Phone / WhatsApp",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "license": "Business License / Registration Document (PDF, JPG, PNG up to 5MB)",
+      "notes": "Additional Sourcing Notes or Requirements (Optional)",
+      "submit": "Submit B2B Application",
+      "back": "Back",
+      "next": "Continue to Account Info"
+    },
+    "pending": {
+      "title": "Your Application is Under Review",
+      "body": "Thank you for applying for a B2B wholesale account. Our compliance and trade operations team will review your business credentials within 24 hours.",
+      "contactSupport": "Need urgent onboarding? Contact support",
+      "signOut": "Sign Out"
+    },
+    "rejected": {
+      "title": "Your Application Was Not Approved",
+      "body": "Unfortunately, your wholesale account application could not be approved at this time.",
+      "reapply": "Submit New Application"
+    },
+    "dashboard": {
+      "welcome": "Welcome to B2B Wholesale Portal",
+      "stats": {
+        "orders": "Commercial Orders",
+        "quotes": "Active Quotes",
+        "cart": "Items in RFQ",
+        "wishlist": "Saved Products"
+      },
+      "recentOrders": "Recent Commercial Orders",
+      "downloadPriceList": "Download Full Wholesale Price List",
+      "accountManager": "Your Dedicated Account Manager"
+    }
   }
 }

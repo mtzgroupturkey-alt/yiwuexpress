@@ -22,7 +22,8 @@ import {
   Menu,
   Truck,
   FileText,
-  Camera
+  Camera,
+  Building2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCustomerView } from '@/hooks/useCustomerView';
@@ -118,6 +119,16 @@ export const Header: React.FC<HeaderProps> = ({
   const { user, isAuthenticated } = useAuth();
   const currentLocale = useLocale();
   const tHeader = useTranslations('Home.header');
+  const tBusiness = useTranslations('business');
+
+  const isWholesaleUser = Boolean(
+    user &&
+    (user.userType === 'WHOLESALE' ||
+     user.userType === 'BOTH' ||
+     user.verificationStatus === 'PENDING' ||
+     user.verificationStatus === 'APPROVED') &&
+    user.role !== 'ADMIN'
+  );
   const pathname = usePathname();
   const router = useRouter();
   const [showLangDropdown, setShowLangDropdown] = useState(false);
@@ -339,8 +350,17 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Right Side: Currency & Language Switchers */}
-          <div className="flex items-center gap-1.5 pl-1">
+          {/* Right Side: Business Link & Currency & Language Switchers */}
+          <div className="flex items-center gap-2.5 pl-1">
+            {!isWholesaleUser && (
+              <Link
+                href={`/${currentLocale}/business`}
+                className="text-[11px] font-bold text-[#00407a] hover:text-[#003060] transition-colors flex items-center gap-1.5 py-0.5 px-2 rounded-md hover:bg-slate-200/60"
+              >
+                <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span>{tBusiness('headerLink')}</span>
+              </Link>
+            )}
             <LanguageSwitcher variant="header-dropdown" />
             <CurrencySwitcher variant="header-dropdown" />
           </div>

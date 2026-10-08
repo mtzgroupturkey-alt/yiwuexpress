@@ -347,3 +347,95 @@ export async function verifyEmailConnection() {
     return { success: false, error }
   }
 }
+
+// B2B Customer Application Received Confirmation
+export async function sendB2BApplicationReceivedEmail(
+  email: string,
+  data: {
+    contactName: string
+    companyName: string
+    taxId: string
+  }
+) {
+  const companyName = await getCompanyName()
+  const subject = `Your ${companyName} B2B application is under review`
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #00407a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 22px;">${companyName} B2B Wholesale</h1>
+      </div>
+      <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #0f172a; margin-top: 0;">Application Received</h2>
+        <p>Dear ${data.contactName},</p>
+        <p>Thank you for submitting your wholesale account application for <strong>${data.companyName}</strong> (Tax / Reg ID: ${data.taxId}).</p>
+        <p>Our trade compliance and operations team will review your business credentials within <strong>24 hours</strong>.</p>
+        <p>Once approved, you will receive an email confirmation and gain full access to wholesale catalog prices, commercial payment terms, and direct factory container ordering.</p>
+        <p style="margin-top: 24px; font-size: 13px; color: #64748b;">If you need urgent onboarding assistance, please reply directly to this email.</p>
+      </div>
+    </div>
+  `
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"${companyName} B2B" <b2b@dromkok.com>`,
+      to: email,
+      subject,
+      html,
+    })
+    return { success: true }
+  } catch (err) {
+    console.warn('[Email] B2B customer confirmation email skipped/failed:', err)
+    return { success: false, error: err }
+  }
+}
+
+// Admin notification for new B2B Application
+export async function sendAdminB2BNotificationEmail(data: {
+  companyName: string
+  contactName: string
+  email: string
+  phone: string
+  taxId: string
+  country: string
+  userId: string
+}) {
+  const companyName = await getCompanyName()
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'admin@dromkok.com'
+  const appUrl = process.env.APP_URL || 'http://localhost:3001'
+  const reviewUrl = `${appUrl}/admin/users?verificationStatus=PENDING`
+  const subject = `[New B2B Application] ${data.companyName}`
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #00407a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h2 style="margin: 0;">New Wholesale B2B Application</h2>
+      </div>
+      <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
+        <p>A new commercial applicant has applied for wholesale access on ${companyName}:</p>
+        <ul style="line-height: 1.8;">
+          <li><strong>Company:</strong> ${data.companyName}</li>
+          <li><strong>Tax / Reg ID:</strong> ${data.taxId}</li>
+          <li><strong>Contact:</strong> ${data.contactName} (${data.email})</li>
+          <li><strong>Phone:</strong> ${data.phone}</li>
+          <li><strong>Country:</strong> ${data.country}</li>
+        </ul>
+        <p style="text-align: center; margin: 25px 0;">
+          <a href="${reviewUrl}" style="background: #F5A602; color: #020617; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 6px; display: inline-block;">
+            Review Application in Admin Panel
+          </a>
+        </p>
+      </div>
+    </div>
+  `
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"${companyName} Alerts" <notifications@dromkok.com>`,
+      to: adminEmail,
+      subject,
+      html,
+    })
+    return { success: true }
+  } catch (err) {
+    console.warn('[Email] Admin B2B notification email skipped/failed:', err)
+    return { success: false, error: err }
+  }
+}
+

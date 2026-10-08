@@ -44,6 +44,8 @@ async function getProfileHandler(request: any) {
       isVerified: user.isVerified,
       userType: user.userType,
       verificationStatus: user.verificationStatus,
+      verificationNotes: user.verificationNotes,
+      verifiedAt: user.verifiedAt,
       supplierProfile: user.supplierProfile ? {
         id: user.supplierProfile.id,
         companyName: user.supplierProfile.companyName,
