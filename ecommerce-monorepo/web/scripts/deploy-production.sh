@@ -44,7 +44,8 @@ node -e "
 echo "=== 5b. Applying High-Performance Database Indexes ==="
 node scripts/add-production-indexes.js || true
 
-echo "=== 5c. Ensuring Dromkok & IKEA Item Numbers are Backfilled ==="
+echo "=== 5c. Ensuring Category Codes and Item Numbers are Seeded and Backfilled ==="
+npx ts-node --compiler-options '{"module":"commonjs"}' scripts/seed-category-codes.ts || true
 npx ts-node --compiler-options '{"module":"commonjs"}' scripts/backfill-item-numbers.ts || true
 
 echo "=== 6. Checking Database Data Strategy ==="
