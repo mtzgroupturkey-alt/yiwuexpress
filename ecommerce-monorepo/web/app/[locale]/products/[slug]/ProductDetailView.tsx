@@ -1134,123 +1134,6 @@ export default function ProductDetailView({
     </div>
   )
 
-  // Key Specifications & Highlights Card
-  const keySpecsSection = (
-    <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-black uppercase tracking-wider text-slate-700">
-          {locale === 'ru' ? 'Ключевые спецификации' : locale === 'zh' ? '关键规格参数' : 'Key Specifications'}
-        </h3>
-        <button
-          type="button"
-          onClick={() => {
-            const el = document.getElementById('product-tabs')
-            if (el) {
-              setActiveTab('specs')
-              el.scrollIntoView({ behavior: 'smooth' })
-            }
-          }}
-          className="text-xs font-bold text-[#00407a] hover:underline flex items-center gap-1 cursor-pointer"
-        >
-          <span>{locale === 'ru' ? 'Все характеристики' : locale === 'zh' ? '查看全部' : 'Full specifications'}</span>
-          <ChevronDown className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {/* Spec 1: Material */}
-        <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-200/80">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-            {t('specMaterial')}
-          </span>
-          <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {getLocalizedMaterial(product.material || product.attributes?.material || 'Heavy-Duty Carbon Steel', locale)}
-          </span>
-        </div>
-
-        {/* Spec 2: Dimensions / Capacity */}
-        <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-200/80">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-            {locale === 'ru' ? 'Размеры' : locale === 'zh' ? '尺寸规格' : 'Dimensions'}
-          </span>
-          <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {product.attributes?.capacity
-              ? getLocalizedOptionLabel('capacity', product.attributes.capacity, locale)
-              : (product.dimensions
-                  ? `${product.dimensions.length} × ${product.dimensions.width} cm`
-                  : getLocalizedOptionLabel('capacity', '24 Standard Cups / 38x26 cm', locale))}
-          </span>
-        </div>
-
-        {/* Spec 3: Coating / Tech */}
-        <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-200/80">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-            {locale === 'ru' ? 'Покрытие' : locale === 'zh' ? '表面工艺' : 'Coating'}
-          </span>
-          <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {getLocalizedOptionLabel(
-              'coating',
-              product.attributes?.coating || product.attributes?.surface_treatment || 'Food-Grade PTFE Non-Stick',
-              locale
-            )}
-          </span>
-        </div>
-
-        {/* Spec 4: Safe Temperature */}
-        <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-200/80">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block">
-            {locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '耐受温度' : 'Oven Safe'}
-          </span>
-          <span className="font-bold text-xs text-slate-900 block truncate mt-0.5">
-            {getLocalizedOptionLabel(
-              'temperature',
-              product.attributes?.temperature || product.attributes?.heat_resistance || 'Up to 230°C / 450°F',
-              locale
-            )}
-          </span>
-        </div>
-      </div>
-
-      {/* Key Highlights Bullet Points */}
-      <div className="pt-2 border-t border-slate-100">
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
-          <li className="flex items-start gap-2">
-            <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="w-2.5 h-2.5 text-emerald-700" />
-            </div>
-            <div>
-              <strong className="text-slate-900">{t('commercialDurability')}:</strong> {t('commercialDurabilityDesc')}
-            </div>
-          </li>
-          <li className="flex items-start gap-2">
-            <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="w-2.5 h-2.5 text-emerald-700" />
-            </div>
-            <div>
-              <strong className="text-slate-900">{t('evenHeating')}:</strong> {t('evenHeatingDesc')}
-            </div>
-          </li>
-          <li className="flex items-start gap-2">
-            <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="w-2.5 h-2.5 text-emerald-700" />
-            </div>
-            <div>
-              <strong className="text-slate-900">{t('effortlessRelease')}:</strong> {t('effortlessReleaseDesc')}
-            </div>
-          </li>
-          <li className="flex items-start gap-2">
-            <div className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="w-2.5 h-2.5 text-emerald-700" />
-            </div>
-            <div>
-              <strong className="text-slate-900">{t('certifiedSafe')}:</strong> {t('certifiedSafeDesc')}
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  )
-
   // Full-width Flagship Buyer Protection & Sourcing Assurance Banner
   const buyerProtectionBanner = (
     <div className="my-6 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs">
@@ -1492,11 +1375,10 @@ export default function ProductDetailView({
                   productName={localized.name}
                 />
 
-                {/* Desktop-only: Reassurance, Frequently Bought Together Bundle & Key Specs */}
+                {/* Desktop-only: Reassurance & Frequently Bought Together Bundle */}
                 <div className="hidden lg:block space-y-4">
                   {reassuranceSection}
                   {bundleSection}
-                  {keySpecsSection}
                 </div>
               </div>
             </div>
@@ -2110,11 +1992,10 @@ export default function ProductDetailView({
                   </div>
                 </div>
 
-                {/* Mobile-only Reassurance Strip, Frequently Bought Together Bundle & Key Specifications */}
+                {/* Mobile-only Reassurance Strip & Frequently Bought Together Bundle */}
                 <div className="lg:hidden space-y-4">
                   {reassuranceSection}
                   {bundleSection}
-                  {keySpecsSection}
                 </div>
               </div>
             </div>
@@ -2178,37 +2059,9 @@ export default function ProductDetailView({
                   toggleAccordion={toggleAccordion}
                 />
 
-                {/* Additional Feature Badges / Guarantees */}
-                <div className={`grid grid-cols-1 ${isApparelCategory ? 'lg:grid-cols-2' : 'sm:grid-cols-2'} gap-4`}>
-                  {/* Return Policy Card */}
-                  <div className="border border-slate-200 rounded-2xl p-5 bg-gradient-to-br from-white to-slate-50">
-                    <div className="flex items-start gap-3">
-                      <div className="bg-emerald-50 text-emerald-700 rounded-xl p-2.5 flex-shrink-0">
-                        <RefreshCw className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">{t('easyReturns')}</h4>
-                        <p className="text-xs text-slate-500 mb-3">{t('returnPolicy30')}</p>
-                        <ul className="space-y-2 text-xs text-slate-700">
-                          <li className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                            <span>{t('returnWindow')}</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                            <span>{t('freeReturnShipping')}</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                            <span>{t('fullRefund')}</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Size Guide - Only shown for apparel */}
-                  {isApparelCategory && (
+                {/* Size Guide - Only shown for apparel */}
+                {isApparelCategory && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="border border-slate-200 rounded-2xl p-5 bg-gradient-to-br from-white to-slate-50">
                       <div className="flex items-start gap-3">
                         <div className="bg-purple-50 text-purple-700 rounded-xl p-2.5 flex-shrink-0">
@@ -2238,8 +2091,8 @@ export default function ProductDetailView({
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             )}
 
