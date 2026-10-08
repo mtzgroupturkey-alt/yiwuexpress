@@ -29,6 +29,9 @@ export interface OrderItemDetail {
   quantity: number
   price: number
   total: number
+  product?: {
+    dromkokItemNo?: string | null
+  }
 }
 
 export interface OrderDetailData {
@@ -242,11 +245,9 @@ export function MobileOrderDetailView({
                       <h4 className="text-xs font-bold text-gray-900 dark:text-white truncate">
                         {item.productName}
                       </h4>
-                      {item.productSku && (
-                        <span className="text-[10px] text-gray-400 font-mono block">
-                          SKU: {item.productSku}
-                        </span>
-                      )}
+                      <span className="text-[10px] text-gray-400 font-mono block">
+                        Item #: {item.product?.dromkokItemNo || '—'}
+                      </span>
                       <div className="flex justify-between items-baseline mt-1">
                         <span className="text-xs text-gray-500 dark:text-slate-400">
                           {formatPrice(item.price)} × {item.quantity}
