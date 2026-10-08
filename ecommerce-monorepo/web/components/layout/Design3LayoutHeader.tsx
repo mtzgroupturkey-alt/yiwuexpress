@@ -20,6 +20,7 @@ import { useSettings } from '@/components/SettingsProvider';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
+import { useCustomerView } from '@/hooks/useCustomerView';
 
 export function Design3LayoutHeader() {
   const locale = useLocale();
@@ -27,6 +28,7 @@ export function Design3LayoutHeader() {
   const { isAuthenticated, isInitialized } = useAuth();
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { settings } = useSettings();
+  const { isWholesale: isWholesaleActive } = useCustomerView();
   const { wishlistCount, favoritesList, toggleWishlist } = useWishlist();
   const {
     deliveryAddress,
@@ -176,8 +178,13 @@ export function Design3LayoutHeader() {
     if (cartResponse?.data?.summary?.subtotal !== undefined && dbCartItems.length > 0 && localCartItems.length === 0) {
       return Number(cartResponse.data.summary.subtotal);
     }
-    return activeCartItems.reduce((sum, item) => sum + (Number(item.product.price) || 0) * item.quantity, 0);
-  }, [cartResponse, dbCartItems, localCartItems, activeCartItems]);
+    return activeCartItems.reduce((sum, item) => {
+      const price = isWholesaleActive && typeof item.product.wholesalePrice === 'number'
+        ? item.product.wholesalePrice
+        : Number(item.product.price) || 0;
+      return sum + price * item.quantity;
+    }, 0);
+  }, [cartResponse, dbCartItems, localCartItems, activeCartItems, isWholesaleActive]);
 
   const handleUpdateQuantity = async (productId: string, quantity: number) => {
     let updatedOnBackend = false;

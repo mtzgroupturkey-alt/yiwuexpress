@@ -479,12 +479,21 @@ export default function Home() {
   // Cart helper calculations
   const cartCount = realCartCount > 0 ? realCartCount : activeCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  const isWholesaleActive =
+    storeMode === 'WHOLESALE' ||
+    (storeMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
+
   const cartTotal = useMemo(() => {
     if (cartResponse?.data?.summary?.subtotal !== undefined && dbCartItems.length > 0) {
       return Number(cartResponse.data.summary.subtotal);
     }
-    return activeCartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  }, [cartResponse, dbCartItems, activeCartItems]);
+    return activeCartItems.reduce((sum, item) => {
+      const price = isWholesaleActive && typeof item.product.wholesalePrice === 'number'
+        ? item.product.wholesalePrice
+        : item.product.price;
+      return sum + price * item.quantity;
+    }, 0);
+  }, [cartResponse, dbCartItems, activeCartItems, isWholesaleActive]);
 
   const cartQuantities = useMemo(() => {
     const map: Record<string, number> = {};
@@ -959,6 +968,8 @@ export default function Home() {
             {/* 5. Featured Products Section (Directly after Seasonal Discounts & Flash Home Deals) */}
             <MotionReveal direction="up">
               <FeaturedProductsSection
+                title="Featured Products"
+                subtitle="Curated products selected for quality, value, and demand."
                 products={activeFeaturedProducts}
                 isLoading={isFeaturedSectionLoading && activeFeaturedProducts.length === 0}
                 onAddToCart={handleAddToCart}
