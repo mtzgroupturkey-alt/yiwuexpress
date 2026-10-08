@@ -55,6 +55,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (['CANCELLED', 'FAILED', 'REFUNDED'].includes(order.status)) {
+      return NextResponse.json(
+        { success: false, error: `Cannot initiate payment for a ${order.status.toLowerCase()} order` },
+        { status: 400 }
+      )
+    }
+
     const accessToken = await getPayPalAccessToken()
 
     const paypalOrder = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
+import { restoreOrderInventory } from '@/lib/inventory/order-restoration'
 
 // GET /api/admin/orders/:id - Get single order details
 export async function GET(
@@ -92,6 +93,11 @@ export async function PATCH(
     const body = await request.json()
     const { status, trackingNumber, carrier, adminNotes } = body
 
+    const existing = await prisma.order.findUnique({ where: { id: params.id } })
+    if (!existing) {
+      return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 })
+    }
+
     const updateData: any = {}
 
     if (status !== undefined) updateData.status = status
@@ -99,41 +105,61 @@ export async function PATCH(
     if (carrier !== undefined) updateData.carrier = carrier
     if (adminNotes !== undefined) updateData.adminNotes = adminNotes
 
+    if (status === 'PAID') {
+      updateData.paymentStatus = 'PAID'
+      if (!existing.paidAt && !updateData.paidAt) {
+        updateData.paidAt = new Date()
+      }
+    }
+
+    if (status === 'REFUNDED') {
+      updateData.paymentStatus = 'REFUNDED'
+    }
+
     // Add shipping timestamp when status changes to SHIPPED
-    if (status === 'SHIPPED' && !updateData.shippedAt) {
+    if (status === 'SHIPPED' && !existing.shippedAt && !updateData.shippedAt) {
       updateData.shippedAt = new Date()
     }
 
     // Add delivery timestamp when status changes to DELIVERED
-    if (status === 'DELIVERED' && !updateData.actualDelivery) {
+    if (status === 'DELIVERED' && !existing.actualDelivery && !updateData.actualDelivery) {
       updateData.actualDelivery = new Date()
     }
 
-    const order = await prisma.order.update({
-      where: { id: params.id },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            phone: true
-          }
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                thumbnail: true,
-                sku: true
+    const order = await prisma.$transaction(async (tx) => {
+      if (status === 'CANCELLED' && existing.status !== 'CANCELLED') {
+        await restoreOrderInventory(tx, params.id, {
+          reason: 'CANCELLED',
+          notes: adminNotes || `Admin PATCH changed status to CANCELLED`,
+        })
+      }
+
+      return tx.order.update({
+        where: { id: params.id },
+        data: updateData,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              phone: true
+            }
+          },
+          items: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  thumbnail: true,
+                  sku: true
+                }
               }
             }
           }
         }
-      }
+      })
     })
 
     return NextResponse.json({

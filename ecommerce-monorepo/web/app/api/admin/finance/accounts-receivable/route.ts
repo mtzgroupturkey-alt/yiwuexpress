@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getTokenFromRequest, verifyToken } from '@/lib/auth'
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {
       paymentStatus: { in: ['UNPAID', 'PENDING', 'PARTIALLY_PAID'] },
-      status: { notIn: ['CANCELLED', 'REFUNDED'] },
+      status: { notIn: ['CANCELLED', 'REFUNDED', 'FAILED'] },
     }
     if (customerId) where.userId = customerId
 

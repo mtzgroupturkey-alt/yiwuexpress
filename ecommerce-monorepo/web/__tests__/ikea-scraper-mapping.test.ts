@@ -460,5 +460,29 @@ describe('IKEA 3-Tabs Comprehensive Extraction Suite (Overview, Product Details,
     expect(product.specs['Package height']).toContain('18 cm')
     expect(product.specs['Package length']).toContain('55 cm')
     expect(product.specs['Package weight']).toContain('4.42 kg')
+
+    // 4. Verify comprehensive description contains real IKEA data
+    expect(product.description).toContain('Key features:')
+    expect(product.description).toContain('The thick base prevents food')
+    expect(product.description).toContain('Good to know:')
+    expect(product.description).toContain('Materials & Care:')
+    expect(product.description).toContain('Packaging details:')
+    expect(product.description).toContain('Designer:')
+  })
+
+  it('enriches description with unmapped/non-attribute specs', async () => {
+    const { enrichProductDescriptionWithLeftoverSpecs } = await import('@/lib/ikea/ensureAttributes')
+
+    const baseDesc = 'A durable saucepan with lid.'
+    const leftovers = [
+      { key: 'Induction Base Layer', value: '4mm bonded steel disc' },
+      { key: 'Riveted Handle Type', value: 'Ergonomic hollow stainless steel' }
+    ]
+
+    const enriched = enrichProductDescriptionWithLeftoverSpecs(baseDesc, leftovers)
+    expect(enriched).toContain('A durable saucepan with lid.')
+    expect(enriched).toContain('Additional Details:')
+    expect(enriched).toContain('• Induction Base Layer: 4mm bonded steel disc')
+    expect(enriched).toContain('• Riveted Handle Type: Ergonomic hollow stainless steel')
   })
 })

@@ -19,6 +19,20 @@ export async function POST(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // State guards: fulfillment requires confirmed payment and valid lifecycle state
+    if (order.status === 'CANCELLED') {
+      return NextResponse.json({ error: 'Cannot fulfill a cancelled order' }, { status: 400 });
+    }
+    if (order.status === 'FAILED') {
+      return NextResponse.json({ error: 'Cannot fulfill an order with failed payment' }, { status: 400 });
+    }
+    if (order.status === 'DELIVERED' || order.status === 'COMPLETED') {
+      return NextResponse.json({ error: 'Order is already fulfilled' }, { status: 400 });
+    }
+    if (order.paymentStatus !== 'PAID') {
+      return NextResponse.json({ error: 'Cannot fulfill an unpaid order. Payment must be confirmed first.' }, { status: 400 });
+    }
+
     const whId = order.warehouseId;
     if (!whId) {
       return NextResponse.json(
@@ -46,11 +60,9 @@ export async function POST(
           });
         }
 
-        // Deduct from global Product.stock
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
-        });
+        // Note: Retail catalog stock (Product.stock) was already decremented at checkout.
+        // Wholesale stock is deducted from WarehouseStock.quantity above.
+
 
         // Record stock movement ledger: ORDER_FULFILLED
         await tx.stockMovement.create({

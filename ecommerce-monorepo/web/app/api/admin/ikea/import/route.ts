@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { cleanIkeaItemNumber } from '@/lib/ikea/fetchProduct'
+import {
+  processIkeaSpecsToAttributes,
+  enrichProductDescriptionWithLeftoverSpecs
+} from '@/lib/ikea/ensureAttributes'
 
 function slugify(text: string): string {
   return text
@@ -57,6 +61,37 @@ export async function POST(req: NextRequest) {
           }
         })
 
+        // Gather all available specs from payload and unmappedSpecs
+        const rawSpecs: Record<string, string> = {
+          ...(item.rawIkeaPayload?.measurements || {}),
+          ...(item.rawIkeaPayload?.specs || {}),
+          ...(item.unmappedSpecs
+            ? Object.fromEntries(item.unmappedSpecs.map((u: any) => [u.key, u.value]))
+            : {})
+        }
+
+        const targetCategoryId = item.categoryId || existing?.categoryId
+
+        // Process specs: make into attributes if standard/needed, otherwise return as leftover
+        const {
+          mappedAttributes: finalMappedAttributes,
+          leftoverSpecs,
+          extractedWeightKg,
+          extractedMaterial,
+          extractedDimensions
+        } = await processIkeaSpecsToAttributes(
+          tx,
+          targetCategoryId,
+          rawSpecs,
+          item.mappedAttributes || []
+        )
+
+        // Put any leftover non-attribute specs into description
+        const enrichedDescription = enrichProductDescriptionWithLeftoverSpecs(
+          item.description || existing?.description || item.name || '',
+          leftoverSpecs
+        )
+
         let productRecord: any
 
         if (existing) {
@@ -67,9 +102,13 @@ export async function POST(req: NextRequest) {
             rawIkeaPayload: item.rawIkeaPayload || existing.rawIkeaPayload
           }
 
+          if (extractedMaterial) updateData.material = extractedMaterial
+          if (extractedWeightKg) updateData.weightKg = extractedWeightKg
+          if (extractedDimensions) updateData.dimensions = extractedDimensions
+
           if (overwriteExisting) {
             updateData.name = item.name || existing.name
-            updateData.description = item.description || existing.description
+            updateData.description = enrichedDescription
             updateData.price = typeof item.price === 'number' ? item.price : existing.price
             updateData.wholesalePrice =
               typeof item.wholesalePrice === 'number' ? item.wholesalePrice : existing.wholesalePrice
@@ -86,31 +125,25 @@ export async function POST(req: NextRequest) {
           })
 
           // Update attribute values
-          if (item.mappedAttributes && Array.isArray(item.mappedAttributes)) {
-            // Delete existing attribute values for attributes that are being remapped
-            const attrIdsToUpdate = item.mappedAttributes
-              .filter((a: any) => a.attributeId && a.value)
-              .map((a: any) => a.attributeId)
+          if (finalMappedAttributes.length > 0) {
+            const attrIdsToUpdate = finalMappedAttributes.map((a: any) => a.attributeId)
 
-            if (attrIdsToUpdate.length > 0) {
-              await tx.attributeValue.deleteMany({
-                where: {
-                  productId: existing.id,
-                  attributeId: { in: attrIdsToUpdate }
-                }
-              })
+            await tx.attributeValue.deleteMany({
+              where: {
+                productId: existing.id,
+                attributeId: { in: attrIdsToUpdate }
+              }
+            })
 
-              // Insert new attribute values
-              for (const attr of item.mappedAttributes) {
-                if (attr.attributeId && attr.value) {
-                  await tx.attributeValue.create({
-                    data: {
-                      productId: existing.id,
-                      attributeId: attr.attributeId,
-                      value: String(attr.value)
-                    }
-                  })
-                }
+            for (const attr of finalMappedAttributes) {
+              if (attr.attributeId && attr.value) {
+                await tx.attributeValue.create({
+                  data: {
+                    productId: existing.id,
+                    attributeId: attr.attributeId,
+                    value: String(attr.value)
+                  }
+                })
               }
             }
           }
@@ -130,14 +163,16 @@ export async function POST(req: NextRequest) {
               ikeaItemNumber: cleanNum,
               name: item.name || `IKEA Item ${cleanNum}`,
               slug,
-              description: item.description || item.name || '',
+              description: enrichedDescription,
               categoryId: item.categoryId || null,
               price,
               wholesalePrice,
               images,
               thumbnail: images[0] || null,
               stock: 100,
-              weightKg: 1.0,
+              weightKg: extractedWeightKg || 1.0,
+              material: extractedMaterial || null,
+              dimensions: extractedDimensions ?? undefined,
               countryOfOrigin: 'China',
               rawIkeaPayload: item.rawIkeaPayload || null,
               isActive: true,
@@ -147,17 +182,15 @@ export async function POST(req: NextRequest) {
           })
 
           // Insert attribute values
-          if (item.mappedAttributes && Array.isArray(item.mappedAttributes)) {
-            for (const attr of item.mappedAttributes) {
-              if (attr.attributeId && attr.value) {
-                await tx.attributeValue.create({
-                  data: {
-                    productId: productRecord.id,
-                    attributeId: attr.attributeId,
-                    value: String(attr.value)
-                  }
-                })
-              }
+          for (const attr of finalMappedAttributes) {
+            if (attr.attributeId && attr.value) {
+              await tx.attributeValue.create({
+                data: {
+                  productId: productRecord.id,
+                  attributeId: attr.attributeId,
+                  value: String(attr.value)
+                }
+              })
             }
           }
         }

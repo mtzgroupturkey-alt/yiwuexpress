@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     if (endDateParam) dateFilter.lte = new Date(endDateParam)
 
     const orderWhere: any = {
-      status: { notIn: ['CANCELLED', 'REFUNDED'] },
+      status: { notIn: ['CANCELLED', 'REFUNDED', 'FAILED'] },
       ...(modeParam && modeParam !== 'ALL' ? { mode: modeParam.toUpperCase() } : {}),
       ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}),
     }

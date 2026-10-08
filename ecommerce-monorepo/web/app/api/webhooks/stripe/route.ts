@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { sendOrderConfirmationEmail } from '@/lib/email'
+import { restoreOrderInventory } from '@/lib/inventory/order-restoration'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2024-06-20',
@@ -45,12 +46,20 @@ export async function POST(req: NextRequest) {
           break
         }
 
+        // Replay guard: If order is already PAID, skip duplicate email and notifications
+        if (order.paymentStatus === 'PAID') {
+          console.info(`[STRIPE WEBHOOK] Order ${orderId} already marked PAID. Replay safely ignored.`)
+          break
+        }
+
+        const shouldAdvanceStatus = order.status === 'PENDING' || order.status === 'PAYMENT_PENDING'
+
         await prisma.order.update({
           where: { id: orderId },
           data: {
             paymentStatus: 'PAID',
-            paidAt: new Date(),
-            status: order.status === 'PENDING' ? 'PAID' : order.status,
+            paidAt: order.paidAt || new Date(),
+            status: shouldAdvanceStatus ? 'PAID' : order.status,
           },
         })
 
@@ -94,11 +103,50 @@ export async function POST(req: NextRequest) {
 
       case 'payment_intent.payment_failed': {
         const failedIntent = event.data.object as Stripe.PaymentIntent
-        const failedOrderId = failedIntent.metadata.orderId
+        const failedOrderId = failedIntent.metadata?.orderId
 
         if (!failedOrderId) break
 
         console.error(`[STRIPE WEBHOOK] Payment failed for order: ${failedOrderId}`)
+
+        await prisma.$transaction(async (tx) => {
+          const order = await tx.order.findUnique({
+            where: { id: failedOrderId },
+            include: { items: true },
+          })
+
+          if (!order) {
+            console.error(`[STRIPE WEBHOOK] Order not found for failed payment: ${failedOrderId}`)
+            return
+          }
+
+          // Idempotency guard: If order is already in FAILED or CANCELLED state, or if payment was already PAID, skip
+          if (order.status === 'FAILED' || order.status === 'CANCELLED' || order.paymentStatus === 'PAID') {
+            console.info(`[STRIPE WEBHOOK] Order ${failedOrderId} already in terminal/paid state (${order.status}/${order.paymentStatus}). Skipping restock.`)
+            return
+          }
+
+          // Restore inventory atomically
+          await restoreOrderInventory(tx, order.id, {
+            reason: 'PAYMENT_FAILED',
+            notes: `Stripe payment failed: ${failedIntent.last_payment_error?.message || 'Payment intent failed'}`,
+          })
+
+          // Update order status to FAILED and paymentStatus to FAILED
+          await tx.order.update({
+            where: { id: order.id },
+            data: {
+              status: 'FAILED',
+              paymentStatus: 'FAILED',
+              hasException: true,
+              exceptionType: 'PAYMENT_FAILED',
+              exceptionNotes: `Stripe PaymentIntent failed: ${failedIntent.last_payment_error?.message || 'Payment failed'}`,
+              adminNotes: (order.adminNotes ? order.adminNotes + '\n' : '') +
+                `[${new Date().toISOString()}] Payment failed via Stripe: ${failedIntent.last_payment_error?.message || 'Payment failed'}. Inventory restored.`,
+            },
+          })
+        })
+
         break
       }
     }

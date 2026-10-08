@@ -56,7 +56,9 @@ const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'warnin
   PROCESSING: 'secondary',
   SHIPPED: 'default',
   DELIVERED: 'success',
-  CANCELLED: 'destructive'
+  CANCELLED: 'destructive',
+  FAILED: 'destructive',
+  REFUNDED: 'secondary',
 }
 
 export default function OrderDetailPage() {
@@ -308,11 +310,11 @@ export default function OrderDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status</span>
-                  <Badge variant={order.paymentStatus === 'PAID' ? 'success' : 'warning'}>
-                    {order.paymentStatus}
+                  <Badge variant={order.paymentStatus === 'PAID' || order.status === 'PAID' ? 'success' : order.paymentStatus === 'FAILED' ? 'destructive' : 'warning'}>
+                    {order.paymentStatus === 'PAID' || order.status === 'PAID' ? 'PAID' : order.paymentStatus}
                   </Badge>
                 </div>
-                {order.paymentStatus === 'UNPAID' && (
+                {order.paymentStatus === 'UNPAID' && !['PAID', 'CANCELLED', 'FAILED', 'REFUNDED'].includes(order.status) && (
                   <Button
                     className="w-full mt-3"
                     onClick={() => navigate(`/payment/${order.id}`)}

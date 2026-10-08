@@ -37,8 +37,82 @@ interface FetchOptions {
 /**
  * Sleep helper for delays and exponential backoff
  */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+/**
+ * Composes a full comprehensive IKEA product description preserving all
+ * real details (overview summary, key features bullets, good to know,
+ * materials, care instructions, packaging, designer, compliance).
+ */
+export function buildComprehensiveIkeaDescription(data: {
+  overviewSummary?: string
+  description?: string
+  keyFeatures?: string[]
+  goodToKnow?: string
+  materials?: string
+  careInstructions?: string
+  packagingList?: Array<{ name?: string; width?: string; height?: string; length?: string; weight?: string }>
+  designer?: string
+  compliance?: string
+}): string {
+  const sections: string[] = []
+
+  // 1. Overview summary or base description
+  const primaryText = (data.overviewSummary || data.description || '').trim()
+  if (primaryText) {
+    sections.push(primaryText)
+  }
+
+  // 2. Key features
+  if (data.keyFeatures && data.keyFeatures.length > 0) {
+    sections.push(`Key features:\n• ${data.keyFeatures.join('\n• ')}`)
+  }
+
+  // 3. Good to know / Package contents
+  if (data.goodToKnow && data.goodToKnow.trim()) {
+    sections.push(`Good to know:\n${data.goodToKnow.trim()}`)
+  }
+
+  // 4. Materials & Care (if present)
+  const matCareLines: string[] = []
+  if (data.materials && data.materials.trim()) {
+    matCareLines.push(`• Materials: ${data.materials.trim()}`)
+  }
+  if (data.careInstructions && data.careInstructions.trim()) {
+    matCareLines.push(`• Care: ${data.careInstructions.trim()}`)
+  }
+  if (matCareLines.length > 0) {
+    sections.push(`Materials & Care:\n${matCareLines.join('\n')}`)
+  }
+
+  // 5. Packaging details
+  if (data.packagingList && data.packagingList.length > 0) {
+    const pkgLines = data.packagingList
+      .map((pkg, idx) => {
+        const parts: string[] = []
+        if (pkg.name) parts.push(pkg.name)
+        if (pkg.width) parts.push(`Width: ${pkg.width}`)
+        if (pkg.height) parts.push(`Height: ${pkg.height}`)
+        if (pkg.length) parts.push(`Length: ${pkg.length}`)
+        if (pkg.weight) parts.push(`Weight: ${pkg.weight}`)
+        return (data.packagingList!.length > 1 ? `Package ${idx + 1}: ` : '') + parts.join(', ')
+      })
+      .filter((line) => line.length > 0)
+
+    if (pkgLines.length > 0) {
+      sections.push(`Packaging details:\n${pkgLines.join('\n')}`)
+    }
+  }
+
+  // 6. Designer
+  if (data.designer && data.designer.trim()) {
+    sections.push(`Designer:\n${data.designer.trim()}`)
+  }
+
+  // 7. Compliance
+  if (data.compliance && data.compliance.trim()) {
+    sections.push(`Compliance & Safety:\n${data.compliance.trim()}`)
+  }
+
+  return sections.join('\n\n')
 }
 
 /**
@@ -388,12 +462,24 @@ export function parseIkeaHtml(html: string, canonicalUrl: string, cleanNum: stri
   const statusText = $('.pip-product-availability, [data-testid="stock-information"]').first().text().trim()
   const inStock = jsonLdProduct?.offers?.availability?.includes('InStock') || !/out of stock|not available/i.test(statusText)
 
+  const fullDescription = buildComprehensiveIkeaDescription({
+    overviewSummary,
+    description,
+    keyFeatures,
+    goodToKnow,
+    materials,
+    careInstructions,
+    packagingList,
+    designer,
+    compliance
+  })
+
   return {
     itemNumber: formatIkeaItemNumber(cleanNum),
     cleanItemNumber: cleanNum,
     name: name || `IKEA Item ${cleanNum}`,
     typeName: typeName || undefined,
-    description: keyFeatures.length > 0 ? `${description}\n\nKey features:\n• ${keyFeatures.join('\n• ')}` : description,
+    description: fullDescription,
     categoryBreadcrumbs: breadcrumbs,
     categoryName,
     price: price || 0,

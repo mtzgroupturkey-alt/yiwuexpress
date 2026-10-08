@@ -49,6 +49,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (order.paymentStatus === 'PAID') {
+      return NextResponse.json({
+        success: true,
+        message: 'Payment already captured',
+      })
+    }
+
+    if (['CANCELLED', 'REFUNDED'].includes(order.status)) {
+      return NextResponse.json(
+        { success: false, error: `Cannot capture payment for a ${order.status.toLowerCase()} order` },
+        { status: 400 }
+      )
+    }
+
     const accessToken = await getPayPalAccessToken()
 
     const captureResponse = await fetch(

@@ -648,16 +648,6 @@ export default function ProductDetailView({
   }, [settings?.pdpCutoffHour])
 
   const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'logistics' | 'faq' | 'reviews'>('overview')
-  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    tips: true,
-    dimensions: true,
-    care: true,
-    documents: true,
-  })
-
-  const toggleAccordion = (section: string) => {
-    setOpenAccordions((prev) => ({ ...prev, [section]: !prev[section] }))
-  }
 
   const handleRelatedAddToCart = async (target: any, qty = 1, mode?: 'RETAIL' | 'WHOLESALE') => {
     const isInstant = settings?.rfqModel === 'INSTANT'
@@ -1943,15 +1933,6 @@ export default function ProductDetailView({
                   </div>
                 </div>
 
-                {/* Structured IKEA Specifications & Information Accordions */}
-                <IkeaSpecificationsAccordion
-                  product={product}
-                  locale={locale}
-                  currentSku={currentSku}
-                  openAccordions={openAccordions}
-                  toggleAccordion={toggleAccordion}
-                />
-
                 {/* Size Guide - Only shown for apparel */}
                 {isApparelCategory && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -2003,11 +1984,11 @@ export default function ProductDetailView({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Left Column: General & Origin Parameters */}
+                  {/* Left Column: General Parameters */}
                   <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
                     <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
                       <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
-                        {locale === 'ru' ? 'Общие параметры и сертификация' : locale === 'zh' ? '基础参数与出厂认证' : 'General & Origin Parameters'}
+                        {locale === 'ru' ? 'Общие параметры' : locale === 'zh' ? '基础参数' : 'General Information'}
                       </h4>
                     </div>
                     <dl className="divide-y divide-slate-100">
@@ -2019,26 +2000,20 @@ export default function ProductDetailView({
                       )}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                         <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Категория' : locale === 'zh' ? '商品分类' : 'Category'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{localizedCategoryName || 'Commercial Bakeware'}</dd>
+                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{localizedCategoryName || 'General Category'}</dd>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specOrigin')}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedCountry(product.countryOfOrigin || 'China', locale)}</dd>
-                      </div>
+                      {product.countryOfOrigin && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specOrigin')}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{getLocalizedCountry(product.countryOfOrigin, locale)}</dd>
+                        </div>
+                      )}
                       {product.hsCode && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                           <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specHsCode')}</dt>
                           <dd className="sm:col-span-2 font-mono font-bold text-slate-900 text-xs sm:text-sm">{product.hsCode}</dd>
                         </div>
                       )}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Гарантия' : locale === 'zh' ? '质保周期' : 'Warranty'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-emerald-700 text-xs sm:text-sm">{locale === 'ru' ? '2 года официальной гарантии' : locale === 'zh' ? '2年官方联保' : '2 Years Official Warranty'}</dd>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Торговая защита' : locale === 'zh' ? '安全托管' : 'Trade Protection'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-[#00407a] text-xs sm:text-sm">{locale === 'ru' ? '100% Эскроу платежей + QC проверка' : locale === 'zh' ? '100%资金托管与出厂全检' : '100% Escrow & Pre-Shipment Inspection'}</dd>
-                      </div>
                       {isWholesaleCustomer && product.minOrderQty && product.minOrderQty > 1 && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                           <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Мин. партия (MOQ)' : locale === 'zh' ? '起订量 (MOQ)' : 'Minimum Order'}</dt>
@@ -2054,20 +2029,50 @@ export default function ProductDetailView({
                     </dl>
                   </div>
 
-                  {/* Right Column: Technical & Operational Parameters */}
+                  {/* Right Column: Dynamic Technical & Product Attributes */}
                   <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-2xs">
                     <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
                       <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
-                        {locale === 'ru' ? 'Технические характеристики и свойства' : locale === 'zh' ? '技术性能与使用规格' : 'Technical & Performance Specs'}
+                        {locale === 'ru' ? 'Характеристики товара' : locale === 'zh' ? '商品规格参数' : 'Product Specifications'}
                       </h4>
                     </div>
                     <dl className="divide-y divide-slate-100">
                       {/* Product Material */}
-                      {(product.material || product.attributes?.material || product.attributes?.cookware_material) && (
+                      {(product.material || product.attributes?.material || product.attributes?.materials || product.attributes?.cookware_material) && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                           <dt className="text-slate-600 font-medium text-xs sm:text-sm">{t('specMaterial')}</dt>
                           <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {getLocalizedMaterial(product.material || product.attributes?.material || product.attributes?.cookware_material || '', locale)}
+                            {getLocalizedMaterial(product.material || product.attributes?.material || product.attributes?.materials || product.attributes?.cookware_material || '', locale)}
+                          </dd>
+                        </div>
+                      )}
+
+                      {/* Care instructions */}
+                      {(product.attributes?.care_instructions || product.attributes?.care) && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Инструкции по уходу' : locale === 'zh' ? '保养说明' : 'Care instructions'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm whitespace-pre-line">
+                            {product.attributes?.care_instructions || product.attributes?.care}
+                          </dd>
+                        </div>
+                      )}
+
+                      {/* Designer */}
+                      {product.attributes?.designer && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Дизайнер' : locale === 'zh' ? '设计师' : 'Designer'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {product.attributes.designer}
+                          </dd>
+                        </div>
+                      )}
+
+                      {/* Good to know */}
+                      {product.attributes?.good_to_know && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Полезно знать' : locale === 'zh' ? '须知' : 'Good to know'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm whitespace-pre-line">
+                            {product.attributes.good_to_know}
                           </dd>
                         </div>
                       )}
@@ -2091,11 +2096,7 @@ export default function ProductDetailView({
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
                           <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вместимость' : locale === 'zh' ? '容量规格' : 'Capacity'}</dt>
                           <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {getLocalizedOptionLabel(
-                              'capacity',
-                              product.attributes.capacity,
-                              locale
-                            )}
+                            {getLocalizedOptionLabel('capacity', product.attributes.capacity, locale)}
                           </dd>
                         </div>
                       )}
@@ -2122,27 +2123,49 @@ export default function ProductDetailView({
                         </div>
                       )}
 
-                      {/* Max Oven Safe Temp */}
-                      {(product.attributes?.temperature || product.attributes?.heat_resistance) && (
+                      {/* Package Dimensions */}
+                      {(product.attributes?.package_dimensions || product.attributes?.package_width) && (
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Термостойкость' : locale === 'zh' ? '最高耐温' : 'Max Oven Temp'}</dt>
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Габариты упаковки' : locale === 'zh' ? '包装尺寸' : 'Package Dimensions'}</dt>
                           <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                            {getLocalizedOptionLabel(
-                              'temperature',
-                              product.attributes?.temperature || product.attributes?.heat_resistance,
-                              locale
-                            )}
+                            {product.attributes?.package_dimensions ||
+                              `${product.attributes?.package_length || ''} × ${product.attributes?.package_width || ''} × ${product.attributes?.package_height || ''}`.trim()}
                           </dd>
                         </div>
                       )}
 
-                      {/* Dishwasher & Care */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
-                        <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Уход и мытье' : locale === 'zh' ? '清洁与保养' : 'Dishwasher Safe'}</dt>
-                        <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
-                          {locale === 'ru' ? 'Да (рекомендуется ручная мойка)' : locale === 'zh' ? '可洗碗机清洗（建议手洗）' : 'Yes (Hand wash recommended)'}
-                        </dd>
-                      </div>
+                      {/* Package Weight */}
+                      {product.attributes?.package_weight && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                          <dt className="text-slate-600 font-medium text-xs sm:text-sm">{locale === 'ru' ? 'Вес упаковки' : locale === 'zh' ? '包装重量' : 'Package Weight'}</dt>
+                          <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">
+                            {product.attributes.package_weight}
+                          </dd>
+                        </div>
+                      )}
+
+                      {/* Other dynamic category attributes */}
+                      {product.categoryAttributes && product.categoryAttributes
+                        .filter((ca: any) => {
+                          const s = ca.slug
+                          return (
+                            !['material', 'materials', 'care_instructions', 'care', 'designer', 'good_to_know', 'dimensions', 'weight', 'package_dimensions', 'package_weight', 'coating', 'capacity'].includes(s) &&
+                            product.attributes?.[s] !== undefined &&
+                            product.attributes?.[s] !== null &&
+                            product.attributes?.[s] !== ''
+                          )
+                        })
+                        .map((ca: any) => {
+                          const val = product.attributes?.[ca.slug]
+                          const displayVal = Array.isArray(val) ? val.join(', ') : String(val)
+                          return (
+                            <div key={ca.slug} className="grid grid-cols-1 sm:grid-cols-3 gap-2 py-3 px-4 hover:bg-slate-50/80 transition-colors">
+                              <dt className="text-slate-600 font-medium text-xs sm:text-sm">{ca.name || ca.slug}</dt>
+                              <dd className="sm:col-span-2 font-semibold text-slate-900 text-xs sm:text-sm">{displayVal}</dd>
+                            </div>
+                          )
+                        })
+                      }
                     </dl>
                   </div>
                 </div>

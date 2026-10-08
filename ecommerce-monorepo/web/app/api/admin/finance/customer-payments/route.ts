@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
       where: { id: orderId },
       data: {
         paymentStatus: newPaymentStatus,
-        paidAt: isFullyPaid ? new Date() : order.paidAt,
+        paidAt: isFullyPaid ? (order.paidAt || new Date()) : order.paidAt,
+        ...(isFullyPaid && (order.status === 'PENDING' || order.status === 'PAYMENT_PENDING') && { status: 'PAID' }),
       },
     })
 

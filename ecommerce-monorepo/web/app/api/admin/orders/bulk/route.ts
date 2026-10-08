@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getTokenFromRequest, verifyToken } from '@/lib/auth'
 import { logActivity } from '@/lib/audit'
+import { restoreOrderInventory } from '@/lib/inventory/order-restoration'
 
 // PATCH /api/admin/orders/bulk - Perform bulk operations on orders
 export async function PATCH(request: NextRequest) {
@@ -26,12 +27,39 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'No order IDs provided' }, { status: 400 })
     }
 
+
     if (action === 'STATUS_UPDATE') {
       if (!status) return NextResponse.json({ error: 'Status is required' }, { status: 400 })
 
-      const result = await prisma.order.updateMany({
-        where: { id: { in: ids } },
-        data: { status },
+      const updatedCount = await prisma.$transaction(async (tx) => {
+        const orders = await tx.order.findMany({
+          where: { id: { in: ids } },
+          include: { items: true },
+        })
+
+        for (const ord of orders) {
+          if (status === 'CANCELLED' && ord.status !== 'CANCELLED') {
+            await restoreOrderInventory(tx, ord.id, {
+              reason: 'CANCELLED',
+              notes: 'Bulk status update to CANCELLED',
+            })
+          }
+
+          const updateData: any = { status }
+          if (status === 'PAID') {
+            updateData.paymentStatus = 'PAID'
+            if (!ord.paidAt) updateData.paidAt = new Date()
+          } else if (status === 'REFUNDED') {
+            updateData.paymentStatus = 'REFUNDED'
+          }
+
+          await tx.order.update({
+            where: { id: ord.id },
+            data: updateData,
+          })
+        }
+
+        return orders.length
       })
 
       // Log activity
@@ -40,10 +68,10 @@ export async function PATCH(request: NextRequest) {
         action: 'BULK_UPDATE',
         resource: 'ORDER',
         resourceId: `[${ids.length} orders]`,
-        changes: { ids, newStatus: status, count: result.count },
+        changes: { ids, newStatus: status, count: updatedCount },
       })
 
-      return NextResponse.json({ success: true, count: result.count })
+      return NextResponse.json({ success: true, count: updatedCount })
     }
 
     if (action === 'DELETE') {

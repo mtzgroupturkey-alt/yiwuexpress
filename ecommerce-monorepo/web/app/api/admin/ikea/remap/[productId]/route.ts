@@ -4,6 +4,11 @@ import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 import { mapIkeaProductToAttributes } from '@/lib/ikea/mapToAttributes'
 import { IkeaProduct } from '@/lib/ikea/types'
 
+import {
+  processIkeaSpecsToAttributes,
+  enrichProductDescriptionWithLeftoverSpecs
+} from '@/lib/ikea/ensureAttributes'
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { productId: string } }
@@ -43,8 +48,40 @@ export async function POST(
 
     // Re-apply mapped attributes transactionally
     await prisma.$transaction(async (tx) => {
-      // Delete existing attribute values for attributes that are mapped
-      const attrIdsToUpdate = mappedResult.mapped.map((m) => m.attributeId)
+      const rawSpecs: Record<string, string> = {
+        ...(rawPayload.measurements || {}),
+        ...(rawPayload.specs || {})
+      }
+
+      const {
+        mappedAttributes: finalMappedAttributes,
+        leftoverSpecs,
+        extractedWeightKg,
+        extractedMaterial,
+        extractedDimensions
+      } = await processIkeaSpecsToAttributes(
+        tx,
+        product.categoryId,
+        rawSpecs,
+        mappedResult.mapped
+      )
+
+      const enrichedDescription = enrichProductDescriptionWithLeftoverSpecs(
+        product.description || '',
+        leftoverSpecs
+      )
+
+      await tx.product.update({
+        where: { id: product.id },
+        data: {
+          description: enrichedDescription,
+          ...(extractedMaterial ? { material: extractedMaterial } : {}),
+          ...(extractedWeightKg ? { weightKg: extractedWeightKg } : {}),
+          ...(extractedDimensions ? { dimensions: extractedDimensions } : {})
+        }
+      })
+
+      const attrIdsToUpdate = finalMappedAttributes.map((m) => m.attributeId)
 
       if (attrIdsToUpdate.length > 0) {
         await tx.attributeValue.deleteMany({
@@ -54,7 +91,7 @@ export async function POST(
           }
         })
 
-        for (const m of mappedResult.mapped) {
+        for (const m of finalMappedAttributes) {
           if (m.attributeId && m.value) {
             await tx.attributeValue.create({
               data: {

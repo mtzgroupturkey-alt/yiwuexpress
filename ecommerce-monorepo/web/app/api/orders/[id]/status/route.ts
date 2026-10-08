@@ -1,13 +1,13 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-
+import { restoreOrderInventory } from '@/lib/inventory/order-restoration'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
 // Valid status transitions
 const STATUS_TRANSITIONS: Record<string, string[]> = {
-  'PENDING': ['PAID', 'CANCELLED'],
-  'PAID': ['PROCESSING', 'CANCELLED'],
+  'PENDING': ['PAID', 'CANCELLED', 'FAILED'],
+  'PAID': ['PROCESSING', 'CANCELLED', 'REFUNDED'],
   'PROCESSING': ['PICKING', 'ON_HOLD', 'CANCELLED'],
   'PICKING': ['PACKING', 'ON_HOLD'],
   'PACKING': ['SHIPPED', 'ON_HOLD'],
@@ -17,17 +17,19 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
   'CUSTOMS_CLEARED': ['ARRIVED', 'IN_TRANSIT'],
   'ARRIVED': ['OUT_FOR_DELIVERY'],
   'OUT_FOR_DELIVERY': ['DELIVERED', 'DELIVERY_FAILED'],
-  'DELIVERED': ['RETURN_REQUESTED', 'COMPLETED'],
+  'DELIVERED': ['RETURN_REQUESTED', 'COMPLETED', 'REFUNDED'],
   'DELIVERY_FAILED': ['OUT_FOR_DELIVERY', 'RETURN_REQUESTED'],
   'RETURN_REQUESTED': ['RETURN_APPROVED', 'CANCELLED'],
   'RETURN_APPROVED': ['RETURN_RECEIVED'],
   'RETURN_RECEIVED': ['REFUND_PROCESSED', 'PARTIALLY_REFUNDED'],
-  'REFUND_PROCESSED': ['COMPLETED'],
+  'REFUND_PROCESSED': ['COMPLETED', 'REFUNDED'],
   'PARTIALLY_REFUNDED': ['COMPLETED'],
   'ON_HOLD': ['PROCESSING', 'PICKING', 'PACKING', 'CANCELLED'],
   'CANCELLED': [],
   'PARTIALLY_SHIPPED': ['SHIPPED', 'IN_TRANSIT'],
-  'COMPLETED': []
+  'COMPLETED': ['REFUNDED'],
+  'FAILED': ['CANCELLED'],
+  'REFUNDED': [],
 }
 
 // PUT /api/orders/[id]/status - Update order status
@@ -86,28 +88,42 @@ export async function PUT(
     const existingHistory = Array.isArray(order.trackingHistory) 
       ? order.trackingHistory 
       : []
-
-    // Update order with new status and tracking history
-    const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
-      data: {
-        status,
-        trackingHistory: [...(existingHistory as any[]), trackingEntry],
-        ...(status === 'PAID' && { paidAt: new Date() }),
-        ...(status === 'SHIPPED' && { shippedAt: new Date() }),
-        ...(status === 'DELIVERED' && { actualDelivery: new Date() })
-      },
-      include: {
-        items: true,
-        shippingCountry: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
-        }
+    // Update order with new status and tracking history atomically
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      if (status === 'CANCELLED' && order.status !== 'CANCELLED') {
+        await restoreOrderInventory(tx, params.id, {
+          reason: 'CANCELLED',
+          notes: notes || `Order status updated to CANCELLED by admin`,
+        })
       }
+
+      return tx.order.update({
+        where: { id: params.id },
+        data: {
+          status,
+          trackingHistory: [...(existingHistory as any[]), trackingEntry],
+          ...(status === 'PAID' && {
+            paidAt: order.paidAt || new Date(),
+            paymentStatus: 'PAID',
+          }),
+          ...(status === 'REFUNDED' && {
+            paymentStatus: 'REFUNDED',
+          }),
+          ...(status === 'SHIPPED' && { shippedAt: order.shippedAt || new Date() }),
+          ...(status === 'DELIVERED' && { actualDelivery: order.actualDelivery || new Date() }),
+        },
+        include: {
+          items: true,
+          shippingCountry: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      })
     })
 
     // TODO: Send email notification to customer

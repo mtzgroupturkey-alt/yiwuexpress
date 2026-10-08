@@ -59,7 +59,10 @@ export async function GET(request: NextRequest) {
 
       if (ord.paymentStatus === 'PAID') {
         paidRevenue += tot
-      } else if (ord.paymentStatus === 'PENDING' || ord.paymentStatus === 'UNPAID') {
+      } else if (
+        (ord.paymentStatus === 'PENDING' || ord.paymentStatus === 'UNPAID' || ord.paymentStatus === 'PARTIALLY_PAID') &&
+        !['CANCELLED', 'REFUNDED', 'FAILED'].includes(ord.status)
+      ) {
         pendingAr += tot
       }
 

@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    if (['CANCELLED', 'FAILED', 'REFUNDED'].includes(order.status)) {
+      return NextResponse.json(
+        { success: false, error: `Cannot initiate payment for a ${order.status.toLowerCase()} order` },
+        { status: 400 }
+      )
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(order.total * 100),
       currency: (order.currency || 'usd').toLowerCase(),
