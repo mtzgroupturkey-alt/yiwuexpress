@@ -39,6 +39,9 @@ interface Order {
     quantity: number
     price: number
     total: number
+    product?: {
+      dromkokItemNo?: string | null
+    }
   }>
   shippingCountry?: {
     name: string
@@ -180,7 +183,7 @@ export default function OrderDetailPage() {
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">{item.productName}</h4>
-                        <p className="text-sm text-gray-500">SKU: {item.productSku}</p>
+                        <p className="text-sm text-gray-500">Item #: {item.product?.dromkokItemNo || '—'}</p>
                         <p className="text-sm text-gray-600 mt-1">
                           ${item.price.toFixed(2)} Ã— {item.quantity}
                         </p>
