@@ -20,19 +20,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 1. Require ADMIN role (with localhost development fallback for preview image tags)
-    try {
-      await requireRole(request, ['ADMIN']);
-    } catch (authError) {
-      const host = request.headers.get('host') || '';
-      const isLocalhost = host.startsWith('localhost:') || host.startsWith('127.0.0.1:');
-      console.log('[DEBUG LICENSES]', { host, isLocalhost, nodeEnv: process.env.NODE_ENV });
-      if (process.env.NODE_ENV !== 'production' && isLocalhost) {
-        // Allow localhost dev preview
-      } else {
-        throw authError;
-      }
-    }
+    // 1. Strictly require ADMIN role on every request unconditionally
+    await requireRole(request, ['ADMIN']);
 
     const docId = params.id;
     if (!docId) {
