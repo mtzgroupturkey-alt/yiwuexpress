@@ -387,6 +387,17 @@ export async function PUT(
             businessType: true,
           },
         },
+        verificationDocs: {
+          select: {
+            id: true,
+            fileName: true,
+            fileSize: true,
+            fileUrl: true,
+            type: true,
+            status: true,
+          },
+          orderBy: { uploadedAt: 'desc' },
+        },
         // NO PASSWORD
       },
     })
