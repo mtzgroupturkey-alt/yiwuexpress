@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { 
   Users, Plus, Search, Edit, Trash2, Eye,
   Building, Mail, Phone, MapPin, Calendar, AlertTriangle,
-  Camera, Loader2
+  Camera, Loader2, FileText
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
@@ -28,6 +28,14 @@ interface User {
   verificationStatus?: 'UNVERIFIED' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'DOCUMENTS_REQUIRED'
   verificationNotes?: string | null
   verifiedAt?: string | null
+  verificationDocs?: Array<{
+    id: string
+    fileName: string
+    fileSize: number
+    fileUrl: string
+    type: string
+    status: string
+  }>
   permissionRole: {
     id: string
     name: string
@@ -1189,6 +1197,30 @@ export default function AdminUsersPage() {
                     onChange={(e) => setEditFormData(prev => ({ ...prev, verificationNotes: e.target.value }))}
                   />
                 </div>
+
+                {selectedUser?.verificationDocs && selectedUser.verificationDocs.length > 0 && (
+                  <div className="md:col-span-2 p-3 bg-blue-50/60 rounded-xl border border-blue-200/80">
+                    <p className="text-xs font-semibold text-blue-900 mb-2 flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-blue-600" />
+                      Uploaded Business License
+                    </p>
+                    <div className="space-y-1.5">
+                      {selectedUser.verificationDocs.map((doc) => (
+                        <a
+                          key={doc.id}
+                          href={`/api/admin/licenses/${doc.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1.5 font-medium bg-white p-2 rounded-lg border border-blue-100 shadow-2xs"
+                        >
+                          <FileText className="w-4 h-4 shrink-0 text-blue-500" />
+                          <span className="truncate max-w-[260px] font-mono">{doc.fileName}</span>
+                          <span className="text-slate-400 text-[11px]">({(doc.fileSize / 1024).toFixed(0)} KB)</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

@@ -89,7 +89,17 @@ export async function GET(request: NextRequest) {
           _count: {
             select: {
               quotes: true,
-                          },
+            },
+          },
+          verificationDocs: {
+            select: {
+              id: true,
+              fileName: true,
+              fileSize: true,
+              fileUrl: true,
+              type: true,
+              status: true,
+            },
           },
           // NO PASSWORD
         },
