@@ -159,7 +159,18 @@ export async function GET(
       )
     }
 
-    return NextResponse.json({ user })
+    const normalizedUser = {
+      ...user,
+      verificationDocs: user.verificationDocs.map((doc) => ({
+        ...doc,
+        fileUrl: (doc.fileUrl && (doc.fileUrl.startsWith('/uploads/') || doc.fileUrl.startsWith('/api/uploads/')))
+          ? doc.fileUrl
+          : `/uploads/licenses/${doc.fileName}`,
+        adminUrl: `/api/admin/licenses/${doc.id}`,
+      })),
+    }
+
+    return NextResponse.json({ user: normalizedUser })
   } catch (error: any) {
     console.error('GET user error:', error)
     return createAuthErrorResponse(error)

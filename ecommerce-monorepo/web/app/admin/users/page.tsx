@@ -6,7 +6,8 @@ import Image from 'next/image'
 import { 
   Users, Plus, Search, Edit, Trash2, Eye,
   Building, Mail, Phone, MapPin, Calendar, AlertTriangle,
-  Camera, Loader2, FileText
+  Camera, Loader2, FileText, ZoomIn, ZoomOut, RotateCw,
+  RefreshCcw, ExternalLink, Download, XCircle, FileCheck
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
@@ -107,6 +108,31 @@ export default function AdminUsersPage() {
   const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null)
   const addFileInputRef = useRef<HTMLInputElement>(null)
   const editFileInputRef = useRef<HTMLInputElement>(null)
+  const [previewDoc, setPreviewDoc] = useState<any>(null)
+  const [docZoom, setDocZoom] = useState(1)
+  const [docRotation, setDocRotation] = useState(0)
+  const [docImgLoading, setDocImgLoading] = useState(true)
+
+  const openDocPreview = (doc: any) => {
+    setDocZoom(1)
+    setDocRotation(0)
+    setDocImgLoading(true)
+    setPreviewDoc(doc)
+  }
+
+  const getDocDisplayUrl = (doc?: { id?: string; fileName?: string; fileUrl?: string } | null) => {
+    if (!doc) return '#'
+    if (doc.fileUrl && (doc.fileUrl.startsWith('/uploads/') || doc.fileUrl.startsWith('/api/uploads/'))) {
+      return doc.fileUrl
+    }
+    if (doc.fileName) {
+      return `/uploads/licenses/${doc.fileName}`
+    }
+    if (doc.id) {
+      return `/api/admin/licenses/${doc.id}`
+    }
+    return '#'
+  }
   const [permissionRoles, setPermissionRoles] = useState<PermissionRole[]>([])
   const [editFormData, setEditFormData] = useState({
     email: '',

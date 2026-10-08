@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+'use client'
 
-export default function CustomerDetailPage({ params }: { params: { id: string } }) {
-  redirect(`/admin/users/${params.id}`)
-}
+import UserProfilePage from '../../users/[id]/page'
+
+export default UserProfilePage

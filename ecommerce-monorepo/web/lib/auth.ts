@@ -125,6 +125,13 @@ export function getTokenFromRequest(req: NextRequest | Request): string | null {
     return authHeader.slice(7)
   }
 
+  // Fallback to URL query parameter (useful for images, iframes, media streams)
+  try {
+    const url = new URL(req.url)
+    const queryToken = url.searchParams.get('token')
+    if (queryToken) return queryToken
+  } catch {}
+
   return null
 }
 

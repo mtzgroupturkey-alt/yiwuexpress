@@ -26,28 +26,29 @@ export default function DynamicFavicon({ faviconUrl }: DynamicFaviconProps) {
       ? 'image/x-icon'
       : undefined
 
-    // Remove existing favicon links to force browser tab to re-render icon
+    // Safely update existing favicon links in-place WITHOUT removing DOM nodes.
+    // Removing nodes with el.remove() detaches them from parentNode behind React's back,
+    // which causes: "Cannot read properties of null (reading 'removeChild') at unmountHoistable"
     const existingIcons = document.querySelectorAll<HTMLLinkElement>(
-      'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel*="icon"]'
+      'link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"]'
     )
-    existingIcons.forEach((el) => el.remove())
 
-    const createLink = (rel: string, sizes?: string) => {
-      const link = document.createElement('link')
-      link.rel = rel
-      if (mimeType) link.type = mimeType
-      if (sizes) link.setAttribute('sizes', sizes)
-      link.href = resolvedUrl
-      link.setAttribute('data-dynamic-favicon', 'true')
-      document.head.appendChild(link)
+    if (existingIcons.length > 0) {
+      existingIcons.forEach((el) => {
+        el.href = resolvedUrl
+        if (mimeType) el.type = mimeType
+      })
+    } else {
+      let dynamicLink = document.querySelector<HTMLLinkElement>('link[data-dynamic-favicon="true"]')
+      if (!dynamicLink) {
+        dynamicLink = document.createElement('link')
+        dynamicLink.rel = 'icon'
+        dynamicLink.setAttribute('data-dynamic-favicon', 'true')
+        document.head.appendChild(dynamicLink)
+      }
+      dynamicLink.href = resolvedUrl
+      if (mimeType) dynamicLink.type = mimeType
     }
-
-    createLink('icon')
-    createLink('icon', '32x32')
-    createLink('icon', '16x16')
-    createLink('shortcut icon')
-    createLink('apple-touch-icon', '180x180')
-    createLink('apple-touch-icon')
   }, [faviconUrl])
 
   return null

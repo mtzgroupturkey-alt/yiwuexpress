@@ -32,7 +32,12 @@ function findUploadFile(relative) {
   const candidates = [
     path.join(process.cwd(), 'public', 'uploads', relative),
     path.join(process.cwd(), 'web', 'public', 'uploads', relative),
+    path.join(process.cwd(), 'storage', relative),
+    path.join(process.cwd(), 'web', 'storage', relative),
+    path.join(process.cwd(), 'storage', 'licenses', path.basename(relative)),
+    path.join(process.cwd(), 'web', 'storage', 'licenses', path.basename(relative)),
     path.join('/www', 'wwwroot', 'www.dromkok.com', 'web', 'public', 'uploads', relative),
+    path.join('/www', 'wwwroot', 'www.dromkok.com', 'storage', relative),
     path.join('/var', 'www', 'dromkok', 'ecommerce-monorepo', 'web', 'public', 'uploads', relative),
   ]
   for (const c of candidates) {

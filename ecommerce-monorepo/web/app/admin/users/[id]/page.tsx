@@ -9,7 +9,8 @@ import {
   ChevronRight, ArrowLeft, Mail, Phone, MapPin, Building, Calendar,
   CreditCard, FileText, ShoppingBag, ExternalLink, CheckCircle2,
   XCircle, Clock, AlertTriangle, Edit3, Trash2, Key, Check,
-  Download, Eye, Lock, Globe, Building2, Copy, FileCheck, Layers
+  Download, Eye, Lock, Globe, Building2, Copy, FileCheck, Layers,
+  ZoomIn, ZoomOut, RotateCw, Loader2, RefreshCcw
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -141,6 +142,31 @@ export default function UserProfilePage() {
   const [targetStatus, setTargetStatus] = useState<'APPROVED' | 'REJECTED' | 'DOCUMENTS_REQUIRED'>('APPROVED')
   const [verificationNotes, setVerificationNotes] = useState('')
   const [processingVerification, setProcessingVerification] = useState(false)
+  const [previewDoc, setPreviewDoc] = useState<UserDetail['verificationDocs'][0] | null>(null)
+  const [docZoom, setDocZoom] = useState(1)
+  const [docRotation, setDocRotation] = useState(0)
+  const [docImgLoading, setDocImgLoading] = useState(true)
+
+  const openDocPreview = (doc: UserDetail['verificationDocs'][0]) => {
+    setDocZoom(1)
+    setDocRotation(0)
+    setDocImgLoading(true)
+    setPreviewDoc(doc)
+  }
+
+  const getDocDisplayUrl = (doc?: { id?: string; fileName?: string; fileUrl?: string } | null) => {
+    if (!doc) return '#'
+    if (doc.fileUrl && (doc.fileUrl.startsWith('/uploads/') || doc.fileUrl.startsWith('/api/uploads/'))) {
+      return doc.fileUrl
+    }
+    if (doc.fileName) {
+      return `/uploads/licenses/${doc.fileName}`
+    }
+    if (doc.id) {
+      return `/api/admin/licenses/${doc.id}`
+    }
+    return '#'
+  }
 
   // Security State
   const [newPassword, setNewPassword] = useState('')
@@ -668,6 +694,86 @@ export default function UserProfilePage() {
                     {user.verificationNotes}
                   </div>
                 )}
+
+                {user.verificationDocs && user.verificationDocs.length > 0 && (
+                  <div className="p-4 bg-blue-50/70 rounded-2xl border border-blue-200/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                        <FileCheck className="w-4 h-4 text-blue-600" />
+                        Uploaded Business License & Credentials ({user.verificationDocs.length})
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('verification')}
+                        className="text-[11px] font-bold text-blue-700 hover:text-blue-900 transition-colors"
+                      >
+                        Manage in Verification Tab &rarr;
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {user.verificationDocs.map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-blue-100 shadow-2xs hover:border-blue-300 transition-colors">
+                          <div className="flex items-center gap-3 truncate pr-2">
+                            {/* Clickable Photo Thumbnail */}
+                            <div
+                              onClick={() => openDocPreview(doc)}
+                              className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 cursor-pointer group/thumb hover:border-blue-500 transition-colors shadow-2xs"
+                              title="Click to view photo in modal"
+                            >
+                              {!doc.fileName.toLowerCase().endsWith('.pdf') ? (
+                                <img
+                                  src={getDocDisplayUrl(doc)}
+                                  alt={doc.fileName}
+                                  className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `/api/admin/licenses/${doc.id}`
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-rose-50 text-rose-600">
+                                  <FileText size={20} />
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 flex items-center justify-center transition-colors">
+                                <Eye size={16} className="text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity drop-shadow" />
+                              </div>
+                            </div>
+
+                            <div className="truncate">
+                              <p 
+                                onClick={() => openDocPreview(doc)}
+                                className="text-xs font-bold text-gray-900 truncate font-mono hover:text-blue-600 cursor-pointer transition-colors"
+                                title="Click to view photo in modal"
+                              >
+                                {doc.fileName}
+                              </p>
+                              <p className="text-[10px] text-gray-400 capitalize">{doc.type.replace(/_/g, ' ')} • {(doc.fileSize / 1024).toFixed(0)} KB • {doc.status}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <Button
+                              size="sm"
+                              onClick={() => openDocPreview(doc)}
+                              className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-1.5 shadow-2xs font-bold"
+                            >
+                              <Eye size={13} />
+                              View Document
+                            </Button>
+                            <a
+                              href={getDocDisplayUrl(doc)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-gray-100"
+                              title="Open in new window"
+                            >
+                              <ExternalLink size={14} />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -972,14 +1078,42 @@ export default function UserProfilePage() {
                   {user.verificationDocs.map((doc) => (
                     <div
                       key={doc.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50/70 border border-gray-200/80 rounded-2xl gap-3"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50/70 border border-gray-200/80 rounded-2xl gap-3 hover:border-blue-200 transition-colors"
                     >
                       <div className="flex items-start sm:items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-blue-100 text-blue-600 shrink-0">
-                          <FileText size={20} />
+                        {/* Clickable Photo Thumbnail */}
+                        <div
+                          onClick={() => openDocPreview(doc)}
+                          className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 cursor-pointer group/thumb hover:ring-2 hover:ring-blue-500 transition-all shadow-2xs"
+                          title="Click to view photo in modal"
+                        >
+                          {!doc.fileName.toLowerCase().endsWith('.pdf') ? (
+                            <img
+                              src={getDocDisplayUrl(doc)}
+                              alt={doc.fileName}
+                              className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = `/api/admin/licenses/${doc.id}`
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-rose-50 text-rose-600">
+                              <FileText size={24} />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/0 group-hover/thumb:bg-black/30 flex items-center justify-center transition-colors">
+                            <Eye size={18} className="text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity drop-shadow" />
+                          </div>
                         </div>
+
                         <div>
-                          <h4 className="text-xs font-bold text-gray-900 font-mono">{doc.fileName}</h4>
+                          <h4 
+                            onClick={() => openDocPreview(doc)}
+                            className="text-xs font-bold text-gray-900 font-mono hover:text-blue-600 cursor-pointer transition-colors"
+                            title="Click to view photo in modal"
+                          >
+                            {doc.fileName}
+                          </h4>
                           <div className="flex items-center gap-3 text-[11px] text-gray-400 mt-0.5">
                             <span className="capitalize">{doc.type.replace(/_/g, ' ')}</span>
                             <span>•</span>
@@ -999,14 +1133,24 @@ export default function UserProfilePage() {
                           {doc.status}
                         </Badge>
 
-                        <a
-                          href={doc.fileUrl || `/api/admin/licenses/${doc.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-white border border-gray-200 text-blue-600 hover:bg-blue-50 transition-colors shadow-2xs"
+                        <Button
+                          size="sm"
+                          onClick={() => openDocPreview(doc)}
+                          className="h-8 px-3 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-2xs"
                         >
                           <Eye size={13} />
                           View Document
+                        </Button>
+
+                        <a
+                          href={getDocDisplayUrl(doc)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-white border border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors shadow-2xs"
+                          title="Open directly in new browser tab"
+                        >
+                          <ExternalLink size={13} />
+                          New Tab
                         </a>
                       </div>
                     </div>
@@ -1290,6 +1434,63 @@ export default function UserProfilePage() {
               </div>
 
               <div className="space-y-3 text-xs">
+                {/* Attached Document Summary in Decision Modal */}
+                {user.verificationDocs && user.verificationDocs.length > 0 && (
+                  <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-2xl space-y-2">
+                    <span className="text-[11px] font-bold text-blue-900 uppercase tracking-wider block">
+                      Attached B2B License Document
+                    </span>
+                    {user.verificationDocs.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between p-2 bg-white rounded-xl border border-blue-100 shadow-2xs">
+                        <div className="flex items-center gap-2.5 truncate pr-2">
+                          {!doc.fileName.toLowerCase().endsWith('.pdf') ? (
+                            <img
+                              src={getDocDisplayUrl(doc)}
+                              alt={doc.fileName}
+                              className="w-10 h-10 rounded-lg object-cover border border-gray-200 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => {
+                                setVerificationModal(false)
+                                openDocPreview(doc)
+                              }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = `/api/admin/licenses/${doc.id}`
+                              }}
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                              <FileText size={18} />
+                            </div>
+                          )}
+                          <div className="truncate">
+                            <p 
+                              className="text-xs font-bold text-gray-900 truncate font-mono hover:text-blue-600 cursor-pointer"
+                              onClick={() => {
+                                setVerificationModal(false)
+                                openDocPreview(doc)
+                              }}
+                            >
+                              {doc.fileName}
+                            </p>
+                            <p className="text-[10px] text-gray-400 capitalize">{doc.type.replace(/_/g, ' ')} • {(doc.fileSize / 1024).toFixed(0)} KB</p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          type="button"
+                          onClick={() => {
+                            setVerificationModal(false)
+                            openDocPreview(doc)
+                          }}
+                          className="h-7 px-2.5 text-[11px] font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white shrink-0 gap-1"
+                        >
+                          <Eye size={12} />
+                          View Photo
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div>
                   <label className="block font-bold text-gray-700 uppercase tracking-wider text-[10px] mb-1">
                     Select Verification Decision
@@ -1340,6 +1541,206 @@ export default function UserProfilePage() {
                     }`}
                   >
                     {processingVerification ? 'Processing...' : `Confirm ${targetStatus}`}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </ClientOnly>
+
+      {/* DOCUMENT PREVIEW MODAL / PHOTO LIGHTBOX */}
+      <ClientOnly>
+        {previewDoc && (
+          <div
+            className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 backdrop-blur-sm"
+            onClick={() => setPreviewDoc(null)}
+          >
+            <div
+              className="bg-slate-900 border border-slate-800 text-white rounded-3xl max-w-5xl w-full p-4 sm:p-6 shadow-2xl max-h-[96vh] flex flex-col gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Top Bar */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-3 truncate pr-2">
+                  <div className="p-2.5 bg-blue-600/20 text-blue-400 rounded-xl border border-blue-500/20">
+                    <FileCheck size={20} />
+                  </div>
+                  <div className="truncate">
+                    <h3 className="text-sm sm:text-base font-black text-white font-mono truncate">{previewDoc.fileName}</h3>
+                    <p className="text-[11px] text-slate-400 capitalize">
+                      {previewDoc.type.replace(/_/g, ' ')} • {(previewDoc.fileSize / 1024).toFixed(0)} KB • Uploaded {formatDate(previewDoc.uploadedAt)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Toolbar */}
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  {!previewDoc.fileName.toLowerCase().endsWith('.pdf') && (
+                    <div className="flex items-center bg-slate-800 rounded-xl p-0.5 border border-slate-700">
+                      <button
+                        type="button"
+                        onClick={() => setDocZoom((z) => Math.max(0.5, +(z - 0.25).toFixed(2)))}
+                        className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Zoom Out"
+                      >
+                        <ZoomOut size={15} />
+                      </button>
+                      <span className="text-[11px] font-mono font-bold px-1.5 text-slate-300 min-w-[42px] text-center">
+                        {Math.round(docZoom * 100)}%
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setDocZoom((z) => Math.min(3, +(z + 0.25).toFixed(2)))}
+                        className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Zoom In"
+                      >
+                        <ZoomIn size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDocRotation((r) => (r + 90) % 360)}
+                        className="p-1.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Rotate 90 degrees"
+                      >
+                        <RotateCw size={15} />
+                      </button>
+                      {(docZoom !== 1 || docRotation !== 0) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDocZoom(1)
+                            setDocRotation(0)
+                          }}
+                          className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-slate-700 rounded-lg transition-colors"
+                          title="Reset Zoom & Rotation"
+                        >
+                          <RefreshCcw size={14} />
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <a
+                    href={getDocDisplayUrl(previewDoc)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors shadow-2xs"
+                    title="Open in new window"
+                  >
+                    <ExternalLink size={13} />
+                    <span className="hidden sm:inline">New Tab</span>
+                  </a>
+
+                  <a
+                    href={getDocDisplayUrl(previewDoc)}
+                    download={previewDoc.fileName}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors shadow-2xs"
+                    title="Download document file"
+                  >
+                    <Download size={13} />
+                    <span className="hidden sm:inline">Download</span>
+                  </a>
+
+                  <button
+                    onClick={() => setPreviewDoc(null)}
+                    className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                    title="Close"
+                  >
+                    <XCircle size={22} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Photo Display Canvas */}
+              <div className="relative flex-1 min-h-[360px] max-h-[66vh] flex items-center justify-center bg-slate-950 rounded-2xl overflow-hidden p-2 sm:p-4 border border-slate-800">
+                {docImgLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 z-10">
+                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                  </div>
+                )}
+
+                {previewDoc.fileName.toLowerCase().endsWith('.pdf') ? (
+                  <iframe
+                    src={getDocDisplayUrl(previewDoc)}
+                    className="w-full h-[62vh] rounded-xl border-0 bg-white"
+                    title="License PDF"
+                    onLoad={() => setDocImgLoading(false)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center overflow-auto p-2">
+                    <img
+                      src={getDocDisplayUrl(previewDoc)}
+                      alt={previewDoc.fileName}
+                      onLoad={() => setDocImgLoading(false)}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        if (!target.dataset.triedUploads) {
+                          target.dataset.triedUploads = '1'
+                          target.src = `/api/uploads/licenses/${previewDoc.fileName}`
+                        } else if (!target.dataset.triedAdmin) {
+                          target.dataset.triedAdmin = '1'
+                          target.src = `/api/admin/licenses/${previewDoc.id}`
+                        }
+                        setDocImgLoading(false)
+                      }}
+                      style={{
+                        transform: `scale(${docZoom}) rotate(${docRotation}deg)`,
+                        transformOrigin: 'center center',
+                        transition: 'transform 0.15s ease-out',
+                      }}
+                      className="max-h-[62vh] max-w-full object-contain rounded-xl shadow-2xl border border-slate-800 bg-black/40 select-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Decision & Action Buttons */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-800 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400 font-medium">Verification Status:</span>
+                  <Badge className={
+                    previewDoc.status === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                    previewDoc.status === 'REJECTED' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
+                    'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                  }>
+                    {previewDoc.status}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setTargetStatus('APPROVED')
+                      setVerificationModal(true)
+                      setPreviewDoc(null)
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs gap-1.5 font-bold shadow-xs"
+                  >
+                    <CheckCircle2 size={13} />
+                    Approve Application
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setTargetStatus('REJECTED')
+                      setVerificationModal(true)
+                      setPreviewDoc(null)
+                    }}
+                    className="text-rose-400 border-rose-500/30 hover:bg-rose-500/10 rounded-xl text-xs gap-1.5 font-semibold bg-transparent"
+                  >
+                    <XCircle size={13} />
+                    Reject Application
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPreviewDoc(null)}
+                    className="border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl text-xs bg-transparent"
+                  >
+                    Close
                   </Button>
                 </div>
               </div>
