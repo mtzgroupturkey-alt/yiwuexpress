@@ -171,7 +171,10 @@ export default function Home() {
 
   const activeBestSellers = useMemo(() => {
     if (dbProducts.length === 0) return [];
-    return dbProducts.filter((p) => {
+    // Prioritize products explicitly marked as featured (BESTSELLER) by admin
+    const featuredItems = dbProducts.filter((p) => p.isFeatured || p.tagBadge?.type === 'bestseller');
+    const matchedCategoryItems = dbProducts.filter((p) => {
+      if (p.isFeatured || p.tagBadge?.type === 'bestseller') return false;
       const dept = (p.department || '').toLowerCase();
       const cat = (p.category || '').toLowerCase();
       const deptSlug = (p.departmentSlug || '').toLowerCase();
@@ -184,6 +187,8 @@ export default function Home() {
         cat.includes('frame') || deptSlug.includes('furniture') || deptSlug.includes('home-garden')
       );
     });
+    const combined = [...featuredItems, ...matchedCategoryItems];
+    return combined.length > 0 ? combined : dbProducts;
   }, [dbProducts]);
 
   const activeKitchenProducts = useMemo(() => {
@@ -930,12 +935,30 @@ export default function Home() {
               </MotionReveal>
             )}
 
-            {/* 5. Four Trust / Value Proposition Cards */}
+            {/* 5. Featured Products & Top Rated Best Sellers Across Departments (Shifted directly after Flash Deals) */}
+            <MotionReveal direction="up">
+              <BestSellersSection
+                products={activeBestSellers}
+                isLoading={isProductsLoading || dbProducts.length === 0}
+                onAddToCart={handleAddToCart}
+                onUpdateQuantity={handleUpdateQuantity}
+                cartQuantities={cartQuantities}
+                favoriteIds={favoriteIds}
+                onToggleFavorite={toggleWishlist}
+                onSelectProduct={(product) => {
+                  setSelectedProductForPDP(product);
+                  handleNavigateView('product', { product });
+                }}
+                onViewAllBestSellers={() => handleNavigateView('shop')}
+              />
+            </MotionReveal>
+
+            {/* 6. Four Trust / Value Proposition Cards */}
             <MotionReveal direction="up">
               <TrustFeatures />
             </MotionReveal>
 
-            {/* 6. Kitchenware, Cookware & Dining Essentials Grid */}
+            {/* 7. Kitchenware, Cookware & Dining Essentials Grid */}
             {settings?.kitchenSectionEnabled !== false && kitchenSectionData?.enabled !== false && (
               <MotionReveal direction="up">
                 <FreshSupermarketSection
@@ -960,7 +983,7 @@ export default function Home() {
               </MotionReveal>
             )}
 
-            {/* 7. Popular in Electronics & Appliances */}
+            {/* 8. Popular in Electronics & Appliances */}
             {settings?.electronicsSectionEnabled !== false && electronicsSectionData?.enabled !== false && (
               <MotionReveal direction="up">
                 <PopularElectronics
@@ -982,24 +1005,6 @@ export default function Home() {
                 />
               </MotionReveal>
             )}
-
-            {/* 8. Top Rated Best Sellers Across Departments */}
-            <MotionReveal direction="up">
-              <BestSellersSection
-                products={activeBestSellers}
-                isLoading={isProductsLoading || dbProducts.length === 0}
-                onAddToCart={handleAddToCart}
-                onUpdateQuantity={handleUpdateQuantity}
-                cartQuantities={cartQuantities}
-                favoriteIds={favoriteIds}
-                onToggleFavorite={toggleWishlist}
-                onSelectProduct={(product) => {
-                  setSelectedProductForPDP(product);
-                  handleNavigateView('product', { product });
-                }}
-                onViewAllBestSellers={() => handleNavigateView('shop')}
-              />
-            </MotionReveal>
 
             {/* 10. Weekly Hypermarket Clearance & Super Deals */}
             {settings?.weeklyBargainsEnabled !== false && (

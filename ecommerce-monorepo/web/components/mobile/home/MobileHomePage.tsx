@@ -113,10 +113,7 @@ export function MobileHomePage({
           onViewAll={() => onNavigateView?.('shop', { filter: 'deals' })}
         />
 
-        {/* 4. Promotional Banner Card */}
-        <MobilePromoBanner onAction={() => onNavigateView?.('wholesale')} />
-
-        {/* 5. Mobile Best Sellers Grid */}
+        {/* 4. Mobile Best Sellers Grid (Shifted directly after Flash Deals) */}
         <MobileBestsellersGrid
           products={bestSellers}
           onAddToCart={onAddToCart}
@@ -125,6 +122,9 @@ export function MobileHomePage({
           onToggleFavorite={onToggleFavorite}
           onViewAll={() => onNavigateView?.('shop')}
         />
+
+        {/* 5. Promotional Banner Card */}
+        <MobilePromoBanner onAction={() => onNavigateView?.('wholesale')} />
 
         {/* 6. Verified Factory & Brand Strip */}
         <MobileBrandStrip />
@@ -163,7 +163,18 @@ export function MobileHomePage({
         onViewAll={() => onNavigateView?.('shop', { filter: 'deals' })}
       />
 
-      {/* 4. Mobile New Arrivals (fresh products from verified manufacturers) */}
+      {/* 4. Mobile Best Sellers Grid (Shifted directly after Flash Deals) */}
+      <MobileBestsellersGrid
+        products={bestSellers}
+        limit={10}
+        onAddToCart={onAddToCart}
+        onSelectProduct={handleSelectProduct}
+        favoriteIds={favoriteIds}
+        onToggleFavorite={onToggleFavorite}
+        onViewAll={() => onNavigateView?.('shop')}
+      />
+
+      {/* 5. Mobile New Arrivals (fresh products from verified manufacturers) */}
       <MobileNewArrivals
         products={newArrivals}
         onAddToCart={onAddToCart}
@@ -173,7 +184,7 @@ export function MobileHomePage({
         onViewAll={() => onNavigateView?.('shop', { sort: 'newest' })}
       />
 
-      {/* 5. Mobile Trending Products (most viewed & requested products) */}
+      {/* 6. Mobile Trending Products (most viewed & requested products) */}
       <MobileTrendingProducts
         products={trendingProducts}
         onAddToCart={onAddToCart}
@@ -181,17 +192,6 @@ export function MobileHomePage({
         favoriteIds={favoriteIds}
         onToggleFavorite={onToggleFavorite}
         onViewAll={() => onNavigateView?.('shop', { sort: 'popularity' })}
-      />
-
-      {/* 6. Mobile Best Sellers Grid (2-column dense catalog showcase) */}
-      <MobileBestsellersGrid
-        products={bestSellers}
-        limit={10}
-        onAddToCart={onAddToCart}
-        onSelectProduct={handleSelectProduct}
-        favoriteIds={favoriteIds}
-        onToggleFavorite={onToggleFavorite}
-        onViewAll={() => onNavigateView?.('shop')}
       />
 
       {/* 7. Mobile Recommended For You (personalized / top-rated picks) */}

@@ -62,6 +62,7 @@ export interface Product {
   dimensions?: any;
   similarity?: number;
   attributes?: Record<string, any> | null;
+  isFeatured?: boolean;
 }
 
 export interface FilterState {

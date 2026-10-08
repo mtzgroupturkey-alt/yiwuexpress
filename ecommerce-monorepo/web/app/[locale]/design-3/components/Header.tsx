@@ -541,11 +541,8 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </div>
-              <div className="text-left leading-tight hidden sm:block">
-                <div className="text-[10px] uppercase font-bold text-amber-700">{tHeader('wholesaleCart')}</div>
-                <div className="text-xs font-black text-slate-900">
-                  {formatPrice(cartTotal)}
-                </div>
+              <div className="text-xs font-black text-slate-900 hidden sm:block">
+                {formatPrice(cartTotal)}
               </div>
             </button>
           ) : (
@@ -563,11 +560,8 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                 )}
               </div>
-              <div className="text-left leading-tight hidden sm:block">
-                <div className="text-[10px] uppercase font-bold text-slate-400">{tHeader('cartTotal')}</div>
-                <div className="text-xs font-black text-slate-900">
-                  {formatPrice(cartTotal)}
-                </div>
+              <div className="text-xs font-black text-slate-900 hidden sm:block">
+                {formatPrice(cartTotal)}
               </div>
             </button>
           )}

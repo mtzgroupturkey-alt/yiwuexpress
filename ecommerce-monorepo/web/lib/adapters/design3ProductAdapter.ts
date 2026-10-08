@@ -73,6 +73,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     weightKg: dbItem.weightKg || undefined,
     dimensions: dbItem.dimensions || undefined,
     attributes: dbItem.attributes || undefined,
+    isFeatured: Boolean(dbItem.isFeatured),
   };
 }
 

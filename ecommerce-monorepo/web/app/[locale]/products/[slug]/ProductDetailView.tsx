@@ -1732,7 +1732,6 @@ export default function ProductDetailView({
                           </div>
 
                           <div className="flex-1 text-right">
-                            <span className="text-[11px] text-slate-400 block leading-tight">{t('subtotal')}</span>
                             <span className="font-black text-lg text-[#00407a]">
                               {formatPrice(displayPrice * quantity)}
                             </span>
