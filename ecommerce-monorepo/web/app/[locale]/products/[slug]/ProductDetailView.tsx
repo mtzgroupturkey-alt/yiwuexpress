@@ -1134,104 +1134,6 @@ export default function ProductDetailView({
     </div>
   )
 
-  // Full-width Flagship Buyer Protection & Sourcing Assurance Banner
-  const buyerProtectionBanner = (
-    <div className="my-6 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#00407a] shrink-0">
-            <ShieldCheck className="h-6 w-6 text-[#00407a]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-black text-slate-900 tracking-tight">
-                {locale === 'ru' ? 'Торговая гарантия и защита покупателя' : locale === 'zh' ? '全球贸易保障与买家服务' : 'Trade Assurance & Buyer Protection'}
-              </h3>
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                {locale === 'ru' ? 'Проверенный хаб' : locale === 'zh' ? '官方认证枢纽' : 'Verified Hub'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500">
-              {locale === 'ru' ? '100% безопасные платежи, строгий контроль качества и прозрачная логистика' : locale === 'zh' ? '100%资金安全托管、发货前严格质检与全球物流直通' : '100% Payment Escrow, Pre-Shipment Quality Inspection & Global Logistics'}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            const tabsEl = document.getElementById('product-tabs')
-            if (tabsEl) {
-              setActiveTab('logistics')
-              tabsEl.scrollIntoView({ behavior: 'smooth' })
-            }
-          }}
-          className="text-xs font-bold text-[#00407a] hover:text-[#002d55] flex items-center gap-1 hover:underline transition-colors shrink-0"
-        >
-          <span>{locale === 'ru' ? 'Подробнее о логистике и гарантиях' : locale === 'zh' ? '查看保障与物流细则' : 'View full protection terms'}</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
-          <div className="p-2 rounded-lg bg-white shadow-2xs text-[#00407a] shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-900">
-              {locale === 'ru' ? '100% Эскроу защита' : locale === 'zh' ? '全额资金托管' : '100% Payment Escrow'}
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-              {locale === 'ru' ? 'Средства переводятся поставщику только после подтверждения получения' : locale === 'zh' ? '买家确认收货且验货合格后平台方可结算' : 'Funds held safely until inspection and delivery confirmation.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
-          <div className="p-2 rounded-lg bg-white shadow-2xs text-emerald-600 shrink-0">
-            <Check className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-900">
-              {locale === 'ru' ? 'Контроль качества (QC)' : locale === 'zh' ? '发货前全检' : 'Pre-Shipment Inspection'}
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-              {locale === 'ru' ? 'Полная проверка целостности, комплектации и серийных номеров' : locale === 'zh' ? '专业质检人员发货前全面开箱验机与检测' : 'Comprehensive physical inspection, packaging check and test.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
-          <div className="p-2 rounded-lg bg-white shadow-2xs text-blue-600 shrink-0">
-            <Truck className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-900">
-              {locale === 'ru' ? 'Прямой экспорт и логистика' : locale === 'zh' ? '中国核心枢纽直发' : 'Direct Hub Logistics'}
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-              {locale === 'ru' ? 'Склад в Китае. Экспресс Авиа, Ж/Д и Морской фрахт (DDP/FOB)' : locale === 'zh' ? '中国枢纽直发，支持空运/海运/中欧班列(DDP/FOB)' : 'Direct dispatch from China hub. Air & Sea freight (DDP/FOB).'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50/70 border border-slate-100">
-          <div className="p-2 rounded-lg bg-white shadow-2xs text-amber-600 shrink-0">
-            <Package className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-900">
-              {locale === 'ru' ? 'Оригинальная продукция' : locale === 'zh' ? '官方正品保证' : 'Genuine & Factory Sealed'}
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-              {locale === 'ru' ? '100% оригинальная заводская упаковка и гарантия производителя' : locale === 'zh' ? '原厂原封包装，附带出厂条码与官方品质背书' : '100% authentic factory-sealed units with serial trackability.'}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
   return (
     <>
       {/* Product JSON-LD Structured Data */}
@@ -2460,33 +2362,6 @@ export default function ProductDetailView({
             )}
           </div>
         </div>
-
-        {/* Customer Support Callout - Compact */}
-        {/* Customer Support Callout - Design 3 Navy */}
-        <div className="bg-[#00407a] rounded-2xl p-6 mb-8 shadow-xs border border-[#003366] text-white">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="bg-white/10 rounded-2xl p-3 backdrop-blur-sm border border-white/20">
-                <MessageCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-bold mb-0.5 text-white">{t('needHelp')}</h3>
-                <p className="text-blue-100 text-xs sm:text-sm">{t('chat247')}</p>
-              </div>
-            </div>
-            <Button
-              size="lg"
-              onClick={() => navigate('/contact')}
-              className="bg-white text-[#00407a] hover:bg-slate-50 font-bold px-6 shadow-xs transition-all text-sm h-11 rounded-xl"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              {t('startLiveChat')}
-            </Button>
-          </div>
-        </div>
-
-        {/* Full-width Flagship Buyer Protection & Sourcing Assurance Banner */}
-        {buyerProtectionBanner}
 
         {/* Related Products Section - Design 3 UnifiedProductCard */}
         {relatedProducts.length > 0 && (
