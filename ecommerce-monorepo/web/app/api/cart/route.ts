@@ -37,6 +37,8 @@ export async function GET(request: Request) {
               name: true,
               slug: true,
               price: true,
+              wholesalePrice: true,
+              minOrderQty: true,
               thumbnail: true,
               stock: true,
               weightKg: true,
@@ -141,12 +143,18 @@ export async function GET(request: Request) {
 
     for (const item of validItems) {
       const qty = typeof item.quantity === 'number' && item.quantity > 0 ? item.quantity : 1
-      const price =
-        typeof item.variant?.price === 'number' && Number.isFinite(item.variant.price)
-          ? item.variant.price
-          : typeof item.product?.price === 'number' && Number.isFinite(item.product.price)
-          ? item.product.price
-          : 0
+      const isWholesale = item.mode === 'WHOLESALE'
+      const price = isWholesale
+        ? (typeof item.product?.wholesalePrice === 'number' && Number.isFinite(item.product.wholesalePrice)
+            ? item.product.wholesalePrice
+            : typeof item.product?.price === 'number' && Number.isFinite(item.product.price)
+            ? item.product.price
+            : 0)
+        : (typeof item.variant?.price === 'number' && Number.isFinite(item.variant.price)
+            ? item.variant.price
+            : typeof item.product?.price === 'number' && Number.isFinite(item.product.price)
+            ? item.product.price
+            : 0)
       const weight =
         typeof item.product?.weightKg === 'number' && Number.isFinite(item.product.weightKg)
           ? item.product.weightKg

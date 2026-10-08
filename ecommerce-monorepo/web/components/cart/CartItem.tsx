@@ -14,11 +14,14 @@ interface CartItemProps {
     variantId?: string | null
     selectedOptions?: Record<string, any> | null
     quantity: number
+    mode?: string
     product: {
       id: string
       name: string
       slug: string
       price: number
+      wholesalePrice?: number | null
+      minOrderQty?: number | null
       thumbnail?: string | null
       stock: number
       weightKg: number
@@ -31,7 +34,11 @@ interface CartItemProps {
 
 export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartItemProps) {
   const t = useTranslations('Cart')
-  const total = item.product.price * item.quantity
+  const isWholesale = item.mode === 'WHOLESALE'
+  const unitPrice = isWholesale && typeof item.product.wholesalePrice === 'number'
+    ? item.product.wholesalePrice
+    : item.product.price
+  const total = unitPrice * item.quantity
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200">
@@ -83,7 +90,12 @@ export function CartItem({ item, onUpdateQuantity, onRemove, updating }: CartIte
         )}
         
         <p className="text-sm text-gray-500 mt-1">
-          ${item.product.price.toFixed(2)} {t('perUnit')}
+          ${unitPrice.toFixed(2)} {t('perUnit')}
+          {isWholesale && (
+            <span className="ml-2 text-xs font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+              Wholesale
+            </span>
+          )}
         </p>
         
         <p className="text-xs text-gray-400 mt-1">
