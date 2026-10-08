@@ -409,7 +409,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                                 </span>
                               )}
                               <span className="text-[10px] text-slate-400 font-bold uppercase">
-                                SKU: {item.product.sku || item.product.id.slice(0, 8)}
+                                Item #: {item.product.dromkokItemNo || '—'}
                               </span>
                             </div>
 
