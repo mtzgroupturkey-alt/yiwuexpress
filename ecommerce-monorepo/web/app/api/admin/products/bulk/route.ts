@@ -43,6 +43,24 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, count: result.count })
     }
 
+    if (action === 'TOGGLE_FEATURED') {
+      const isFeaturedVal = Boolean(body.isFeatured)
+      const result = await prisma.product.updateMany({
+        where: { id: { in: ids } },
+        data: { isFeatured: isFeaturedVal },
+      })
+
+      await logActivity({
+        userId: admin.id,
+        action: 'BULK_UPDATE',
+        resource: 'PRODUCT',
+        resourceId: `[${ids.length} products]`,
+        changes: { ids, isFeatured: isFeaturedVal, count: result.count },
+      })
+
+      return NextResponse.json({ success: true, count: result.count })
+    }
+
     if (action === 'DELETE') {
       const result = await prisma.product.deleteMany({
         where: { id: { in: ids } },

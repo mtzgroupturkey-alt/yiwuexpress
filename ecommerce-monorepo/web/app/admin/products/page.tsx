@@ -378,78 +378,154 @@ export default function AdminProductsPage() {
   }
 
   const handleToggleActive = async (id: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus
+    // Optimistic local update (AJAX, no page reset or loading spinner)
+    setProducts(prev =>
+      prev.map(p => (p.id === id ? { ...p, isActive: nextStatus } : p))
+    )
+    setMetrics(prev => ({
+      ...prev,
+      active: Math.max(0, prev.active + (nextStatus ? 1 : -1))
+    }))
+
     try {
       const response = await fetch(`/api/admin/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !currentStatus })
+        body: JSON.stringify({ isActive: nextStatus })
       })
 
       const data = await response.json()
-      if (data.success) {
-        fetchProducts()
-      } else {
-        alert(data.error || 'Failed to update product')
+      if (!data.success) {
+        // Rollback on failure
+        setProducts(prev =>
+          prev.map(p => (p.id === id ? { ...p, isActive: currentStatus } : p))
+        )
+        setMetrics(prev => ({
+          ...prev,
+          active: Math.max(0, prev.active + (currentStatus ? 1 : -1))
+        }))
+        alert(data.error || 'Failed to update product status')
       }
     } catch (error) {
       console.error('Error updating product:', error)
+      // Rollback on error
+      setProducts(prev =>
+        prev.map(p => (p.id === id ? { ...p, isActive: currentStatus } : p))
+      )
+      setMetrics(prev => ({
+        ...prev,
+        active: Math.max(0, prev.active + (currentStatus ? 1 : -1))
+      }))
+      alert('Failed to update product status due to network error')
     }
   }
 
   const handleToggleFeatured = async (id: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus
+    // Optimistic local update (AJAX, no page reset or loading spinner)
+    setProducts(prev =>
+      prev.map(p => (p.id === id ? { ...p, isFeatured: nextStatus } : p))
+    )
+    setMetrics(prev => ({
+      ...prev,
+      featured: Math.max(0, prev.featured + (nextStatus ? 1 : -1))
+    }))
+
     try {
       const response = await fetch(`/api/admin/products/${id}/featured`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFeatured: !currentStatus })
+        body: JSON.stringify({ isFeatured: nextStatus })
       })
 
       const data = await response.json()
-      if (data.success) {
-        fetchProducts()
-      } else {
+      if (!data.success) {
+        // Rollback on failure
+        setProducts(prev =>
+          prev.map(p => (p.id === id ? { ...p, isFeatured: currentStatus } : p))
+        )
+        setMetrics(prev => ({
+          ...prev,
+          featured: Math.max(0, prev.featured + (currentStatus ? 1 : -1))
+        }))
         alert(data.error || 'Failed to update featured status')
       }
     } catch (error) {
       console.error('Error updating featured status:', error)
+      // Rollback on error
+      setProducts(prev =>
+        prev.map(p => (p.id === id ? { ...p, isFeatured: currentStatus } : p))
+      )
+      setMetrics(prev => ({
+        ...prev,
+        featured: Math.max(0, prev.featured + (currentStatus ? 1 : -1))
+      }))
+      alert('Failed to update featured status due to network error')
     }
   }
 
   const handleToggleNewArrival = async (id: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus
+    // Optimistic local update (AJAX, no page reset or loading spinner)
+    setProducts(prev =>
+      prev.map(p => (p.id === id ? { ...p, isNewArrival: nextStatus } : p))
+    )
+
     try {
       const response = await fetch(`/api/admin/products/${id}/new-arrival`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isNewArrival: !currentStatus })
+        body: JSON.stringify({ isNewArrival: nextStatus })
       })
 
       const data = await response.json()
-      if (data.success) {
-        fetchProducts()
-      } else {
+      if (!data.success) {
+        // Rollback on failure
+        setProducts(prev =>
+          prev.map(p => (p.id === id ? { ...p, isNewArrival: currentStatus } : p))
+        )
         alert(data.error || 'Failed to update new arrival status')
       }
     } catch (error) {
       console.error('Error updating new arrival status:', error)
+      // Rollback on error
+      setProducts(prev =>
+        prev.map(p => (p.id === id ? { ...p, isNewArrival: currentStatus } : p))
+      )
+      alert('Failed to update new arrival status due to network error')
     }
   }
 
   const handleToggleFlashSale = async (id: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus
+    // Optimistic local update (AJAX, no page reset or loading spinner)
+    setProducts(prev =>
+      prev.map(p => (p.id === id ? { ...p, isFlashSale: nextStatus } : p))
+    )
+
     try {
       const response = await fetch(`/api/admin/products/${id}/flash-sale`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFlashSale: !currentStatus })
+        body: JSON.stringify({ isFlashSale: nextStatus })
       })
 
       const data = await response.json()
-      if (data.success) {
-        fetchProducts()
-      } else {
+      if (!data.success) {
+        // Rollback on failure
+        setProducts(prev =>
+          prev.map(p => (p.id === id ? { ...p, isFlashSale: currentStatus } : p))
+        )
         alert(data.error || 'Failed to update flash sale status')
       }
     } catch (error) {
       console.error('Error updating flash sale status:', error)
+      // Rollback on error
+      setProducts(prev =>
+        prev.map(p => (p.id === id ? { ...p, isFlashSale: currentStatus } : p))
+      )
+      alert('Failed to update flash sale status due to network error')
     }
   }
 
