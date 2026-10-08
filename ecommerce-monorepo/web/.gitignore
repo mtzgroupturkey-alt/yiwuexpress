@@ -80,3 +80,6 @@ temp/
 public/uploads/products/prod-*
 data/migration-logs/
 *.sql.gz
+
+# Secure storage (private documents & licenses)
+storage/

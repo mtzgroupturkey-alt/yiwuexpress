@@ -129,27 +129,32 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 8. File name sanitization & Disk Persistence
+    // 8. File name sanitization & Disk Persistence (Secure storage outside public web root)
     const sanitizedName = `${user.id}_${Date.now()}.${extension}`;
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'licenses');
-    await fs.promises.mkdir(uploadsDir, { recursive: true });
+    const storageDir = path.join(process.cwd(), 'storage', 'licenses');
+    await fs.promises.mkdir(storageDir, { recursive: true });
 
-    const filePath = path.join(uploadsDir, sanitizedName);
+    const filePath = path.join(storageDir, sanitizedName);
     const arrayBuffer = await licenseFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     await fs.promises.writeFile(filePath, buffer);
 
     // 9. Create VerificationDocument Record
-    await prisma.verificationDocument.create({
+    const verDoc = await prisma.verificationDocument.create({
       data: {
         userId: user.id,
         type: 'BUSINESS_LICENSE',
         fileName: sanitizedName,
-        fileUrl: `/uploads/licenses/${sanitizedName}`,
+        fileUrl: '',
         fileSize: licenseFile.size,
         status: 'PENDING',
         notes: `Submitted during B2B registration for ${validated.companyName}`,
       },
+    });
+
+    await prisma.verificationDocument.update({
+      where: { id: verDoc.id },
+      data: { fileUrl: `/api/admin/licenses/${verDoc.id}` },
     });
 
     // 10. Record Admin Notification if model exists
