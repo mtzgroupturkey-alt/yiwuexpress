@@ -21,10 +21,11 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
 ): SanitizedProduct<T> {
   if (!product) return product as SanitizedProduct<T>
 
-  // 1. Strip sensitive backend/supplier margin fields & internal IKEA item numbers from all non-admins
+  // 1. Strip sensitive backend/supplier margin fields, internal IKEA item numbers, and internal SKU from all non-admins
   const safe: Record<string, any> = { ...product }
   if (!isAdmin) {
     delete safe.ikeaItemNo
+    delete safe.sku
     delete safe.costPrice
     delete safe.purchaseCost
     delete safe.profit
@@ -44,7 +45,17 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
     safe.images = [safe.thumbnail]
   }
 
-  // 2. Gate wholesale price & tiered quantity discounts
+  // 2. Strip variant sensitive fields for non-admins
+  if (Array.isArray(safe.variants) && !isAdmin) {
+    safe.variants = safe.variants.map((variant: any) => {
+      const vSafe = { ...variant }
+      delete vSafe.sku
+      delete vSafe.costPrice
+      return vSafe
+    })
+  }
+
+  // 3. Gate wholesale price & tiered quantity discounts
   if (!canViewWholesale) {
     safe.wholesalePrice = null
     delete safe.minOrderQty
@@ -55,9 +66,6 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
     if (Array.isArray(safe.variants)) {
       safe.variants = safe.variants.map((variant: any) => {
         const vSafe = { ...variant }
-        if (!isAdmin) {
-          delete vSafe.costPrice
-        }
         delete vSafe.minOrderQty
         delete vSafe.moq
         vSafe.tieredPrices = [] // Hide volume discount tiers from public/retail
