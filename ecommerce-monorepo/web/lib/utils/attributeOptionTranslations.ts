@@ -154,18 +154,55 @@ export const OPTION_TRANSLATIONS: Record<string, { ru: string; zh: string }> = {
   '15 Bar Standard': { ru: '15 Бар стандарт', zh: '15 Bar 标准压力' },
   '19 Bar High Pressure': { ru: '19 Бар высокое давление', zh: '19 Bar 高压' },
   '20 Bar Commercial Italian Pump': { ru: '20 Бар коммерческая итальянская помпа', zh: '20 Bar 意大利商用泵' },
+  'Stainless Steel': { ru: 'Нержавеющая сталь', zh: '不锈钢' },
   'Tri-Ply 18/10 Stainless Steel': { ru: 'Трехслойная нержавеющая сталь 18/10', zh: '三层18/10不锈钢' },
+  'Aluminium & Stainless Steel': { ru: 'Алюминий и нержавеющая сталь', zh: '铝与不锈钢' },
   'Pre-Seasoned Cast Iron': { ru: 'Чугун с заводской закалкой', zh: '预开锅熟铁/铸铁' },
+  'Cast Iron': { ru: 'Чугун', zh: '铸铁' },
+  'Aluminum': { ru: 'Алюминий', zh: '铝合金' },
+  'Aluminium': { ru: 'Алюминий', zh: '铝合金' },
   'Enameled Cast Iron': { ru: 'Эмалированный чугун', zh: '珐琅铸铁' },
   'Hard-Anodized Aluminum': { ru: 'Анодированный алюминий высокой прочности', zh: '硬质阳极氧化铝' },
   'Blue Carbon Steel': { ru: 'Вороненая углеродистая сталь', zh: '蓝碳钢' },
+  'Carbon Steel': { ru: 'Углеродистая сталь', zh: '碳钢' },
   'Food-Grade Silicone': { ru: 'Пищевой силикон', zh: '食品级硅胶' },
   'High-Heat Borosilicate Glass': { ru: 'Термостойкое боросиликатное стекло', zh: '耐热高硼硅玻璃' },
+  'Glass': { ru: 'Стекло', zh: '玻璃' },
+  'Wood': { ru: 'Дерево', zh: '木材' },
+  'Plastic': { ru: 'Пластик', zh: '塑料' },
+  'Silicone': { ru: 'Силикон', zh: '硅胶' },
+  'Ceramic': { ru: 'Керамика', zh: '陶瓷' },
+
+  // Sizes & Dimensions
+  'Small': { ru: 'Маленький', zh: '小号' },
+  'Medium': { ru: 'Средний', zh: '中号' },
+  'Large': { ru: 'Большой', zh: '大号' },
+  'Extra Large': { ru: 'Очень большой', zh: '特大号' },
+  'S': { ru: 'S (Маленький)', zh: 'S (小号)' },
+  'M': { ru: 'M (Средний)', zh: 'M (中号)' },
+  'L': { ru: 'L (Большой)', zh: 'L (大号)' },
+  'XL': { ru: 'XL (Очень большой)', zh: 'XL (特大号)' },
+
+  // Oven & Heat Safety
+  'Oven Safe': { ru: 'Подходит для духовки', zh: '适用于烤箱' },
   'Not Oven Safe': { ru: 'Не подходит для духовки', zh: '不可进烤箱' },
+  'Up to 350°F': { ru: 'До 175°C (350°F)', zh: '最高 175°C (350°F)' },
+  'Up to 350°f': { ru: 'До 175°C (350°F)', zh: '最高 175°C (350°F)' },
   'Up to 180°C (350°F)': { ru: 'До 180°C (350°F)', zh: '最高耐热 180°C' },
+  'Up to 400°F': { ru: 'До 200°C (400°F)', zh: '最高 200°C (400°F)' },
   'Up to 220°C (425°F)': { ru: 'До 220°C (425°F)', zh: '最高耐热 220°C' },
+  'Up to 450°F': { ru: 'До 230°C (450°F)', zh: '最高 230°C (450°F)' },
   'Up to 260°C (500°F)': { ru: 'До 260°C (500°F)', zh: '最高耐热 260°C' },
+  'Up to 500°F': { ru: 'До 260°C (500°F)', zh: '最高 260°C (500°F)' },
   'Up to 300°C (575°F)': { ru: 'До 300°C (575°F)', zh: '最高耐热 300°C' },
+
+  // Compatibility & Fit
+  'Suitable': { ru: 'Подходит', zh: '适用' },
+  'Not Suitable': { ru: 'Не подходит', zh: '不适用' },
+  'Compatible': { ru: 'Совместимо', zh: '兼容' },
+  'Incompatible': { ru: 'Не совместимо', zh: '不兼容' },
+  'Fits': { ru: 'Подходит', zh: '适合' },
+  'Works': { ru: 'Работает', zh: '支持' },
   'Diamond / Titanium Non-Stick': { ru: 'Алмазное / титановое антипригарное', zh: '钻石 / 钛金不粘涂层' },
   'Mineral Ceramic Coating': { ru: 'Минеральное керамическое покрытие', zh: '矿物陶瓷涂层' },
   'Enamel Glazed': { ru: 'Эмалированная глазурь', zh: '珐琅釉面' },
@@ -318,7 +355,6 @@ export const OPTION_TRANSLATIONS: Record<string, { ru: string; zh: string }> = {
   '12 Muffin Cups': { ru: '12 чашек для маффинов', zh: '12 连杯马芬模具' },
   '6 Jumbo Cups': { ru: '6 больших чашек (Jumbo)', zh: '6 连大号杯' },
   'Heavy-Duty Carbon Steel': { ru: 'Высокопрочная углеродистая сталь', zh: '加厚高碳钢' },
-  'Carbon Steel': { ru: 'Углеродистая сталь', zh: '碳钢' },
   '230°C / 450°F': { ru: '230°C / 450°F', zh: '230°C / 450°F' },
   'Up to 230°C / 450°F': { ru: 'До 230°C / 450°F', zh: '最高耐温 230°C / 450°F' },
   '38 × 26 × 3.2 cm': { ru: '38 × 26 × 3.2 см', zh: '38 × 26 × 3.2 厘米' },
@@ -380,6 +416,13 @@ export function getLocalizedOptionLabel(
     const matched = OPTION_TRANSLATIONS[foundKey]
     if (locale === 'ru' && matched.ru) return matched.ru
     if (locale === 'zh' && matched.zh) return matched.zh
+  }
+
+  // Material fallback lookup
+  const matEntry = MATERIAL_TRANSLATIONS[lowerVal]
+  if (matEntry) {
+    if (locale === 'ru' && matEntry.ru) return matEntry.ru
+    if (locale === 'zh' && matEntry.zh) return matEntry.zh
   }
 
   return strVal
@@ -498,4 +541,139 @@ export function getLocalizedMaterial(
   }
   return material
 }
+
+/**
+ * Resolves localized display string for any attribute value, taking into account:
+ * 1. Translations defined inside the attribute's options array (e.g. from /admin/attributes: opt.translations.ru / opt.translations.zh)
+ * 2. Color translations (opt.translations, hex codes)
+ * 3. Built-in dictionaries (OPTION_TRANSLATIONS, MATERIAL_TRANSLATIONS, COLOR_TRANSLATIONS)
+ * 4. Booleans (Yes/No, Да/Нет, 是/否)
+ * 5. Arrays (MULTISELECT, multiple tags)
+ */
+export function resolveLocalizedAttributeValue(
+  attribute: any,
+  rawVal: any,
+  locale: 'en' | 'ru' | 'zh' | string = 'en'
+): string {
+  if (rawVal === undefined || rawVal === null || rawVal === '') return ''
+
+  if (Array.isArray(rawVal)) {
+    if (rawVal.length === 0) return ''
+    return rawVal
+      .map((item) => resolveLocalizedAttributeValue(attribute, item, locale))
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  if (typeof rawVal === 'boolean') {
+    return rawVal
+      ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes')
+      : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
+  }
+
+  if (typeof rawVal === 'object' && rawVal !== null) {
+    if (rawVal.translations?.[locale] && String(rawVal.translations[locale]).trim()) {
+      return String(rawVal.translations[locale]).trim()
+    }
+    if (rawVal[locale] && String(rawVal[locale]).trim()) {
+      return String(rawVal[locale]).trim()
+    }
+    if (rawVal.label || rawVal.value) {
+      return resolveLocalizedAttributeValue(attribute, rawVal.label || rawVal.value, locale)
+    }
+    return JSON.stringify(rawVal)
+  }
+
+  const strVal = String(rawVal).trim()
+  if (!strVal) return ''
+
+  // 1. Look up in attribute's configured options (from /admin/attributes)
+  const options = Array.isArray(attribute?.rawOptions)
+    ? attribute.rawOptions
+    : Array.isArray(attribute?.options)
+    ? attribute.options
+    : []
+
+  if (options.length > 0) {
+    const lowerVal = strVal.toLowerCase()
+    const match = options.find((opt: any) => {
+      if (typeof opt === 'object' && opt !== null) {
+        return (
+          opt.value === strVal ||
+          opt.label === strVal ||
+          String(opt.value || '').toLowerCase() === lowerVal ||
+          String(opt.label || '').toLowerCase() === lowerVal
+        )
+      }
+      return String(opt) === strVal || String(opt).toLowerCase() === lowerVal
+    })
+
+    if (match && typeof match === 'object') {
+      if (locale === 'en') {
+        return match.label || match.value || strVal
+      }
+      if (match.translations?.[locale] && String(match.translations[locale]).trim()) {
+        return String(match.translations[locale]).trim()
+      }
+      if (match[locale] && String(match[locale]).trim()) {
+        return String(match[locale]).trim()
+      }
+      if (match.labels?.[locale] && String(match.labels[locale]).trim()) {
+        return String(match.labels[locale]).trim()
+      }
+    }
+  }
+
+  // 2. Look up in color options
+  const colorOptions = Array.isArray(attribute?.rawColorOptions)
+    ? attribute.rawColorOptions
+    : Array.isArray(attribute?.colorOptions)
+    ? attribute.colorOptions
+    : []
+
+  if (colorOptions.length > 0) {
+    const lowerVal = strVal.toLowerCase()
+    const match = colorOptions.find((c: any) => {
+      if (typeof c === 'object' && c !== null) {
+        return (
+          c.value === strVal ||
+          c.label === strVal ||
+          String(c.value || '').toLowerCase() === lowerVal ||
+          String(c.label || '').toLowerCase() === lowerVal
+        )
+      }
+      return String(c) === strVal || String(c).toLowerCase() === lowerVal
+    })
+
+    if (match && typeof match === 'object') {
+      if (locale === 'en') {
+        return match.label || match.value || strVal
+      }
+      if (match.translations?.[locale] && String(match.translations[locale]).trim()) {
+        return String(match.translations[locale]).trim()
+      }
+      if (match.value) {
+        const colName = getLocalizedColorName(match.value, match.label, locale)
+        if (colName) return colName
+      }
+    }
+  }
+
+  if (locale === 'en') return strVal
+
+  // 3. Fallback to dictionary translation
+  const dictTranslated = getLocalizedOptionLabel(attribute?.slug || '', strVal, locale)
+  if (dictTranslated && dictTranslated !== strVal) {
+    return dictTranslated
+  }
+
+  // 4. Material dictionary fallback
+  const matTranslated = getLocalizedMaterial(strVal, locale)
+  if (matTranslated && matTranslated !== strVal) {
+    return matTranslated
+  }
+
+  return strVal
+}
+
 

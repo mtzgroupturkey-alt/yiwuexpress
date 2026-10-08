@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { Star, ShoppingCart, Check, Heart, Eye } from 'lucide-react'
 import { ProductItem } from '@/data/products'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
+import { useAuth } from '@/hooks/useAuth'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 interface ElectronicsProductCardProps {
   product: ProductItem
@@ -21,9 +23,18 @@ export function ElectronicsProductCard({
 }: ElectronicsProductCardProps) {
   const { tShop, tBadge, tFlash, tPdp } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
+  const { isAuthenticated } = useAuth()
+  const customerView = useCustomerView()
+  const [mounted, setMounted] = useState(false)
   const [isAdded, setIsAdded] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
   const [imageError, setImageError] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false
 
   const discount = product.oldPrice 
     ? Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100) 
@@ -151,28 +162,30 @@ export function ElectronicsProductCard({
           )}
         </div>
 
-        {/* Add to Cart button */}
-        <button
-          type="button"
-          onClick={handleAdd}
-          className={`w-full py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98 ${
-            isAdded
-              ? 'bg-emerald-600 text-white'
-              : 'bg-[#FF4D00] hover:bg-[#e04400] text-white hover:shadow-md'
-          }`}
-        >
-          {isAdded ? (
-            <>
-              <Check className="w-4 h-4" />
-              <span>{tPdp('added')}</span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4" />
-              <span>{tFlash('addToCart')}</span>
-            </>
-          )}
-        </button>
+        {/* Add to Cart button - Only shown to authenticated users */}
+        {isUserLoggedIn && (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className={`w-full py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98 ${
+              isAdded
+                ? 'bg-emerald-600 text-white'
+                : 'bg-[#FF4D00] hover:bg-[#e04400] text-white hover:shadow-md'
+            }`}
+          >
+            {isAdded ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>{tPdp('added')}</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4" />
+                <span>{tFlash('addToCart')}</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   )

@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
+import { useAuth } from '@/hooks/useAuth'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 export interface ModernProductData {
   id: string
@@ -66,12 +68,21 @@ export function ModernProductCard({
 }: ModernProductCardProps) {
   const { tBadge } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
+  const { isAuthenticated } = useAuth()
+  const customerView = useCustomerView()
+  const [mounted, setMounted] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [isFavorite, setIsFavorite] = useState(product.isFavorite || false)
   const cardRef = useRef<HTMLDivElement>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false
 
   const translations: Record<string, Record<string, string>> = {
     en: {
@@ -285,17 +296,19 @@ export function ModernProductCard({
               transition={{ duration: 0.2 }}
               className="absolute inset-0 flex items-center justify-center gap-2 p-4 z-20"
             >
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  onAddToCart?.(product.id)
-                }}
-                className="bg-gradient-to-r from-[#c9a84c] to-[#e5c158] hover:from-[#b8963b] hover:to-[#c9a84c] text-navy-950 font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-[#c9a84c]/30 flex items-center gap-1.5 cursor-pointer"
-              >
-                <ShoppingCart className="w-3.5 h-3.5" />
-                {t.addToCart}
-              </Button>
+              {isUserLoggedIn && (
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onAddToCart?.(product.id)
+                  }}
+                  className="bg-gradient-to-r from-[#c9a84c] to-[#e5c158] hover:from-[#b8963b] hover:to-[#c9a84c] text-navy-950 font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-[#c9a84c]/30 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  {t.addToCart}
+                </Button>
+              )}
 
               <button
                 onClick={(e) => {

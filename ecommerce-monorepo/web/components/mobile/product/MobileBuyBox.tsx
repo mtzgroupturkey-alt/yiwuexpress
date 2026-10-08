@@ -1,12 +1,13 @@
 'use client'
 
 import React from 'react'
-import { ShoppingCart, FileText, ShieldCheck, Truck, MessageSquare, Loader2 } from 'lucide-react'
+import { ShoppingCart, FileText, ShieldCheck, Truck, MessageSquare, Loader2, LogIn } from 'lucide-react'
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useLocale } from 'next-intl'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { MobileQuantityStepper } from './MobileQuantityStepper'
+import { LocaleLink } from '@/components/LocaleLink'
 
 interface MobileBuyBoxProps {
   product: Product
@@ -21,6 +22,7 @@ interface MobileBuyBoxProps {
   onInquireSupplier?: () => void
   isAdding?: boolean
   className?: string
+  isLoggedIn?: boolean
 }
 
 export function MobileBuyBox({
@@ -36,6 +38,7 @@ export function MobileBuyBox({
   onInquireSupplier,
   isAdding = false,
   className = '',
+  isLoggedIn = true,
 }: MobileBuyBoxProps) {
   const { formatPrice } = useCurrency()
   const locale = useLocale()
@@ -104,31 +107,43 @@ export function MobileBuyBox({
 
       {/* Action Buttons */}
       <div className="space-y-2 pt-2">
-        <button
-          type="button"
-          onClick={onAddToCart}
-          disabled={isAdding || (stock !== undefined && stock <= 0)}
-          aria-label={isWholesaleActive && !isInstantWholesale ? 'Request Wholesale Quote (RFQ)' : 'Add to Shopping Cart'}
-          className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg tap-spring active:scale-[0.97] transition-all touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50 cursor-pointer"
-        >
-          {isAdding ? (
-            <Loader2 className="w-5 h-5 animate-spin text-white" />
-          ) : isWholesaleActive && !isInstantWholesale ? (
-            <>
-              <FileText className="w-5 h-5 transition-transform group-hover:scale-110" />
-              <span>
-                {locale === 'zh' ? '加入询价清单' : locale === 'ru' ? 'Запросить расчет цен' : 'Request Wholesale Quote (RFQ)'}
-              </span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-5 h-5 transition-transform group-hover:scale-110" />
-              <span>
-                {locale === 'zh' ? '立即加入购物车' : locale === 'ru' ? 'Добавить в корзину' : 'Add to Shopping Cart'}
-              </span>
-            </>
-          )}
-        </button>
+        {isLoggedIn ? (
+          <button
+            type="button"
+            onClick={onAddToCart}
+            disabled={isAdding || (stock !== undefined && stock <= 0)}
+            aria-label={isWholesaleActive && !isInstantWholesale ? 'Request Wholesale Quote (RFQ)' : 'Add to Shopping Cart'}
+            className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg tap-spring active:scale-[0.97] transition-all touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50 cursor-pointer"
+          >
+            {isAdding ? (
+              <Loader2 className="w-5 h-5 animate-spin text-white" />
+            ) : isWholesaleActive && !isInstantWholesale ? (
+              <>
+                <FileText className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <span>
+                  {locale === 'zh' ? '加入询价清单' : locale === 'ru' ? 'Запросить расчет цен' : 'Request Wholesale Quote (RFQ)'}
+                </span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <span>
+                  {locale === 'zh' ? '立即加入购物车' : locale === 'ru' ? 'Добавить в корзину' : 'Add to Shopping Cart'}
+                </span>
+              </>
+            )}
+          </button>
+        ) : (
+          <LocaleLink
+            href={`/sign-in?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : `/products/${product.slug || product.id}`)}`}
+            className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg tap-spring active:scale-[0.97] transition-all touch-manipulation focus:outline-none cursor-pointer"
+          >
+            <LogIn className="w-5 h-5" />
+            <span>
+              {locale === 'zh' ? '登录以加购或下单' : locale === 'ru' ? 'Войдите, чтобы оформить заказ' : 'Sign in to Order / Add to Cart'}
+            </span>
+          </LocaleLink>
+        )}
 
         {onInquireSupplier && (
           <button

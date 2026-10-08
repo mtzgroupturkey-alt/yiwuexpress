@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft, X, TrendingUp, Camera } from 'lucide-react'
+import { Menu, ShoppingCart, ClipboardList, Bell, Search, ArrowLeft, X, TrendingUp, Camera, LogIn, Briefcase, Building2 } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useSettings } from '@/components/SettingsProvider'
+import { useAuthContext } from '@/components/providers/AuthProvider'
 import { useMobile } from '@/components/MobileProvider'
 import { useCart } from '@/components/CartContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
@@ -40,6 +41,7 @@ export interface MobileHeaderProps {
   showCart?: boolean
   onCartClick?: () => void
   onMenuClick?: () => void
+  isAuthenticated?: boolean
   className?: string
 }
 
@@ -60,10 +62,13 @@ export function MobileHeader({
   showCart = true,
   onCartClick,
   onMenuClick,
+  isAuthenticated,
   className = '',
 }: MobileHeaderProps) {
   const router = useRouter()
   const locale = useLocale()
+  const authCtx = useAuthContext()
+  const effectiveIsAuth = isAuthenticated !== undefined ? isAuthenticated : authCtx.isAuthenticated
   const { settings } = useSettings()
   const { openDrawer, toggleDrawer, toggleSearch, isStandalone } = useMobile()
 
@@ -286,49 +291,76 @@ export function MobileHeader({
               </div>
             )}
 
-            {/* Notifications (if enabled) */}
-            {showNotifications && notificationCount > 0 && (
-              <button
-                type="button"
-                onClick={onNotificationsClick}
-                aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
-                data-testid="mobile-notifications-trigger"
-                className="relative w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all touch-manipulation shadow-2xs"
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0f172a]">
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </span>
-              </button>
-            )}
-
-            {/* Cart Icon with Live Badge */}
-            {showCart && (
-              <LocaleLink
-                href={cartHref}
-                onClick={handleCartClick}
-                aria-label={
-                  isWholesale
-                    ? locale === 'zh' ? '报价询价车' : locale === 'ru' ? 'Корзина запросов' : 'Quote Cart'
-                    : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина' : 'Cart'
-                }
-                data-testid="mobile-cart-trigger"
-                className="relative w-10 h-10 flex items-center justify-center text-slate-800 dark:text-slate-100 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all touch-manipulation shadow-2xs"
-              >
-                {isWholesale ? (
-                  <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
-                ) : (
-                  <ShoppingCart className="w-5 h-5 text-slate-800 dark:text-white" />
-                )}
-                {effectiveCartCount > 0 && (
-                  <span
-                    data-testid="mobile-cart-badge"
-                    className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F5A602] text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0f172a]"
+            {effectiveIsAuth ? (
+              <>
+                {/* Notifications (if enabled) */}
+                {showNotifications && notificationCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={onNotificationsClick}
+                    aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
+                    data-testid="mobile-notifications-trigger"
+                    className="relative w-10 h-10 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100/80 dark:bg-slate-800/80 rounded-xl hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all touch-manipulation shadow-2xs"
                   >
-                    {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
-                  </span>
+                    <Bell className="w-4 h-4" />
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0f172a]">
+                      {notificationCount > 99 ? '99+' : notificationCount}
+                    </span>
+                  </button>
                 )}
-              </LocaleLink>
+
+                {/* Cart Icon with Live Badge */}
+                {showCart && (
+                  <LocaleLink
+                    href={cartHref}
+                    onClick={handleCartClick}
+                    aria-label={
+                      isWholesale
+                        ? locale === 'zh' ? '报价询价车' : locale === 'ru' ? 'Корзина запросов' : 'Quote Cart'
+                        : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина' : 'Cart'
+                    }
+                    data-testid="mobile-cart-trigger"
+                    className="relative w-10 h-10 flex items-center justify-center text-slate-800 dark:text-slate-100 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/60 dark:border-slate-700/60 active:scale-95 transition-all touch-manipulation shadow-2xs"
+                  >
+                    {isWholesale ? (
+                      <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
+                    ) : (
+                      <ShoppingCart className="w-5 h-5 text-slate-800 dark:text-white" />
+                    )}
+                    {effectiveCartCount > 0 && (
+                      <span
+                        data-testid="mobile-cart-badge"
+                        className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F5A602] text-slate-950 text-[10px] font-black flex items-center justify-center shadow-xs ring-2 ring-white dark:ring-[#0f172a]"
+                      >
+                        {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
+                      </span>
+                    )}
+                  </LocaleLink>
+                )}
+              </>
+            ) : (
+              <>
+                {/* State A: Guest Mobile CTA and Sign In */}
+                <LocaleLink
+                  href="/register-b2b"
+                  data-testid="mobile-b2b-cta"
+                  className="inline-flex items-center gap-1.5 px-2.5 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-[#00407a] dark:text-blue-400 font-bold text-xs shadow-2xs active:scale-95 transition-all border border-slate-200/60 dark:border-slate-700/60 uppercase tracking-wide"
+                  title="Create a wholesale account"
+                >
+                  <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="hidden min-[380px]:inline">FOR BUSINESS</span>
+                  <span className="min-[380px]:hidden">B2B</span>
+                </LocaleLink>
+
+                <LocaleLink
+                  href="/sign-in"
+                  data-testid="mobile-sign-in"
+                  className="inline-flex items-center gap-1 px-2.5 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-semibold text-xs active:scale-95 transition-all border border-slate-200/60 dark:border-slate-700/60"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>{locale === 'zh' ? '登录' : locale === 'ru' ? 'Войти' : 'Sign In'}</span>
+                </LocaleLink>
+              </>
             )}
 
             {/* Menu Hamburger Button */}
@@ -537,48 +569,61 @@ export function MobileHeader({
             </button>
           )}
 
-          {showNotifications && (
-            <button
-              type="button"
-              onClick={onNotificationsClick}
-              aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
-              data-testid="mobile-notifications-trigger"
-              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              <Bell className="w-5 h-5" />
-              {notificationCount > 0 && (
-                <span className="absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </span>
-              )}
-            </button>
-          )}
-
-          {showCart && (
-            <LocaleLink
-              href={cartHref}
-              onClick={handleCartClick}
-              aria-label={
-                isWholesale
-                  ? locale === 'zh' ? '报价询价车' : locale === 'ru' ? 'Корзина запросов' : 'Quote Cart'
-                  : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина покупок' : 'Shopping Cart'
-              }
-              data-testid="mobile-cart-trigger"
-              className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              {isWholesale ? (
-                <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
-              ) : (
-                <ShoppingCart className="w-5 h-5 text-gray-900 dark:text-white" />
-              )}
-              {effectiveCartCount > 0 && (
-                <span
-                  data-testid="mobile-cart-badge"
-                  className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs"
+          {effectiveIsAuth ? (
+            <>
+              {showNotifications && (
+                <button
+                  type="button"
+                  onClick={onNotificationsClick}
+                  aria-label={locale === 'zh' ? '通知' : locale === 'ru' ? 'Уведомления' : 'Notifications'}
+                  data-testid="mobile-notifications-trigger"
+                  className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 >
-                  {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
-                </span>
+                  <Bell className="w-5 h-5" />
+                  {notificationCount > 0 && (
+                    <span className="absolute top-2 right-2 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs">
+                      {notificationCount > 99 ? '99+' : notificationCount}
+                    </span>
+                  )}
+                </button>
               )}
+
+              {showCart && (
+                <LocaleLink
+                  href={cartHref}
+                  onClick={handleCartClick}
+                  aria-label={
+                    isWholesale
+                      ? locale === 'zh' ? '报价询价车' : locale === 'ru' ? 'Корзина запросов' : 'Quote Cart'
+                      : locale === 'zh' ? '购物车' : locale === 'ru' ? 'Корзина покупок' : 'Shopping Cart'
+                  }
+                  data-testid="mobile-cart-trigger"
+                  className="relative min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                >
+                  {isWholesale ? (
+                    <ClipboardList className="w-5 h-5 text-[#00407a] dark:text-blue-400" />
+                  ) : (
+                    <ShoppingCart className="w-5 h-5 text-gray-900 dark:text-white" />
+                  )}
+                  {effectiveCartCount > 0 && (
+                    <span
+                      data-testid="mobile-cart-badge"
+                      className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-xs"
+                    >
+                      {effectiveCartCount > 99 ? '99+' : effectiveCartCount}
+                    </span>
+                  )}
+                </LocaleLink>
+              )}
+            </>
+          ) : (
+            <LocaleLink
+              href="/sign-in"
+              data-testid="mobile-sign-in"
+              aria-label={locale === 'zh' ? '登录' : locale === 'ru' ? 'Войти' : 'Sign In'}
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-900 dark:text-white rounded-full active:bg-gray-100 dark:active:bg-slate-800 transition-colors touch-manipulation"
+            >
+              <LogIn className="w-5 h-5" />
             </LocaleLink>
           )}
         </div>

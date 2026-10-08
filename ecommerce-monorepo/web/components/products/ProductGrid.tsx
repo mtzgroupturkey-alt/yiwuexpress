@@ -11,6 +11,8 @@ import { ProductImage } from '@/components/ui/ProductImage'
 import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
 import { useStoreMode } from '@/contexts/StoreModeContext'
+import { useAuth } from '@/hooks/useAuth'
+import { useCustomerView } from '@/hooks/useCustomerView'
 
 interface Product {
   id: string
@@ -58,11 +60,20 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const { refreshCartCount } = useCart()
   const { isRetail } = useStoreMode()
+  const { isAuthenticated } = useAuth()
+  const customerView = useCustomerView()
+  const [mounted, setMounted] = useState(false)
   const t = useTranslations('Product')
   const { tBadge } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const [wishlist, setWishlist] = useState<Set<string>>(new Set())
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false
 
   useEffect(() => {
     // Load wishlist from localStorage
@@ -254,7 +265,7 @@ export default function ProductGrid({
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-3">
-                {isRetail && (
+                {isRetail && isUserLoggedIn && (
                   <button
                     onClick={() => !isSoldOut && handleAddToCart(product.id)}
                     disabled={isSoldOut}

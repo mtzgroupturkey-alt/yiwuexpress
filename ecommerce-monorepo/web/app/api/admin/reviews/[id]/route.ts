@@ -21,11 +21,53 @@ export async function PUT(
 
     const reviewId = params.id
     const body = await req.json().catch(() => ({}))
-    const { isApproved } = body
+    const { isApproved, rating, title, comment } = body
+
+    const updateData: any = {}
+    if (isApproved !== undefined) updateData.isApproved = !!isApproved
+    if (typeof rating === 'number' && rating >= 1 && rating <= 5) updateData.rating = rating
+    if (typeof title === 'string') updateData.title = title.trim()
+    if (typeof comment === 'string') updateData.comment = comment.trim()
 
     const updatedReview = await prisma.review.update({
       where: { id: reviewId },
-      data: { isApproved: isApproved !== undefined ? !!isApproved : true }
+      data: updateData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            profilePhoto: true,
+            userType: true,
+            role: true,
+          }
+        },
+        product: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            thumbnail: true,
+            images: true,
+          }
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
     })
 
     return NextResponse.json({ success: true, data: updatedReview })

@@ -38,6 +38,7 @@ import { Search, X, CheckCircle2 } from 'lucide-react';
 import { useSettings } from '@/components/SettingsProvider';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/components/providers/AuthProvider';
 import { useCart } from '@/components/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from 'next-intl';
@@ -52,7 +53,7 @@ export default function Home() {
   const router = useRouter();
   const { settings } = useSettings();
   const { formatPrice } = useCurrency();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuthContext();
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { wishlistCount, favoriteIds, favoritesList, toggleWishlist } = useWishlist();
   const { storeMode } = useStoreMode();
@@ -708,6 +709,8 @@ export default function Home() {
 
       {/* 1. Header (Utility, Brand Bar, Ribbon, Ticker) */}
       <Header
+        isAuthenticated={isAuthenticated}
+        user={user}
         cartCount={cartCount}
         cartTotal={cartTotal}
         favoritesCount={wishlistCount}

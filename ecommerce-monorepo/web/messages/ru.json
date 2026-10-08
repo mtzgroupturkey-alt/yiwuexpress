@@ -1,4 +1,20 @@
 {
+  "header": {
+    "forBusiness": "DRÖMKÖK ДЛЯ БИЗНЕСА",
+    "forBusinessTooltip": "Создать оптовый аккаунт",
+    "signIn": "Войти",
+    "favorites": "Избранное",
+    "basket": "Корзина",
+    "profile": "Профиль"
+  },
+  "reviews": {
+    "count_one": "{n} отзыв",
+    "count_other": "{n} отзывов",
+    "average": "{avg} из 5",
+    "beFirst": "Будьте первым, кто оставит отзыв об этом товаре.",
+    "writeReview": "Написать отзыв",
+    "distribution": "Распределение оценок"
+  },
   "Header": {
     "logoAlt": "Логотип компании",
     "viewAll": "Показать все",

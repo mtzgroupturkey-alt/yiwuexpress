@@ -40,6 +40,7 @@ export interface MobileProductDetailViewProps {
   allImages?: string[]
   isWholesale?: boolean
   isInstantWholesale?: boolean
+  isLoggedIn?: boolean
 }
 
 export function MobileProductDetailView({
@@ -66,6 +67,7 @@ export function MobileProductDetailView({
   loadMoreRelated,
   hasMoreRelated = false,
   loadingMoreRelated = false,
+  isLoggedIn = true,
 }: MobileProductDetailViewProps) {
   const { isStandalone } = useMobile()
   const { isWholesaleSession } = useSessionMode()
@@ -214,6 +216,7 @@ export function MobileProductDetailView({
           onAddToCart={handleAddToCart}
           onInquireSupplier={handleInquireSupplier}
           isAdding={isAdding}
+          isLoggedIn={isLoggedIn}
         />
 
         {/* Trust Badges */}
@@ -293,6 +296,7 @@ export function MobileProductDetailView({
         minQty={product.moq || 1}
         productName={product.name}
         productImage={activeImages[0] || product.image}
+        isLoggedIn={isLoggedIn}
       />
     </div>
   )

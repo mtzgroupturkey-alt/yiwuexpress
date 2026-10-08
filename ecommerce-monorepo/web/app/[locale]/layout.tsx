@@ -23,6 +23,8 @@ import { InstallPrompt } from '@/components/mobile/InstallPrompt'
 import { LocaleCurrencyAutoDetect } from '@/components/i18n/LocaleCurrencyAutoDetect'
 import { PushNotificationPrompt } from '@/components/pwa/PushNotificationPrompt'
 import DynamicFavicon from '@/components/DynamicFavicon'
+import { getServerAuth } from '@/lib/auth/getServerAuth'
+import { AuthProvider } from '@/components/providers/AuthProvider'
 
 export const dynamic = 'force-dynamic'
 
@@ -162,6 +164,8 @@ export default async function LocaleLayout({
   const initialIsIOS = checkIsIOS(userAgent)
   const initialIsAndroid = checkIsAndroid(userAgent)
 
+  const serverAuth = await getServerAuth()
+
   return (
     <>
       <DynamicFavicon faviconUrl={companyFavicon} />
@@ -217,37 +221,39 @@ export default async function LocaleLayout({
       />
       <NextIntlClientProvider messages={messages}>
         <PreloaderWrapper initialLogo={companyLogo} initialCompanyName={companyName}>
-          <StoreSessionProvider
-            initialStoreMode={serverSettings.storeMode as any}
-            initialSessionMode={resolvedSessionMode}
-            initialSettings={serverSettings}
-          >
-            <SessionModeProvider initialMode={resolvedSessionMode}>
-              <WholesaleInquiryProvider>
-                <Providers>
-                  <SettingsProvider initialSettings={serverSettings}>
-                    <CurrencyProvider initialCurrency={rawCurrencyCookie}>
-                      <LocaleCurrencyAutoDetect />
-                      <MobileProvider
-                        initialIsMobile={initialIsMobile}
-                        initialIsIOS={initialIsIOS}
-                        initialIsAndroid={initialIsAndroid}
-                      >
-                        <MobileLayoutContainer>
-                          {children}
-                        </MobileLayoutContainer>
-                        <InstallPrompt />
-                        <PushNotificationPrompt />
-                        <BottomNav />
-                        <MobileDrawer />
-                        <BackToTop />
-                      </MobileProvider>
-                    </CurrencyProvider>
-                  </SettingsProvider>
-                </Providers>
-              </WholesaleInquiryProvider>
-            </SessionModeProvider>
-          </StoreSessionProvider>
+          <AuthProvider initialAuth={serverAuth}>
+            <StoreSessionProvider
+              initialStoreMode={serverSettings.storeMode as any}
+              initialSessionMode={resolvedSessionMode}
+              initialSettings={serverSettings}
+            >
+              <SessionModeProvider initialMode={resolvedSessionMode}>
+                <WholesaleInquiryProvider>
+                  <Providers>
+                    <SettingsProvider initialSettings={serverSettings}>
+                      <CurrencyProvider initialCurrency={rawCurrencyCookie}>
+                        <LocaleCurrencyAutoDetect />
+                        <MobileProvider
+                          initialIsMobile={initialIsMobile}
+                          initialIsIOS={initialIsIOS}
+                          initialIsAndroid={initialIsAndroid}
+                        >
+                          <MobileLayoutContainer>
+                            {children}
+                          </MobileLayoutContainer>
+                          <InstallPrompt />
+                          <PushNotificationPrompt />
+                          <BottomNav />
+                          <MobileDrawer />
+                          <BackToTop />
+                        </MobileProvider>
+                      </CurrencyProvider>
+                    </SettingsProvider>
+                  </Providers>
+                </WholesaleInquiryProvider>
+              </SessionModeProvider>
+            </StoreSessionProvider>
+          </AuthProvider>
         </PreloaderWrapper>
       </NextIntlClientProvider>
     </>

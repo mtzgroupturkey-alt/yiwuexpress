@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 
 interface ReviewFormProps {
@@ -23,6 +24,7 @@ interface ReviewFormProps {
 
 export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProps) {
   const [rating, setRating] = useState(0)
+  const router = useRouter()
   const [submitted, setSubmitted] = useState(false)
   const queryClient = useQueryClient()
   const t = useTranslations('Product')
@@ -90,6 +92,7 @@ export function ReviewForm({ productId, productName, onSuccess }: ReviewFormProp
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews', productId] })
+      router.refresh()
       setSubmitted(true)
       setTimeout(() => {
         reset()

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { useRouter } from 'next/navigation'
@@ -9,6 +9,7 @@ import { Star, Plus, Heart, Package, ClipboardList, Check } from 'lucide-react'
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useCustomerView } from '@/hooks/useCustomerView'
+import { useAuth } from '@/hooks/useAuth'
 import { useSettings } from '@/components/SettingsProvider'
 
 interface MobileProductCardProps {
@@ -33,8 +34,15 @@ export function MobileProductCard({
   const { formatPrice } = useCurrency()
   const customerView = useCustomerView()
   const { settings } = useSettings()
-
+  const { isAuthenticated } = useAuth()
+  const [mounted, setMounted] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false
 
   const isWholesaleActive = customerView.isWholesale
   const canRequestQuote = customerView.canRequestQuote
@@ -173,27 +181,29 @@ export function MobileProductCard({
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleActionClick}
-            aria-label={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
-            title={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
-            className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-85 transition-all duration-150 touch-manipulation cursor-pointer ${
-              justAdded
-                ? 'bg-emerald-600 shadow-emerald-500/30 shadow-md scale-105'
-                : isRfqMode
-                ? 'bg-[#00407a] hover:bg-[#003366]'
-                : 'bg-primary-600 hover:bg-primary-700'
-            }`}
-          >
-            {justAdded ? (
-              <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
-            ) : isRfqMode ? (
-              <ClipboardList className="w-4 h-4 transition-transform group-hover:scale-110" />
-            ) : (
-              <Plus className="w-4 h-4 transition-transform group-hover:scale-110" />
-            )}
-          </button>
+          {isUserLoggedIn && (
+            <button
+              type="button"
+              onClick={handleActionClick}
+              aria-label={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
+              title={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
+              className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-85 transition-all duration-150 touch-manipulation cursor-pointer ${
+                justAdded
+                  ? 'bg-emerald-600 shadow-emerald-500/30 shadow-md scale-105'
+                  : isRfqMode
+                  ? 'bg-[#00407a] hover:bg-[#003366]'
+                  : 'bg-primary-600 hover:bg-primary-700'
+              }`}
+            >
+              {justAdded ? (
+                <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
+              ) : isRfqMode ? (
+                <ClipboardList className="w-4 h-4 transition-transform group-hover:scale-110" />
+              ) : (
+                <Plus className="w-4 h-4 transition-transform group-hover:scale-110" />
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

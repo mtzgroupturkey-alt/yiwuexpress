@@ -8,6 +8,7 @@ import {
   getLocalizedOptionLabel,
   getLocalizedColorList,
   getLocalizedColorName,
+  resolveLocalizedAttributeValue,
 } from '@/lib/utils/attributeOptionTranslations';
 
 interface ProductPageProps {
@@ -127,34 +128,6 @@ async function getProductFromDB(slug: string, locale: string) {
     });
   }
 
-  // Localize values in attributes object
-  if (requestedLocale !== 'en') {
-    for (const attrSlug of Object.keys(attributes)) {
-      // Color attributes should remain as arrays so ProductDetailView can render swatch badges
-      if (attrSlug === 'color' || attrSlug.endsWith('_color')) {
-        continue;
-      }
-
-      if (slugTranslationMap[attrSlug]) {
-        attributes[attrSlug] = slugTranslationMap[attrSlug];
-      } else {
-        const val = attributes[attrSlug];
-        if (typeof val === 'string' && valueTranslationMap[val]) {
-          attributes[attrSlug] = valueTranslationMap[val];
-        } else if (val === 'true' || val === true) {
-          attributes[attrSlug] = requestedLocale === 'ru' ? 'Да' : requestedLocale === 'zh' ? '是' : 'Yes';
-        } else if (val === 'false' || val === false) {
-          attributes[attrSlug] = requestedLocale === 'ru' ? 'Нет' : requestedLocale === 'zh' ? '否' : 'No';
-        } else if (Array.isArray(val)) {
-          // If it's an option array, translate each item
-          attributes[attrSlug] = val.map((v) => getLocalizedOptionLabel(attrSlug, String(v), requestedLocale as any));
-        } else if (typeof val === 'string') {
-          attributes[attrSlug] = getLocalizedOptionLabel(attrSlug, val, requestedLocale as any);
-        }
-      }
-    }
-  }
-
   const flattenCategoryAttrs = (catAttrs: any[]) =>
     catAttrs
       .filter((ca: any) => ca.attribute)
@@ -170,9 +143,7 @@ async function getProductFromDB(slug: string, locale: string) {
         isVariant: ca.attribute.isVariant ?? false,
         rawOptions: ca.attribute.options || [],
         rawColorOptions: ca.attribute.colorOptions || [],
-        options: ca.attribute.options?.map((opt: string) =>
-          getLocalizedOptionLabel(ca.attribute.slug, opt, requestedLocale as any)
-        ) || ca.attribute.options,
+        options: ca.attribute.options || [],
         colorOptions: ca.attribute.colorOptions?.map((c: any) => ({
           ...c,
           label: getLocalizedColorName(c.value, c.label, requestedLocale as any)
@@ -192,6 +163,28 @@ async function getProductFromDB(slug: string, locale: string) {
     }
     return acc;
   }, []);
+
+  // Localize values in attributes object
+  if (requestedLocale !== 'en') {
+    for (const attrSlug of Object.keys(attributes)) {
+      // Color attributes should remain as arrays so ProductDetailView can render swatch badges
+      if (attrSlug === 'color' || attrSlug.endsWith('_color')) {
+        continue;
+      }
+
+      if (slugTranslationMap[attrSlug]) {
+        attributes[attrSlug] = slugTranslationMap[attrSlug];
+      } else {
+        const val = attributes[attrSlug];
+        if (typeof val === 'string' && valueTranslationMap[val]) {
+          attributes[attrSlug] = valueTranslationMap[val];
+        } else {
+          const matchedAttr = uniqueAttributes.find((a: any) => a.slug === attrSlug);
+          attributes[attrSlug] = resolveLocalizedAttributeValue(matchedAttr, val, requestedLocale);
+        }
+      }
+    }
+  }
 
   const rawCategory = product.category as any;
   const localizedCategory = rawCategory
@@ -315,6 +308,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
+import { getProductRating } from '@/lib/reviews/rating';
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug, locale } = params;
   const product = await getProductFromDB(slug, locale);
@@ -323,10 +318,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const companyName = await getCompanyName();
+  const [companyName, ratingSummary] = await Promise.all([
+    getCompanyName(),
+    getProductRating(product.id),
+  ]);
+
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://dromkok.com';
   const localized = localizeProduct(product, locale);
-  const jsonLd = {
+  const jsonLd: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: localized.name || product.name,
@@ -347,13 +346,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
     },
   };
 
+  // Only emit aggregateRating when there are approved reviews
+  if (ratingSummary.count > 0) {
+    jsonLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: ratingSummary.average,
+      reviewCount: ratingSummary.count,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ProductDetailView product={product} slug={slug} locale={locale} />
+      <ProductDetailView product={product} slug={slug} locale={locale} ratingSummary={ratingSummary} />
     </>
   );
 }

@@ -1,4 +1,20 @@
 {
+  "header": {
+    "forBusiness": "DRÖMKÖK FOR BUSINESS",
+    "forBusinessTooltip": "Create a wholesale account",
+    "signIn": "Sign In",
+    "favorites": "Favorites",
+    "basket": "Basket",
+    "profile": "Profile"
+  },
+  "reviews": {
+    "count_one": "{n} review",
+    "count_other": "{n} reviews",
+    "average": "{avg} out of 5",
+    "beFirst": "Be the first person to review this product.",
+    "writeReview": "Write a review",
+    "distribution": "Rating distribution"
+  },
   "Header": {
     "logoAlt": "Company logo",
     "viewAll": "View All",
@@ -1017,7 +1033,7 @@
     "basedOnReviews": "Based on {n} reviews",
     "writeReview": "Write a Review",
     "noReviews": "No reviews yet",
-    "beFirst": "Be the first to review this product",
+    "beFirst": "Be the first person to review this product.",
     "faqTitle": "Frequently Asked Questions",
     "faqSubtitle": "Get quick answers to common questions",
     "faqStillQuestions": "Still have questions?",

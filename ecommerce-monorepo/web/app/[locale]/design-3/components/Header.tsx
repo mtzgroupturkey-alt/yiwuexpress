@@ -35,6 +35,7 @@ import { useMobile } from '@/components/MobileProvider';
 import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { CurrencySwitcher } from '@/components/i18n/CurrencySwitcher';
 import { VisualSearchModal } from '@/components/search/VisualSearchModal';
+import { useAuthContext } from '@/components/providers/AuthProvider';
 
 export interface NavChildCategory {
   id: string;
@@ -53,7 +54,9 @@ export interface NavCategory {
   children?: NavChildCategory[];
 }
 
-interface HeaderProps {
+export interface HeaderProps {
+  isAuthenticated?: boolean;
+  user?: any;
   cartCount: number;
   cartTotal: number;
   favoritesCount: number;
@@ -85,7 +88,238 @@ const DEPARTMENTS = [
   'Garden & Outdoor'
 ];
 
+export interface WholesaleCtaButtonProps {
+  locale: string;
+  label?: string;
+  tooltip?: string;
+}
+
+export const WholesaleCtaButton: React.FC<WholesaleCtaButtonProps> = ({
+  locale,
+  label = 'DRÖMKÖK FOR BUSINESS',
+  tooltip = 'Create a wholesale account',
+}) => {
+  return (
+    <Link
+      id="header-cta-business-btn"
+      href={`/${locale}/register-b2b`}
+      title={tooltip}
+      aria-label={tooltip}
+      className="h-10 px-3.5 py-2 flex items-center gap-2 text-[#00407a] hover:text-[#003060] hover:bg-slate-100 rounded-lg transition-colors text-xs sm:text-sm font-bold uppercase tracking-wide shrink-0 whitespace-nowrap cursor-pointer"
+    >
+      <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
+      <span>{label}</span>
+    </Link>
+  );
+};
+
+export interface SignInLinkProps {
+  locale: string;
+  label?: string;
+}
+
+export const SignInLink: React.FC<SignInLinkProps> = ({
+  locale,
+  label = 'Sign In',
+}) => {
+  return (
+    <Link
+      id="header-signin-btn"
+      href={`/${locale}/sign-in`}
+      className="h-10 px-3.5 py-2 flex items-center gap-2 text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-lg transition-colors text-xs sm:text-sm font-semibold shrink-0 whitespace-nowrap cursor-pointer"
+    >
+      <UserIcon className="w-4 h-4 text-slate-600" />
+      <span>{label}</span>
+    </Link>
+  );
+};
+
+export interface FavoritesIconProps {
+  favoritesCount: number;
+  label: string;
+  onClick: () => void;
+}
+
+export const FavoritesIcon: React.FC<FavoritesIconProps> = ({
+  favoritesCount,
+  label,
+  onClick,
+}) => {
+  return (
+    <button
+      id="header-favorites-btn"
+      onClick={onClick}
+      className="h-10 flex flex-col items-center justify-center relative p-1.5 text-slate-700 hover:text-[#00407a] transition-colors cursor-pointer group"
+    >
+      <div className="relative">
+        <Heart className="w-5 h-5 text-slate-600 group-hover:text-red-500 transition-colors" />
+        {favoritesCount > 0 && (
+          <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+            {favoritesCount}
+          </span>
+        )}
+      </div>
+      <span className="text-[11px] font-medium mt-0.5 text-slate-600 leading-none">{label}</span>
+    </button>
+  );
+};
+
+export interface BasketIconProps {
+  cartCount: number;
+  cartTotal: number;
+  canRequestQuote: boolean;
+  isInstantWholesale: boolean;
+  isWholesaleActive: boolean;
+  quoteCount: number;
+  currentLocale: string;
+  formatPrice: (amount: number) => string;
+  tHeader: any;
+  onOpenCart: () => void;
+  verificationStatus?: string;
+}
+
+export const BasketIcon: React.FC<BasketIconProps> = ({
+  cartCount,
+  cartTotal,
+  canRequestQuote,
+  isInstantWholesale,
+  isWholesaleActive,
+  quoteCount,
+  currentLocale,
+  formatPrice,
+  tHeader,
+  onOpenCart,
+  verificationStatus,
+}) => {
+  if (canRequestQuote && !isInstantWholesale) {
+    return (
+      <Link
+        id="header-cart-btn"
+        href={`/${currentLocale}/quote-cart`}
+        title={`${tHeader('quoteRequest')} (${quoteCount} ${quoteCount === 1 ? tHeader('item') : tHeader('items')})`}
+        className="h-10 flex items-center gap-2.5 bg-blue-50 hover:bg-blue-100/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-blue-200 text-blue-950"
+      >
+        <div className="relative">
+          <FileText className="w-5 h-5 text-blue-700" />
+          {quoteCount > 0 && (
+            <span className="absolute -top-2 -right-2.5 bg-blue-600 text-white text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+              {quoteCount}
+            </span>
+          )}
+        </div>
+        <div className="text-left leading-tight hidden sm:block">
+          <div className="text-[10px] uppercase font-bold text-blue-600 flex items-center gap-1">
+            <span>{tHeader('quoteRequest')}</span>
+            {verificationStatus === 'PENDING' && (
+              <span className="text-[9px] bg-amber-100 text-amber-800 px-1 rounded font-normal">Pending</span>
+            )}
+          </div>
+          <div className="text-xs font-black text-blue-950">
+            {quoteCount} {quoteCount === 1 ? tHeader('item') : tHeader('items')}
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  if (isWholesaleActive && isInstantWholesale) {
+    return (
+      <button
+        id="header-cart-btn"
+        onClick={onOpenCart}
+        title={`${tHeader('wholesaleCart')} (${cartCount} ${cartCount === 1 ? tHeader('item') : tHeader('items')})`}
+        className="h-10 flex items-center gap-2.5 bg-amber-50 hover:bg-amber-100/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-amber-200"
+      >
+        <div className="relative">
+          <ShoppingCart className="w-5 h-5 text-amber-700" />
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+              {cartCount}
+            </span>
+          )}
+        </div>
+        <div className="text-left leading-tight hidden sm:block">
+          {verificationStatus === 'PENDING' && (
+            <div className="text-[9px] font-semibold text-amber-700 leading-none mb-0.5">Pending Approval</div>
+          )}
+          <div className="text-xs font-black text-slate-900">
+            {formatPrice(cartTotal)}
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      id="header-cart-btn"
+      onClick={onOpenCart}
+      title={`Shopping Cart (${cartCount} items)`}
+      className="h-10 flex items-center gap-2.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-slate-200"
+    >
+      <div className="relative">
+        <ShoppingCart className="w-5 h-5 text-[#00407a]" />
+        {cartCount > 0 && (
+          <span className="absolute -top-2 -right-2.5 bg-[#F5A602] text-slate-900 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
+            {cartCount}
+          </span>
+        )}
+      </div>
+      <div className="text-xs font-black text-slate-900 hidden sm:block">
+        {formatPrice(cartTotal)}
+      </div>
+    </button>
+  );
+};
+
+export interface ProfileIconProps {
+  user: any;
+  tHeader: any;
+  onClick: () => void;
+}
+
+export const ProfileIcon: React.FC<ProfileIconProps> = ({
+  user,
+  tHeader,
+  onClick,
+}) => {
+  return (
+    <button
+      id="header-profile-btn"
+      onClick={onClick}
+      className="h-10 flex items-center gap-2 pl-1 hover:opacity-90 cursor-pointer transition-opacity"
+      title={`Account: ${user?.name || user?.email || 'User'}`}
+    >
+      {user?.profilePhoto ? (
+        <img
+          src={user.profilePhoto}
+          alt={user.name || 'User'}
+          className="w-9 h-9 rounded-full object-cover border border-amber-300 ring-2 ring-amber-100"
+        />
+      ) : (
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00407a] to-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs ring-2 ring-blue-100">
+          {user?.name ? user.name.charAt(0).toUpperCase() : user?.email ? user.email.charAt(0).toUpperCase() : 'U'}
+        </div>
+      )}
+      <div className="text-left hidden xl:block leading-tight">
+        <div className="text-xs font-bold text-slate-900 truncate max-w-[120px]">
+          {user?.name ? user.name.split(' ')[0] : user?.email ? user.email.split('@')[0] : 'Member'}
+        </div>
+        <div className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">
+          {user?.role === 'ADMIN'
+            ? tHeader('roleAdmin')
+            : user?.role === 'SUPPLIER'
+            ? tHeader('roleSupplier')
+            : tHeader('roleMember')}
+        </div>
+      </div>
+    </button>
+  );
+};
+
 export const Header: React.FC<HeaderProps> = ({
+  isAuthenticated: propIsAuthenticated,
+  user: propUser,
   cartCount,
   cartTotal,
   favoritesCount,
@@ -116,9 +350,12 @@ export const Header: React.FC<HeaderProps> = ({
   const isInstantWholesale = rfqModel === 'INSTANT';
 
   const { currency, currencies, setCurrency, formatPrice, currentCurrency } = useCurrency();
-  const { user, isAuthenticated } = useAuth();
+  const authCtx = useAuthContext();
+  const isAuthenticated = propIsAuthenticated !== undefined ? propIsAuthenticated : authCtx.isAuthenticated;
+  const user = propUser !== undefined ? propUser : authCtx.user;
   const currentLocale = useLocale();
   const tHeader = useTranslations('Home.header');
+  const tRootHeader = useTranslations('header');
   const tBusiness = useTranslations('business');
 
   const isWholesaleUser = Boolean(
@@ -350,17 +587,8 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Right Side: Business Link & Currency & Language Switchers */}
+          {/* Right Side: Currency & Language Switchers */}
           <div className="flex items-center gap-2.5 pl-1">
-            {!isWholesaleUser && (
-              <Link
-                href={`/${currentLocale}/business`}
-                className="text-[11px] font-bold text-[#00407a] hover:text-[#003060] transition-colors flex items-center gap-1.5 py-0.5 px-2 rounded-md hover:bg-slate-200/60 uppercase tracking-wide"
-              >
-                <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>DRÖMKÖK FOR BUSINESS</span>
-              </Link>
-            )}
             <LanguageSwitcher variant="header-dropdown" />
             <CurrencySwitcher variant="header-dropdown" />
           </div>
@@ -493,130 +721,49 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </form>
 
-        {/* Action Controls & Profile */}
-        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          {/* Favorites */}
-          <button
-            id="header-favorites-btn"
-            onClick={onOpenFavorites}
-            className="flex flex-col items-center justify-center relative p-1.5 text-slate-700 hover:text-[#00407a] transition-colors cursor-pointer group"
-          >
-            <div className="relative">
-              <Heart className="w-5 h-5 text-slate-600 group-hover:text-red-500 transition-colors" />
-              {favoritesCount > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                  {favoritesCount}
-                </span>
-              )}
-            </div>
-            <span className="text-[11px] font-medium mt-0.5 text-slate-600">{tHeader('favorites')}</span>
-          </button>
-
-          {/* Smart Morphing Cart Button */}
-          {canRequestQuote && !isInstantWholesale ? (
-            <Link
-              id="header-cart-btn"
-              href={`/${currentLocale}/quote-cart`}
-              title={`${tHeader('quoteRequest')} (${quoteCount} ${quoteCount === 1 ? tHeader('item') : tHeader('items')})`}
-              className="flex items-center gap-2.5 bg-blue-50 hover:bg-blue-100/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-blue-200 text-blue-950"
-            >
-              <div className="relative">
-                <FileText className="w-5 h-5 text-blue-700" />
-                {quoteCount > 0 && (
-                  <span className="absolute -top-2 -right-2.5 bg-blue-600 text-white text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                    {quoteCount}
-                  </span>
-                )}
-              </div>
-              <div className="text-left leading-tight hidden sm:block">
-                <div className="text-[10px] uppercase font-bold text-blue-600">{tHeader('quoteRequest')}</div>
-                <div className="text-xs font-black text-blue-950">
-                  {quoteCount} {quoteCount === 1 ? tHeader('item') : tHeader('items')}
-                </div>
-              </div>
-            </Link>
-          ) : isWholesaleActive && isInstantWholesale ? (
-            <button
-              id="header-cart-btn"
-              onClick={onOpenCart}
-              title={`${tHeader('wholesaleCart')} (${cartCount} ${cartCount === 1 ? tHeader('item') : tHeader('items')})`}
-              className="flex items-center gap-2.5 bg-amber-50 hover:bg-amber-100/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-amber-200"
-            >
-              <div className="relative">
-                <ShoppingCart className="w-5 h-5 text-amber-700" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2.5 bg-amber-500 text-slate-950 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <div className="text-xs font-black text-slate-900 hidden sm:block">
-                {formatPrice(cartTotal)}
-              </div>
-            </button>
+        {/* Action Controls: STATE A (Guest) vs STATE B (Logged-in) */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 h-10">
+          {!isAuthenticated ? (
+            /* --- STATE A: GUEST (not logged in) --- */
+            <>
+              <WholesaleCtaButton
+                locale={currentLocale}
+                label={tRootHeader('forBusiness') || 'DRÖMKÖK FOR BUSINESS'}
+                tooltip={tRootHeader('forBusinessTooltip') || 'Create a wholesale account'}
+              />
+              <SignInLink
+                locale={currentLocale}
+                label={tRootHeader('signIn') || 'Sign In'}
+              />
+            </>
           ) : (
-            <button
-              id="header-cart-btn"
-              onClick={onOpenCart}
-              title={`Shopping Cart (${cartCount} items)`}
-              className="flex items-center gap-2.5 bg-slate-100 hover:bg-slate-200/80 px-3 py-2 rounded-lg transition-colors cursor-pointer border border-slate-200"
-            >
-              <div className="relative">
-                <ShoppingCart className="w-5 h-5 text-[#00407a]" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2.5 bg-[#F5A602] text-slate-900 text-[10px] font-extrabold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <div className="text-xs font-black text-slate-900 hidden sm:block">
-                {formatPrice(cartTotal)}
-              </div>
-            </button>
+            /* --- STATE B: AUTHENTICATED USER (wholesale or retail) --- */
+            <>
+              <FavoritesIcon
+                favoritesCount={favoritesCount}
+                label={tRootHeader('favorites') || tHeader('favorites')}
+                onClick={onOpenFavorites}
+              />
+              <BasketIcon
+                cartCount={cartCount}
+                cartTotal={cartTotal}
+                canRequestQuote={canRequestQuote}
+                isInstantWholesale={isInstantWholesale}
+                isWholesaleActive={isWholesaleActive}
+                quoteCount={quoteCount}
+                currentLocale={currentLocale}
+                formatPrice={formatPrice}
+                tHeader={tHeader}
+                onOpenCart={onOpenCart}
+                verificationStatus={user?.verificationStatus}
+              />
+              <ProfileIcon
+                user={user}
+                tHeader={tHeader}
+                onClick={onOpenMemberModal}
+              />
+            </>
           )}
-
-          {/* User Profile */}
-          <button
-            id="header-profile-btn"
-            onClick={onOpenMemberModal}
-            className="flex items-center gap-2 pl-1 hover:opacity-90 cursor-pointer transition-opacity"
-            title={isAuthenticated && user ? `Account: ${user.name || user.email}` : 'Sign In / Account'}
-          >
-            {isAuthenticated && user ? (
-              user.profilePhoto ? (
-                <img
-                  src={user.profilePhoto}
-                  alt={user.name || 'User'}
-                  className="w-9 h-9 rounded-full object-cover border border-amber-300 ring-2 ring-amber-100"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00407a] to-blue-600 text-white font-black text-xs flex items-center justify-center shadow-xs ring-2 ring-blue-100">
-                  {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
-                </div>
-              )
-            ) : (
-              <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center shadow-2xs hover:bg-slate-200">
-                <UserIcon className="w-4 h-4" />
-              </div>
-            )}
-            <div className="text-left hidden xl:block leading-tight">
-              {isAuthenticated && user ? (
-                <>
-                  <div className="text-xs font-bold text-slate-900 truncate max-w-[120px]">
-                    {user.name ? user.name.split(' ')[0] : user.email.split('@')[0]}
-                  </div>
-                  <div className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">
-                    {user.role === 'ADMIN' ? tHeader('roleAdmin') : user.role === 'SUPPLIER' ? tHeader('roleSupplier') : tHeader('roleMember')}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-xs font-bold text-slate-900">{tHeader('signIn')}</div>
-                  <div className="text-[10px] font-medium text-slate-400">{tHeader('account')}</div>
-                </>
-              )}
-            </div>
-          </button>
         </div>
       </div>
 

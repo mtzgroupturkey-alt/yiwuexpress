@@ -15,14 +15,36 @@ export async function GET(req: NextRequest) {
       include: {
         user: {
           select: {
+            id: true,
             name: true,
             email: true,
+            profilePhoto: true,
+            userType: true,
+            role: true,
           }
         },
         product: {
           select: {
+            id: true,
             name: true,
             slug: true,
+            thumbnail: true,
+            images: true,
+          }
+        },
+        replies: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
           }
         }
       },

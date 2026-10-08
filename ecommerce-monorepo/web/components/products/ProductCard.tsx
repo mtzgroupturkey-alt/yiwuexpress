@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
@@ -16,6 +16,7 @@ import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
 import { useCustomerView } from '@/hooks/useCustomerView'
+import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/components/CartContext'
 
 interface Product {
@@ -58,6 +59,7 @@ export default function ProductCard({
   const { formatPrice } = useCurrency()
   const router = useRouter()
   const { settings } = useSettings()
+  const { isAuthenticated } = useAuth()
   const customerView = useCustomerView()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { enableWholesaleSession } = useSessionMode()
@@ -66,17 +68,26 @@ export default function ProductCard({
   const [isHovered, setIsHovered] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [isAddingToQuote, setIsAddingToQuote] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const rfqModel = settings?.rfqModel || 'RFQ'
   const isInstantWholesale = rfqModel === 'INSTANT'
   const moq = product.moq || product.minOrder || product.minOrderQty || settings?.wholesaleDefaultMoq || 1
 
   const {
+    isGuest,
+    isRetail: isRetailActive,
     isWholesale: isWholesaleActive,
     canRequestQuote,
     canAddToWholesaleCart,
-  } = useCustomerView()
-  const showRetailCart = !canRequestQuote && !canAddToWholesaleCart
+  } = customerView
+
+  const isUserLoggedIn = mounted ? (isAuthenticated || (!isGuest && (isRetailActive || isWholesaleActive))) : false
+  const showRetailCart = isUserLoggedIn && !canRequestQuote && !canAddToWholesaleCart
   const hasWholesale = Boolean(product.wholesalePrice && isWholesaleActive)
 
   const { refreshCartCount } = useCart()
@@ -374,7 +385,7 @@ export default function ProductCard({
           )}
 
           {/* Wholesale B2B Button - RFQ Mode */}
-          {canRequestQuote && hasWholesale && !isInstantWholesale && (
+          {isUserLoggedIn && canRequestQuote && hasWholesale && !isInstantWholesale && (
             <button
               onClick={handleAddToQuoteList}
               disabled={isAddingToQuote || (product.stock !== undefined && product.stock === 0)}
@@ -401,7 +412,7 @@ export default function ProductCard({
           )}
 
           {/* Wholesale B2B Button - INSTANT Mode */}
-          {canAddToWholesaleCart && hasWholesale && isInstantWholesale && (
+          {isUserLoggedIn && canAddToWholesaleCart && hasWholesale && isInstantWholesale && (
             <button
               onClick={(e) => {
                 e.preventDefault()

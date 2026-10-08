@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,6 +25,7 @@ import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 import { useCustomerView } from '@/hooks/useCustomerView';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UnifiedProductCardProps {
   product: Product;
@@ -77,12 +78,21 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
   const [justAdded, setJustAdded] = useState(false);
 
   const { settings } = useSettings();
+  const customerView = useCustomerView();
   const {
     isWholesale: isWholesaleActive,
     canRequestQuote,
     canAddToWholesaleCart,
     isLoading: isCustomerLoading,
-  } = useCustomerView();
+  } = customerView;
+  const { isAuthenticated } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false;
   const { items: quoteItems, addToQuote, updateQuantity: updateQuoteQuantity, removeFromQuote } = useQuoteCart();
   const { addItem: addInquiryItem } = useWholesaleInquiry();
 
@@ -325,8 +335,9 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           </div>
         )}
 
-        {/* Cart Button or Rapid Stepper */}
-        {canRequestQuote && !isInstantWholesale ? (
+        {/* Cart Button or Rapid Stepper - Only shown for authenticated users */}
+        {isUserLoggedIn && (
+          canRequestQuote && !isInstantWholesale ? (
           // Wholesale RFQ Mode: "Request Quote (MOQ: X)" -> QuoteCartContext
           qtyInQuote === 0 ? (
             <motion.button
@@ -528,7 +539,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
               </motion.button>
             </div>
           )
-        )}
+        ))}
       </div>
     </motion.div>
   );

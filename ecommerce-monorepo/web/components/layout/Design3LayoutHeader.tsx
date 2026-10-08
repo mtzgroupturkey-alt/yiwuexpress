@@ -19,13 +19,16 @@ import { useSettings } from '@/components/SettingsProvider';
 
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/components/providers/AuthProvider';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 import { useCustomerView } from '@/hooks/useCustomerView';
 
 export function Design3LayoutHeader() {
   const locale = useLocale();
   const router = useRouter();
-  const { isAuthenticated, isInitialized } = useAuth();
+  const authCtx = useAuthContext();
+  const isAuthenticated = authCtx.isAuthenticated;
+  const user = authCtx.user;
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { settings } = useSettings();
   const { isWholesale: isWholesaleActive } = useCustomerView();
@@ -314,6 +317,8 @@ export function Design3LayoutHeader() {
   return (
     <>
       <Header
+        isAuthenticated={isAuthenticated}
+        user={user}
         cartCount={displayCartCount}
         cartTotal={cartTotal}
         favoritesCount={wishlistCount}

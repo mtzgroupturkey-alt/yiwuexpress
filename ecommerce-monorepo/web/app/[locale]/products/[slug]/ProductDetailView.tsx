@@ -8,7 +8,8 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart, Layers } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart, Layers, LogIn } from 'lucide-react'
+import { LocaleLink } from '@/components/LocaleLink'
 import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { NewsletterBar } from '@/app/[locale]/design-3/components/NewsletterBar'
@@ -28,7 +29,13 @@ import { useCustomerView } from '@/hooks/useCustomerView'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
-import { getLocalizedOptionLabel, getLocalizedColorName, getLocalizedCountry, getLocalizedMaterial } from '@/lib/utils/attributeOptionTranslations'
+import {
+  getLocalizedOptionLabel,
+  getLocalizedColorName,
+  getLocalizedCountry,
+  getLocalizedMaterial,
+  resolveLocalizedAttributeValue,
+} from '@/lib/utils/attributeOptionTranslations'
 import { useTranslations } from 'next-intl'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
@@ -118,16 +125,20 @@ interface RelatedProduct {
   colors?: { label: string; value: string }[]
 }
 
+import type { ProductRatingSummary } from '@/lib/reviews/rating'
+
 interface ProductDetailViewProps {
   product: ProductData
   slug: string
   locale: string
+  ratingSummary?: ProductRatingSummary
 }
 
 export default function ProductDetailView({
   product,
   slug,
   locale,
+  ratingSummary,
 }: ProductDetailViewProps) {
   // Resolve localized name/description with en fallback safety
   const localized = localizeProduct(product, locale)
@@ -150,6 +161,13 @@ export default function ProductDetailView({
   const { storeMode: ctxStoreMode, storeMode, isWholesale, isRetail, isBoth } = useStoreMode()
   const customerView = useCustomerView()
   const isWholesaleCustomer = customerView.isWholesale
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  const isUserLoggedIn = mounted
+    ? (isAuthenticated || (!customerView.isGuest && (customerView.isRetail || customerView.isWholesale)))
+    : false
   const { sessionMode, isWholesaleSession, enableWholesaleSession } = useSessionMode()
   const { addItem: addInquiryItem } = useWholesaleInquiry()
   const { addToQuote } = useQuoteCart()
@@ -370,15 +388,18 @@ export default function ProductDetailView({
     return list.length > 0 ? list : ['/images/product-placeholder.webp']
   }, [selectedVariant, product.images, product.thumbnail])
 
-  // Review summaries
+  // Review summaries derived from server aggregation or product reviews
   const reviewsList = useMemo(() => product.reviews || [], [product.reviews])
-  const reviewsCount = reviewsList.length
+  const reviewsCount = ratingSummary !== undefined ? ratingSummary.count : reviewsList.length
   const averageRating = useMemo(() => {
-    if (reviewsCount === 0) return 5
+    if (ratingSummary !== undefined) {
+      return ratingSummary.average
+    }
+    if (reviewsCount === 0) return 0
     return (
-      reviewsList.reduce((acc, r) => acc + (r.rating || 5), 0) / reviewsCount
+      Math.round((reviewsList.reduce((acc, r) => acc + (r.rating || 5), 0) / reviewsCount) * 10) / 10
     )
-  }, [reviewsList, reviewsCount])
+  }, [ratingSummary, reviewsList, reviewsCount])
 
   // Check if apparel/clothing category for size guide
   const isApparelCategory = Boolean(
@@ -849,22 +870,9 @@ export default function ProductDetailView({
       if (rawVal !== undefined && rawVal !== null && rawVal !== '') {
         if (Array.isArray(rawVal) && rawVal.length === 0) return
 
-        let displayValue = ''
-        if (Array.isArray(rawVal)) {
-          displayValue = rawVal
-            .map((v) => (typeof v === 'object' && v?.label ? v.label : String(v)))
-            .join(', ')
-        } else if (typeof rawVal === 'boolean') {
-          displayValue = rawVal
-            ? (locale === 'ru' ? 'Да' : locale === 'zh' ? '是' : 'Yes')
-            : (locale === 'ru' ? 'Нет' : locale === 'zh' ? '否' : 'No')
-        } else if (typeof rawVal === 'object') {
-          displayValue = rawVal.label || rawVal.value || JSON.stringify(rawVal)
-        } else {
-          displayValue = String(rawVal)
-        }
+        const displayValue = resolveLocalizedAttributeValue(ca, rawVal, locale)
 
-        if (displayValue.trim()) {
+        if (displayValue && displayValue.trim()) {
           list.push({
             key: ca.slug,
             name: ca.name || ca.slug,
@@ -898,7 +906,7 @@ export default function ProductDetailView({
     tabs.push({
       id: 'reviews',
       label: locale === 'ru' ? 'Отзывы' : locale === 'zh' ? '评价' : 'Reviews',
-      count: reviewsCount > 0 ? reviewsCount : 348,
+      count: reviewsCount,
     })
 
     return tabs
@@ -1394,15 +1402,25 @@ export default function ProductDetailView({
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={() => handleAddBundleToCart(bundleItem)}
-          disabled={adding}
-          className="px-4 py-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-        >
-          <ShoppingCart className="w-3.5 h-3.5" />
-          <span>{bundleAdded ? (locale === 'ru' ? 'Добавлено!' : locale === 'zh' ? '已加入' : 'Added!') : (locale === 'ru' ? 'Купить оба' : locale === 'zh' ? '购买组合' : 'Add Both')}</span>
-        </button>
+        {isUserLoggedIn ? (
+          <button
+            type="button"
+            onClick={() => handleAddBundleToCart(bundleItem)}
+            disabled={adding}
+            className="px-4 py-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <ShoppingCart className="w-3.5 h-3.5" />
+            <span>{bundleAdded ? (locale === 'ru' ? 'Добавлено!' : locale === 'zh' ? '已加入' : 'Added!') : (locale === 'ru' ? 'Купить оба' : locale === 'zh' ? '购买组合' : 'Add Both')}</span>
+          </button>
+        ) : (
+          <LocaleLink
+            href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
+            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <LogIn className="w-3.5 h-3.5 text-[#00407a]" />
+            <span>{locale === 'ru' ? 'Войти для покупки' : locale === 'zh' ? '登录购买' : 'Sign In to Buy'}</span>
+          </LocaleLink>
+        )}
       </div>
     </div>
   )
@@ -1456,28 +1474,6 @@ export default function ProductDetailView({
 
   return (
     <>
-      {/* Product JSON-LD Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Product',
-            name: localized.name || product.name,
-            sku: product.sku,
-            image: (product.images && product.images.length > 0 ? product.images : [product.thumbnail]).filter(Boolean),
-            description: localized.description || product.description,
-            offers: {
-              '@type': 'Offer',
-              price: product.price,
-              priceCurrency: 'USD',
-              availability: product.stock > 0
-                ? 'https://schema.org/InStock'
-                : 'https://schema.org/OutOfStock',
-            },
-          }),
-        }}
-      />
       {/* MOBILE PDP VIEW (Phase 3, hidden on md+) */}
       <div className="md:hidden">
         <MobileProductDetailView
@@ -1486,6 +1482,7 @@ export default function ProductDetailView({
           loadMoreRelated={loadMoreRelatedProducts}
           hasMoreRelated={hasMoreRelated}
           loadingMoreRelated={loadingMoreRelated}
+          isLoggedIn={isUserLoggedIn}
           onAddToCart={(_p, q) => {
             setQuantity(q);
             handleAddToCart();
@@ -1652,7 +1649,7 @@ export default function ProductDetailView({
                         ))}
                       </div>
                       <span className="text-sm font-black text-slate-900">
-                        {reviewsCount > 0 ? averageRating.toFixed(1) : '4.9'}
+                        {reviewsCount > 0 ? averageRating.toFixed(1) : '0.0'}
                       </span>
                       <span className="text-slate-300">|</span>
                       <a
@@ -1660,7 +1657,9 @@ export default function ProductDetailView({
                         onClick={() => setActiveTab('reviews')}
                         className="text-xs text-slate-600 hover:text-[#00407a] font-semibold transition-colors underline-offset-2 hover:underline"
                       >
-                        {reviewsCount > 0 ? `${reviewsCount} ${t('customerReviews')}` : '348 Reviews'}
+                        {reviewsCount > 0
+                          ? `${reviewsCount} ${reviewsCount === 1 ? 'Review' : t('customerReviews')}`
+                          : (t('noReviews') || '0 Reviews')}
                       </a>
                     </div>
 
@@ -1953,19 +1952,31 @@ export default function ProductDetailView({
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        disabled={totalMatrixUnits < (product.minOrderQty || 1) || adding}
-                        onClick={isInstantWholesale ? handleMatrixAddToCart : handleMatrixAddToQuote}
-                        className="w-full mt-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs py-2 rounded-xl shadow-xs transition-colors cursor-pointer gap-1.5 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>
-                          {isInstantWholesale
-                            ? (locale === 'ru' ? 'Добавить матрицу в корзину' : locale === 'zh' ? '批量加入购物车' : 'Add Assortment to Cart')
-                            : (locale === 'ru' ? 'Добавить матрицу в заявку' : locale === 'zh' ? '批量加入报价单' : 'Add Assortment to Quote List')}
-                        </span>
-                      </button>
+                      {isUserLoggedIn ? (
+                        <button
+                          type="button"
+                          disabled={totalMatrixUnits < (product.minOrderQty || 1) || adding}
+                          onClick={isInstantWholesale ? handleMatrixAddToCart : handleMatrixAddToQuote}
+                          className="w-full mt-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs py-2 rounded-xl shadow-xs transition-colors cursor-pointer gap-1.5 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>
+                            {isInstantWholesale
+                              ? (locale === 'ru' ? 'Добавить матрицу в корзину' : locale === 'zh' ? '批量加入购物车' : 'Add Assortment to Cart')
+                              : (locale === 'ru' ? 'Добавить матрицу в заявку' : locale === 'zh' ? '批量加入报价单' : 'Add Assortment to Quote List')}
+                          </span>
+                        </button>
+                      ) : (
+                        <LocaleLink
+                          href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
+                          className="w-full mt-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs py-2 rounded-xl shadow-xs transition-colors cursor-pointer gap-1.5 flex items-center justify-center"
+                        >
+                          <LogIn className="w-3.5 h-3.5" />
+                          <span>
+                            {locale === 'ru' ? 'Войдите для заказа матрицы' : locale === 'zh' ? '登录以批量下单' : 'Sign In to Order Assortment'}
+                          </span>
+                        </LocaleLink>
+                      )}
                     </div>
                   )}
 
@@ -2033,76 +2044,103 @@ export default function ProductDetailView({
 
                   {/* Primary Call to Action Buttons */}
                   <div id="pdp-main-buy-box" className="space-y-2 pt-1">
-                    {/* Wholesale RFQ Flow CTA */}
-                    {isWholesaleActive && !isInstantWholesale ? (
-                      <button
-                        type="button"
-                        onClick={handleAddToQuoteList}
-                        disabled={currentStock === 0}
-                        className="w-full h-11 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]"
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>{t('addToQuoteList')} ({tPdp('wholesaleMoq', { moq })})</span>
-                      </button>
-                    ) : isWholesaleActive && isInstantWholesale ? (
-                      <button
-                        type="button"
-                        onClick={handleAddToCart}
-                        disabled={currentStock === 0 || adding}
-                        className="w-full h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                        <span>{adding ? t('addingToCart') : t('addToCart')}</span>
-                      </button>
-                    ) : (
-                      /* Retail Flow CTAs */
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={handleAddToCart}
-                          disabled={currentStock === 0 || adding}
-                          className="h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    {!isUserLoggedIn ? (
+                      <div className="space-y-2">
+                        <LocaleLink
+                          href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
+                          className="w-full h-12 bg-gradient-to-r from-[#00407a] to-[#00305c] hover:from-[#003366] hover:to-[#00284d] text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
                         >
-                          <ShoppingCart className="w-4 h-4" />
-                          <span>{adding ? t('addingToCart') : t('addToCart')}</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={handleQuickOrder}
-                          disabled={currentStock === 0 || adding}
-                          className="h-11 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-300 text-slate-800 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                        >
-                          <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                          <span>{locale === 'ru' ? 'Быстрый заказ' : locale === 'zh' ? '一键订购' : '1-Click Order'}</span>
-                        </button>
+                          <LogIn className="w-4 h-4" />
+                          <span>
+                            {locale === 'ru'
+                              ? 'Войдите, чтобы оформить заказ'
+                              : locale === 'zh'
+                              ? '登录以加购或下单'
+                              : 'Sign in to Order / Add to Cart'}
+                          </span>
+                        </LocaleLink>
+                        <p className="text-[11px] text-center text-slate-500 font-medium">
+                          {locale === 'ru'
+                            ? 'Авторизуйтесь, чтобы добавить товар в корзину и оформить заказ'
+                            : locale === 'zh'
+                            ? '登录后即可将商品加入购物车并享受专享采购价格'
+                            : 'Sign in to add items to cart and access full ordering privileges'}
+                        </p>
                       </div>
-                    )}
+                    ) : (
+                      <>
+                        {/* Wholesale RFQ Flow CTA */}
+                        {isWholesaleActive && !isInstantWholesale ? (
+                          <button
+                            type="button"
+                            onClick={handleAddToQuoteList}
+                            disabled={currentStock === 0}
+                            className="w-full h-11 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]"
+                          >
+                            <FileText className="w-4 h-4" />
+                            <span>{t('addToQuoteList')} ({tPdp('wholesaleMoq', { moq })})</span>
+                          </button>
+                        ) : isWholesaleActive && isInstantWholesale ? (
+                          <button
+                            type="button"
+                            onClick={handleAddToCart}
+                            disabled={currentStock === 0 || adding}
+                            className="w-full h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            <ShoppingCart className="w-4 h-4" />
+                            <span>{adding ? t('addingToCart') : t('addToCart')}</span>
+                          </button>
+                        ) : (
+                          /* Retail Flow CTAs */
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={handleAddToCart}
+                              disabled={currentStock === 0 || adding}
+                              className="h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              <ShoppingCart className="w-4 h-4" />
+                              <span>{adding ? t('addingToCart') : t('addToCart')}</span>
+                            </button>
 
-                    {/* Secondary option: If wholesale is active and store is BOTH, allow retail purchase */}
-                    {isWholesaleActive && isBoth && (
-                      <button
-                        type="button"
-                        onClick={handleAddToCart}
-                        disabled={currentStock === 0 || adding}
-                        className="w-full h-10 rounded-xl text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5 text-slate-500" />
-                        <span>{locale === 'ru' ? 'Купить в розницу' : locale === 'zh' ? '以零售价购买' : 'Buy at Retail Price'} ({formatPrice(currentPrice)})</span>
-                      </button>
-                    )}
+                            <button
+                              type="button"
+                              onClick={handleQuickOrder}
+                              disabled={currentStock === 0 || adding}
+                              className="h-11 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-300 text-slate-800 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            >
+                              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                              <span>{locale === 'ru' ? 'Быстрый заказ' : locale === 'zh' ? '一键订购' : '1-Click Order'}</span>
+                            </button>
+                          </div>
+                        )}
 
-                    {/* Secondary option: If retail is active and store is BOTH, allow quote request */}
-                    {!isWholesaleActive && isBoth && (
-                      <button
-                        type="button"
-                        onClick={handleAddToQuoteList}
-                        disabled={currentStock === 0}
-                        className="w-full h-10 rounded-xl text-xs font-bold border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>{isInstantWholesale ? t('addToCart') : t('addToQuoteList')}</span>
-                      </button>
+                        {/* Secondary option: If wholesale is active and store is BOTH, allow retail purchase */}
+                        {isWholesaleActive && isBoth && (
+                          <button
+                            type="button"
+                            onClick={handleAddToCart}
+                            disabled={currentStock === 0 || adding}
+                            className="w-full h-10 rounded-xl text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5 text-slate-500" />
+                            <span>{locale === 'ru' ? 'Купить в розницу' : locale === 'zh' ? '以零售价购买' : 'Buy at Retail Price'} ({formatPrice(currentPrice)})</span>
+                          </button>
+                        )}
+
+                        {/* Secondary option: If retail is active and store is BOTH, allow quote request */}
+                        {!isWholesaleActive && isBoth && (
+                          <button
+                            type="button"
+                            onClick={handleAddToQuoteList}
+                            disabled={currentStock === 0}
+                            className="w-full h-10 rounded-xl text-xs font-bold border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                          >
+                            <FileText className="w-4 h-4" />
+                            <span>{isInstantWholesale ? t('addToCart') : t('addToQuoteList')}</span>
+                          </button>
+                        )}
+                      </>
                     )}
 
                     {moqError && (
@@ -2828,7 +2866,11 @@ export default function ProductDetailView({
             {/* Tab 5: Reviews */}
             {activeTab === 'reviews' && (
               <div className="animate-fade-in">
-                <ReviewSection productId={product.id} productName={localized.name} />
+                <ReviewSection
+                  productId={product.id}
+                  productName={localized.name}
+                  initialSummary={ratingSummary}
+                />
               </div>
             )}
           </div>
@@ -2917,6 +2959,7 @@ export default function ProductDetailView({
           maxQty={currentStock}
           productName={localized.name}
           productImage={currentImages[0]}
+          isLoggedIn={isUserLoggedIn}
         />
       </Container>
     </div>
