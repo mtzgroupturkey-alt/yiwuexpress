@@ -130,7 +130,7 @@ export function MainHeader() {
                   className="hover:text-[#c9a84c] text-amber-300 font-bold transition-colors uppercase tracking-wider text-[10px] flex items-center gap-1"
                 >
                   <Building2 className="w-3 h-3 text-amber-400" />
-                  <span>Dromkok for Business</span>
+                  <span>DRÖMKÖK FOR BUSINESS</span>
                 </LocaleLink>
               )}
               {TOP_BAR_LINKS.map((item) => (
@@ -316,10 +316,10 @@ export function MainHeader() {
               {!isWholesaleUser && (
                 <LocaleLink
                   href="/business"
-                  className="hidden md:flex text-xs font-bold text-[#00407a] hover:text-[#003060] items-center gap-1.5 py-1.5 px-3 rounded-lg border border-blue-200 bg-blue-50/60 hover:bg-blue-100/60 transition-colors shrink-0"
+                  className="hidden md:flex text-xs font-bold text-[#00407a] hover:text-[#003060] items-center gap-1.5 py-1.5 px-3 rounded-lg border border-blue-200 bg-blue-50/60 hover:bg-blue-100/60 transition-colors shrink-0 uppercase tracking-wide"
                 >
                   <Building2 className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Dromkok for Business</span>
+                  <span>DRÖMKÖK FOR BUSINESS</span>
                 </LocaleLink>
               )}
 

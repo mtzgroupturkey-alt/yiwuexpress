@@ -355,10 +355,10 @@ export const Header: React.FC<HeaderProps> = ({
             {!isWholesaleUser && (
               <Link
                 href={`/${currentLocale}/business`}
-                className="text-[11px] font-bold text-[#00407a] hover:text-[#003060] transition-colors flex items-center gap-1.5 py-0.5 px-2 rounded-md hover:bg-slate-200/60"
+                className="text-[11px] font-bold text-[#00407a] hover:text-[#003060] transition-colors flex items-center gap-1.5 py-0.5 px-2 rounded-md hover:bg-slate-200/60 uppercase tracking-wide"
               >
                 <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>{tBusiness('headerLink')}</span>
+                <span>DRÖMKÖK FOR BUSINESS</span>
               </Link>
             )}
             <LanguageSwitcher variant="header-dropdown" />
