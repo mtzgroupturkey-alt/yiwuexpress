@@ -42,8 +42,14 @@ import { Search, X, CheckCircle2 } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 export function Design3Storefront() {
+  const router = useRouter();
+  const locale = useLocale();
+  const { isAuthenticated } = useAuth();
   const { formatPrice } = useCurrency();
   const { settings } = useSettings();
   // 1. Core State
@@ -198,6 +204,10 @@ export function Design3Storefront() {
     view: 'home' | 'shop' | 'product' | 'checkout', 
     options?: { department?: string; category?: string; search?: string; product?: Product }
   ) => {
+    if (view === 'checkout' && !isAuthenticated) {
+      router.push(`/${locale}/register?redirect=/${locale}/checkout`);
+      return;
+    }
     setCurrentView(view);
     if (options?.department !== undefined) {
       setSelectedDepartment(options.department);

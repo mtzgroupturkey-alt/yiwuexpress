@@ -176,8 +176,8 @@ const nextConfig = {
     return [
       {
         source: '/login',
-        destination: '/auth/login',
-        permanent: true,
+        destination: '/en/login',
+        permanent: false,
       },
     ];
   },

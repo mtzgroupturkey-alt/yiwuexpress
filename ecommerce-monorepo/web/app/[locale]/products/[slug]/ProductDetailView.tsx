@@ -37,6 +37,7 @@ import { StickyBuyBar } from '@/components/mobile/StickyBuyBar'
 import { MobileProductDetailView } from '@/components/mobile/product/MobileProductDetailView'
 import { useMobile } from '@/components/MobileProvider'
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation'
+import { useAuth } from '@/hooks/useAuth'
 
 // A serializable subset of the product API payload (mirrors the page-level
 // projection). Extra fields are tolerated via index signature.
@@ -129,6 +130,7 @@ export default function ProductDetailView({
 }: ProductDetailViewProps) {
   const router = useRouter()
   const navigate = useLocaleNav()
+  const { isAuthenticated } = useAuth()
   const { refreshCartCount } = useCart()
   const { formatPrice } = useCurrency()
   const { tBadge, tPdp } = useStorefrontTranslation()
@@ -848,7 +850,11 @@ export default function ProductDetailView({
 
   const handleQuickOrder = async () => {
     await handleAddToCart()
-    navigate('/checkout')
+    if (!isAuthenticated) {
+      router.push(`/${locale}/register?redirect=/${locale}/checkout`)
+    } else {
+      navigate('/checkout')
+    }
   }
 
   const handleAddBundleToCart = async (bundleItem: any) => {

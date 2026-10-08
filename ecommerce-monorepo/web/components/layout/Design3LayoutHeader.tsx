@@ -290,7 +290,11 @@ export function Design3LayoutHeader() {
     } else if (view === 'shop') {
       router.push(`/${locale}/store`);
     } else if (view === 'checkout') {
-      router.push(`/${locale}/checkout`);
+      if (!isAuthenticated) {
+        router.push(`/${locale}/register?redirect=/${locale}/checkout`);
+      } else {
+        router.push(`/${locale}/checkout`);
+      }
     } else {
       router.push(`/${locale}`);
     }
@@ -340,7 +344,11 @@ export function Design3LayoutHeader() {
         onRemoveItem={handleRemoveFromCart}
         onProceedToCheckout={() => {
           setIsCartOpen(false);
-          router.push(`/${locale}/checkout`);
+          if (!isAuthenticated) {
+            router.push(`/${locale}/register?redirect=/${locale}/checkout`);
+          } else {
+            router.push(`/${locale}/checkout`);
+          }
         }}
       />
 

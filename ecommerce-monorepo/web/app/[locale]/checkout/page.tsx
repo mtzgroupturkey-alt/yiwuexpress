@@ -20,6 +20,7 @@ import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useLocale, useTranslations } from 'next-intl'
 import { MobileCheckoutPage } from '@/components/mobile/checkout/MobileCheckoutPage'
 import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker'
+import { useAuth } from '@/hooks/useAuth'
 
 
 const buildCheckoutSchema = (t: (key: string, values?: any) => string) => z.object({
@@ -41,6 +42,7 @@ type CheckoutForm = z.infer<ReturnType<typeof buildCheckoutSchema>>
 export default function CheckoutPage() {
   const router = useRouter()
   const navigate = useLocaleNav()
+  const { isAuthenticated, isInitialized } = useAuth()
   const { storeMode: ctxStoreMode, isRetail } = useStoreMode()
   const { settings, storeMode: systemStoreMode } = useSettings()
   const { sessionMode, isWholesaleSession } = useSessionMode()
@@ -78,13 +80,17 @@ export default function CheckoutPage() {
   const selectedCountryId = watch('shippingCountryId')
 
   useEffect(() => {
+    if (isInitialized && !isAuthenticated) {
+      router.replace(`/${locale}/register?redirect=/${locale}/checkout`)
+      return
+    }
     if (isWholesaleActive) {
       navigate('/quote-cart')
       return
     }
     fetchCart()
     fetchCountries()
-  }, [isWholesaleActive])
+  }, [isInitialized, isAuthenticated, isWholesaleActive])
 
   useEffect(() => {
     if (selectedCountryId && cart) {
@@ -94,14 +100,14 @@ export default function CheckoutPage() {
 
   const fetchCart = async () => {
     try {
-      // âœ… MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
+      // ✅ MIGRATED TO COOKIE-BASED AUTH - cookies sent automatically
       const response = await fetch('/api/cart', {
         credentials: 'include'
       })
 
       if (!response.ok) {
         if (response.status === 401) {
-          navigate('/login')
+          router.replace(`/${locale}/register?redirect=/${locale}/checkout`)
           return
         }
         throw new Error('Failed to fetch cart')
@@ -110,7 +116,11 @@ export default function CheckoutPage() {
       const data = await response.json()
 
       if (data.success) {
-        if (!data.data.cart || data.data.cart.items.length === 0) {
+        if (data.authenticated === false || !data.data?.cart || data.data.cart.items.length === 0) {
+          if (!isAuthenticated) {
+            router.replace(`/${locale}/register?redirect=/${locale}/checkout`)
+            return
+          }
           alert(t('cartEmpty'))
           navigate('/cart')
           return

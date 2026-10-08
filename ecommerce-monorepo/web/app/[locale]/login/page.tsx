@@ -163,7 +163,7 @@ export default function LocalizedLoginPage() {
                   <p className="text-sm text-gray-600">
                     {t('noAccount')}{' '}
                     <LocaleLink
-                      href="/register"
+                      href={searchParams.get('redirect') ? `/register?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : '/register'}
                       className="font-semibold text-[#1a3a5c] hover:text-[#c9a84c] transition-colors"
                     >
                       {t('registerNow')}

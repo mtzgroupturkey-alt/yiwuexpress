@@ -15,6 +15,7 @@ import { useSettings } from '@/components/SettingsProvider'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { MobileCartPage } from '@/components/mobile/cart/MobileCartPage'
+import { useAuth } from '@/hooks/useAuth'
 
 
 interface Cart {
@@ -45,6 +46,7 @@ interface Cart {
 export default function CartPage() {
   const router = useRouter()
   const navigate = useLocaleNav()
+  const { isAuthenticated } = useAuth()
   const { refreshCartCount } = useCart()
   const t = useTranslations('Cart')
   const { settings, storeMode: systemStoreMode } = useSettings()
@@ -55,6 +57,9 @@ export default function CartPage() {
   const isWholesaleActive =
     currentStoreMode === 'WHOLESALE' ||
     (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession))
+
+  const rfqModel = settings?.rfqModel || 'RFQ'
+  const isInstantWholesale = isWholesaleActive && rfqModel === 'INSTANT'
 
   const [cart, setCart] = useState<Cart | null>(null)
   const [summary, setSummary] = useState({
@@ -68,13 +73,12 @@ export default function CartPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const rfqModel = settings?.rfqModel || 'RFQ'
-    if (isWholesaleActive && rfqModel === 'RFQ') {
+    if (isWholesaleActive && !isInstantWholesale) {
       navigate('/quote-cart')
       return
     }
     fetchCart()
-  }, [isWholesaleActive, settings?.rfqModel])
+  }, [isWholesaleActive, isInstantWholesale])
 
   const fetchCart = async () => {
     setLoading(true)
@@ -174,7 +178,7 @@ export default function CartPage() {
    }
 
     const handleCheckout = () => {
-      if (isWholesaleActive) {
+      if (isWholesaleActive && !isInstantWholesale) {
         alert('Wholesale orders must be submitted via the B2B Quote Cart.')
         navigate('/quote-cart')
         return
@@ -183,10 +187,14 @@ export default function CartPage() {
         alert(t('emptyCartAlert'))
         return
       }
+      if (!isAuthenticated) {
+        navigate('/register?redirect=/checkout')
+        return
+      }
       navigate('/checkout')
     }
 
-    if (isWholesaleActive) {
+    if (isWholesaleActive && !isInstantWholesale) {
       return (
         <SharedLayout
           pageTitle="Wholesale Mode Active"

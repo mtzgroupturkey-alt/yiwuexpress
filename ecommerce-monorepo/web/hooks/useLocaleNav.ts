@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 // Paths intentionally kept at the app root (NOT localized). Navigation to these
 // must never receive a locale prefix.
-const ROOT_PREFIXES = ['/login', '/dashboard', '/admin', '/auth', '/api']
+const ROOT_PREFIXES = ['/dashboard', '/admin', '/auth', '/api']
 
 export function useLocaleNav() {
   const locale = useLocale()

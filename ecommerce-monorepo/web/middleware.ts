@@ -158,6 +158,7 @@ async function authMiddleware(request: NextRequest) {
     '/api/addresses',
     '/api/profile',
     '/api/payments',
+    '/checkout',
   ]
 
   const isProtectedPath = protectedPaths.some(path => {
@@ -173,9 +174,14 @@ async function authMiddleware(request: NextRequest) {
 
   if (isProtectedPath) {
     if (!token) {
-      // Redirect to login for page requests
+      // Redirect to register/login for page requests
       if (!pathname.startsWith('/api/')) {
-        const loginUrl = new URL('/login', request.url)
+        if (pathname === '/checkout' || pathname.startsWith('/checkout/')) {
+          const registerUrl = new URL('/en/register', request.url)
+          registerUrl.searchParams.set('redirect', pathname)
+          return NextResponse.redirect(registerUrl)
+        }
+        const loginUrl = new URL('/en/login', request.url)
         loginUrl.searchParams.set('redirect', pathname)
         return NextResponse.redirect(loginUrl)
       }
@@ -342,6 +348,7 @@ export async function middleware(request: NextRequest) {
       '/orders',
       '/payment',
       '/wishlist',
+      '/checkout',
     ]
     
     const isProtectedPath = protectedPaths.some(path => 
@@ -352,6 +359,11 @@ export async function middleware(request: NextRequest) {
       // Check authentication
       const token = getTokenFromRequest(request)
       if (!token) {
+        if (routeWithoutLocale === '/checkout' || routeWithoutLocale.startsWith('/checkout/')) {
+          const registerUrl = new URL(`/${firstSegment}/register`, request.url)
+          registerUrl.searchParams.set('redirect', pathname)
+          return NextResponse.redirect(registerUrl)
+        }
         const loginUrl = new URL(`/${firstSegment}/login`, request.url)
         loginUrl.searchParams.set('redirect', pathname)
         return NextResponse.redirect(loginUrl)

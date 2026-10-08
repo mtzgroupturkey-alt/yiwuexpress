@@ -82,8 +82,15 @@ export default function LoginPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Login Form */}
               <div className="bg-white rounded-2xl shadow-brand p-8">
+                <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between text-xs">
+                  <span className="text-blue-900 font-medium">Retail customer shopping online?</span>
+                  <Link href="/en/register" className="font-bold text-blue-700 hover:underline">
+                    Retail Register →
+                  </Link>
+                </div>
+
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                  Business Account Login
+                  Account Sign In
                 </h2>
 
               {error && (
@@ -184,11 +191,17 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <div className="mt-8 text-center">
-                <p className="text-gray-600">
-                  Don&apos;t have a business account?{' '}
-                  <Link href="/register" className="font-medium text-primary-600 hover:text-primary-700">
-                    Register your business
+              <div className="mt-8 text-center space-y-2">
+                <p className="text-gray-600 text-sm">
+                  Looking to shop retail?{' '}
+                  <Link href="/en/register" className="font-semibold text-primary-600 hover:text-primary-700">
+                    Create free retail account
+                  </Link>
+                </p>
+                <p className="text-gray-500 text-xs">
+                  Business partner?{' '}
+                  <Link href="/business/register" className="font-medium text-gray-700 hover:underline">
+                    Register wholesale business
                   </Link>
                 </p>
               </div>
