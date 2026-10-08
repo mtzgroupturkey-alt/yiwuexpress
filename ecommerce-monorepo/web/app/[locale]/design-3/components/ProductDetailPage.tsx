@@ -159,10 +159,7 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
           </nav>
 
           <div className="hidden md:flex items-center gap-4 text-xs text-slate-400">
-            {currentProduct.dromkokItemNo ? (
-              <span>Item #: <strong className="text-slate-800 font-bold font-mono">{currentProduct.dromkokItemNo}</strong></span>
-            ) : null}
-            <span>SKU: <strong className="text-slate-700 font-semibold">{currentProduct.sku || '—'}</strong></span>
+            <span>Item #: <strong className="text-slate-800 font-bold font-mono">{currentProduct.dromkokItemNo || '—'}</strong></span>
           </div>
         </div>
       </div>
