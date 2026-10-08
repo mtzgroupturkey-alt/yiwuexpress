@@ -215,6 +215,8 @@ export async function PUT(
       )
     }
 
+    const previousStatus = user.verificationStatus;
+
     // Last-admin protection: Cannot demote or deactivate the last active ADMIN
     if (user.role === 'ADMIN' && (validatedData.role !== 'ADMIN' || validatedData.isActive === false)) {
       const activeAdminCount = await prisma.user.count({
@@ -333,22 +335,30 @@ export async function PUT(
       })
     }
 
-    // Dispatch customer notification email on B2B verification status updates (Non-blocking)
-    if (validatedData.verificationStatus === 'APPROVED') {
-      sendB2BApprovalEmail({
-        to: validatedData.email || user.email,
-        companyName: validatedData.companyName || user.companyName,
-        locale: (user as any).locale || 'en',
-      }).catch(err => console.error('[B2B approve email]', err))
-    }
+    // Dispatch customer notification email on actual B2B verification status transitions (Non-blocking)
+    const isStatusChanging =
+      validatedData.verificationStatus &&
+      validatedData.verificationStatus !== previousStatus;
 
-    if (validatedData.verificationStatus === 'REJECTED') {
-      sendB2BRejectionEmail({
-        to: validatedData.email || user.email,
-        companyName: validatedData.companyName || user.companyName,
-        reason: validatedData.verificationNotes,
-        locale: (user as any).locale || 'en',
-      }).catch(err => console.error('[B2B reject email]', err))
+    if (isStatusChanging) {
+      const recipientEmail = validatedData.email || user.email;
+      const recipientCompany = validatedData.companyName !== undefined ? validatedData.companyName : user.companyName;
+      const recipientLocale = (user as any).locale || 'en';
+
+      if (validatedData.verificationStatus === 'APPROVED') {
+        void sendB2BApprovalEmail({
+          to: recipientEmail,
+          companyName: recipientCompany,
+          locale: recipientLocale,
+        }).catch((err) => console.error('[B2B approve email failed]:', err));
+      } else if (validatedData.verificationStatus === 'REJECTED') {
+        void sendB2BRejectionEmail({
+          to: recipientEmail,
+          companyName: recipientCompany,
+          reason: validatedData.verificationNotes || 'Document verification could not be completed at this time.',
+          locale: recipientLocale,
+        }).catch((err) => console.error('[B2B reject email failed]:', err));
+      }
     }
 
     // Fetch updated user
