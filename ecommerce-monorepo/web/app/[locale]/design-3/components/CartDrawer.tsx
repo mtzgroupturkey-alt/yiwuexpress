@@ -5,7 +5,6 @@ import {
   Plus, 
   Minus, 
   ShoppingBag, 
-  Truck, 
   Tag, 
   ArrowRight,
   CheckCircle2
@@ -63,10 +62,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const isDeliveryFeeCountedLater = !isFreeShipping;
   const deliveryFee = 0; // Immediate payable fee is 0, counted later upon dispatch
   const total = Math.max(0, subtotal - discountAmount);
-  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
-  const progressPercent = freeShippingThreshold > 0
-    ? Math.min(100, (subtotal / freeShippingThreshold) * 100)
-    : 100;
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,57 +106,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Shipping Status Banner */}
-        {isWholesale ? (
-          <div className="bg-[#F8FAFC] p-3.5 border-b border-slate-200">
-            <div className="flex items-start gap-2.5 text-xs">
-              <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-[#00407a] shrink-0 mt-0.5">
-                <Truck className="w-4 h-4" />
-              </div>
-              <div className="flex-1">
-                <span className="font-bold text-slate-900 block text-xs">
-                  {tCartDrawer('wholesaleFreightNotice')}
-                </span>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                  {tCartDrawer('wholesaleFreightDesc')}
-                </p>
-                <span className="inline-block mt-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
-                  {tCartDrawer('willCountLater')}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-[#F8FAFC] p-4 border-b border-slate-200">
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="flex items-center gap-1.5 font-bold text-slate-800">
-                <Truck className="w-4 h-4 text-[#00407a]" />
-                {isFreeShipping ? (
-                  <span className="text-emerald-700">{tCartDrawer('freeUnlocked')}</span>
-                ) : (
-                  <span>{tCartDrawer('addMore', { amount: formatPrice(remainingForFreeShipping) })}</span>
-                )}
-              </span>
-              <span className="text-[11px] font-bold text-slate-500" suppressHydrationWarning>
-                {formatPrice(freeShippingThreshold)}
-              </span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-full transition-all duration-300 ${
-                  isFreeShipping ? 'bg-emerald-500' : 'bg-[#F5A602]'
-                }`}
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-            {!isFreeShipping && (
-              <p className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1 font-medium">
-                <span>ℹ {tCartDrawer('willCountLater')}</span>
-              </p>
-            )}
-          </div>
-        )}
 
         {/* Items List */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
@@ -288,20 +232,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   {isFreeShipping ? (
                     <strong className="text-emerald-600 font-bold">{tCartDrawer('free')}</strong>
                   ) : (
-                    <span 
-                      className="text-amber-800 font-semibold text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1"
-                      title={tCartDrawer('willCountLater')}
-                    >
+                    <span className="text-amber-800 font-semibold text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center gap-1">
                       {tCartDrawer('countedLater')}
                     </span>
                   )}
                 </span>
               </div>
-              {!isFreeShipping && (
-                <div className="text-[10px] text-slate-500 italic text-right -mt-1">
-                  {tCartDrawer('willCountLater')}
-                </div>
-              )}
               <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-black text-slate-900">
                 <span>{tCartDrawer('total')}</span>
                 <span className="text-[#00407a] text-base">{formatPrice(total)}</span>
