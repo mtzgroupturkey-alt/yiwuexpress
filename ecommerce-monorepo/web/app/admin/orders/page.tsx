@@ -55,6 +55,8 @@ function OrderStatusBadge({ status, label }: { status: string; label?: string })
     COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
     ON_HOLD: 'bg-amber-50 text-amber-700 border-amber-200/80',
     CANCELLED: 'bg-red-50 text-red-700 border-red-200/80',
+    FAILED: 'bg-rose-50 text-rose-700 border-rose-200/80',
+    REFUNDED: 'bg-slate-50 text-slate-700 border-slate-200/80',
   }
 
   return (
@@ -66,13 +68,27 @@ function OrderStatusBadge({ status, label }: { status: string; label?: string })
 
 function PaymentStatusBadge({ status, label }: { status: string; label?: string }) {
   const isPaid = status === 'PAID'
+  const isFailed = status === 'FAILED'
+  const isRefunded = status === 'REFUNDED'
+  const style = isPaid
+    ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+    : isFailed
+    ? 'bg-rose-50 text-rose-700 border-rose-200/80'
+    : isRefunded
+    ? 'bg-slate-50 text-slate-700 border-slate-200/80'
+    : 'bg-amber-50 text-amber-700 border-amber-200/80'
+
+  const dot = isPaid
+    ? 'bg-emerald-500'
+    : isFailed
+    ? 'bg-rose-500'
+    : isRefunded
+    ? 'bg-slate-500'
+    : 'bg-amber-500'
+
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-      isPaid
-        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-        : 'bg-amber-50 text-amber-700 border-amber-200/80'
-    }`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${isPaid ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${style}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
       {label || status || 'UNPAID'}
     </span>
   )

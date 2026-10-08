@@ -29,7 +29,8 @@ export async function POST(
     if (order.status === 'DELIVERED' || order.status === 'COMPLETED') {
       return NextResponse.json({ error: 'Order is already fulfilled' }, { status: 400 });
     }
-    if (order.paymentStatus !== 'PAID') {
+    const isWholesaleOrder = order.mode?.toUpperCase() === 'WHOLESALE';
+    if (!isWholesaleOrder && order.paymentStatus !== 'PAID') {
       return NextResponse.json({ error: 'Cannot fulfill an unpaid order. Payment must be confirmed first.' }, { status: 400 });
     }
 

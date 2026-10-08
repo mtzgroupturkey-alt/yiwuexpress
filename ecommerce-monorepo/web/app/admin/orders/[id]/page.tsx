@@ -42,7 +42,9 @@ const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'warnin
   SHIPPED: 'default',
   DELIVERED: 'success',
   CANCELLED: 'destructive',
-  ON_HOLD: 'warning'
+  ON_HOLD: 'warning',
+  FAILED: 'destructive',
+  REFUNDED: 'secondary',
 }
 
 export default function AdminOrderDetailPage({ params }: { params: { id: string } }) {
@@ -739,7 +741,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                 <div>
                   <span className="text-sm text-gray-600">{dict.common.status}</span>
                   <div className="mt-1">
-                    <Badge variant={order.paymentStatus === 'PAID' ? 'success' : 'warning'}>
+                    <Badge variant={order.paymentStatus === 'PAID' ? 'success' : order.paymentStatus === 'FAILED' ? 'destructive' : order.paymentStatus === 'REFUNDED' ? 'secondary' : 'warning'}>
                       {t(order.paymentStatus, order.paymentStatus)}
                     </Badge>
                   </div>

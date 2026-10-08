@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     if (order.paymentStatus === 'PAID') {
       return NextResponse.json({
         success: true,
+        alreadyPaid: true,
         message: 'Payment already captured',
       })
     }

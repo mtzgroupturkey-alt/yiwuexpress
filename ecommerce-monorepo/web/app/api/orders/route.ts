@@ -73,6 +73,63 @@ export async function POST(request: Request) {
 
     const body = await request.json()
 
+    const isApprovedWholesale = isApprovedWholesaleUser(authUser)
+    const requestedMode = body.mode ? body.mode.toUpperCase() : 'RETAIL'
+
+    // Security check: Wholesale mode is strictly for approved wholesale customers
+    if (requestedMode === 'WHOLESALE' && !isApprovedWholesale) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Wholesale ordering is restricted to approved wholesale accounts' },
+        { status: 403 }
+      )
+    }
+
+    const orderMode: 'RETAIL' | 'WHOLESALE' = (requestedMode === 'WHOLESALE' && isApprovedWholesale) ? 'WHOLESALE' : 'RETAIL'
+
+    // For approved wholesale customers, gracefully populate default customer info and address if omitted from Side Cart
+    if (orderMode === 'WHOLESALE' && authUser) {
+      body.customerName = body.customerName || authUser.name || 'Wholesale Customer'
+      body.customerEmail = body.customerEmail || authUser.email
+      body.customerPhone = body.customerPhone || authUser.phone || 'N/A'
+      body.companyName = body.companyName || authUser.companyName || null
+      body.paymentMethod = body.paymentMethod || 'BANK_TRANSFER'
+
+      if (!body.shippingAddress || !body.shippingCity || !body.shippingPostalCode) {
+        const userAddress = await prisma.address.findFirst({
+          where: { userId: authUser.id },
+          orderBy: { isDefault: 'desc' },
+        })
+        if (userAddress) {
+          body.shippingAddress = body.shippingAddress || userAddress.addressLine1
+          body.shippingCity = body.shippingCity || userAddress.city
+          body.shippingState = body.shippingState || userAddress.state || null
+          body.shippingPostalCode = body.shippingPostalCode || userAddress.postalCode
+          if (!body.shippingCountryId && userAddress.country) {
+            body.shippingCountryId = userAddress.country
+          }
+        } else {
+          body.shippingAddress = body.shippingAddress || (authUser.companyName ? `${authUser.companyName} Headquarters` : 'Wholesale Direct Delivery')
+          body.shippingCity = body.shippingCity || 'Pending Confirmation'
+          body.shippingPostalCode = body.shippingPostalCode || '000000'
+        }
+      }
+    }
+
+    // Fallback to active DB cart items if items array was not provided
+    if ((!body.items || !Array.isArray(body.items) || body.items.length === 0) && authUser) {
+      const userCart = await prisma.cart.findUnique({
+        where: { userId: authUser.id },
+        include: { items: true },
+      })
+      if (userCart && userCart.items.length > 0) {
+        body.items = userCart.items.map((it) => ({
+          productId: it.productId,
+          variantId: it.variantId || undefined,
+          quantity: it.quantity,
+        }))
+      }
+    }
+
     const requiredFields = [
       'customerName',
       'customerEmail',
@@ -171,9 +228,6 @@ export async function POST(request: Request) {
     const shippingCountryId = country.id
 
     // Authoritatively calculate order totals and resolve tiered/wholesale/contract pricing
-    const orderMode: 'RETAIL' | 'WHOLESALE' = (body.mode && body.mode.toUpperCase() === 'WHOLESALE') ? 'WHOLESALE' : 'RETAIL'
-    const isApprovedWholesale = isApprovedWholesaleUser(authUser)
-
     let calculation
     try {
       calculation = await calculateOrderTotals(
@@ -230,7 +284,7 @@ export async function POST(request: Request) {
           billingPostalCode: body.billingPostalCode,
           billingCountry: body.billingCountry,
           status: 'PENDING',
-          mode: (body.mode ? body.mode.toUpperCase() : 'RETAIL'),
+          mode: orderMode,
           paymentMethod: body.paymentMethod,
           paymentStatus: 'UNPAID',
           subtotal,

@@ -236,13 +236,44 @@ async function getProductFromDB(slug: string, locale: string) {
 
   const localized = localizeProduct(product, requestedLocale);
 
+  const ikeaNum =
+    (product as any).ikeaItemNumber ||
+    (product as any).ikeaItemNo ||
+    (product.sku?.startsWith('IKEA-') ? product.sku.replace('IKEA-', '') : null);
+  let rawIkeaPayload = (product as any).rawIkeaPayload;
+
+  if (!rawIkeaPayload && ikeaNum) {
+    try {
+      const { fetchIkeaProduct } = await import('@/lib/ikea/fetchProduct');
+      const fetched = await fetchIkeaProduct(ikeaNum);
+      if (fetched) {
+        rawIkeaPayload = fetched;
+        const updateData: any = { rawIkeaPayload: fetched as any };
+        if (!product.description && fetched.description) {
+          updateData.description = fetched.description;
+        }
+        if (!(product as any).ikeaItemNumber && ikeaNum) {
+          updateData.ikeaItemNumber = ikeaNum;
+        }
+        prisma.product
+          .update({
+            where: { id: product.id },
+            data: updateData,
+          })
+          .catch(() => {});
+      }
+    } catch {
+      // Graceful fallback if offline
+    }
+  }
+
   return {
     id: product.id,
     sku: product.sku,
     dromkokItemNo: product.dromkokItemNo,
     name: localized.name,
     slug: product.slug,
-    description: localized.description,
+    description: localized.description || (rawIkeaPayload as any)?.overview?.summary || product.description,
     metaTitle: localized.metaTitle,
     metaDescription: localized.metaDescription,
     price: product.price,
@@ -263,6 +294,8 @@ async function getProductFromDB(slug: string, locale: string) {
     categoryAttributes: uniqueAttributes,
     variants: product.variants,
     reviews: product.reviews,
+    ikeaItemNumber: ikeaNum,
+    rawIkeaPayload: rawIkeaPayload || null,
   };
 }
 

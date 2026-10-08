@@ -24,6 +24,7 @@
     "db:restore": "bash prisma/migrations/restore.sh",
     "seed:demo": "tsx scripts/seed-autopilot-demo.ts",
     "generate:placeholders": "node scripts/generate-placeholders.js",
+    "sync:ikea": "tsx scripts/sync-all-ikea-products.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

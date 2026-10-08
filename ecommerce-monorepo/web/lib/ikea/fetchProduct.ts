@@ -37,6 +37,10 @@ interface FetchOptions {
 /**
  * Sleep helper for delays and exponential backoff
  */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 /**
  * Composes a full comprehensive IKEA product description preserving all
  * real details (overview summary, key features bullets, good to know,

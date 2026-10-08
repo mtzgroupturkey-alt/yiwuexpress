@@ -48,9 +48,11 @@ export default function PaymentPage() {
       })
       const data = await response.json()
       if (data.success) {
-        if (data.data.paymentStatus === 'PAID') {
+        if (data.data.paymentStatus === 'PAID' || data.data.status === 'PAID') {
           setStage('success')
           setStageMessage('This order has already been paid.')
+        } else if (['CANCELLED', 'FAILED', 'REFUNDED'].includes(data.data.status) || data.data.paymentStatus === 'REFUNDED') {
+          setError(`This order is ${data.data.status.toLowerCase()} and cannot accept payment.`)
         }
         setOrder(data.data)
       } else {
