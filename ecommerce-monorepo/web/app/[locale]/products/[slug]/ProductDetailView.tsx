@@ -1518,11 +1518,6 @@ export default function ProductDetailView({
                           {t('inHighDemand')}
                         </span>
                       )}
-                      {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (
-                        <span className="bg-blue-50 text-blue-800 border border-blue-200 font-bold text-xs px-2.5 py-0.5 rounded-full font-mono tracking-wide shadow-2xs">
-                          Item #: {(selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo}
-                        </span>
-                      )}
                       <span className="text-xs text-slate-400 font-mono font-medium">{t('skuLabel')}{currentSku}</span>
                     </div>
 
@@ -1537,6 +1532,13 @@ export default function ProductDetailView({
                       </span>
                     </div>
                   </div>
+
+                  {/* Clean Item # line without badge */}
+                  {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (
+                    <div className="text-xs font-mono text-slate-500 font-medium">
+                      Item #: <span className="text-slate-900 font-bold tracking-wide">{((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)}</span>
+                    </div>
+                  )}
 
                   {/* Product H1 Title */}
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
