@@ -34,6 +34,9 @@ export interface ProductTranslationFormProps {
   /** Article # for IKEA / manufacturer identification */
   articleNumber?: string
   onArticleNumberChange?: (value: string) => void
+  /** Dynamic Category-specific Attributes slot to render inside hero section */
+  renderAttributes?: (currentLocale: TranslationLocale) => React.ReactNode
+  attributesSlot?: React.ReactNode
 }
 
 const LOCALES: {
@@ -72,7 +75,9 @@ export function ProductTranslationForm({
   swedenName = '',
   onSwedenNameChange,
   articleNumber = '',
-  onArticleNumberChange
+  onArticleNumberChange,
+  renderAttributes,
+  attributesSlot
 }: ProductTranslationFormProps) {
   const { dict } = useAdminLocale()
   const [activeTab, setActiveTab] = useState<TranslationLocale>('en')
@@ -347,38 +352,47 @@ export function ProductTranslationForm({
                 )}
               </div>
 
-              {/* SEO Meta Fields per Language Tab */}
-              <div className="border-t border-gray-100 pt-4 space-y-4">
-                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">{label} SEO & Meta</h4>
-                <div>
-                  <label htmlFor={`translation-${code}-metaTitle`} className="mb-1 block text-xs font-semibold text-gray-700">
-                    {dict.products.metaTitle} ({label})
-                  </label>
-                  <input
-                    id={`translation-${code}-metaTitle`}
-                    type="text"
-                    value={entry.metaTitle || ''}
-                    disabled={disabled}
-                    onChange={(e) => update(code, 'metaTitle', e.target.value)}
-                    placeholder="SEO Meta Title"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-200"
-                  />
+              {/* Dynamic Category Attributes embedded inside Hero Section box */}
+              {renderAttributes ? (
+                renderAttributes(code)
+              ) : attributesSlot ? (
+                attributesSlot
+              ) : null}
+
+              {/* SEO Meta Fields per Language Tab - Hidden for now */}
+              {false && (
+                <div className="border-t border-gray-100 pt-4 space-y-4">
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">{label} SEO & Meta</h4>
+                  <div>
+                    <label htmlFor={`translation-${code}-metaTitle`} className="mb-1 block text-xs font-semibold text-gray-700">
+                      {dict.products.metaTitle} ({label})
+                    </label>
+                    <input
+                      id={`translation-${code}-metaTitle`}
+                      type="text"
+                      value={entry.metaTitle || ''}
+                      disabled={disabled}
+                      onChange={(e) => update(code, 'metaTitle', e.target.value)}
+                      placeholder="SEO Meta Title"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-200"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor={`translation-${code}-metaDescription`} className="mb-1 block text-xs font-semibold text-gray-700">
+                      {dict.products.metaDescription} ({label})
+                    </label>
+                    <textarea
+                      id={`translation-${code}-metaDescription`}
+                      value={entry.metaDescription || ''}
+                      disabled={disabled}
+                      onChange={(e) => update(code, 'metaDescription', e.target.value)}
+                      placeholder="SEO Meta Description"
+                      rows={2}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-200"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor={`translation-${code}-metaDescription`} className="mb-1 block text-xs font-semibold text-gray-700">
-                    {dict.products.metaDescription} ({label})
-                  </label>
-                  <textarea
-                    id={`translation-${code}-metaDescription`}
-                    value={entry.metaDescription || ''}
-                    disabled={disabled}
-                    onChange={(e) => update(code, 'metaDescription', e.target.value)}
-                    placeholder="SEO Meta Description"
-                    rows={2}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-200"
-                  />
-                </div>
-              </div>
+              )}
             </div>
           )
         })}

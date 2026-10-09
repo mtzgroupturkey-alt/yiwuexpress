@@ -20,19 +20,36 @@ interface ProductAttributesSectionProps {
   /** Per-locale translations for attribute values: { [slug]: { en: string, ru: string, zh: string } } */
   attributeTranslations?: Record<string, Record<string, string>>
   onChange: (values: Record<string, any>, translations: Record<string, Record<string, string>>) => void
+  variant?: 'card' | 'embedded'
+  activeLocale?: 'en' | 'ru' | 'zh'
+  onLocaleChange?: (locale: 'en' | 'ru' | 'zh') => void
+  hideLocaleTabs?: boolean
+  hideHeader?: boolean
 }
+
+const attributesCache = new Map<string, any[]>()
 
 export function ProductAttributesSection({
   categoryId,
   initialValues = {},
   attributeTranslations: initialTranslations = {},
   onChange,
+  variant = 'card',
+  activeLocale,
+  onLocaleChange,
+  hideLocaleTabs = false,
+  hideHeader = false,
 }: ProductAttributesSectionProps) {
   const { dict } = useAdminLocale()
   const [categoryAttributes, setCategoryAttributes] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>(initialValues)
   const [attrTranslations, setAttrTranslations] = useState<Record<string, Record<string, string>>>(initialTranslations)
-  const [activeTab, setActiveTab] = useState<'en' | 'ru' | 'zh'>('en')
+  const [internalActiveTab, setInternalActiveTab] = useState<'en' | 'ru' | 'zh'>('en')
+  const activeTab = activeLocale ?? internalActiveTab
+  const setActiveTab = (tab: 'en' | 'ru' | 'zh') => {
+    setInternalActiveTab(tab)
+    onLocaleChange?.(tab)
+  }
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -64,11 +81,25 @@ export function ProductAttributesSection({
   }, [initialTranslations])
 
   const fetchCategoryAttributes = async (catId: string) => {
+    if (attributesCache.has(catId)) {
+      const cached = attributesCache.get(catId)!
+      setCategoryAttributes(cached)
+      const currentVals = Object.keys(attributeValues).length > 0 ? attributeValues : initialValues
+      const cleanVals: Record<string, any> = {}
+      cached.forEach((attr: any) => {
+        cleanVals[attr.slug] = currentVals[attr.slug] ?? defaultForType(attr.type)
+      })
+      setAttributeValues(cleanVals)
+      onChange(cleanVals, attrTranslations)
+      return
+    }
+
     setLoading(true)
     try {
       const response = await fetch(`/api/admin/categories/${catId}/attributes`)
       const data = await response.json()
       if (data.data) {
+        attributesCache.set(catId, data.data || [])
         setCategoryAttributes(data.data || [])
         const currentVals = Object.keys(attributeValues).length > 0 ? attributeValues : initialValues
         const cleanVals: Record<string, any> = {}
@@ -430,6 +461,13 @@ export function ProductAttributesSection({
 
   if (!categoryId) return null
   if (loading) {
+    if (variant === 'embedded') {
+      return (
+        <div className="border-t border-slate-200/80 pt-5 mt-5 py-3 text-center">
+          <p className="text-xs text-gray-500 animate-pulse">{dict.products.loadingAttributes}</p>
+        </div>
+      )
+    }
     return (
       <Card>
         <CardHeader><CardTitle>{dict.products.productAttributes}</CardTitle></CardHeader>
@@ -438,6 +476,73 @@ export function ProductAttributesSection({
     )
   }
   if (categoryAttributes.length === 0) return null
+
+  const attributeInputs = (
+    <div className="space-y-4">
+      {categoryAttributes.map(attribute => (
+        <div key={attribute.id}>
+          <Label htmlFor={attribute.slug} className="mb-1 flex items-center justify-between">
+            <span className="font-semibold text-gray-800 text-sm">
+              {getLocalizedAttributeName(attribute, activeTab)}
+              {attribute.isRequired && <span className="text-red-500 ml-1">*</span>}
+            </span>
+            <span className="text-[10px] uppercase bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">
+              {activeTab}
+            </span>
+          </Label>
+          {renderInput(attribute)}
+          {(() => {
+            const localizedHelper = getLocalizedHelperText(attribute, activeTab)
+            return localizedHelper && attribute.type !== 'CHECKBOX' ? (
+              <p className="text-xs text-[#1a3a5c]/70 mt-1 italic">{localizedHelper}</p>
+            ) : null
+          })()}
+        </div>
+      ))}
+    </div>
+  )
+
+  if (variant === 'embedded') {
+    return (
+      <div className="border-t border-slate-200/80 pt-5 mt-5 space-y-4">
+        {!hideHeader && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  {dict.products.productAttributes}
+                </span>
+                <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
+                  {categoryAttributes.length} {categoryAttributes.length === 1 ? 'attribute' : 'attributes'}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">{dict.products.categoryAttributesSubtitle}</p>
+            </div>
+            {!hideLocaleTabs && !activeLocale && (
+              <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                {(['en', 'ru', 'zh'] as const).map(loc => {
+                  const flags: Record<string, string> = { en: '🇬🇧 EN', ru: '🇷🇺 RU', zh: '🇨🇳 ZH' }
+                  return (
+                    <button
+                      key={loc}
+                      type="button"
+                      onClick={() => setActiveTab(loc)}
+                      className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                        activeTab === loc ? 'bg-primary-600 text-white shadow-sm bg-[#1a3a5c]' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      {flags[loc]}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        {attributeInputs}
+      </div>
+    )
+  }
 
   return (
     <Card>
@@ -518,26 +623,7 @@ export function ProductAttributesSection({
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        {categoryAttributes.map(attribute => (
-          <div key={attribute.id}>
-            <Label htmlFor={attribute.slug} className="mb-1 flex items-center justify-between">
-              <span className="font-semibold text-gray-800">
-                {getLocalizedAttributeName(attribute, activeTab)}
-                {attribute.isRequired && <span className="text-red-500 ml-1">*</span>}
-              </span>
-              <span className="text-[10px] uppercase bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-bold">
-                {activeTab}
-              </span>
-            </Label>
-            {renderInput(attribute)}
-            {(() => {
-              const localizedHelper = getLocalizedHelperText(attribute, activeTab)
-              return localizedHelper && attribute.type !== 'CHECKBOX' ? (
-                <p className="text-xs text-[#1a3a5c]/70 mt-1 italic">{localizedHelper}</p>
-              ) : null
-            })()}
-          </div>
-        ))}
+        {attributeInputs}
       </CardContent>
     </Card>
   )
