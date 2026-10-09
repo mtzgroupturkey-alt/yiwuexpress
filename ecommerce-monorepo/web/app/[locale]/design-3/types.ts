@@ -53,6 +53,8 @@ export interface Product {
   article?: string;
   dromkokItemNo?: string;
   ikeaItemNo?: string;
+  swedenName?: string;
+  englishName?: string;
   minOrderQty?: number;
   dietaryTag?: string;
   finishVariants?: { name: string; colorHex: string }[];

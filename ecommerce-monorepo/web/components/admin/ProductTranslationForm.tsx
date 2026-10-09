@@ -283,25 +283,6 @@ export function ProductTranslationForm({
                       />
                       <p className="text-[11px] text-gray-500">English product type / description</p>
                     </div>
-
-                    {/* Article # */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                          Article #
-                        </label>
-                        <span className="text-[10px] text-slate-400 font-mono">XXX.XXX.XX</span>
-                      </div>
-                      <input
-                        type="text"
-                        value={articleNumber}
-                        disabled={disabled}
-                        onChange={(e) => onArticleNumberChange?.(e.target.value)}
-                        placeholder="e.g. 406.094.49"
-                        className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-mono font-bold text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
-                      />
-                      <p className="text-[11px] text-gray-500">Article Number</p>
-                    </div>
                   </div>
                 </div>
               ) : (

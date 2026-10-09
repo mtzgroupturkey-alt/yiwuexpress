@@ -186,14 +186,23 @@ export function MobileProductDetailView({
           </div>
         </div>
 
-        {/* Product Title */}
-        <h1 className="text-lg font-black text-gray-900 dark:text-white leading-snug">
-          {product.name}
-        </h1>
+        {/* Product Title & Naming Stack on Mobile */}
+        <div className="space-y-0.5">
+          {product.swedenName && (
+            <div className="text-xl font-black text-[#00407a] dark:text-blue-400 uppercase tracking-wide leading-tight">
+              {product.swedenName}
+            </div>
+          )}
+          <h1 className={`${product.swedenName ? 'text-sm sm:text-base font-bold text-gray-700 dark:text-gray-300' : 'text-lg font-black text-gray-900 dark:text-white'} leading-snug`}>
+            {product.englishName && product.englishName.toLowerCase() !== product.swedenName?.toLowerCase()
+              ? product.englishName
+              : product.name}
+          </h1>
+        </div>
 
         {/* Product Description */}
         {product.description && (
-          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line line-clamp-3">
+          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line line-clamp-3 pt-0.5 border-t border-gray-100 dark:border-slate-800">
             {product.description.replace(/<[^>]+>/g, '').trim()}
           </p>
         )}

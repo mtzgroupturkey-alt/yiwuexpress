@@ -92,10 +92,13 @@ function extractEnglishName(fullName?: string, swedenName?: string): string {
 
 function dimensionsMapToArray(map?: Record<string, any> | null): DimensionItem[] {
   if (!map || typeof map !== 'object') return []
-  return Object.entries(map).map(([key, val]) => ({
-    key: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    value: typeof val === 'number' ? `${val} cm` : String(val ?? '')
-  }))
+  const shippingKeys = new Set(['unit', 'packageqty', 'volumel', 'grossweightkg', 'netweightkg', 'grossweight', 'packagecount'])
+  return Object.entries(map)
+    .filter(([key]) => !shippingKeys.has(key.toLowerCase().replace(/[^a-z0-9]/g, '')))
+    .map(([key, val]) => ({
+      key: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      value: typeof val === 'number' ? `${val} cm` : String(val ?? '')
+    }))
 }
 
 function dimensionsArrayToMap(arr: DimensionItem[]): Record<string, string> {

@@ -902,6 +902,25 @@ export default function ProductDetailView({
   }, [ikeaData, locale, product.name, (product as any)?.attributes])
 
   const displayEnglishName = useMemo(() => {
+    // 1. Authoritative: Admin's product name entered in admin panel (ProductTranslationForm / Product.name)
+    const adminName = (localized.name || product.name || '').trim()
+
+    if (adminName) {
+      if (displaySwedenName) {
+        // Normalize comparison (handle umlauts / casing e.g. GULDÖRING vs GULDoRING)
+        const normAdmin = adminName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+        const normSweden = displaySwedenName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+        if (normAdmin.startsWith(normSweden)) {
+          let sub = adminName.slice(displaySwedenName.length).trim()
+          if (sub.startsWith('-')) sub = sub.slice(1).trim()
+          if (sub) return sub
+        }
+      }
+      return adminName
+    }
+
+    // 2. Fallbacks if adminName is empty
     const locEng =
       ikeaData?.translations?.[locale]?.englishName ||
       ikeaData?.translations?.[locale]?.productDetails?.englishName
@@ -911,13 +930,7 @@ export default function ProductDetailView({
     if (ikeaData?.productDetails?.englishName) return ikeaData.productDetails.englishName
     if ((product as any)?.attributes?.english_name) return (product as any).attributes.english_name
 
-    if (displaySwedenName && ikeaData?.name?.startsWith(displaySwedenName)) {
-      let sub = ikeaData.name.slice(displaySwedenName.length).trim()
-      if (sub.startsWith('-')) sub = sub.slice(1).trim()
-      if (sub) return sub
-    }
-
-    return localized.name || product.name || null
+    return null
   }, [ikeaData, locale, displaySwedenName, localized.name, product.name, (product as any)?.attributes])
 
   const displayArticleNumber = useMemo(() => {
@@ -950,20 +963,63 @@ export default function ProductDetailView({
   }, [ikeaData, locale, overviewSummary, localized.description, product.description])
 
   const resolvedDimensions = useMemo(() => {
-    if (dimensionsMap && Object.keys(dimensionsMap).length > 0) {
-      return dimensionsMap
+    const isShippingKey = (key: string) => {
+      const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '')
+      return (
+        normalized === 'unit' ||
+        normalized === 'packageqty' ||
+        normalized === 'volumel' ||
+        normalized === 'grossweightkg' ||
+        normalized === 'netweightkg' ||
+        normalized === 'grossweight' ||
+        normalized === 'packagecount'
+      )
     }
+
+    if (dimensionsMap && Object.keys(dimensionsMap).length > 0) {
+      const filtered: Record<string, string> = {}
+      Object.entries(dimensionsMap).forEach(([k, v]) => {
+        if (!isShippingKey(k) && v && String(v).trim()) {
+          filtered[k] = String(v)
+        }
+      })
+      if (Object.keys(filtered).length > 0) {
+        return filtered
+      }
+    }
+
+    // If packagingList already provides package specifications, do not duplicate package dimensions into Section A
+    if (packagingList && packagingList.length > 0) {
+      const attrFallback: Record<string, string> = {}
+      const itemKeys = ['diameter', 'thread_count', 'cord_length', 'seat_height', 'seat_depth', 'seat_width']
+      itemKeys.forEach((key) => {
+        if (product.attributes?.[key]) {
+          const title = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+          attrFallback[title] = String(product.attributes[key])
+        }
+      })
+      return attrFallback
+    }
+
     const fallback: Record<string, string> = {}
     if (product.dimensions) {
       if (typeof product.dimensions === 'object') {
-        Object.entries(product.dimensions).forEach(([k, v]) => {
-          if (v) fallback[k.charAt(0).toUpperCase() + k.slice(1)] = String(v)
-        })
-      } else if (typeof product.dimensions === 'string') {
+        const dimObj = product.dimensions as Record<string, any>
+        const hasOnlyShipping = Object.keys(dimObj).every((k) =>
+          isShippingKey(k) || ['width', 'height', 'length'].includes(k.toLowerCase())
+        )
+        if (!hasOnlyShipping) {
+          Object.entries(dimObj).forEach(([k, v]) => {
+            if (!isShippingKey(k) && v) {
+              fallback[k.charAt(0).toUpperCase() + k.slice(1)] = String(v)
+            }
+          })
+        }
+      } else if (typeof product.dimensions === 'string' && product.dimensions.trim()) {
         fallback['Dimensions'] = product.dimensions
       }
     }
-    const standardKeys = ['width', 'height', 'length', 'diameter', 'weight', 'volume', 'thread_count']
+    const standardKeys = ['diameter', 'thread_count', 'cord_length', 'seat_height', 'seat_depth', 'seat_width']
     standardKeys.forEach((key) => {
       if (product.attributes?.[key]) {
         const title = key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
@@ -971,7 +1027,7 @@ export default function ProductDetailView({
       }
     })
     return fallback
-  }, [dimensionsMap, product.dimensions, product.attributes])
+  }, [dimensionsMap, packagingList, product.dimensions, product.attributes])
 
   // Category Attributes with filled values (from /admin/attributes)
   const categoryAttributesWithValues = useMemo(() => {
@@ -1615,6 +1671,8 @@ export default function ProductDetailView({
           product={mapDbProductToDesign3({
             ...product,
             name: localized.name || product.name,
+            swedenName: displaySwedenName || undefined,
+            englishName: (displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()) ? displayEnglishName : undefined,
             description: productHeaderDescription || localized.description || product.description
           })}
           relatedProducts={relatedProducts.map(mapDbProductToDesign3)}
@@ -1760,12 +1818,6 @@ export default function ProductDetailView({
                         </span>
                       )}
 
-                      {displayArticleNumber && (
-                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full tracking-wide">
-                          {locale === 'ru' ? 'Артикул' : locale === 'zh' ? '货号' : 'Article'} #: {displayArticleNumber}
-                        </span>
-                      )}
-
                       {/* High Demand Badge (Admin on/off controlled) */}
                       {(() => {
                         const isHighDemandEnabled =
@@ -1786,21 +1838,24 @@ export default function ProductDetailView({
                     </div>
                   </div>
 
-                  {/* Product H1 Title */}
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight flex flex-wrap items-baseline gap-2">
+                  {/* Product Title & Naming Stack: Each in its own separate line */}
+                  <div className="space-y-1">
+                    {/* Line 1: Sweden Name (Original Swedish series / brand name) */}
                     {displaySwedenName && (
-                      <span className="text-[#00407a] font-black uppercase tracking-wide">
+                      <div className="text-2xl sm:text-3xl font-black text-[#00407a] uppercase tracking-wide leading-tight">
                         {displaySwedenName}
-                      </span>
+                      </div>
                     )}
-                    <span>
+
+                    {/* Line 2: English Name (English product type / title) */}
+                    <h1 className={`${displaySwedenName ? 'text-lg sm:text-xl font-bold text-slate-800' : 'text-xl sm:text-2xl font-black text-slate-900'} leading-snug`}>
                       {displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()
                         ? displayEnglishName
                         : localized.name}
-                    </span>
-                  </h1>
+                    </h1>
+                  </div>
 
-                  {/* Product Description right after product name on top */}
+                  {/* Line 3: English Description on its own separate line/block */}
                   {(displayProductDetailsDescription || productHeaderDescription) && (() => {
                     const descText = displayProductDetailsDescription || productHeaderDescription || ''
                     const cleanText = descText.replace(/<[^>]+>/g, '').trim()
@@ -1808,7 +1863,7 @@ export default function ProductDetailView({
                     const isLong = cleanText.length > 200
 
                     return (
-                      <div className="text-sm text-slate-600 leading-relaxed pt-0.5">
+                      <div className="w-full text-sm text-slate-600 leading-relaxed pt-1 border-t border-slate-100">
                         <div className={`transition-all duration-200 ${!isDescExpanded && isLong ? 'line-clamp-3' : ''}`}>
                           {isHtml ? (
                             <div
@@ -2630,19 +2685,19 @@ export default function ProductDetailView({
             {/* Tab 3: Measurements */}
             {activeTab === 'measurements' && (
               <div className="space-y-8 animate-fade-in">
-                {/* Section A: Product Dimensions */}
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                      <Ruler className="w-5 h-5 text-[#00407a]" />
-                      {locale === 'ru' ? 'Размеры изделия' : locale === 'zh' ? '产品尺寸规格' : 'Measurements'}
-                    </h3>
-                    <span className="text-xs text-slate-500">
-                      {locale === 'ru' ? 'Точные физические габариты' : locale === 'zh' ? '精确物理尺寸参数' : 'Exact physical specifications'}
-                    </span>
-                  </div>
+                {/* Section A: Product Dimensions (Only shown when product physical dimensions exist) */}
+                {Object.keys(resolvedDimensions).length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <Ruler className="w-5 h-5 text-[#00407a]" />
+                        {locale === 'ru' ? 'Размеры изделия' : locale === 'zh' ? '产品尺寸规格' : 'Measurements'}
+                      </h3>
+                      <span className="text-xs text-slate-500">
+                        {locale === 'ru' ? 'Точные физические габариты' : locale === 'zh' ? '精确物理尺寸参数' : 'Exact physical specifications'}
+                      </span>
+                    </div>
 
-                  {Object.keys(resolvedDimensions).length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                       {Object.entries(resolvedDimensions).map(([key, val]) => (
                         <div
@@ -2658,16 +2713,19 @@ export default function ProductDetailView({
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <div className="p-6 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm">
-                      {locale === 'ru'
-                        ? 'Габариты соответствуют стандартным фабричным нормативам.'
-                        : locale === 'zh'
-                        ? '尺寸符合出厂标准规范。'
-                        : 'Standard manufacturer sizing applies.'}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Fallback if neither product dimensions nor packaging details exist */}
+                {Object.keys(resolvedDimensions).length === 0 && (!packagingList || packagingList.length === 0) && (
+                  <div className="p-6 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm">
+                    {locale === 'ru'
+                      ? 'Габариты соответствуют стандартным фабричным нормативам.'
+                      : locale === 'zh'
+                      ? '尺寸符合出厂标准规范。'
+                      : 'Standard manufacturer sizing applies.'}
+                  </div>
+                )}
 
                 {/* Section B: Packaging Information */}
                 <div className="space-y-4 pt-2">
@@ -2697,12 +2755,6 @@ export default function ProductDetailView({
                                 {pkg.name || localized.name}
                               </h4>
                             </div>
-                            {(pkg.articleNumber || displayIkeaItemNo) && (
-                              <span className="text-xs font-mono font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">
-                                {locale === 'ru' ? 'Артикул: ' : locale === 'zh' ? '货号: ' : 'Article #: '}
-                                {pkg.articleNumber || displayIkeaItemNo}
-                              </span>
-                            )}
                           </div>
 
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
