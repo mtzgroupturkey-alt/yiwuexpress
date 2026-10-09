@@ -106,32 +106,41 @@ export default function AttributeManager() {
       const res = await fetch(`/api/admin/attributes/${id}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error('Failed to delete attribute')
-      return res.json()
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to delete attribute')
+      }
+      return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-attributes'] })
       queryClient.invalidateQueries({ queryKey: ['categories', 'with-attributes'] })
       toast.success(dict.common?.deleteSuccess || 'Attribute deleted successfully')
     },
-    onError: () => {
-      toast.error(dict.common?.errorOccurred || 'Failed to delete attribute')
+    onError: (err: any, id: string) => {
+      if (err.message && (err.message.includes('used by products') || err.message.includes('products'))) {
+        toast.error('Attribute has stored product data — hiding it instead so all data is preserved safely.')
+        toggleVisibility.mutate({ id, visible: false, categoryId: selectedCategoryId })
+      } else {
+        toast.error(err.message || dict.common?.errorOccurred || 'Failed to delete attribute')
+      }
     },
   })
 
   // Toggle attribute visibility
   const toggleVisibility = useMutation({
-    mutationFn: async ({ id, visible }: { id: string; visible: boolean }) => {
+    mutationFn: async ({ id, visible, categoryId }: { id: string; visible: boolean; categoryId?: string | null }) => {
       const res = await fetch(`/api/admin/attributes/${id}/visibility`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVisible: visible }),
+        body: JSON.stringify({ isVisible: visible, categoryId: categoryId ?? selectedCategoryId }),
       })
       if (!res.ok) throw new Error('Failed to toggle visibility')
       return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['category-attributes'] })
+      queryClient.invalidateQueries({ queryKey: ['categories', 'with-attributes'] })
       toast.success('Visibility updated')
     },
     onError: () => {
@@ -1158,11 +1167,11 @@ export default function AttributeManager() {
                                       toggleVisibility.mutate({
                                         id: attr.id,
                                         visible: !attr.isVisible,
+                                        categoryId: selectedCategoryId,
                                       })
                                     }
-                                    disabled={attr.isInherited}
                                   />
-                                  <span className="text-xs text-slate-500">
+                                  <span className={`text-xs font-semibold ${attr.isVisible ? 'text-emerald-700' : 'text-slate-400'}`}>
                                     {attr.isVisible ? 'Live' : 'Hidden'}
                                   </span>
                                 </div>
@@ -1170,17 +1179,17 @@ export default function AttributeManager() {
 
                               {/* Actions */}
                               <TableCell className="py-3 text-right">
-                                {!attr.isInherited ? (
-                                  <div className="flex items-center justify-end gap-1.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleEdit(attr)}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-2xs transition-all group cursor-pointer"
-                                      title="Edit attribute"
-                                    >
-                                      <Pencil className="w-3.5 h-3.5 text-blue-600 group-hover:text-white transition-colors" />
-                                      <span>{dict.common?.edit || 'Edit'}</span>
-                                    </button>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEdit(attr)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-2xs transition-all group cursor-pointer"
+                                    title="Edit attribute"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5 text-blue-600 group-hover:text-white transition-colors" />
+                                    <span>{dict.common?.edit || 'Edit'}</span>
+                                  </button>
+                                  {!attr.isInherited ? (
                                     <button
                                       type="button"
                                       onClick={() => handleDelete(attr.id)}
@@ -1190,13 +1199,37 @@ export default function AttributeManager() {
                                       <Trash2 className="w-3.5 h-3.5 text-red-600 group-hover:text-white transition-colors" />
                                       <span>{dict.common?.delete || 'Delete'}</span>
                                     </button>
-                                  </div>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                                    {dict.attributes?.readOnly || 'Inherited (Read-only)'}
-                                  </span>
-                                )}
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        toggleVisibility.mutate({
+                                          id: attr.id,
+                                          visible: !attr.isVisible,
+                                          categoryId: selectedCategoryId,
+                                        })
+                                      }
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border shadow-2xs transition-all cursor-pointer ${
+                                        attr.isVisible
+                                          ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-600 hover:text-white hover:border-amber-600'
+                                          : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600'
+                                      }`}
+                                      title={attr.isVisible ? 'Hide in this category' : 'Show in this category'}
+                                    >
+                                      {attr.isVisible ? (
+                                        <>
+                                          <EyeOff className="w-3.5 h-3.5" />
+                                          <span>Hide</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="w-3.5 h-3.5" />
+                                          <span>Show</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           )
@@ -1273,16 +1306,16 @@ export default function AttributeManager() {
                                 )}
                               </div>
 
-                              {!attr.isInherited ? (
-                                <div className="flex items-center gap-1.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleEdit(attr)}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-2xs transition-all group cursor-pointer"
-                                  >
-                                    <Pencil className="w-3 h-3 text-blue-600 group-hover:text-white transition-colors" />
-                                    <span>{dict.common?.edit || 'Edit'}</span>
-                                  </button>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleEdit(attr)}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-2xs transition-all group cursor-pointer"
+                                >
+                                  <Pencil className="w-3 h-3 text-blue-600 group-hover:text-white transition-colors" />
+                                  <span>{dict.common?.edit || 'Edit'}</span>
+                                </button>
+                                {!attr.isInherited ? (
                                   <button
                                     type="button"
                                     onClick={() => handleDelete(attr.id)}
@@ -1291,12 +1324,27 @@ export default function AttributeManager() {
                                     <Trash2 className="w-3 h-3 text-red-600 group-hover:text-white transition-colors" />
                                     <span>{dict.common?.delete || 'Delete'}</span>
                                   </button>
-                                </div>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
-                                  {dict.attributes?.readOnly || 'Read-only'}
-                                </span>
-                              )}
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      toggleVisibility.mutate({
+                                        id: attr.id,
+                                        visible: !attr.isVisible,
+                                        categoryId: selectedCategoryId,
+                                      })
+                                    }
+                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold border shadow-2xs transition-all cursor-pointer ${
+                                      attr.isVisible
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-600 hover:text-white'
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-600 hover:text-white'
+                                    }`}
+                                  >
+                                    {attr.isVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                                    <span>{attr.isVisible ? 'Hide' : 'Show'}</span>
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         )

@@ -9,6 +9,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useAuth } from '@/hooks/useAuth'
 import { useCustomerView } from '@/hooks/useCustomerView'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 interface ElectronicsProductCardProps {
   product: ProductItem
@@ -133,9 +134,28 @@ export function ElectronicsProductCard({
         </div>
 
         {/* Product Name */}
-        <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-[#FF4D00] transition-colors line-clamp-2 leading-snug mb-2">
-          {product.name}
-        </h3>
+        {(() => {
+          const { swedenName, englishName } = getProductDisplayNames(product);
+
+          return (
+            <h3 className="text-xs sm:text-sm leading-snug group-hover:text-[#FF4D00] transition-colors min-h-[36px] mb-2">
+              {swedenName ? (
+                <>
+                  <span className="block font-black text-slate-900 uppercase tracking-wide truncate">
+                    {swedenName}
+                  </span>
+                  <span className="block font-medium text-slate-600 text-xs line-clamp-1">
+                    {englishName}
+                  </span>
+                </>
+              ) : (
+                <span className="font-bold text-slate-900 line-clamp-2">
+                  {englishName || product.name}
+                </span>
+              )}
+            </h3>
+          );
+        })()}
 
         {/* Key Specs tags if present */}
         {product.specs && (

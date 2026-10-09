@@ -18,6 +18,7 @@ import { useSettings } from '@/components/SettingsProvider'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/components/CartContext'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 interface Product {
   id: string
@@ -302,15 +303,34 @@ export default function ProductCard({
             </span>
           </div>
 
-          {/* Product Name */}
-          <LocaleLink
-            href={`/products/${product.slug}`}
-            className="after:absolute after:inset-0 after:z-0 after:content-['']"
-          >
-            <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-2 leading-snug group-hover:text-[#0055A4] transition-colors">
-              {product.name}
-            </h3>
-          </LocaleLink>
+          {/* Product Name: First Swedish name, next line English name */}
+          {(() => {
+            const { swedenName, englishName } = getProductDisplayNames(product);
+
+            return (
+              <LocaleLink
+                href={`/products/${product.slug}`}
+                className="after:absolute after:inset-0 after:z-0 after:content-[''] block"
+              >
+                <h3 className="text-xs sm:text-sm leading-snug group-hover:text-[#0055A4] transition-colors min-h-[36px]">
+                  {swedenName ? (
+                    <>
+                      <span className="block font-black text-gray-900 dark:text-gray-100 uppercase tracking-wide truncate">
+                        {swedenName}
+                      </span>
+                      <span className="block font-medium text-gray-600 dark:text-gray-300 text-xs line-clamp-1">
+                        {englishName}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-2">
+                      {englishName || product.name}
+                    </span>
+                  )}
+                </h3>
+              </LocaleLink>
+            );
+          })()}
         </div>
 
         <div>

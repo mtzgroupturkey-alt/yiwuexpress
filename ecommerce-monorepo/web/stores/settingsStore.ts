@@ -112,6 +112,7 @@ export interface CompanySettings {
   pdpFaq4A?: string | null
   pdpFaq5Q?: string | null
   pdpFaq5A?: string | null
+  pdpCourierDeliveryBadgeEnabled?: boolean
 }
 
 export interface SettingsState {
@@ -217,6 +218,7 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   pdpFaq4A: 'We offer full pre-shipment quality inspection and 30-day return coverage for any verified manufacturing defects.',
   pdpFaq5Q: 'Can I customize this product or add my logo (OEM/ODM)?',
   pdpFaq5A: 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.',
+  pdpCourierDeliveryBadgeEnabled: true,
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({

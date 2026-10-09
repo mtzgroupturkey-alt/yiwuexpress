@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
-import { revalidateTag } from 'next/cache'
+import { revalidateTag, revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { requireRole, createAuthErrorResponse } from '@/lib/auth'
 
@@ -157,11 +157,23 @@ export async function PUT(
     // persisted independently, and the English copy is mirrored back onto the
     // legacy root columns so non-migrated read paths keep working.
     const englishEntry = incomingTranslations.find((t) => t.locale === 'en')
-    if (englishEntry) {
-      productData.name = englishEntry.name ?? productData.name
+    if (englishEntry && typeof englishEntry.name === 'string') {
+      const enName = englishEntry.name.trim()
+      productData.name = enName || productData.name
       productData.description = englishEntry.description ?? null
       if (englishEntry.metaTitle) productData.metaTitle = englishEntry.metaTitle
       if (englishEntry.metaDescription) productData.metaDescription = englishEntry.metaDescription
+
+      // Guarantee rawIkeaPayload stays strictly in sync with the updated English name
+      const targetRaw = (productData.rawIkeaPayload || existing.rawIkeaPayload || {}) as any
+      if (typeof targetRaw === 'object' && targetRaw !== null) {
+        targetRaw.englishName = enName
+        if (!targetRaw.productDetails || typeof targetRaw.productDetails !== 'object') {
+          targetRaw.productDetails = {}
+        }
+        targetRaw.productDetails.englishName = enName
+        productData.rawIkeaPayload = targetRaw
+      }
     }
 
     // Update product + write all locale rows atomically.
@@ -274,7 +286,21 @@ export async function PUT(
     try {
       revalidateTag('homepage-products')
       revalidateTag('products')
-    } catch {}
+      revalidatePath('/', 'layout')
+      revalidatePath('/[locale]', 'layout')
+      if (productWithAttributes?.slug) {
+        for (const loc of ['en', 'ru', 'zh']) {
+          revalidatePath(`/${loc}/products/${productWithAttributes.slug}`)
+        }
+      }
+      for (const loc of ['en', 'ru', 'zh']) {
+        revalidatePath(`/${loc}/products`)
+        revalidatePath(`/${loc}/store`)
+        revalidatePath(`/${loc}`)
+      }
+    } catch (e) {
+      console.error('Revalidation error:', e)
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,4 +1,5 @@
 import { normalizeProductImageUrl } from '@/lib/image-utils'
+import { getProductDisplayNames } from './productNames'
 
 /**
  * Sanitizes product objects returned by public/storefront APIs,
@@ -43,6 +44,13 @@ export function sanitizeProductForClient<T extends Record<string, any>>(
     safe.images = safe.images.map((img: string) => normalizeProductImageUrl(img, catName, safe.name))
   } else if (safe.thumbnail) {
     safe.images = [safe.thumbnail]
+  }
+
+  // 1c. Attach resolved Swedish & English names if not already set
+  if (!safe.swedenName && !safe.englishName) {
+    const { swedenName, englishName } = getProductDisplayNames(safe)
+    safe.swedenName = swedenName
+    safe.englishName = englishName
   }
 
   // 2. Strip variant sensitive fields for non-admins

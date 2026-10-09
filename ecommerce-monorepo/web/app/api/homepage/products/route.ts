@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { localizeEntity, getLocalField } from '@/lib/utils/localize'
 import { getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
 import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 export const revalidate = 300 // 5 minutes
 
@@ -35,6 +36,7 @@ const getCachedHomepageProducts = unstable_cache(
         isNewArrival: true,
         isFlashSale: true,
         categoryId: true,
+        rawIkeaPayload: true,
         category: {
           select: {
             id: true,
@@ -110,10 +112,18 @@ const getCachedHomepageProducts = unstable_cache(
           : null)
       const images = primaryImage ? [primaryImage] : []
 
+      const { swedenName, englishName } = getProductDisplayNames({
+        ...product,
+        name,
+      })
+
       return {
         id: product.id,
         name,
         slug: product.slug,
+        swedenName,
+        englishName,
+        rawIkeaPayload: product.rawIkeaPayload || null,
         price: product.price,
         compareAtPrice: product.compareAtPrice,
         wholesalePrice: product.wholesalePrice,

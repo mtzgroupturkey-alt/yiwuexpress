@@ -11,7 +11,8 @@ import {
   Plus, Search, Edit, Trash2, Eye, Package, Star, Sparkles,
   Zap, ArrowUpDown, Filter, RefreshCw, Layers, CheckCircle2,
   AlertTriangle, XCircle, ExternalLink, ChevronLeft, ChevronRight,
-  CheckSquare, Square, X
+  CheckSquare, Square, X, Image as ImageIcon, SlidersHorizontal,
+  ArrowUp, ArrowDown, Tag
 } from 'lucide-react'
 import {
   Dialog,
@@ -30,6 +31,7 @@ interface Product {
   sku: string
   dromkokItemNo?: string | null
   ikeaItemNo?: string | null
+  rawIkeaPayload?: any
   name: string
   slug: string
   price: number
@@ -43,6 +45,48 @@ interface Product {
   category?: {
     name: string
   } | null
+}
+
+function getProductSwedenName(product: Product): string {
+  const raw = product.rawIkeaPayload as any
+  if (raw?.swedenName && typeof raw.swedenName === 'string' && raw.swedenName.trim()) {
+    return raw.swedenName.trim()
+  }
+  if (raw?.swedishName && typeof raw.swedishName === 'string' && raw.swedishName.trim()) {
+    return raw.swedishName.trim()
+  }
+  if (raw?.productDetails?.swedenName && typeof raw.productDetails.swedenName === 'string' && raw.productDetails.swedenName.trim()) {
+    return raw.productDetails.swedenName.trim()
+  }
+  if (raw?.productDetails?.swedishSeries && typeof raw.productDetails.swedishSeries === 'string' && raw.productDetails.swedishSeries.trim()) {
+    return raw.productDetails.swedishSeries.trim()
+  }
+  if (raw?.item?.itemMeasureReferenceText && typeof raw.item.itemMeasureReferenceText === 'string' && raw.item.itemMeasureReferenceText.trim()) {
+    return raw.item.itemMeasureReferenceText.trim()
+  }
+  if (raw?.translations && typeof raw.translations === 'object') {
+    for (const loc of ['en', 'sv', 'ru', 'zh']) {
+      const trans = raw.translations[loc]
+      if (trans?.swedenName && typeof trans.swedenName === 'string' && trans.swedenName.trim()) {
+        return trans.swedenName.trim()
+      }
+      if (trans?.productDetails?.swedenName && typeof trans.productDetails.swedenName === 'string' && trans.productDetails.swedenName.trim()) {
+        return trans.productDetails.swedenName.trim()
+      }
+    }
+  }
+  const rawName = (product.name || '').trim()
+  const match = rawName.match(/^([A-ZÅÄÖØÆÉÈÜ0-9]{2,})/u)
+  if (match) {
+    return match[1]
+  }
+  return ''
+}
+
+// English name and Swedish name are separate — show the English name in full.
+// The Swedish series badge is displayed separately above it.
+function getProductDisplayTitle(name: string): string {
+  return name || ''
 }
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'zh'] as const
@@ -151,13 +195,27 @@ export default function AdminProductsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [badgeFilter, setBadgeFilter] = useState<'all' | 'featured' | 'new_arrival' | 'flash_sale'>('all')
+  const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'low_stock' | 'out_of_stock'>('all')
+  const [imageFilter, setImageFilter] = useState<'all' | 'real' | 'placeholder'>('all')
+  const [sortBy, setSortBy] = useState<string>('createdAt')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [bulkProcessing, setBulkProcessing] = useState(false)
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(20)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
-  const [metrics, setMetrics] = useState({ total: 0, active: 0, featured: 0, lowStock: 0 })
+  const [metrics, setMetrics] = useState({
+    total: 0,
+    active: 0,
+    featured: 0,
+    newArrival: 0,
+    flashSale: 0,
+    lowStock: 0,
+    outOfStock: 0
+  })
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -222,6 +280,12 @@ export default function AdminProductsPage() {
           setDebouncedSearch(filters.search)
         }
         if (filters.categoryFilter) setCategoryFilter(filters.categoryFilter)
+        if (filters.statusFilter) setStatusFilter(filters.statusFilter)
+        if (filters.badgeFilter) setBadgeFilter(filters.badgeFilter)
+        if (filters.stockFilter) setStockFilter(filters.stockFilter)
+        if (filters.imageFilter) setImageFilter(filters.imageFilter)
+        if (filters.sortBy) setSortBy(filters.sortBy)
+        if (filters.sortOrder) setSortOrder(filters.sortOrder)
         if (filters.limit) setLimit(filters.limit)
         // If restoring a search, ensure page starts at 1
         if (filters.page && !filters.search) setPage(filters.page)
@@ -272,10 +336,33 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     if (filtersLoaded) {
-      const filters = { search: debouncedSearch, categoryFilter, page, limit }
+      const filters = {
+        search: debouncedSearch,
+        categoryFilter,
+        statusFilter,
+        badgeFilter,
+        stockFilter,
+        imageFilter,
+        sortBy,
+        sortOrder,
+        page,
+        limit
+      }
       localStorage.setItem('adminProductsFilters', JSON.stringify(filters))
     }
-  }, [debouncedSearch, categoryFilter, page, limit, filtersLoaded])
+  }, [
+    debouncedSearch,
+    categoryFilter,
+    statusFilter,
+    badgeFilter,
+    stockFilter,
+    imageFilter,
+    sortBy,
+    sortOrder,
+    page,
+    limit,
+    filtersLoaded
+  ])
 
   useEffect(() => {
     fetchCategories()
@@ -285,7 +372,19 @@ export default function AdminProductsPage() {
     if (filtersLoaded) {
       fetchProducts()
     }
-  }, [page, limit, debouncedSearch, categoryFilter, filtersLoaded])
+  }, [
+    page,
+    limit,
+    debouncedSearch,
+    categoryFilter,
+    statusFilter,
+    badgeFilter,
+    stockFilter,
+    imageFilter,
+    sortBy,
+    sortOrder,
+    filtersLoaded
+  ])
   
   useEffect(() => {
     if (flatCategories.length > 0 && categoryFilter) {
@@ -325,7 +424,16 @@ export default function AdminProductsPage() {
         page: page.toString(),
         limit: limit.toString(),
         ...(trimmedSearch && { search: trimmedSearch }),
-        ...(categorySlug && { category: categorySlug })
+        ...(categorySlug && { category: categorySlug }),
+        ...(statusFilter !== 'all' && { isActive: (statusFilter === 'active').toString() }),
+        ...(badgeFilter === 'featured' && { isFeatured: 'true' }),
+        ...(badgeFilter === 'new_arrival' && { isNewArrival: 'true' }),
+        ...(badgeFilter === 'flash_sale' && { isFlashSale: 'true' }),
+        ...(stockFilter !== 'all' && { stockStatus: stockFilter }),
+        ...(imageFilter === 'real' && { hasRealImage: 'true' }),
+        ...(imageFilter === 'placeholder' && { hasRealImage: 'false' }),
+        sortBy,
+        sortOrder
       })
 
       const response = await fetch(`/api/admin/products?${params}`)
@@ -342,7 +450,10 @@ export default function AdminProductsPage() {
             total: data.pagination?.total || data.data?.length || 0,
             active: (data.data || []).filter((p: any) => p.isActive).length,
             featured: (data.data || []).filter((p: any) => p.isFeatured).length,
-            lowStock: (data.data || []).filter((p: any) => p.stock < 10).length,
+            newArrival: (data.data || []).filter((p: any) => p.isNewArrival).length,
+            flashSale: (data.data || []).filter((p: any) => p.isFlashSale).length,
+            lowStock: (data.data || []).filter((p: any) => p.stock > 0 && p.stock < 10).length,
+            outOfStock: (data.data || []).filter((p: any) => p.stock <= 0).length,
           })
         }
       }
@@ -532,7 +643,35 @@ export default function AdminProductsPage() {
   // Summary counts (from database metrics across all matching products)
   const activeCount = metrics.active
   const featuredCount = metrics.featured
+  const newArrivalCount = metrics.newArrival
+  const flashSaleCount = metrics.flashSale
   const lowStockCount = metrics.lowStock
+  const outOfStockCount = metrics.outOfStock
+
+  const resetAllFilters = () => {
+    setSearch('')
+    setDebouncedSearch('')
+    setCategoryFilter(null)
+    setStatusFilter('all')
+    setBadgeFilter('all')
+    setStockFilter('all')
+    setImageFilter('all')
+    setSortBy('createdAt')
+    setSortOrder('desc')
+    setPage(1)
+    localStorage.removeItem('adminProductsFilters')
+  }
+
+  const hasActiveFilters = Boolean(
+    debouncedSearch.trim() ||
+    categoryFilter ||
+    statusFilter !== 'all' ||
+    badgeFilter !== 'all' ||
+    stockFilter !== 'all' ||
+    imageFilter !== 'all' ||
+    sortBy !== 'createdAt' ||
+    sortOrder !== 'desc'
+  )
 
   return (
     <div className="w-full max-w-full min-w-0 space-y-6 pb-12">
@@ -561,111 +700,461 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {/* Mini Metric Badges */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-            <Package size={18} />
+      {/* Interactive Metric Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* Total Products */}
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter('all')
+            setBadgeFilter('all')
+            setStockFilter('all')
+            setImageFilter('all')
+            setPage(1)
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all ${
+            statusFilter === 'all' && badgeFilter === 'all' && stockFilter === 'all' && imageFilter === 'all'
+              ? 'bg-blue-50/40 border-blue-200 ring-2 ring-blue-500/20'
+              : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-xs'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+              <Package size={14} />
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium truncate">{dict.dashboard.totalProducts}</span>
           </div>
-          <div>
-            <p className="text-xs text-gray-500 font-medium">{dict.dashboard.totalProducts}</p>
-            <p className="text-lg font-black text-gray-900">{totalCount}</p>
-          </div>
-        </div>
+          <p className="text-lg font-black text-gray-900">{metrics.total}</p>
+        </button>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle2 size={18} />
+        {/* Active */}
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter(prev => prev === 'active' ? 'all' : 'active')
+            setPage(1)
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all ${
+            statusFilter === 'active'
+              ? 'bg-emerald-50/50 border-emerald-300 ring-2 ring-emerald-500/30'
+              : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-xs'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+              <CheckCircle2 size={14} />
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium truncate">{dict.common.active}</span>
           </div>
-          <div>
-            <p className="text-xs text-gray-500 font-medium">{dict.common.active}</p>
-            <p className="text-lg font-black text-emerald-600">{activeCount}</p>
-          </div>
-        </div>
+          <p className="text-lg font-black text-emerald-600">{activeCount}</p>
+        </button>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-            <Star size={18} />
+        {/* Featured */}
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter(prev => prev === 'featured' ? 'all' : 'featured')
+            setPage(1)
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all ${
+            badgeFilter === 'featured'
+              ? 'bg-amber-50/50 border-amber-300 ring-2 ring-amber-500/30'
+              : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-xs'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+              <Star size={14} />
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium truncate">{dict.products.featured}</span>
           </div>
-          <div>
-            <p className="text-xs text-gray-500 font-medium">{dict.products.featured}</p>
-            <p className="text-lg font-black text-amber-600">{featuredCount}</p>
-          </div>
-        </div>
+          <p className="text-lg font-black text-amber-600">{featuredCount}</p>
+        </button>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-2xs flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
-            <AlertTriangle size={18} />
+        {/* New Arrivals */}
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter(prev => prev === 'new_arrival' ? 'all' : 'new_arrival')
+            setPage(1)
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all ${
+            badgeFilter === 'new_arrival'
+              ? 'bg-indigo-50/50 border-indigo-300 ring-2 ring-indigo-500/30'
+              : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-xs'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+              <Sparkles size={14} />
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium truncate">{dict.products.newArrival}</span>
           </div>
-          <div>
-            <p className="text-xs text-gray-500 font-medium">{dict.dashboard.lowStock}</p>
-            <p className="text-lg font-black text-red-600">{lowStockCount}</p>
+          <p className="text-lg font-black text-indigo-600">{newArrivalCount}</p>
+        </button>
+
+        {/* Flash Sale */}
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter(prev => prev === 'flash_sale' ? 'all' : 'flash_sale')
+            setPage(1)
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all ${
+            badgeFilter === 'flash_sale'
+              ? 'bg-purple-50/50 border-purple-300 ring-2 ring-purple-500/30'
+              : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-xs'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+              <Zap size={14} />
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium truncate">{dict.products.flashSale}</span>
           </div>
-        </div>
+          <p className="text-lg font-black text-purple-600">{flashSaleCount}</p>
+        </button>
+
+        {/* Low Stock */}
+        <button
+          type="button"
+          onClick={() => {
+            setStockFilter(prev => prev === 'low_stock' ? 'all' : 'low_stock')
+            setPage(1)
+          }}
+          className={`p-3.5 rounded-2xl border text-left transition-all ${
+            stockFilter === 'low_stock'
+              ? 'bg-red-50/50 border-red-300 ring-2 ring-red-500/30'
+              : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-xs'
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-7 h-7 rounded-lg bg-red-50 text-red-600 flex items-center justify-center font-bold">
+              <AlertTriangle size={14} />
+            </div>
+            <span className="text-[11px] text-gray-500 font-medium truncate">{dict.dashboard.lowStock}</span>
+          </div>
+          <p className="text-lg font-black text-red-600">{lowStockCount}</p>
+        </button>
+      </div>
+
+      {/* Quick Filter Chips Row */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+          <Filter size={12} />
+          Quick:
+        </span>
+
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter('all')
+            setStatusFilter('all')
+            setStockFilter('all')
+            setImageFilter('all')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all ${
+            badgeFilter === 'all' && statusFilter === 'all' && stockFilter === 'all' && imageFilter === 'all'
+              ? 'bg-[#1a3a5c] text-white shadow-xs'
+              : 'bg-white text-gray-600 border border-gray-200/80 hover:bg-gray-50'
+          }`}
+        >
+          All ({totalCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter(prev => prev === 'featured' ? 'all' : 'featured')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            badgeFilter === 'featured'
+              ? 'bg-amber-500 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-amber-50/50'
+          }`}
+        >
+          <Star size={12} className={badgeFilter === 'featured' ? 'fill-white' : 'text-amber-500 fill-amber-500'} />
+          Featured ({featuredCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter(prev => prev === 'new_arrival' ? 'all' : 'new_arrival')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            badgeFilter === 'new_arrival'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-indigo-50/50'
+          }`}
+        >
+          <Sparkles size={12} className={badgeFilter === 'new_arrival' ? 'text-white' : 'text-indigo-500'} />
+          New Arrivals ({newArrivalCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setBadgeFilter(prev => prev === 'flash_sale' ? 'all' : 'flash_sale')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            badgeFilter === 'flash_sale'
+              ? 'bg-purple-600 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-purple-50/50'
+          }`}
+        >
+          <Zap size={12} className={badgeFilter === 'flash_sale' ? 'text-white fill-white' : 'text-purple-500 fill-purple-500'} />
+          Flash Sale ({flashSaleCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter(prev => prev === 'active' ? 'all' : 'active')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            statusFilter === 'active'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-emerald-50/50'
+          }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          Active ({activeCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatusFilter(prev => prev === 'inactive' ? 'all' : 'inactive')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            statusFilter === 'inactive'
+              ? 'bg-gray-800 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-gray-50'
+          }`}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+          Inactive
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStockFilter(prev => prev === 'low_stock' ? 'all' : 'low_stock')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            stockFilter === 'low_stock'
+              ? 'bg-red-600 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-red-50/50'
+          }`}
+        >
+          <AlertTriangle size={12} className={stockFilter === 'low_stock' ? 'text-white' : 'text-red-500'} />
+          Low Stock ({lowStockCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStockFilter(prev => prev === 'out_of_stock' ? 'all' : 'out_of_stock')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            stockFilter === 'out_of_stock'
+              ? 'bg-rose-700 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-rose-50/50'
+          }`}
+        >
+          <XCircle size={12} className={stockFilter === 'out_of_stock' ? 'text-white' : 'text-rose-600'} />
+          Out of Stock ({outOfStockCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setImageFilter(prev => prev === 'placeholder' ? 'all' : 'placeholder')
+            setPage(1)
+          }}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 transition-all ${
+            imageFilter === 'placeholder'
+              ? 'bg-amber-700 text-white shadow-xs'
+              : 'bg-white text-gray-700 border border-gray-200/80 hover:bg-amber-50/50'
+          }`}
+        >
+          <ImageIcon size={12} className={imageFilter === 'placeholder' ? 'text-white' : 'text-amber-600'} />
+          Placeholder Image
+        </button>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="flex-1 w-full relative">
-          {isSearching ? (
-            <RefreshCw className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
-          ) : (
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          )}
-          <Input
-            type="text"
-            placeholder={dict.products.searchPlaceholder}
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10 pr-9 h-10 bg-gray-50/50 border-gray-200 focus:bg-white rounded-xl text-xs"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => handleSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
-              title="Clear search"
+      <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-3">
+        {/* Top search & category row */}
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div className="flex-1 w-full relative">
+            {isSearching ? (
+              <RefreshCw className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
+            ) : (
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            )}
+            <Input
+              type="text"
+              placeholder={dict.products.searchPlaceholder}
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10 pr-9 h-10 bg-gray-50/50 border-gray-200 focus:bg-white rounded-xl text-xs"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          <div className="w-full md:w-72">
+            <CategoryDropdown
+              categories={categories}
+              value={categoryFilter}
+              onChange={handleCategoryChange}
+              placeholder={dict.products.filterByCategory}
+              searchPlaceholder={dict.products.searchPlaceholder}
+              clearable
+              showPath
+              showLevelIndicator={false}
+            />
+          </div>
+        </div>
+
+        {/* Detailed filter dropdowns row */}
+        <div className="pt-2.5 border-t border-gray-100 flex flex-wrap gap-2.5 items-center justify-between">
+          <div className="flex flex-wrap gap-2.5 items-center">
+            {/* Badge / Collection filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-gray-500">Badge:</span>
+              <select
+                value={badgeFilter}
+                onChange={(e) => {
+                  setBadgeFilter(e.target.value as any)
+                  setPage(1)
+                }}
+                className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
+              >
+                <option value="all">All Badges</option>
+                <option value="featured">⭐ Featured / Bestseller</option>
+                <option value="new_arrival">✨ New Arrivals</option>
+                <option value="flash_sale">⚡ Flash Sale</option>
+              </select>
+            </div>
+
+            {/* Status filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-gray-500">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value as any)
+                  setPage(1)
+                }}
+                className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
+              >
+                <option value="all">All Status</option>
+                <option value="active">🟢 Active Only</option>
+                <option value="inactive">🔴 Inactive Only</option>
+              </select>
+            </div>
+
+            {/* Stock filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-gray-500">Stock:</span>
+              <select
+                value={stockFilter}
+                onChange={(e) => {
+                  setStockFilter(e.target.value as any)
+                  setPage(1)
+                }}
+                className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
+              >
+                <option value="all">All Stock</option>
+                <option value="in_stock">✅ In Stock (≥10)</option>
+                <option value="low_stock">⚠️ Low Stock (&lt;10)</option>
+                <option value="out_of_stock">🚫 Out of Stock (0)</option>
+              </select>
+            </div>
+
+            {/* Photo filter */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-gray-500">Photo:</span>
+              <select
+                value={imageFilter}
+                onChange={(e) => {
+                  setImageFilter(e.target.value as any)
+                  setPage(1)
+                }}
+                className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
+              >
+                <option value="all">All Photos</option>
+                <option value="real">📸 Verified Real Photo</option>
+                <option value="placeholder">⚠️ Placeholder / Needs Photo</option>
+              </select>
+            </div>
+
+            {/* Sort by */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-gray-500">Sort:</span>
+              <select
+                value={`${sortBy}_${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split('_')
+                  setSortBy(field)
+                  setSortOrder(order as any)
+                  setPage(1)
+                }}
+                className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
+              >
+                <option value="createdAt_desc">🕒 Newest First</option>
+                <option value="createdAt_asc">🕒 Oldest First</option>
+                <option value="price_asc">💲 Price: Low to High</option>
+                <option value="price_desc">💲 Price: High to Low</option>
+                <option value="stock_asc">📦 Stock: Low to High</option>
+                <option value="stock_desc">📦 Stock: High to Low</option>
+                <option value="name_asc">🔤 Name: A to Z</option>
+                <option value="updatedAt_desc">🔄 Recently Updated</option>
+              </select>
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetAllFilters}
+              className="h-9 px-3 rounded-xl text-xs font-semibold text-rose-600 border-rose-200 bg-rose-50/50 hover:bg-rose-100/70 hover:text-rose-700 shrink-0 gap-1"
             >
-              <X size={14} />
-            </button>
+              <X size={12} />
+              Reset All Filters
+            </Button>
           )}
         </div>
-
-        <div className="w-full md:w-64">
-          <CategoryDropdown
-            categories={categories}
-            value={categoryFilter}
-            onChange={handleCategoryChange}
-            placeholder={dict.products.filterByCategory}
-            searchPlaceholder={dict.products.searchPlaceholder}
-            clearable
-            showPath
-            showLevelIndicator={false}
-          />
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() => {
-            setSearch('')
-            setCategoryFilter(null)
-            setPage(1)
-            localStorage.removeItem('adminProductsFilters')
-          }}
-          className="h-10 px-4 rounded-xl text-xs font-semibold text-gray-600 border-gray-200 hover:bg-gray-50 shrink-0"
-        >
-          {dict.common.reset}
-        </Button>
       </div>
 
       {/* Active Search & Filter Indicators */}
-      {(debouncedSearch.trim() || categoryFilter) && (
+      {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
-          <span className="text-gray-500 font-medium">Active search:</span>
+          <span className="text-gray-500 font-semibold text-[11px]">Active Filters ({totalCount} results):</span>
+
           {debouncedSearch.trim() && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200/60">
-              <span>All products matching: &ldquo;{debouncedSearch.trim()}&rdquo;</span>
-              <span className="bg-blue-200/60 text-blue-800 rounded-full px-1.5 py-0.2 text-[10px]">{totalCount} found</span>
+              <span>Search: &ldquo;{debouncedSearch.trim()}&rdquo;</span>
               <button
                 type="button"
                 onClick={() => handleSearchChange('')}
@@ -676,6 +1165,7 @@ export default function AdminProductsPage() {
               </button>
             </span>
           )}
+
           {categoryFilter && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold border border-amber-200/60">
               <span>Category filtered</span>
@@ -689,6 +1179,88 @@ export default function AdminProductsPage() {
               </button>
             </span>
           )}
+
+          {badgeFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold border border-purple-200/60">
+              <span>
+                Badge: {badgeFilter === 'featured' ? '⭐ Featured' : badgeFilter === 'new_arrival' ? '✨ New Arrival' : '⚡ Flash Sale'}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setBadgeFilter('all'); setPage(1); }}
+                className="hover:text-purple-900 transition-colors ml-0.5"
+                title="Remove badge filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {statusFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
+              <span>Status: {statusFilter === 'active' ? '🟢 Active' : '🔴 Inactive'}</span>
+              <button
+                type="button"
+                onClick={() => { setStatusFilter('all'); setPage(1); }}
+                className="hover:text-emerald-900 transition-colors ml-0.5"
+                title="Remove status filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {stockFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-semibold border border-red-200/60">
+              <span>
+                Stock: {stockFilter === 'in_stock' ? 'In Stock (≥10)' : stockFilter === 'low_stock' ? 'Low Stock (<10)' : 'Out of Stock (0)'}
+              </span>
+              <button
+                type="button"
+                onClick={() => { setStockFilter('all'); setPage(1); }}
+                className="hover:text-red-900 transition-colors ml-0.5"
+                title="Remove stock filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {imageFilter !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 font-semibold border border-amber-200/60">
+              <span>Photo: {imageFilter === 'real' ? 'Real Photo' : 'Placeholder Image'}</span>
+              <button
+                type="button"
+                onClick={() => { setImageFilter('all'); setPage(1); }}
+                className="hover:text-amber-950 transition-colors ml-0.5"
+                title="Remove photo filter"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          {(sortBy !== 'createdAt' || sortOrder !== 'desc') && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-200/60">
+              <span>Sort: {sortBy} ({sortOrder})</span>
+              <button
+                type="button"
+                onClick={() => { setSortBy('createdAt'); setSortOrder('desc'); setPage(1); }}
+                className="hover:text-gray-900 transition-colors ml-0.5"
+                title="Reset sort"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={resetAllFilters}
+            className="text-[11px] font-bold text-gray-500 hover:text-gray-800 underline ml-1"
+          >
+            Clear all
+          </button>
         </div>
       )}
 
@@ -749,7 +1321,7 @@ export default function AdminProductsPage() {
                       />
                     </th>
                     <th className="py-3.5 px-4">{dict.products.productName}</th>
-                    <th className="py-3.5 px-4">{dict.products.sku}</th>
+                    <th className="py-3.5 px-4">Item #</th>
                     <th className="py-3.5 px-4">{dict.common.price}</th>
                     <th className="py-3.5 px-4">{dict.products.stock}</th>
                     <th className="py-3.5 px-3 text-center">{dict.products.featured}</th>
@@ -766,6 +1338,8 @@ export default function AdminProductsPage() {
                   {products.map((product) => {
                     const localized = localizeProduct(product, locale)
                     const isSelected = selectedIds.includes(product.id)
+                    const swedenName = getProductSwedenName(product)
+                    const displayTitle = getProductDisplayTitle(localized.name)
                     return (
                       <tr key={product.id} className={`hover:bg-blue-50/30 transition-colors group ${isSelected ? 'bg-blue-50/40' : ''}`}>
                         {/* Checkbox */}
@@ -783,8 +1357,22 @@ export default function AdminProductsPage() {
                           <div className="flex items-center gap-3.5">
                             <ProductThumbnail src={product.thumbnail} alt={localized.name} productId={product.id} />
                             <div className="min-w-0">
-                              <p className="font-bold text-gray-900 truncate max-w-xs group-hover:text-[#1a3a5c] transition-colors">
-                                {localized.name}
+                              {swedenName ? (
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span
+                                    className="text-[10px] font-black text-amber-900 bg-amber-50/90 px-1.5 py-0.5 rounded border border-amber-200/70 uppercase tracking-wider inline-flex items-center gap-1"
+                                    title="Swedish series / brand name"
+                                  >
+                                    <span className="text-[9px] font-bold text-amber-700/80">SWE:</span>
+                                    <span>{swedenName}</span>
+                                  </span>
+                                </div>
+                              ) : null}
+                              <p
+                                className="font-bold text-gray-900 truncate max-w-xs group-hover:text-[#1a3a5c] transition-colors"
+                                title={localized.name}
+                              >
+                                {displayTitle}
                               </p>
                               <div className="flex items-center gap-2 mt-0.5">
                                 {product.category && (
@@ -798,17 +1386,19 @@ export default function AdminProductsPage() {
                           </div>
                         </td>
 
-                        {/* Identifiers (SKU, Dromkok #, IKEA #) */}
+                        {/* Identifiers (Dromkok Item #, IKEA Item #) */}
                         <td className="py-4 px-4 font-mono text-[11px] text-gray-600">
                           <div className="flex flex-col gap-1">
                             {product.dromkokItemNo ? (
-                              <span className="font-bold text-blue-700 bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200/50 inline-block w-fit">
+                              <span
+                                className="font-bold text-blue-700 bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200/50 inline-block w-fit"
+                                title="Dromkok Item #"
+                              >
                                 {product.dromkokItemNo}
                               </span>
                             ) : null}
-                            <span className="text-gray-500 text-[10px]">SKU: {product.sku || '—'}</span>
                             {product.ikeaItemNo ? (
-                              <div className="flex items-center gap-1 mt-0.5">
+                              <div className="flex items-center gap-1">
                                 <span className="text-[10px] bg-amber-50 text-amber-800 font-semibold px-1 py-0.5 rounded border border-amber-200/60">
                                   IKEA: {product.ikeaItemNo}
                                 </span>
@@ -822,6 +1412,9 @@ export default function AdminProductsPage() {
                                   <ExternalLink size={11} />
                                 </a>
                               </div>
+                            ) : null}
+                            {!product.dromkokItemNo && !product.ikeaItemNo ? (
+                              <span className="text-gray-400 text-[11px]">—</span>
                             ) : null}
                           </div>
                         </td>
@@ -940,13 +1533,53 @@ export default function AdminProductsPage() {
           <div className="lg:hidden space-y-3.5">
             {products.map((product) => {
               const localized = localizeProduct(product, locale)
+              const swedenName = getProductSwedenName(product)
+              const displayTitle = getProductDisplayTitle(localized.name)
               return (
                 <div key={product.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                   <div className="flex gap-3.5">
                     <ProductThumbnail src={product.thumbnail} alt={localized.name} size="lg" productId={product.id} />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-sm truncate">{localized.name}</h3>
-                      <p className="text-xs text-gray-400 font-mono mt-0.5">SKU: {product.sku || '—'}</p>
+                      {swedenName ? (
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span
+                            className="text-[10px] font-black text-amber-900 bg-amber-50/90 px-1.5 py-0.5 rounded border border-amber-200/70 uppercase tracking-wider inline-flex items-center gap-1"
+                            title="Swedish series / brand name"
+                          >
+                            <span className="text-[9px] font-bold text-amber-700/80">SWE:</span>
+                            <span>{swedenName}</span>
+                          </span>
+                        </div>
+                      ) : null}
+                      <h3 className="font-bold text-gray-900 text-sm truncate" title={localized.name}>
+                        {displayTitle}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1 font-mono text-[11px]">
+                        {product.dromkokItemNo ? (
+                          <span className="font-bold text-blue-700 bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200/50">
+                            {product.dromkokItemNo}
+                          </span>
+                        ) : null}
+                        {product.ikeaItemNo ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] bg-amber-50 text-amber-800 font-semibold px-1 py-0.5 rounded border border-amber-200/60">
+                              IKEA: {product.ikeaItemNo}
+                            </span>
+                            <a
+                              href={`https://www.ikea.com/us/en/p/-${product.ikeaItemNo.replace(/\D/g, '')}/`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 p-0.5"
+                              title={`Open original item ${product.ikeaItemNo} on IKEA.com`}
+                            >
+                              <ExternalLink size={11} />
+                            </a>
+                          </div>
+                        ) : null}
+                        {!product.dromkokItemNo && !product.ikeaItemNo ? (
+                          <span className="text-gray-400 text-[11px]">—</span>
+                        ) : null}
+                      </div>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="font-bold text-gray-900 text-sm">${Number(product.price).toFixed(2)}</span>
                         <span className="text-[11px] text-gray-500 font-medium">{dict.products.stock}: {product.stock}</span>

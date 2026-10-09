@@ -872,7 +872,64 @@ export default function ProductBadgesSettingsPage() {
                 </div>
               </div>
 
-              {/* 2. Reassurance Badges Section */}
+              {/* 2. Courier Delivery & Dispatch Countdown Box */}
+              <div className="p-4 rounded-2xl border border-blue-200/80 bg-blue-50/30 space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#00407a] flex items-center justify-center font-bold text-xs shrink-0">
+                      <Truck className="w-4 h-4 text-[#00407a]" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-900">
+                        🚚 Courier Delivery &amp; Live Dispatch Countdown Box
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Shows or hides the Courier Delivery timing box (&ldquo;Delivery on 2-3 business days&rdquo; with live order dispatch countdown) on the product details page.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                      {currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? 'ON' : 'OFF'}
+                    </span>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={currentValues.pdpCourierDeliveryBadgeEnabled !== 'false'}
+                        onChange={(e) => updateField('pdpCourierDeliveryBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Preview:</span>
+                    {currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? (
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+                        <div className="w-6 h-6 rounded-md bg-blue-50 text-[#00407a] flex items-center justify-center">
+                          <Truck className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="font-bold text-slate-900">
+                          {activeLocaleTab === 'ru' ? 'Курьерская доставка' : activeLocaleTab === 'zh' ? '特快专递送达' : 'Courier Delivery'}
+                        </span>
+                        <span className="font-bold text-emerald-600 font-mono">
+                          {activeLocaleTab === 'ru' ? '1 – 3 рабочих дня' : activeLocaleTab === 'zh' ? '1 – 3个工作日' : '1 – 3 business days'}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs italic text-rose-500 font-medium">
+                        (Hidden / Disabled on Product Details Page)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Reassurance Badges Section */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
                   <ShieldCheck className="w-4 h-4 text-blue-600" />

@@ -5,6 +5,7 @@ import { Star, Shield } from 'lucide-react'
 import { ModernProductData } from '@/components/ui/ModernProductCard'
 import { useCurrency } from '@/hooks/useCurrency'
 import { ProductImage } from '@/components/ui/ProductImage'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 interface CompactProductCardProps {
   product: ModernProductData
@@ -29,11 +30,28 @@ export function CompactProductCard({ product, locale = 'en' }: CompactProductCar
       </div>
 
       <div className="flex-1 min-w-0">
-        <Link href={`/${locale}/products/${product.slug}`}>
-          <h4 className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate hover:text-[#c9a84c] transition-colors">
-            {product.name}
-          </h4>
-        </Link>
+        {(() => {
+          const { swedenName, englishName } = getProductDisplayNames(product);
+
+          return (
+            <Link href={`/${locale}/products/${product.slug}`}>
+              {swedenName ? (
+                <>
+                  <h4 className="text-xs font-black text-gray-900 dark:text-gray-100 uppercase tracking-wide truncate hover:text-[#c9a84c] transition-colors">
+                    {swedenName}
+                  </h4>
+                  <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400 truncate">
+                    {englishName}
+                  </p>
+                </>
+              ) : (
+                <h4 className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate hover:text-[#c9a84c] transition-colors">
+                  {englishName || product.name}
+                </h4>
+              )}
+            </Link>
+          );
+        })()}
         <div className="flex items-center gap-1 mt-0.5">
           <Star className="w-3 h-3 fill-[#c9a84c] text-[#c9a84c]" />
           <span className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">

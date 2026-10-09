@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { getSystemSettings } from '../company'
+import { localizeSystemSetting } from '../utils/localize'
 import { CompanySettings, DEFAULT_SETTINGS } from '../../stores/settingsStore'
 
 /**
@@ -45,6 +46,8 @@ export const getServerSettings = cache(async (locale = 'en'): Promise<CompanySet
       instagramUrl: raw.instagramUrl || undefined,
       whatsappNumber: raw.whatsappNumber || undefined,
       wechatId: raw.wechatId || undefined,
+      pdpCourierDeliveryBadgeEnabled:
+        localizeSystemSetting(raw.translations, 'pdpCourierDeliveryBadgeEnabled', 'true', locale) !== 'false',
     }
   } catch (error) {
     console.error('[getServerSettings] Failed to fetch settings, using fallback defaults:', error)

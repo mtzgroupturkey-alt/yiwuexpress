@@ -467,12 +467,21 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
     return products.filter((item) => {
       // 1. Search Query (skip if server-paged because server already filtered)
       if (!isServerPaged && catalogSearch.trim()) {
-        const q = catalogSearch.toLowerCase();
+        const q = catalogSearch.toLowerCase().trim();
+        const cleanDigits = q.replace(/\D/g, '');
         const matchName = item.name.toLowerCase().includes(q);
         const matchBrand = item.brand.toLowerCase().includes(q);
         const matchDesc = item.description?.toLowerCase().includes(q);
         const matchCategory = item.category.toLowerCase().includes(q);
-        if (!matchName && !matchBrand && !matchDesc && !matchCategory) {
+        const matchDromkokItemNo = Boolean(item.dromkokItemNo && (
+          item.dromkokItemNo.toLowerCase().includes(q) ||
+          (cleanDigits.length >= 4 && item.dromkokItemNo.replace(/\D/g, '').includes(cleanDigits))
+        ));
+        const matchIkeaItemNo = Boolean(item.ikeaItemNo && item.ikeaItemNo.toLowerCase().includes(q));
+        const matchSku = Boolean(item.sku && item.sku.toLowerCase().includes(q));
+        const matchSwedenName = Boolean(item.swedenName && item.swedenName.toLowerCase().includes(q));
+        const matchEnglishName = Boolean(item.englishName && item.englishName.toLowerCase().includes(q));
+        if (!matchName && !matchBrand && !matchDesc && !matchCategory && !matchDromkokItemNo && !matchIkeaItemNo && !matchSku && !matchSwedenName && !matchEnglishName) {
           return false;
         }
       }

@@ -17,6 +17,7 @@ import {
   FileText
 } from 'lucide-react';
 import { Product } from '../types';
+import { getProductDisplayNames } from '@/lib/utils/productNames';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
@@ -271,20 +272,39 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           )}
         </div>
 
-        {/* Title */}
-        <h3 className="text-xs font-bold text-slate-900 line-clamp-2 leading-[18px] min-h-[36px] hover:text-[#00407a] transition-colors mb-1.5">
-          <Link
-            href={productUrl}
-            onClick={(e) => {
-              e.preventDefault();
-              onSelectProduct(product);
-            }}
-            title={product.name}
-            className="hover:text-[#00407a] transition-colors"
-          >
-            {product.name}
-          </Link>
-        </h3>
+        {/* Title: First Swedish name, next line English name */}
+        {(() => {
+          const { swedenName, englishName } = getProductDisplayNames(product);
+
+          return (
+            <h3 className="text-xs leading-[18px] min-h-[38px] mb-1.5">
+              <Link
+                href={productUrl}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onSelectProduct(product);
+                }}
+                title={product.name}
+                className="block group/title hover:text-[#00407a] transition-colors"
+              >
+                {swedenName ? (
+                  <>
+                    <span className="block font-black text-slate-900 uppercase tracking-wide group-hover/title:text-[#00407a] transition-colors truncate">
+                      {swedenName}
+                    </span>
+                    <span className="block font-medium text-slate-600 line-clamp-1 group-hover/title:text-slate-900 transition-colors">
+                      {englishName}
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-bold text-slate-900 line-clamp-2 group-hover/title:text-[#00407a] transition-colors">
+                    {englishName || product.name}
+                  </span>
+                )}
+              </Link>
+            </h3>
+          );
+        })()}
 
         {/* Rating & Reviews */}
         <div className="flex items-center gap-1 text-[11px] text-slate-500 mb-2">

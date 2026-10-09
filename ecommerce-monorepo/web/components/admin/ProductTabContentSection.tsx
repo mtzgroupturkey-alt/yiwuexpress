@@ -139,7 +139,7 @@ export function ProductTabContentSection({
   disabled = false,
 }: ProductTabContentSectionProps) {
   const [activeLocale, setActiveLocale] = useState<LocaleCode>('en')
-  const [activeInnerTab, setActiveInnerTab] = useState<'details' | 'overview' | 'measurements'>('details')
+  const [activeInnerTab, setActiveInnerTab] = useState<'details' | 'overview' | 'measurements'>('overview')
 
   // Article number state
   const [articleNumber, setArticleNumber] = useState<string>(() => {
@@ -209,7 +209,7 @@ export function ProductTabContentSection({
       : []
 
     // Materials
-    en.materials = raw.productDetails?.materials || initialMaterial || ''
+    en.materials = raw.productDetails?.materials !== undefined ? (raw.productDetails.materials || '') : (initialMaterial || '')
     ru.materials = raw.productDetails?.translations?.ru?.materials || translations.ru?.productDetails?.materials || ''
     zh.materials = raw.productDetails?.translations?.zh?.materials || translations.zh?.productDetails?.materials || ''
 
@@ -369,7 +369,7 @@ export function ProductTabContentSection({
       onChange({
         rawIkeaPayload: updatedRawPayload,
         dimensions: Object.keys(enDimMap).length > 0 ? enDimMap : (initialDimensions || {}),
-        material: en.materials || initialMaterial,
+        material: en.materials.trim(),
         ikeaItemNo: currentArticleNum || undefined
       })
     },
@@ -532,26 +532,8 @@ export function ProductTabContentSection({
         </div>
       </div>
 
-      {/* Inner Subtabs: Product Details Info | Overview | Measurements */}
+      {/* Inner Subtabs: Overview | Product Details Info | Measurements */}
       <div className="flex space-x-2 border-b border-slate-100 pb-2">
-        <button
-          type="button"
-          onClick={() => setActiveInnerTab('details')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-            activeInnerTab === 'details'
-              ? 'bg-[#1a3a5c] text-white shadow-xs'
-              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>Product Details & Information</span>
-          {current.keyFeatures.length > 0 && (
-            <span className="text-[11px] px-1.5 py-0.2 bg-white/20 rounded-full font-semibold">
-              {current.keyFeatures.length}
-            </span>
-          )}
-        </button>
-
         <button
           type="button"
           onClick={() => setActiveInnerTab('overview')}
@@ -563,6 +545,29 @@ export function ProductTabContentSection({
         >
           <FileText className="w-4 h-4" />
           <span>Product Overview</span>
+          {current.overviewHighlights.length > 0 && (
+            <span className="text-[11px] px-1.5 py-0.2 bg-white/20 rounded-full font-semibold">
+              {current.overviewHighlights.length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveInnerTab('details')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            activeInnerTab === 'details'
+              ? 'bg-[#1a3a5c] text-white shadow-xs'
+              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Product Details &amp; Information</span>
+          {current.keyFeatures.length > 0 && (
+            <span className="text-[11px] px-1.5 py-0.2 bg-white/20 rounded-full font-semibold">
+              {current.keyFeatures.length}
+            </span>
+          )}
         </button>
 
         <button
@@ -575,7 +580,7 @@ export function ProductTabContentSection({
           }`}
         >
           <Ruler className="w-4 h-4" />
-          <span>Measurements & Packaging</span>
+          <span>Measurements &amp; Packaging</span>
           {current.dimensions.length > 0 && (
             <span className="text-[11px] px-1.5 py-0.2 bg-white/20 rounded-full font-semibold">
               {current.dimensions.length}

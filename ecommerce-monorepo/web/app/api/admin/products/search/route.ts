@@ -17,12 +17,34 @@ export async function GET(req: NextRequest) {
 
     if (query.trim()) {
       const q = query.trim();
-      where.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { sku: { contains: q, mode: 'insensitive' } },
-        { slug: { contains: q, mode: 'insensitive' } },
-        { category: { name: { contains: q, mode: 'insensitive' } } },
-      ];
+      const searchTerms = new Set<string>();
+      searchTerms.add(q);
+      if (!q.toLowerCase().startsWith('dk-') && q.includes('.')) {
+        searchTerms.add(`DK-${q}`);
+      }
+      if (q.toLowerCase().startsWith('dk-')) {
+        const withoutPrefix = q.slice(3).trim();
+        if (withoutPrefix) searchTerms.add(withoutPrefix);
+      }
+      const digitsOnly = q.replace(/\D/g, '');
+      if (digitsOnly.length === 8) {
+        const formattedDots = `${digitsOnly.slice(0, 3)}.${digitsOnly.slice(3, 6)}.${digitsOnly.slice(6, 8)}`;
+        searchTerms.add(formattedDots);
+        searchTerms.add(`DK-${formattedDots}`);
+      }
+
+      const orConditions: any[] = [];
+      for (const term of searchTerms) {
+        orConditions.push(
+          { name: { contains: term, mode: 'insensitive' } },
+          { sku: { contains: term, mode: 'insensitive' } },
+          { slug: { contains: term, mode: 'insensitive' } },
+          { dromkokItemNo: { contains: term, mode: 'insensitive' } },
+          { ikeaItemNo: { contains: term, mode: 'insensitive' } },
+          { category: { name: { contains: term, mode: 'insensitive' } } }
+        );
+      }
+      where.OR = orConditions;
     }
 
     const products = await prisma.product.findMany({

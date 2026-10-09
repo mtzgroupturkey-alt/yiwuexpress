@@ -12,6 +12,15 @@ export async function GET(request: Request) {
     const search = searchParams.get('search')
     const categorySlug = searchParams.get('category')
     const isActive = searchParams.get('isActive')
+    const isFeatured = searchParams.get('isFeatured')
+    const isNewArrival = searchParams.get('isNewArrival')
+    const isFlashSale = searchParams.get('isFlashSale')
+    const stockStatus = searchParams.get('stockStatus')
+    const hasRealImage = searchParams.get('hasRealImage')
+    const availableForRetail = searchParams.get('availableForRetail')
+    const availableForWholesale = searchParams.get('availableForWholesale')
+    const sortBy = searchParams.get('sortBy') || 'createdAt'
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc'
     const includeVariants = searchParams.get('includeVariants') === 'true'
     const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10))
     const limitParam = searchParams.get('limit')
@@ -88,11 +97,83 @@ export async function GET(request: Request) {
       }
     }
 
-    if (isActive !== null && isActive !== undefined) {
+    if (isActive !== null && isActive !== undefined && isActive !== 'all') {
       where.isActive = isActive === 'true'
     }
 
-    const [products, total, activeCount, featuredCount, lowStockCount] = await Promise.all([
+    if (isFeatured === 'true') {
+      where.isFeatured = true
+    } else if (isFeatured === 'false') {
+      where.isFeatured = false
+    }
+
+    if (isNewArrival === 'true') {
+      where.isNewArrival = true
+    } else if (isNewArrival === 'false') {
+      where.isNewArrival = false
+    }
+
+    if (isFlashSale === 'true') {
+      where.isFlashSale = true
+    } else if (isFlashSale === 'false') {
+      where.isFlashSale = false
+    }
+
+    if (availableForRetail === 'true') {
+      where.availableForRetail = true
+    } else if (availableForRetail === 'false') {
+      where.availableForRetail = false
+    }
+
+    if (availableForWholesale === 'true') {
+      where.availableForWholesale = true
+    } else if (availableForWholesale === 'false') {
+      where.availableForWholesale = false
+    }
+
+    if (stockStatus === 'in_stock') {
+      where.stock = { gte: 10 }
+    } else if (stockStatus === 'low_stock') {
+      where.stock = { gt: 0, lt: 10 }
+    } else if (stockStatus === 'out_of_stock') {
+      where.stock = { lte: 0 }
+    }
+
+    if (hasRealImage === 'true') {
+      where.hasRealImage = true
+    } else if (hasRealImage === 'false') {
+      where.hasRealImage = false
+    }
+
+    // Configure orderBy
+    let orderBy: any = { createdAt: 'desc' }
+    if (sortBy === 'price') {
+      orderBy = { price: sortOrder }
+    } else if (sortBy === 'stock') {
+      orderBy = { stock: sortOrder }
+    } else if (sortBy === 'name') {
+      orderBy = { name: sortOrder }
+    } else if (sortBy === 'updatedAt') {
+      orderBy = { updatedAt: sortOrder }
+    } else if (sortBy === 'createdAt') {
+      orderBy = { createdAt: sortOrder }
+    }
+
+    // Base where for scoped counts (search + category)
+    const baseWhere: any = {}
+    if (where.OR) baseWhere.OR = where.OR
+    if (where.categoryId) baseWhere.categoryId = where.categoryId
+
+    const [
+      products,
+      total,
+      activeCount,
+      featuredCount,
+      newArrivalCount,
+      flashSaleCount,
+      lowStockCount,
+      outOfStockCount
+    ] = await Promise.all([
       prisma.product.findMany({
         where,
         include: {
@@ -133,16 +214,17 @@ export async function GET(request: Request) {
             }
           },
         },
-        orderBy: {
-          createdAt: 'desc'
-        },
+        orderBy,
         skip,
         take: limit
       }),
       prisma.product.count({ where }),
-      prisma.product.count({ where: { ...where, isActive: true } }),
-      prisma.product.count({ where: { ...where, isFeatured: true } }),
-      prisma.product.count({ where: { ...where, stock: { lt: 10 } } })
+      prisma.product.count({ where: { ...baseWhere, isActive: true } }),
+      prisma.product.count({ where: { ...baseWhere, isFeatured: true } }),
+      prisma.product.count({ where: { ...baseWhere, isNewArrival: true } }),
+      prisma.product.count({ where: { ...baseWhere, isFlashSale: true } }),
+      prisma.product.count({ where: { ...baseWhere, stock: { gt: 0, lt: 10 } } }),
+      prisma.product.count({ where: { ...baseWhere, stock: { lte: 0 } } })
     ])
 
     return NextResponse.json({
@@ -158,7 +240,10 @@ export async function GET(request: Request) {
         total,
         active: activeCount,
         featured: featuredCount,
-        lowStock: lowStockCount
+        newArrival: newArrivalCount,
+        flashSale: flashSaleCount,
+        lowStock: lowStockCount,
+        outOfStock: outOfStockCount
       }
     })
   } catch (error) {

@@ -49,6 +49,8 @@ export const PRODUCT_BADGE_KEYS = [
   'pdpHighDemandBadgeEnabled',
   'pdpHighDemandThreshold',
   'pdpHighDemandText',
+  // Courier Delivery Box On/Off Toggle
+  'pdpCourierDeliveryBadgeEnabled',
   // Reassurance Badges On/Off Toggles
   'pdpWarrantyBadgeEnabled',
   'pdpDeliveryBadgeEnabled',
@@ -109,6 +111,7 @@ export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBa
     pdpHighDemandBadgeEnabled: 'true',
     pdpHighDemandThreshold: '100',
     pdpHighDemandText: '⚡ In High Demand',
+    pdpCourierDeliveryBadgeEnabled: 'true',
     pdpWarrantyBadgeEnabled: 'true',
     pdpDeliveryBadgeEnabled: 'true',
     pdpReturnsBadgeEnabled: 'true',
@@ -162,6 +165,7 @@ export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBa
     pdpHighDemandBadgeEnabled: 'true',
     pdpHighDemandThreshold: '100',
     pdpHighDemandText: '⚡ Высокий спрос',
+    pdpCourierDeliveryBadgeEnabled: 'true',
     pdpWarrantyBadgeEnabled: 'true',
     pdpDeliveryBadgeEnabled: 'true',
     pdpReturnsBadgeEnabled: 'true',
@@ -215,6 +219,7 @@ export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBa
     pdpHighDemandBadgeEnabled: 'true',
     pdpHighDemandThreshold: '100',
     pdpHighDemandText: '⚡ 热销爆款',
+    pdpCourierDeliveryBadgeEnabled: 'true',
     pdpWarrantyBadgeEnabled: 'true',
     pdpDeliveryBadgeEnabled: 'true',
     pdpReturnsBadgeEnabled: 'true',

@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ProductDetailView from './ProductDetailView';
@@ -130,7 +133,7 @@ async function getProductFromDB(slug: string, locale: string) {
 
   const flattenCategoryAttrs = (catAttrs: any[]) =>
     catAttrs
-      .filter((ca: any) => ca.attribute)
+      .filter((ca: any) => ca.attribute && ca.isVisible !== false && ca.attribute.isActive !== false)
       .map((ca: any) => ({
         id: ca.attribute.id,
         slug: ca.attribute.slug,

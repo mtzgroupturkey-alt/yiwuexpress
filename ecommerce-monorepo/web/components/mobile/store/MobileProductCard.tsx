@@ -11,6 +11,7 @@ import { useCurrency } from '@/hooks/useCurrency'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { useAuth } from '@/hooks/useAuth'
 import { useSettings } from '@/components/SettingsProvider'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 interface MobileProductCardProps {
   product: Product
@@ -144,9 +145,28 @@ export function MobileProductCard({
               {product.brand}
             </p>
           )}
-          <h4 className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
-            {product.name}
-          </h4>
+          {(() => {
+            const { swedenName, englishName } = getProductDisplayNames(product);
+
+            return (
+              <h4 className="text-xs leading-tight group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors min-h-[30px]">
+                {swedenName ? (
+                  <>
+                    <span className="block font-black text-gray-900 dark:text-white uppercase tracking-wide truncate">
+                      {swedenName}
+                    </span>
+                    <span className="block font-medium text-gray-600 dark:text-gray-300 text-[11px] line-clamp-1">
+                      {englishName}
+                    </span>
+                  </>
+                ) : (
+                  <span className="font-semibold text-gray-900 dark:text-white line-clamp-2">
+                    {englishName || product.name}
+                  </span>
+                )}
+              </h4>
+            );
+          })()}
 
           {/* Rating stars */}
           <div className="flex items-center gap-1 mt-1 text-[11px] text-gray-500 dark:text-slate-400">

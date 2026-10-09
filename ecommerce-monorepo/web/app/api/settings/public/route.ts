@@ -212,6 +212,9 @@ export async function GET(request: NextRequest) {
       locale
     )
 
+    // Courier Delivery Box On/Off
+    const pdpCourierDeliveryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpCourierDeliveryBadgeEnabled', 'true', locale) !== 'false'
+
     // Reassurance Badges On/Off
     const pdpWarrantyBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpWarrantyBadgeEnabled', 'true', locale) !== 'false'
     const pdpDeliveryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryBadgeEnabled', 'true', locale) !== 'false'
@@ -317,6 +320,8 @@ export async function GET(request: NextRequest) {
         pdpHighDemandBadgeEnabled,
         pdpHighDemandThreshold,
         pdpHighDemandText,
+        // Courier Delivery Box On/Off Toggle
+        pdpCourierDeliveryBadgeEnabled,
         // Reassurance Badges On/Off Toggles
         pdpWarrantyBadgeEnabled,
         pdpDeliveryBadgeEnabled,

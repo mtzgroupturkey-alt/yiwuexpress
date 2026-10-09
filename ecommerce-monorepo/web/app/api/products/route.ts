@@ -5,6 +5,7 @@ import { getLocalField, localizeEntity } from '@/lib/utils/localize'
 import { requireRole, createAuthErrorResponse, getAuthUser, isApprovedWholesaleUser } from '@/lib/auth'
 import { sanitizeProductForClient } from '@/lib/utils/productSanitizer'
 import { generateDromkokItemNo } from '@/lib/catalog/generate-item-no'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 interface FilterMetadata {
   id: string
@@ -300,12 +301,50 @@ export async function GET(request: Request) {
       }
     }
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { sku: { contains: search, mode: 'insensitive' } }
-      ]
+    if (search && search.trim().length > 0) {
+      const q = search.trim()
+      const searchTerms = new Set<string>()
+      searchTerms.add(q)
+
+      // Normalize variations for Dromkok item # (e.g. DK-100.144.01 <-> 100.144.01)
+      if (!q.toLowerCase().startsWith('dk-') && q.includes('.')) {
+        searchTerms.add(`DK-${q}`)
+      }
+      if (q.toLowerCase().startsWith('dk-')) {
+        const withoutPrefix = q.slice(3).trim()
+        if (withoutPrefix) searchTerms.add(withoutPrefix)
+      }
+
+      // If user typed digits only e.g. '10014401' (8 digits) -> '100.144.01' and 'DK-100.144.01'
+      const digitsOnly = q.replace(/\D/g, '')
+      if (digitsOnly.length === 8) {
+        const formattedDots = `${digitsOnly.slice(0, 3)}.${digitsOnly.slice(3, 6)}.${digitsOnly.slice(6, 8)}`
+        searchTerms.add(formattedDots)
+        searchTerms.add(`DK-${formattedDots}`)
+      }
+
+      const orConditions: any[] = []
+      for (const term of searchTerms) {
+        orConditions.push(
+          { name: { contains: term, mode: 'insensitive' } },
+          { description: { contains: term, mode: 'insensitive' } },
+          { sku: { contains: term, mode: 'insensitive' } },
+          { dromkokItemNo: { contains: term, mode: 'insensitive' } },
+          { ikeaItemNo: { contains: term, mode: 'insensitive' } },
+          {
+            translations: {
+              some: {
+                OR: [
+                  { name: { contains: term, mode: 'insensitive' } },
+                  { description: { contains: term, mode: 'insensitive' } },
+                ]
+              }
+            }
+          }
+        )
+      }
+
+      where.OR = orConditions
     }
 
     // Attribute filters are AND-combined: each pushes its own condition so a
@@ -571,8 +610,9 @@ export async function GET(request: Request) {
           }
         : product.category
       const { translations, ...rest } = product;
-if (rest.images && Array.isArray(rest.images)) { rest.images = rest.images.slice(0, 3); }
-return { ...rest, name, description, category }
+      if (rest.images && Array.isArray(rest.images)) { rest.images = rest.images.slice(0, 3); }
+      const { swedenName, englishName } = getProductDisplayNames({ ...product, name })
+      return { ...rest, name, description, category, swedenName, englishName }
     })
 
     // Check caller wholesale access permissions

@@ -163,7 +163,7 @@ export async function GET(
     // Helper to flatten CategoryAttribute join-table rows into the shape the frontend expects
     const flattenCategoryAttrs = (catAttrs: any[]) =>
       catAttrs
-        .filter((ca: any) => ca.attribute) // safety check
+        .filter((ca: any) => ca.attribute && ca.isVisible !== false && ca.attribute.isActive !== false)
         .map((ca: any) => ({
           id: ca.attribute.id,
           slug: ca.attribute.slug,

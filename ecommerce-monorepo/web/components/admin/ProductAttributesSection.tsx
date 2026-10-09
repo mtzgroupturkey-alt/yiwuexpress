@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,8 +26,6 @@ interface ProductAttributesSectionProps {
   hideLocaleTabs?: boolean
   hideHeader?: boolean
 }
-
-const attributesCache = new Map<string, any[]>()
 
 export function ProductAttributesSection({
   categoryId,
@@ -81,33 +79,27 @@ export function ProductAttributesSection({
   }, [initialTranslations])
 
   const fetchCategoryAttributes = async (catId: string) => {
-    if (attributesCache.has(catId)) {
-      const cached = attributesCache.get(catId)!
-      setCategoryAttributes(cached)
-      const currentVals = Object.keys(attributeValues).length > 0 ? attributeValues : initialValues
-      const cleanVals: Record<string, any> = {}
-      cached.forEach((attr: any) => {
-        cleanVals[attr.slug] = currentVals[attr.slug] ?? defaultForType(attr.type)
-      })
-      setAttributeValues(cleanVals)
-      onChange(cleanVals, attrTranslations)
-      return
-    }
-
     setLoading(true)
     try {
-      const response = await fetch(`/api/admin/categories/${catId}/attributes`)
+      const response = await fetch(`/api/admin/categories/${catId}/attributes?onlyVisible=true`, {
+        cache: 'no-store'
+      })
       const data = await response.json()
       if (data.data) {
-        attributesCache.set(catId, data.data || [])
-        setCategoryAttributes(data.data || [])
+        const visibleOnly = (data.data || []).filter(
+          (attr: any) => attr.isVisible !== false && attr.isActive !== false
+        )
+        setCategoryAttributes(visibleOnly)
         const currentVals = Object.keys(attributeValues).length > 0 ? attributeValues : initialValues
         const cleanVals: Record<string, any> = {}
-        data.data.forEach((attr: any) => {
+        visibleOnly.forEach((attr: any) => {
           cleanVals[attr.slug] = currentVals[attr.slug] ?? defaultForType(attr.type)
         })
         setAttributeValues(cleanVals)
-        onChange(cleanVals, attrTranslations)
+        // Defer to avoid "Cannot update component while rendering" warning
+        queueMicrotask(() => onChange(cleanVals, attrTranslations))
+      } else {
+        setCategoryAttributes([])
       }
     } catch (err) {
       console.error('Error fetching category attributes:', err)
@@ -169,6 +161,11 @@ export function ProductAttributesSection({
       }
     }
   }, [categoryAttributes, attributeValues])
+
+  // MUST be before any early returns to satisfy Rules of Hooks
+  const visibleCategoryAttributes = useMemo(() => {
+    return categoryAttributes.filter((attr: any) => attr.isVisible !== false && attr.isActive !== false)
+  }, [categoryAttributes])
 
   const getLocalizedAttributeName = (attribute: any, tab: 'en' | 'ru' | 'zh') => {
     if (tab === 'en') return attribute.name
@@ -475,11 +472,12 @@ export function ProductAttributesSection({
       </Card>
     )
   }
-  if (categoryAttributes.length === 0) return null
+
+  if (visibleCategoryAttributes.length === 0) return null
 
   const attributeInputs = (
     <div className="space-y-4">
-      {categoryAttributes.map(attribute => (
+      {visibleCategoryAttributes.map((attribute: any) => (
         <div key={attribute.id}>
           <Label htmlFor={attribute.slug} className="mb-1 flex items-center justify-between">
             <span className="font-semibold text-gray-800 text-sm">
@@ -513,7 +511,7 @@ export function ProductAttributesSection({
                   {dict.products.productAttributes}
                 </span>
                 <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-                  {categoryAttributes.length} {categoryAttributes.length === 1 ? 'attribute' : 'attributes'}
+                  {visibleCategoryAttributes.length} {visibleCategoryAttributes.length === 1 ? 'attribute' : 'attributes'}
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-0.5">{dict.products.categoryAttributesSubtitle}</p>
@@ -635,6 +633,7 @@ export function validateRequiredAttributes(
 ): string[] {
   return categoryAttributes
     .filter(attr => {
+      if (attr.isVisible === false || attr.isActive === false) return false
       if (!attr.isRequired) return false
       const val = attributeValues[attr.slug]
       if (!val) return true

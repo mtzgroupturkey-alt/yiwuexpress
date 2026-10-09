@@ -23,6 +23,7 @@ import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useAuth } from '@/hooks/useAuth'
 import { useCustomerView } from '@/hooks/useCustomerView'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 
 export interface ModernProductData {
   id: string
@@ -395,12 +396,31 @@ export function ModernProductCard({
             </div>
           )}
 
-          {/* Product Name Title */}
-          <Link href={`/${activeLocale}/products/${product.slug}`}>
-            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm hover:text-[#c9a84c] transition-colors line-clamp-2 leading-snug">
-              {product.name}
-            </h3>
-          </Link>
+          {/* Product Name Title: Swedish name line 1, English name line 2 */}
+          {(() => {
+            const { swedenName, englishName } = getProductDisplayNames(product);
+
+            return (
+              <Link href={`/${activeLocale}/products/${product.slug}`}>
+                <h3 className="text-xs sm:text-sm leading-snug group-hover:text-[#c9a84c] transition-colors min-h-[36px]">
+                  {swedenName ? (
+                    <>
+                      <span className="block font-black text-gray-900 dark:text-gray-100 uppercase tracking-wide truncate">
+                        {swedenName}
+                      </span>
+                      <span className="block font-medium text-gray-600 dark:text-gray-300 text-xs line-clamp-1">
+                        {englishName}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-bold text-gray-900 dark:text-gray-100 line-clamp-2">
+                      {englishName || product.name}
+                    </span>
+                  )}
+                </h3>
+              </Link>
+            );
+          })()}
         </div>
 
         {/* Ratings & Reviews */}

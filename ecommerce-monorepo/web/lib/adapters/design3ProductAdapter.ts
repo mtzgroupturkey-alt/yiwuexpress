@@ -1,5 +1,6 @@
 import { Product, Category } from '@/app/[locale]/design-3/types';
 import { normalizeProductImageUrl } from '@/lib/image-utils';
+import { getProductDisplayNames } from '@/lib/utils/productNames';
 
 export function mapDbProductToDesign3(dbItem: any): Product {
   const price = typeof dbItem.price === 'number' ? dbItem.price : parseFloat(dbItem.price || '0');
@@ -77,8 +78,9 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     attributes: dbItem.attributes || undefined,
     isFeatured: Boolean(dbItem.isFeatured),
     dromkokItemNo: dbItem.dromkokItemNo || undefined,
-    swedenName: dbItem.swedenName || undefined,
-    englishName: dbItem.englishName || undefined,
+    ikeaItemNo: dbItem.ikeaItemNo || undefined,
+    swedenName: getProductDisplayNames(dbItem).swedenName || undefined,
+    englishName: getProductDisplayNames(dbItem).englishName || undefined,
   };
 }
 

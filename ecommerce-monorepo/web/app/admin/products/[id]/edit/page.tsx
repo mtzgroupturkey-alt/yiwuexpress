@@ -341,16 +341,19 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         attributeTranslations,
       }
 
+      const finalEnglishName = (translations?.en?.name || englishName || data.name || '').trim()
+      const finalSwedenName = swedenName.trim()
+
       const currentRaw = productData.rawIkeaPayload || productRawData?.rawIkeaPayload || {}
       const updatedRaw = {
         ...currentRaw,
-        swedenName: swedenName.trim(),
-        englishName: englishName.trim(),
+        swedenName: finalSwedenName,
+        englishName: finalEnglishName,
         articleNumber: articleNo.trim(),
         productDetails: {
           ...(currentRaw.productDetails || {}),
-          swedenName: swedenName.trim(),
-          englishName: englishName.trim(),
+          swedenName: finalSwedenName,
+          englishName: finalEnglishName,
           description: productDescription.trim()
         },
         overview: {
@@ -373,13 +376,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         if (tabContentPayload.rawIkeaPayload) {
           productData.rawIkeaPayload = {
             ...tabContentPayload.rawIkeaPayload,
-            swedenName: swedenName.trim() || tabContentPayload.rawIkeaPayload.swedenName,
-            englishName: englishName.trim() || tabContentPayload.rawIkeaPayload.englishName,
+            swedenName: finalSwedenName || tabContentPayload.rawIkeaPayload.swedenName,
+            englishName: finalEnglishName || tabContentPayload.rawIkeaPayload.englishName,
             articleNumber: articleNo.trim() || tabContentPayload.rawIkeaPayload.articleNumber,
             productDetails: {
               ...(tabContentPayload.rawIkeaPayload.productDetails || {}),
-              swedenName: swedenName.trim() || tabContentPayload.rawIkeaPayload.productDetails?.swedenName,
-              englishName: englishName.trim() || tabContentPayload.rawIkeaPayload.productDetails?.englishName,
+              swedenName: finalSwedenName || tabContentPayload.rawIkeaPayload.productDetails?.swedenName,
+              englishName: finalEnglishName || tabContentPayload.rawIkeaPayload.productDetails?.englishName,
               description: productDescription.trim() || tabContentPayload.rawIkeaPayload.productDetails?.description
             }
           }
@@ -387,8 +390,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         if (tabContentPayload.dimensions) {
           productData.dimensions = tabContentPayload.dimensions
         }
-        if (tabContentPayload.material) {
-          productData.material = tabContentPayload.material
+        if (tabContentPayload.material !== undefined) {
+          productData.material = tabContentPayload.material ? tabContentPayload.material.trim() : null
         }
         if (tabContentPayload.ikeaItemNo) {
           productData.ikeaItemNo = articleNo.trim() || tabContentPayload.ikeaItemNo
@@ -570,6 +573,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     }}
                     onChange={(newTrans) => {
                       setTranslations(newTrans)
+                      if (newTrans.en.name) {
+                        setEnglishName(newTrans.en.name)
+                        setValue('name', newTrans.en.name)
+                      }
                       if (newTrans.en.description) {
                         setProductDescription(newTrans.en.description)
                         setValue('description', newTrans.en.description)

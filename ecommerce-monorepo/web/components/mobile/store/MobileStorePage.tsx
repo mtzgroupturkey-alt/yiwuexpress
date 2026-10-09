@@ -118,12 +118,22 @@ export function MobileStorePage({
 
     // 1. Text search if present
     if (initialSearch.trim()) {
-      const q = initialSearch.toLowerCase()
+      const q = initialSearch.toLowerCase().trim()
+      const cleanDigits = q.replace(/\D/g, '')
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
           (p.brand && p.brand.toLowerCase().includes(q)) ||
-          (p.category && p.category.toLowerCase().includes(q))
+          (p.category && p.category.toLowerCase().includes(q)) ||
+          (p.dromkokItemNo && (
+            p.dromkokItemNo.toLowerCase().includes(q) ||
+            (cleanDigits.length >= 4 && p.dromkokItemNo.replace(/\D/g, '').includes(cleanDigits))
+          )) ||
+          (p.ikeaItemNo && p.ikeaItemNo.toLowerCase().includes(q)) ||
+          (p.sku && p.sku.toLowerCase().includes(q)) ||
+          (p.article && p.article.toLowerCase().includes(q)) ||
+          (p.swedenName && p.swedenName.toLowerCase().includes(q)) ||
+          (p.englishName && p.englishName.toLowerCase().includes(q))
       )
     }
 

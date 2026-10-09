@@ -8,7 +8,7 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, Clock, CreditCard, CheckCircle2, Flame, Award, Heart, Layers, LogIn } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, CreditCard, CheckCircle2, Flame, Heart, Layers, LogIn, PenLine } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
 import { ProductImage } from '@/components/ui/ProductImage'
@@ -38,6 +38,7 @@ import {
 } from '@/lib/utils/attributeOptionTranslations'
 import { useTranslations } from 'next-intl'
 import { useCurrency } from '@/hooks/useCurrency'
+import { getProductDisplayNames } from '@/lib/utils/productNames'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { StickyBuyBar } from '@/components/mobile/StickyBuyBar'
 import { MobileProductDetailView } from '@/components/mobile/product/MobileProductDetailView'
@@ -228,6 +229,7 @@ export default function ProductDetailView({
     const prodAttrs = product.attributes || {}
 
     catAttrs.forEach((ca) => {
+      if ((ca as any).isVisible === false || (ca as any).isActive === false) return
       const val = prodAttrs[ca.slug]
       const hasMultiValue = Array.isArray(val) && val.length > 1
       const isVariant = ca.isVariant ?? false
@@ -811,27 +813,22 @@ export default function ProductDetailView({
     const locMat =
       ikeaData?.translations?.[locale]?.productDetails?.materials ||
       ikeaData?.productDetails?.translations?.[locale]?.materials
-    if (locMat) return locMat
-    return (
-      ikeaData?.productDetails?.materials ||
-      product.material ||
-      product.attributes?.material ||
-      product.attributes?.materials ||
-      null
-    )
-  }, [ikeaData, locale, product.material, product.attributes])
+    if (typeof locMat === 'string' && locMat.trim()) return locMat.trim()
+    if (typeof ikeaData?.productDetails?.materials === 'string') {
+      return ikeaData.productDetails.materials.trim() || null
+    }
+    return product.material?.trim() || null
+  }, [ikeaData, locale, product.material])
 
   const careInstructions = useMemo(() => {
     const locCare =
       ikeaData?.translations?.[locale]?.productDetails?.careInstructions ||
       ikeaData?.productDetails?.translations?.[locale]?.careInstructions
-    if (locCare) return locCare
-    return (
-      ikeaData?.productDetails?.careInstructions ||
-      product.attributes?.care_instructions ||
-      product.attributes?.care ||
-      null
-    )
+    if (typeof locCare === 'string' && locCare.trim()) return locCare.trim()
+    if (typeof ikeaData?.productDetails?.careInstructions === 'string') {
+      return ikeaData.productDetails.careInstructions.trim() || null
+    }
+    return product.attributes?.care_instructions || product.attributes?.care || null
   }, [ikeaData, locale, product.attributes])
 
   const designer = useMemo(() => {
@@ -867,83 +864,29 @@ export default function ProductDetailView({
     const locWi =
       ikeaData?.translations?.[locale]?.productDetails?.whatsIncluded ||
       ikeaData?.productDetails?.translations?.[locale]?.whatsIncluded
-    if (locWi) return locWi
-    return ikeaData?.productDetails?.whatsIncluded || product.attributes?.whats_included || null
+    if (typeof locWi === 'string' && locWi.trim()) return locWi.trim()
+    if (typeof ikeaData?.productDetails?.whatsIncluded === 'string') {
+      return ikeaData.productDetails.whatsIncluded.trim() || null
+    }
+    return product.attributes?.whats_included || null
   }, [ikeaData, locale, product.attributes])
 
-  const displayIkeaItemNo = useMemo(() => {
-    const raw = product.ikeaItemNumber || (product as any).ikeaItemNo || (product as any).dromkokItemNo || ikeaData?.itemNumber || ''
-    if (!raw) return null
-    const cleaned = String(raw).replace(/[\s.-]/g, '')
-    if (cleaned.length === 8 && /^\d+$/.test(cleaned)) {
-      return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 8)}`
-    }
-    return raw
-  }, [product.ikeaItemNumber, (product as any).ikeaItemNo, (product as any).dromkokItemNo, ikeaData?.itemNumber])
+  const displayNames = useMemo(() => {
+    const parsed = getProductDisplayNames({
+      name: localized.name || product.name,
+      swedenName: ikeaData?.translations?.[locale]?.swedenName || ikeaData?.translations?.[locale]?.productDetails?.swedenName || ikeaData?.swedenName || (product as any)?.swedenName,
+      rawIkeaPayload: ikeaData,
+      attributes: (product as any)?.attributes,
+    })
+    return parsed
+  }, [ikeaData, locale, localized.name, product.name, (product as any)?.swedenName, (product as any)?.attributes])
 
-  const displaySwedenName = useMemo(() => {
-    const locSweden =
-      ikeaData?.translations?.[locale]?.swedenName ||
-      ikeaData?.translations?.[locale]?.productDetails?.swedenName
-    if (locSweden) return locSweden
-
-    if (ikeaData?.swedenName) return ikeaData.swedenName
-    if (ikeaData?.productDetails?.swedenName) return ikeaData.productDetails.swedenName
-    if ((product as any)?.attributes?.sweden_name) return (product as any).attributes.sweden_name
-
-    const rawName = (ikeaData?.name || product.name || '').trim()
-    const match = rawName.match(/^([A-ZÅÄÖØÆÉÈÜ0-9]{2,})/u)
-    if (match) return match[1]
-
-    const dashMatch = product.name?.match(/-\s*([A-ZÅÄÖØÆÉÈÜ0-9]{2,})$/u)
-    if (dashMatch) return dashMatch[1]
-
-    return null
-  }, [ikeaData, locale, product.name, (product as any)?.attributes])
-
-  const displayEnglishName = useMemo(() => {
-    // 1. Authoritative: Admin's product name entered in admin panel (ProductTranslationForm / Product.name)
-    const adminName = (localized.name || product.name || '').trim()
-
-    if (adminName) {
-      if (displaySwedenName) {
-        // Normalize comparison (handle umlauts / casing e.g. GULDÖRING vs GULDoRING)
-        const normAdmin = adminName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-        const normSweden = displaySwedenName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-
-        if (normAdmin.startsWith(normSweden)) {
-          let sub = adminName.slice(displaySwedenName.length).trim()
-          if (sub.startsWith('-')) sub = sub.slice(1).trim()
-          if (sub) return sub
-        }
-      }
-      return adminName
-    }
-
-    // 2. Fallbacks if adminName is empty
-    const locEng =
-      ikeaData?.translations?.[locale]?.englishName ||
-      ikeaData?.translations?.[locale]?.productDetails?.englishName
-    if (locEng) return locEng
-
-    if (ikeaData?.englishName) return ikeaData.englishName
-    if (ikeaData?.productDetails?.englishName) return ikeaData.productDetails.englishName
-    if ((product as any)?.attributes?.english_name) return (product as any).attributes.english_name
-
-    return null
-  }, [ikeaData, locale, displaySwedenName, localized.name, product.name, (product as any)?.attributes])
+  const displaySwedenName = displayNames.swedenName
+  const displayEnglishName = displayNames.englishName
 
   const displayArticleNumber = useMemo(() => {
-    if (ikeaData?.articleNumber) {
-      const raw = ikeaData.articleNumber
-      const cleaned = String(raw).replace(/[\s.-]/g, '')
-      if (cleaned.length === 8 && /^\d+$/.test(cleaned)) {
-        return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 8)}`
-      }
-      return raw
-    }
-    return displayIkeaItemNo || (product as any)?.dromkokItemNo || null
-  }, [ikeaData?.articleNumber, displayIkeaItemNo, (product as any)?.dromkokItemNo])
+    return (selectedVariant as any)?.dromkokItemNo || product.dromkokItemNo || (product as any)?.dromkokItemNumber || null
+  }, [(selectedVariant as any)?.dromkokItemNo, product.dromkokItemNo, (product as any)?.dromkokItemNumber])
 
   const displayProductDetailsDescription = useMemo(() => {
     if (typeof localized.description === 'string' && localized.description.trim()) {
@@ -1011,7 +954,9 @@ export default function ProductDetailView({
         if (!hasOnlyShipping) {
           Object.entries(dimObj).forEach(([k, v]) => {
             if (!isShippingKey(k) && v) {
-              fallback[k.charAt(0).toUpperCase() + k.slice(1)] = String(v)
+              const unitStr = dimObj.unit ? ` ${dimObj.unit}` : (typeof v === 'number' ? ' cm' : '')
+              const valStr = typeof v === 'number' && !String(v).includes('cm') ? `${v}${unitStr}` : String(v)
+              fallback[k.charAt(0).toUpperCase() + k.slice(1)] = valStr
             }
           })
         }
@@ -1042,6 +987,7 @@ export default function ProductDetailView({
     const prodAttrs = product.attributes || {}
 
     catAttrs.forEach((ca: any) => {
+      if (ca.isVisible === false || ca.isActive === false) return
       let rawVal = prodAttrs[ca.slug]
       if (rawVal === undefined && ca.slug === 'material' && product.material) {
         rawVal = product.material
@@ -1065,6 +1011,140 @@ export default function ProductDetailView({
 
     return list
   }, [product.categoryAttributes, product.attributes, product.material, locale])
+
+  // 1. Clean Lead Description (authentic storytelling from IKEA / catalog)
+  const ikeaLeadDescription = useMemo(() => {
+    if (typeof ikeaData?.description === 'string' && ikeaData.description.trim()) {
+      const raw = ikeaData.description.trim()
+      const firstSection = raw.split(/\n\s*\n|\bKey features:|\bGood to know:/i)[0]?.trim()
+      if (firstSection && firstSection.length > 20 && !/^good to know/i.test(firstSection)) {
+        return firstSection
+      }
+    }
+    return null
+  }, [ikeaData?.description])
+
+  const effectiveOverviewText = useMemo(() => {
+    if (typeof localized.description === 'string' && localized.description.trim()) {
+      return localized.description
+    }
+    if (ikeaLeadDescription) {
+      return ikeaLeadDescription
+    }
+    if (typeof product.description === 'string' && product.description.trim()) {
+      return product.description
+    }
+    return overviewSummary || t('noDescription')
+  }, [localized.description, ikeaLeadDescription, product.description, overviewSummary, t])
+
+  // 2. Intelligent Product Details Parser (cleans concatenated strings, parses Good to know, Materials, Care)
+  const parsedProductDetails = useMemo(() => {
+    const rawKf = keyFeatures || []
+    const rawGtk = goodToKnow || ''
+
+    let extractedGoodToKnowList: string[] = []
+    let extractedMaterials = materials || ''
+    let extractedCare = careInstructions || ''
+    let extractedCompliance = compliance || ''
+    let extractedAssemblyDocs: string[] = []
+    let cleanedKeyFeatures: string[] = []
+
+    const cleanSectionPrefix = (text: string, prefix: string) => {
+      const regex = new RegExp(`^${prefix}\\s*`, 'i')
+      return text.replace(regex, '').trim()
+    }
+
+    rawKf.forEach((item) => {
+      const trimmed = item.trim()
+      if (/^good to know/i.test(trimmed)) {
+        const body = cleanSectionPrefix(trimmed, 'good to know')
+        const sentences = body
+          .split(/(?<=[.!?])\s+(?=[A-Z])/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 10 && !/^good to know/i.test(s))
+        extractedGoodToKnowList.push(...sentences)
+      } else if (/^materials and care/i.test(trimmed) || /^material/i.test(trimmed)) {
+        const body = cleanSectionPrefix(trimmed, 'materials and care')
+        if (/care/i.test(body)) {
+          const [matPart, carePart] = body.split(/care/i)
+          if (!extractedMaterials && matPart) {
+            extractedMaterials = cleanSectionPrefix(matPart, 'material')
+              .replace(/battery box:/i, 'Battery box: ')
+              .replace(/protective pad:/i, ' • Protective pad: ')
+              .trim()
+          }
+          if (!extractedCare && carePart) {
+            extractedCare = carePart.trim()
+          }
+        } else if (!extractedMaterials) {
+          extractedMaterials = cleanSectionPrefix(body, 'material').trim()
+        }
+      } else if (/^safety and compliance/i.test(trimmed)) {
+        if (!extractedCompliance) {
+          extractedCompliance = cleanSectionPrefix(trimmed, 'safety and compliance').trim()
+        }
+      } else if (/^assembly and documents/i.test(trimmed) || /^assembly instructions/i.test(trimmed)) {
+        extractedAssemblyDocs.push(cleanSectionPrefix(trimmed, 'assembly and documents'))
+      } else {
+        cleanedKeyFeatures.push(trimmed)
+      }
+    })
+
+    if (extractedGoodToKnowList.length === 0 && rawGtk) {
+      const cleaned = cleanSectionPrefix(rawGtk, 'good to know')
+      const sentences = cleaned
+        .split(/(?<=[.!?])\s+(?=[A-Z])/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 10 && !/^good to know/i.test(s))
+      extractedGoodToKnowList = Array.from(new Set(sentences))
+    }
+
+    extractedGoodToKnowList = Array.from(new Set(extractedGoodToKnowList))
+
+    return {
+      goodToKnowList: extractedGoodToKnowList,
+      materials: extractedMaterials,
+      care: extractedCare,
+      compliance: extractedCompliance,
+      assemblyDocs: extractedAssemblyDocs,
+      keyFeatures: cleanedKeyFeatures,
+    }
+  }, [keyFeatures, goodToKnow, materials, careInstructions, compliance])
+
+  // 3. Overview Highlights — only show if admin explicitly saved them in the form
+  const overviewHighlightCards = useMemo(() => {
+    if (!overviewFeatures || overviewFeatures.length === 0) return []
+    return overviewFeatures.map((feat) => ({
+      icon: <Sparkles className="w-4 h-4 text-[#00407a]" />,
+      title: feat.split(/[:.]/)[0]?.trim() || feat,
+      description: feat,
+    }))
+  }, [overviewFeatures])
+
+  // 4. Dimension Cards for Measurements Tab — only real data from DB
+  const dimensionCards = useMemo(() => {
+    const cards: Array<{ label: string; value: string }> = []
+
+    Object.entries(resolvedDimensions).forEach(([k, v]) => {
+      cards.push({ label: k, value: String(v) })
+    })
+
+    if (cards.length === 0 && product.dimensions && typeof product.dimensions === 'object') {
+      const d = product.dimensions as Record<string, any>
+      if (d.width) cards.push({ label: locale === 'ru' ? 'Ширина' : locale === 'zh' ? '宽度' : 'Width', value: `${d.width} cm` })
+      if (d.depth) cards.push({ label: locale === 'ru' ? 'Глубина' : locale === 'zh' ? '进深' : 'Depth', value: `${d.depth} cm` })
+      if (d.height) cards.push({ label: locale === 'ru' ? 'Высота' : locale === 'zh' ? '高度' : 'Height', value: `${d.height} cm` })
+    }
+
+    return cards
+  }, [resolvedDimensions, product.dimensions, locale])
+
+  const dimensionsSummaryPill = useMemo(() => {
+    if (dimensionCards.length > 0) {
+      return dimensionCards.map((c) => c.value).join(' × ')
+    }
+    return null
+  }, [dimensionCards])
 
   const hasCategoryAttributesData = categoryAttributesWithValues.length > 0
 
@@ -2413,34 +2493,36 @@ export default function ProductDetailView({
                   </div>
 
                   {/* Delivery & Fulfillment Information Box */}
-                  <div className="bg-slate-50/90 rounded-xl p-3 border border-slate-200/80 space-y-2.5 text-xs">
-                    {/* Courier Delivery with Live Countdown */}
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100 mt-0.5">
-                        <Truck className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900">
-                            {locale === 'ru' ? 'Курьерская доставка' : locale === 'zh' ? '特快专递送达' : 'Courier Delivery'}
-                          </span>
-                          <span className="font-bold text-emerald-600 text-right ml-2">
-                            {deliveryTimingEstimate}
-                          </span>
+                  {((settings as any)?.pdpCourierDeliveryBadgeEnabled !== false && (settings as any)?.pdpCourierDeliveryBadgeEnabled !== 'false') && (
+                    <div className="bg-slate-50/90 rounded-xl p-3 border border-slate-200/80 space-y-2.5 text-xs">
+                      {/* Courier Delivery with Live Countdown */}
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100 mt-0.5">
+                          <Truck className="w-3.5 h-3.5" />
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1 font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>
-                            {locale === 'ru'
-                              ? `Закажите в течение ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} для быстрой отправки`
-                              : locale === 'zh'
-                              ? `在 ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} 内下单即刻排单发货`
-                              : `Order within ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} for fastest dispatch`}
-                          </span>
-                        </p>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900">
+                              {locale === 'ru' ? 'Курьерская доставка' : locale === 'zh' ? '特快专递送达' : 'Courier Delivery'}
+                            </span>
+                            <span className="font-bold text-emerald-600 text-right ml-2">
+                              {deliveryTimingEstimate}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1 font-medium">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span>
+                              {locale === 'ru'
+                                ? `Закажите в течение ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} для быстрой отправки`
+                                : locale === 'zh'
+                                ? `在 ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} 内下单即刻排单发货`
+                                : `Order within ${String(timeLeft.hours).padStart(2, '0')}:${String(timeLeft.minutes).padStart(2, '0')}:${String(timeLeft.seconds).padStart(2, '0')} for fastest dispatch`}
+                            </span>
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Mobile-only Reassurance Strip & Frequently Bought Together Bundle */}
@@ -2454,79 +2536,118 @@ export default function ProductDetailView({
 
         {/* Full-width Modern Product Hub (Description, Specifications, Logistics, FAQ, Reviews) */}
         <div id="product-tabs" className="mt-6 mb-8 scroll-mt-24">
-          <div className="border-b border-slate-200 bg-white rounded-t-2xl px-3 sm:px-6 pt-2 shadow-xs">
-            <nav className="flex space-x-2 sm:space-x-8 overflow-x-auto scrollbar-none" aria-label="Tabs">
+          <div className="border-b border-slate-200/90 bg-white rounded-t-2xl px-3 sm:px-6 pt-2 shadow-xs flex items-center justify-between flex-wrap gap-2">
+            <nav className="flex space-x-1 sm:space-x-2 overflow-x-auto scrollbar-none py-1" aria-label="Tabs">
               {visibleTabs.map((tab) => {
                 const isActive = activeTab === tab.id
+                const tabIcon =
+                  tab.id === 'overview' ? <Sparkles className="w-4 h-4" /> :
+                  tab.id === 'product-details' ? <FileText className="w-4 h-4" /> :
+                  tab.id === 'measurements' ? <Ruler className="w-4 h-4" /> :
+                  tab.id === 'specs' ? <Layers className="w-4 h-4" /> :
+                  <Star className="w-4 h-4" />
+
                 return (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`whitespace-nowrap py-4 px-2 sm:px-3 border-b-2 font-bold text-sm sm:text-base transition-all flex items-center gap-2 ${
+                    className={`relative whitespace-nowrap py-3 px-3 sm:px-4 rounded-xl font-bold text-sm sm:text-base transition-all flex items-center gap-2 cursor-pointer ${
                       isActive
-                        ? 'border-[#00407a] text-[#00407a]'
-                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                        ? 'bg-blue-50/70 text-[#00407a] shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                     }`}
                   >
+                    <span className={isActive ? 'text-[#00407a]' : 'text-slate-400'}>
+                      {tabIcon}
+                    </span>
                     <span>{tab.label}</span>
-                    {tab.count !== null && tab.count > 0 && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${isActive ? 'bg-blue-50 text-[#00407a]' : 'bg-slate-100 text-slate-600'}`}>
+                    {tab.count !== null && tab.count > 0 ? (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                        isActive ? 'bg-[#00407a] text-white' : 'bg-slate-100 text-slate-600'
+                      }`}>
                         {tab.count}
                       </span>
+                    ) : null}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-[#00407a] rounded-full" />
                     )}
                   </button>
                 )
               })}
             </nav>
+
+            {/* Quick Article / Item # tag on the right (desktop) */}
+            {displayArticleNumber && (
+              <div className="hidden lg:flex items-center gap-2 py-2 pr-2 text-xs text-slate-400">
+                <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-400">Item #:</span>
+                <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/80">
+                  {displayArticleNumber}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-b-2xl border-x border-b border-slate-200/80 p-5 sm:p-8 shadow-xs min-h-[360px]">
             {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
-              <div className="space-y-8 animate-fade-in">
-                {/* Header Strip with Article Number and Category */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      {locale === 'ru' ? 'Обзор товара' : locale === 'zh' ? '产品概览' : 'Product Overview'}
+              <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+                {/* 1. Editorial Story & Lead Description */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 p-6 sm:p-8 shadow-2xs">
+                  <div className="flex items-center gap-2 mb-3.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-[#00407a] text-xs font-bold uppercase tracking-wider">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {locale === 'ru' ? 'Концепция и описание' : locale === 'zh' ? '设计理念与概览' : 'Design & Product Story'}
                     </span>
-                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
-                      {localized.name}
-                    </h3>
+                    {displaySwedenName && (
+                      <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+                        • {displaySwedenName} Collection
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="prose prose-slate max-w-none text-slate-800 text-base sm:text-lg leading-relaxed font-normal">
+                    {/<[a-z][\s\S]*>/i.test(effectiveOverviewText) ? (
+                      <div dangerouslySetInnerHTML={{ __html: effectiveOverviewText }} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{effectiveOverviewText}</p>
+                    )}
                   </div>
                 </div>
 
-                {/* Main Overview Summary Text */}
-                <div className="prose prose-slate max-w-none text-slate-700 text-base sm:text-lg leading-relaxed bg-gradient-to-br from-slate-50/80 to-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-2xs">
-                  {/<[a-z][\s\S]*>/i.test(overviewSummary) ? (
-                    <div dangerouslySetInnerHTML={{ __html: overviewSummary }} />
-                  ) : (
-                    <p className="whitespace-pre-wrap">{overviewSummary}</p>
-                  )}
-                </div>
+                {/* 2. Overview Highlights — only shown when admin has saved highlights in the form */}
+                {overviewHighlightCards.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#00407a]" />
+                        {locale === 'ru' ? 'Ключевые преимущества' : locale === 'zh' ? '核心产品亮点' : 'Key Highlights'}
+                      </h4>
+                      <span className="text-xs text-slate-400 font-medium">
+                        {overviewHighlightCards.length} {locale === 'ru' ? 'особенностей' : locale === 'zh' ? '项优势' : 'features'}
+                      </span>
+                    </div>
 
-                {/* Feature Highlights Grid (from IKEA Overview features) */}
-                {overviewFeatures && overviewFeatures.length > 0 && (
-                  <div className="space-y-4 pt-2">
-                    <h4 className="text-sm font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-[#00407a]" />
-                      {locale === 'ru' ? 'Ключевые преимущества' : locale === 'zh' ? '核心亮点' : 'Key Highlights'}
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                      {overviewFeatures.map((feat, idx) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                      {overviewHighlightCards.map((feat, idx) => (
                         <div
                           key={idx}
-                          className="flex items-start gap-3 p-4 rounded-xl bg-blue-50/40 border border-blue-100/80 text-slate-800 text-sm sm:text-base leading-snug transition-all hover:bg-blue-50/70"
+                          className="flex flex-col p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:shadow-xs hover:border-blue-200 transition-all duration-200 group"
                         >
-                          <CheckCircle2 className="w-5 h-5 text-[#00407a] flex-shrink-0 mt-0.5" />
-                          <span>{feat}</span>
+                          <div className="w-9 h-9 rounded-xl bg-blue-50 group-hover:bg-[#00407a] group-hover:text-white text-[#00407a] flex items-center justify-center mb-3 transition-colors shrink-0">
+                            {feat.icon}
+                          </div>
+                          <h5 className="font-bold text-slate-900 text-sm mb-1 group-hover:text-[#00407a] transition-colors">
+                            {feat.title}
+                          </h5>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            {feat.description}
+                          </p>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-
 
                 {/* Size Guide - Only shown for apparel */}
                 {isApparelCategory && (
@@ -2567,20 +2688,19 @@ export default function ProductDetailView({
 
             {/* Tab 2: Product Details */}
             {activeTab === 'product-details' && (
-              <div className="space-y-8 animate-fade-in">
-
-                {/* Key Features Bullets */}
-                {keyFeatures && keyFeatures.length > 0 && (
+              <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+                {/* 1. Key Features — only shown when admin explicitly added bullet points */}
+                {parsedProductDetails.keyFeatures.length > 0 && (
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-[#00407a]" />
+                    <h4 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#00407a]" />
                       {locale === 'ru' ? 'Главные черты' : locale === 'zh' ? '主要特点' : 'Key features'}
-                    </h3>
+                    </h4>
                     <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-2xs">
                       <ul className="space-y-3">
-                        {keyFeatures.map((kf, idx) => (
-                          <li key={idx} className="flex items-start gap-3 text-slate-700 text-sm sm:text-base leading-relaxed">
-                            <span className="w-2 h-2 rounded-full bg-[#00407a] mt-2 flex-shrink-0" />
+                        {parsedProductDetails.keyFeatures.map((kf, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-slate-700 text-xs sm:text-sm leading-relaxed">
+                            <span className="w-2 h-2 rounded-full bg-[#00407a] mt-1.5 shrink-0" />
                             <span>{kf}</span>
                           </li>
                         ))}
@@ -2589,220 +2709,207 @@ export default function ProductDetailView({
                   </div>
                 )}
 
-                {/* What's included (if multi-piece set) */}
+                {/* 2. What's Included — only when admin filled in the field */}
                 {whatsIncluded && (
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Package className="w-5 h-5 text-indigo-600" />
+                    <h4 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                      <Package className="w-4 h-4 text-indigo-600" />
                       {locale === 'ru' ? 'Что включено в комплект' : locale === 'zh' ? '包含组件' : "What's included"}
-                    </h3>
-                    <div className="p-5 rounded-2xl bg-indigo-50/40 border border-indigo-100 text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
+                    </h4>
+                    <div className="p-5 rounded-2xl bg-indigo-50/40 border border-indigo-100 text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
                       {whatsIncluded}
                     </div>
                   </div>
                 )}
 
-                {/* Materials & Care Instructions Side-by-Side Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Materials */}
-                  {materials && (
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <Layers className="w-5 h-5 text-[#00407a]" />
-                        {locale === 'ru' ? 'Материалы и компоненты' : locale === 'zh' ? '材料与材质' : 'Materials'}
-                      </h3>
-                      <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap min-h-[120px]">
-                        {materials}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Care instructions */}
-                  {careInstructions && (
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                        {locale === 'ru' ? 'Инструкция по уходу' : locale === 'zh' ? '保养说明' : 'Care instructions'}
-                      </h3>
-                      <div className="p-5 rounded-2xl bg-emerald-50/30 border border-emerald-100 text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap min-h-[120px]">
-                        {careInstructions}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Fallback Standard Technical Specs if no IKEA details yet */}
-                {!keyFeatures?.length && !whatsIncluded && !materials && !careInstructions && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                      <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-[#00407a]" />
-                        {locale === 'ru' ? 'Информация о товаре и параметры' : locale === 'zh' ? '基础参数与产品信息' : 'Product Information & Specifications'}
-                      </h3>
-                      <span className="text-xs text-slate-500 font-medium">
-                        {locale === 'ru' ? 'Заводские спецификации' : locale === 'zh' ? '出厂参数' : 'Standard Specifications'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">{locale === 'ru' ? 'Артикул / SKU' : locale === 'zh' ? '商品编码' : 'SKU / Item #'}</span>
-                        <span className="text-sm font-mono font-bold text-slate-900 block mt-1">{currentSku}</span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">{locale === 'ru' ? 'Категория' : locale === 'zh' ? '分类' : 'Category'}</span>
-                        <span className="text-sm font-bold text-slate-900 block mt-1">{localizedCategoryName || 'General Catalog'}</span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">{locale === 'ru' ? 'Страна происхождения' : locale === 'zh' ? '产地' : 'Country of Origin'}</span>
-                        <span className="text-sm font-bold text-slate-900 block mt-1">{getLocalizedCountry(product.countryOfOrigin, locale) || 'China'}</span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">{locale === 'ru' ? 'Масса' : locale === 'zh' ? '重量' : 'Weight'}</span>
-                        <span className="text-sm font-bold text-slate-900 block mt-1">{product.weightKg ? `${product.weightKg} kg` : 'Standard'}</span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">{locale === 'ru' ? 'Минимальный заказ (MOQ)' : locale === 'zh' ? '起订量' : 'Min Order Qty (MOQ)'}</span>
-                        <span className="text-sm font-bold text-slate-900 block mt-1">{product.minOrderQty || 1} {locale === 'ru' ? 'шт.' : locale === 'zh' ? '件' : 'units'}</span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
-                        <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">{locale === 'ru' ? 'Статус склада' : locale === 'zh' ? '库存状态' : 'Stock Status'}</span>
-                        <span className={`text-sm font-bold block mt-1 ${currentStock > 0 ? 'text-emerald-700' : 'text-slate-600'}`}>
-                          {currentStock > 0 ? `${currentStock} ${locale === 'ru' ? 'в наличии' : locale === 'zh' ? '现货' : 'in stock'}` : t('outOfStock')}
-                        </span>
-                      </div>
+                {/* 3. Materials — only when admin filled in the Materials field */}
+                {materials && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-[#00407a]" />
+                      {locale === 'ru' ? 'Материалы' : locale === 'zh' ? '材料与材质' : 'Materials'}
+                    </h4>
+                    <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                      {materials}
                     </div>
                   </div>
                 )}
+
+                {/* 4. Care Instructions — only when admin filled in the Care field */}
+                {careInstructions && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      {locale === 'ru' ? 'Уход' : locale === 'zh' ? '保养说明' : 'Care instructions'}
+                    </h4>
+                    <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                      {careInstructions}
+                    </div>
+                  </div>
+                )}
+
+                {/* Empty state — when admin hasn't filled in any Product Details fields yet */}
+                {parsedProductDetails.keyFeatures.length === 0 && !whatsIncluded && !materials && !careInstructions && (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                      <FileText className="w-7 h-7 text-slate-300" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-500 mb-1">
+                      {locale === 'ru' ? 'Сведения о товаре не заполнены' : locale === 'zh' ? '暂无商品详情' : 'No product details yet'}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {locale === 'ru' ? 'Администратор может добавить информацию в панели управления.' : locale === 'zh' ? '管理员可在后台填写商品详细信息。' : 'Admin can add details in the dashboard.'}
+                    </p>
+                  </div>
+                )}
+
+
+
               </div>
             )}
 
             {/* Tab 3: Measurements */}
             {activeTab === 'measurements' && (
-              <div className="space-y-8 animate-fade-in">
-                {/* Section A: Product Dimensions (Only shown when product physical dimensions exist) */}
-                {Object.keys(resolvedDimensions).length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                      <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <Ruler className="w-5 h-5 text-[#00407a]" />
-                        {locale === 'ru' ? 'Размеры изделия' : locale === 'zh' ? '产品尺寸规格' : 'Measurements'}
-                      </h3>
-                      <span className="text-xs text-slate-500">
-                        {locale === 'ru' ? 'Точные физические габариты' : locale === 'zh' ? '精确物理尺寸参数' : 'Exact physical specifications'}
+              <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                {/* Section A: Product Dimensions — only shown when dimensions exist */}
+                {dimensionCards.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-5 py-4 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0">
+                          <Ruler className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                            {locale === 'ru' ? 'Размеры изделия' : locale === 'zh' ? '产品尺寸与规格' : 'Product Measurements'}
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            {locale === 'ru' ? 'Физические габариты изделия' : locale === 'zh' ? '精确物理尺寸与规格参数' : 'Physical dimensions and specifications'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Quick Dimensions Summary Pill */}
+                      {dimensionsSummaryPill && (
+                        <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-white border border-slate-200 text-[#00407a] shadow-2xs">
+                          {dimensionsSummaryPill}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-4 sm:p-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {dimensionCards.map((card, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-100 hover:bg-white hover:border-blue-200 hover:shadow-2xs transition-all"
+                          >
+                            <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400 block">
+                              {card.label}
+                            </span>
+                            <span className="text-base sm:text-lg font-black text-slate-900 block mt-1 font-mono">
+                              {card.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Section B: Packaging Information — only shown when packaging exists */}
+                {packagingList && packagingList.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                    <div className="px-5 py-4 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0">
+                          <Box className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                            {locale === 'ru' ? 'Информация об упаковке' : locale === 'zh' ? '包装与物流规格' : 'Packaging & Shipping Details'}
+                          </h3>
+                          <p className="text-[11px] text-slate-400">
+                            {locale === 'ru' ? 'Габариты упаковки и масса брутто' : locale === 'zh' ? '包装尺寸与毛重参数' : 'Package dimensions & gross weight'}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        {packagingList.length} {packagingList.length === 1 ? 'Package' : 'Packages'}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {Object.entries(resolvedDimensions).map(([key, val]) => (
-                        <div
-                          key={key}
-                          className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs hover:border-blue-300 transition-colors"
-                        >
-                          <span className="text-xs uppercase tracking-wider font-bold text-slate-500 block">
-                            {key}
-                          </span>
-                          <span className="text-base sm:text-lg font-black text-slate-900 block mt-1">
-                            {val}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Fallback if neither product dimensions nor packaging details exist */}
-                {Object.keys(resolvedDimensions).length === 0 && (!packagingList || packagingList.length === 0) && (
-                  <div className="p-6 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-sm">
-                    {locale === 'ru'
-                      ? 'Габариты соответствуют стандартным фабричным нормативам.'
-                      : locale === 'zh'
-                      ? '尺寸符合出厂标准规范。'
-                      : 'Standard manufacturer sizing applies.'}
-                  </div>
-                )}
-
-                {/* Section B: Packaging Information */}
-                <div className="space-y-4 pt-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                      <Box className="w-5 h-5 text-[#00407a]" />
-                      {locale === 'ru' ? 'Информация об упаковке' : locale === 'zh' ? '包装规格与物流尺寸' : 'Packaging Details'}
-                    </h3>
-                    <span className="text-xs text-slate-500">
-                      {locale === 'ru' ? 'Размеры упаковки и масса брутто' : locale === 'zh' ? '外箱尺寸与毛重' : 'Package dimensions and gross weight'}
-                    </span>
-                  </div>
-
-                  {packagingList && packagingList.length > 0 ? (
-                    <div className="space-y-4">
-                      {packagingList.map((pkg, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs hover:shadow-xs transition-shadow"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-6 h-6 rounded-full bg-blue-100 text-[#00407a] font-bold text-xs flex items-center justify-center">
-                                {idx + 1}
+                    <div className="p-4 sm:p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {packagingList.map((pkg, idx) => (
+                          <div
+                            key={idx}
+                            className="rounded-xl border border-slate-200/80 p-4 bg-gradient-to-br from-slate-50/60 to-white shadow-2xs"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#00407a] border border-blue-100">
+                                <Box className="w-3 h-3" />
+                                {locale === 'ru' ? `Упаковка ${idx + 1}` : locale === 'zh' ? `包装件 ${idx + 1}` : `Package ${idx + 1}`}
                               </span>
-                              <h4 className="font-bold text-slate-900 text-sm sm:text-base">
-                                {pkg.name || localized.name}
-                              </h4>
+                              {pkg.weight && (
+                                <span className="text-xs font-mono font-bold text-[#00407a]">
+                                  {pkg.weight}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                              {pkg.width && (
+                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-center">
+                                  <span className="text-[10px] text-slate-400 block font-bold uppercase">{locale === 'ru' ? 'Ширина' : locale === 'zh' ? '宽度' : 'Width'}</span>
+                                  <span className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 font-mono">{pkg.width}</span>
+                                </div>
+                              )}
+                              {pkg.height && (
+                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-center">
+                                  <span className="text-[10px] text-slate-400 block font-bold uppercase">{locale === 'ru' ? 'Высота' : locale === 'zh' ? '高度' : 'Height'}</span>
+                                  <span className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 font-mono">{pkg.height}</span>
+                                </div>
+                              )}
+                              {pkg.length && (
+                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-center">
+                                  <span className="text-[10px] text-slate-400 block font-bold uppercase">{locale === 'ru' ? 'Длина' : locale === 'zh' ? '长度' : 'Length'}</span>
+                                  <span className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 font-mono">{pkg.length}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
+                        ))}
+                      </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {pkg.width && (
-                              <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                                <span className="text-xs text-slate-500 block">{locale === 'ru' ? 'Ширина' : locale === 'zh' ? '宽度' : 'Width'}</span>
-                                <span className="text-sm sm:text-base font-bold text-slate-900 block mt-0.5">{pkg.width}</span>
-                              </div>
-                            )}
-                            {pkg.height && (
-                              <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                                <span className="text-xs text-slate-500 block">{locale === 'ru' ? 'Высота' : locale === 'zh' ? '高度' : 'Height'}</span>
-                                <span className="text-sm sm:text-base font-bold text-slate-900 block mt-0.5">{pkg.height}</span>
-                              </div>
-                            )}
-                            {pkg.length && (
-                              <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                                <span className="text-xs text-slate-500 block">{locale === 'ru' ? 'Длина' : locale === 'zh' ? '长度' : 'Length'}</span>
-                                <span className="text-sm sm:text-base font-bold text-slate-900 block mt-0.5">{pkg.length}</span>
-                              </div>
-                            )}
-                            {pkg.weight && (
-                              <div className="bg-slate-50/80 p-3 rounded-xl border border-slate-100">
-                                <span className="text-xs text-slate-500 block">{locale === 'ru' ? 'Масса брутто' : locale === 'zh' ? '毛重' : 'Weight'}</span>
-                                <span className="text-sm sm:text-base font-bold text-[#00407a] block mt-0.5">{pkg.weight}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-100">
-                          <span className="text-xs text-slate-500 block">{locale === 'ru' ? 'Масса нетто / брутто' : locale === 'zh' ? '重量' : 'Weight'}</span>
-                          <span className="text-base font-bold text-[#00407a] block mt-1">
-                            {product.weightKg ? `${product.weightKg} kg` : (product.attributes?.weight ? String(product.attributes.weight) : 'Standard weight')}
-                          </span>
-                        </div>
-                        <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-100">
-                          <span className="text-xs text-slate-500 block">{locale === 'ru' ? 'Количество упаковок' : locale === 'zh' ? '包装件数' : 'Package count'}</span>
-                          <span className="text-base font-bold text-slate-900 block mt-1">1</span>
-                        </div>
+                      <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-500">
+                        <Truck className="w-4 h-4 text-[#00407a] shrink-0" />
+                        <span>
+                          {locale === 'ru'
+                            ? 'Компактная упаковка разработана для безопасной транспортировки и оптимизации логистических затрат.'
+                            : locale === 'zh'
+                            ? '紧凑扁平化包装，经优化可保障跨国运输安全并减少物流损耗。'
+                            : 'Flat-pack design optimized for international logistics, safe transit, and minimized shipping footprint.'}
+                        </span>
                       </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Empty state — when neither dimensions nor packaging are available */}
+                {dimensionCards.length === 0 && (!packagingList || packagingList.length === 0) && (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+                      <Ruler className="w-7 h-7 text-slate-300" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-500 mb-1">
+                      {locale === 'ru' ? 'Размеры не указаны' : locale === 'zh' ? '暂无尺寸规格' : 'No measurements available yet'}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {locale === 'ru' ? 'Администратор может добавить информацию в панели управления.' : locale === 'zh' ? '管理员可在后台填写商品尺寸与包装数据。' : 'Admin can add dimensions and packaging details in the dashboard.'}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -3043,9 +3150,9 @@ export default function ProductDetailView({
               </div>
             )}
 
-            {/* Tab 5: Reviews */}
+            {/* Tab: Reviews */}
             {activeTab === 'reviews' && (
-              <div className="animate-fade-in">
+              <div className="max-w-4xl mx-auto animate-fade-in">
                 <ReviewSection
                   productId={product.id}
                   productName={localized.name}

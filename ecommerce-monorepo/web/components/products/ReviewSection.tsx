@@ -149,24 +149,44 @@ export function ReviewSection({ productId, productName, initialSummary }: Review
       {totalReviews > 0 ? (
         <ReviewList reviews={reviews} />
       ) : !showForm ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-2xs">
-          <div className="w-12 h-12 bg-blue-50 text-[#00407a] rounded-2xl flex items-center justify-center mx-auto mb-3 border border-blue-100">
-            <MessageSquare className="w-6 h-6" />
+        <div className="bg-gradient-to-b from-slate-50/70 via-white to-slate-50/40 border border-slate-200/90 rounded-2xl p-8 sm:p-12 text-center shadow-2xs">
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star key={star} className="w-5 h-5 fill-amber-400 text-amber-400 drop-shadow-xs" />
+            ))}
           </div>
-          <h3 className="text-base font-bold text-slate-900 mb-1">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-1.5 tracking-tight">
             {t('noReviews')}
           </h3>
-          <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
+          <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto leading-relaxed">
             {t('beFirst')}
           </p>
-          <button
-            type="button"
-            onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs px-6 py-3 rounded-xl shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <PenLine className="w-4 h-4" />
-            <span>{t('writeReview')}</span>
-          </button>
+          <div className="flex justify-center mb-8">
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-2 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-xl shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              <PenLine className="w-4 h-4" />
+              <span>{t('writeReview')}</span>
+            </button>
+          </div>
+
+          {/* Trust assurance pills */}
+          <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 font-medium">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Verified Buyer Reviews
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              Transparent Ratings
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              Community Moderated
+            </span>
+          </div>
         </div>
       ) : null}
     </section>
