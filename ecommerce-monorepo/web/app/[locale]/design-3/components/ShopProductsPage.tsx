@@ -35,6 +35,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
+import { useAuthContext } from '@/components/providers/AuthProvider';
 
 interface ShopProductsPageProps {
   products: Product[];
@@ -81,6 +82,12 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
   const searchParams = useSearchParams();
   const { tShop, tPdp, tBadge, tOriginAndBrand } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useAuthContext();
+  const [authMounted, setAuthMounted] = useState(false);
+
+  useEffect(() => {
+    setAuthMounted(true);
+  }, []);
 
   const { settings, storeMode: systemStoreMode } = useSettings();
   const { storeMode: ctxStoreMode } = useStoreMode();
@@ -1500,19 +1507,21 @@ export const ShopProductsPage: React.FC<ShopProductsPageProps> = ({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onToggleFavorite(product);
-                            }}
-                            className={`p-2 rounded-xl border transition-colors cursor-pointer ${
-                              isFav
-                                ? 'bg-red-50 border-red-200 text-red-500'
-                                : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-red-500'
-                            }`}
-                          >
-                            <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500' : ''}`} />
-                          </button>
+                          {authMounted && isAuthenticated && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onToggleFavorite(product);
+                              }}
+                              className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                                isFav
+                                  ? 'bg-red-50 border-red-200 text-red-500'
+                                  : 'bg-slate-50 border-slate-200 text-slate-400 hover:text-red-500'
+                              }`}
+                            >
+                              <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500' : ''}`} />
+                            </button>
+                          )}
 
                           {isWholesaleActive && !isInstantWholesale ? (
                             qtyInQuote === 0 ? (

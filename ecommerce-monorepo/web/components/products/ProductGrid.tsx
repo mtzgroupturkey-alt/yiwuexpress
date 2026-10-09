@@ -278,17 +278,19 @@ export default function ProductGrid({
                     {isSoldOut ? t('soldOut') : t('addToCart')}
                   </button>
                 )}
-                <button
-                  onClick={() => handleToggleWishlist(product.id)}
-                  className="p-2 rounded border border-gray-200 hover:border-primary-600 transition-colors"
-                >
-                  <Heart
-                    className={`w-4 h-4 ${wishlist.has(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
-                  />
-                </button>
+                  {isUserLoggedIn && (
+                    <button
+                      onClick={() => handleToggleWishlist(product.id)}
+                      className="p-2 rounded border border-gray-200 hover:border-primary-600 transition-colors"
+                    >
+                      <Heart
+                        className={`w-4 h-4 ${wishlist.has(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+                      />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
         )
       })}
     </div>

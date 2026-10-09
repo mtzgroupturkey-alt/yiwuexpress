@@ -8,6 +8,7 @@ import { Product } from '@/app/[locale]/design-3/types'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useAuthContext } from '@/components/providers/AuthProvider'
 import { Skeleton } from '../Skeleton'
 
 export interface MobileProductRowProps {
@@ -33,6 +34,12 @@ export function MobileProductRow({
   const locale = useLocale()
   const { formatPrice } = useCurrency()
   const { isWholesaleSession } = useSessionMode()
+  const { isAuthenticated } = useAuthContext()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
   const [justAddedId, setJustAddedId] = React.useState<string | null>(null)
 
   const handleCardClick = (product: Product) => {
@@ -121,7 +128,7 @@ export function MobileProductRow({
                 </span>
               )}
 
-              {onToggleFavorite && (
+              {mounted && isAuthenticated && onToggleFavorite && (
                 <button
                   type="button"
                   onClick={(e) => handleFavoriteClick(e, product.id)}

@@ -6,9 +6,6 @@ import {
   ShieldCheck, 
   Smartphone, 
   CreditCard, 
-  CheckCircle2, 
-  Truck, 
-  DollarSign, 
   Lock, 
   Phone, 
   Mail, 
@@ -20,8 +17,7 @@ import {
   ChevronRight,
   X,
   BadgeCheck,
-  Banknote,
-  Globe
+  Banknote
 } from 'lucide-react';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useSettings } from '@/components/SettingsProvider';
@@ -82,73 +78,6 @@ export const Footer: React.FC<FooterProps> = ({
       {/* Subtle background ambient glow */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
-
-      {/* 1. Value Pillars & Global Sourcing Guarantees Strip */}
-      <div className="border-b border-slate-800/80 bg-[#07172B]/60 backdrop-blur-xs">
-        <div className="max-w-[1440px] mx-auto px-4 lg:px-6 py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {/* Pillar 1 */}
-            <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 hover:border-slate-700 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h4 className="text-xs font-bold text-white tracking-tight truncate">
-                  {tFooter('directPricing')}
-                </h4>
-                <p className="text-[11px] text-slate-400 truncate">
-                  {tFooter('directPricingSub')}
-                </p>
-              </div>
-            </div>
-
-            {/* Pillar 2 */}
-            <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 hover:border-slate-700 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h4 className="text-xs font-bold text-white tracking-tight truncate">
-                  {tFooter('qualityInspection')}
-                </h4>
-                <p className="text-[11px] text-slate-400 truncate">
-                  {tFooter('qualityInspectionSub')}
-                </p>
-              </div>
-            </div>
-
-            {/* Pillar 3 */}
-            <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 hover:border-slate-700 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                <Truck className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h4 className="text-xs font-bold text-white tracking-tight truncate">
-                  {tFooter('globalLogistics')}
-                </h4>
-                <p className="text-[11px] text-slate-400 truncate">
-                  {tFooter('globalLogisticsSub')}
-                </p>
-              </div>
-            </div>
-
-            {/* Pillar 4 */}
-            <div className="flex items-center gap-3.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/60 hover:border-slate-700 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h4 className="text-xs font-bold text-white tracking-tight truncate">
-                  {tFooter('tradeAssurance')}
-                </h4>
-                <p className="text-[11px] text-slate-400 truncate">
-                  {tFooter('tradeAssuranceSub')}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* 2. Main 5-Column Navigation Grid */}
       <div className="max-w-[1440px] mx-auto px-4 lg:px-6 pt-12 pb-10 relative z-10">
@@ -467,11 +396,6 @@ export const Footer: React.FC<FooterProps> = ({
                   {tFooter('contact')}
                 </Link>
               </li>
-              <li>
-                <Link href={`/${locale}/sitemap`} className="hover:text-white transition-colors text-slate-300 block">
-                  {tFooter('sitemap')}
-                </Link>
-              </li>
             </ul>
 
             {/* Mobile App Download Badges */}
@@ -574,10 +498,6 @@ export const Footer: React.FC<FooterProps> = ({
             <Link href={`/${locale}/cookies`} className="hover:text-white transition-colors">
               {tFooter('cookiePolicy')}
             </Link>
-            <span>•</span>
-            <Link href={`/${locale}/sitemap`} className="hover:text-white transition-colors">
-              {tFooter('sitemap')}
-            </Link>
           </div>
         </div>
 
@@ -601,11 +521,6 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex items-center gap-1.5">
               <LanguageSwitcher variant="footer-dropdown" />
               <CurrencySwitcher variant="footer-dropdown" />
-            </div>
-            <span className="text-slate-700 hidden sm:inline">|</span>
-            <div className="hidden sm:flex items-center gap-1.5 text-slate-500 text-[11px]">
-              <Globe className="w-3.5 h-3.5 text-slate-500" />
-              <span>Global Export & Wholesale Hub</span>
             </div>
           </div>
         </div>

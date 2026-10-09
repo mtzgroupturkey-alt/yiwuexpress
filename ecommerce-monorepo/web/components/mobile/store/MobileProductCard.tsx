@@ -108,7 +108,7 @@ export function MobileProductCard({
           </span>
         )}
 
-        {onToggleFavorite && (
+        {mounted && (isAuthenticated || !customerView.isGuest) && onToggleFavorite && (
           <button
             type="button"
             onClick={handleFavoriteClick}

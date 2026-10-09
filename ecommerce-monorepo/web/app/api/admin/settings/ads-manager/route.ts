@@ -77,6 +77,41 @@ const DEFAULT_TRANSLATIONS = {
       howPointsLink: '',
     },
   },
+  trustFeatures: {
+    en: {
+      enabled: true,
+      deliveryTitle: 'Express Home Delivery',
+      deliveryDesc: 'Carefully packaged and delivered straight to your apartment or front door.',
+      guaranteeTitle: 'Zero Damage Guarantee',
+      guaranteeDesc: 'Reinforced protective packaging ensuring ceramics, glass, and mirrors arrive pristine.',
+      showroomsTitle: '120+ Pickup Showrooms',
+      showroomsDesc: 'Inspect items in person, test furniture materials, and pick up free at your convenience.',
+      returnsTitle: 'Instant 14-Day Return',
+      returnsDesc: 'Simple exchange or full refund for home decor, cookware, and appliances.',
+    },
+    ru: {
+      enabled: true,
+      deliveryTitle: 'Экспресс-доставка на дом',
+      deliveryDesc: 'Бережная упаковка и доставка прямо до вашей квартиры или двери.',
+      guaranteeTitle: 'Гарантия сохранности 100%',
+      guaranteeDesc: 'Усиленная защитная упаковка гарантирует целостность керамики, стекла и зеркал.',
+      showroomsTitle: '120+ Шоурумов самовывоза',
+      showroomsDesc: 'Осмотрите товары вживую, оцените материалы мебели и заберите заказ бесплатно в удобное время.',
+      returnsTitle: 'Быстрый возврат 14 дней',
+      returnsDesc: 'Простой обмен или полный возврат средств за декор, посуду и бытовую технику.',
+    },
+    zh: {
+      enabled: true,
+      deliveryTitle: '极速送达上门',
+      deliveryDesc: '专业防护包装，安全送达至您的公寓或家门口。',
+      guaranteeTitle: '100%破损包赔',
+      guaranteeDesc: '加固抗震缓冲包装，确保陶瓷、玻璃与镜面完好无损。',
+      showroomsTitle: '120+ 线下自提体验馆',
+      showroomsDesc: '实地触摸家具材质质感，随时免费自提，安心便捷。',
+      returnsTitle: '14天无忧退换',
+      returnsDesc: '家居饰品、厨具及家用电器支持便捷换货或全额退款。',
+    },
+  },
 };
 
 const ALL_KEYS = [
@@ -96,6 +131,15 @@ const ALL_KEYS = [
   'memberClubActivateLink',
   'memberClubHowPointsWork',
   'memberClubHowPointsLink',
+  'trustFeaturesEnabled',
+  'trustDeliveryTitle',
+  'trustDeliveryDesc',
+  'trustGuaranteeTitle',
+  'trustGuaranteeDesc',
+  'trustShowroomsTitle',
+  'trustShowroomsDesc',
+  'trustReturnsTitle',
+  'trustReturnsDesc',
 ];
 
 // GET /api/admin/settings/ads-manager
@@ -130,6 +174,7 @@ export async function GET(req: NextRequest) {
     const result = {
       weeklyBargains: JSON.parse(JSON.stringify(DEFAULT_TRANSLATIONS.weeklyBargains)),
       memberClub: JSON.parse(JSON.stringify(DEFAULT_TRANSLATIONS.memberClub)),
+      trustFeatures: JSON.parse(JSON.stringify(DEFAULT_TRANSLATIONS.trustFeatures)),
       companyName: settings.companyName || 'Global Trade',
     };
 
@@ -176,6 +221,27 @@ export async function GET(req: NextRequest) {
         result.memberClub[loc].howPointsWork = t.value;
       } else if (t.key === 'memberClubHowPointsLink') {
         result.memberClub[loc].howPointsLink = t.value;
+      } else if (t.key === 'trustFeaturesEnabled') {
+        const val = t.value === 'true';
+        result.trustFeatures.en.enabled = val;
+        result.trustFeatures.ru.enabled = val;
+        result.trustFeatures.zh.enabled = val;
+      } else if (t.key === 'trustDeliveryTitle' && t.value) {
+        result.trustFeatures[loc].deliveryTitle = t.value;
+      } else if (t.key === 'trustDeliveryDesc' && t.value) {
+        result.trustFeatures[loc].deliveryDesc = t.value;
+      } else if (t.key === 'trustGuaranteeTitle' && t.value) {
+        result.trustFeatures[loc].guaranteeTitle = t.value;
+      } else if (t.key === 'trustGuaranteeDesc' && t.value) {
+        result.trustFeatures[loc].guaranteeDesc = t.value;
+      } else if (t.key === 'trustShowroomsTitle' && t.value) {
+        result.trustFeatures[loc].showroomsTitle = t.value;
+      } else if (t.key === 'trustShowroomsDesc' && t.value) {
+        result.trustFeatures[loc].showroomsDesc = t.value;
+      } else if (t.key === 'trustReturnsTitle' && t.value) {
+        result.trustFeatures[loc].returnsTitle = t.value;
+      } else if (t.key === 'trustReturnsDesc' && t.value) {
+        result.trustFeatures[loc].returnsDesc = t.value;
       }
     }
 
@@ -195,7 +261,7 @@ export async function PUT(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { weeklyBargains, memberClub } = body;
+    const { weeklyBargains, memberClub, trustFeatures } = body;
 
     let settings = await prisma.systemSettings.findFirst({
       select: { id: true },
@@ -216,10 +282,12 @@ export async function PUT(req: NextRequest) {
     // Global toggle values
     const wbEnabled = weeklyBargains?.en?.enabled !== false;
     const mcEnabled = memberClub?.en?.enabled !== false;
+    const tfEnabled = trustFeatures?.en?.enabled !== false;
 
     for (const loc of locales) {
       upsertRows.push({ locale: loc, key: 'weeklyBargainsEnabled', value: String(wbEnabled) });
       upsertRows.push({ locale: loc, key: 'memberClubEnabled', value: String(mcEnabled) });
+      upsertRows.push({ locale: loc, key: 'trustFeaturesEnabled', value: String(tfEnabled) });
 
       const wb = weeklyBargains?.[loc] || DEFAULT_TRANSLATIONS.weeklyBargains[loc];
       if (wb) {
@@ -241,6 +309,18 @@ export async function PUT(req: NextRequest) {
         if (mc.activateLink !== undefined) upsertRows.push({ locale: loc, key: 'memberClubActivateLink', value: String(mc.activateLink || '') });
         if (mc.howPointsWork !== undefined) upsertRows.push({ locale: loc, key: 'memberClubHowPointsWork', value: String(mc.howPointsWork) });
         if (mc.howPointsLink !== undefined) upsertRows.push({ locale: loc, key: 'memberClubHowPointsLink', value: String(mc.howPointsLink || '') });
+      }
+
+      const tf = trustFeatures?.[loc] || DEFAULT_TRANSLATIONS.trustFeatures[loc];
+      if (tf) {
+        if (tf.deliveryTitle !== undefined) upsertRows.push({ locale: loc, key: 'trustDeliveryTitle', value: String(tf.deliveryTitle) });
+        if (tf.deliveryDesc !== undefined) upsertRows.push({ locale: loc, key: 'trustDeliveryDesc', value: String(tf.deliveryDesc) });
+        if (tf.guaranteeTitle !== undefined) upsertRows.push({ locale: loc, key: 'trustGuaranteeTitle', value: String(tf.guaranteeTitle) });
+        if (tf.guaranteeDesc !== undefined) upsertRows.push({ locale: loc, key: 'trustGuaranteeDesc', value: String(tf.guaranteeDesc) });
+        if (tf.showroomsTitle !== undefined) upsertRows.push({ locale: loc, key: 'trustShowroomsTitle', value: String(tf.showroomsTitle) });
+        if (tf.showroomsDesc !== undefined) upsertRows.push({ locale: loc, key: 'trustShowroomsDesc', value: String(tf.showroomsDesc) });
+        if (tf.returnsTitle !== undefined) upsertRows.push({ locale: loc, key: 'trustReturnsTitle', value: String(tf.returnsTitle) });
+        if (tf.returnsDesc !== undefined) upsertRows.push({ locale: loc, key: 'trustReturnsDesc', value: String(tf.returnsDesc) });
       }
     }
 

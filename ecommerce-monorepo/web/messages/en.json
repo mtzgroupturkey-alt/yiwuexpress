@@ -978,6 +978,8 @@
     "copyLink": "Copy Link",
     "inHighDemand": "⚡ In High Demand",
     "sku": "SKU",
+    "swedishName": "Swedish Name",
+    "swedishNameDesc": "Original Swedish series / brand name",
     "productDescription": "Product Description",
     "noDescription": "No description available for this product. Contact us for more details about features, materials, and specifications.",
     "wholesalePrice": "Wholesale Price",
@@ -2082,6 +2084,31 @@
       "recentOrders": "Recent Commercial Orders",
       "downloadPriceList": "Download Full Wholesale Price List",
       "accountManager": "Your Dedicated Account Manager"
+    }
+  },
+  "pricing": {
+    "retailPrice": "Retail Price",
+    "discountPercent": "Discount %",
+    "afterDiscount": "After Discount",
+    "customerSees": "Customer sees:",
+    "overrideManual": "Set \"After Discount\" manually",
+    "profitPerSale": "Profit per sale",
+    "profitPerWholesaleUnit": "Profit per wholesale unit",
+    "boughtFor": "You bought it for",
+    "wholesalePrice": "Their special price",
+    "minBuy": "Minimum they must buy",
+    "badge": {
+      "save": "Save {percent}%"
+    },
+    "error": {
+      "retailRequired": "Please enter a price like 49.99.",
+      "discountRange": "Discount must be between 0 and 99.",
+      "afterDiscountRequired": "After-discount price must be greater than 0.",
+      "afterDiscountTooHigh": "After-discount price must be lower than retail price."
+    },
+    "warn": {
+      "loss": "Warning: You will lose money on each sale.",
+      "wholesaleLoss": "Warning: You will lose money on each wholesale unit."
     }
   }
 }

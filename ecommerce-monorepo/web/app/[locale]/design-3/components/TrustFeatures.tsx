@@ -4,30 +4,36 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Truck, Snowflake, Package, RotateCcw } from 'lucide-react';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useSettings } from '@/components/SettingsProvider';
 
 export const TrustFeatures: React.FC = () => {
   const { tTrust } = useStorefrontTranslation();
+  const { settings } = useSettings();
+
+  if (settings?.trustFeaturesEnabled === false) {
+    return null;
+  }
 
   const features = [
     {
       icon: <Truck className="w-5 h-5 text-[#00407a]" />,
-      title: tTrust('deliveryTitle'),
-      desc: tTrust('deliveryDesc'),
+      title: settings?.trustDeliveryTitle || tTrust('deliveryTitle'),
+      desc: settings?.trustDeliveryDesc || tTrust('deliveryDesc'),
     },
     {
       icon: <Snowflake className="w-5 h-5 text-[#00407a]" />,
-      title: tTrust('guaranteeTitle'),
-      desc: tTrust('guaranteeDesc'),
+      title: settings?.trustGuaranteeTitle || tTrust('guaranteeTitle'),
+      desc: settings?.trustGuaranteeDesc || tTrust('guaranteeDesc'),
     },
     {
       icon: <Package className="w-5 h-5 text-[#00407a]" />,
-      title: tTrust('showroomsTitle'),
-      desc: tTrust('showroomsDesc'),
+      title: settings?.trustShowroomsTitle || tTrust('showroomsTitle'),
+      desc: settings?.trustShowroomsDesc || tTrust('showroomsDesc'),
     },
     {
       icon: <RotateCcw className="w-5 h-5 text-[#00407a]" />,
-      title: tTrust('returnsTitle'),
-      desc: tTrust('returnsDesc'),
+      title: settings?.trustReturnsTitle || tTrust('returnsTitle'),
+      desc: settings?.trustReturnsDesc || tTrust('returnsDesc'),
     },
   ];
 

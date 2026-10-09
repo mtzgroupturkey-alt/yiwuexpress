@@ -28,7 +28,7 @@ export interface ProductTranslationFormProps {
   onAttributesTranslated?: (translatedAttrs: Record<string, Record<string, string>>) => void
   /** Disable editing (e.g. while submitting). */
   disabled?: boolean
-  /** Sweden Name for product details identification */
+  /** Swedish Name for product details identification */
   swedenName?: string
   onSwedenNameChange?: (value: string) => void
   /** Article # for IKEA / manufacturer identification */
@@ -234,7 +234,7 @@ export function ProductTranslationForm({
           return (
             <div key={code} className="space-y-4">
               {code === 'en' ? (
-                /* English Tab: Integrated Product Details Information (Sweden Name, English Name, Article #) */
+                /* English Tab: Integrated Product Details Information (Swedish Name, English Name, Article #) */
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-1">
                     <div className="flex items-center gap-1.5">
@@ -248,11 +248,11 @@ export function ProductTranslationForm({
                   </div>
 
                   <div className="space-y-4">
-                    {/* Sweden Name */}
+                    {/* Swedish Name */}
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                          Sweden Name
+                          {dict?.products?.swedishName || 'Swedish Name'}
                         </label>
                         <span className="text-[10px] text-slate-400 font-mono">e.g. GULDÖRING</span>
                       </div>
@@ -264,7 +264,9 @@ export function ProductTranslationForm({
                         placeholder="e.g. GULDÖRING"
                         className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
                       />
-                      <p className="text-[11px] text-gray-500">Original Swedish series / brand name</p>
+                      <p className="text-[11px] text-gray-500">
+                        {dict?.products?.swedishNameDesc || 'Original Swedish series / brand name'}
+                      </p>
                     </div>
 
                     {/* English Name (Single Product Name) */}

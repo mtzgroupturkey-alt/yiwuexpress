@@ -21,6 +21,7 @@ import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
+import { useAuthContext } from '@/components/providers/AuthProvider';
 
 interface ProductModalProps {
   product: Product | null;
@@ -41,6 +42,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onToggleFavorite,
   onViewFullPDP,
 }) => {
+  const { isAuthenticated } = useAuthContext();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { tModals, tPdp, tBadge, tOriginAndBrand } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
   const { settings, storeMode: systemStoreMode } = useSettings();
@@ -146,12 +154,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   {tBadge(product.tagBadge.text, product.tagBadge.type)}
                 </span>
               )}
-              <button
-                onClick={() => onToggleFavorite && onToggleFavorite(product)}
-                className="ml-auto p-1.5 rounded-full hover:bg-white text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-              >
-                <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-              </button>
+              {mounted && isAuthenticated && (
+                <button
+                  onClick={() => onToggleFavorite && onToggleFavorite(product)}
+                  className="ml-auto p-1.5 rounded-full hover:bg-white text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                </button>
+              )}
             </div>
 
             <div className="my-6 aspect-square w-full max-w-[240px] flex items-center justify-center relative">

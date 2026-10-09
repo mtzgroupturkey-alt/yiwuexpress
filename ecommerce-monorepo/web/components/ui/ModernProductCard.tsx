@@ -352,23 +352,25 @@ export function ModernProductCard({
         </div>
 
         {/* Wishlist Heart Toggle (Top Right) */}
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setIsFavorite(!isFavorite)
-            onToggleFavorite?.(product.id)
-          }}
-          aria-label="Toggle Wishlist"
-          className="absolute top-2.5 right-2.5 z-10 p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 text-white hover:text-red-400 transition-all hover:scale-110 cursor-pointer"
-        >
-          <Heart 
-            className={cn(
-              'w-4 h-4 transition-colors',
-              isFavorite ? 'fill-red-500 text-red-500' : 'text-white'
-            )} 
-          />
-        </button>
+        {isUserLoggedIn && (
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setIsFavorite(!isFavorite)
+              onToggleFavorite?.(product.id)
+            }}
+            aria-label="Toggle Wishlist"
+            className="absolute top-2.5 right-2.5 z-10 p-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/20 text-white hover:text-red-400 transition-all hover:scale-110 cursor-pointer"
+          >
+            <Heart 
+              className={cn(
+                'w-4 h-4 transition-colors',
+                isFavorite ? 'fill-red-500 text-red-500' : 'text-white'
+              )} 
+            />
+          </button>
+        )}
 
         {/* Out of Stock Overlay */}
         {!isAvailable && (

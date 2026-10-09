@@ -123,10 +123,22 @@ export const WholesaleCtaButton: React.FC<WholesaleCtaButtonProps> = ({
       href={`/${locale}/register-b2b`}
       title={resolvedTooltip}
       aria-label={resolvedTooltip}
-      className="h-10 px-3.5 py-2 flex items-center gap-2 text-[#00407a] hover:text-[#003060] hover:bg-slate-100 rounded-lg transition-colors text-xs sm:text-sm font-bold uppercase tracking-wide shrink-0 whitespace-nowrap cursor-pointer"
+      className="group relative h-10 px-3.5 py-1.5 flex items-center gap-2 rounded-xl text-xs sm:text-[13px] font-bold uppercase tracking-wider shrink-0 whitespace-nowrap cursor-pointer overflow-hidden transition-all duration-300 bg-gradient-to-r from-[#003366] via-[#00407a] to-[#0b4d8c] text-white shadow-sm shadow-[#00407a]/20 hover:shadow-md hover:shadow-[#00407a]/35 hover:-translate-y-0.5 active:translate-y-0 border border-white/15"
     >
-      <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
-      <span>{resolvedLabel}</span>
+      {/* Subtle glossy shimmer overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none" />
+
+      {/* Glowing icon container with gold accent */}
+      <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-amber-400/20 text-amber-300 border border-amber-300/30 group-hover:bg-amber-400/30 group-hover:scale-105 transition-all shrink-0">
+        <Building2 className="w-3.5 h-3.5 text-amber-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] shrink-0" />
+      </span>
+
+      <span className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">{resolvedLabel}</span>
+
+      {/* Mini PRO/B2B indicator pill */}
+      <span className="relative ml-0.5 px-1.5 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-extrabold tracking-normal leading-none shadow-xs group-hover:bg-amber-300 transition-colors">
+        B2B
+      </span>
     </Link>
   );
 };
@@ -414,11 +426,13 @@ export const Header: React.FC<HeaderProps> = ({
     id: string;
     category: NavCategory;
     top: number;
-    left: number;
+    left?: number;
+    right?: number;
     isNearRight: boolean;
   } | null>(null);
   const [activeChildId, setActiveChildId] = useState<string | null>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isHoveringDropdownRef = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -426,6 +440,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   useEffect(() => {
     const handleScrollOrResize = () => {
+      // If user cursor is actively hovering or interacting inside the menu/trigger, do NOT close on scroll!
+      if (isHoveringDropdownRef.current) return;
       if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
       setActiveDropdown(null);
       setActiveChildId(null);
@@ -440,6 +456,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   const handleCategoryMouseEnter = (dept: NavCategory, e: React.MouseEvent<HTMLElement>) => {
+    isHoveringDropdownRef.current = true;
     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     if (!dept.children || dept.children.length === 0) {
       setActiveDropdown(null);
@@ -448,11 +465,10 @@ export const Header: React.FC<HeaderProps> = ({
     }
     const rect = e.currentTarget.getBoundingClientRect();
     const hasAnyLevel3 = dept.children.some((c) => c.children && c.children.length > 0);
-    const totalFlyoutWidth = hasAnyLevel3 ? 460 : 230;
+    const totalFlyoutWidth = hasAnyLevel3 ? 490 : 250;
     const isNearRight = rect.left + totalFlyoutWidth > window.innerWidth - 16;
-    const computedLeft = isNearRight 
-      ? Math.max(8, rect.right - 230) 
-      : rect.left;
+    const computedLeft = Math.max(16, rect.left);
+    const computedRight = Math.max(16, window.innerWidth - rect.right);
 
     // Reset active child when category ribbon item is hovered
     setActiveChildId(null);
@@ -462,18 +478,22 @@ export const Header: React.FC<HeaderProps> = ({
       category: dept,
       top: rect.bottom + 2,
       left: computedLeft,
+      right: computedRight,
       isNearRight,
     });
   };
 
   const handleCategoryMouseLeave = () => {
+    isHoveringDropdownRef.current = false;
+    if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     closeTimeoutRef.current = setTimeout(() => {
       setActiveDropdown(null);
       setActiveChildId(null);
-    }, 180);
+    }, 280);
   };
 
   const handleDropdownMouseEnter = () => {
+    isHoveringDropdownRef.current = true;
     if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
   };
 
@@ -870,23 +890,30 @@ export const Header: React.FC<HeaderProps> = ({
 
     {/* Teleported Category Submenu Dropdown (Guaranteed on top of everything) */}
     {mounted && activeDropdown && (() => {
+      const activeChild = activeDropdown.category.children?.find((c) => c.id === activeChildId);
+      const hasActiveChildL3 = Boolean(activeChild && activeChild.children && activeChild.children.length > 0);
+
       return createPortal(
         <div
           style={{
             position: 'fixed',
             top: `${activeDropdown.top}px`,
-            left: `${activeDropdown.left}px`,
+            ...(activeDropdown.isNearRight
+              ? { right: `${activeDropdown.right ?? 16}px` }
+              : { left: `${activeDropdown.left ?? 16}px` }),
             zIndex: 99999,
           }}
           onMouseEnter={handleDropdownMouseEnter}
           onMouseLeave={handleDropdownMouseLeave}
-          className="animate-in fade-in-50 zoom-in-95 duration-100"
+          className={`animate-in fade-in-50 zoom-in-95 duration-100 flex items-start ${
+            activeDropdown.isNearRight ? 'flex-row-reverse' : 'flex-row'
+          }`}
         >
           {/* Level 2 Submenu Panel */}
-          <div className="bg-white border border-slate-200/90 rounded-xl shadow-[0_16px_36px_rgba(0,0,0,0.16)] py-2 w-[230px] text-xs shrink-0 relative">
-            <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between">
-              <span className="truncate max-w-[150px]">{activeDropdown.category.name}</span>
-              <span className="text-blue-600 font-semibold">{tHeader('subCount', { count: activeDropdown.category.children?.length || 0 })}</span>
+          <div className="bg-white border border-slate-200/90 rounded-2xl shadow-[0_16px_36px_rgba(0,0,0,0.16)] py-2 w-[240px] text-xs shrink-0 flex flex-col max-h-[min(580px,calc(100vh-140px))] overscroll-contain">
+            <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between shrink-0">
+              <span className="truncate max-w-[140px] text-slate-700">{activeDropdown.category.name}</span>
+              <span className="text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.5 rounded-full">{tHeader('subCount', { count: activeDropdown.category.children?.length || 0 })}</span>
             </div>
             
             {/* View all in department option */}
@@ -899,29 +926,25 @@ export const Header: React.FC<HeaderProps> = ({
                 const targetCategory = activeDropdown.category.slug || activeDropdown.category.id || activeDropdown.category.name;
                 router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
               }}
-              className="w-full text-left px-3 py-1.5 font-bold text-[#00407a] hover:bg-blue-50 flex items-center justify-between transition-colors cursor-pointer"
+              className="w-full text-left px-3 py-1.5 font-bold text-[#00407a] hover:bg-blue-50 flex items-center justify-between transition-colors cursor-pointer shrink-0"
             >
               <span>{tHeader('allProducts')}</span>
               <span className="text-[11px] font-bold">&rarr;</span>
             </button>
 
-            <div className="h-px bg-slate-100 my-1" />
+            <div className="h-px bg-slate-100 my-1 shrink-0" />
 
-            {/* Direct Level 2 child categories */}
-            {activeDropdown.category.children?.map((child, idx) => {
-              const isChildActive = activeChildId === child.id;
-              const childHasL3 = Boolean(child.children && child.children.length > 0);
-              const totalItems = activeDropdown.category.children?.length || 0;
-              const alignBottom = idx >= Math.max(3, totalItems - 3) && (child.children?.length || 0) > 4;
+            {/* Direct Level 2 child categories - SCROLLABLE with custom scrollbar */}
+            <div className="flex-1 overflow-y-auto overscroll-contain dropdown-scrollbar px-1 py-0.5 space-y-0.5">
+              {activeDropdown.category.children?.map((child) => {
+                const isChildActive = activeChildId === child.id;
+                const childHasL3 = Boolean(child.children && child.children.length > 0);
 
-              return (
-                <div
-                  key={child.id || child.slug}
-                  className="relative"
-                  onMouseEnter={() => setActiveChildId(child.id)}
-                >
+                return (
                   <button
+                    key={child.id || child.slug}
                     type="button"
+                    onMouseEnter={() => setActiveChildId(child.id)}
                     onClick={() => {
                       if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
                       setActiveDropdown(null);
@@ -929,8 +952,8 @@ export const Header: React.FC<HeaderProps> = ({
                       const targetCategory = child.slug || child.id || child.name;
                       router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
                     }}
-                    className={`w-full text-left px-3 py-1.5 font-medium transition-colors flex items-center justify-between group cursor-pointer ${
-                      isChildActive && childHasL3
+                    className={`w-full text-left px-2.5 py-1.5 rounded-lg font-medium transition-colors flex items-center justify-between group cursor-pointer ${
+                      isChildActive
                         ? 'bg-blue-50 text-[#00407a] font-bold'
                         : 'text-slate-700 hover:bg-slate-50 hover:text-[#00407a]'
                     }`}
@@ -947,78 +970,69 @@ export const Header: React.FC<HeaderProps> = ({
                         </span>
                       )}
                       <ChevronRight className={`w-3.5 h-3.5 transition-colors ${
-                        isChildActive && childHasL3
+                        isChildActive
                           ? 'text-[#00407a]'
                           : 'text-slate-300 group-hover:text-[#00407a]'
                       }`} />
                     </div>
                   </button>
-
-                  {/* Level 3 Cascading Flyout Panel - positioned DIRECTLY in front of / beside this parent row */}
-                  {isChildActive && childHasL3 && (
-                    <div
-                      className={`absolute ${
-                        activeDropdown.isNearRight 
-                          ? 'right-full mr-1.5' 
-                          : 'left-full ml-1.5'
-                      } ${
-                        alignBottom ? 'bottom-0' : 'top-0'
-                      } bg-white border border-slate-200/90 rounded-xl shadow-[0_16px_36px_rgba(0,0,0,0.18)] py-2 w-[220px] text-xs shrink-0 z-50 animate-in fade-in-50 zoom-in-95 duration-100 max-h-[75vh] overflow-y-auto no-scrollbar`}
-                    >
-                      {/* Invisible hover bridge connecting row to flyout */}
-                      <div
-                        className={`absolute top-0 bottom-0 ${
-                          activeDropdown.isNearRight ? '-right-2 w-2' : '-left-2 w-2'
-                        }`}
-                      />
-
-                      <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between">
-                        <span className="truncate max-w-[130px] text-[#00407a]">{child.name}</span>
-                        <span className="text-emerald-600 font-semibold">{child.children?.length || 0} {tHeader('items')}</span>
-                      </div>
-
-                      {/* View all in this Level 2 subcategory */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-                          setActiveDropdown(null);
-                          setActiveChildId(null);
-                          const targetCategory = child.slug || child.id || child.name;
-                          router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
-                        }}
-                        className="w-full text-left px-3 py-1.5 font-bold text-slate-800 hover:bg-slate-50 hover:text-[#00407a] flex items-center justify-between transition-colors cursor-pointer"
-                      >
-                        <span>{tHeader('allProducts')} ({child.name})</span>
-                        <span className="text-[10px]">&rarr;</span>
-                      </button>
-
-                      <div className="h-px bg-slate-100 my-1" />
-
-                      {/* Level 3 items */}
-                      {child.children?.map((sub) => (
-                        <button
-                          key={sub.id || sub.slug}
-                          type="button"
-                          onClick={() => {
-                            if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-                            setActiveDropdown(null);
-                            setActiveChildId(null);
-                            const targetCategory = sub.slug || sub.id || sub.name;
-                            router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
-                          }}
-                          className="w-full text-left px-3 py-1.5 text-slate-600 hover:bg-blue-50 hover:text-[#00407a] hover:font-bold font-medium transition-colors flex items-center gap-2 group cursor-pointer"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-[#00407a] group-hover:scale-125 transition-all shrink-0" />
-                          <span className="truncate">{sub.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+
+          {/* Level 3 Cascading Sibling Panel */}
+          {hasActiveChildL3 && activeChild && (
+            <div
+              className={`bg-white border border-slate-200/90 rounded-2xl shadow-[0_16px_36px_rgba(0,0,0,0.18)] py-2 w-[240px] text-xs shrink-0 flex flex-col max-h-[min(580px,calc(100vh-140px))] overscroll-contain animate-in fade-in-50 zoom-in-95 duration-100 ${
+                activeDropdown.isNearRight ? 'mr-1.5' : 'ml-1.5'
+              }`}
+            >
+              <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1 flex items-center justify-between shrink-0">
+                <span className="truncate max-w-[140px] text-[#00407a]">{activeChild.name}</span>
+                <span className="text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-full">{activeChild.children?.length || 0} {tHeader('items')}</span>
+              </div>
+
+              {/* View all in this Level 2 subcategory */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+                  setActiveDropdown(null);
+                  setActiveChildId(null);
+                  const targetCategory = activeChild.slug || activeChild.id || activeChild.name;
+                  router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
+                }}
+                className="w-full text-left px-3 py-1.5 font-bold text-slate-800 hover:bg-slate-50 hover:text-[#00407a] flex items-center justify-between transition-colors cursor-pointer shrink-0"
+              >
+                <span className="truncate">{tHeader('allProducts')} ({activeChild.name})</span>
+                <span className="text-[10px] font-bold shrink-0 ml-1">&rarr;</span>
+              </button>
+
+              <div className="h-px bg-slate-100 my-1 shrink-0" />
+
+              {/* Level 3 items - SCROLLABLE with custom scrollbar */}
+              <div className="flex-1 overflow-y-auto overscroll-contain dropdown-scrollbar px-1 py-0.5 space-y-0.5">
+                {activeChild.children?.map((sub) => (
+                  <button
+                    key={sub.id || sub.slug}
+                    type="button"
+                    onClick={() => {
+                      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+                      setActiveDropdown(null);
+                      setActiveChildId(null);
+                      const targetCategory = sub.slug || sub.id || sub.name;
+                      router.push(`/${currentLocale}/store?category=${encodeURIComponent(targetCategory)}`);
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-[#00407a] hover:font-bold font-medium transition-colors flex items-center gap-2 group cursor-pointer"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-[#00407a] group-hover:scale-125 transition-all shrink-0" />
+                    <span className="truncate">{sub.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>,
         document.body
       );

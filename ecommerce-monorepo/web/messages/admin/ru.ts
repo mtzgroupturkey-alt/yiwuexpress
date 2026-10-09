@@ -260,6 +260,8 @@ export const adminRu: AdminDictionary = {
     editProduct: 'Редактировать товар',
     sku: 'Артикул (SKU)',
     productName: 'Наименование товара',
+    swedishName: 'Шведское наименование',
+    swedishNameDesc: 'Оригинальное шведское наименование серии или бренда',
     category: 'Категория',
     stock: 'Остаток',
     inStock: 'В наличии',

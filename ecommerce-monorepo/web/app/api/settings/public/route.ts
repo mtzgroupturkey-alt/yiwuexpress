@@ -230,6 +230,18 @@ export async function GET(request: NextRequest) {
     const pdpPickupBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpPickupBadgeEnabled', 'true', locale) !== 'false'
     const pdpFaqBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpFaqBadgeEnabled', 'true', locale) !== 'false'
 
+    // Homepage Trust & Reassurance Badges
+    const rawTrustEnabled = localizeSystemSetting(effectiveSettings.translations, 'trustFeaturesEnabled', 'true', locale)
+    const trustFeaturesEnabled = rawTrustEnabled !== 'false'
+    const trustDeliveryTitle = localizeSystemSetting(effectiveSettings.translations, 'trustDeliveryTitle', '', locale)
+    const trustDeliveryDesc = localizeSystemSetting(effectiveSettings.translations, 'trustDeliveryDesc', '', locale)
+    const trustGuaranteeTitle = localizeSystemSetting(effectiveSettings.translations, 'trustGuaranteeTitle', '', locale)
+    const trustGuaranteeDesc = localizeSystemSetting(effectiveSettings.translations, 'trustGuaranteeDesc', '', locale)
+    const trustShowroomsTitle = localizeSystemSetting(effectiveSettings.translations, 'trustShowroomsTitle', '', locale)
+    const trustShowroomsDesc = localizeSystemSetting(effectiveSettings.translations, 'trustShowroomsDesc', '', locale)
+    const trustReturnsTitle = localizeSystemSetting(effectiveSettings.translations, 'trustReturnsTitle', '', locale)
+    const trustReturnsDesc = localizeSystemSetting(effectiveSettings.translations, 'trustReturnsDesc', '', locale)
+
     const { translations, ...publicSettings } = effectiveSettings
 
 
@@ -273,6 +285,16 @@ export async function GET(request: NextRequest) {
         memberClubActivateLink: memberClubActivateLink || null,
         memberClubHowPointsWork: memberClubHowPointsWork || null,
         memberClubHowPointsLink: memberClubHowPointsLink || null,
+        // Homepage Trust & Reassurance Badges
+        trustFeaturesEnabled,
+        trustDeliveryTitle: trustDeliveryTitle || null,
+        trustDeliveryDesc: trustDeliveryDesc || null,
+        trustGuaranteeTitle: trustGuaranteeTitle || null,
+        trustGuaranteeDesc: trustGuaranteeDesc || null,
+        trustShowroomsTitle: trustShowroomsTitle || null,
+        trustShowroomsDesc: trustShowroomsDesc || null,
+        trustReturnsTitle: trustReturnsTitle || null,
+        trustReturnsDesc: trustReturnsDesc || null,
         // Map Provider Configuration
         mapProvider: (effectiveSettings as any)?.mapProvider || 'yandex',
         yandexMapsApiKey: (effectiveSettings as any)?.yandexMapsApiKey || process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY || '',

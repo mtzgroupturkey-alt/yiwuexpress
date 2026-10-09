@@ -21,6 +21,7 @@ import {
   type TranslationPayload
 } from '@/components/admin/ProductTranslationForm'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
+import { PricingSection, type PricingFormValues } from '@/components/admin/product/PricingSection'
 
 interface MediaItem {
   url: string
@@ -66,7 +67,7 @@ type ProductForm = z.input<typeof productSchema>
 
 export default function NewProductPage() {
   const router = useRouter()
-  const { dict } = useAdminLocale()
+  const { dict, locale } = useAdminLocale()
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [attributeTranslations, setAttributeTranslations] = useState<Record<string, Record<string, string>>>({})
@@ -107,6 +108,38 @@ export default function NewProductPage() {
   })
 
   const selectedCategoryId = watch('categoryId')
+  const watchedPrice = watch('price')
+  const watchedCompareAtPrice = watch('compareAtPrice')
+  const watchedCostPrice = watch('costPrice')
+  const watchedWholesalePrice = watch('wholesalePrice')
+  const watchedMinOrderQty = watch('minOrderQty')
+
+  const handlePricingChange = (vals: PricingFormValues) => {
+    const finalPrice = vals.afterDiscount !== '' ? parseFloat(String(vals.afterDiscount)) : (vals.retailPrice !== '' ? parseFloat(String(vals.retailPrice)) : 0);
+    setValue('price', isNaN(finalPrice) ? 0 : finalPrice, { shouldValidate: true, shouldDirty: true });
+
+    if (vals.retailPrice !== '' && !isNaN(parseFloat(String(vals.retailPrice)))) {
+      setValue('compareAtPrice', parseFloat(String(vals.retailPrice)), { shouldValidate: true, shouldDirty: true });
+    } else {
+      setValue('compareAtPrice', undefined, { shouldValidate: true, shouldDirty: true });
+    }
+
+    if (vals.costPrice !== '' && !isNaN(parseFloat(String(vals.costPrice)))) {
+      setValue('costPrice', parseFloat(String(vals.costPrice)), { shouldValidate: true, shouldDirty: true });
+    } else {
+      setValue('costPrice', undefined, { shouldValidate: true, shouldDirty: true });
+    }
+
+    if (vals.wholesalePrice !== '' && !isNaN(parseFloat(String(vals.wholesalePrice)))) {
+      setValue('wholesalePrice', parseFloat(String(vals.wholesalePrice)), { shouldValidate: true, shouldDirty: true });
+    } else {
+      setValue('wholesalePrice', undefined, { shouldValidate: true, shouldDirty: true });
+    }
+
+    if (vals.minOrderQty !== '' && !isNaN(parseInt(String(vals.minOrderQty)))) {
+      setValue('minOrderQty', parseInt(String(vals.minOrderQty)), { shouldValidate: true, shouldDirty: true });
+    }
+  };
 
   useEffect(() => {
     fetchCategories()
@@ -164,6 +197,13 @@ export default function NewProductPage() {
         thumbnail: images[0] || null,
         price: parseFloat(data.price.toString()),
         compareAtPrice: data.compareAtPrice !== undefined && data.compareAtPrice !== null && !isNaN(Number(data.compareAtPrice)) ? parseFloat(data.compareAtPrice.toString()) : null,
+        retailPrice: data.compareAtPrice !== undefined && data.compareAtPrice !== null && !isNaN(Number(data.compareAtPrice))
+          ? parseFloat(data.compareAtPrice.toString())
+          : parseFloat(data.price.toString()),
+        discountPercent: data.compareAtPrice && data.price && Number(data.compareAtPrice) > Number(data.price)
+          ? Math.round(((Number(data.compareAtPrice) - Number(data.price)) / Number(data.compareAtPrice)) * 10000) / 100
+          : null,
+        afterDiscount: parseFloat(data.price.toString()),
         costPrice: data.costPrice !== undefined && data.costPrice !== null && !isNaN(Number(data.costPrice)) ? parseFloat(data.costPrice.toString()) : null,
         wholesalePrice: data.wholesalePrice !== undefined && data.wholesalePrice !== null && !isNaN(Number(data.wholesalePrice)) ? parseFloat(data.wholesalePrice.toString()) : null,
         weightKg: parseFloat(data.weightKg.toString()),
@@ -407,35 +447,30 @@ export default function NewProductPage() {
               onChange={(payload) => setTabContentPayload(payload)}
             />
 
-            {/* Pricing */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.pricing}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="price" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.priceWithSymbol} *</Label>
-                  <Input id="price" type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="rounded-xl" />
-                  {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="compareAtPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.compareAtPriceWithSymbol}</Label>
-                  <Input id="compareAtPrice" type="number" step="0.01" {...register('compareAtPrice', { valueAsNumber: true })} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="costPrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.costPriceWithSymbol}</Label>
-                  <Input id="costPrice" type="number" step="0.01" {...register('costPrice', { valueAsNumber: true })} className="rounded-xl" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="wholesalePrice" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.wholesalePriceWithSymbol}</Label>
-                  <Input id="wholesalePrice" type="number" step="0.01" {...register('wholesalePrice', { valueAsNumber: true })} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="minOrderQty" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.minOrderQuantityLabel}</Label>
-                  <Input id="minOrderQty" type="number" {...register('minOrderQty', { valueAsNumber: true })} className="rounded-xl" />
-                </div>
-              </div>
-            </div>
+            {/* Redesigned Multilingual Pricing Section */}
+            <PricingSection
+              locale={locale as any}
+              values={{
+                retailPrice: watchedCompareAtPrice !== undefined && watchedCompareAtPrice !== null && !isNaN(Number(watchedCompareAtPrice))
+                  ? Number(watchedCompareAtPrice)
+                  : watchedPrice !== undefined && watchedPrice !== null && !isNaN(Number(watchedPrice))
+                  ? Number(watchedPrice)
+                  : '',
+                discountPercent:
+                  watchedCompareAtPrice && watchedPrice && Number(watchedCompareAtPrice) > Number(watchedPrice)
+                    ? Math.round(((Number(watchedCompareAtPrice) - Number(watchedPrice)) / Number(watchedCompareAtPrice)) * 1000) / 10
+                    : '',
+                afterDiscount: watchedPrice !== undefined && watchedPrice !== null && !isNaN(Number(watchedPrice)) ? Number(watchedPrice) : '',
+                costPrice: watchedCostPrice !== undefined && watchedCostPrice !== null && !isNaN(Number(watchedCostPrice)) ? Number(watchedCostPrice) : '',
+                wholesalePrice: watchedWholesalePrice !== undefined && watchedWholesalePrice !== null && !isNaN(Number(watchedWholesalePrice)) ? Number(watchedWholesalePrice) : '',
+                minOrderQty: watchedMinOrderQty !== undefined && watchedMinOrderQty !== null && !isNaN(Number(watchedMinOrderQty)) ? Number(watchedMinOrderQty) : 1,
+              }}
+              errors={{
+                retailPrice: errors.price?.message,
+                afterDiscount: errors.price?.message,
+              }}
+              onChange={handlePricingChange}
+            />
 
             {/* Inventory */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">

@@ -995,6 +995,8 @@
     "copyLink": "复制链接",
     "inHighDemand": "⚡ 热销中",
     "sku": "货号",
+    "swedishName": "瑞典语原名",
+    "swedishNameDesc": "原厂瑞典语系列/品牌标识名称",
     "productDescription": "商品描述",
     "noDescription": "该商品暂无描述。请联系我们了解功能、材质和规格详情。",
     "wholesalePrice": "批发价",
@@ -2099,6 +2101,31 @@
       "recentOrders": "近期采购订单",
       "downloadPriceList": "下载全品类批发价格表",
       "accountManager": "您的专属外贸经理"
+    }
+  },
+  "pricing": {
+    "retailPrice": "零售原价",
+    "discountPercent": "折扣 %",
+    "afterDiscount": "折后最终价",
+    "customerSees": "客户实际看到：",
+    "overrideManual": "手动输入折后最终价",
+    "profitPerSale": "每单零售利润",
+    "profitPerWholesaleUnit": "单件批发利润",
+    "boughtFor": "进货成本价",
+    "wholesalePrice": "批发专属特价",
+    "minBuy": "起订数量 (MOQ)",
+    "badge": {
+      "save": "立省 {percent}%"
+    },
+    "error": {
+      "retailRequired": "请输入有效的零售价，例如：49.99。",
+      "discountRange": "折扣百分比必须在 0 到 99 之间。",
+      "afterDiscountRequired": "折后价格必须大于 0。",
+      "afterDiscountTooHigh": "折后价格必须低于零售原价。"
+    },
+    "warn": {
+      "loss": "警告：当前售价将导致该商品每单亏损。",
+      "wholesaleLoss": "警告：批发特价低于进货成本，每件都将亏损。"
     }
   }
 }

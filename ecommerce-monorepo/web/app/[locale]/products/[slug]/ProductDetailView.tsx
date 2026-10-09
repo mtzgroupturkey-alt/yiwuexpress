@@ -8,7 +8,7 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, CreditCard, CheckCircle2, Flame, Heart, Layers, LogIn, PenLine } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, ArrowRight, Copy, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, CreditCard, CheckCircle2, Flame, Heart, Layers, LogIn, PenLine } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
 import { ProductImage } from '@/components/ui/ProductImage'
@@ -661,6 +661,21 @@ export default function ProductDetailView({
   const [hasMoreRelated, setHasMoreRelated] = useState(true)
   const [loadingMoreRelated, setLoadingMoreRelated] = useState(false)
   const [quantity, setQuantity] = useState(1)
+
+  useEffect(() => {
+    if (currentStock <= 0) {
+      setQuantity(0)
+      return
+    }
+    const minQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock) : 1
+    const maxQty = isWholesaleActive ? currentStock : Math.min(10, currentStock)
+    setQuantity((prev) => {
+      if (prev <= 0) return minQty
+      if (prev < minQty) return minQty
+      if (prev > maxQty) return maxQty
+      return prev
+    })
+  }, [isWholesaleActive, product.minOrderQty, currentStock])
   const [adding, setAdding] = useState(false)
   const [isSpecificationsExpanded, setIsSpecificationsExpanded] = useState(false)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
@@ -674,6 +689,7 @@ export default function ProductDetailView({
   const [bundleAdded, setBundleAdded] = useState(false)
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 44, seconds: 19 })
   const [showStickyBuyBar, setShowStickyBuyBar] = useState(false)
+  const [copiedItemNo, setCopiedItemNo] = useState(false)
 
   useEffect(() => {
     const target = document.getElementById('pdp-main-buy-box')
@@ -1312,16 +1328,23 @@ export default function ProductDetailView({
   }
 
   const handleQuantityChange = (delta: number) => {
-    const effectiveMinQty = getEffectiveMinOrderQty(product.minOrderQty, storeMode)
-    const newQty = quantity + delta
-    if (newQty >= effectiveMinQty && newQty <= currentStock) {
-      setQuantity(newQty)
-      if (moqError && newQty >= (product.minOrderQty || 1)) setMoqError('')
-      // Context B: crossing the wholesale minimum threshold morphs the header
-      // anchor to the B2B inquiry basket (only in hybrid mode).
-      if (isBoth && product.wholesalePrice && newQty >= product.minOrderQty) {
-        enableWholesaleSession()
-      }
+    if (currentStock <= 0) return
+    const minQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock > 0 ? currentStock : 1) : 1
+    const maxQty = isWholesaleActive ? (currentStock > 0 ? currentStock : 9999) : Math.min(10, currentStock > 0 ? currentStock : 10)
+
+    let nextVal = quantity + delta
+    if (quantity < minQty && delta > 0) {
+      nextVal = minQty
+    } else if (quantity > maxQty && delta < 0) {
+      nextVal = maxQty
+    }
+
+    nextVal = Math.max(minQty, Math.min(maxQty, nextVal))
+    setQuantity(nextVal)
+
+    if (moqError && nextVal >= minQty) setMoqError('')
+    if (isBoth && product.wholesalePrice && nextVal >= (product.minOrderQty || 1)) {
+      enableWholesaleSession()
     }
   }
 
@@ -1884,70 +1907,89 @@ export default function ProductDetailView({
               <div className="lg:sticky lg:top-20 space-y-4">
                 {/* Main Buy Box Container */}
                 <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  {/* Category Title & Item # in one line */}
-                  {/* Category Title & Item Identifiers in top bar */}
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                        {localizedCategoryName || 'Cookware & Bakeware'}
+                  {/* 1. Category, Item # and High Demand / Status Badges */}
+                  <div className="flex items-center justify-between gap-2.5 flex-wrap pb-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs uppercase tracking-wider shadow-2xs">
+                        <Layers className="w-3.5 h-3.5 text-[#00407a]" />
+                        <span>{localizedCategoryName || 'Cookware & Bakeware'}</span>
                       </span>
 
-                      {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (
-                        <span className="text-xs font-mono text-slate-500 font-medium">
-                          Item #: <span className="text-slate-900 font-bold tracking-wide">{((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)}</span>
-                        </span>
-                      )}
-
-                      {/* High Demand Badge (Admin on/off controlled) */}
-                      {(() => {
-                        const isHighDemandEnabled =
-                          (settings as any)?.pdpHighDemandBadgeEnabled !== false &&
-                          (settings as any)?.pdpHighDemandBadgeEnabled !== 'false'
-                        const rawThreshold = (settings as any)?.pdpHighDemandThreshold
-                        const threshold = typeof rawThreshold === 'number' ? rawThreshold : (parseInt(rawThreshold || '100', 10) || 100)
-                        const highDemandText = (settings as any)?.pdpHighDemandText || t('inHighDemand')
-
-                        if (!isHighDemandEnabled || currentStock <= threshold) return null
-
+                      {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (() => {
+                        const itemCode = ((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)
                         return (
-                          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                            {highDemandText}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(itemCode)
+                              setCopiedItemNo(true)
+                              setTimeout(() => setCopiedItemNo(false), 2000)
+                            }}
+                            title={copiedItemNo ? 'Copied to clipboard!' : 'Click to copy item number'}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 font-mono text-xs font-semibold transition-colors cursor-pointer group"
+                          >
+                            <span className="text-slate-400 font-normal">Item #:</span>
+                            <span className="font-bold text-slate-900 group-hover:text-[#00407a]">{itemCode}</span>
+                            {copiedItemNo ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3 text-slate-400 opacity-60 group-hover:opacity-100" />
+                            )}
+                          </button>
                         )
                       })()}
                     </div>
+
+                    {/* High Demand Badge (Admin on/off controlled) */}
+                    {(() => {
+                      const isHighDemandEnabled =
+                        (settings as any)?.pdpHighDemandBadgeEnabled !== false &&
+                        (settings as any)?.pdpHighDemandBadgeEnabled !== 'false'
+                      const rawThreshold = (settings as any)?.pdpHighDemandThreshold
+                      const threshold = typeof rawThreshold === 'number' ? rawThreshold : (parseInt(rawThreshold || '100', 10) || 100)
+                      const highDemandText = (settings as any)?.pdpHighDemandText || t('inHighDemand')
+
+                      if (!isHighDemandEnabled || currentStock <= threshold) return null
+
+                      return (
+                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 border border-amber-200/80 font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-wider shadow-2xs">
+                          <Flame className="w-3.5 h-3.5 text-amber-600" />
+                          {highDemandText}
+                        </span>
+                      )
+                    })()}
                   </div>
 
-                  {/* Product Title & Naming Stack: Each in its own separate line */}
-                  <div className="space-y-1">
-                    {/* Line 1: Sweden Name (Original Swedish series / brand name) */}
+                  {/* 2. Product Title & Naming Stack: Scandinavian Typography */}
+                  <div className="space-y-1.5 pt-0.5">
+                    {/* Line 1: Swedish Name */}
                     {displaySwedenName && (
                       <div className="text-2xl sm:text-3xl font-black text-[#00407a] uppercase tracking-wide leading-tight">
                         {displaySwedenName}
                       </div>
                     )}
 
-                    {/* Line 2: English Name (English product type / title) */}
-                    <h1 className={`${displaySwedenName ? 'text-lg sm:text-xl font-bold text-slate-800' : 'text-xl sm:text-2xl font-black text-slate-900'} leading-snug`}>
+                    {/* Line 2: English Product Name */}
+                    <h1 className={`${displaySwedenName ? 'text-lg sm:text-xl font-bold text-slate-800' : 'text-xl sm:text-2xl font-black text-slate-900'} leading-snug tracking-tight`}>
                       {displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()
                         ? displayEnglishName
                         : localized.name}
                     </h1>
                   </div>
 
-                  {/* Line 3: English Description on its own separate line/block */}
+                  {/* 3. Product Overview Summary Card */}
                   {(displayProductDetailsDescription || productHeaderDescription) && (() => {
                     const descText = displayProductDetailsDescription || productHeaderDescription || ''
                     const cleanText = descText.replace(/<[^>]+>/g, '').trim()
                     const isHtml = /<[a-z][\s\S]*>/i.test(descText)
-                    const isLong = cleanText.length > 200
+                    const isLong = cleanText.length > 180
 
                     return (
-                      <div className="w-full text-sm text-slate-600 leading-relaxed pt-1 border-t border-slate-100">
+                      <div className="rounded-xl bg-slate-50/80 border border-slate-200/70 p-3 sm:p-3.5 text-xs sm:text-[13px] text-slate-600 leading-relaxed shadow-2xs">
                         <div className={`transition-all duration-200 ${!isDescExpanded && isLong ? 'line-clamp-3' : ''}`}>
                           {isHtml ? (
                             <div
-                              className="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed"
+                              className="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed text-xs sm:text-[13px]"
                               dangerouslySetInnerHTML={{ __html: descText }}
                             />
                           ) : (
@@ -1958,7 +2000,7 @@ export default function ProductDetailView({
                           <button
                             type="button"
                             onClick={() => setIsDescExpanded(!isDescExpanded)}
-                            className="mt-1 text-xs font-bold text-[#00407a] hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+                            className="mt-2 text-xs font-bold text-[#00407a] hover:text-[#002d57] inline-flex items-center gap-1 cursor-pointer transition-colors"
                           >
                             {isDescExpanded ? (
                               <>
@@ -1977,34 +2019,50 @@ export default function ProductDetailView({
                     )
                   })()}
 
-                  {/* Rating & Review Summary Line */}
+                  {/* 4. Rating & Review Summary Line */}
                   <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 flex-wrap gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center">
+                      <div className="flex items-center text-amber-400">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
                             className={`w-3.5 h-3.5 ${
                               reviewsCount > 0 && star <= Math.round(averageRating)
                                 ? 'fill-amber-400 text-amber-400'
-                                : 'fill-slate-200 text-slate-200'
+                                : reviewsCount > 0
+                                ? 'fill-slate-200 text-slate-200'
+                                : 'fill-amber-300/30 text-amber-400/60'
                             }`}
                           />
                         ))}
                       </div>
-                      <span className="text-sm font-black text-slate-900">
-                        {reviewsCount > 0 ? averageRating.toFixed(1) : '0.0'}
-                      </span>
-                      <span className="text-slate-300">|</span>
-                      <a
-                        href="#product-tabs"
-                        onClick={() => setActiveTab('reviews')}
-                        className="text-xs text-slate-600 hover:text-[#00407a] font-semibold transition-colors underline-offset-2 hover:underline"
-                      >
-                        {reviewsCount > 0
-                          ? `${reviewsCount} ${reviewsCount === 1 ? 'Review' : t('customerReviews')}`
-                          : (t('noReviews') || '0 Reviews')}
-                      </a>
+                      {reviewsCount > 0 ? (
+                        <>
+                          <span className="text-sm font-black text-slate-900">{averageRating.toFixed(1)}</span>
+                          <span className="text-slate-300">•</span>
+                          <a
+                            href="#product-tabs"
+                            onClick={() => setActiveTab('reviews')}
+                            className="text-xs text-slate-600 hover:text-[#00407a] font-semibold transition-colors underline-offset-2 hover:underline"
+                          >
+                            {reviewsCount} {reviewsCount === 1 ? 'Review' : t('customerReviews')}
+                          </a>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-xs font-medium text-slate-500">
+                            {t('noReviews') || 'No reviews yet'}
+                          </span>
+                          <span className="text-slate-300">•</span>
+                          <a
+                            href="#product-tabs"
+                            onClick={() => setActiveTab('reviews')}
+                            className="text-xs text-[#00407a] font-bold hover:underline transition-colors cursor-pointer"
+                          >
+                            {locale === 'ru' ? 'Оставить отзыв' : locale === 'zh' ? '发表首条评价' : 'Be first to review'}
+                          </a>
+                        </>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -2037,29 +2095,45 @@ export default function ProductDetailView({
                     </div>
                   </div>
 
-                  {/* Price Section */}
-                  <div className="bg-slate-50/80 rounded-xl p-3 border border-slate-200/80">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                        {formatPrice(displayPrice)}
-                      </span>
-                      {priceType === 'wholesale' && (
-                        <span className="bg-blue-50 text-[#00407a] border border-blue-200 font-bold text-xs px-2 py-0.5 rounded-md uppercase tracking-wider">
-                          {t('wholesalePrice')}
+                  {/* 5. Pricing & Value Showcase */}
+                  <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 shadow-2xs">
+                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                      <div className="flex items-baseline gap-2.5 flex-wrap">
+                        <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
+                          {formatPrice(displayPrice)}
                         </span>
-                      )}
-                      {showOriginalPrice && showOriginalPrice > displayPrice && (
-                        <>
-                          <span className="text-sm text-slate-400 line-through font-medium">
+                        {priceType === 'wholesale' && (
+                          <span className="bg-blue-50 text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                            {t('wholesalePrice')}
+                          </span>
+                        )}
+                        {showOriginalPrice && showOriginalPrice > displayPrice && (
+                          <span className="text-base font-semibold text-slate-400 line-through decoration-slate-400">
                             {formatPrice(showOriginalPrice)}
                           </span>
-                          {discount > 0 && (
-                            <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-black px-2 py-0.5 rounded-md">
-                              -{discount}%
-                            </span>
-                          )}
-                        </>
+                        )}
+                      </div>
+
+                      {showOriginalPrice && showOriginalPrice > displayPrice && discount > 0 && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            -{discount}% OFF
+                          </span>
+                          <span className="hidden sm:inline-block text-[11px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full">
+                            Save {formatPrice(showOriginalPrice - displayPrice)}
+                          </span>
+                        </div>
                       )}
+                    </div>
+
+                    <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-2">
+                      <span className="flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Includes VAT & export clearance</span>
+                      </span>
+                      <span className="text-emerald-700 font-bold bg-emerald-50/80 px-2 py-0.5 rounded-md">
+                        Direct Factory Sourced
+                      </span>
                     </div>
                   </div>
 
@@ -2324,61 +2398,98 @@ export default function ProductDetailView({
                     </div>
                   )}
 
-                  {/* Stock Status & Quantity Stepper */}
+                  {/* 6. Stock Status, Quantity Stepper & Real-time Subtotal */}
                   {(() => {
-                    const effectiveMinQty = isWholesaleActive ? moq : 1
+                    const stepperMinQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock > 0 ? currentStock : 1) : 1
+                    const stepperMaxQty = isWholesaleActive ? (currentStock > 0 ? currentStock : 9999) : Math.min(10, currentStock > 0 ? currentStock : 10)
+                    const subtotal = displayPrice * quantity
 
                     return (
-                      <div className="space-y-2 pt-0.5">
+                      <div className="rounded-2xl p-3.5 bg-slate-50/80 border border-slate-200/80 space-y-3">
+                        {/* Stock & Limit row */}
                         <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1.5 font-bold text-slate-700">
-                            <Package className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>{currentStock > 0 ? `${t('inStock')} (${currentStock})` : t('outOfStock')}</span>
+                          <div className="flex items-center gap-2">
+                            {currentStock > 0 ? (
+                              <div className="inline-flex items-center gap-1.5 font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full text-xs">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span>{t('inStock')} ({currentStock} available)</span>
+                              </div>
+                            ) : (
+                              <span className="font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full text-xs">
+                                {t('outOfStock')}
+                              </span>
+                            )}
+
                             {currentStock <= 50 && currentStock > 0 && (
-                              <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.5 rounded font-bold animate-pulse">
+                              <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.5 rounded font-black animate-pulse">
                                 {t('onlyLeft', { n: currentStock })}
                               </span>
                             )}
                           </div>
-                          <span className="text-slate-400 text-[11px]">
-                            {isWholesaleActive ? `${tPdp('wholesaleMoq', { moq })}` : (locale === 'ru' ? 'Макс. 10 шт.' : locale === 'zh' ? '限购10件' : 'Max 10 units')}
+
+                          <span className="text-slate-500 text-[11px] font-semibold bg-white border border-slate-200 px-2 py-0.5 rounded-md shadow-2xs">
+                            {isWholesaleActive
+                              ? `${tPdp('wholesaleMoq', { moq })}`
+                              : (locale === 'ru' ? 'Макс. 10 шт.' : locale === 'zh' ? '限购10件' : 'Max 10 units')}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center border border-slate-200 rounded-xl bg-slate-50/60 p-0.5">
-                            <button
-                              type="button"
-                              onClick={() => handleQuantityChange(-1)}
-                              disabled={quantity <= effectiveMinQty}
-                              className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-100 font-bold transition disabled:opacity-40 cursor-pointer shadow-2xs"
-                            >
-                              <Minus className="w-3.5 h-3.5" />
-                            </button>
-                            <input
-                              type="number"
-                              min={effectiveMinQty}
-                              max={currentStock}
-                              value={quantity}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value) || effectiveMinQty
-                                if (val >= effectiveMinQty && val <= currentStock) setQuantity(val)
-                              }}
-                              className="w-12 text-center font-black text-slate-900 bg-transparent text-sm focus:outline-hidden"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleQuantityChange(1)}
-                              disabled={quantity >= currentStock}
-                              className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-100 font-bold transition disabled:opacity-40 cursor-pointer shadow-2xs"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
+                        {/* Stepper + Subtotal Display */}
+                        <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                              Quantity
+                            </span>
+                            <div className="inline-flex items-center border border-slate-300 rounded-xl bg-white shadow-2xs p-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleQuantityChange(-1)}
+                                disabled={quantity <= stepperMinQty || currentStock <= 0}
+                                aria-label="Decrease quantity"
+                                className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-40 cursor-pointer active:scale-95"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <input
+                                type="number"
+                                min={stepperMinQty}
+                                max={stepperMaxQty}
+                                value={quantity}
+                                disabled={currentStock <= 0}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value)
+                                  if (!isNaN(val)) {
+                                    if (val >= stepperMinQty && val <= stepperMaxQty) {
+                                      setQuantity(val)
+                                    }
+                                  }
+                                }}
+                                className="w-12 text-center font-black text-slate-900 bg-transparent text-sm focus:outline-hidden disabled:opacity-50"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleQuantityChange(1)}
+                                disabled={quantity >= stepperMaxQty || currentStock <= 0}
+                                aria-label="Increase quantity"
+                                className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-40 cursor-pointer active:scale-95"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
 
-                          <div className="flex-1 text-right">
-                            <span className="font-black text-lg text-[#00407a]">
-                              {formatPrice(displayPrice * quantity)}
+                          <div className="text-right space-y-0.5">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                              Order Subtotal
+                            </span>
+                            <div className="text-xl sm:text-2xl font-black text-[#00407a] tracking-tight leading-none">
+                              {formatPrice(subtotal)}
+                            </div>
+                            <span className="text-[11px] text-slate-400 font-medium block">
+                              {formatPrice(displayPrice)} × {quantity} {quantity === 1 ? 'unit' : 'units'}
                             </span>
                           </div>
                         </div>
@@ -2386,15 +2497,16 @@ export default function ProductDetailView({
                     )
                   })()}
 
-                  {/* Primary Call to Action Buttons */}
-                  <div id="pdp-main-buy-box" className="space-y-2 pt-1">
+                  {/* 7. Primary Call to Action Buttons */}
+                  <div id="pdp-main-buy-box" className="space-y-2.5 pt-1">
                     {!isUserLoggedIn ? (
                       <div className="space-y-2">
                         <LocaleLink
                           href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
-                          className="w-full h-12 bg-gradient-to-r from-[#00407a] to-[#00305c] hover:from-[#003366] hover:to-[#00284d] text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                          className="group relative w-full h-12 sm:h-13 bg-gradient-to-r from-[#00407a] via-[#004c8f] to-[#00386b] hover:from-[#00386b] hover:to-[#00274d] text-white font-black text-sm sm:text-base rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] overflow-hidden"
                         >
-                          <LogIn className="w-4 h-4" />
+                          <span className="absolute inset-0 w-1/2 h-full bg-white/10 skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-700 ease-out pointer-events-none" />
+                          <LogIn className="w-4 h-4 text-blue-200 group-hover:scale-110 transition-transform" />
                           <span>
                             {locale === 'ru'
                               ? 'Войдите, чтобы оформить заказ'
@@ -2402,14 +2514,27 @@ export default function ProductDetailView({
                               ? '登录以加购或下单'
                               : 'Sign in to Order / Add to Cart'}
                           </span>
+                          <ArrowRight className="w-4 h-4 text-blue-200 group-hover:translate-x-1 transition-transform ml-0.5" />
                         </LocaleLink>
-                        <p className="text-[11px] text-center text-slate-500 font-medium">
-                          {locale === 'ru'
-                            ? 'Авторизуйтесь, чтобы добавить товар в корзину и оформить заказ'
-                            : locale === 'zh'
-                            ? '登录后即可将商品加入购物车并享受专享采购价格'
-                            : 'Sign in to add items to cart and access full ordering privileges'}
-                        </p>
+
+                        <div className="rounded-xl bg-slate-50/90 border border-slate-200/80 p-2.5 flex items-center justify-between text-[11px] text-slate-600 shadow-2xs">
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-[#00407a] shrink-0" />
+                            <span>
+                              {locale === 'ru'
+                                ? 'Войдите в аккаунт для заказа и оптовых цен'
+                                : locale === 'zh'
+                                ? '登录以解锁购物车与专属采购特权'
+                                : 'Sign in to access cart and order privileges'}
+                            </span>
+                          </div>
+                          <LocaleLink
+                            href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
+                            className="text-[#00407a] font-bold hover:underline shrink-0"
+                          >
+                            {locale === 'ru' ? 'Вход' : locale === 'zh' ? '立即登录' : 'Sign in'} →
+                          </LocaleLink>
+                        </div>
                       </div>
                     ) : (
                       <>

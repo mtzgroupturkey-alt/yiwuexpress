@@ -258,6 +258,8 @@ export const adminEn = {
     editProduct: 'Edit Product',
     sku: 'SKU',
     productName: 'Product Name',
+    swedishName: 'Swedish Name',
+    swedishNameDesc: 'Original Swedish series / brand name',
     category: 'Category',
     stock: 'Stock',
     inStock: 'In Stock',

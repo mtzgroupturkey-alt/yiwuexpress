@@ -16,6 +16,11 @@ import {
   ChevronRight,
   Languages,
   ExternalLink,
+  Truck,
+  Snowflake,
+  Package,
+  RotateCcw,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,9 +55,22 @@ interface MemberClubForm {
   howPointsLink: string;
 }
 
+interface TrustFeaturesForm {
+  enabled: boolean;
+  deliveryTitle: string;
+  deliveryDesc: string;
+  guaranteeTitle: string;
+  guaranteeDesc: string;
+  showroomsTitle: string;
+  showroomsDesc: string;
+  returnsTitle: string;
+  returnsDesc: string;
+}
+
 const DEFAULT_STATE: {
   weeklyBargains: Record<TranslationLocale, WeeklyBargainsForm>;
   memberClub: Record<TranslationLocale, MemberClubForm>;
+  trustFeatures: Record<TranslationLocale, TrustFeaturesForm>;
 } = {
   weeklyBargains: {
     en: {
@@ -118,6 +136,41 @@ const DEFAULT_STATE: {
       howPointsLink: '',
     },
   },
+  trustFeatures: {
+    en: {
+      enabled: true,
+      deliveryTitle: 'Express Home Delivery',
+      deliveryDesc: 'Carefully packaged and delivered straight to your apartment or front door.',
+      guaranteeTitle: 'Zero Damage Guarantee',
+      guaranteeDesc: 'Reinforced protective packaging ensuring ceramics, glass, and mirrors arrive pristine.',
+      showroomsTitle: '120+ Pickup Showrooms',
+      showroomsDesc: 'Inspect items in person, test furniture materials, and pick up free at your convenience.',
+      returnsTitle: 'Instant 14-Day Return',
+      returnsDesc: 'Simple exchange or full refund for home decor, cookware, and appliances.',
+    },
+    ru: {
+      enabled: true,
+      deliveryTitle: 'Экспресс-доставка на дом',
+      deliveryDesc: 'Бережная упаковка и доставка прямо до вашей квартиры или двери.',
+      guaranteeTitle: 'Гарантия сохранности 100%',
+      guaranteeDesc: 'Усиленная защитная упаковка гарантирует целостность керамики, стекла и зеркал.',
+      showroomsTitle: '120+ Шоурумов самовывоза',
+      showroomsDesc: 'Осмотрите товары вживую, оцените материалы мебели и заберите заказ бесплатно в удобное время.',
+      returnsTitle: 'Быстрый возврат 14 дней',
+      returnsDesc: 'Простой обмен или полный возврат средств за декор, посуду и бытовую технику.',
+    },
+    zh: {
+      enabled: true,
+      deliveryTitle: '极速送达上门',
+      deliveryDesc: '专业防护包装，安全送达至您的公寓或家门口。',
+      guaranteeTitle: '100%破损包赔',
+      guaranteeDesc: '加固抗震缓冲包装，确保陶瓷、玻璃与镜面完好无损。',
+      showroomsTitle: '120+ 线下自提体验馆',
+      showroomsDesc: '实地触摸家具材质质感，随时免费自提，安心便捷。',
+      returnsTitle: '14天无忧退换',
+      returnsDesc: '家居饰品、厨具及家用电器支持便捷换货或全额退款。',
+    },
+  },
 };
 
 export default function AdsManagerPage() {
@@ -134,6 +187,9 @@ export default function AdsManagerPage() {
   const [memberClub, setMemberClub] = useState<Record<TranslationLocale, MemberClubForm>>(
     DEFAULT_STATE.memberClub
   );
+  const [trustFeatures, setTrustFeatures] = useState<Record<TranslationLocale, TrustFeaturesForm>>(
+    DEFAULT_STATE.trustFeatures
+  );
   const [companyName, setCompanyName] = useState('dromkok');
 
   const fetchSettings = async () => {
@@ -145,6 +201,7 @@ export default function AdsManagerPage() {
       if (json.data) {
         if (json.data.weeklyBargains) setWeeklyBargains(json.data.weeklyBargains);
         if (json.data.memberClub) setMemberClub(json.data.memberClub);
+        if (json.data.trustFeatures) setTrustFeatures(json.data.trustFeatures);
         if (json.data.companyName) setCompanyName(json.data.companyName);
       }
     } catch (err: any) {
@@ -169,6 +226,7 @@ export default function AdsManagerPage() {
         body: JSON.stringify({
           weeklyBargains,
           memberClub,
+          trustFeatures,
         }),
       });
 
@@ -192,6 +250,7 @@ export default function AdsManagerPage() {
     if (confirm('Reset all promo banner text and settings to factory defaults?')) {
       setWeeklyBargains(DEFAULT_STATE.weeklyBargains);
       setMemberClub(DEFAULT_STATE.memberClub);
+      setTrustFeatures(DEFAULT_STATE.trustFeatures);
     }
   };
 
@@ -232,8 +291,27 @@ export default function AdsManagerPage() {
     }));
   };
 
+  const updateTF = (key: keyof TrustFeaturesForm, value: any) => {
+    setTrustFeatures((prev) => ({
+      ...prev,
+      [activeTab]: {
+        ...prev[activeTab],
+        [key]: value,
+      },
+    }));
+  };
+
+  const updateGlobalTfEnabled = (enabled: boolean) => {
+    setTrustFeatures((prev) => ({
+      en: { ...prev.en, enabled },
+      ru: { ...prev.ru, enabled },
+      zh: { ...prev.zh, enabled },
+    }));
+  };
+
   const currentWB = weeklyBargains[activeTab] || DEFAULT_STATE.weeklyBargains[activeTab];
   const currentMC = memberClub[activeTab] || DEFAULT_STATE.memberClub[activeTab];
+  const currentTF = trustFeatures[activeTab] || DEFAULT_STATE.trustFeatures[activeTab];
 
   if (loading) {
     return (
@@ -714,6 +792,249 @@ export default function AdsManagerPage() {
                 </div>
                 <div className="text-white text-xs font-semibold px-2 py-1 cursor-default">
                   {currentMC.howPointsWork || 'How points work'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ============================================================== */}
+      {/* SECTION 3: HOMEPAGE TRUST & REASSURANCE FEATURES              */}
+      {/* ============================================================== */}
+      <Card className="rounded-3xl border-gray-100 shadow-xs overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50 p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#00407a] text-white flex items-center justify-center shadow-xs">
+                <Truck className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div>
+                <CardTitle className="text-lg font-black text-gray-900">
+                  Homepage Trust & Reassurance Badges
+                </CardTitle>
+                <CardDescription className="text-xs text-gray-500 mt-0.5">
+                  High-converting reassurance block displayed on the homepage (Delivery, Damage Guarantee, Showrooms, Returns)
+                </CardDescription>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-blue-100 shadow-2xs">
+              <span className="text-xs font-bold text-gray-700">Display Section:</span>
+              <Switch
+                checked={currentTF.enabled}
+                onCheckedChange={updateGlobalTfEnabled}
+              />
+              <span className={`text-xs font-black ${currentTF.enabled ? 'text-emerald-600' : 'text-gray-400'}`}>
+                {currentTF.enabled ? 'VISIBLE' : 'HIDDEN'}
+              </span>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-6 space-y-6">
+          {/* 4 Badges Configuration Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1. Express Home Delivery */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 text-[#00407a] flex items-center justify-center shrink-0">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-800">Badge 1: Express Home Delivery</span>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Title ({activeTab.toUpperCase()})
+                </label>
+                <Input
+                  value={currentTF.deliveryTitle}
+                  onChange={(e) => updateTF('deliveryTitle', e.target.value)}
+                  placeholder="e.g. Express Home Delivery"
+                  className="font-bold text-sm bg-white border-gray-200"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Description ({activeTab.toUpperCase()})
+                </label>
+                <Textarea
+                  rows={2}
+                  value={currentTF.deliveryDesc}
+                  onChange={(e) => updateTF('deliveryDesc', e.target.value)}
+                  placeholder="e.g. Carefully packaged and delivered straight to your apartment or front door."
+                  className="text-xs bg-white border-gray-200"
+                />
+              </div>
+            </div>
+
+            {/* 2. Zero Damage Guarantee */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 text-[#00407a] flex items-center justify-center shrink-0">
+                  <Snowflake className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-800">Badge 2: Zero Damage Guarantee</span>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Title ({activeTab.toUpperCase()})
+                </label>
+                <Input
+                  value={currentTF.guaranteeTitle}
+                  onChange={(e) => updateTF('guaranteeTitle', e.target.value)}
+                  placeholder="e.g. Zero Damage Guarantee"
+                  className="font-bold text-sm bg-white border-gray-200"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Description ({activeTab.toUpperCase()})
+                </label>
+                <Textarea
+                  rows={2}
+                  value={currentTF.guaranteeDesc}
+                  onChange={(e) => updateTF('guaranteeDesc', e.target.value)}
+                  placeholder="e.g. Reinforced protective packaging ensuring ceramics, glass, and mirrors arrive pristine."
+                  className="text-xs bg-white border-gray-200"
+                />
+              </div>
+            </div>
+
+            {/* 3. 120+ Pickup Showrooms */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 text-[#00407a] flex items-center justify-center shrink-0">
+                  <Package className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-800">Badge 3: 120+ Pickup Showrooms</span>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Title ({activeTab.toUpperCase()})
+                </label>
+                <Input
+                  value={currentTF.showroomsTitle}
+                  onChange={(e) => updateTF('showroomsTitle', e.target.value)}
+                  placeholder="e.g. 120+ Pickup Showrooms"
+                  className="font-bold text-sm bg-white border-gray-200"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Description ({activeTab.toUpperCase()})
+                </label>
+                <Textarea
+                  rows={2}
+                  value={currentTF.showroomsDesc}
+                  onChange={(e) => updateTF('showroomsDesc', e.target.value)}
+                  placeholder="e.g. Inspect items in person, test furniture materials, and pick up free at your convenience."
+                  className="text-xs bg-white border-gray-200"
+                />
+              </div>
+            </div>
+
+            {/* 4. Instant 14-Day Return */}
+            <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-200/60">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 text-[#00407a] flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-800">Badge 4: Instant 14-Day Return</span>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Title ({activeTab.toUpperCase()})
+                </label>
+                <Input
+                  value={currentTF.returnsTitle}
+                  onChange={(e) => updateTF('returnsTitle', e.target.value)}
+                  placeholder="e.g. Instant 14-Day Return"
+                  className="font-bold text-sm bg-white border-gray-200"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  Description ({activeTab.toUpperCase()})
+                </label>
+                <Textarea
+                  rows={2}
+                  value={currentTF.returnsDesc}
+                  onChange={(e) => updateTF('returnsDesc', e.target.value)}
+                  placeholder="e.g. Simple exchange or full refund for home decor, cookware, and appliances."
+                  className="text-xs bg-white border-gray-200"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Live Preview Box */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-3">
+              <Eye className="w-4 h-4 text-[#1a3a5c]" />
+              <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                Live Storefront Preview ({activeTab.toUpperCase()})
+              </span>
+            </div>
+
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50/60 border border-slate-200">
+              {/* Card 1 */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-3.5 shadow-2xs">
+                <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] flex items-center justify-center shrink-0">
+                  <Truck className="w-5 h-5 text-[#00407a]" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+                    {currentTF.deliveryTitle || 'Express Home Delivery'}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {currentTF.deliveryDesc || 'Carefully packaged and delivered straight to your apartment or front door.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 2 */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-3.5 shadow-2xs">
+                <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] flex items-center justify-center shrink-0">
+                  <Snowflake className="w-5 h-5 text-[#00407a]" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+                    {currentTF.guaranteeTitle || 'Zero Damage Guarantee'}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {currentTF.guaranteeDesc || 'Reinforced protective packaging ensuring ceramics, glass, and mirrors arrive pristine.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-3.5 shadow-2xs">
+                <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] flex items-center justify-center shrink-0">
+                  <Package className="w-5 h-5 text-[#00407a]" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+                    {currentTF.showroomsTitle || '120+ Pickup Showrooms'}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {currentTF.showroomsDesc || 'Inspect items in person, test furniture materials, and pick up free at your convenience.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 4 */}
+              <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-3.5 shadow-2xs">
+                <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-5 h-5 text-[#00407a]" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+                    {currentTF.returnsTitle || 'Instant 14-Day Return'}
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    {currentTF.returnsDesc || 'Simple exchange or full refund for home decor, cookware, and appliances.'}
+                  </p>
                 </div>
               </div>
             </div>

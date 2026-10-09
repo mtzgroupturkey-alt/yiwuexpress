@@ -9,6 +9,7 @@ import { Star, Plus, Check, ShoppingCart, FileText, Heart, Package } from 'lucid
 import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useSessionMode } from '@/contexts/SessionModeContext'
+import { useAuthContext } from '@/components/providers/AuthProvider'
 
 interface MobileBestsellersGridProps {
   products: Product[]
@@ -41,6 +42,12 @@ export function MobileBestsellersGrid({
   const locale = useLocale()
   const { formatPrice } = useCurrency()
   const { isWholesaleSession } = useSessionMode()
+  const { isAuthenticated } = useAuthContext()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleCardClick = (product: Product) => {
     if (onSelectProduct) {
@@ -111,7 +118,7 @@ export function MobileBestsellersGrid({
               >
                 {/* Thumbnail & Wishlist Button */}
                 <div className="relative w-full aspect-square bg-gray-50 dark:bg-slate-900 p-2">
-                  {onToggleFavorite && (
+                  {mounted && isAuthenticated && onToggleFavorite && (
                     <button
                       type="button"
                       onClick={(e) => handleFavoriteClick(e, product.id)}

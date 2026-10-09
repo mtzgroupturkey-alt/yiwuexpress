@@ -2,8 +2,9 @@
 
 import { Heart } from 'lucide-react'
 import { useWishlist } from '@/hooks/useWishlist'
+import { useAuthContext } from '@/components/providers/AuthProvider'
 import { cn } from '@/lib/utils'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface WishlistButtonProps {
   productId: string
@@ -20,10 +21,21 @@ export function WishlistButton({
   showText = false,
   onToggle,
 }: WishlistButtonProps) {
+  const { isAuthenticated } = useAuthContext()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const { isInWishlist, toggleWishlist, isLoading } = useWishlist()
   const [isProcessing, setIsProcessing] = useState(false)
 
   const isFavorited = isInWishlist(productId)
+
+  if (!mounted || !isAuthenticated) {
+    return null
+  }
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault()

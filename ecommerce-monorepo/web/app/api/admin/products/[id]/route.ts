@@ -129,8 +129,16 @@ export async function PUT(
       }
     }
 
-    // Extract attributes and translations from body
-    const { attributes, attributeTranslations, translations, ...productData } = body
+    // Extract attributes, translations, and virtual pricing helper fields from body
+    const {
+      attributes,
+      attributeTranslations,
+      translations,
+      retailPrice,
+      discountPercent,
+      afterDiscount,
+      ...productData
+    } = body
 
     // Normalize the incoming translations payload into an array of
     // { locale, name, description, metaTitle, metaDescription } rows (en/ru/zh).

@@ -260,6 +260,8 @@ export const adminZh: AdminDictionary = {
     editProduct: '编辑商品',
     sku: '商品编码 (SKU)',
     productName: '商品名称',
+    swedishName: '瑞典语原名',
+    swedishNameDesc: '原厂瑞典语系列/品牌标识名称',
     category: '所属分类',
     stock: '库存余量',
     inStock: '有现货',

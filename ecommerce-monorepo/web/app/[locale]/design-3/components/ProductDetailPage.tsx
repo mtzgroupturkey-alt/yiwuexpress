@@ -33,6 +33,7 @@ import { PHILIPS_PDP_PRODUCT, SIMILAR_COFFEE_MACHINES } from '../data/pdpData';
 import { useCompanyName } from '@/hooks/useCompanyName';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useAuthContext } from '@/components/providers/AuthProvider';
 
 interface ProductDetailPageProps {
   product?: Product;
@@ -55,6 +56,13 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
   onSelectProduct,
   onProceedToCheckout,
 }) => {
+  const { isAuthenticated } = useAuthContext();
+  const [authMounted, setAuthMounted] = useState(false);
+
+  useEffect(() => {
+    setAuthMounted(true);
+  }, []);
+
   const companyName = useCompanyName();
   const { tPdp, tShop, tModals, tBadge } = useStorefrontTranslation();
   const { formatPrice } = useCurrency();
@@ -238,17 +246,19 @@ export const ProductDetailPage: React.FC<ProductDetailPageProps> = ({
 
                 {/* Wishlist & Share Quick Actions */}
                 <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
-                  <button
-                    onClick={() => onToggleFavorite(currentProduct.id)}
-                    className={`w-9 h-9 rounded-full shadow-xs flex items-center justify-center transition-colors cursor-pointer ${
-                      isFavorite 
-                        ? 'bg-red-50 text-red-500 border border-red-200' 
-                        : 'bg-white text-slate-500 hover:text-red-500 border border-slate-200'
-                    }`}
-                    title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                  >
-                    <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-                  </button>
+                  {authMounted && isAuthenticated && (
+                    <button
+                      onClick={() => onToggleFavorite(currentProduct.id)}
+                      className={`w-9 h-9 rounded-full shadow-xs flex items-center justify-center transition-colors cursor-pointer ${
+                        isFavorite 
+                          ? 'bg-red-50 text-red-500 border border-red-200' 
+                          : 'bg-white text-slate-500 hover:text-red-500 border border-slate-200'
+                      }`}
+                      title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       if (navigator.clipboard) {

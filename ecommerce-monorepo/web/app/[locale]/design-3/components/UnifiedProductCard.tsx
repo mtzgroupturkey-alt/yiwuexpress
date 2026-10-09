@@ -214,21 +214,23 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
             )}
           </div>
 
-          <motion.button
-            whileTap={{ scale: 0.8 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite(product);
-            }}
-            className="p-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
-            aria-label="Add to favorites"
-          >
-            <Heart
-              className={`w-4 h-4 transition-transform duration-200 ${
-                isFavorite ? 'fill-red-500 text-red-500 scale-110' : 'text-slate-400'
-              }`}
-            />
-          </motion.button>
+          {isUserLoggedIn && (
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(product);
+              }}
+              className="p-1 rounded-full text-slate-400 hover:text-red-500 hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
+              aria-label="Add to favorites"
+            >
+              <Heart
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isFavorite ? 'fill-red-500 text-red-500 scale-110' : 'text-slate-400'
+                }`}
+              />
+            </motion.button>
+          )}
         </div>
 
         {/* Product Image */}

@@ -160,7 +160,7 @@ export function ProductTabContentSection({
     const raw = initialRawIkeaPayload || {}
     const translations = raw.translations || {}
 
-    // Sweden Name
+    // Swedish Name
     const autoSweden = extractSwedenName(raw.name || initialName || '')
     en.swedenName = raw.swedenName || raw.swedishName || raw.productDetails?.swedenName || autoSweden || ''
     ru.swedenName = raw.translations?.ru?.swedenName || raw.translations?.ru?.productDetails?.swedenName || en.swedenName
@@ -490,7 +490,7 @@ export function ProductTabContentSection({
             <h2 className="text-lg font-bold text-[#1a3a5c]">Storefront Tab Content & Descriptions</h2>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Edit Sweden Name, English Name, Article #, Description, Key Features, and Measurements.
+            Edit Swedish Name, English Name, Article #, Description, Key Features, and Measurements.
           </p>
         </div>
 

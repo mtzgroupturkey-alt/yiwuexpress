@@ -1801,17 +1801,44 @@ model PageContent {
   id          String   @id @default(cuid())
   slug        String   @unique
   title       String
-  content     String // Rich HTML content
+  subtitle    String?
+  badge       String?
+  content     String   @default("") // Rich HTML content
   metaTitle   String?
   metaDesc    String?
+  sections    Json?    // Structured section fields (form labels, buttons, custom blocks)
   isPublished Boolean  @default(true)
   author      String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  translations PageContentTranslation[]
+
   @@index([slug])
   @@map("page_contents")
 }
+
+model PageContentTranslation {
+  id        String   @id @default(cuid())
+  pageId    String
+  locale    String   // "en", "ru", "zh"
+  title     String?
+  subtitle  String?
+  badge     String?
+  content   String?  // Rich HTML content
+  metaTitle String?
+  metaDesc  String?
+  sections  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  page PageContent @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, locale])
+  @@index([locale])
+  @@map("page_content_translations")
+}
+
 
 model VerificationDocument {
   id         String   @id @default(cuid())

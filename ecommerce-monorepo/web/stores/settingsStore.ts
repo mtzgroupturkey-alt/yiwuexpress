@@ -71,6 +71,16 @@ export interface CompanySettings {
   memberClubActivateLink?: string | null
   memberClubHowPointsWork?: string | null
   memberClubHowPointsLink?: string | null
+  // Homepage Trust & Reassurance Badges
+  trustFeaturesEnabled?: boolean
+  trustDeliveryTitle?: string | null
+  trustDeliveryDesc?: string | null
+  trustGuaranteeTitle?: string | null
+  trustGuaranteeDesc?: string | null
+  trustShowroomsTitle?: string | null
+  trustShowroomsDesc?: string | null
+  trustReturnsTitle?: string | null
+  trustReturnsDesc?: string | null
   // Product Details Reassurance Badges & Delivery Timings
   pdpWarrantyTitle?: string | null
   pdpWarrantySubtitle?: string | null
@@ -219,6 +229,16 @@ export const DEFAULT_SETTINGS: CompanySettings = {
   pdpFaq5Q: 'Can I customize this product or add my logo (OEM/ODM)?',
   pdpFaq5A: 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.',
   pdpCourierDeliveryBadgeEnabled: true,
+  // Homepage Trust & Reassurance Badges
+  trustFeaturesEnabled: true,
+  trustDeliveryTitle: 'Express Home Delivery',
+  trustDeliveryDesc: 'Carefully packaged and delivered straight to your apartment or front door.',
+  trustGuaranteeTitle: 'Zero Damage Guarantee',
+  trustGuaranteeDesc: 'Reinforced protective packaging ensuring ceramics, glass, and mirrors arrive pristine.',
+  trustShowroomsTitle: '120+ Pickup Showrooms',
+  trustShowroomsDesc: 'Inspect items in person, test furniture materials, and pick up free at your convenience.',
+  trustReturnsTitle: 'Instant 14-Day Return',
+  trustReturnsDesc: 'Simple exchange or full refund for home decor, cookware, and appliances.',
 }
 
 export const useSettingsStore = create<SettingsState>((set) => ({
