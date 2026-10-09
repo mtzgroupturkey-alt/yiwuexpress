@@ -368,8 +368,8 @@ export default function ProductDetailView({
     ? 'both'
     : 'retail'
 
-  const showOriginalPrice = isWholesalePricing && effectiveWholesalePrice < currentPrice
-    ? currentPrice
+  const showOriginalPrice = isWholesalePricing
+    ? null
     : currentCompareAtPrice && currentCompareAtPrice > displayPrice
     ? currentCompareAtPrice
     : null
@@ -689,14 +689,19 @@ export default function ProductDetailView({
   const [hasMoreRelated, setHasMoreRelated] = useState(true)
   const [loadingMoreRelated, setLoadingMoreRelated] = useState(false)
   const [quantity, setQuantity] = useState(1)
+  const [quantityInput, setQuantityInput] = useState<string>('1')
 
   useEffect(() => {
-    if (currentStock <= 0) {
+    setQuantityInput(String(quantity))
+  }, [quantity])
+
+  useEffect(() => {
+    if (!isWholesaleActive && currentStock <= 0) {
       setQuantity(0)
       return
     }
-    const minQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock) : 1
-    const maxQty = isWholesaleActive ? currentStock : Math.min(10, currentStock)
+    const minQty = isWholesaleActive ? (product.minOrderQty || 1) : 1
+    const maxQty = isWholesaleActive ? 999999 : (currentStock > 0 ? currentStock : 99)
     setQuantity((prev) => {
       if (prev <= 0) return minQty
       if (prev < minQty) return minQty
@@ -1356,9 +1361,8 @@ export default function ProductDetailView({
   }
 
   const handleQuantityChange = (delta: number) => {
-    if (currentStock <= 0) return
-    const minQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock > 0 ? currentStock : 1) : 1
-    const maxQty = isWholesaleActive ? (currentStock > 0 ? currentStock : 9999) : Math.min(10, currentStock > 0 ? currentStock : 10)
+    const minQty = isWholesaleActive ? (product.minOrderQty || 1) : 1
+    const maxQty = isWholesaleActive ? 999999 : (currentStock > 0 ? currentStock : 99)
 
     let nextVal = quantity + delta
     if (quantity < minQty && delta > 0) {
@@ -2124,60 +2128,61 @@ export default function ProductDetailView({
                   </div>
 
                   {/* 5. Pricing & Value Showcase */}
-                  <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 shadow-2xs space-y-2.5">
-                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
-                      <div className="flex items-baseline gap-2.5 flex-wrap">
-                        <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
-                          {formatPrice(displayPrice)}
+                  <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 shadow-2xs space-y-2">
+                    {/* Wholesale Price badge on top */}
+                    {priceType === 'wholesale' && (
+                      <div className="flex items-center gap-2">
+                        <span className="bg-blue-50 text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                          {t('wholesalePrice')}
                         </span>
-                        {priceType === 'wholesale' && (
-                          <span className="bg-blue-50 text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-md uppercase tracking-wider">
-                            {t('wholesalePrice')}
+                      </div>
+                    )}
+
+                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                      <div className="flex items-baseline gap-2.5 sm:gap-3 flex-wrap">
+                        {priceType === 'wholesale' && effectiveDisplayPriceWithTax ? (
+                          <div data-testid="pdp-tax-display" className="flex items-baseline gap-2.5 sm:gap-3 flex-wrap">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide">
+                                {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
+                              </span>
+                              <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
+                                {formatPrice(displayPrice)}
+                              </span>
+                            </div>
+
+                            <span className="text-slate-300 text-2xl font-light">|</span>
+
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-xs sm:text-sm font-bold text-purple-700 uppercase tracking-wide">
+                                {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
+                              </span>
+                              <span className="text-3xl sm:text-4xl font-black text-purple-900 tracking-tight font-sans">
+                                {formatPrice(effectiveDisplayPriceWithTax)}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
+                            {formatPrice(displayPrice)}
                           </span>
                         )}
-                        {showOriginalPrice && showOriginalPrice > displayPrice && (
+
+                        {priceType !== 'wholesale' && showOriginalPrice && showOriginalPrice > displayPrice && (
                           <span className="text-base font-semibold text-slate-400 line-through decoration-slate-400">
                             {formatPrice(showOriginalPrice)}
                           </span>
                         )}
                       </div>
 
-                      {showOriginalPrice && showOriginalPrice > displayPrice && discount > 0 && (
+                      {priceType !== 'wholesale' && showOriginalPrice && showOriginalPrice > displayPrice && discount > 0 && (
                         <div className="flex items-center gap-1.5">
                           <span className="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                             -{discount}% OFF
                           </span>
-                          <span className="hidden sm:inline-block text-[11px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2 py-0.5 rounded-full">
-                            Save {formatPrice(showOriginalPrice - displayPrice)}
-                          </span>
                         </div>
                       )}
                     </div>
-
-                    {/* Tax Breakdown: Shows both price without TAX and price + TAX */}
-                    {effectiveDisplayPriceWithTax && (
-                      <div
-                        data-testid="pdp-tax-display"
-                        className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-200/70 text-xs flex-wrap"
-                      >
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-slate-500 font-medium">
-                            {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}{' '}
-                            <strong className="text-slate-800 font-bold">{formatPrice(displayPrice)}</strong>
-                          </span>
-                          <span className="text-slate-300">|</span>
-                          <span className="text-purple-700 font-medium">
-                            {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}{' '}
-                            <strong className="text-purple-900 font-black text-sm">{formatPrice(effectiveDisplayPriceWithTax)}</strong>
-                          </span>
-                        </div>
-                        {effectiveTaxRate > 0 && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
-                            +{effectiveTaxRate}% {locale === 'ru' ? 'НДС' : locale === 'zh' ? '税' : 'TAX'}
-                          </span>
-                        )}
-                      </div>
-                    )}
                   </div>
 
                   {/* Variant / Configurable Attribute Selectors */}
@@ -2443,8 +2448,8 @@ export default function ProductDetailView({
 
                   {/* 6. Stock Status, Quantity Stepper & Real-time Subtotal */}
                   {(() => {
-                    const stepperMinQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock > 0 ? currentStock : 1) : 1
-                    const stepperMaxQty = isWholesaleActive ? (currentStock > 0 ? currentStock : 9999) : Math.min(10, currentStock > 0 ? currentStock : 10)
+                    const stepperMinQty = isWholesaleActive ? (product.minOrderQty || 1) : 1
+                    const stepperMaxQty = isWholesaleActive ? 999999 : (currentStock > 0 ? currentStock : 99)
                     const subtotal = displayPrice * quantity
                     const subtotalWithTax = isWholesaleActive && effectiveDisplayPriceWithTax ? effectiveDisplayPriceWithTax * quantity : null
 
@@ -2453,7 +2458,7 @@ export default function ProductDetailView({
                         {/* Stock & Limit row */}
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
-                            {currentStock > 0 ? (
+                            {currentStock > 0 || isWholesaleActive ? (
                               <div className="inline-flex items-center gap-1.5 font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full text-xs">
                                 <span className="relative flex h-2 w-2">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -2485,55 +2490,92 @@ export default function ProductDetailView({
                               <button
                                 type="button"
                                 onClick={() => handleQuantityChange(-1)}
-                                disabled={quantity <= stepperMinQty || currentStock <= 0}
+                                disabled={quantity <= stepperMinQty}
                                 aria-label="Decrease quantity"
-                                className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-40 cursor-pointer active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                               >
                                 <Minus className="w-3.5 h-3.5" />
                               </button>
                               <input
-                                type="number"
-                                min={stepperMinQty}
-                                max={stepperMaxQty}
-                                value={quantity}
-                                disabled={currentStock <= 0}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={quantityInput}
+                                disabled={!isWholesaleActive && currentStock <= 0}
                                 onChange={(e) => {
-                                  const val = parseInt(e.target.value)
+                                  const raw = e.target.value.replace(/[^0-9]/g, '')
+                                  setQuantityInput(raw)
+                                  const val = parseInt(raw, 10)
                                   if (!isNaN(val)) {
                                     if (val >= stepperMinQty && val <= stepperMaxQty) {
                                       setQuantity(val)
+                                      if (moqError) setMoqError('')
                                     }
                                   }
                                 }}
-                                className="w-12 text-center font-black text-slate-900 bg-transparent text-sm focus:outline-hidden disabled:opacity-50"
+                                onBlur={() => {
+                                  let val = parseInt(quantityInput, 10)
+                                  if (isNaN(val) || val < stepperMinQty) {
+                                    val = stepperMinQty
+                                  } else if (val > stepperMaxQty) {
+                                    val = stepperMaxQty
+                                  }
+                                  setQuantity(val)
+                                  setQuantityInput(String(val))
+                                  if (moqError) setMoqError('')
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    (e.target as HTMLInputElement).blur()
+                                  }
+                                }}
+                                className="w-16 sm:w-20 text-center font-black text-slate-900 bg-transparent text-sm sm:text-base focus:outline-none disabled:opacity-50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                               <button
                                 type="button"
                                 onClick={() => handleQuantityChange(1)}
-                                disabled={quantity >= stepperMaxQty || currentStock <= 0}
+                                disabled={quantity >= stepperMaxQty}
                                 aria-label="Increase quantity"
-                                className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-40 cursor-pointer active:scale-95"
+                                className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                               >
                                 <Plus className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           </div>
 
-                          <div className="text-right space-y-0.5">
+                          <div className="text-right space-y-1">
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
                               Order Subtotal
                             </span>
-                            <div className="text-xl sm:text-2xl font-black text-[#00407a] tracking-tight leading-none">
-                              {formatPrice(subtotal)}
-                            </div>
-                            <span className="text-[11px] text-slate-400 font-medium block">
-                              {formatPrice(displayPrice)} × {quantity} {quantity === 1 ? 'unit' : 'units'}
-                            </span>
-                            {subtotalWithTax && (
-                              <span className="text-[11px] text-purple-700 font-semibold block pt-0.5">
-                                {locale === 'ru' ? 'С НДС: ' : locale === 'zh' ? '含税总计: ' : 'Incl. TAX: '}
-                                <strong className="text-purple-900 font-black">{formatPrice(subtotalWithTax)}</strong>
-                              </span>
+
+                            {subtotalWithTax ? (
+                              <div className="space-y-1">
+                                <div className="flex items-baseline justify-end gap-2 flex-wrap">
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="text-[11px] font-bold text-slate-500 uppercase">
+                                      {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税:' : 'Excl. TAX:'}
+                                    </span>
+                                    <span className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+                                      {formatPrice(subtotal)}
+                                    </span>
+                                  </div>
+
+                                  <span className="text-slate-300 text-base font-light">|</span>
+
+                                  <div className="flex items-baseline gap-1">
+                                    <span className="text-[11px] font-bold text-purple-700 uppercase">
+                                      {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税:' : 'Incl. TAX:'}
+                                    </span>
+                                    <span className="text-lg sm:text-2xl font-black text-purple-900 tracking-tight">
+                                      {formatPrice(subtotalWithTax)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-xl sm:text-2xl font-black text-[#00407a] tracking-tight leading-none">
+                                {formatPrice(subtotal)}
+                              </div>
                             )}
                           </div>
                         </div>
