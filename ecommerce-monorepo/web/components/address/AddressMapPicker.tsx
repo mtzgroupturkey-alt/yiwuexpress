@@ -12,8 +12,11 @@ import {
   Layers, 
   CornerDownRight, 
   ChevronDown, 
-  ChevronUp,
-  AlertCircle
+  AlertCircle,
+  Lock,
+  Compass,
+  ShieldAlert,
+  ExternalLink
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useSettings } from '@/components/SettingsProvider';
@@ -111,6 +114,8 @@ export function AddressMapPicker({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [activeProvider, setActiveProvider] = useState<'yandex' | 'leaflet' | 'loading'>('loading');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showPermissionHelp, setShowPermissionHelp] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
 
   // References to active map instances
   const ymapsMapRef = useRef<any>(null);
@@ -412,29 +417,149 @@ export function AddressMapPicker({
     reverseGeocode(lat, lng);
   }, [activeProvider, reverseGeocode]);
 
-  // 5. GPS Geolocation Handler
-  const handleLocateMe = () => {
-    if (!navigator.geolocation) {
-      setErrorMsg(currentLocale === 'ru' ? 'Геолокация не поддерживается вашим браузером' : 'Geolocation is not supported by your browser');
+  // 5. GPS / IP Geolocation Handler with Explicit Permission & Fallback Support
+  const handleLocateMe = async () => {
+    setErrorMsg(null);
+    setIsLocating(true);
+    setIsGeocoding(true);
+
+    const tryIpGeoFallback = async () => {
+      try {
+        const res = await fetch('/api/geo/ip');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.success && typeof data.lat === 'number' && typeof data.lng === 'number' && !isNaN(data.lat) && !isNaN(data.lng)) {
+            moveMapTo(data.lat, data.lng);
+            setIsGeocoding(false);
+            setIsLocating(false);
+            return true;
+          }
+        }
+      } catch (ipErr) {
+        console.warn('IP geolocation fallback failed:', ipErr);
+      }
+      return false;
+    };
+
+    const tryYmapsGeoFallback = async () => {
+      if ((window as any).ymaps?.geolocation?.get) {
+        try {
+          const ymaps = (window as any).ymaps;
+          const res = await ymaps.geolocation.get({
+            provider: 'auto',
+            autoReverseGeocode: false,
+            timeout: 6000,
+          });
+          const geoObj = res.geoObjects.get(0);
+          if (geoObj) {
+            const [yLat, yLng] = geoObj.geometry.getCoordinates();
+            if (typeof yLat === 'number' && typeof yLng === 'number') {
+              moveMapTo(yLat, yLng);
+              setIsGeocoding(false);
+              setIsLocating(false);
+              return true;
+            }
+          }
+        } catch (yErr) {
+          console.warn('Yandex geolocation fallback failed:', yErr);
+        }
+      }
+      return false;
+    };
+
+    // If browser supports navigator.permissions, check state upfront
+    if (typeof navigator !== 'undefined' && 'permissions' in navigator && navigator.permissions?.query) {
+      try {
+        const permStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+        if (permStatus.state === 'denied') {
+          // Explicitly denied by user in browser settings
+          setShowPermissionHelp(true);
+          // Still provide instant location via IP or Ymaps so user gets their city
+          const fallbackSuccess = (await tryYmapsGeoFallback()) || (await tryIpGeoFallback());
+          setIsLocating(false);
+          setIsGeocoding(false);
+          if (!fallbackSuccess) {
+            setErrorMsg(
+              currentLocale === 'ru'
+                ? 'Доступ к местоположению заблокирован в браузере'
+                : currentLocale === 'zh'
+                ? '浏览器已禁止位置访问权限'
+                : 'Location permission blocked in your browser'
+            );
+          }
+          return;
+        }
+      } catch (pErr) {
+        // Some browsers don't support geolocation permission query, proceed normally
+      }
+    }
+
+    // Call browser HTML5 Geolocation API (triggers native browser permission prompt if not yet decided)
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          setShowPermissionHelp(false);
+          moveMapTo(latitude, longitude);
+          setIsLocating(false);
+        },
+        async (err) => {
+          console.warn('HTML5 Geolocation error:', err);
+          setIsLocating(false);
+
+          if (err.code === 1) {
+            // PERMISSION_DENIED: User clicked "Block" or denied permission
+            setShowPermissionHelp(true);
+            const fallbackOk = (await tryYmapsGeoFallback()) || (await tryIpGeoFallback());
+            setIsGeocoding(false);
+            if (!fallbackOk) {
+              setErrorMsg(
+                currentLocale === 'ru'
+                  ? 'Доступ к геопозиции заблокирован. Разрешите доступ в настройках браузера.'
+                  : currentLocale === 'zh'
+                  ? '位置访问已被拒绝，请在浏览器地址栏允许定位。'
+                  : 'Location access was denied. Please allow location in your browser.'
+              );
+            }
+            return;
+          }
+
+          // Code 2 (POSITION_UNAVAILABLE) or Code 3 (TIMEOUT): Try high-accuracy fallback or IP
+          const ymapsSuccess = await tryYmapsGeoFallback();
+          if (ymapsSuccess) return;
+
+          const ipSuccess = await tryIpGeoFallback();
+          if (ipSuccess) return;
+
+          setIsGeocoding(false);
+          setErrorMsg(
+            currentLocale === 'ru' 
+              ? 'Не удалось определить точную геопозицию. Проверьте интернет или выберите точку на карте.' 
+              : currentLocale === 'zh'
+              ? '无法精确定位，请检查网络或在地图上手动选择。'
+              : 'Unable to pinpoint exact location. Please select on map.'
+          );
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
       return;
     }
 
-    setIsGeocoding(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        moveMapTo(latitude, longitude);
-      },
-      (err) => {
-        console.warn('Geolocation error:', err);
-        setIsGeocoding(false);
-        setErrorMsg(
-          currentLocale === 'ru' 
-            ? 'Не удалось определить местоположение (разрешите доступ к геопозиции)' 
-            : 'Unable to retrieve location (please allow location access)'
-        );
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
+    // Geolocation not supported in navigator: fallback directly to Yandex / IP
+    const ymapsSuccess = await tryYmapsGeoFallback();
+    if (ymapsSuccess) return;
+
+    const ipSuccess = await tryIpGeoFallback();
+    if (ipSuccess) return;
+
+    setIsLocating(false);
+    setIsGeocoding(false);
+    setErrorMsg(
+      currentLocale === 'ru' 
+        ? 'Геолокация не поддерживается вашим браузером' 
+        : currentLocale === 'zh'
+        ? '您的浏览器不支持地理定位'
+        : 'Geolocation is not supported by your browser'
     );
   };
 
@@ -723,10 +848,84 @@ export function AddressMapPicker({
             </div>
           )}
 
+          {/* Permission Denied Assistance Modal / Banner */}
+          {showPermissionHelp && (
+            <div className="absolute inset-x-3 top-3 z-30 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 border border-amber-300 shadow-xl animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
+                    <Lock className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                      {currentLocale === 'ru'
+                        ? 'Как включить доступ к геолокации'
+                        : currentLocale === 'zh'
+                        ? '如何在浏览器中开启位置访问'
+                        : 'How to allow location access'}
+                    </h4>
+                    <p className="text-[11px] text-slate-600 mt-1 leading-relaxed">
+                      {currentLocale === 'ru' ? (
+                        <>
+                          Нажмите на значок <strong className="text-slate-900">замка 🔒</strong> в строке браузера слева от адреса сайта, переключите пункт <strong className="text-slate-900">«Геопозиция»</strong> в положение <strong className="text-emerald-700">«Разрешить»</strong>, затем нажмите кнопку повтора:
+                        </>
+                      ) : currentLocale === 'zh' ? (
+                        <>
+                          请点击浏览器地址栏左侧的 <strong className="text-slate-900">小锁图标 🔒</strong>，将 <strong className="text-slate-900">“位置信息”</strong> 设为 <strong className="text-emerald-700">“允许”</strong>，然后点击重试：
+                        </>
+                      ) : (
+                        <>
+                          Click the <strong className="text-slate-900">lock icon 🔒</strong> in your browser address bar, set <strong className="text-slate-900">Location</strong> to <strong className="text-emerald-700">Allow</strong>, then retry:
+                        </>
+                      )}
+                    </p>
+
+                    <div className="flex items-center gap-2 mt-2.5">
+                      <button
+                        type="button"
+                        onClick={handleLocateMe}
+                        className="px-3 py-1.5 bg-[#00407a] hover:bg-[#003366] text-white rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                      >
+                        <Compass className="w-3.5 h-3.5" />
+                        <span>
+                          {currentLocale === 'ru' ? 'Повторить определение' : currentLocale === 'zh' ? '再次检测位置' : 'Retry detection'}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPermissionHelp(false)}
+                        className="px-2.5 py-1.5 text-[11px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
+                      >
+                        {currentLocale === 'ru' ? 'Понятно' : currentLocale === 'zh' ? '知道了' : 'Dismiss'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPermissionHelp(false)}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {errorMsg && (
-            <div className="absolute bottom-3 left-3 right-3 bg-red-50 text-red-700 border border-red-200 text-xs px-3 py-2 rounded-xl flex items-center gap-2 z-10">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+            <div className="absolute bottom-3 left-3 right-3 bg-red-50 text-red-700 border border-red-200 text-xs px-3 py-2 rounded-xl flex items-center justify-between gap-2 z-10 shadow-xs">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPermissionHelp(true)}
+                className="text-[11px] underline font-bold text-red-800 hover:text-red-950 shrink-0"
+              >
+                {currentLocale === 'ru' ? 'Инструкция' : currentLocale === 'zh' ? '查看说明' : 'How to fix'}
+              </button>
             </div>
           )}
         </div>
@@ -750,14 +949,31 @@ export function AddressMapPicker({
               </div>
             </div>
 
-            {isGeocoding && (
-              <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium shrink-0 animate-pulse">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span className="hidden sm:inline">
-                  {currentLocale === 'ru' ? 'Определяем...' : currentLocale === 'zh' ? '解析中...' : 'Detecting...'}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleLocateMe}
+                disabled={isLocating}
+                title={currentLocale === 'ru' ? 'Автоматически определить мое местоположение' : 'Auto-detect my location'}
+                className="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#00407a] text-[11px] font-bold border border-blue-200/80 flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95 disabled:opacity-50"
+              >
+                <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
+                <span>
+                  {isLocating
+                    ? (currentLocale === 'ru' ? 'Определяем...' : currentLocale === 'zh' ? '正在定位...' : 'Locating...')
+                    : (currentLocale === 'ru' ? 'Мое место' : currentLocale === 'zh' ? '自动定位' : 'Auto-detect')}
                 </span>
-              </div>
-            )}
+              </button>
+
+              {isGeocoding && (
+                <div className="flex items-center gap-1.5 text-xs text-blue-600 font-medium shrink-0 animate-pulse">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span className="hidden sm:inline">
+                    {currentLocale === 'ru' ? 'Определяем...' : currentLocale === 'zh' ? '解析中...' : 'Detecting...'}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Structured Address Form Inputs */}

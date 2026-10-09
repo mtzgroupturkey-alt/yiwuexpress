@@ -8,7 +8,7 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, ArrowRight, Copy, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, CreditCard, CheckCircle2, Flame, Heart, Layers, LogIn, PenLine } from 'lucide-react'
+import { ShoppingCart, Minus, Plus, Package, Truck, ArrowLeft, ArrowRight, Copy, FileText, ChevronDown, ChevronUp, ChevronRight, Share2, Star, Check, Download, ExternalLink, Info, CheckCircle, MessageCircle, Ruler, RefreshCw, HelpCircle, ShieldCheck, Box, Sparkles, Zap, CreditCard, Flame, Heart, Layers, LogIn, PenLine } from 'lucide-react'
 import { LocaleLink } from '@/components/LocaleLink'
 import { UnifiedProductCard } from '@/app/[locale]/design-3/components/UnifiedProductCard'
 import { ProductImage } from '@/components/ui/ProductImage'
@@ -2125,16 +2125,6 @@ export default function ProductDetailView({
                         </div>
                       )}
                     </div>
-
-                    <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-2">
-                      <span className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Includes VAT & export clearance</span>
-                      </span>
-                      <span className="text-emerald-700 font-bold bg-emerald-50/80 px-2 py-0.5 rounded-md">
-                        Direct Factory Sourced
-                      </span>
-                    </div>
                   </div>
 
                   {/* Variant / Configurable Attribute Selectors */}
@@ -2415,17 +2405,11 @@ export default function ProductDetailView({
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                                 </span>
-                                <span>{t('inStock')} ({currentStock} available)</span>
+                                <span>{t('inStock')}</span>
                               </div>
                             ) : (
                               <span className="font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full text-xs">
                                 {t('outOfStock')}
-                              </span>
-                            )}
-
-                            {currentStock <= 50 && currentStock > 0 && (
-                              <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.5 rounded font-black animate-pulse">
-                                {t('onlyLeft', { n: currentStock })}
                               </span>
                             )}
                           </div>
@@ -2498,124 +2482,85 @@ export default function ProductDetailView({
                   })()}
 
                   {/* 7. Primary Call to Action Buttons */}
-                  <div id="pdp-main-buy-box" className="space-y-2.5 pt-1">
-                    {!isUserLoggedIn ? (
-                      <div className="space-y-2">
-                        <LocaleLink
-                          href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
-                          className="group relative w-full h-12 sm:h-13 bg-gradient-to-r from-[#00407a] via-[#004c8f] to-[#00386b] hover:from-[#00386b] hover:to-[#00274d] text-white font-black text-sm sm:text-base rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] overflow-hidden"
+                  {isUserLoggedIn && (
+                    <div id="pdp-main-buy-box" className="space-y-2.5 pt-1">
+                      {/* Wholesale RFQ Flow CTA */}
+                      {isWholesaleActive && !isInstantWholesale ? (
+                        <button
+                          type="button"
+                          onClick={handleAddToQuoteList}
+                          disabled={currentStock === 0}
+                          className="w-full h-11 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]"
                         >
-                          <span className="absolute inset-0 w-1/2 h-full bg-white/10 skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-700 ease-out pointer-events-none" />
-                          <LogIn className="w-4 h-4 text-blue-200 group-hover:scale-110 transition-transform" />
-                          <span>
-                            {locale === 'ru'
-                              ? 'Войдите, чтобы оформить заказ'
-                              : locale === 'zh'
-                              ? '登录以加购或下单'
-                              : 'Sign in to Order / Add to Cart'}
-                          </span>
-                          <ArrowRight className="w-4 h-4 text-blue-200 group-hover:translate-x-1 transition-transform ml-0.5" />
-                        </LocaleLink>
-
-                        <div className="rounded-xl bg-slate-50/90 border border-slate-200/80 p-2.5 flex items-center justify-between text-[11px] text-slate-600 shadow-2xs">
-                          <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-4 h-4 text-[#00407a] shrink-0" />
-                            <span>
-                              {locale === 'ru'
-                                ? 'Войдите в аккаунт для заказа и оптовых цен'
-                                : locale === 'zh'
-                                ? '登录以解锁购物车与专属采购特权'
-                                : 'Sign in to access cart and order privileges'}
-                            </span>
-                          </div>
-                          <LocaleLink
-                            href={`/sign-in?redirect=${encodeURIComponent(`/products/${product.slug}`)}`}
-                            className="text-[#00407a] font-bold hover:underline shrink-0"
-                          >
-                            {locale === 'ru' ? 'Вход' : locale === 'zh' ? '立即登录' : 'Sign in'} →
-                          </LocaleLink>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Wholesale RFQ Flow CTA */}
-                        {isWholesaleActive && !isInstantWholesale ? (
-                          <button
-                            type="button"
-                            onClick={handleAddToQuoteList}
-                            disabled={currentStock === 0}
-                            className="w-full h-11 bg-[#00407a] hover:bg-[#003366] text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98]"
-                          >
-                            <FileText className="w-4 h-4" />
-                            <span>{t('addToQuoteList')} ({tPdp('wholesaleMoq', { moq })})</span>
-                          </button>
-                        ) : isWholesaleActive && isInstantWholesale ? (
+                          <FileText className="w-4 h-4" />
+                          <span>{t('addToQuoteList')} ({tPdp('wholesaleMoq', { moq })})</span>
+                        </button>
+                      ) : isWholesaleActive && isInstantWholesale ? (
+                        <button
+                          type="button"
+                          onClick={handleAddToCart}
+                          disabled={currentStock === 0 || adding}
+                          className="w-full h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          <span>{adding ? t('addingToCart') : t('addToCart')}</span>
+                        </button>
+                      ) : (
+                        /* Retail Flow CTAs */
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <button
                             type="button"
                             onClick={handleAddToCart}
                             disabled={currentStock === 0 || adding}
-                            className="w-full h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            className="h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                           >
                             <ShoppingCart className="w-4 h-4" />
                             <span>{adding ? t('addingToCart') : t('addToCart')}</span>
                           </button>
-                        ) : (
-                          /* Retail Flow CTAs */
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={handleAddToCart}
-                              disabled={currentStock === 0 || adding}
-                              className="h-11 bg-[#F5A602] hover:bg-[#E09500] active:scale-[0.98] text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                              <ShoppingCart className="w-4 h-4" />
-                              <span>{adding ? t('addingToCart') : t('addToCart')}</span>
-                            </button>
 
-                            <button
-                              type="button"
-                              onClick={handleQuickOrder}
-                              disabled={currentStock === 0 || adding}
-                              className="h-11 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-300 text-slate-800 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                            >
-                              <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                              <span>{locale === 'ru' ? 'Быстрый заказ' : locale === 'zh' ? '一键订购' : '1-Click Order'}</span>
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Secondary option: If wholesale is active and store is BOTH, allow retail purchase */}
-                        {isWholesaleActive && isBoth && (
                           <button
                             type="button"
-                            onClick={handleAddToCart}
+                            onClick={handleQuickOrder}
                             disabled={currentStock === 0 || adding}
-                            className="w-full h-10 rounded-xl text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                            className="h-11 bg-white hover:bg-slate-50 active:scale-[0.98] border border-slate-300 text-slate-800 font-bold text-xs rounded-xl shadow-2xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                           >
-                            <ShoppingCart className="w-3.5 h-3.5 text-slate-500" />
-                            <span>{locale === 'ru' ? 'Купить в розницу' : locale === 'zh' ? '以零售价购买' : 'Buy at Retail Price'} ({formatPrice(currentPrice)})</span>
+                            <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                            <span>{locale === 'ru' ? 'Быстрый заказ' : locale === 'zh' ? '一键订购' : '1-Click Order'}</span>
                           </button>
-                        )}
+                        </div>
+                      )}
 
-                        {/* Secondary option: If retail is active and store is BOTH, allow quote request */}
-                        {!isWholesaleActive && isBoth && (
-                          <button
-                            type="button"
-                            onClick={handleAddToQuoteList}
-                            disabled={currentStock === 0}
-                            className="w-full h-10 rounded-xl text-xs font-bold border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
-                          >
-                            <FileText className="w-4 h-4" />
-                            <span>{isInstantWholesale ? t('addToCart') : t('addToQuoteList')}</span>
-                          </button>
-                        )}
-                      </>
-                    )}
+                      {/* Secondary option: If wholesale is active and store is BOTH, allow retail purchase */}
+                      {isWholesaleActive && isBoth && (
+                        <button
+                          type="button"
+                          onClick={handleAddToCart}
+                          disabled={currentStock === 0 || adding}
+                          className="w-full h-10 rounded-xl text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{locale === 'ru' ? 'Купить в розницу' : locale === 'zh' ? '以零售价购买' : 'Buy at Retail Price'} ({formatPrice(currentPrice)})</span>
+                        </button>
+                      )}
 
-                    {moqError && (
-                      <p className="text-xs font-medium text-rose-600 text-center">{moqError}</p>
-                    )}
-                  </div>
+                      {/* Secondary option: If retail is active and store is BOTH, allow quote request */}
+                      {!isWholesaleActive && isBoth && (
+                        <button
+                          type="button"
+                          onClick={handleAddToQuoteList}
+                          disabled={currentStock === 0}
+                          className="w-full h-10 rounded-xl text-xs font-bold border-2 border-[#00407a] text-[#00407a] hover:bg-[#EFF6FF] transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98]"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>{isInstantWholesale ? t('addToCart') : t('addToQuoteList')}</span>
+                        </button>
+                      )}
+
+                      {moqError && (
+                        <p className="text-xs font-medium text-rose-600 text-center">{moqError}</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Delivery & Fulfillment Information Box */}
                   {((settings as any)?.pdpCourierDeliveryBadgeEnabled !== false && (settings as any)?.pdpCourierDeliveryBadgeEnabled !== 'false') && (

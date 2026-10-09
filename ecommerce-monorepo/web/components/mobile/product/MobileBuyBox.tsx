@@ -107,7 +107,7 @@ export function MobileBuyBox({
 
       {/* Action Buttons */}
       <div className="space-y-2 pt-2">
-        {isLoggedIn ? (
+        {isLoggedIn && (
           <button
             type="button"
             onClick={onAddToCart}
@@ -133,16 +133,6 @@ export function MobileBuyBox({
               </>
             )}
           </button>
-        ) : (
-          <LocaleLink
-            href={`/sign-in?redirect=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : `/products/${product.slug || product.id}`)}`}
-            className="w-full min-h-[50px] px-5 rounded-2xl bg-[#00407a] dark:bg-primary-600 hover:bg-[#00305c] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg tap-spring active:scale-[0.97] transition-all touch-manipulation focus:outline-none cursor-pointer"
-          >
-            <LogIn className="w-5 h-5" />
-            <span>
-              {locale === 'zh' ? '登录以加购或下单' : locale === 'ru' ? 'Войдите, чтобы оформить заказ' : 'Sign in to Order / Add to Cart'}
-            </span>
-          </LocaleLink>
         )}
 
         {onInquireSupplier && (
