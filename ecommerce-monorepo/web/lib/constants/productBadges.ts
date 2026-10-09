@@ -67,6 +67,30 @@ export const PRODUCT_BADGE_KEYS = [
 
 export type ProductBadgeKey = (typeof PRODUCT_BADGE_KEYS)[number];
 
+/**
+ * Global operational switches and numerical thresholds that apply
+ * across ALL storefront languages (not per-language translated copy).
+ */
+export const GLOBAL_BADGE_TOGGLE_KEYS = [
+  'pdpHighDemandBadgeEnabled',
+  'pdpHighDemandThreshold',
+  'pdpCutoffHour',
+  'pdpCourierDeliveryBadgeEnabled',
+  'pdpWarrantyBadgeEnabled',
+  'pdpDeliveryBadgeEnabled',
+  'pdpReturnsBadgeEnabled',
+  'pdpFactoryBadgeEnabled',
+  'pdpQcBadgeEnabled',
+  'pdpLogisticsBadgeEnabled',
+  'pdpEscrowBadgeEnabled',
+  'pdpPickupBadgeEnabled',
+  'pdpFaqBadgeEnabled',
+] as const;
+
+export type GlobalBadgeToggleKey = (typeof GLOBAL_BADGE_TOGGLE_KEYS)[number];
+
+export const GLOBAL_BADGE_TOGGLE_KEYS_SET = new Set<string>(GLOBAL_BADGE_TOGGLE_KEYS);
+
 export const DEFAULT_PRODUCT_BADGES: Record<'en' | 'ru' | 'zh', Record<ProductBadgeKey, string>> = {
   en: {
     pdpWarrantyTitle: '2-Year Warranty',

@@ -5,6 +5,8 @@ import {
   round2,
   computeAfterDiscount,
   computeDiscountPercent,
+  computePriceWithTax,
+  computeTaxPercent,
   computeProfit,
   computeWholesaleProfit,
 } from '@/lib/pricing/calculate';
@@ -15,8 +17,12 @@ export interface PricingFormValues {
   retailPrice: string | number;
   discountPercent: string | number;
   afterDiscount: string | number;
+  taxPercent?: string | number;
+  taxRate?: string | number;
+  priceWithTax?: string | number;
   costPrice: string | number;
   wholesalePrice: string | number;
+  wholesalePriceWithTax?: string | number;
   minOrderQty: string | number;
 }
 
@@ -52,12 +58,22 @@ export const pricingDict: Record<
     customerSees: string;
     saveBadge: string;
     enterRetailAbove: string;
+    taxPercent: string;
+    taxHelper: string;
+    priceWithTax: string;
+    overrideManualTax: string;
+    taxBadge: string;
+    priceWithoutTaxLabel: string;
+    priceWithTaxLabel: string;
     lossRetailWarning: string;
     lossRetailDesc: string;
 
     section3Title: string;
     section3Subtitle: string;
     wholesalePrice: string;
+    wholesalePriceWithoutTax: string;
+    wholesalePriceWithTax: string;
+    wholesaleTaxPreview: string;
     wholesaleHelper: string;
     minBuy: string;
     minBuyHelper: string;
@@ -90,12 +106,22 @@ export const pricingDict: Record<
     customerSees: 'Customer sees:',
     saveBadge: 'Save {percent}%',
     enterRetailAbove: 'Enter retail price above',
+    taxPercent: 'TAX %',
+    taxHelper: 'Type 20 for 20% tax/VAT. Leave empty for no tax.',
+    priceWithTax: 'Price after TAX (Price + TAX)',
+    overrideManualTax: 'Set "Price after TAX" manually',
+    taxBadge: '+{percent}% TAX',
+    priceWithoutTaxLabel: 'Without TAX',
+    priceWithTaxLabel: 'With TAX',
     lossRetailWarning: 'Warning: You will lose money on each sale.',
     lossRetailDesc: 'Your selling price (${selling}) is lower than what you bought it for (${cost}).',
 
     section3Title: 'Wholesale Buyers',
     section3Subtitle: 'Optional — for business buyers only',
     wholesalePrice: 'Their special price',
+    wholesalePriceWithoutTax: 'Their special price (excl. TAX)',
+    wholesalePriceWithTax: 'Price after TAX (Price + TAX)',
+    wholesaleTaxPreview: 'Wholesale with TAX',
     wholesaleHelper: 'Discounted bulk unit price for verified wholesale accounts.',
     minBuy: 'Minimum they must buy',
     minBuyHelper: 'Minimum order quantity required to unlock this wholesale price.',
@@ -127,12 +153,22 @@ export const pricingDict: Record<
     customerSees: 'Покупатель видит:',
     saveBadge: 'Скидка {percent}%',
     enterRetailAbove: 'Укажите розничную цену выше',
+    taxPercent: 'НДС / Налог %',
+    taxHelper: 'Введите 20 для 20% налога/НДС. Оставьте пустым, если без налога.',
+    priceWithTax: 'Цена с НДС (Итого с налогом)',
+    overrideManualTax: 'Указать цену с налогом вручную',
+    taxBadge: '+{percent}% НДС',
+    priceWithoutTaxLabel: 'Без налога',
+    priceWithTaxLabel: 'С налогом',
     lossRetailWarning: 'Внимание: вы будете продавать в убыток с каждой продажи.',
     lossRetailDesc: 'Ваша цена продажи (${selling}) ниже цены закупки (${cost}).',
 
     section3Title: 'Оптовые покупатели',
     section3Subtitle: 'Необязательно — только для бизнес-клиентов (B2B)',
     wholesalePrice: 'Их специальная цена',
+    wholesalePriceWithoutTax: 'Их специальная цена (без НДС)',
+    wholesalePriceWithTax: 'Цена с НДС (Итого с налогом)',
+    wholesaleTaxPreview: 'Оптовая цена с НДС',
     wholesaleHelper: 'Специальная оптовая цена за единицу для верифицированных компаний.',
     minBuy: 'Минимальный заказ',
     minBuyHelper: 'Минимальное количество единиц для применения оптовой цены.',
@@ -164,12 +200,22 @@ export const pricingDict: Record<
     customerSees: '客户实际看到：',
     saveBadge: '立省 {percent}%',
     enterRetailAbove: '请在下方输入零售原价',
+    taxPercent: '税率 %',
+    taxHelper: '输入 20 表示 20% 增值税/税费。无税费请留空。',
+    priceWithTax: '含税最终价 (售价 + 税)',
+    overrideManualTax: '手动输入含税价',
+    taxBadge: '+{percent}% 税',
+    priceWithoutTaxLabel: '未含税',
+    priceWithTaxLabel: '含税',
     lossRetailWarning: '警告：当前售价将导致该商品每单亏损。',
     lossRetailDesc: '您的售价 (${selling}) 低于进货成本 (${cost})。',
 
     section3Title: '企业大宗批发',
     section3Subtitle: '选填 — 仅面向 B2B 批发客户',
     wholesalePrice: '批发专属特价',
+    wholesalePriceWithoutTax: '批发专属特价 (未含税)',
+    wholesalePriceWithTax: '含税批发价 (含税)',
+    wholesaleTaxPreview: '含税批发价',
     wholesaleHelper: '通过认证的企业批发客户享受的大宗单价。',
     minBuy: '起订数量 (MOQ)',
     minBuyHelper: '享受该批发特价所需采购的最低数量。',
@@ -214,37 +260,86 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
   const [afterDiscount, setAfterDiscount] = useState<string>(
     externalValues?.afterDiscount !== undefined ? String(externalValues.afterDiscount) : ''
   );
+  const [taxPercent, setTaxPercent] = useState<string>(
+    externalValues?.taxPercent !== undefined
+      ? String(externalValues.taxPercent)
+      : externalValues?.taxRate !== undefined
+      ? String(externalValues.taxRate)
+      : ''
+  );
+  const [priceWithTax, setPriceWithTax] = useState<string>(
+    externalValues?.priceWithTax !== undefined ? String(externalValues.priceWithTax) : ''
+  );
   const [costPrice, setCostPrice] = useState<string>(
     externalValues?.costPrice !== undefined ? String(externalValues.costPrice) : ''
   );
   const [wholesalePrice, setWholesalePrice] = useState<string>(
     externalValues?.wholesalePrice !== undefined ? String(externalValues.wholesalePrice) : ''
   );
+  const [wholesalePriceWithTax, setWholesalePriceWithTax] = useState<string>(
+    externalValues?.wholesalePriceWithTax !== undefined
+      ? String(externalValues.wholesalePriceWithTax)
+      : ''
+  );
   const [minOrderQty, setMinOrderQty] = useState<string>(
     externalValues?.minOrderQty !== undefined ? String(externalValues.minOrderQty) : ''
   );
 
   const [isManualOverride, setIsManualOverride] = useState<boolean>(false);
+  const [isManualTaxOverride, setIsManualTaxOverride] = useState<boolean>(false);
 
   // Sync when external values change
   useEffect(() => {
     if (externalValues?.retailPrice !== undefined) setRetailPrice(String(externalValues.retailPrice || ''));
     if (externalValues?.discountPercent !== undefined) setDiscountPercent(String(externalValues.discountPercent || ''));
     if (externalValues?.afterDiscount !== undefined) setAfterDiscount(String(externalValues.afterDiscount || ''));
+    if (externalValues?.taxPercent !== undefined) {
+      setTaxPercent(String(externalValues.taxPercent || ''));
+    } else if (externalValues?.taxRate !== undefined) {
+      setTaxPercent(String(externalValues.taxRate || ''));
+    }
+    if (externalValues?.priceWithTax !== undefined) setPriceWithTax(String(externalValues.priceWithTax || ''));
     if (externalValues?.costPrice !== undefined) setCostPrice(String(externalValues.costPrice || ''));
     if (externalValues?.wholesalePrice !== undefined) setWholesalePrice(String(externalValues.wholesalePrice || ''));
+    if (externalValues?.wholesalePriceWithTax !== undefined) {
+      setWholesalePriceWithTax(String(externalValues.wholesalePriceWithTax || ''));
+    } else if (
+      externalValues?.wholesalePrice !== undefined &&
+      (externalValues?.taxPercent !== undefined || externalValues?.taxRate !== undefined)
+    ) {
+      const wVal = parseFloat(String(externalValues.wholesalePrice));
+      const tVal = parseFloat(String(externalValues.taxPercent ?? externalValues.taxRate));
+      if (!isNaN(wVal) && wVal > 0 && !isNaN(tVal) && tVal > 0) {
+        setWholesalePriceWithTax(String(computePriceWithTax(wVal, tVal)));
+      }
+    }
     if (externalValues?.minOrderQty !== undefined) setMinOrderQty(String(externalValues.minOrderQty || ''));
   }, [externalValues]);
+
+  // Helper: get current base selling price
+  const getSellingPrice = (rStr: string, aStr: string): number => {
+    const aVal = parseFloat(aStr);
+    if (!isNaN(aVal) && aVal > 0) return aVal;
+    const rVal = parseFloat(rStr);
+    if (!isNaN(rVal) && rVal > 0) return rVal;
+    return 0;
+  };
 
   // Notify parent on change
   const notifyChange = (updated: Partial<PricingFormValues>) => {
     if (onChange) {
+      const currentTax = updated.taxPercent !== undefined ? updated.taxPercent : taxPercent;
       onChange({
         retailPrice: updated.retailPrice !== undefined ? updated.retailPrice : retailPrice,
         discountPercent: updated.discountPercent !== undefined ? updated.discountPercent : discountPercent,
         afterDiscount: updated.afterDiscount !== undefined ? updated.afterDiscount : afterDiscount,
+        taxPercent: currentTax,
+        taxRate: updated.taxRate !== undefined ? updated.taxRate : currentTax,
+        priceWithTax: updated.priceWithTax !== undefined ? updated.priceWithTax : priceWithTax,
         costPrice: updated.costPrice !== undefined ? updated.costPrice : costPrice,
         wholesalePrice: updated.wholesalePrice !== undefined ? updated.wholesalePrice : wholesalePrice,
+        wholesalePriceWithTax:
+          updated.wholesalePriceWithTax !== undefined ? updated.wholesalePriceWithTax : wholesalePriceWithTax,
         minOrderQty: updated.minOrderQty !== undefined ? updated.minOrderQty : minOrderQty,
       });
     }
@@ -271,22 +366,28 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
       return;
     }
 
+    let updatedAfter = afterDiscount;
+    let calculatedDiscountStr = discountPercent;
+
     if (isManualOverride) {
       const aNum = parseFloat(afterDiscount);
       if (!isNaN(aNum) && aNum > 0 && aNum < rNum) {
         const calculatedDiscount = computeDiscountPercent(rNum, aNum);
-        setDiscountPercent(calculatedDiscount > 0 ? String(calculatedDiscount) : '');
-        notifyChange({ retailPrice: val, discountPercent: calculatedDiscount > 0 ? String(calculatedDiscount) : '' });
-      } else {
-        notifyChange({ retailPrice: val });
+        calculatedDiscountStr = calculatedDiscount > 0 ? String(calculatedDiscount) : '';
+        setDiscountPercent(calculatedDiscountStr);
       }
     } else {
       const dNum = parseFloat(discountPercent);
       const computed = computeAfterDiscount(rNum, !isNaN(dNum) ? dNum : 0);
-      const afterStr = computed > 0 ? String(computed) : '';
-      setAfterDiscount(afterStr);
-      notifyChange({ retailPrice: val, afterDiscount: afterStr });
+      updatedAfter = computed > 0 ? String(computed) : '';
+      setAfterDiscount(updatedAfter);
     }
+
+    notifyChange({
+      retailPrice: val,
+      discountPercent: calculatedDiscountStr,
+      afterDiscount: updatedAfter,
+    });
   };
 
   // 3. Handling Discount % Change
@@ -303,7 +404,11 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
     const computed = computeAfterDiscount(rNum, !isNaN(dNum) ? dNum : 0);
     const afterStr = computed > 0 ? String(computed) : '';
     setAfterDiscount(afterStr);
-    notifyChange({ discountPercent: val, afterDiscount: afterStr });
+
+    notifyChange({
+      discountPercent: val,
+      afterDiscount: afterStr,
+    });
   };
 
   // 4. Handling After Discount Change
@@ -312,22 +417,22 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
     const aNum = parseFloat(val);
     const rNum = parseFloat(retailPrice);
 
+    let discStr = '';
     if (!isNaN(rNum) && rNum > 0 && !isNaN(aNum) && aNum > 0 && aNum < rNum) {
       const calculatedDiscount = computeDiscountPercent(rNum, aNum);
-      const discStr = calculatedDiscount > 0 ? String(calculatedDiscount) : '';
+      discStr = calculatedDiscount > 0 ? String(calculatedDiscount) : '';
       setDiscountPercent(discStr);
-      notifyChange({ afterDiscount: val, discountPercent: discStr });
     } else {
-      if (aNum >= rNum) {
-        setDiscountPercent('');
-        notifyChange({ afterDiscount: val, discountPercent: '' });
-      } else {
-        notifyChange({ afterDiscount: val });
-      }
+      setDiscountPercent('');
     }
+
+    notifyChange({
+      afterDiscount: val,
+      discountPercent: discStr,
+    });
   };
 
-  // Toggle manual override
+  // Toggle manual discount override
   const handleManualOverrideToggle = (checked: boolean) => {
     setIsManualOverride(checked);
     if (!checked) {
@@ -342,17 +447,122 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
     }
   };
 
+  // 5. Handling Wholesale TAX % Change
+  const handleTaxPercentChange = (val: string) => {
+    setTaxPercent(val);
+    const tNum = parseFloat(val);
+    const wNum = parseFloat(wholesalePrice);
+
+    let updatedWWithTax = '';
+    if (!isNaN(wNum) && wNum > 0) {
+      if (!isNaN(tNum) && tNum > 0) {
+        updatedWWithTax = String(computePriceWithTax(wNum, tNum));
+      } else {
+        updatedWWithTax = String(round2(wNum));
+      }
+    }
+    setWholesalePriceWithTax(updatedWWithTax);
+    setPriceWithTax(updatedWWithTax);
+
+    notifyChange({
+      taxPercent: val,
+      taxRate: val,
+      priceWithTax: updatedWWithTax,
+      wholesalePriceWithTax: updatedWWithTax,
+    });
+  };
+
+  // 6. Handling Wholesale Price after TAX Change (Manual)
+  const handlePriceWithTaxChange = (val: string) => {
+    setPriceWithTax(val);
+    setWholesalePriceWithTax(val);
+    const pNum = parseFloat(val);
+    const wNum = parseFloat(wholesalePrice);
+
+    if (wNum > 0 && !isNaN(pNum) && pNum > wNum) {
+      const calculatedTax = computeTaxPercent(wNum, pNum);
+      const taxStr = calculatedTax > 0 ? String(calculatedTax) : '';
+      setTaxPercent(taxStr);
+
+      notifyChange({
+        priceWithTax: val,
+        wholesalePriceWithTax: val,
+        taxPercent: taxStr,
+        taxRate: taxStr,
+      });
+    } else {
+      if (pNum <= wNum) {
+        setTaxPercent('');
+        notifyChange({
+          priceWithTax: val,
+          wholesalePriceWithTax: val,
+          taxPercent: '',
+          taxRate: '',
+        });
+      } else {
+        notifyChange({
+          priceWithTax: val,
+          wholesalePriceWithTax: val,
+        });
+      }
+    }
+  };
+
+  // 7. Handling Wholesale Price Change
+  const handleWholesalePriceChange = (val: string) => {
+    setWholesalePrice(val);
+    const wNum = parseFloat(val);
+    const tNum = parseFloat(taxPercent);
+    let updatedWWithTax = '';
+    if (!isNaN(wNum) && wNum > 0) {
+      if (!isNaN(tNum) && tNum > 0) {
+        updatedWWithTax = String(computePriceWithTax(wNum, tNum));
+      } else {
+        updatedWWithTax = String(round2(wNum));
+      }
+    }
+    setWholesalePriceWithTax(updatedWWithTax);
+    setPriceWithTax(updatedWWithTax);
+    notifyChange({
+      wholesalePrice: val,
+      wholesalePriceWithTax: updatedWWithTax,
+      priceWithTax: updatedWWithTax,
+    });
+  };
+
+  // Toggle manual tax override
+  const handleManualTaxOverrideToggle = (checked: boolean) => {
+    setIsManualTaxOverride(checked);
+    if (!checked) {
+      const wNum = parseFloat(wholesalePrice);
+      const tNum = parseFloat(taxPercent);
+      if (wNum > 0 && !isNaN(tNum) && tNum > 0) {
+        const computed = computePriceWithTax(wNum, tNum);
+        const withTaxStr = computed > 0 ? String(computed) : '';
+        setWholesalePriceWithTax(withTaxStr);
+        setPriceWithTax(withTaxStr);
+        notifyChange({ wholesalePriceWithTax: withTaxStr, priceWithTax: withTaxStr });
+      }
+    }
+  };
+
   const rNum = parseFloat(retailPrice);
   const dNum = parseFloat(discountPercent);
   const aNum = parseFloat(afterDiscount);
+  const tNum = parseFloat(taxPercent);
+  const pTaxNum = parseFloat(priceWithTax);
   const cNum = parseFloat(costPrice);
   const wNum = parseFloat(wholesalePrice);
 
   const validRetail = !isNaN(rNum) && rNum > 0;
   const validDiscount = !isNaN(dNum) && dNum > 0;
   const validAfter = !isNaN(aNum) && aNum > 0;
+  const validTax = !isNaN(tNum) && tNum > 0;
+  const validTaxPrice = !isNaN(pTaxNum) && pTaxNum > 0;
   const validCost = !isNaN(cNum) && cNum > 0;
   const validWholesale = !isNaN(wNum) && wNum > 0;
+
+  const currentSelling = validAfter ? aNum : validRetail ? rNum : 0;
 
   // Live profit calculation
   const retailProfit = validAfter && validCost ? computeProfit(aNum, cNum) : null;
@@ -372,8 +582,12 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
       <input type="hidden" name="afterDiscount" value={afterDiscount} />
       <input type="hidden" name="price" value={afterDiscount || retailPrice} />
       <input type="hidden" name="compareAtPrice" value={retailPrice} />
+      <input type="hidden" name="taxPercent" value={taxPercent} />
+      <input type="hidden" name="taxRate" value={taxPercent} />
+      <input type="hidden" name="priceWithTax" value={priceWithTax} />
       <input type="hidden" name="costPrice" value={costPrice} />
       <input type="hidden" name="wholesalePrice" value={wholesalePrice} />
+      <input type="hidden" name="wholesalePriceWithTax" value={wholesalePriceWithTax} />
       <input type="hidden" name="minOrderQty" value={minOrderQty} />
 
       {/* Main Header */}
@@ -691,14 +905,19 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Field: Their special price */}
+            {/* Field: Their special price (without TAX) */}
             <div>
-              <label
-                htmlFor={`${baseId}-wholesalePrice`}
-                className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
-              >
-                {t.wholesalePrice}
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor={`${baseId}-wholesalePrice`}
+                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
+                >
+                  {t.wholesalePrice}
+                </label>
+                <span className="text-[11px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  {t.priceWithoutTaxLabel}
+                </span>
+              </div>
               <div className="relative">
                 <input
                   id={`${baseId}-wholesalePrice`}
@@ -707,10 +926,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   step="0.01"
                   min="0"
                   value={wholesalePrice}
-                  onChange={(e) => {
-                    setWholesalePrice(e.target.value);
-                    notifyChange({ wholesalePrice: e.target.value });
-                  }}
+                  onChange={(e) => handleWholesalePriceChange(e.target.value)}
                   placeholder="0"
                   className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
                 />
@@ -754,10 +970,183 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 {t.minBuyHelper}
               </p>
             </div>
+
+            {/* Field: Wholesale TAX % */}
+            <div>
+              <label
+                htmlFor={`${baseId}-taxPercent`}
+                className="block text-xs font-bold text-purple-900 uppercase tracking-wider mb-1.5"
+              >
+                {t.taxPercent}
+              </label>
+              <div className="relative">
+                <input
+                  id={`${baseId}-taxPercent`}
+                  data-testid="input-tax-percent"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  disabled={isManualTaxOverride}
+                  value={taxPercent}
+                  onChange={(e) => handleTaxPercentChange(e.target.value)}
+                  placeholder="0"
+                  className={`w-full min-h-[48px] px-4 py-3 rounded-xl border text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors ${
+                    isManualTaxOverride
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : errors.taxPercent
+                      ? 'border-red-400 bg-red-50/30'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                />
+                <span className="absolute top-3.5 right-4 text-gray-400 font-bold text-sm">
+                  %
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                {t.taxHelper}
+              </p>
+              {errors.taxPercent && (
+                <p className="text-xs text-red-600 font-medium mt-1" role="alert">
+                  {errors.taxPercent}
+                </p>
+              )}
+            </div>
+
+            {/* Field: Price after TAX for Wholesale */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor={`${baseId}-wholesalePriceWithTax`}
+                  className="block text-xs font-bold text-purple-900 uppercase tracking-wider"
+                >
+                  {t.wholesalePriceWithTax}
+                </label>
+                {/* Manual Override Checkbox */}
+                <div className="flex items-center gap-1.5">
+                  <input
+                    id={`${baseId}-overrideManualTax`}
+                    data-testid="checkbox-manual-tax-override"
+                    type="checkbox"
+                    checked={isManualTaxOverride}
+                    onChange={(e) => handleManualTaxOverrideToggle(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded text-purple-600 border-gray-300 focus:ring-purple-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor={`${baseId}-overrideManualTax`}
+                    className="text-[11px] font-semibold text-gray-600 cursor-pointer select-none"
+                  >
+                    {t.overrideManualTax}
+                  </label>
+                </div>
+              </div>
+
+              <div className="relative">
+                {isManualTaxOverride ? (
+                  <div className="relative">
+                    <input
+                      id={`${baseId}-wholesalePriceWithTax`}
+                      data-testid="input-price-with-tax"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={wholesalePriceWithTax || priceWithTax}
+                      onChange={(e) => handlePriceWithTaxChange(e.target.value)}
+                      placeholder="0"
+                      className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-purple-500 bg-white text-lg font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
+                      {currency}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="relative flex items-center">
+                    <input
+                      id={`${baseId}-wholesalePriceWithTax`}
+                      data-testid="display-wholesale-price-with-tax"
+                      type="text"
+                      readOnly
+                      value={
+                        validWholesale
+                          ? `$${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}`
+                          : ''
+                      }
+                      placeholder={currency === 'USD' ? '$0.00' : '0.00'}
+                      className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-purple-200 bg-purple-50/50 text-base font-bold text-purple-950 placeholder-gray-400 cursor-not-allowed focus:outline-none"
+                    />
+                    <span
+                      data-testid="display-price-with-tax"
+                      className="sr-only"
+                    >
+                      {validWholesale
+                        ? `$${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}`
+                        : '$0.00'}
+                    </span>
+                    <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
+                      {currency}
+                    </span>
+                    {validTax && (
+                      <span
+                        data-testid="badge-tax"
+                        className="absolute right-14 top-3 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200"
+                      >
+                        <span data-testid="badge-wholesale-tax">
+                          {t.taxBadge.replace('{percent}', String(round2(tNum)))}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                {validTax
+                  ? `Calculated automatically with ${taxPercent}% TAX.`
+                  : 'Enter TAX % to calculate wholesale price with tax.'}
+              </p>
+            </div>
           </div>
 
-          {/* Wholesale Profit Preview Box */}
+          {/* Wholesale Tax & Profit Preview Box */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-2">
+            {/* Tax preview for wholesale */}
+            <div
+              data-testid="wholesale-tax-preview"
+              className="p-4 rounded-2xl border border-purple-200 bg-purple-50/60 text-purple-950 space-y-1.5"
+            >
+              <div
+                data-testid="tax-preview"
+                className="space-y-1"
+              >
+                <div className="text-[11px] font-bold uppercase tracking-wider text-purple-800 flex items-center justify-between">
+                  <span>🏷️ {t.wholesaleTaxPreview}</span>
+                  {validTax && (
+                    <span className="text-[10px] font-bold bg-purple-200/80 text-purple-800 px-2 py-0.5 rounded-full">
+                      +{taxPercent}% TAX
+                    </span>
+                  )}
+                </div>
+                {validWholesale ? (
+                  <div className="space-y-1 pt-0.5">
+                    <div className="flex items-baseline justify-between text-xs">
+                      <span className="text-gray-600">{t.priceWithoutTaxLabel}: </span>
+                      <span className="font-semibold text-gray-900">${round2(wNum).toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-baseline justify-between text-xs">
+                      <span className="text-purple-800 font-semibold">{t.priceWithTaxLabel}: </span>
+                      <span className="font-black text-purple-900 text-sm">
+                        ${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-xs italic text-gray-400">
+                    {t.wholesaleProfitPrompt}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Wholesale Profit Preview Box */}
             <div
               data-testid="profit-preview-wholesale"
               className={`p-4 rounded-2xl border transition-colors ${

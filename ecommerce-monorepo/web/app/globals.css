@@ -144,8 +144,8 @@
   --accent: 231, 76, 60;
   --primary-color: #1a3a5c;
   --accent-color: #c9a84c;
-  --font-display: 'Playfair Display', serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-sans: var(--font-inter), 'Inter', system-ui, sans-serif;
   --shadow-premium: 0 4px 20px rgba(26, 58, 92, 0.08);
   --shadow-premium-lg: 0 12px 40px rgba(26, 58, 92, 0.16);
   --shadow-premium-xl: 0 16px 48px rgba(26, 58, 92, 0.24);

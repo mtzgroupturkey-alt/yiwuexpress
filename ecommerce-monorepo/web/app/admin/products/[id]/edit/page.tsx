@@ -113,6 +113,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const watchedWholesalePrice = watch('wholesalePrice')
   const watchedMinOrderQty = watch('minOrderQty')
 
+  const [taxPercent, setTaxPercent] = useState<string>('')
+  const [priceWithTax, setPriceWithTax] = useState<string>('')
+  const [wholesalePriceWithTax, setWholesalePriceWithTax] = useState<string>('')
+
   const handlePricingChange = (vals: PricingFormValues) => {
     const finalPrice = vals.afterDiscount !== '' ? parseFloat(String(vals.afterDiscount)) : (vals.retailPrice !== '' ? parseFloat(String(vals.retailPrice)) : 0);
     setValue('price', isNaN(finalPrice) ? 0 : finalPrice, { shouldValidate: true, shouldDirty: true });
@@ -138,6 +142,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     if (vals.minOrderQty !== '' && !isNaN(parseInt(String(vals.minOrderQty)))) {
       setValue('minOrderQty', parseInt(String(vals.minOrderQty)), { shouldValidate: true, shouldDirty: true });
     }
+
+    if (vals.taxPercent !== undefined) setTaxPercent(String(vals.taxPercent));
+    if (vals.priceWithTax !== undefined) setPriceWithTax(String(vals.priceWithTax));
+    if (vals.wholesalePriceWithTax !== undefined) setWholesalePriceWithTax(String(vals.wholesalePriceWithTax));
   };
 
   const fetchPhotoStatus = async () => {
@@ -228,6 +236,13 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
         const initialDesc = product.description || rawPayload.productDetails?.description || rawPayload.overview?.summary || ''
         setProductDescription(initialDesc)
+
+        const rawTaxRate = product.taxRate ?? product.taxPercent ?? rawPayload.taxRate ?? rawPayload.taxPercent ?? ''
+        const rawPriceWithTax = product.priceWithTax ?? rawPayload.priceWithTax ?? ''
+        const rawWholesaleWithTax = product.wholesalePriceWithTax ?? rawPayload.wholesalePriceWithTax ?? ''
+        setTaxPercent(rawTaxRate ? String(rawTaxRate) : '')
+        setPriceWithTax(rawPriceWithTax ? String(rawPriceWithTax) : '')
+        setWholesalePriceWithTax(rawWholesaleWithTax ? String(rawWholesaleWithTax) : '')
         
         // Reset form with product data
         reset({
@@ -366,6 +381,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           ? Math.round(((Number(data.compareAtPrice) - Number(data.price)) / Number(data.compareAtPrice)) * 10000) / 100
           : null,
         afterDiscount: parseFloat(data.price.toString()),
+        taxRate: taxPercent !== '' && !isNaN(parseFloat(taxPercent)) ? parseFloat(taxPercent) : null,
+        taxPercent: taxPercent !== '' && !isNaN(parseFloat(taxPercent)) ? parseFloat(taxPercent) : null,
+        priceWithTax: priceWithTax !== '' && !isNaN(parseFloat(priceWithTax)) ? parseFloat(priceWithTax) : null,
+        wholesalePriceWithTax: wholesalePriceWithTax !== '' && !isNaN(parseFloat(wholesalePriceWithTax)) ? parseFloat(wholesalePriceWithTax) : null,
         costPrice: data.costPrice !== undefined && data.costPrice !== null && !isNaN(Number(data.costPrice)) ? parseFloat(data.costPrice.toString()) : null,
         wholesalePrice: data.wholesalePrice !== undefined && data.wholesalePrice !== null && !isNaN(Number(data.wholesalePrice)) ? parseFloat(data.wholesalePrice.toString()) : null,
         weightKg: parseFloat(data.weightKg.toString()),
@@ -387,6 +406,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       const currentRaw = productData.rawIkeaPayload || productRawData?.rawIkeaPayload || {}
       const updatedRaw = {
         ...currentRaw,
+        taxRate: taxPercent !== '' && !isNaN(parseFloat(taxPercent)) ? parseFloat(taxPercent) : null,
+        taxPercent: taxPercent !== '' && !isNaN(parseFloat(taxPercent)) ? parseFloat(taxPercent) : null,
+        priceWithTax: priceWithTax !== '' && !isNaN(parseFloat(priceWithTax)) ? parseFloat(priceWithTax) : null,
+        wholesalePriceWithTax: wholesalePriceWithTax !== '' && !isNaN(parseFloat(wholesalePriceWithTax)) ? parseFloat(wholesalePriceWithTax) : null,
         swedenName: finalSwedenName,
         englishName: finalEnglishName,
         articleNumber: articleNo.trim(),
@@ -688,8 +711,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     ? Math.round(((Number(watchedCompareAtPrice) - Number(watchedPrice)) / Number(watchedCompareAtPrice)) * 1000) / 10
                     : '',
                 afterDiscount: watchedPrice !== undefined && watchedPrice !== null && !isNaN(Number(watchedPrice)) ? Number(watchedPrice) : '',
+                taxPercent: taxPercent !== '' ? Number(taxPercent) : '',
+                taxRate: taxPercent !== '' ? Number(taxPercent) : '',
+                priceWithTax: priceWithTax !== '' ? Number(priceWithTax) : '',
                 costPrice: watchedCostPrice !== undefined && watchedCostPrice !== null && !isNaN(Number(watchedCostPrice)) ? Number(watchedCostPrice) : '',
                 wholesalePrice: watchedWholesalePrice !== undefined && watchedWholesalePrice !== null && !isNaN(Number(watchedWholesalePrice)) ? Number(watchedWholesalePrice) : '',
+                wholesalePriceWithTax: wholesalePriceWithTax !== '' ? Number(wholesalePriceWithTax) : '',
                 minOrderQty: watchedMinOrderQty !== undefined && watchedMinOrderQty !== null && !isNaN(Number(watchedMinOrderQty)) ? Number(watchedMinOrderQty) : 1,
               }}
               errors={{

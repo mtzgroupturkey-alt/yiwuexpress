@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
-import { DEFAULT_PRODUCT_BADGES, ProductBadgeKey } from '@/lib/constants/productBadges';
+import { DEFAULT_PRODUCT_BADGES, ProductBadgeKey, GLOBAL_BADGE_TOGGLE_KEYS, GLOBAL_BADGE_TOGGLE_KEYS_SET } from '@/lib/constants/productBadges';
 
 type TranslationLocale = 'en' | 'ru' | 'zh';
 
@@ -75,11 +75,23 @@ export default function ProductBadgesSettingsPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.badges) {
-          setBadgesState({
+          const merged = {
             en: { ...DEFAULT_PRODUCT_BADGES.en, ...data.badges.en },
             ru: { ...DEFAULT_PRODUCT_BADGES.ru, ...data.badges.ru },
             zh: { ...DEFAULT_PRODUCT_BADGES.zh, ...data.badges.zh },
-          });
+          };
+
+          // Synchronize all global switches & thresholds across locales
+          for (const key of GLOBAL_BADGE_TOGGLE_KEYS) {
+            const canonical = merged.en[key] ?? merged.ru[key] ?? merged.zh[key];
+            if (canonical !== undefined) {
+              merged.en[key] = canonical;
+              merged.ru[key] = canonical;
+              merged.zh[key] = canonical;
+            }
+          }
+
+          setBadgesState(merged);
         }
       }
     } catch (err) {
@@ -90,13 +102,24 @@ export default function ProductBadgesSettingsPage() {
   };
 
   const updateField = (key: string, value: string) => {
-    setBadgesState((prev) => ({
-      ...prev,
-      [activeLocaleTab]: {
-        ...prev[activeLocaleTab],
-        [key]: value,
-      },
-    }));
+    if (GLOBAL_BADGE_TOGGLE_KEYS_SET.has(key)) {
+      // Visibility toggles and thresholds are store-wide operational flags:
+      // updating here instantly keeps all language tabs perfectly in sync.
+      setBadgesState((prev) => ({
+        ...prev,
+        en: { ...prev.en, [key]: value },
+        ru: { ...prev.ru, [key]: value },
+        zh: { ...prev.zh, [key]: value },
+      }));
+    } else {
+      setBadgesState((prev) => ({
+        ...prev,
+        [activeLocaleTab]: {
+          ...prev[activeLocaleTab],
+          [key]: value,
+        },
+      }));
+    }
   };
 
   // Auto-translate using the existing AI translation endpoint
@@ -126,9 +149,14 @@ export default function ProductBadgesSettingsPage() {
           Object.keys(data.translations).forEach((targetLoc) => {
             const loc = targetLoc as TranslationLocale;
             if (next[loc]) {
+              const incoming = { ...data.translations[targetLoc] };
+              // Never let AI translations overwrite global switches or numerical thresholds
+              for (const toggleKey of GLOBAL_BADGE_TOGGLE_KEYS) {
+                delete incoming[toggleKey];
+              }
               next[loc] = {
                 ...next[loc],
-                ...data.translations[targetLoc],
+                ...incoming,
               };
             }
           });
@@ -149,10 +177,26 @@ export default function ProductBadgesSettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const payloadBadges = {
+        en: { ...badgesState.en },
+        ru: { ...badgesState.ru },
+        zh: { ...badgesState.zh },
+      };
+
+      // Ensure all global toggles and thresholds are strictly uniform across all locales
+      for (const key of GLOBAL_BADGE_TOGGLE_KEYS) {
+        const canonical = payloadBadges.en[key] ?? payloadBadges[activeLocaleTab]?.[key];
+        if (canonical !== undefined) {
+          payloadBadges.en[key] = canonical;
+          payloadBadges.ru[key] = canonical;
+          payloadBadges.zh[key] = canonical;
+        }
+      }
+
       const res = await fetch('/api/admin/settings/product-badges', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ badges: badgesState }),
+        body: JSON.stringify({ badges: payloadBadges }),
       });
 
       if (!res.ok) {

@@ -109,6 +109,10 @@ interface ProductData {
     user?: { name: string }
   }> | null
   ikeaItemNumber?: string | null
+  taxRate?: number | null
+  taxPercent?: number | null
+  priceWithTax?: number | null
+  wholesalePriceWithTax?: number | null
   rawIkeaPayload?: any | null
 }
 
@@ -369,6 +373,30 @@ export default function ProductDetailView({
     : currentCompareAtPrice && currentCompareAtPrice > displayPrice
     ? currentCompareAtPrice
     : null
+
+  const effectiveTaxRate = useMemo(() => {
+    const rawTax =
+      product.taxRate ??
+      product.taxPercent ??
+      (product.rawIkeaPayload as any)?.taxRate ??
+      (product.rawIkeaPayload as any)?.taxPercent
+    if (rawTax !== undefined && rawTax !== null && !isNaN(Number(rawTax)) && Number(rawTax) > 0) {
+      return Number(rawTax)
+    }
+    return 0
+  }, [product])
+
+  const effectiveDisplayPriceWithTax = useMemo(() => {
+    if (priceType === 'wholesale') {
+      if (product.wholesalePriceWithTax && product.wholesalePriceWithTax > 0) {
+        return product.wholesalePriceWithTax
+      }
+      if (effectiveTaxRate > 0 && displayPrice > 0) {
+        return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100
+      }
+    }
+    return null
+  }, [priceType, product.wholesalePriceWithTax, effectiveTaxRate, displayPrice])
   const currentImages = useMemo(() => {
     const list: string[] = []
     // If selected variant has specific photos, show them first
@@ -1910,8 +1938,8 @@ export default function ProductDetailView({
                   {/* 1. Category, Item # and High Demand / Status Badges */}
                   <div className="flex items-center justify-between gap-2.5 flex-wrap pb-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs uppercase tracking-wider shadow-2xs">
-                        <Layers className="w-3.5 h-3.5 text-[#00407a]" />
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-sm uppercase tracking-wider shadow-2xs">
+                        <Layers className="w-4 h-4 text-[#00407a]" />
                         <span>{localizedCategoryName || 'Cookware & Bakeware'}</span>
                       </span>
 
@@ -1926,14 +1954,14 @@ export default function ProductDetailView({
                               setTimeout(() => setCopiedItemNo(false), 2000)
                             }}
                             title={copiedItemNo ? 'Copied to clipboard!' : 'Click to copy item number'}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 font-mono text-xs font-semibold transition-colors cursor-pointer group"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 font-mono text-sm font-semibold transition-colors cursor-pointer group"
                           >
-                            <span className="text-slate-400 font-normal">Item #:</span>
-                            <span className="font-bold text-slate-900 group-hover:text-[#00407a]">{itemCode}</span>
+                            <span className="text-slate-400 font-medium">Item #:</span>
+                            <span className="font-extrabold text-slate-900 group-hover:text-[#00407a] tracking-tight">{itemCode}</span>
                             {copiedItemNo ? (
-                              <Check className="w-3 h-3 text-emerald-600" />
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
                             ) : (
-                              <Copy className="w-3 h-3 text-slate-400 opacity-60 group-hover:opacity-100" />
+                              <Copy className="w-3.5 h-3.5 text-slate-400 opacity-60 group-hover:opacity-100" />
                             )}
                           </button>
                         )
@@ -2096,7 +2124,7 @@ export default function ProductDetailView({
                   </div>
 
                   {/* 5. Pricing & Value Showcase */}
-                  <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 shadow-2xs">
+                  <div className="rounded-2xl p-4 bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 shadow-2xs space-y-2.5">
                     <div className="flex items-baseline justify-between gap-3 flex-wrap">
                       <div className="flex items-baseline gap-2.5 flex-wrap">
                         <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
@@ -2125,6 +2153,31 @@ export default function ProductDetailView({
                         </div>
                       )}
                     </div>
+
+                    {/* Tax Breakdown: Shows both price without TAX and price + TAX */}
+                    {effectiveDisplayPriceWithTax && (
+                      <div
+                        data-testid="pdp-tax-display"
+                        className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-200/70 text-xs flex-wrap"
+                      >
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-slate-500 font-medium">
+                            {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}{' '}
+                            <strong className="text-slate-800 font-bold">{formatPrice(displayPrice)}</strong>
+                          </span>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-purple-700 font-medium">
+                            {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}{' '}
+                            <strong className="text-purple-900 font-black text-sm">{formatPrice(effectiveDisplayPriceWithTax)}</strong>
+                          </span>
+                        </div>
+                        {effectiveTaxRate > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                            +{effectiveTaxRate}% {locale === 'ru' ? 'НДС' : locale === 'zh' ? '税' : 'TAX'}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Variant / Configurable Attribute Selectors */}
@@ -2393,6 +2446,7 @@ export default function ProductDetailView({
                     const stepperMinQty = isWholesaleActive ? Math.min(product.minOrderQty || 1, currentStock > 0 ? currentStock : 1) : 1
                     const stepperMaxQty = isWholesaleActive ? (currentStock > 0 ? currentStock : 9999) : Math.min(10, currentStock > 0 ? currentStock : 10)
                     const subtotal = displayPrice * quantity
+                    const subtotalWithTax = isWholesaleActive && effectiveDisplayPriceWithTax ? effectiveDisplayPriceWithTax * quantity : null
 
                     return (
                       <div className="rounded-2xl p-3.5 bg-slate-50/80 border border-slate-200/80 space-y-3">
@@ -2475,6 +2529,12 @@ export default function ProductDetailView({
                             <span className="text-[11px] text-slate-400 font-medium block">
                               {formatPrice(displayPrice)} × {quantity} {quantity === 1 ? 'unit' : 'units'}
                             </span>
+                            {subtotalWithTax && (
+                              <span className="text-[11px] text-purple-700 font-semibold block pt-0.5">
+                                {locale === 'ru' ? 'С НДС: ' : locale === 'zh' ? '含税总计: ' : 'Incl. TAX: '}
+                                <strong className="text-purple-900 font-black">{formatPrice(subtotalWithTax)}</strong>
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -2649,9 +2709,9 @@ export default function ProductDetailView({
 
             {/* Quick Article / Item # tag on the right (desktop) */}
             {displayArticleNumber && (
-              <div className="hidden lg:flex items-center gap-2 py-2 pr-2 text-xs text-slate-400">
-                <span className="font-semibold uppercase tracking-wider text-[11px] text-slate-400">Item #:</span>
-                <span className="font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200/80">
+              <div className="hidden lg:flex items-center gap-2 py-2 pr-2 text-sm text-slate-500">
+                <span className="font-bold uppercase tracking-wider text-xs text-slate-400">Item #:</span>
+                <span className="font-mono font-extrabold text-slate-800 bg-slate-100 px-3 py-1 rounded-md border border-slate-200/80 text-sm">
                   {displayArticleNumber}
                 </span>
               </div>

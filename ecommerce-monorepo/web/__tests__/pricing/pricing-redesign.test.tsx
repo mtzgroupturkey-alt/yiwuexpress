@@ -5,6 +5,8 @@ import {
   round2,
   computeAfterDiscount,
   computeDiscountPercent,
+  computePriceWithTax,
+  computeTaxPercent,
   computeProfit,
   computeWholesaleProfit,
 } from '@/lib/pricing/calculate';
@@ -330,6 +332,149 @@ describe('Pricing Redesign Unit & Regression Suite', () => {
       const wholesaleOffer = buildJsonLdOffers(product, 'wholesale');
       expect(wholesaleOffer.price).toBe(29.99);
       expect(wholesaleOffer.price).not.toBe(product.retailPrice);
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 6. TAX Calculations & UI Field Tests
+  // ─────────────────────────────────────────────────────────────────────────────
+  describe('TAX Calculations & PricingSection Integration', () => {
+    it('computes Price after TAX from selling price and tax percent', () => {
+      // 59.99 with 20% tax -> 59.99 * 1.20 = 71.988 -> 71.99
+      expect(computePriceWithTax(59.99, 20)).toBe(71.99);
+      expect(computePriceWithTax(100, 10)).toBe(110.00);
+      expect(computePriceWithTax(50, 0)).toBe(50.00);
+      expect(computePriceWithTax(50, null)).toBe(50.00);
+    });
+
+    it('computes Tax % backwards from manual Price after TAX', () => {
+      // selling price 50, price with tax 60 -> ((60 - 50) / 50) * 100 = 20%
+      expect(computeTaxPercent(50, 60)).toBe(20);
+      // selling price 59.99, price with tax 71.99 -> ((71.99 - 59.99) / 59.99) * 100 = 20%
+      expect(computeTaxPercent(59.99, 71.99)).toBe(20);
+    });
+
+    it('updates Price after TAX when typing TAX % in PricingSection', () => {
+      const handleChange = vi.fn();
+      render(
+        <PricingSection
+          values={{
+            retailPrice: '65',
+            discountPercent: '7.7',
+            afterDiscount: '59.99',
+            wholesalePrice: '50',
+          }}
+          onChange={handleChange}
+        />
+      );
+
+      const taxInput = screen.getByTestId('input-tax-percent');
+      fireEvent.change(taxInput, { target: { value: '20' } });
+
+      const displayTax = screen.getByTestId('display-price-with-tax');
+      expect(displayTax.textContent).toContain('$60.00');
+      expect(screen.getByTestId('badge-tax').textContent).toContain('+20% TAX');
+
+      const taxPreview = screen.getByTestId('tax-preview');
+      expect(taxPreview.textContent).toContain('Without TAX: $50.00');
+      expect(taxPreview.textContent).toContain('With TAX: $60.00');
+    });
+
+    it('supports manual override checkbox for Price after TAX and computes tax % backwards', () => {
+      const handleChange = vi.fn();
+      render(
+        <PricingSection
+          values={{
+            retailPrice: '50',
+            afterDiscount: '50',
+            wholesalePrice: '50',
+          }}
+          onChange={handleChange}
+        />
+      );
+
+      const overrideTaxCheckbox = screen.getByTestId('checkbox-manual-tax-override');
+      fireEvent.click(overrideTaxCheckbox);
+
+      const priceWithTaxInput = screen.getByTestId('input-price-with-tax');
+      expect(priceWithTaxInput).toBeDefined();
+
+      // Enter manual 60.00 on 50.00 wholesale price -> 20% tax
+      fireEvent.change(priceWithTaxInput, { target: { value: '60.00' } });
+      const taxInput = screen.getByTestId('input-tax-percent') as HTMLInputElement;
+      expect(parseFloat(taxInput.value)).toBe(20);
+    });
+
+    it('does not display price after tax or tax controls in retail section', () => {
+      render(
+        <PricingSection
+          values={{
+            retailPrice: '65',
+            discountPercent: '7.7',
+            afterDiscount: '59.99',
+          }}
+        />
+      );
+
+      const retailPreview = screen.getByTestId('customer-preview');
+      expect(retailPreview.textContent).toContain('$65.00');
+      expect(retailPreview.textContent).toContain('$59.99');
+      // No tax mention in retail preview
+      expect(retailPreview.textContent).not.toContain('TAX');
+      expect(retailPreview.textContent).not.toContain('Without TAX');
+      expect(retailPreview.textContent).not.toContain('With TAX');
+    });
+
+    it('calculates and shows wholesale price after TAX when wholesale price and TAX % are set', () => {
+      const handleChange = vi.fn();
+      render(
+        <PricingSection
+          values={{
+            retailPrice: '65',
+            afterDiscount: '59.99',
+            taxPercent: '20',
+            wholesalePrice: '50',
+            minOrderQty: '1000',
+          }}
+          onChange={handleChange}
+        />
+      );
+
+      const wholesaleWithTaxDisplay = screen.getByTestId('display-wholesale-price-with-tax') as HTMLInputElement;
+      expect(wholesaleWithTaxDisplay.value).toBe('$60.00');
+
+      const wholesaleTaxPreview = screen.getByTestId('wholesale-tax-preview');
+      expect(wholesaleTaxPreview.textContent).toContain('Without TAX: $50.00');
+      expect(wholesaleTaxPreview.textContent).toContain('With TAX: $60.00');
+      expect(screen.getByTestId('badge-wholesale-tax').textContent).toContain('+20% TAX');
+    });
+
+    it('recalculates wholesale price after TAX in real-time when user types a new wholesale price', () => {
+      const handleChange = vi.fn();
+      render(
+        <PricingSection
+          values={{
+            retailPrice: '100',
+            afterDiscount: '100',
+            taxPercent: '10',
+            wholesalePrice: '50',
+          }}
+          onChange={handleChange}
+        />
+      );
+
+      const wholesaleInput = screen.getByTestId('input-wholesale-price');
+      fireEvent.change(wholesaleInput, { target: { value: '80' } });
+
+      const wholesaleWithTaxDisplay = screen.getByTestId('display-wholesale-price-with-tax') as HTMLInputElement;
+      expect(wholesaleWithTaxDisplay.value).toBe('$88.00');
+
+      expect(handleChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          wholesalePrice: '80',
+          wholesalePriceWithTax: '88',
+        })
+      );
     });
   });
 });

@@ -201,9 +201,17 @@ export async function GET(request: NextRequest) {
     const pdpFaq5Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq5Q', locale === 'ru' ? 'Возможно ли брендирование и производство под заказ (OEM/ODM)?' : locale === 'zh' ? '是否支持贴牌定制与打样（OEM / ODM）？' : 'Can I customize this product or add my logo (OEM/ODM)?', locale)
     const pdpFaq5A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq5A', locale === 'ru' ? 'Да, нанесение логотипа и индивидуальная упаковка доступны для партий от 500 шт. Напишите нам детали заказа.' : locale === 'zh' ? '支持定制包装、印刷 Logo 和模具开发。订单量达到定制门槛即可联系客服沟通打样与生产周期。' : 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.', locale)
 
+    // Operational badge visibility switches: disabled globally if turned off in English or active locale
+    const resolveBadgeToggle = (key: string, defaultValue = true): boolean => {
+      const rows = (effectiveSettings.translations || []).filter((t: any) => t.key === key);
+      if (rows.length === 0) return defaultValue;
+      if (rows.some((t: any) => t.value === 'false')) return false;
+      const targetRow = rows.find((t: any) => t.locale === locale) || rows.find((t: any) => t.locale === 'en');
+      return targetRow ? targetRow.value !== 'false' : defaultValue;
+    };
+
     // High Demand & Stock Urgency Badge
-    const rawHighDemandEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpHighDemandBadgeEnabled', 'true', locale)
-    const pdpHighDemandBadgeEnabled = rawHighDemandEnabled !== 'false'
+    const pdpHighDemandBadgeEnabled = resolveBadgeToggle('pdpHighDemandBadgeEnabled', true)
     const pdpHighDemandThreshold = parseInt(localizeSystemSetting(effectiveSettings.translations, 'pdpHighDemandThreshold', '100', locale) || '100', 10) || 100
     const pdpHighDemandText = localizeSystemSetting(
       effectiveSettings.translations,
@@ -213,22 +221,22 @@ export async function GET(request: NextRequest) {
     )
 
     // Courier Delivery Box On/Off
-    const pdpCourierDeliveryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpCourierDeliveryBadgeEnabled', 'true', locale) !== 'false'
+    const pdpCourierDeliveryBadgeEnabled = resolveBadgeToggle('pdpCourierDeliveryBadgeEnabled', true)
 
     // Reassurance Badges On/Off
-    const pdpWarrantyBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpWarrantyBadgeEnabled', 'true', locale) !== 'false'
-    const pdpDeliveryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryBadgeEnabled', 'true', locale) !== 'false'
-    const pdpReturnsBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpReturnsBadgeEnabled', 'true', locale) !== 'false'
+    const pdpWarrantyBadgeEnabled = resolveBadgeToggle('pdpWarrantyBadgeEnabled', true)
+    const pdpDeliveryBadgeEnabled = resolveBadgeToggle('pdpDeliveryBadgeEnabled', true)
+    const pdpReturnsBadgeEnabled = resolveBadgeToggle('pdpReturnsBadgeEnabled', true)
 
     // Trust Badges On/Off
-    const pdpFactoryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpFactoryBadgeEnabled', 'true', locale) !== 'false'
-    const pdpQcBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpQcBadgeEnabled', 'true', locale) !== 'false'
-    const pdpLogisticsBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpLogisticsBadgeEnabled', 'true', locale) !== 'false'
-    const pdpEscrowBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpEscrowBadgeEnabled', 'true', locale) !== 'false'
+    const pdpFactoryBadgeEnabled = resolveBadgeToggle('pdpFactoryBadgeEnabled', true)
+    const pdpQcBadgeEnabled = resolveBadgeToggle('pdpQcBadgeEnabled', true)
+    const pdpLogisticsBadgeEnabled = resolveBadgeToggle('pdpLogisticsBadgeEnabled', true)
+    const pdpEscrowBadgeEnabled = resolveBadgeToggle('pdpEscrowBadgeEnabled', true)
 
     // Pickup Hub & FAQ On/Off
-    const pdpPickupBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpPickupBadgeEnabled', 'true', locale) !== 'false'
-    const pdpFaqBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpFaqBadgeEnabled', 'true', locale) !== 'false'
+    const pdpPickupBadgeEnabled = resolveBadgeToggle('pdpPickupBadgeEnabled', true)
+    const pdpFaqBadgeEnabled = resolveBadgeToggle('pdpFaqBadgeEnabled', true)
 
     // Homepage Trust & Reassurance Badges
     const rawTrustEnabled = localizeSystemSetting(effectiveSettings.translations, 'trustFeaturesEnabled', 'true', locale)

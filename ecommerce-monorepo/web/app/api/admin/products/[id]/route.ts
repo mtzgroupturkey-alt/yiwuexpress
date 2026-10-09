@@ -56,10 +56,15 @@ export async function GET(
       }
     })
 
+    const rawPayload = (product.rawIkeaPayload as any) || {}
     return NextResponse.json({
       success: true,
       data: {
         ...product,
+        taxRate: (product as any).taxRate ?? rawPayload.taxRate ?? rawPayload.taxPercent ?? null,
+        taxPercent: (product as any).taxPercent ?? rawPayload.taxPercent ?? rawPayload.taxRate ?? null,
+        priceWithTax: (product as any).priceWithTax ?? rawPayload.priceWithTax ?? null,
+        wholesalePriceWithTax: (product as any).wholesalePriceWithTax ?? rawPayload.wholesalePriceWithTax ?? null,
         attributes,
         attributeTranslations
       }
@@ -137,8 +142,48 @@ export async function PUT(
       retailPrice,
       discountPercent,
       afterDiscount,
+      taxPercent,
+      taxRate: incomingTaxRate,
+      priceWithTax,
+      wholesalePriceWithTax,
       ...productData
     } = body
+
+    // Sync tax and wholesale tax settings into rawIkeaPayload
+    const effectiveTaxRate = incomingTaxRate !== undefined && incomingTaxRate !== null && incomingTaxRate !== ''
+      ? parseFloat(String(incomingTaxRate))
+      : (taxPercent !== undefined && taxPercent !== null && taxPercent !== '' ? parseFloat(String(taxPercent)) : null)
+    const effectivePriceWithTax = priceWithTax !== undefined && priceWithTax !== null && priceWithTax !== ''
+      ? parseFloat(String(priceWithTax))
+      : null
+    const effectiveWholesalePriceWithTax = wholesalePriceWithTax !== undefined && wholesalePriceWithTax !== null && wholesalePriceWithTax !== ''
+      ? parseFloat(String(wholesalePriceWithTax))
+      : null
+
+    const initialRaw = (productData.rawIkeaPayload || existing.rawIkeaPayload || {}) as any
+    if (typeof initialRaw === 'object' && initialRaw !== null) {
+      if (effectiveTaxRate !== null && !isNaN(effectiveTaxRate)) {
+        initialRaw.taxRate = effectiveTaxRate
+        initialRaw.taxPercent = effectiveTaxRate
+      } else if (effectiveTaxRate === null || taxPercent === '') {
+        delete initialRaw.taxRate
+        delete initialRaw.taxPercent
+      }
+
+      if (effectivePriceWithTax !== null && !isNaN(effectivePriceWithTax)) {
+        initialRaw.priceWithTax = effectivePriceWithTax
+      } else if (effectivePriceWithTax === null || priceWithTax === '') {
+        delete initialRaw.priceWithTax
+      }
+
+      if (effectiveWholesalePriceWithTax !== null && !isNaN(effectiveWholesalePriceWithTax)) {
+        initialRaw.wholesalePriceWithTax = effectiveWholesalePriceWithTax
+      } else if (effectiveWholesalePriceWithTax === null || wholesalePriceWithTax === '') {
+        delete initialRaw.wholesalePriceWithTax
+      }
+
+      productData.rawIkeaPayload = initialRaw
+    }
 
     // Normalize the incoming translations payload into an array of
     // { locale, name, description, metaTitle, metaDescription } rows (en/ru/zh).

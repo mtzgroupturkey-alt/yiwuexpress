@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import { headers } from 'next/headers'
 import { getCompanyName, getSiteTagline, getSystemSettings } from '@/lib/company'
 import './globals.css'
 import './preloader.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = localFont({
+  src: '../public/fonts/InterVariable.woff2',
+  display: 'swap',
+  variable: '--font-inter',
+  weight: '100 900',
+})
 
 export async function generateMetadata(): Promise<Metadata> {
   const [settings, companyName, tagline] = await Promise.all([
@@ -117,7 +122,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.variable} ${inter.className} font-sans`}>{children}</body>
     </html>
   )
 }

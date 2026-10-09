@@ -688,8 +688,38 @@ export async function POST(request: Request) {
       retailPrice,
       discountPercent,
       afterDiscount,
+      taxPercent,
+      taxRate: incomingTaxRate,
+      priceWithTax,
+      wholesalePriceWithTax,
       ...productData
     } = body
+
+    // Sync tax and wholesale tax settings into rawIkeaPayload
+    const effectiveTaxRate = incomingTaxRate !== undefined && incomingTaxRate !== null && incomingTaxRate !== ''
+      ? parseFloat(String(incomingTaxRate))
+      : (taxPercent !== undefined && taxPercent !== null && taxPercent !== '' ? parseFloat(String(taxPercent)) : null)
+    const effectivePriceWithTax = priceWithTax !== undefined && priceWithTax !== null && priceWithTax !== ''
+      ? parseFloat(String(priceWithTax))
+      : null
+    const effectiveWholesalePriceWithTax = wholesalePriceWithTax !== undefined && wholesalePriceWithTax !== null && wholesalePriceWithTax !== ''
+      ? parseFloat(String(wholesalePriceWithTax))
+      : null
+
+    const initialRaw = (productData.rawIkeaPayload || {}) as any
+    if (typeof initialRaw === 'object' && initialRaw !== null) {
+      if (effectiveTaxRate !== null && !isNaN(effectiveTaxRate)) {
+        initialRaw.taxRate = effectiveTaxRate
+        initialRaw.taxPercent = effectiveTaxRate
+      }
+      if (effectivePriceWithTax !== null && !isNaN(effectivePriceWithTax)) {
+        initialRaw.priceWithTax = effectivePriceWithTax
+      }
+      if (effectiveWholesalePriceWithTax !== null && !isNaN(effectiveWholesalePriceWithTax)) {
+        initialRaw.wholesalePriceWithTax = effectiveWholesalePriceWithTax
+      }
+      productData.rawIkeaPayload = initialRaw
+    }
 
     // Normalize the incoming translations payload into an array of
     // { locale, name, description, metaTitle, metaDescription } rows (en/ru/zh).

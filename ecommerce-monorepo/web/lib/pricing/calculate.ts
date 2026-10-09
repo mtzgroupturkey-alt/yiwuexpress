@@ -112,3 +112,39 @@ export const computeWholesaleProfit = (
     isLoss: amount < 0,
   };
 };
+
+/**
+ * Computes Price after TAX (selling price + tax)
+ * Formula: round2(sellingPrice * (1 + (taxPercent || 0) / 100))
+ */
+export const computePriceWithTax = (
+  sellingPrice: number,
+  taxPercent?: number | null
+): number => {
+  if (!sellingPrice || sellingPrice <= 0 || isNaN(sellingPrice)) return 0;
+  if (!taxPercent || taxPercent <= 0 || isNaN(taxPercent)) {
+    return round2(sellingPrice);
+  }
+  return round2(sellingPrice * (1 + taxPercent / 100));
+};
+
+/**
+ * Computes Tax % backwards from selling price and manual Price after TAX
+ * Formula: round2(((priceWithTax - sellingPrice) / sellingPrice) * 100)
+ */
+export const computeTaxPercent = (
+  sellingPrice: number,
+  priceWithTax: number
+): number => {
+  if (
+    !sellingPrice ||
+    sellingPrice <= 0 ||
+    !priceWithTax ||
+    priceWithTax <= 0 ||
+    priceWithTax <= sellingPrice
+  ) {
+    return 0;
+  }
+  const pct = ((priceWithTax - sellingPrice) / sellingPrice) * 100;
+  return Math.max(0, round2(pct));
+};

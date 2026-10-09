@@ -103,6 +103,18 @@ export function createPricingSchema(locale: PricingLocale = 'en') {
         .min(1, msgs.minOrderMin)
         .nullable()
         .optional(),
+
+      taxPercent: z.coerce
+        .number()
+        .min(0)
+        .nullable()
+        .optional(),
+
+      priceWithTax: z.coerce
+        .number()
+        .min(0)
+        .nullable()
+        .optional(),
     })
     .refine(
       (data) => {

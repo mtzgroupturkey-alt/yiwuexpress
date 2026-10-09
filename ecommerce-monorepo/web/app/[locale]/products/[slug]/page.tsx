@@ -263,7 +263,10 @@ async function getProductFromDB(slug: string, locale: string) {
     categoryAttributes: uniqueAttributes,
     variants: product.variants,
     reviews: product.reviews,
-    ikeaItemNumber: ikeaNum,
+    taxRate: (product as any).taxRate ?? (rawIkeaPayload as any)?.taxRate ?? (rawIkeaPayload as any)?.taxPercent ?? null,
+    taxPercent: (product as any).taxPercent ?? (rawIkeaPayload as any)?.taxPercent ?? (rawIkeaPayload as any)?.taxRate ?? null,
+    priceWithTax: (product as any).priceWithTax ?? (rawIkeaPayload as any)?.priceWithTax ?? null,
+    wholesalePriceWithTax: (product as any).wholesalePriceWithTax ?? (rawIkeaPayload as any)?.wholesalePriceWithTax ?? null,
     rawIkeaPayload: rawIkeaPayload || null,
   };
 }

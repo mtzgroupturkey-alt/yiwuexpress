@@ -125,25 +125,27 @@ export function StickyBuyBar({
             </div>
 
             {/* CTA Button */}
-            <button
-              type="button"
-              onClick={onAddToCart}
-              disabled={isAdding}
-              className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95 disabled:opacity-60 ${
-                isWholesale && !isInstantWholesale
-                  ? 'bg-[#00407a] hover:bg-[#003366] text-white'
-                  : 'bg-[#F5A602] hover:bg-[#E09500] text-slate-950'
-              }`}
-            >
-              {isAdding ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : isWholesale && !isInstantWholesale ? (
-                <FileText className="w-4 h-4" />
-              ) : (
-                <ShoppingCart className="w-4 h-4" />
-              )}
-              <span className="whitespace-nowrap">{buttonText}</span>
-            </button>
+            {isLoggedIn && (
+              <button
+                type="button"
+                onClick={onAddToCart}
+                disabled={isAdding}
+                className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-black shadow-xs transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95 disabled:opacity-60 ${
+                  isWholesale && !isInstantWholesale
+                    ? 'bg-[#00407a] hover:bg-[#003366] text-white'
+                    : 'bg-[#F5A602] hover:bg-[#E09500] text-slate-950'
+                }`}
+              >
+                {isAdding ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : isWholesale && !isInstantWholesale ? (
+                  <FileText className="w-4 h-4" />
+                ) : (
+                  <ShoppingCart className="w-4 h-4" />
+                )}
+                <span className="whitespace-nowrap">{buttonText}</span>
+              </button>
+            )}
           </div>
         </motion.div>
       )}
