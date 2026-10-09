@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Search, Plus, Edit, Trash2, FolderTree, ChevronRight,
+  Search, Plus, Edit, Trash2, FolderTree, ChevronRight, ChevronLeft, ArrowRight,
   Folder, Star, Layers, Package, CornerDownRight,
   X, Sparkles, FolderPlus, GripVertical, ChevronUp, ChevronDown,
   Eye, EyeOff, LayoutGrid, ArrowUpDown, Home, CheckCircle2,
@@ -503,6 +503,19 @@ export default function AdminCategoriesPage() {
     zh: { name: '', description: '' }
   })
 
+  const drawerContentRef = useRef<HTMLDivElement>(null)
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showForm) {
+        handleCancelEdit()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showForm])
+
   const {
     register,
     handleSubmit,
@@ -634,6 +647,42 @@ export default function AdminCategoriesPage() {
     }
   }, [search, filteredCategories])
 
+  // Root categories sorted by menuOrder with deterministic tie breaker
+  const rootCategories = useMemo(() => {
+    const roots = filteredCategories.filter(c => !c.parentId)
+    return [...roots].sort((a, b) => {
+      const orderA = a.menuOrder ?? 0
+      const orderB = b.menuOrder ?? 0
+      if (orderA !== orderB) return orderA - orderB
+      return a.name.localeCompare(b.name)
+    })
+  }, [filteredCategories])
+
+  // Flattened ordered list matching exact hierarchical tree order for sequential Prev/Next navigation
+  const orderedCategoryList = useMemo(() => {
+    const list: Category[] = []
+    const traverse = (parentList: Category[]) => {
+      for (const parent of parentList) {
+        list.push(parent)
+        const kids = filteredCategories.filter(c => c.parentId === parent.id)
+        if (kids.length > 0) {
+          traverse(kids)
+        }
+      }
+    }
+    traverse(rootCategories)
+    return list
+  }, [rootCategories, filteredCategories])
+
+  const currentCategoryIndex = editingCategory
+    ? orderedCategoryList.findIndex(c => c.id === editingCategory.id)
+    : -1
+
+  const prevCategory = currentCategoryIndex > 0 ? orderedCategoryList[currentCategoryIndex - 1] : null
+  const nextCategory = currentCategoryIndex >= 0 && currentCategoryIndex < orderedCategoryList.length - 1
+    ? orderedCategoryList[currentCategoryIndex + 1]
+    : null
+
   const handleEdit = (category: Category) => {
     setEditingCategory(category)
     setCategoryImage(category.image || '')
@@ -664,6 +713,17 @@ export default function AdminCategoriesPage() {
       showInMenu: category.showInMenu !== false
     })
     setShowForm(true)
+
+    // Reset drawer scroll to top so new category form starts at top
+    drawerContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+
+    // Highlight and gently center active row in the background list
+    setTimeout(() => {
+      const el = document.getElementById(`cat-row-${category.id}`)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 100)
   }
 
   const handleAddSubcategory = (parentId: string) => {
@@ -694,7 +754,7 @@ export default function AdminCategoriesPage() {
     })
   }
 
-  const onSubmit = async (data: CategoryForm) => {
+  const saveCategory = async (data: CategoryForm, andNext: boolean = false) => {
     setSubmitting(true)
     try {
       const enName = translations.en?.name?.trim()
@@ -744,8 +804,27 @@ export default function AdminCategoriesPage() {
       const result = await response.json()
 
       if (result.success) {
-        handleCancelEdit()
-        fetchCategories()
+        showToast(
+          editingCategory 
+            ? `Category "${categoryData.name}" updated successfully!` 
+            : `Category "${categoryData.name}" created!`
+        )
+        await fetchCategories()
+
+        if (andNext && nextCategory) {
+          handleEdit(nextCategory)
+        } else {
+          const currentId = editingCategory?.id
+          handleCancelEdit()
+          if (currentId) {
+            setTimeout(() => {
+              const el = document.getElementById(`cat-row-${currentId}`)
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }, 100)
+          }
+        }
       } else {
         alert(result.error || dict.categories.categorySaveFailed)
       }
@@ -1058,16 +1137,6 @@ export default function AdminCategoriesPage() {
     saveHeroGridOrderToServer(reordered)
   }
 
-  // Root categories sorted by menuOrder with deterministic tie breaker
-  const rootCategories = useMemo(() => {
-    const roots = filteredCategories.filter(c => !c.parentId)
-    return [...roots].sort((a, b) => {
-      const orderA = a.menuOrder ?? 0
-      const orderB = b.menuOrder ?? 0
-      if (orderA !== orderB) return orderA - orderB
-      return a.name.localeCompare(b.name)
-    })
-  }, [filteredCategories])
   const totalProducts = categories.reduce((sum, c) => sum + (c._count?.products || 0), 0)
   const totalSubcategories = categories.filter(c => c.parentId).length
 
@@ -1088,9 +1157,12 @@ export default function AdminCategoriesPage() {
     return (
       <div className="group/node">
         <div
-          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 my-1.5 rounded-2xl bg-white hover:bg-blue-50/40 border border-gray-100 hover:border-blue-200/60 shadow-2xs hover:shadow-sm transition-all duration-200 ${
-            level > 0 ? 'relative' : ''
-          }`}
+          id={`cat-row-${category.id}`}
+          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 my-1.5 rounded-2xl transition-all duration-200 ${
+            editingCategory?.id === category.id
+              ? 'border-blue-500 ring-2 ring-blue-400 bg-blue-50/80 shadow-md'
+              : 'bg-white hover:bg-blue-50/40 border border-gray-100 hover:border-blue-200/60 shadow-2xs hover:shadow-sm'
+          } ${level > 0 ? 'relative' : ''}`}
           style={{ 
             marginLeft: level > 0 ? `${Math.min(level * 20, 48)}px` : '0',
           }}
@@ -1141,7 +1213,62 @@ export default function AdminCategoriesPage() {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-400 font-mono truncate mt-0.5">/{category.slug}</p>
+
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <p className="text-xs text-gray-400 font-mono truncate">/{category.slug}</p>
+                
+                {/* Language translation coverage badges */}
+                <div className="flex items-center gap-1">
+                  <span
+                    title={
+                      category.translations?.find(t => t.locale === 'en')?.name || category.name 
+                        ? `English: ${category.translations?.find(t => t.locale === 'en')?.name || category.name}` 
+                        : "English missing"
+                    }
+                    className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs select-none"
+                  >
+                    EN
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEdit(category)
+                    }}
+                    title={
+                      category.translations?.find(t => t.locale === 'ru')?.name?.trim()
+                        ? `Russian: ${category.translations?.find(t => t.locale === 'ru')?.name}` 
+                        : "Russian missing (click to edit/translate)"
+                    }
+                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      category.translations?.find(t => t.locale === 'ru')?.name?.trim()
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs'
+                        : 'bg-amber-50 text-amber-800 border border-amber-300 font-extrabold hover:bg-amber-100 ring-1 ring-amber-300'
+                    }`}
+                  >
+                    RU {!category.translations?.find(t => t.locale === 'ru')?.name?.trim() && '•'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleEdit(category)
+                    }}
+                    title={
+                      category.translations?.find(t => t.locale === 'zh')?.name?.trim()
+                        ? `Chinese: ${category.translations?.find(t => t.locale === 'zh')?.name}` 
+                        : "Chinese missing (click to edit/translate)"
+                    }
+                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                      category.translations?.find(t => t.locale === 'zh')?.name?.trim()
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs'
+                        : 'bg-amber-50 text-amber-800 border border-amber-300 font-extrabold hover:bg-amber-100 ring-1 ring-amber-300'
+                    }`}
+                  >
+                    ZH {!category.translations?.find(t => t.locale === 'zh')?.name?.trim() && '•'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1305,17 +1432,13 @@ export default function AdminCategoriesPage() {
         <div className="flex items-center gap-2.5 shrink-0">
           <Button
             onClick={() => {
-              if (showForm && !editingCategory) {
-                setShowForm(false)
-              } else {
-                handleCancelEdit()
-                setShowForm(true)
-              }
+              handleCancelEdit()
+              setShowForm(true)
             }}
-            className="bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] hover:from-[#152e4a] hover:to-[#1d4ed8] text-white shadow-md shadow-blue-900/10 rounded-xl px-4 py-2.5 font-bold text-xs inline-flex items-center gap-1.5 transition-all active:scale-95"
+            className="bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] hover:from-[#152e4a] hover:to-[#1d4ed8] text-white shadow-md shadow-blue-900/10 rounded-xl px-4 py-2.5 font-bold text-xs inline-flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
           >
-            {showForm && !editingCategory ? <X size={15} /> : <Plus size={15} />}
-            <span>{showForm && !editingCategory ? dict.common.close : dict.categories.addCategory}</span>
+            <Plus size={15} />
+            <span>{dict.categories.addCategory}</span>
           </Button>
         </div>
       </div>
@@ -1428,8 +1551,7 @@ export default function AdminCategoriesPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className={`${showForm ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-4`}>
+      <div className="space-y-4">
           {activeTab === 'tree' ? (
             <>
               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
@@ -1726,181 +1848,270 @@ export default function AdminCategoriesPage() {
               </div>
             </div>
           )}
-        </div>
+      </div>
 
-        {showForm && (
-          <div className="lg:col-span-1 sticky top-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Sparkles size={16} />
+      {/* Slide-Over Drawer for Sequential Editing & Translation */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 overflow-hidden animate-in fade-in duration-200">
+          {/* Dark Backdrop with blur */}
+          <div 
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity cursor-pointer" 
+            onClick={handleCancelEdit} 
+          />
+
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+            <div 
+              className="w-screen max-w-2xl bg-white shadow-2xl flex flex-col h-full border-l border-slate-200 animate-in slide-in-from-right duration-300"
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                  e.preventDefault()
+                  handleSubmit((d) => saveCategory(d, Boolean(editingCategory && nextCategory)))()
+                }
+              }}
+            >
+              {/* Fixed Header */}
+              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/95 backdrop-blur-xs flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#1a3a5c] to-[#2563eb] text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <Sparkles size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-bold text-gray-900 truncate">
+                        {editingCategory ? dict.categories.editCategory : dict.categories.newCategory}
+                      </h2>
+                      {editingCategory && (
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-bold shrink-0">
+                          #{currentCategoryIndex + 1}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">
+                      {editingCategory 
+                        ? (editingCategory.translations ? localizeCategory(editingCategory, locale).name : editingCategory.name) 
+                        : 'Add category to store taxonomy'}
+                    </p>
+                  </div>
                 </div>
-                <h2 className="text-base font-bold text-gray-900">
-                  {editingCategory ? dict.categories.editCategory : dict.categories.newCategory}
-                </h2>
-              </div>
-              <button
-                onClick={handleCancelEdit}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <ProductTranslationForm
-                initialValues={translations}
-                onChange={setTranslations}
-              />
+                <div className="flex items-center gap-2">
+                  {/* Sequential Category Navigator (Previous / Next) */}
+                  {editingCategory && (
+                    <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                      <button
+                        type="button"
+                        disabled={!prevCategory || submitting}
+                        onClick={() => prevCategory && handleEdit(prevCategory)}
+                        className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-slate-100 disabled:opacity-25 transition-all cursor-pointer"
+                        title="Previous Category (without saving)"
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
 
-              <div>
-                <Label htmlFor="slug" className="text-xs font-semibold text-gray-700">{dict.categories.slugLabel}</Label>
-                <Input
-                  id="slug"
-                  {...register('slug')}
-                  className="mt-1 h-9 text-xs rounded-xl"
-                  placeholder={dict.categories.slugPlaceholder}
-                />
-                {errors.slug && (
-                  <p className="text-red-500 text-[11px] mt-1">{errors.slug.message}</p>
-                )}
-                <p className="text-[11px] text-gray-400 mt-1">{dict.categories.slugHelper}</p>
-              </div>
+                      <span className="text-[11px] font-mono font-bold text-slate-600 px-2 select-none">
+                        {currentCategoryIndex + 1} / {orderedCategoryList.length}
+                      </span>
 
-              <div>
-                <Label htmlFor="parentId" className="text-xs font-semibold text-gray-700">{dict.categories.parentCategory}</Label>
-                <select
-                  id="parentId"
-                  {...register('parentId')}
-                  className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a3a5c] focus:border-[#1a3a5c] bg-gray-50/50"
-                >
-                  <option value="">{dict.categories.topLevelRoot}</option>
-                  {hierarchicalCategories
-                    .filter(c => !editingCategory || c.id !== editingCategory.id)
-                    .map(cat => {
-                      const indent = '\u00A0\u00A0\u00A0'.repeat(cat.depth)
-                      const arrow = cat.depth > 0 ? '└─ ' : ''
-                      return (
-                        <option key={cat.id} value={cat.id}>
-                          {indent}{arrow}{cat.name}
-                        </option>
-                      )
-                    })}
-                </select>
-                <p className="text-[11px] text-gray-400 mt-1">
-                  {dict.categories.parentHelper}
-                </p>
+                      <button
+                        type="button"
+                        disabled={!nextCategory || submitting}
+                        onClick={() => nextCategory && handleEdit(nextCategory)}
+                        className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-slate-100 disabled:opacity-25 transition-all cursor-pointer"
+                        title="Next Category (without saving)"
+                      >
+                        <ChevronRight size={16} />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Close Button */}
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 transition-colors cursor-pointer"
+                    title="Close (Esc)"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
               </div>
 
-              <div>
-                <ImageUpload
-                  value={categoryImage}
-                  onChange={(url) => {
-                    setCategoryImage(url)
-                    setValue('image', url)
-                  }}
-                  folder="categories"
-                  label={dict.categories.categoryPhoto}
-                />
-              </div>
+              {/* Scrollable Form Body */}
+              <div ref={drawerContentRef} className="flex-1 overflow-y-auto p-6 space-y-5">
+                <form id="category-drawer-form" onSubmit={handleSubmit((d) => saveCategory(d, false))} className="space-y-4">
+                  <ProductTranslationForm
+                    initialValues={translations}
+                    onChange={setTranslations}
+                  />
 
-              <div>
-                <CategoryIconPicker
-                  value={watch('icon')}
-                  onChange={(iconName) => {
-                    setValue('icon', iconName, { shouldValidate: true, shouldDirty: true })
-                  }}
-                  label={dict.categories.iconLabel}
-                  helperText={dict.categories.iconPlaceholder}
-                />
-              </div>
-
-              {/* Live Preview Card */}
-              {(categoryImage || watch('icon')) && (
-                <div className="p-3 bg-gradient-to-br from-slate-50 to-blue-50/50 border border-blue-100/80 rounded-2xl shadow-2xs">
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Live Category Badge Preview</p>
-                  <div className="flex items-center gap-3">
-                    <CategoryAvatar 
-                      src={categoryImage} 
-                      icon={watch('icon')} 
-                      name={translations.en?.name || 'Preview'} 
-                      size="lg" 
+                  <div>
+                    <Label htmlFor="slug" className="text-xs font-semibold text-gray-700">{dict.categories.slugLabel}</Label>
+                    <Input
+                      id="slug"
+                      {...register('slug')}
+                      className="mt-1 h-9 text-xs rounded-xl"
+                      placeholder={dict.categories.slugPlaceholder}
                     />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-gray-900 truncate">
-                        {translations.en?.name || translations.ru?.name || translations.zh?.name || 'Category Name'}
-                      </p>
-                      <p className="text-[11px] text-gray-500 font-mono truncate">
-                        {watch('slug') ? `/${watch('slug')}` : '/category-slug'}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                        {categoryImage && (
-                          <span className="inline-flex items-center text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-semibold">
-                            Photo Set
-                          </span>
-                        )}
-                        {watch('icon') && (
-                          <span className="inline-flex items-center gap-1 text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md font-semibold">
-                            <DynamicCategoryIcon name={watch('icon')!} className="w-3 h-3 text-[#1a3a5c]" />
-                            {watch('icon')}
-                          </span>
-                        )}
+                    {errors.slug && (
+                      <p className="text-red-500 text-[11px] mt-1">{errors.slug.message}</p>
+                    )}
+                    <p className="text-[11px] text-gray-400 mt-1">{dict.categories.slugHelper}</p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="parentId" className="text-xs font-semibold text-gray-700">{dict.categories.parentCategory}</Label>
+                    <select
+                      id="parentId"
+                      {...register('parentId')}
+                      className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#1a3a5c] focus:border-[#1a3a5c] bg-gray-50/50"
+                    >
+                      <option value="">{dict.categories.topLevelRoot}</option>
+                      {hierarchicalCategories
+                        .filter(c => !editingCategory || c.id !== editingCategory.id)
+                        .map(cat => {
+                          const indent = '\u00A0\u00A0\u00A0'.repeat(cat.depth)
+                          const arrow = cat.depth > 0 ? '└─ ' : ''
+                          return (
+                            <option key={cat.id} value={cat.id}>
+                              {indent}{arrow}{cat.name}
+                            </option>
+                          )
+                        })}
+                    </select>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {dict.categories.parentHelper}
+                    </p>
+                  </div>
+
+                  <div>
+                    <ImageUpload
+                      value={categoryImage}
+                      onChange={(url) => {
+                        setCategoryImage(url)
+                        setValue('image', url)
+                      }}
+                      folder="categories"
+                      label={dict.categories.categoryPhoto}
+                    />
+                  </div>
+
+                  <div>
+                    <CategoryIconPicker
+                      value={watch('icon')}
+                      onChange={(iconName) => {
+                        setValue('icon', iconName, { shouldValidate: true, shouldDirty: true })
+                      }}
+                      label={dict.categories.iconLabel}
+                      helperText={dict.categories.iconPlaceholder}
+                    />
+                  </div>
+
+                  {/* Live Preview Card */}
+                  {(categoryImage || watch('icon')) && (
+                    <div className="p-3 bg-gradient-to-br from-slate-50 to-blue-50/50 border border-blue-100/80 rounded-2xl shadow-2xs">
+                      <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Live Category Badge Preview</p>
+                      <div className="flex items-center gap-3">
+                        <CategoryAvatar 
+                          src={categoryImage} 
+                          icon={watch('icon')} 
+                          name={translations.en?.name || 'Preview'} 
+                          size="lg" 
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-gray-900 truncate">
+                            {translations.en?.name || translations.ru?.name || translations.zh?.name || 'Category Name'}
+                          </p>
+                          <p className="text-[11px] text-gray-500 font-mono truncate">
+                            {watch('slug') ? `/${watch('slug')}` : '/category-slug'}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            {categoryImage && (
+                              <span className="inline-flex items-center text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-semibold">
+                                Photo Set
+                              </span>
+                            )}
+                            {watch('icon') && (
+                              <span className="inline-flex items-center gap-1 text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md font-semibold">
+                                <DynamicCategoryIcon name={watch('icon')!} className="w-3 h-3 text-[#1a3a5c]" />
+                                {watch('icon')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              )}
+                  )}
 
-              <div className="pt-3 border-t border-gray-100 space-y-3">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">{dict.categories.activeStatus}</p>
-                    <p className="text-[11px] text-gray-400">{dict.categories.activeStatusHelper}</p>
-                  </div>
-                  <input type="checkbox" {...register('isActive')} className="w-4 h-4 rounded text-[#1a3a5c]" />
-                </div>
+                  <div className="pt-3 border-t border-gray-100 space-y-3">
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
+                      <div>
+                        <p className="text-xs font-bold text-gray-800">{dict.categories.activeStatus}</p>
+                        <p className="text-[11px] text-gray-400">{dict.categories.activeStatusHelper}</p>
+                      </div>
+                      <input type="checkbox" {...register('isActive')} className="w-4 h-4 rounded text-[#1a3a5c]" />
+                    </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">{dict.categories.showInNavMenu}</p>
-                    <p className="text-[11px] text-gray-400">{dict.categories.showInNavMenuHelper}</p>
-                  </div>
-                  <input type="checkbox" {...register('showInMenu')} className="w-4 h-4 rounded text-[#1a3a5c]" />
-                </div>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
+                      <div>
+                        <p className="text-xs font-bold text-gray-800">{dict.categories.showInNavMenu}</p>
+                        <p className="text-[11px] text-gray-400">{dict.categories.showInNavMenuHelper}</p>
+                      </div>
+                      <input type="checkbox" {...register('showInMenu')} className="w-4 h-4 rounded text-[#1a3a5c]" />
+                    </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
-                  <div>
-                    <p className="text-xs font-bold text-gray-800 flex items-center gap-1">
-                      <Star size={13} className="text-amber-500 fill-amber-500" />
-                      {dict.categories.featuredHomepage}
-                    </p>
-                    <p className="text-[11px] text-gray-400">{dict.categories.featuredHomepageHelper}</p>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50">
+                      <div>
+                        <p className="text-xs font-bold text-gray-800 flex items-center gap-1">
+                          <Star size={13} className="text-amber-500 fill-amber-500" />
+                          {dict.categories.featuredHomepage}
+                        </p>
+                        <p className="text-[11px] text-gray-400">{dict.categories.featuredHomepageHelper}</p>
+                      </div>
+                      <input type="checkbox" {...register('isFeatured')} className="w-4 h-4 rounded text-amber-500" />
+                    </div>
                   </div>
-                  <input type="checkbox" {...register('isFeatured')} className="w-4 h-4 rounded text-amber-500" />
-                </div>
+                </form>
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white text-xs font-bold rounded-xl py-2.5"
-                >
-                  {submitting ? dict.common.saving : editingCategory ? dict.categories.updateCategory : dict.categories.createCategory}
-                </Button>
+              {/* Fixed Footer */}
+              <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCancelEdit}
-                  className="rounded-xl text-xs font-semibold"
+                  className="rounded-xl text-xs font-semibold h-10 px-4 cursor-pointer"
                 >
                   {dict.common.cancel}
                 </Button>
+
+                <div className="flex items-center gap-2.5">
+                  {editingCategory && nextCategory && (
+                    <Button
+                      type="button"
+                      disabled={submitting}
+                      onClick={handleSubmit((data) => saveCategory(data, true))}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl h-10 px-4 flex items-center gap-1.5 shadow-md shadow-emerald-900/10 transition-all active:scale-95 cursor-pointer"
+                      title="Save and advance to next category (Ctrl + Enter)"
+                    >
+                      <span>Save & Next</span>
+                      <ArrowRight size={15} />
+                    </Button>
+                  )}
+
+                  <Button
+                    type="submit"
+                    form="category-drawer-form"
+                    disabled={submitting}
+                    className="bg-gradient-to-r from-[#1a3a5c] to-[#2563eb] text-white text-xs font-bold rounded-xl h-10 px-5 flex items-center gap-1.5 shadow-md shadow-blue-900/10 transition-all active:scale-95 cursor-pointer"
+                  >
+                    {submitting ? dict.common.saving : editingCategory ? dict.categories.updateCategory : dict.categories.createCategory}
+                  </Button>
+                </div>
               </div>
-            </form>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Floating Toast Notification */}
       {toastNotification && (
