@@ -2599,11 +2599,6 @@ export default function ProductDetailView({
                       <Sparkles className="w-3.5 h-3.5" />
                       {locale === 'ru' ? 'Концепция и описание' : locale === 'zh' ? '设计理念与概览' : 'Design & Product Story'}
                     </span>
-                    {displaySwedenName && (
-                      <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-                        • {displaySwedenName} Collection
-                      </span>
-                    )}
                   </div>
 
                   <div className="prose prose-slate max-w-none text-slate-800 text-base sm:text-lg leading-relaxed font-normal">
