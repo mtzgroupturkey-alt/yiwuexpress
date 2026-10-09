@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Check, AlertCircle, Info } from 'lucide-react'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { RichTextEditor } from '@/components/admin/RichTextEditor'
@@ -84,6 +84,10 @@ export function ProductTranslationForm({
   const [translations, setTranslations] = useState<TranslationPayload>(() =>
     buildInitial(initialValues)
   )
+
+  useEffect(() => {
+    setTranslations(buildInitial(initialValues))
+  }, [initialValues])
   const [touched, setTouched] = useState<Record<TranslationLocale, boolean>>({
     en: false,
     ru: false,

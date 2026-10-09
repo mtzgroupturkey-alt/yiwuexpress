@@ -1938,8 +1938,14 @@ export default function AdminCategoriesPage() {
 
               {/* Scrollable Form Body */}
               <div ref={drawerContentRef} className="flex-1 overflow-y-auto p-6 space-y-5">
-                <form id="category-drawer-form" onSubmit={handleSubmit((d) => saveCategory(d, false))} className="space-y-4">
+                <form 
+                  key={editingCategory?.id || 'new'} 
+                  id="category-drawer-form" 
+                  onSubmit={handleSubmit((d) => saveCategory(d, false))} 
+                  className="space-y-4"
+                >
                   <ProductTranslationForm
+                    key={editingCategory?.id || 'new'}
                     initialValues={translations}
                     onChange={setTranslations}
                   />
