@@ -21,6 +21,8 @@ import {
   Award,
   Factory,
   Lock,
+  Zap,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +46,7 @@ export default function ProductBadgesSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [activeLocaleTab, setActiveLocaleTab] = useState<TranslationLocale>('en');
-  const [activeSectionTab, setActiveSectionTab] = useState<'reassurance' | 'delivery' | 'trust' | 'faq'>('delivery');
+  const [activeSectionTab, setActiveSectionTab] = useState<'reassurance' | 'delivery' | 'demand' | 'trust' | 'faq'>('delivery');
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Multilingual values map
@@ -264,6 +266,18 @@ export default function ProductBadgesSettingsPage() {
           >
             <Shield className="w-3.5 h-3.5" />
             <span>{t.tabReassurance || '3-Card Reassurance Strip'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSectionTab('demand')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+              activeSectionTab === 'demand'
+                ? 'bg-white text-blue-700 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span>{t.tabDemand || '⚡ Badges ON/OFF Manager'}</span>
           </button>
           <button
             type="button"
@@ -748,6 +762,427 @@ export default function ProductBadgesSettingsPage() {
                       <span className="text-[11px] text-slate-500">
                         {currentValues.pdpReturnsSubtitle || 'Hassle-free guarantee'}
                       </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB: Badges & Signals ON/OFF Manager */}
+      {activeSectionTab === 'demand' && (
+        <div className="space-y-6 animate-in fade-in-50 duration-200">
+          {/* Header Card */}
+          <Card className="rounded-2xl border-slate-200">
+            <CardHeader className="pb-3 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                  </span>
+                  <div>
+                    <CardTitle className="text-base font-bold text-slate-900">
+                      Product Badges &amp; Signals ON/OFF Manager
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500">
+                      Enable or disable any product detail badge with independent ON/OFF switches, custom text, and instant storefront preview.
+                    </CardDescription>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-slate-500">
+                  Editing: {LOCALES.find((l) => l.code === activeLocaleTab)?.label}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-6">
+
+              {/* 1. High Demand & Urgency Badge */}
+              <div className="p-4 rounded-2xl border border-amber-200/80 bg-amber-50/30 space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0">
+                      <Zap className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm text-slate-900">
+                        ⚡ &ldquo;In High Demand&rdquo; Badge
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Green urgency pill badge shown next to category pill in the main buy box.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpHighDemandBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                      {currentValues.pdpHighDemandBadgeEnabled !== 'false' ? 'ON' : 'OFF'}
+                    </span>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={currentValues.pdpHighDemandBadgeEnabled !== 'false'}
+                        onChange={(e) => updateField('pdpHighDemandBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-amber-200/60">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700">Minimum Stock Trigger (Units)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={currentValues.pdpHighDemandThreshold ?? '100'}
+                      onChange={(e) => updateField('pdpHighDemandThreshold', e.target.value)}
+                      placeholder="100"
+                      className="rounded-xl text-xs font-bold bg-white"
+                    />
+                    <p className="text-[11px] text-slate-500">Only displayed when available stock exceeds this amount.</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700">Badge Label ({LOCALES.find((l) => l.code === activeLocaleTab)?.label})</Label>
+                    <Input
+                      value={currentValues.pdpHighDemandText || ''}
+                      onChange={(e) => updateField('pdpHighDemandText', e.target.value)}
+                      placeholder="e.g. ⚡ In High Demand"
+                      className="rounded-xl text-xs font-bold bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Preview:</span>
+                  <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    COOKWARE &amp; BAKEWARE
+                  </span>
+                  {currentValues.pdpHighDemandBadgeEnabled !== 'false' ? (
+                    <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      {currentValues.pdpHighDemandText || '⚡ In High Demand'}
+                    </span>
+                  ) : (
+                    <span className="text-xs italic text-rose-500">
+                      (Hidden / Disabled)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Reassurance Badges Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    3-Benefit Reassurance Strip Badges
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Warranty Card */}
+                  <div className="p-4 rounded-2xl border border-blue-100 bg-blue-50/20 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
+                            <Shield className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="font-bold text-xs text-slate-900">Warranty Badge</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={currentValues.pdpWarrantyBadgeEnabled !== 'false'}
+                            onChange={(e) => updateField('pdpWarrantyBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpWarrantyTitle || ''}
+                          onChange={(e) => updateField('pdpWarrantyTitle', e.target.value)}
+                          placeholder="e.g. 2-Year Warranty"
+                          className="rounded-xl text-xs bg-white h-8"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-slate-700">Subtitle</Label>
+                        <Input
+                          value={currentValues.pdpWarrantySubtitle || ''}
+                          onChange={(e) => updateField('pdpWarrantySubtitle', e.target.value)}
+                          placeholder="e.g. Full factory coverage"
+                          className="rounded-xl text-xs bg-white h-8"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-blue-100/80">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpWarrantyBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        {currentValues.pdpWarrantyBadgeEnabled !== 'false' ? '● Active' : '○ Hidden'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Express Delivery Card */}
+                  <div className="p-4 rounded-2xl border border-emerald-100 bg-emerald-50/20 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                            <Truck className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="font-bold text-xs text-slate-900">Express Delivery</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={currentValues.pdpDeliveryBadgeEnabled !== 'false'}
+                            onChange={(e) => updateField('pdpDeliveryBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpDeliveryTitle || ''}
+                          onChange={(e) => updateField('pdpDeliveryTitle', e.target.value)}
+                          placeholder="e.g. Express Delivery"
+                          className="rounded-xl text-xs bg-white h-8"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-slate-700">Subtitle</Label>
+                        <Input
+                          value={currentValues.pdpDeliverySubtitle || ''}
+                          onChange={(e) => updateField('pdpDeliverySubtitle', e.target.value)}
+                          placeholder="e.g. Free over $50+"
+                          className="rounded-xl text-xs bg-white h-8"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-emerald-100/80">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpDeliveryBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        {currentValues.pdpDeliveryBadgeEnabled !== 'false' ? '● Active' : '○ Hidden'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 14-Day Returns Card */}
+                  <div className="p-4 rounded-2xl border border-amber-100 bg-amber-50/20 space-y-3 flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
+                            <RefreshCw className="w-3.5 h-3.5" />
+                          </div>
+                          <span className="font-bold text-xs text-slate-900">14-Day Returns</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={currentValues.pdpReturnsBadgeEnabled !== 'false'}
+                            onChange={(e) => updateField('pdpReturnsBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                            className="sr-only peer"
+                          />
+                          <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                        </label>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpReturnsTitle || ''}
+                          onChange={(e) => updateField('pdpReturnsTitle', e.target.value)}
+                          placeholder="e.g. 14-Day Returns"
+                          className="rounded-xl text-xs bg-white h-8"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-[11px] font-semibold text-slate-700">Subtitle</Label>
+                        <Input
+                          value={currentValues.pdpReturnsSubtitle || ''}
+                          onChange={(e) => updateField('pdpReturnsSubtitle', e.target.value)}
+                          placeholder="e.g. Hassle-free guarantee"
+                          className="rounded-xl text-xs bg-white h-8"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-amber-100/80">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpReturnsBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        {currentValues.pdpReturnsBadgeEnabled !== 'false' ? '● Active' : '○ Hidden'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Factory & QC Trust Badges Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                  <Award className="w-4 h-4 text-indigo-600" />
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Factory &amp; Quality Control Trust Badges
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Factory Direct */}
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Factory className="w-4 h-4 text-blue-600" />
+                        <span className="font-bold text-xs text-slate-900">Direct Verified Factory</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={currentValues.pdpFactoryBadgeEnabled !== 'false'}
+                          onChange={(e) => updateField('pdpFactoryBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpFactoryTitle || ''}
+                          onChange={(e) => updateField('pdpFactoryTitle', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Input
+                          value={currentValues.pdpFactoryDesc || ''}
+                          onChange={(e) => updateField('pdpFactoryDesc', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* QC Inspection */}
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-4 h-4 text-amber-500" />
+                        <span className="font-bold text-xs text-slate-900">Rigorous Quality Inspection</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={currentValues.pdpQcBadgeEnabled !== 'false'}
+                          onChange={(e) => updateField('pdpQcBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpQcTitle || ''}
+                          onChange={(e) => updateField('pdpQcTitle', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Input
+                          value={currentValues.pdpQcDesc || ''}
+                          onChange={(e) => updateField('pdpQcDesc', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Door-to-Door Logistics */}
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Truck className="w-4 h-4 text-blue-500" />
+                        <span className="font-bold text-xs text-slate-900">Door-to-Door Logistics</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={currentValues.pdpLogisticsBadgeEnabled !== 'false'}
+                          onChange={(e) => updateField('pdpLogisticsBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpLogisticsTitle || ''}
+                          onChange={(e) => updateField('pdpLogisticsTitle', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Input
+                          value={currentValues.pdpLogisticsDesc || ''}
+                          onChange={(e) => updateField('pdpLogisticsDesc', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trade Assurance Escrow */}
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-white space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-emerald-500" />
+                        <span className="font-bold text-xs text-slate-900">Trade Assurance Escrow</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={currentValues.pdpEscrowBadgeEnabled !== 'false'}
+                          onChange={(e) => updateField('pdpEscrowBadgeEnabled', e.target.checked ? 'true' : 'false')}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Input
+                          value={currentValues.pdpEscrowTitle || ''}
+                          onChange={(e) => updateField('pdpEscrowTitle', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Input
+                          value={currentValues.pdpEscrowDesc || ''}
+                          onChange={(e) => updateField('pdpEscrowDesc', e.target.value)}
+                          className="rounded-xl text-xs bg-slate-50 h-8 mt-1"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

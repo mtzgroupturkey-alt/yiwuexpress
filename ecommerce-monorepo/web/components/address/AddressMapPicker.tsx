@@ -17,6 +17,11 @@ import {
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useSettings } from '@/components/SettingsProvider';
+import {
+  isCoordinateAddress,
+  getOfflineLocationName,
+  resolveCoordinatesClientSide,
+} from '@/lib/geo/coordinateResolver';
 
 export interface StructuredAddress {
   formattedAddress: string;
@@ -136,27 +141,53 @@ export function AddressMapPicker({
           `/api/geo/reverse?lat=${lat}&lng=${lng}&locale=${encodeURIComponent(currentLocale)}`
         );
         const data = await res.json();
-        if (data.success && data.address) {
+        if (
+          data.success &&
+          data.address &&
+          (data.address.city || data.address.country) &&
+          !isCoordinateAddress(data.address.city)
+        ) {
           setAddressDetails(data.address);
-        } else {
+          setIsGeocoding(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('API reverse geocode failed, trying client fallback:', err);
+      }
+
+      // Client-side fallback if server API is unavailable/failed
+      try {
+        const clientResolved = await resolveCoordinatesClientSide(lat, lng, currentLocale);
+        if (clientResolved && (clientResolved.city || clientResolved.country)) {
           setAddressDetails((prev) => ({
             ...prev,
             lat,
             lng,
-            formattedAddress: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+            city: clientResolved.city,
+            country: clientResolved.country,
+            countryCode: clientResolved.countryCode,
+            formattedAddress: clientResolved.formattedAddress,
+            street: prev.street || clientResolved.street,
           }));
+          setIsGeocoding(false);
+          return;
         }
-      } catch (err) {
-        console.warn('Reverse geocode failed:', err);
-        setAddressDetails((prev) => ({
-          ...prev,
-          lat,
-          lng,
-          formattedAddress: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-        }));
-      } finally {
-        setIsGeocoding(false);
+      } catch (clientErr) {
+        console.warn('Client fallback geocode failed, using offline lookup:', clientErr);
       }
+
+      // Guaranteed offline geometric lookup (never outputs raw float coords)
+      const offline = getOfflineLocationName(lat, lng, currentLocale);
+      setAddressDetails((prev) => ({
+        ...prev,
+        lat,
+        lng,
+        city: offline.city,
+        country: offline.country,
+        countryCode: offline.countryCode,
+        formattedAddress: offline.formattedAddress,
+      }));
+      setIsGeocoding(false);
     },
     [currentLocale]
   );
@@ -436,16 +467,30 @@ export function AddressMapPicker({
       parts.push(addressDetails.houseNumber ? `${addressDetails.street}, ${addressDetails.houseNumber}` : addressDetails.street);
     }
     if (apartment) parts.push(currentLocale === 'ru' ? `кв. ${apartment}` : `Apt ${apartment}`);
-    if (addressDetails.city) parts.push(addressDetails.city);
-    if (addressDetails.country) parts.push(addressDetails.country);
+    if (addressDetails.city && !isCoordinateAddress(addressDetails.city)) parts.push(addressDetails.city);
+    if (addressDetails.country && !isCoordinateAddress(addressDetails.country)) parts.push(addressDetails.country);
 
-    const finalFormatted = parts.length > 0 ? parts.join(', ') : addressDetails.formattedAddress || `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+    let finalFormatted = parts.length > 0 ? parts.join(', ') : (addressDetails.formattedAddress || '');
+    let resolvedCity = addressDetails.city && !isCoordinateAddress(addressDetails.city) ? addressDetails.city : '';
+    let resolvedCountry = addressDetails.country && !isCoordinateAddress(addressDetails.country) ? addressDetails.country : '';
+    let resolvedCountryCode = addressDetails.countryCode || '';
+
+    // If city or formatted line is still empty or looks like numbers, apply offline resolver
+    if (!resolvedCity || isCoordinateAddress(resolvedCity) || !finalFormatted || isCoordinateAddress(finalFormatted)) {
+      const offline = getOfflineLocationName(coords.lat, coords.lng, currentLocale);
+      resolvedCity = resolvedCity || offline.city;
+      resolvedCountry = resolvedCountry || offline.country;
+      resolvedCountryCode = resolvedCountryCode || offline.countryCode;
+      if (!finalFormatted || isCoordinateAddress(finalFormatted)) {
+        finalFormatted = parts.length > 0 ? [...parts, resolvedCity, resolvedCountry].join(', ') : offline.formattedAddress;
+      }
+    }
 
     const structured: StructuredAddress = {
       formattedAddress: finalFormatted,
-      country: addressDetails.country || (currentLocale === 'ru' ? 'Россия' : 'Russia'),
-      countryCode: addressDetails.countryCode || 'RU',
-      city: addressDetails.city || '',
+      country: resolvedCountry || (currentLocale === 'ru' ? 'Россия' : 'Russia'),
+      countryCode: resolvedCountryCode || 'RU',
+      city: resolvedCity || resolvedCountry,
       state: addressDetails.state,
       street: addressDetails.street,
       houseNumber: addressDetails.houseNumber,

@@ -709,6 +709,7 @@ export default function Home() {
 
       {/* 1. Header (Utility, Brand Bar, Ribbon, Ticker) */}
       <Header
+        locale={locale}
         isAuthenticated={isAuthenticated}
         user={user}
         cartCount={cartCount}

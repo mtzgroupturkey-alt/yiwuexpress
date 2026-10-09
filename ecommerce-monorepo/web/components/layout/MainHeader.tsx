@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { LocaleLink } from '@/components/LocaleLink'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -40,6 +41,7 @@ const TOP_BAR_LINKS = [
 ]
 
 export function MainHeader() {
+  const tHeader = useTranslations('header')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSticky, setIsSticky] = useState(false)
@@ -124,15 +126,6 @@ export function MainHeader() {
               />
             </div>
             <div className="flex items-center space-x-6">
-              {!isWholesaleUser && (
-                <LocaleLink
-                  href="/business"
-                  className="hover:text-[#c9a84c] text-amber-300 font-bold transition-colors uppercase tracking-wider text-[10px] flex items-center gap-1"
-                >
-                  <Building2 className="w-3 h-3 text-amber-400" />
-                  <span>DRÖMKÖK FOR BUSINESS</span>
-                </LocaleLink>
-              )}
               {TOP_BAR_LINKS.map((item) => (
                 <LocaleLink
                   key={item.name}
@@ -319,7 +312,7 @@ export function MainHeader() {
                   className="hidden md:flex text-xs font-bold text-[#00407a] hover:text-[#003060] items-center gap-1.5 py-1.5 px-3 rounded-lg border border-blue-200 bg-blue-50/60 hover:bg-blue-100/60 transition-colors shrink-0 uppercase tracking-wide"
                 >
                   <Building2 className="w-3.5 h-3.5 text-amber-500" />
-                  <span>DRÖMKÖK FOR BUSINESS</span>
+                  <span>{tHeader('forBusiness')}</span>
                 </LocaleLink>
               )}
 

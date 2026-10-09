@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { X, MapPin, Check, ExternalLink, Trash2 } from 'lucide-react';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
+import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker';
+import { isCoordinateAddress, cleanAddressDisplay } from '@/lib/geo/coordinateResolver';
 
 export interface UserAddressOption {
   id: string;
@@ -33,6 +35,7 @@ export const LocationModal: React.FC<LocationModalProps> = ({
   isAuthenticated = false,
 }) => {
   const { tModals } = useStorefrontTranslation();
+  const locale = useLocale();
   const [customAddress, setCustomAddress] = useState('');
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
 
@@ -42,10 +45,11 @@ export const LocationModal: React.FC<LocationModalProps> = ({
     e.preventDefault();
     const trimmed = customAddress.trim();
     if (trimmed) {
-      onSelectAddress(trimmed, {
+      const cleaned = cleanAddressDisplay(trimmed, locale);
+      onSelectAddress(cleaned, {
         addressLine1: trimmed,
-        city: trimmed.split(',')[0]?.trim() || trimmed,
-        country: trimmed.split(',')[1]?.trim() || '',
+        city: cleaned.split(',')[0]?.trim() || trimmed,
+        country: cleaned.split(',')[1]?.trim() || '',
       });
       setCustomAddress('');
       onClose();
@@ -53,22 +57,37 @@ export const LocationModal: React.FC<LocationModalProps> = ({
   };
 
   const handleMapConfirm = (addr: StructuredAddress) => {
-    const chosen = addr.formattedAddress || `${addr.city}, ${addr.country}`;
+    const rawChosen = addr.formattedAddress || `${addr.city}, ${addr.country}`;
+    const chosen = cleanAddressDisplay(rawChosen, locale);
+    const city = addr.city && !isCoordinateAddress(addr.city) ? addr.city : (chosen.split(',')[0]?.trim() || chosen);
+    const country = addr.country && !isCoordinateAddress(addr.country) ? addr.country : (chosen.split(',')[1]?.trim() || '');
+
     onSelectAddress(chosen, {
-      city: addr.city,
-      country: addr.country,
+      city,
+      country,
       addressLine1: addr.street ? `${addr.street} ${addr.houseNumber || ''}`.trim() : chosen,
-      label: addr.street || addr.city,
+      label: addr.street || city,
     });
     setIsMapPickerOpen(false);
     onClose();
   };
 
   const formatAddressLabel = (addr: UserAddressOption) => {
+    if (isCoordinateAddress(addr.city) || isCoordinateAddress(addr.addressLine1)) {
+      const raw = isCoordinateAddress(addr.addressLine1) ? addr.addressLine1 : `${addr.city}, ${addr.country}`;
+      return cleanAddressDisplay(raw, locale);
+    }
     if (addr.city && addr.country) {
       return `${addr.city}, ${addr.country}`;
     }
-    return addr.city || addr.country || addr.addressLine1;
+    return cleanAddressDisplay(addr.city || addr.country || addr.addressLine1, locale);
+  };
+
+  const formatAddressSubline = (addr: UserAddressOption) => {
+    if (isCoordinateAddress(addr.addressLine1)) {
+      return cleanAddressDisplay(addr.addressLine1, locale);
+    }
+    return addr.addressLine1;
   };
 
   return (
@@ -159,8 +178,8 @@ export const LocationModal: React.FC<LocationModalProps> = ({
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold truncate">{label}</p>
                           <p className="text-[11px] font-normal text-slate-500 truncate mt-0.5">
-                            {addr.addressLine1}
-                            {addr.label && addr.label !== label ? ` · ${addr.label}` : ''}
+                            {formatAddressSubline(addr)}
+                            {addr.label && addr.label !== label && !isCoordinateAddress(addr.label) ? ` · ${addr.label}` : ''}
                             {addr.isDefault ? ` · ${tModals('defaultBadge')}` : ''}
                           </p>
                         </div>

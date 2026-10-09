@@ -317,6 +317,7 @@ export function Design3LayoutHeader() {
   return (
     <>
       <Header
+        locale={locale}
         isAuthenticated={isAuthenticated}
         user={user}
         cartCount={displayCartCount}

@@ -283,6 +283,8 @@
       "contact": "联系我们的团队"
     },
     "header": {
+      "forBusiness": "DRÖMKÖK 企业专区",
+      "forBusinessTooltip": "注册企业采购账户",
       "openNow": "营业中:",
       "story3d": "3D 故事",
       "trackOrders": "追踪订单",
@@ -2037,7 +2039,8 @@
   "business": {
     "title": "Dromkok 商业采购 (B2B)",
     "subtitle": "源头工厂批发底价、批量集运出海与专属外贸客服",
-    "headerLink": "Dromkok 企业采购",
+    "headerLink": "DRÖMKÖK 企业专区",
+    "forBusiness": "DRÖMKÖK 企业专区",
     "benefit": {
       "wholesalePrice": "源头工厂批发底价",
       "wholesalePriceDesc": "直连认证中国源头制造企业，解锁阶梯采购折扣。",

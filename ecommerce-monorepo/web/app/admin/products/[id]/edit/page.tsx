@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save, Trash2, ExternalLink, Sparkles, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react'
 import { ProductAttributesSection } from '@/components/admin/ProductAttributesSection'
+import { ProductTabContentSection, type TabSectionPayload } from '@/components/admin/ProductTabContentSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
 import {
@@ -84,6 +85,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     catalogIkeaUrl: string | null;
   } | null>(null)
   const [fetchingIkea, setFetchingIkea] = useState(false)
+  const [productRawData, setProductRawData] = useState<any>(null)
+  const [tabContentPayload, setTabContentPayload] = useState<TabSectionPayload | null>(null)
 
   const {
     register,
@@ -163,6 +166,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       
       if (data.success && data.data) {
         const product = data.data
+        setProductRawData(product)
         
         // Reset form with product data
         reset({
@@ -282,7 +286,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       const images = media.filter(m => m.type === 'image').map(m => m.url)
       const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
-      const productData = {
+      const productData: any = {
         ...data,
         // Dual-write: legacy name/description stay in sync with 'en' translation
         // (Phase 1 design) so reads that haven't migrated still work.
@@ -307,6 +311,18 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         flashSaleStock: data.flashSaleStock !== undefined && data.flashSaleStock !== null && !isNaN(Number(data.flashSaleStock)) ? parseInt(data.flashSaleStock.toString()) : null,
         attributes: attributeValues, // Include attribute values
         attributeTranslations,
+      }
+
+      if (tabContentPayload) {
+        if (tabContentPayload.rawIkeaPayload) {
+          productData.rawIkeaPayload = tabContentPayload.rawIkeaPayload
+        }
+        if (tabContentPayload.dimensions) {
+          productData.dimensions = tabContentPayload.dimensions
+        }
+        if (tabContentPayload.material) {
+          productData.material = tabContentPayload.material
+        }
       }
 
       const response = await fetch(`/api/admin/products/${params.id}`, {
@@ -560,6 +576,18 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 setAttributeTranslations(translations)
               }}
             />
+
+            {/* Storefront Tab Content & Descriptions (Overview, Key Features & Details, Measurements) */}
+            {productRawData && (
+              <ProductTabContentSection
+                initialRawIkeaPayload={productRawData.rawIkeaPayload}
+                initialDimensions={productRawData.dimensions}
+                initialMaterial={productRawData.material}
+                initialDescription={productRawData.description}
+                disabled={submitting}
+                onChange={(payload) => setTabContentPayload(payload)}
+              />
+            )}
 
             {/* Pricing */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">

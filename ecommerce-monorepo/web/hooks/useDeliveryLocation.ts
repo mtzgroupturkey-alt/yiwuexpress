@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/components/SettingsProvider';
 import { UserAddressOption } from '@/app/[locale]/design-3/components/LocationModal';
+import { isCoordinateAddress, cleanAddressDisplay } from '@/lib/geo/coordinateResolver';
 
 export const DELIVERY_LOCATION_KEY = 'delivery_location';
 export const DELIVERY_LOCATION_CUSTOM_SET_KEY = 'delivery_location_user_selected';
@@ -28,7 +29,32 @@ export function useDeliveryLocation() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          setLocalSavedAddresses(parsed);
+          let hasModifications = false;
+          const cleanedList: UserAddressOption[] = parsed.map((item: UserAddressOption) => {
+            if (isCoordinateAddress(item.city) || isCoordinateAddress(item.addressLine1)) {
+              hasModifications = true;
+              const sourceAddr = isCoordinateAddress(item.addressLine1)
+                ? item.addressLine1
+                : `${item.city}, ${item.country}`;
+              const cleanedText = cleanAddressDisplay(sourceAddr, 'ru');
+              const parts = cleanedText.split(',').map((p) => p.trim());
+              return {
+                ...item,
+                city: parts[0] || item.city,
+                country: parts[1] || item.country,
+                addressLine1: isCoordinateAddress(item.addressLine1) ? cleanedText : item.addressLine1,
+                label: item.label && isCoordinateAddress(item.label) ? cleanedText : item.label,
+              };
+            }
+            return item;
+          });
+
+          setLocalSavedAddresses(cleanedList);
+          if (hasModifications) {
+            try {
+              localStorage.setItem(DELIVERY_SAVED_ADDRESSES_KEY, JSON.stringify(cleanedList));
+            } catch {}
+          }
           return;
         }
       }
@@ -42,22 +68,40 @@ export function useDeliveryLocation() {
     const trimmed = addr.trim();
     if (!trimmed) return;
 
-    // 1. Set active delivery address string
-    setDeliveryAddress(trimmed);
+    // 1. Sanitize to ensure coordinates are converted to real human-readable text
+    const cleaned = cleanAddressDisplay(trimmed, 'ru');
+
+    // Set active delivery address string
+    setDeliveryAddress(cleaned);
     try {
-      localStorage.setItem(DELIVERY_LOCATION_KEY, trimmed);
+      localStorage.setItem(DELIVERY_LOCATION_KEY, cleaned);
       localStorage.setItem(DELIVERY_LOCATION_CUSTOM_SET_KEY, 'true');
-      window.dispatchEvent(new CustomEvent('delivery-location-updated', { detail: trimmed }));
+      window.dispatchEvent(new CustomEvent('delivery-location-updated', { detail: cleaned }));
     } catch {}
 
     // 2. Parse or construct address option
+    const parsedCity =
+      details?.city && !isCoordinateAddress(details.city)
+        ? details.city
+        : cleaned.split(',')[0]?.trim() || cleaned;
+
+    const parsedCountry =
+      details?.country && !isCoordinateAddress(details.country)
+        ? details.country
+        : cleaned.split(',')[1]?.trim() || '';
+
+    const parsedAddressLine1 =
+      details?.addressLine1 && !isCoordinateAddress(details.addressLine1)
+        ? details.addressLine1
+        : cleaned;
+
     const newOption: UserAddressOption = {
       id: details?.id || `local-${Date.now()}`,
-      city: details?.city || trimmed.split(',')[0]?.trim() || trimmed,
-      country: details?.country || (trimmed.split(',')[1]?.trim() || ''),
-      addressLine1: details?.addressLine1 || trimmed,
+      city: parsedCity,
+      country: parsedCountry,
+      addressLine1: parsedAddressLine1,
       isDefault: details?.isDefault || false,
-      label: details?.label || null,
+      label: details?.label && !isCoordinateAddress(details.label) ? details.label : null,
     };
 
     // 3. Persist in saved addresses list
@@ -177,6 +221,15 @@ export function useDeliveryLocation() {
         savedLocation = localStorage.getItem(DELIVERY_LOCATION_KEY);
         isExplicitlySet = localStorage.getItem(DELIVERY_LOCATION_CUSTOM_SET_KEY) === 'true';
       } catch {}
+
+      // If saved location contains coordinate floats, auto-heal it into text!
+      if (savedLocation && isCoordinateAddress(savedLocation)) {
+        const cleaned = cleanAddressDisplay(savedLocation, 'ru');
+        savedLocation = cleaned;
+        try {
+          localStorage.setItem(DELIVERY_LOCATION_KEY, cleaned);
+        } catch {}
+      }
 
       // If user already manually selected an address, honor it immediately
       if (savedLocation && isExplicitlySet) {

@@ -750,26 +750,51 @@ export default function ProductDetailView({
   }, [product.rawIkeaPayload])
 
   const overviewSummary = useMemo(() => {
+    const localizedIkeaSummary =
+      ikeaData?.translations?.[locale]?.overview?.summary ||
+      ikeaData?.overview?.translations?.[locale]?.summary
+    if (localizedIkeaSummary) return localizedIkeaSummary
+
+    if (locale !== 'en' && typeof localized.description === 'string' && localized.description.trim()) {
+      return localized.description
+    }
+
     if (ikeaData?.overview?.summary) return ikeaData.overview.summary
     if (typeof localized.description === 'string' && localized.description.trim()) {
       return localized.description
     }
     return t('noDescription')
-  }, [ikeaData, localized.description, t])
+  }, [ikeaData, localized.description, locale, t])
 
   const overviewFeatures: string[] = useMemo(() => {
+    const locFeats =
+      ikeaData?.translations?.[locale]?.overview?.features ||
+      ikeaData?.overview?.translations?.[locale]?.features
+    if (Array.isArray(locFeats) && locFeats.length > 0) {
+      return locFeats
+    }
     return ikeaData?.overview?.features || []
-  }, [ikeaData])
+  }, [ikeaData, locale])
 
   const keyFeatures: string[] = useMemo(() => {
+    const locKf =
+      ikeaData?.translations?.[locale]?.productDetails?.keyFeatures ||
+      ikeaData?.productDetails?.translations?.[locale]?.keyFeatures
+    if (Array.isArray(locKf) && locKf.length > 0) {
+      return locKf
+    }
     return ikeaData?.productDetails?.keyFeatures || []
-  }, [ikeaData])
+  }, [ikeaData, locale])
 
   const goodToKnow = useMemo(() => {
     return ikeaData?.productDetails?.goodToKnow || product.attributes?.good_to_know || null
   }, [ikeaData, product.attributes])
 
   const materials = useMemo(() => {
+    const locMat =
+      ikeaData?.translations?.[locale]?.productDetails?.materials ||
+      ikeaData?.productDetails?.translations?.[locale]?.materials
+    if (locMat) return locMat
     return (
       ikeaData?.productDetails?.materials ||
       product.material ||
@@ -777,16 +802,20 @@ export default function ProductDetailView({
       product.attributes?.materials ||
       null
     )
-  }, [ikeaData, product.material, product.attributes])
+  }, [ikeaData, locale, product.material, product.attributes])
 
   const careInstructions = useMemo(() => {
+    const locCare =
+      ikeaData?.translations?.[locale]?.productDetails?.careInstructions ||
+      ikeaData?.productDetails?.translations?.[locale]?.careInstructions
+    if (locCare) return locCare
     return (
       ikeaData?.productDetails?.careInstructions ||
       product.attributes?.care_instructions ||
       product.attributes?.care ||
       null
     )
-  }, [ikeaData, product.attributes])
+  }, [ikeaData, locale, product.attributes])
 
   const designer = useMemo(() => {
     return ikeaData?.productDetails?.designer || product.attributes?.designer || null
@@ -797,8 +826,14 @@ export default function ProductDetailView({
   }, [ikeaData])
 
   const dimensionsMap: Record<string, string> = useMemo(() => {
+    const locDims =
+      ikeaData?.translations?.[locale]?.measurementsTab?.dimensions ||
+      ikeaData?.measurementsTab?.translations?.[locale]?.dimensions
+    if (locDims && Object.keys(locDims).length > 0) {
+      return locDims
+    }
     return ikeaData?.measurementsTab?.dimensions || {}
-  }, [ikeaData])
+  }, [ikeaData, locale])
 
   const packagingList: Array<{
     name?: string
@@ -812,8 +847,12 @@ export default function ProductDetailView({
   }, [ikeaData])
 
   const whatsIncluded = useMemo(() => {
+    const locWi =
+      ikeaData?.translations?.[locale]?.productDetails?.whatsIncluded ||
+      ikeaData?.productDetails?.translations?.[locale]?.whatsIncluded
+    if (locWi) return locWi
     return ikeaData?.productDetails?.whatsIncluded || product.attributes?.whats_included || null
-  }, [ikeaData, product.attributes])
+  }, [ikeaData, locale, product.attributes])
 
   const displayIkeaItemNo = useMemo(() => {
     const raw = product.ikeaItemNumber || (product as any).ikeaItemNo || (product as any).dromkokItemNo || ikeaData?.itemNumber || ''
@@ -1426,49 +1465,60 @@ export default function ProductDetailView({
   )
 
   // 3-Benefit Reassurance Strip (Warranty, Express Delivery, 14-Day Returns)
-  const reassuranceSection = (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs">
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100">
-          <ShieldCheck className="w-4 h-4 text-[#00407a]" />
-        </div>
-        <div>
-          <span className="font-bold text-xs text-slate-900 block leading-tight">
-            {settings?.pdpWarrantyTitle || (locale === 'ru' ? '2 года гарантии' : locale === 'zh' ? '2年原厂质保' : '2-Year Warranty')}
-          </span>
-          <span className="text-[11px] text-slate-500">
-            {settings?.pdpWarrantySubtitle || (locale === 'ru' ? 'Официальная' : locale === 'zh' ? '官方正品联保' : 'Full factory coverage')}
-          </span>
-        </div>
-      </div>
+  const isWarrantyEnabled = (settings as any)?.pdpWarrantyBadgeEnabled !== false && (settings as any)?.pdpWarrantyBadgeEnabled !== 'false'
+  const isDeliveryEnabled = (settings as any)?.pdpDeliveryBadgeEnabled !== false && (settings as any)?.pdpDeliveryBadgeEnabled !== 'false'
+  const isReturnsEnabled = (settings as any)?.pdpReturnsBadgeEnabled !== false && (settings as any)?.pdpReturnsBadgeEnabled !== 'false'
+  const activeReassuranceCount = (isWarrantyEnabled ? 1 : 0) + (isDeliveryEnabled ? 1 : 0) + (isReturnsEnabled ? 1 : 0)
 
-      <div className="flex items-center gap-2.5 border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0 sm:pl-3">
-        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-          <Truck className="w-4 h-4 text-emerald-600" />
+  const reassuranceSection = activeReassuranceCount === 0 ? null : (
+    <div className={`grid grid-cols-1 ${activeReassuranceCount === 3 ? 'sm:grid-cols-3' : activeReassuranceCount === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1'} gap-2.5 bg-white rounded-2xl border border-slate-200/90 p-3 shadow-2xs`}>
+      {isWarrantyEnabled && (
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#00407a] flex items-center justify-center shrink-0 border border-blue-100">
+            <ShieldCheck className="w-4 h-4 text-[#00407a]" />
+          </div>
+          <div>
+            <span className="font-bold text-xs text-slate-900 block leading-tight">
+              {settings?.pdpWarrantyTitle || (locale === 'ru' ? '2 года гарантии' : locale === 'zh' ? '2年原厂质保' : '2-Year Warranty')}
+            </span>
+            <span className="text-[11px] text-slate-500">
+              {settings?.pdpWarrantySubtitle || (locale === 'ru' ? 'Официальная' : locale === 'zh' ? '官方正品联保' : 'Full factory coverage')}
+            </span>
+          </div>
         </div>
-        <div>
-          <span className="font-bold text-xs text-slate-900 block leading-tight">
-            {settings?.pdpDeliveryTitle || (locale === 'ru' ? 'Экспресс-доставка' : locale === 'zh' ? '极速直达物流' : 'Express Delivery')}
-          </span>
-          <span className="text-[11px] text-slate-500">
-            {settings?.pdpDeliverySubtitle || (locale === 'ru' ? 'От $50 бесплатно' : locale === 'zh' ? '满额免费包邮' : 'Free over $50+')}
-          </span>
-        </div>
-      </div>
+      )}
 
-      <div className="flex items-center gap-2.5 border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0 sm:pl-3">
-        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-          <RefreshCw className="w-4 h-4 text-amber-600" />
+      {isDeliveryEnabled && (
+        <div className={`flex items-center gap-2.5 ${isWarrantyEnabled ? 'border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0 sm:pl-3' : ''}`}>
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+            <Truck className="w-4 h-4 text-emerald-600" />
+          </div>
+          <div>
+            <span className="font-bold text-xs text-slate-900 block leading-tight">
+              {settings?.pdpDeliveryTitle || (locale === 'ru' ? 'Экспресс-доставка' : locale === 'zh' ? '极速直达物流' : 'Express Delivery')}
+            </span>
+            <span className="text-[11px] text-slate-500">
+              {settings?.pdpDeliverySubtitle || (locale === 'ru' ? 'От $50 бесплатно' : locale === 'zh' ? '满额免费包邮' : 'Free over $50+')}
+            </span>
+          </div>
         </div>
-        <div>
-          <span className="font-bold text-xs text-slate-900 block leading-tight">
-            {settings?.pdpReturnsTitle || (locale === 'ru' ? '14 дней возврат' : locale === 'zh' ? '14天无忧退换' : '14-Day Returns')}
-          </span>
-          <span className="text-[11px] text-slate-500">
-            {settings?.pdpReturnsSubtitle || (locale === 'ru' ? 'Легкий возврат' : locale === 'zh' ? '支持退款换货' : 'Hassle-free guarantee')}
-          </span>
+      )}
+
+      {isReturnsEnabled && (
+        <div className={`flex items-center gap-2.5 ${(isWarrantyEnabled || isDeliveryEnabled) ? 'border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0 sm:pl-3' : ''}`}>
+          <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
+            <RefreshCw className="w-4 h-4 text-amber-600" />
+          </div>
+          <div>
+            <span className="font-bold text-xs text-slate-900 block leading-tight">
+              {settings?.pdpReturnsTitle || (locale === 'ru' ? '14 дней возврат' : locale === 'zh' ? '14天无忧退换' : '14-Day Returns')}
+            </span>
+            <span className="text-[11px] text-slate-500">
+              {settings?.pdpReturnsSubtitle || (locale === 'ru' ? 'Легкий возврат' : locale === 'zh' ? '支持退款换货' : 'Hassle-free guarantee')}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 
@@ -1613,11 +1663,23 @@ export default function ProductDetailView({
                       <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                         {localizedCategoryName || 'BAKEWARE PRO'}
                       </span>
-                      {currentStock > 100 && (
-                        <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                          {t('inHighDemand')}
-                        </span>
-                      )}
+                      {/* High Demand Badge (Admin on/off controlled) */}
+                      {(() => {
+                        const isHighDemandEnabled =
+                          (settings as any)?.pdpHighDemandBadgeEnabled !== false &&
+                          (settings as any)?.pdpHighDemandBadgeEnabled !== 'false'
+                        const rawThreshold = (settings as any)?.pdpHighDemandThreshold
+                        const threshold = typeof rawThreshold === 'number' ? rawThreshold : (parseInt(rawThreshold || '100', 10) || 100)
+                        const highDemandText = (settings as any)?.pdpHighDemandText || t('inHighDemand')
+
+                        if (!isHighDemandEnabled || currentStock <= threshold) return null
+
+                        return (
+                          <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 font-bold text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                            {highDemandText}
+                          </span>
+                        )
+                      })()}
                     </div>
                   </div>
 
@@ -2231,15 +2293,6 @@ export default function ProductDetailView({
                       {localized.name}
                     </h3>
                   </div>
-
-                  {displayIkeaItemNo && (
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-mono font-bold tracking-wider shadow-2xs">
-                      <span className="text-slate-400 uppercase text-[10px] tracking-normal font-sans">
-                        {locale === 'ru' ? 'Артикул' : locale === 'zh' ? '货号' : 'Article #'}
-                      </span>
-                      <span>{displayIkeaItemNo}</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Main Overview Summary Text */}
@@ -2390,66 +2443,8 @@ export default function ProductDetailView({
                   )}
                 </div>
 
-                {/* Good to know */}
-                {goodToKnow && (
-                  <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Info className="w-5 h-5 text-amber-600" />
-                      {locale === 'ru' ? 'Полезно знать' : locale === 'zh' ? '实用信息' : 'Good to know'}
-                    </h3>
-                    <div className="p-5 rounded-2xl bg-amber-50/40 border border-amber-200/70 text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">
-                      {goodToKnow}
-                    </div>
-                  </div>
-                )}
-
-                {/* Designer Credit */}
-                {designer && (
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-sm text-slate-700">
-                    <span className="font-semibold text-slate-900">
-                      {locale === 'ru' ? 'Дизайнер:' : locale === 'zh' ? '设计师:' : 'Designer:'}
-                    </span>
-                    <span className="text-[#00407a] font-medium">{designer}</span>
-                  </div>
-                )}
-
-                {/* Compliance & Safety */}
-                {compliance && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      {locale === 'ru' ? 'Безопасность и соответствие' : locale === 'zh' ? '安全与合规' : 'Safety & Compliance'}
-                    </h4>
-                    <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
-                      {compliance}
-                    </p>
-                  </div>
-                )}
-
-                {/* Dynamic Mapped Specifications (if category attributes exist) */}
-                {product.categoryAttributes && product.categoryAttributes.length > 0 && (
-                  <div className="space-y-4 pt-4 border-t border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-blue-600" />
-                      {locale === 'ru' ? 'Спецификации атрибутов' : locale === 'zh' ? '属性参数' : 'Category Attributes'}
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {product.categoryAttributes.map((attr) => {
-                        const val = product.attributes?.[attr.slug]
-                        if (!val) return null
-                        const displayVal = Array.isArray(val) ? val.join(', ') : typeof val === 'object' ? JSON.stringify(val) : String(val)
-                        return (
-                          <div key={attr.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-                            <span className="text-xs text-slate-500 block font-medium">{attr.name}</span>
-                            <span className="text-sm font-bold text-slate-900 block mt-0.5">{displayVal}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Fallback Standard Technical Specs if no IKEA details or custom attributes yet */}
-                {!keyFeatures?.length && !whatsIncluded && !materials && !careInstructions && !goodToKnow && !designer && !compliance && (!product.categoryAttributes || product.categoryAttributes.length === 0) && (
+                {/* Fallback Standard Technical Specs if no IKEA details yet */}
+                {!keyFeatures?.length && !whatsIncluded && !materials && !careInstructions && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                       <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">

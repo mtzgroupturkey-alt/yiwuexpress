@@ -13,37 +13,53 @@ export function MobileTrustBadges({ className = '' }: MobileTrustBadgesProps) {
   const locale = useLocale()
   const { settings } = useSettings()
 
-  const badges = [
+  const isFactoryEnabled = (settings as any)?.pdpFactoryBadgeEnabled !== false && (settings as any)?.pdpFactoryBadgeEnabled !== 'false'
+  const isQcEnabled = (settings as any)?.pdpQcBadgeEnabled !== false && (settings as any)?.pdpQcBadgeEnabled !== 'false'
+  const isLogisticsEnabled = (settings as any)?.pdpLogisticsBadgeEnabled !== false && (settings as any)?.pdpLogisticsBadgeEnabled !== 'false'
+  const isEscrowEnabled = (settings as any)?.pdpEscrowBadgeEnabled !== false && (settings as any)?.pdpEscrowBadgeEnabled !== 'false'
+
+  const allBadges = [
     {
+      id: 'factory',
+      enabled: isFactoryEnabled,
       icon: <Factory className="w-4 h-4 text-primary-600 dark:text-primary-400" />,
       title: settings?.pdpFactoryTitle || (locale === 'zh' ? '源头工厂直供' : locale === 'ru' ? 'Прямой производитель' : 'Direct Verified Factory'),
       desc: settings?.pdpFactoryDesc || (locale === 'zh' ? '无中间商一手出厂底价' : locale === 'ru' ? 'Без наценок посредников' : 'Zero middleman markup'),
     },
     {
+      id: 'qc',
+      enabled: isQcEnabled,
       icon: <Award className="w-4 h-4 text-amber-500" />,
       title: settings?.pdpQcTitle || (locale === 'zh' ? '专业验厂与品控' : locale === 'ru' ? 'Контроль качества' : 'Rigorous Quality Inspection'),
       desc: settings?.pdpQcDesc || (locale === 'zh' ? '出货前实物检测把关' : locale === 'ru' ? 'Проверка перед отправкой' : 'Pre-shipment inspection'),
     },
     {
+      id: 'logistics',
+      enabled: isLogisticsEnabled,
       icon: <Truck className="w-4 h-4 text-blue-500" />,
       title: settings?.pdpLogisticsTitle || (locale === 'zh' ? '双清包税物流专线' : locale === 'ru' ? 'Таможенная очистка' : 'Door-to-Door Logistics'),
       desc: settings?.pdpLogisticsDesc || (locale === 'zh' ? '海运空运拼箱极速清关' : locale === 'ru' ? 'Авиа и морская доставка' : 'Air & ocean freight cleared'),
     },
     {
+      id: 'escrow',
+      enabled: isEscrowEnabled,
       icon: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
       title: settings?.pdpEscrowTitle || (locale === 'zh' ? '贸易资金担保' : locale === 'ru' ? 'Безопасная сделка' : 'Trade Assurance Protected'),
       desc: settings?.pdpEscrowDesc || (locale === 'zh' ? '验货通过后支付尾款' : locale === 'ru' ? 'Гарантия сохранности средств' : 'Escrow payment security'),
     },
   ]
 
+  const activeBadges = allBadges.filter((b) => b.enabled)
+  if (activeBadges.length === 0) return null
+
   return (
     <div
       data-testid="mobile-trust-badges"
       className={`rounded-3xl bg-gray-50 dark:bg-slate-800/60 border border-gray-200/80 dark:border-slate-700/80 p-4 space-y-3 ${className}`}
     >
-      <div className="grid grid-cols-2 gap-3">
-        {badges.map((b, idx) => (
-          <div key={idx} className="flex items-start gap-2.5">
+      <div className={`grid ${activeBadges.length === 1 ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
+        {activeBadges.map((b) => (
+          <div key={b.id} className="flex items-start gap-2.5">
             <div className="w-7 h-7 rounded-xl bg-white dark:bg-slate-700 shadow-2xs flex items-center justify-center shrink-0 mt-0.5">
               {b.icon}
             </div>

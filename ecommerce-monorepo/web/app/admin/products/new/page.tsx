@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Save } from 'lucide-react'
 import { ProductAttributesSection, validateRequiredAttributes } from '@/components/admin/ProductAttributesSection'
+import { ProductTabContentSection, type TabSectionPayload } from '@/components/admin/ProductTabContentSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { ProductMediaUpload } from '@/components/admin/ProductMediaUpload'
 import {
@@ -76,6 +77,7 @@ export default function NewProductPage() {
     ru: { name: '', description: '' },
     zh: { name: '', description: '' }
   })
+  const [tabContentPayload, setTabContentPayload] = useState<TabSectionPayload | null>(null)
 
   const {
     register,
@@ -171,6 +173,18 @@ export default function NewProductPage() {
         flashSaleStock: data.flashSaleStock !== undefined && data.flashSaleStock !== null && !isNaN(Number(data.flashSaleStock)) ? parseInt(data.flashSaleStock.toString()) : null,
         attributes: attributeValues, // Add attribute values to product data
         attributeTranslations,
+      }
+
+      if (tabContentPayload) {
+        if (tabContentPayload.rawIkeaPayload) {
+          (productData as any).rawIkeaPayload = tabContentPayload.rawIkeaPayload
+        }
+        if (tabContentPayload.dimensions) {
+          (productData as any).dimensions = tabContentPayload.dimensions
+        }
+        if (tabContentPayload.material) {
+          (productData as any).material = tabContentPayload.material
+        }
       }
 
       const response = await fetch('/api/products', {
@@ -332,6 +346,12 @@ export default function NewProductPage() {
                 setAttributeValues(values)
                 setAttributeTranslations(translations)
               }}
+            />
+
+            {/* Storefront Tab Content & Descriptions (Overview, Key Features & Details, Measurements) */}
+            <ProductTabContentSection
+              disabled={submitting}
+              onChange={(payload) => setTabContentPayload(payload)}
             />
 
             {/* Pricing */}

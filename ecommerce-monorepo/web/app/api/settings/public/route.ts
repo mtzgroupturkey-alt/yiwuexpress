@@ -201,6 +201,32 @@ export async function GET(request: NextRequest) {
     const pdpFaq5Q = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq5Q', locale === 'ru' ? 'Возможно ли брендирование и производство под заказ (OEM/ODM)?' : locale === 'zh' ? '是否支持贴牌定制与打样（OEM / ODM）？' : 'Can I customize this product or add my logo (OEM/ODM)?', locale)
     const pdpFaq5A = localizeSystemSetting(effectiveSettings.translations, 'pdpFaq5A', locale === 'ru' ? 'Да, нанесение логотипа и индивидуальная упаковка доступны для партий от 500 шт. Напишите нам детали заказа.' : locale === 'zh' ? '支持定制包装、印刷 Logo 和模具开发。订单量达到定制门槛即可联系客服沟通打样与生产周期。' : 'Yes, OEM packaging, custom branding, and ODM tooling are supported for volume orders. Contact sourcing for specs.', locale)
 
+    // High Demand & Stock Urgency Badge
+    const rawHighDemandEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpHighDemandBadgeEnabled', 'true', locale)
+    const pdpHighDemandBadgeEnabled = rawHighDemandEnabled !== 'false'
+    const pdpHighDemandThreshold = parseInt(localizeSystemSetting(effectiveSettings.translations, 'pdpHighDemandThreshold', '100', locale) || '100', 10) || 100
+    const pdpHighDemandText = localizeSystemSetting(
+      effectiveSettings.translations,
+      'pdpHighDemandText',
+      locale === 'ru' ? '⚡ Высокий спрос' : locale === 'zh' ? '⚡ 热销爆款' : '⚡ In High Demand',
+      locale
+    )
+
+    // Reassurance Badges On/Off
+    const pdpWarrantyBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpWarrantyBadgeEnabled', 'true', locale) !== 'false'
+    const pdpDeliveryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpDeliveryBadgeEnabled', 'true', locale) !== 'false'
+    const pdpReturnsBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpReturnsBadgeEnabled', 'true', locale) !== 'false'
+
+    // Trust Badges On/Off
+    const pdpFactoryBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpFactoryBadgeEnabled', 'true', locale) !== 'false'
+    const pdpQcBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpQcBadgeEnabled', 'true', locale) !== 'false'
+    const pdpLogisticsBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpLogisticsBadgeEnabled', 'true', locale) !== 'false'
+    const pdpEscrowBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpEscrowBadgeEnabled', 'true', locale) !== 'false'
+
+    // Pickup Hub & FAQ On/Off
+    const pdpPickupBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpPickupBadgeEnabled', 'true', locale) !== 'false'
+    const pdpFaqBadgeEnabled = localizeSystemSetting(effectiveSettings.translations, 'pdpFaqBadgeEnabled', 'true', locale) !== 'false'
+
     const { translations, ...publicSettings } = effectiveSettings
 
 
@@ -287,6 +313,22 @@ export async function GET(request: NextRequest) {
         pdpFaq4A,
         pdpFaq5Q,
         pdpFaq5A,
+        // High Demand & Stock Urgency Badge
+        pdpHighDemandBadgeEnabled,
+        pdpHighDemandThreshold,
+        pdpHighDemandText,
+        // Reassurance Badges On/Off Toggles
+        pdpWarrantyBadgeEnabled,
+        pdpDeliveryBadgeEnabled,
+        pdpReturnsBadgeEnabled,
+        // Trust Badges On/Off Toggles
+        pdpFactoryBadgeEnabled,
+        pdpQcBadgeEnabled,
+        pdpLogisticsBadgeEnabled,
+        pdpEscrowBadgeEnabled,
+        // Pickup Hub & FAQ On/Off Toggles
+        pdpPickupBadgeEnabled,
+        pdpFaqBadgeEnabled,
       }
     })
   } catch (error) {
@@ -315,6 +357,18 @@ export async function GET(request: NextRequest) {
       announcementTicker: null,
       mapProvider: 'yandex',
       yandexMapsApiKey: process.env.NEXT_PUBLIC_YANDEX_MAPS_KEY || '',
+      pdpHighDemandBadgeEnabled: true,
+      pdpHighDemandThreshold: 100,
+      pdpHighDemandText: '⚡ In High Demand',
+      pdpWarrantyBadgeEnabled: true,
+      pdpDeliveryBadgeEnabled: true,
+      pdpReturnsBadgeEnabled: true,
+      pdpFactoryBadgeEnabled: true,
+      pdpQcBadgeEnabled: true,
+      pdpLogisticsBadgeEnabled: true,
+      pdpEscrowBadgeEnabled: true,
+      pdpPickupBadgeEnabled: true,
+      pdpFaqBadgeEnabled: true,
     }
 
     return NextResponse.json({ settings: defaultSettings })
