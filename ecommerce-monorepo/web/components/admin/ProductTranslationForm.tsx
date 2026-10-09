@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, AlertCircle } from 'lucide-react'
+import { Check, AlertCircle, Info } from 'lucide-react'
 import { AutoTranslateButton } from '@/components/admin/AutoTranslateButton'
 import { RichTextEditor } from '@/components/admin/RichTextEditor'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
@@ -28,6 +28,12 @@ export interface ProductTranslationFormProps {
   onAttributesTranslated?: (translatedAttrs: Record<string, Record<string, string>>) => void
   /** Disable editing (e.g. while submitting). */
   disabled?: boolean
+  /** Sweden Name for product details identification */
+  swedenName?: string
+  onSwedenNameChange?: (value: string) => void
+  /** Article # for IKEA / manufacturer identification */
+  articleNumber?: string
+  onArticleNumberChange?: (value: string) => void
 }
 
 const LOCALES: {
@@ -62,7 +68,11 @@ export function ProductTranslationForm({
   onChange,
   extraFieldsToTranslate,
   onAttributesTranslated,
-  disabled = false
+  disabled = false,
+  swedenName = '',
+  onSwedenNameChange,
+  articleNumber = '',
+  onArticleNumberChange
 }: ProductTranslationFormProps) {
   const { dict } = useAdminLocale()
   const [activeTab, setActiveTab] = useState<TranslationLocale>('en')
@@ -214,59 +224,146 @@ export function ProductTranslationForm({
           const showEnError = code === 'en' && touched.en && entry.name.trim().length === 0
           return (
             <div key={code} className="space-y-4">
-              <div>
-                <label
-                  htmlFor={`translation-${code}-name`}
-                  className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-800"
-                >
-                  <span className="text-base" aria-hidden>
-                    {LOCALES.find((l) => l.code === code)?.flag}
-                  </span>
-                  {label} {dict.common.name}
-                  {required ? (
-                    <span className="text-red-600">*</span>
-                  ) : (
-                    <span className="text-xs font-normal text-gray-500">
-                      {dict.products.optionalRecommended}
-                    </span>
-                  )}
-                </label>
-                <input
-                  id={`translation-${code}-name`}
-                  type="text"
-                  value={entry.name}
-                  disabled={disabled}
-                  onChange={(e) => update(code, 'name', e.target.value)}
-                  onBlur={() => handleBlur(code)}
-                  placeholder={dict.products.enterNamePlaceholder.replace('{label}', label)}
-                  className={[
-                    'w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2',
-                    showEnError
-                      ? 'border-red-400 focus:ring-red-200'
-                      : 'border-gray-300 focus:border-primary-500 focus:ring-primary-200'
-                  ].join(' ')}
-                />
-                {showEnError && (
-                  <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    {dict.products.nameRequiredError}
-                  </p>
-                )}
-              </div>
+              {code === 'en' ? (
+                /* English Tab: Integrated Product Details Information (Sweden Name, English Name, Article #) */
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-1">
+                    <div className="flex items-center gap-1.5">
+                      <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Product Details Information
+                      </label>
+                      <span className="text-[10px] text-gray-400 font-normal">
+                        (Hero Section)
+                      </span>
+                    </div>
+                  </div>
 
-              <div>
-                <label
-                  className="mb-1.5 block text-sm font-semibold text-gray-800"
-                >
-                  {label} {dict.common.description}
-                  {required && <span className="text-red-600"> *</span>}
-                </label>
+                  <div className="space-y-4">
+                    {/* Sweden Name */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          Sweden Name
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-mono">e.g. GULDÖRING</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={swedenName}
+                        disabled={disabled}
+                        onChange={(e) => onSwedenNameChange?.(e.target.value)}
+                        placeholder="e.g. GULDÖRING"
+                        className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                      />
+                      <p className="text-[11px] text-gray-500">Original Swedish series / brand name</p>
+                    </div>
+
+                    {/* English Name (Single Product Name) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="translation-en-name" className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          English Name <span className="text-red-600">*</span>
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-mono">e.g. 7-piece cookware set</span>
+                      </div>
+                      <input
+                        id="translation-en-name"
+                        type="text"
+                        value={entry.name}
+                        disabled={disabled}
+                        onChange={(e) => update('en', 'name', e.target.value)}
+                        onBlur={() => handleBlur('en')}
+                        placeholder="e.g. 7-piece cookware set"
+                        className={[
+                          'w-full rounded-xl border px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2',
+                          showEnError
+                            ? 'border-red-400 focus:ring-red-200'
+                            : 'border-gray-300 focus:border-primary-500 focus:ring-primary-200'
+                        ].join(' ')}
+                      />
+                      <p className="text-[11px] text-gray-500">English product type / description</p>
+                    </div>
+
+                    {/* Article # */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                          Article #
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-mono">XXX.XXX.XX</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={articleNumber}
+                        disabled={disabled}
+                        onChange={(e) => onArticleNumberChange?.(e.target.value)}
+                        placeholder="e.g. 406.094.49"
+                        className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-mono font-bold text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                      />
+                      <p className="text-[11px] text-gray-500">Article Number</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Non-English Tabs (Russian, Chinese) */
+                <div>
+                  <label
+                    htmlFor={`translation-${code}-name`}
+                    className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-gray-800"
+                  >
+                    <span className="text-base" aria-hidden>
+                      {LOCALES.find((l) => l.code === code)?.flag}
+                    </span>
+                    {label} {dict.common.name}
+                    {required ? (
+                      <span className="text-red-600">*</span>
+                    ) : (
+                      <span className="text-xs font-normal text-gray-500">
+                        {dict.products.optionalRecommended}
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    id={`translation-${code}-name`}
+                    type="text"
+                    value={entry.name}
+                    disabled={disabled}
+                    onChange={(e) => update(code, 'name', e.target.value)}
+                    onBlur={() => handleBlur(code)}
+                    placeholder={dict.products.enterNamePlaceholder.replace('{label}', label)}
+                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                  />
+                </div>
+              )}
+
+              {showEnError && code === 'en' && (
+                <p className="flex items-center gap-1 text-xs text-red-600">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {dict.products.nameRequiredError}
+                </p>
+              )}
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    {label} {dict.common.description} {required && <span className="text-red-600">*</span>}
+                  </label>
+                  {code === 'en' && (
+                    <span className="text-[10px] text-slate-400">Displayed on Top under Product Title</span>
+                  )}
+                </div>
                 <RichTextEditor
                   value={entry.description}
                   disabled={disabled}
                   onChange={(html) => update(code, 'description', html)}
                   placeholder={dict.products.enterDescPlaceholder.replace('{label}', label)}
                 />
+                {code === 'en' && (
+                  <p className="text-[11px] text-gray-500">
+                    Original description displayed in hero section on product page.
+                  </p>
+                )}
               </div>
 
               {/* SEO Meta Fields per Language Tab */}

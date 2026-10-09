@@ -76,6 +76,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     dimensions: dbItem.dimensions || undefined,
     attributes: dbItem.attributes || undefined,
     isFeatured: Boolean(dbItem.isFeatured),
+    dromkokItemNo: dbItem.dromkokItemNo || undefined,
   };
 }
 

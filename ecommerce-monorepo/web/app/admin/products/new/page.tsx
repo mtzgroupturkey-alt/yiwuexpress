@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Save } from 'lucide-react'
+import { ArrowLeft, Save, Info } from 'lucide-react'
 import { ProductAttributesSection, validateRequiredAttributes } from '@/components/admin/ProductAttributesSection'
 import { ProductTabContentSection, type TabSectionPayload } from '@/components/admin/ProductTabContentSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
@@ -78,6 +78,10 @@ export default function NewProductPage() {
     zh: { name: '', description: '' }
   })
   const [tabContentPayload, setTabContentPayload] = useState<TabSectionPayload | null>(null)
+  const [swedenName, setSwedenName] = useState('')
+  const [englishName, setEnglishName] = useState('')
+  const [articleNo, setArticleNo] = useState('')
+  const [productDescription, setProductDescription] = useState('')
 
   const {
     register,
@@ -148,7 +152,7 @@ export default function NewProductPage() {
       const images = media.filter(m => m.type === 'image').map(m => m.url)
       const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
-      const productData = {
+      const productData: any = {
         ...data,
         // Dual-write: legacy name/description stay in sync with 'en' translation
         // (Phase 1 design) so reads that haven't migrated still work.
@@ -173,17 +177,62 @@ export default function NewProductPage() {
         flashSaleStock: data.flashSaleStock !== undefined && data.flashSaleStock !== null && !isNaN(Number(data.flashSaleStock)) ? parseInt(data.flashSaleStock.toString()) : null,
         attributes: attributeValues, // Add attribute values to product data
         attributeTranslations,
+      };
+
+      const baseRaw = productData.rawIkeaPayload || {};
+      const updatedRaw = {
+        ...baseRaw,
+        swedenName: swedenName.trim(),
+        englishName: englishName.trim(),
+        articleNumber: articleNo.trim(),
+        productDetails: {
+          ...(baseRaw.productDetails || {}),
+          swedenName: swedenName.trim(),
+          englishName: englishName.trim(),
+          description: productDescription.trim()
+        },
+        overview: {
+          ...(baseRaw.overview || {}),
+          summary: productDescription.trim()
+        }
+      };
+
+      productData.rawIkeaPayload = updatedRaw;
+      if (productDescription.trim()) {
+        productData.description = productDescription.trim();
+      }
+      if (articleNo.trim()) {
+        productData.ikeaItemNo = articleNo.trim();
+        productData.ikeaItemNumber = articleNo.trim();
+      }
+      if (translations && translations.en && productDescription.trim()) {
+        translations.en.description = productDescription.trim();
       }
 
       if (tabContentPayload) {
         if (tabContentPayload.rawIkeaPayload) {
-          (productData as any).rawIkeaPayload = tabContentPayload.rawIkeaPayload
+          productData.rawIkeaPayload = {
+            ...tabContentPayload.rawIkeaPayload,
+            swedenName: swedenName.trim() || tabContentPayload.rawIkeaPayload.swedenName,
+            englishName: englishName.trim() || tabContentPayload.rawIkeaPayload.englishName,
+            articleNumber: articleNo.trim() || tabContentPayload.rawIkeaPayload.articleNumber,
+            productDetails: {
+              ...(tabContentPayload.rawIkeaPayload.productDetails || {}),
+              swedenName: swedenName.trim() || tabContentPayload.rawIkeaPayload.productDetails?.swedenName,
+              englishName: englishName.trim() || tabContentPayload.rawIkeaPayload.productDetails?.englishName,
+              description: productDescription.trim() || tabContentPayload.rawIkeaPayload.productDetails?.description
+            }
+          };
         }
         if (tabContentPayload.dimensions) {
-          (productData as any).dimensions = tabContentPayload.dimensions
+          productData.dimensions = tabContentPayload.dimensions;
         }
         if (tabContentPayload.material) {
-          (productData as any).material = tabContentPayload.material
+          productData.material = tabContentPayload.material;
+        }
+        if (tabContentPayload.ikeaItemNo && !productData.ikeaItemNo) {
+          productData.ikeaItemNo = articleNo.trim() || tabContentPayload.ikeaItemNo;
+          productData.ikeaItemNumber = articleNo.trim() || tabContentPayload.ikeaItemNo;
         }
       }
 
@@ -311,8 +360,19 @@ export default function NewProductPage() {
                 <ProductTranslationForm
                   disabled={submitting}
                   initialValues={translations}
+                  swedenName={swedenName}
+                  onSwedenNameChange={setSwedenName}
+                  articleNumber={articleNo}
+                  onArticleNumberChange={(val) => {
+                    setArticleNo(val)
+                    setValue('ikeaItemNo', val)
+                  }}
                   onChange={(newTrans) => {
                     setTranslations(newTrans)
+                    if (newTrans.en.description) {
+                      setProductDescription(newTrans.en.description)
+                      setValue('description', newTrans.en.description)
+                    }
                     if (newTrans.en.metaTitle) setValue('metaTitle', newTrans.en.metaTitle)
                     if (newTrans.en.metaDescription) setValue('metaDescription', newTrans.en.metaDescription)
                   }}
@@ -350,6 +410,8 @@ export default function NewProductPage() {
 
             {/* Storefront Tab Content & Descriptions (Overview, Key Features & Details, Measurements) */}
             <ProductTabContentSection
+              initialName={translations.en?.name || ''}
+              initialIkeaItemNo={watch('ikeaItemNo') || ''}
               disabled={submitting}
               onChange={(payload) => setTabContentPayload(payload)}
             />

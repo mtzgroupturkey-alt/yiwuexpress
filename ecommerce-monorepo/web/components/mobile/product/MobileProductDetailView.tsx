@@ -171,18 +171,32 @@ export function MobileProductDetailView({
 
       {/* 3. Product Information Container */}
       <div className="p-3.5 space-y-3">
-        {/* Brand & Category */}
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <span className="font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
-            {product.brand || 'Verified Manufacturer'}
-          </span>
-          <span>{product.category}</span>
+        {/* Brand, Category & Item # in one line */}
+        <div className="flex items-center justify-between text-xs text-gray-400 flex-wrap gap-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-bold text-primary-600 dark:text-primary-400 uppercase tracking-wider">
+              {product.brand || 'Verified Manufacturer'}
+            </span>
+            {product.category && <span>• {product.category}</span>}
+            {product.dromkokItemNo && (
+              <span className="font-mono text-slate-500 font-medium">
+                Item #: <span className="text-slate-900 dark:text-white font-bold">{product.dromkokItemNo}</span>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Product Title */}
         <h1 className="text-lg font-black text-gray-900 dark:text-white leading-snug">
           {product.name}
         </h1>
+
+        {/* Product Description */}
+        {product.description && (
+          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line line-clamp-3">
+            {product.description.replace(/<[^>]+>/g, '').trim()}
+          </p>
+        )}
 
         {/* Dynamic Attributes or Legacy Variant chips */}
         {hasDynamicAttributes ? (

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Save, Trash2, ExternalLink, Sparkles, CheckCircle2, AlertTriangle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, ExternalLink, Sparkles, CheckCircle2, AlertTriangle, RefreshCw, Info } from 'lucide-react'
 import { ProductAttributesSection } from '@/components/admin/ProductAttributesSection'
 import { ProductTabContentSection, type TabSectionPayload } from '@/components/admin/ProductTabContentSection'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
@@ -87,6 +87,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [fetchingIkea, setFetchingIkea] = useState(false)
   const [productRawData, setProductRawData] = useState<any>(null)
   const [tabContentPayload, setTabContentPayload] = useState<TabSectionPayload | null>(null)
+
+  // Direct Product Identification & Details States (Sweden Name, English Name, Article #, Description)
+  const [swedenName, setSwedenName] = useState('')
+  const [englishName, setEnglishName] = useState('')
+  const [articleNo, setArticleNo] = useState('')
+  const [productDescription, setProductDescription] = useState('')
 
   const {
     register,
@@ -167,6 +173,28 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       if (data.success && data.data) {
         const product = data.data
         setProductRawData(product)
+
+        // Extract and populate Sweden Name, English Name, Article #, Description
+        const rawPayload = product.rawIkeaPayload || {}
+        const rawName = (rawPayload.name || product.name || '').trim()
+        const swedenMatch = rawName.match(/^([A-ZÅÄÖØÆÉÈÜ0-9]{2,})/u)
+        const initialSweden = rawPayload.swedenName || rawPayload.swedishName || rawPayload.productDetails?.swedenName || (swedenMatch ? swedenMatch[1] : '')
+        setSwedenName(initialSweden)
+
+        let initialEng = rawPayload.englishName || rawPayload.productDetails?.englishName || ''
+        if (!initialEng && initialSweden && rawName.startsWith(initialSweden)) {
+          let sub = rawName.slice(initialSweden.length).trim()
+          if (sub.startsWith('-')) sub = sub.slice(1).trim()
+          initialEng = sub
+        }
+        if (!initialEng) initialEng = product.name || ''
+        setEnglishName(initialEng)
+
+        const rawArt = rawPayload.articleNumber || rawPayload.itemNumber || product.ikeaItemNo || product.ikeaItemNumber || ''
+        setArticleNo(rawArt)
+
+        const initialDesc = product.description || rawPayload.productDetails?.description || rawPayload.overview?.summary || ''
+        setProductDescription(initialDesc)
         
         // Reset form with product data
         reset({
@@ -313,15 +341,58 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         attributeTranslations,
       }
 
+      const currentRaw = productData.rawIkeaPayload || productRawData?.rawIkeaPayload || {}
+      const updatedRaw = {
+        ...currentRaw,
+        swedenName: swedenName.trim(),
+        englishName: englishName.trim(),
+        articleNumber: articleNo.trim(),
+        productDetails: {
+          ...(currentRaw.productDetails || {}),
+          swedenName: swedenName.trim(),
+          englishName: englishName.trim(),
+          description: productDescription.trim()
+        },
+        overview: {
+          ...(currentRaw.overview || {}),
+          summary: productDescription.trim()
+        }
+      }
+
+      productData.rawIkeaPayload = updatedRaw
+      productData.description = productDescription.trim()
+      if (articleNo.trim()) {
+        productData.ikeaItemNo = articleNo.trim()
+        productData.ikeaItemNumber = articleNo.trim()
+      }
+      if (translations && translations.en) {
+        translations.en.description = productDescription.trim()
+      }
+
       if (tabContentPayload) {
         if (tabContentPayload.rawIkeaPayload) {
-          productData.rawIkeaPayload = tabContentPayload.rawIkeaPayload
+          productData.rawIkeaPayload = {
+            ...tabContentPayload.rawIkeaPayload,
+            swedenName: swedenName.trim() || tabContentPayload.rawIkeaPayload.swedenName,
+            englishName: englishName.trim() || tabContentPayload.rawIkeaPayload.englishName,
+            articleNumber: articleNo.trim() || tabContentPayload.rawIkeaPayload.articleNumber,
+            productDetails: {
+              ...(tabContentPayload.rawIkeaPayload.productDetails || {}),
+              swedenName: swedenName.trim() || tabContentPayload.rawIkeaPayload.productDetails?.swedenName,
+              englishName: englishName.trim() || tabContentPayload.rawIkeaPayload.productDetails?.englishName,
+              description: productDescription.trim() || tabContentPayload.rawIkeaPayload.productDetails?.description
+            }
+          }
         }
         if (tabContentPayload.dimensions) {
           productData.dimensions = tabContentPayload.dimensions
         }
         if (tabContentPayload.material) {
           productData.material = tabContentPayload.material
+        }
+        if (tabContentPayload.ikeaItemNo) {
+          productData.ikeaItemNo = articleNo.trim() || tabContentPayload.ikeaItemNo
+          productData.ikeaItemNumber = articleNo.trim() || tabContentPayload.ikeaItemNo
         }
       }
 
@@ -538,8 +609,19 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 {translations && (
                   <ProductTranslationForm
                     initialValues={translations}
+                    swedenName={swedenName}
+                    onSwedenNameChange={setSwedenName}
+                    articleNumber={articleNo}
+                    onArticleNumberChange={(val) => {
+                      setArticleNo(val)
+                      setValue('ikeaItemNo', val)
+                    }}
                     onChange={(newTrans) => {
                       setTranslations(newTrans)
+                      if (newTrans.en.description) {
+                        setProductDescription(newTrans.en.description)
+                        setValue('description', newTrans.en.description)
+                      }
                       if (newTrans.en.metaTitle) setValue('metaTitle', newTrans.en.metaTitle)
                       if (newTrans.en.metaDescription) setValue('metaDescription', newTrans.en.metaDescription)
                     }}
@@ -584,6 +666,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 initialDimensions={productRawData.dimensions}
                 initialMaterial={productRawData.material}
                 initialDescription={productRawData.description}
+                initialName={productRawData.name}
+                initialIkeaItemNo={productRawData.ikeaItemNo || productRawData.ikeaItemNumber}
                 disabled={submitting}
                 onChange={(payload) => setTabContentPayload(payload)}
               />

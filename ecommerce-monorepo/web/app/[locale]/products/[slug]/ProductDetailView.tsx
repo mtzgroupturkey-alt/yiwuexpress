@@ -744,27 +744,44 @@ export default function ProductDetailView({
   const [activeTab, setActiveTab] = useState<
     'overview' | 'product-details' | 'measurements' | 'specs' | 'logistics' | 'faq' | 'reviews'
   >('overview')
+  const [isDescExpanded, setIsDescExpanded] = useState(false)
 
   const ikeaData = useMemo(() => {
     return product.rawIkeaPayload || null
   }, [product.rawIkeaPayload])
 
   const overviewSummary = useMemo(() => {
+    // 1. Prioritize admin's entered description (from translations or product.description)
+    if (typeof localized.description === 'string' && localized.description.trim()) {
+      return localized.description
+    }
+    if (typeof product.description === 'string' && product.description.trim()) {
+      return product.description
+    }
+
     const localizedIkeaSummary =
       ikeaData?.translations?.[locale]?.overview?.summary ||
       ikeaData?.overview?.translations?.[locale]?.summary
     if (localizedIkeaSummary) return localizedIkeaSummary
 
-    if (locale !== 'en' && typeof localized.description === 'string' && localized.description.trim()) {
-      return localized.description
-    }
-
     if (ikeaData?.overview?.summary) return ikeaData.overview.summary
+    return t('noDescription')
+  }, [ikeaData, localized.description, product.description, locale, t])
+
+  const productHeaderDescription = useMemo(() => {
     if (typeof localized.description === 'string' && localized.description.trim()) {
       return localized.description
     }
-    return t('noDescription')
-  }, [ikeaData, localized.description, locale, t])
+    if (typeof product.description === 'string' && product.description.trim()) {
+      return product.description
+    }
+    const localizedIkeaSummary =
+      ikeaData?.translations?.[locale]?.overview?.summary ||
+      ikeaData?.overview?.translations?.[locale]?.summary
+    if (localizedIkeaSummary) return localizedIkeaSummary
+    if (ikeaData?.overview?.summary) return ikeaData.overview.summary
+    return null
+  }, [localized.description, product.description, ikeaData, locale])
 
   const overviewFeatures: string[] = useMemo(() => {
     const locFeats =
@@ -863,6 +880,74 @@ export default function ProductDetailView({
     }
     return raw
   }, [product.ikeaItemNumber, (product as any).ikeaItemNo, (product as any).dromkokItemNo, ikeaData?.itemNumber])
+
+  const displaySwedenName = useMemo(() => {
+    const locSweden =
+      ikeaData?.translations?.[locale]?.swedenName ||
+      ikeaData?.translations?.[locale]?.productDetails?.swedenName
+    if (locSweden) return locSweden
+
+    if (ikeaData?.swedenName) return ikeaData.swedenName
+    if (ikeaData?.productDetails?.swedenName) return ikeaData.productDetails.swedenName
+    if ((product as any)?.attributes?.sweden_name) return (product as any).attributes.sweden_name
+
+    const rawName = (ikeaData?.name || product.name || '').trim()
+    const match = rawName.match(/^([A-ZÅÄÖØÆÉÈÜ0-9]{2,})/u)
+    if (match) return match[1]
+
+    const dashMatch = product.name?.match(/-\s*([A-ZÅÄÖØÆÉÈÜ0-9]{2,})$/u)
+    if (dashMatch) return dashMatch[1]
+
+    return null
+  }, [ikeaData, locale, product.name, (product as any)?.attributes])
+
+  const displayEnglishName = useMemo(() => {
+    const locEng =
+      ikeaData?.translations?.[locale]?.englishName ||
+      ikeaData?.translations?.[locale]?.productDetails?.englishName
+    if (locEng) return locEng
+
+    if (ikeaData?.englishName) return ikeaData.englishName
+    if (ikeaData?.productDetails?.englishName) return ikeaData.productDetails.englishName
+    if ((product as any)?.attributes?.english_name) return (product as any).attributes.english_name
+
+    if (displaySwedenName && ikeaData?.name?.startsWith(displaySwedenName)) {
+      let sub = ikeaData.name.slice(displaySwedenName.length).trim()
+      if (sub.startsWith('-')) sub = sub.slice(1).trim()
+      if (sub) return sub
+    }
+
+    return localized.name || product.name || null
+  }, [ikeaData, locale, displaySwedenName, localized.name, product.name, (product as any)?.attributes])
+
+  const displayArticleNumber = useMemo(() => {
+    if (ikeaData?.articleNumber) {
+      const raw = ikeaData.articleNumber
+      const cleaned = String(raw).replace(/[\s.-]/g, '')
+      if (cleaned.length === 8 && /^\d+$/.test(cleaned)) {
+        return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 8)}`
+      }
+      return raw
+    }
+    return displayIkeaItemNo || (product as any)?.dromkokItemNo || null
+  }, [ikeaData?.articleNumber, displayIkeaItemNo, (product as any)?.dromkokItemNo])
+
+  const displayProductDetailsDescription = useMemo(() => {
+    if (typeof localized.description === 'string' && localized.description.trim()) {
+      return localized.description
+    }
+    if (typeof product.description === 'string' && product.description.trim()) {
+      return product.description
+    }
+
+    const locDesc =
+      ikeaData?.translations?.[locale]?.productDetails?.description ||
+      ikeaData?.productDetails?.translations?.[locale]?.description
+    if (locDesc) return locDesc
+
+    if (ikeaData?.productDetails?.description) return ikeaData.productDetails.description
+    return overviewSummary || null
+  }, [ikeaData, locale, overviewSummary, localized.description, product.description])
 
   const resolvedDimensions = useMemo(() => {
     if (dimensionsMap && Object.keys(dimensionsMap).length > 0) {
@@ -1527,7 +1612,11 @@ export default function ProductDetailView({
       {/* MOBILE PDP VIEW (Phase 3, hidden on md+) */}
       <div className="md:hidden">
         <MobileProductDetailView
-          product={mapDbProductToDesign3(product)}
+          product={mapDbProductToDesign3({
+            ...product,
+            name: localized.name || product.name,
+            description: productHeaderDescription || localized.description || product.description
+          })}
           relatedProducts={relatedProducts.map(mapDbProductToDesign3)}
           loadMoreRelated={loadMoreRelatedProducts}
           hasMoreRelated={hasMoreRelated}
@@ -1657,12 +1746,26 @@ export default function ProductDetailView({
               <div className="lg:sticky lg:top-20 space-y-4">
                 {/* Main Buy Box Container */}
                 <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  {/* Brand Pill */}
+                  {/* Category Title & Item # in one line */}
+                  {/* Category Title & Item Identifiers in top bar */}
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5 flex-wrap">
                       <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                        {localizedCategoryName || 'BAKEWARE PRO'}
+                        {localizedCategoryName || 'Cookware & Bakeware'}
                       </span>
+
+                      {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (
+                        <span className="text-xs font-mono text-slate-500 font-medium">
+                          Item #: <span className="text-slate-900 font-bold tracking-wide">{((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)}</span>
+                        </span>
+                      )}
+
+                      {displayArticleNumber && (
+                        <span className="bg-slate-100 text-slate-800 border border-slate-200/90 font-mono font-bold text-xs px-2.5 py-0.5 rounded-full tracking-wide">
+                          {locale === 'ru' ? 'Артикул' : locale === 'zh' ? '货号' : 'Article'} #: {displayArticleNumber}
+                        </span>
+                      )}
+
                       {/* High Demand Badge (Admin on/off controlled) */}
                       {(() => {
                         const isHighDemandEnabled =
@@ -1683,17 +1786,61 @@ export default function ProductDetailView({
                     </div>
                   </div>
 
-                  {/* Clean Item # line without badge */}
-                  {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (
-                    <div className="text-xs font-mono text-slate-500 font-medium">
-                      Item #: <span className="text-slate-900 font-bold tracking-wide">{((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)}</span>
-                    </div>
-                  )}
-
                   {/* Product H1 Title */}
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight">
-                    {localized.name}
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight tracking-tight flex flex-wrap items-baseline gap-2">
+                    {displaySwedenName && (
+                      <span className="text-[#00407a] font-black uppercase tracking-wide">
+                        {displaySwedenName}
+                      </span>
+                    )}
+                    <span>
+                      {displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()
+                        ? displayEnglishName
+                        : localized.name}
+                    </span>
                   </h1>
+
+                  {/* Product Description right after product name on top */}
+                  {(displayProductDetailsDescription || productHeaderDescription) && (() => {
+                    const descText = displayProductDetailsDescription || productHeaderDescription || ''
+                    const cleanText = descText.replace(/<[^>]+>/g, '').trim()
+                    const isHtml = /<[a-z][\s\S]*>/i.test(descText)
+                    const isLong = cleanText.length > 200
+
+                    return (
+                      <div className="text-sm text-slate-600 leading-relaxed pt-0.5">
+                        <div className={`transition-all duration-200 ${!isDescExpanded && isLong ? 'line-clamp-3' : ''}`}>
+                          {isHtml ? (
+                            <div
+                              className="prose prose-sm prose-slate max-w-none text-slate-600 leading-relaxed"
+                              dangerouslySetInnerHTML={{ __html: descText }}
+                            />
+                          ) : (
+                            <p className="whitespace-pre-line leading-relaxed">{descText}</p>
+                          )}
+                        </div>
+                        {isLong && (
+                          <button
+                            type="button"
+                            onClick={() => setIsDescExpanded(!isDescExpanded)}
+                            className="mt-1 text-xs font-bold text-[#00407a] hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            {isDescExpanded ? (
+                              <>
+                                {locale === 'ru' ? 'Свернуть' : locale === 'zh' ? '收起' : 'Show less'}
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              </>
+                            ) : (
+                              <>
+                                {locale === 'ru' ? 'Читать полностью' : locale === 'zh' ? '展开全文' : 'Read more'}
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   {/* Rating & Review Summary Line */}
                   <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 flex-wrap gap-2">
@@ -2296,8 +2443,12 @@ export default function ProductDetailView({
                 </div>
 
                 {/* Main Overview Summary Text */}
-                <div className="prose prose-slate max-w-none text-slate-700 text-base sm:text-lg leading-relaxed whitespace-pre-wrap bg-gradient-to-br from-slate-50/80 to-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-2xs">
-                  {overviewSummary}
+                <div className="prose prose-slate max-w-none text-slate-700 text-base sm:text-lg leading-relaxed bg-gradient-to-br from-slate-50/80 to-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-2xs">
+                  {/<[a-z][\s\S]*>/i.test(overviewSummary) ? (
+                    <div dangerouslySetInnerHTML={{ __html: overviewSummary }} />
+                  ) : (
+                    <p className="whitespace-pre-wrap">{overviewSummary}</p>
+                  )}
                 </div>
 
                 {/* Feature Highlights Grid (from IKEA Overview features) */}
@@ -2321,25 +2472,6 @@ export default function ProductDetailView({
                   </div>
                 )}
 
-                {/* Stock & Origin Strip */}
-                <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200/70 text-xs sm:text-sm text-slate-600">
-                  <div className="flex items-center gap-2 font-medium">
-                    <Truck className="w-4 h-4 text-emerald-600" />
-                    <span>
-                      {locale === 'ru'
-                        ? 'Поставляется напрямую со склада в Китае'
-                        : locale === 'zh'
-                        ? '中国中心仓现货直发'
-                        : 'Direct fulfillment from China distribution center'}
-                    </span>
-                  </div>
-                  {product.countryOfOrigin && (
-                    <div className="flex items-center gap-1.5 ml-auto text-slate-500 font-mono text-xs">
-                      <span>{locale === 'ru' ? 'Страна происхождения:' : locale === 'zh' ? '原产地:' : 'Origin:'}</span>
-                      <span className="font-bold text-slate-700">{getLocalizedCountry(product.countryOfOrigin, locale)}</span>
-                    </div>
-                  )}
-                </div>
 
                 {/* Size Guide - Only shown for apparel */}
                 {isApparelCategory && (
@@ -2381,6 +2513,7 @@ export default function ProductDetailView({
             {/* Tab 2: Product Details */}
             {activeTab === 'product-details' && (
               <div className="space-y-8 animate-fade-in">
+
                 {/* Key Features Bullets */}
                 {keyFeatures && keyFeatures.length > 0 && (
                   <div className="space-y-4">

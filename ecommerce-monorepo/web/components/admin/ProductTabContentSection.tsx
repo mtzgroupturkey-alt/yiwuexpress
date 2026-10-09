@@ -15,7 +15,9 @@ import {
   Box,
   CheckCircle2,
   ListPlus,
-  HelpCircle
+  HelpCircle,
+  Info,
+  Hash
 } from 'lucide-react'
 
 export type LocaleCode = 'en' | 'ru' | 'zh'
@@ -35,6 +37,9 @@ export interface PackageItem {
 }
 
 export interface TabLocaleContent {
+  swedenName: string
+  englishName: string
+  description: string
   overviewSummary: string
   overviewHighlights: string[]
   keyFeatures: string[]
@@ -48,6 +53,7 @@ export interface TabSectionPayload {
   rawIkeaPayload: any
   dimensions: Record<string, any>
   material?: string
+  ikeaItemNo?: string
 }
 
 interface ProductTabContentSectionProps {
@@ -55,6 +61,8 @@ interface ProductTabContentSectionProps {
   initialDimensions?: any
   initialMaterial?: string
   initialDescription?: string
+  initialName?: string
+  initialIkeaItemNo?: string
   onChange: (payload: TabSectionPayload) => void
   disabled?: boolean
 }
@@ -64,6 +72,23 @@ const LOCALES: { code: LocaleCode; label: string; flag: string }[] = [
   { code: 'ru', label: 'Русский', flag: '🇷🇺' },
   { code: 'zh', label: '中文', flag: '🇨🇳' },
 ]
+
+function extractSwedenName(fullName?: string): string {
+  if (!fullName) return ''
+  const trimmed = fullName.trim()
+  const m = trimmed.match(/^([A-ZÅÄÖØÆÉÈÜ0-9]{2,})/u)
+  return m ? m[1] : ''
+}
+
+function extractEnglishName(fullName?: string, swedenName?: string): string {
+  if (!fullName) return ''
+  let cleaned = fullName.trim()
+  if (swedenName && cleaned.startsWith(swedenName)) {
+    cleaned = cleaned.slice(swedenName.length).trim()
+    if (cleaned.startsWith('-')) cleaned = cleaned.slice(1).trim()
+  }
+  return cleaned
+}
 
 function dimensionsMapToArray(map?: Record<string, any> | null): DimensionItem[] {
   if (!map || typeof map !== 'object') return []
@@ -87,6 +112,9 @@ function dimensionsArrayToMap(arr: DimensionItem[]): Record<string, string> {
 
 function createEmptyLocaleContent(): TabLocaleContent {
   return {
+    swedenName: '',
+    englishName: '',
+    description: '',
     overviewSummary: '',
     overviewHighlights: [],
     keyFeatures: [],
@@ -102,11 +130,23 @@ export function ProductTabContentSection({
   initialDimensions,
   initialMaterial,
   initialDescription,
+  initialName,
+  initialIkeaItemNo,
   onChange,
   disabled = false,
 }: ProductTabContentSectionProps) {
   const [activeLocale, setActiveLocale] = useState<LocaleCode>('en')
-  const [activeInnerTab, setActiveInnerTab] = useState<'overview' | 'features' | 'measurements'>('overview')
+  const [activeInnerTab, setActiveInnerTab] = useState<'details' | 'overview' | 'measurements'>('details')
+
+  // Article number state
+  const [articleNumber, setArticleNumber] = useState<string>(() => {
+    return (
+      initialRawIkeaPayload?.articleNumber ||
+      initialRawIkeaPayload?.itemNumber ||
+      initialIkeaItemNo ||
+      ''
+    )
+  })
 
   // Multi-locale content storage
   const [localeData, setLocaleData] = useState<Record<LocaleCode, TabLocaleContent>>(() => {
@@ -117,12 +157,29 @@ export function ProductTabContentSection({
     const raw = initialRawIkeaPayload || {}
     const translations = raw.translations || {}
 
-    // 1. Overview summary
+    // Sweden Name
+    const autoSweden = extractSwedenName(raw.name || initialName || '')
+    en.swedenName = raw.swedenName || raw.swedishName || raw.productDetails?.swedenName || autoSweden || ''
+    ru.swedenName = raw.translations?.ru?.swedenName || raw.translations?.ru?.productDetails?.swedenName || en.swedenName
+    zh.swedenName = raw.translations?.zh?.swedenName || raw.translations?.zh?.productDetails?.swedenName || en.swedenName
+
+    // English Name
+    const autoEng = extractEnglishName(raw.name, en.swedenName) || initialName || ''
+    en.englishName = raw.englishName || raw.productDetails?.englishName || autoEng || ''
+    ru.englishName = raw.translations?.ru?.englishName || raw.translations?.ru?.productDetails?.englishName || ''
+    zh.englishName = raw.translations?.zh?.englishName || raw.translations?.zh?.productDetails?.englishName || ''
+
+    // Description
+    en.description = raw.productDetails?.description || raw.description || initialDescription || ''
+    ru.description = raw.translations?.ru?.productDetails?.description || raw.translations?.ru?.description || ''
+    zh.description = raw.translations?.zh?.productDetails?.description || raw.translations?.zh?.description || ''
+
+    // Overview summary
     en.overviewSummary = raw.overview?.summary || initialDescription || ''
     ru.overviewSummary = raw.overview?.translations?.ru?.summary || translations.ru?.overview?.summary || ''
     zh.overviewSummary = raw.overview?.translations?.zh?.summary || translations.zh?.overview?.summary || ''
 
-    // 2. Overview highlights
+    // Overview highlights
     en.overviewHighlights = Array.isArray(raw.overview?.features) ? [...raw.overview.features] : []
     ru.overviewHighlights = Array.isArray(raw.overview?.translations?.ru?.features)
       ? [...raw.overview.translations.ru.features]
@@ -135,7 +192,7 @@ export function ProductTabContentSection({
       ? [...translations.zh.overview.features]
       : []
 
-    // 3. Key features bullets
+    // Key features bullets
     en.keyFeatures = Array.isArray(raw.productDetails?.keyFeatures) ? [...raw.productDetails.keyFeatures] : []
     ru.keyFeatures = Array.isArray(raw.productDetails?.translations?.ru?.keyFeatures)
       ? [...raw.productDetails.translations.ru.keyFeatures]
@@ -148,22 +205,22 @@ export function ProductTabContentSection({
       ? [...translations.zh.productDetails.keyFeatures]
       : []
 
-    // 4. Materials
+    // Materials
     en.materials = raw.productDetails?.materials || initialMaterial || ''
     ru.materials = raw.productDetails?.translations?.ru?.materials || translations.ru?.productDetails?.materials || ''
     zh.materials = raw.productDetails?.translations?.zh?.materials || translations.zh?.productDetails?.materials || ''
 
-    // 5. Care instructions
+    // Care instructions
     en.careInstructions = raw.productDetails?.careInstructions || ''
     ru.careInstructions = raw.productDetails?.translations?.ru?.careInstructions || translations.ru?.productDetails?.careInstructions || ''
     zh.careInstructions = raw.productDetails?.translations?.zh?.careInstructions || translations.zh?.productDetails?.careInstructions || ''
 
-    // 6. What's included
+    // What's included
     en.whatsIncluded = raw.productDetails?.whatsIncluded || ''
     ru.whatsIncluded = raw.productDetails?.translations?.ru?.whatsIncluded || translations.ru?.productDetails?.whatsIncluded || ''
     zh.whatsIncluded = raw.productDetails?.translations?.zh?.whatsIncluded || translations.zh?.productDetails?.whatsIncluded || ''
 
-    // 7. Dimensions
+    // Dimensions
     const enDims = raw.measurementsTab?.dimensions || initialDimensions || {}
     en.dimensions = dimensionsMapToArray(enDims)
 
@@ -176,7 +233,7 @@ export function ProductTabContentSection({
     return { en, ru, zh }
   })
 
-  // Packaging list (typically universal across locales)
+  // Packaging list
   const [packagingList, setPackagingList] = useState<PackageItem[]>(() => {
     return Array.isArray(initialRawIkeaPayload?.measurementsTab?.packaging)
       ? [...initialRawIkeaPayload.measurementsTab.packaging]
@@ -185,7 +242,11 @@ export function ProductTabContentSection({
 
   // Emit changes to parent
   const emitChanges = useCallback(
-    (currentLocales: Record<LocaleCode, TabLocaleContent>, currentPackaging: PackageItem[]) => {
+    (
+      currentLocales: Record<LocaleCode, TabLocaleContent>,
+      currentPackaging: PackageItem[],
+      currentArticleNum: string
+    ) => {
       const en = currentLocales.en
       const ru = currentLocales.ru
       const zh = currentLocales.zh
@@ -196,6 +257,9 @@ export function ProductTabContentSection({
 
       const updatedRawPayload = {
         ...(initialRawIkeaPayload || {}),
+        swedenName: en.swedenName,
+        englishName: en.englishName,
+        articleNumber: currentArticleNum,
         overview: {
           ...(initialRawIkeaPayload?.overview || {}),
           summary: en.overviewSummary,
@@ -213,18 +277,30 @@ export function ProductTabContentSection({
         },
         productDetails: {
           ...(initialRawIkeaPayload?.productDetails || {}),
+          swedenName: en.swedenName,
+          englishName: en.englishName,
+          articleNumber: currentArticleNum,
+          description: en.description,
           keyFeatures: en.keyFeatures.filter(Boolean),
           materials: en.materials,
           careInstructions: en.careInstructions,
           whatsIncluded: en.whatsIncluded,
           translations: {
             ru: {
+              swedenName: ru.swedenName,
+              englishName: ru.englishName,
+              articleNumber: currentArticleNum,
+              description: ru.description,
               keyFeatures: ru.keyFeatures.filter(Boolean),
               materials: ru.materials,
               careInstructions: ru.careInstructions,
               whatsIncluded: ru.whatsIncluded
             },
             zh: {
+              swedenName: zh.swedenName,
+              englishName: zh.englishName,
+              articleNumber: currentArticleNum,
+              description: zh.description,
               keyFeatures: zh.keyFeatures.filter(Boolean),
               materials: zh.materials,
               careInstructions: zh.careInstructions,
@@ -241,14 +317,21 @@ export function ProductTabContentSection({
             zh: { dimensions: zhDimMap }
           }
         },
-        // Top-level duplicate for convenience
         translations: {
           ru: {
+            swedenName: ru.swedenName,
+            englishName: ru.englishName,
+            articleNumber: currentArticleNum,
+            description: ru.description,
             overview: {
               summary: ru.overviewSummary,
               features: ru.overviewHighlights.filter(Boolean)
             },
             productDetails: {
+              swedenName: ru.swedenName,
+              englishName: ru.englishName,
+              articleNumber: currentArticleNum,
+              description: ru.description,
               keyFeatures: ru.keyFeatures.filter(Boolean),
               materials: ru.materials,
               careInstructions: ru.careInstructions,
@@ -257,11 +340,19 @@ export function ProductTabContentSection({
             measurementsTab: { dimensions: ruDimMap }
           },
           zh: {
+            swedenName: zh.swedenName,
+            englishName: zh.englishName,
+            articleNumber: currentArticleNum,
+            description: zh.description,
             overview: {
               summary: zh.overviewSummary,
               features: zh.overviewHighlights.filter(Boolean)
             },
             productDetails: {
+              swedenName: zh.swedenName,
+              englishName: zh.englishName,
+              articleNumber: currentArticleNum,
+              description: zh.description,
               keyFeatures: zh.keyFeatures.filter(Boolean),
               materials: zh.materials,
               careInstructions: zh.careInstructions,
@@ -276,6 +367,7 @@ export function ProductTabContentSection({
         rawIkeaPayload: updatedRawPayload,
         dimensions: Object.keys(enDimMap).length > 0 ? enDimMap : (initialDimensions || {}),
         material: en.materials || initialMaterial,
+        ikeaItemNo: currentArticleNum || undefined
       })
     },
     [initialRawIkeaPayload, initialDimensions, initialMaterial, onChange]
@@ -287,20 +379,27 @@ export function ProductTabContentSection({
         ...prev,
         [activeLocale]: updater(prev[activeLocale])
       }
-      emitChanges(next, packagingList)
+      emitChanges(next, packagingList, articleNumber)
       return next
     })
   }
 
   const updatePackaging = (newPackaging: PackageItem[]) => {
     setPackagingList(newPackaging)
-    emitChanges(localeData, newPackaging)
+    emitChanges(localeData, newPackaging, articleNumber)
+  }
+
+  const handleArticleNumberChange = (newVal: string) => {
+    setArticleNumber(newVal)
+    emitChanges(localeData, packagingList, newVal)
   }
 
   // Flattened fields for Auto-Translate
   const getFlatFieldsForLocale = (loc: LocaleCode): Record<string, string> => {
     const data = localeData[loc]
     const flat: Record<string, string> = {}
+    if (data.englishName) flat.englishName = data.englishName
+    if (data.description) flat.description = data.description
     if (data.overviewSummary) flat.overviewSummary = data.overviewSummary
     if (data.materials) flat.materials = data.materials
     if (data.careInstructions) flat.careInstructions = data.careInstructions
@@ -328,6 +427,8 @@ export function ProductTabContentSection({
         if (!trans) return
 
         const current = { ...next[targetLocale] }
+        if (trans.englishName) current.englishName = trans.englishName
+        if (trans.description) current.description = trans.description
         if (trans.overviewSummary) current.overviewSummary = trans.overviewSummary
         if (trans.materials) current.materials = trans.materials
         if (trans.careInstructions) current.careInstructions = trans.careInstructions
@@ -360,7 +461,7 @@ export function ProductTabContentSection({
         next[targetLocale] = current
       })
 
-      emitChanges(next, packagingList)
+      emitChanges(next, packagingList, articleNumber)
       return next
     })
   }
@@ -386,7 +487,7 @@ export function ProductTabContentSection({
             <h2 className="text-lg font-bold text-[#1a3a5c]">Storefront Tab Content & Descriptions</h2>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Edit text and specifications displayed on storefront tabs (Overview, Key Features & Details, Measurements).
+            Edit Sweden Name, English Name, Article #, Description, Key Features, and Measurements.
           </p>
         </div>
 
@@ -428,8 +529,26 @@ export function ProductTabContentSection({
         </div>
       </div>
 
-      {/* Inner Subtabs: Overview | Key Features | Measurements */}
+      {/* Inner Subtabs: Product Details Info | Overview | Measurements */}
       <div className="flex space-x-2 border-b border-slate-100 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveInnerTab('details')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            activeInnerTab === 'details'
+              ? 'bg-[#1a3a5c] text-white shadow-xs'
+              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Product Details & Information</span>
+          {current.keyFeatures.length > 0 && (
+            <span className="text-[11px] px-1.5 py-0.2 bg-white/20 rounded-full font-semibold">
+              {current.keyFeatures.length}
+            </span>
+          )}
+        </button>
+
         <button
           type="button"
           onClick={() => setActiveInnerTab('overview')}
@@ -441,24 +560,6 @@ export function ProductTabContentSection({
         >
           <FileText className="w-4 h-4" />
           <span>Product Overview</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveInnerTab('features')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-            activeInnerTab === 'features'
-              ? 'bg-[#1a3a5c] text-white shadow-xs'
-              : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>Key Features & Details</span>
-          {current.keyFeatures.length > 0 && (
-            <span className="text-[11px] px-1.5 py-0.2 bg-white/20 rounded-full font-semibold">
-              {current.keyFeatures.length}
-            </span>
-          )}
         </button>
 
         <button
@@ -480,120 +581,18 @@ export function ProductTabContentSection({
         </button>
       </div>
 
-      {/* TAB 1: PRODUCT OVERVIEW */}
-      {activeInnerTab === 'overview' && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Overview Summary */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Product Overview Summary ({activeLocale.toUpperCase()})
-              </Label>
-              <span className="text-[11px] text-gray-400">
-                Shown as the main paragraph in the Overview tab
-              </span>
-            </div>
-            <textarea
-              rows={4}
-              value={current.overviewSummary}
-              disabled={disabled}
-              onChange={(e) =>
-                updateCurrentLocale((prev) => ({ ...prev, overviewSummary: e.target.value }))
-              }
-              placeholder="e.g. Modern, sleek and versatile cookware with non-stick coating and even, quick heat distribution..."
-              className="w-full border border-gray-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-[#1a3a5c]/20 focus:border-[#1a3a5c] transition-all"
-            />
-          </div>
-
-          {/* Key Highlights list (displayed on Overview tab) */}
-          <div className="space-y-3 pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
-                  Overview Highlights (Key Highlights)
-                </Label>
-                <p className="text-[11px] text-gray-400">
-                  Displayed in cards on the Overview tab.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={disabled}
-                onClick={() =>
-                  updateCurrentLocale((prev) => ({
-                    ...prev,
-                    overviewHighlights: [...prev.overviewHighlights, '']
-                  }))
-                }
-                className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 text-xs gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add Highlight
-              </Button>
-            </div>
-
-            {current.overviewHighlights.length === 0 ? (
-              <div className="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center text-xs text-slate-500">
-                No overview highlights defined yet. Click &quot;Add Highlight&quot; to add highlights.
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {current.overviewHighlights.map((feat, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-blue-50 text-[#1a3a5c] font-bold text-xs flex items-center justify-center shrink-0">
-                      {idx + 1}
-                    </span>
-                    <Input
-                      value={feat}
-                      disabled={disabled}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        updateCurrentLocale((prev) => {
-                          const updated = [...prev.overviewHighlights]
-                          updated[idx] = val
-                          return { ...prev, overviewHighlights: updated }
-                        })
-                      }}
-                      placeholder={`Highlight #${idx + 1}`}
-                      className="rounded-xl flex-1 text-sm bg-gray-50/40 focus:bg-white"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={disabled}
-                      onClick={() => {
-                        updateCurrentLocale((prev) => ({
-                          ...prev,
-                          overviewHighlights: prev.overviewHighlights.filter((_, i) => i !== idx)
-                        }))
-                      }}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg p-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: KEY FEATURES & DETAILS */}
-      {activeInnerTab === 'features' && (
+      {/* TAB 1: PRODUCT DETAILS & IDENTIFICATION */}
+      {activeInnerTab === 'details' && (
         <div className="space-y-6 animate-fade-in">
           {/* Key Features (Bullet Points) */}
-          <div className="space-y-3">
+          <div className="space-y-3 pt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
                   Key Features (Bullet Points) ({activeLocale.toUpperCase()})
                 </Label>
                 <p className="text-[11px] text-gray-400">
-                  Displayed as bullet points in the &quot;Product details&quot; tab. Delete any unwanted or messy IKEA text.
+                  Displayed as bullet points in the &quot;Product details&quot; tab. Delete any unwanted text.
                 </p>
               </div>
               <Button
@@ -710,6 +709,108 @@ export function ProductTabContentSection({
               placeholder="e.g. Pot 5L with lid, saucepan 2L with lid, saucepan 1L with lid..."
               className="rounded-xl text-sm"
             />
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: PRODUCT OVERVIEW */}
+      {activeInnerTab === 'overview' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Overview Summary */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                Product Overview Summary ({activeLocale.toUpperCase()})
+              </Label>
+              <span className="text-[11px] text-gray-400">
+                Shown as the main paragraph in the Overview tab
+              </span>
+            </div>
+            <textarea
+              rows={4}
+              value={current.overviewSummary}
+              disabled={disabled}
+              onChange={(e) =>
+                updateCurrentLocale((prev) => ({ ...prev, overviewSummary: e.target.value }))
+              }
+              placeholder="e.g. Modern, sleek and versatile cookware with non-stick coating and even, quick heat distribution..."
+              className="w-full border border-gray-300 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-[#1a3a5c]/20 focus:border-[#1a3a5c] transition-all"
+            />
+          </div>
+
+          {/* Key Highlights list (displayed on Overview tab) */}
+          <div className="space-y-3 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
+                  Overview Highlights (Key Highlights)
+                </Label>
+                <p className="text-[11px] text-gray-400">
+                  Displayed in cards on the Overview tab.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                onClick={() =>
+                  updateCurrentLocale((prev) => ({
+                    ...prev,
+                    overviewHighlights: [...prev.overviewHighlights, '']
+                  }))
+                }
+                className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 text-xs gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Highlight
+              </Button>
+            </div>
+
+            {current.overviewHighlights.length === 0 ? (
+              <div className="p-4 rounded-xl bg-slate-50 border border-dashed border-slate-200 text-center text-xs text-slate-500">
+                No overview highlights defined yet. Click &quot;Add Highlight&quot; to add highlights.
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {current.overviewHighlights.map((feat, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-blue-50 text-[#1a3a5c] font-bold text-xs flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <Input
+                      value={feat}
+                      disabled={disabled}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        updateCurrentLocale((prev) => {
+                          const updated = [...prev.overviewHighlights]
+                          updated[idx] = val
+                          return { ...prev, overviewHighlights: updated }
+                        })
+                      }}
+                      placeholder={`Highlight #${idx + 1}`}
+                      className="rounded-xl flex-1 text-sm bg-gray-50/40 focus:bg-white"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={disabled}
+                      onClick={() => {
+                        updateCurrentLocale((prev) => ({
+                          ...prev,
+                          overviewHighlights: prev.overviewHighlights.filter((_, i) => i !== idx)
+                        }))
+                      }}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg p-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
