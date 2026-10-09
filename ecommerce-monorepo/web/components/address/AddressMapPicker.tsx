@@ -21,6 +21,7 @@ import {
   isCoordinateAddress,
   getOfflineLocationName,
   resolveCoordinatesClientSide,
+  searchOfflineCities,
 } from '@/lib/geo/coordinateResolver';
 
 export interface StructuredAddress {
@@ -39,6 +40,15 @@ export interface StructuredAddress {
   entrance?: string;
   floor?: string;
   notes?: string;
+}
+
+export interface SearchResultItem {
+  id: string;
+  label: string;
+  city?: string;
+  country?: string;
+  lat: number;
+  lng: number;
 }
 
 export interface AddressMapPickerProps {
@@ -96,7 +106,7 @@ export function AddressMapPicker({
   // UI state
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; label: string; lat: number; lng: number }>>([]);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [activeProvider, setActiveProvider] = useState<'yandex' | 'leaflet' | 'loading'>('loading');
@@ -439,20 +449,61 @@ export function AddressMapPicker({
     setIsSearching(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/geo/search?q=${encodeURIComponent(searchQuery)}&locale=${encodeURIComponent(currentLocale)}`
-        );
-        const data = await res.json();
-        if (data?.success) {
-          setSearchResults(data.results || []);
-          setShowSearchResults(true);
+        let results: SearchResultItem[] = [];
+
+        // 1. Fetch from multi-tier server API (Photon + Yandex + OSM + offline dictionary)
+        try {
+          const res = await fetch(
+            `/api/geo/search?q=${encodeURIComponent(searchQuery)}&locale=${encodeURIComponent(currentLocale)}`
+          );
+          const data = await res.json();
+          if (data?.success && Array.isArray(data.results) && data.results.length > 0) {
+            results = data.results;
+          }
+        } catch (fetchErr) {
+          console.warn('Server geo search API request failed:', fetchErr);
         }
+
+        // 2. Client-side Yandex Suggest fallback if server returned 0 results and ymaps is available in browser
+        if (results.length === 0 && (window as any).ymaps?.suggest) {
+          try {
+            const ymaps = (window as any).ymaps;
+            const suggestions = await ymaps.suggest(searchQuery, { results: 5 });
+            if (suggestions && suggestions.length > 0) {
+              results = suggestions.map((s: any, idx: number) => ({
+                id: `ymaps-client-${idx}-${Date.now()}`,
+                label: s.displayName,
+                city: s.value,
+                lat: 0,
+                lng: 0,
+              }));
+            }
+          } catch (suggestErr) {
+            console.warn('Client ymaps.suggest failed:', suggestErr);
+          }
+        }
+
+        // 3. Client-side offline city directory fallback if still empty
+        if (results.length === 0) {
+          const offlineCities = searchOfflineCities(searchQuery, currentLocale);
+          if (offlineCities.length > 0) {
+            results = offlineCities;
+          }
+        }
+
+        setSearchResults(results);
+        setShowSearchResults(results.length > 0);
       } catch (err) {
         console.error('Search query error:', err);
+        const offlineCities = searchOfflineCities(searchQuery, currentLocale);
+        if (offlineCities.length > 0) {
+          setSearchResults(offlineCities);
+          setShowSearchResults(true);
+        }
       } finally {
         setIsSearching(false);
       }
-    }, 350);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchQuery, currentLocale]);
@@ -554,7 +605,7 @@ export function AddressMapPicker({
         </div>
 
         {/* Search Bar Overlay */}
-        <div className="p-3 bg-white border-b border-slate-100 relative z-20 shrink-0">
+        <div className="p-3 bg-white border-b border-slate-100 relative z-40 shrink-0">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
@@ -600,17 +651,45 @@ export function AddressMapPicker({
             </button>
           </div>
 
-          {/* Autocomplete Suggestions Dropdown */}
+          {/* Autocomplete Suggestions Dropdown - Elevated above map panes with high z-index and shadow */}
           {showSearchResults && searchResults.length > 0 && (
-            <div className="absolute left-3 right-3 top-14 bg-white rounded-xl shadow-xl border border-slate-200 max-h-56 overflow-y-auto divide-y divide-slate-100 z-30">
+            <div className="absolute left-3 right-3 top-14 bg-white rounded-xl shadow-2xl border border-slate-200 max-h-60 overflow-y-auto divide-y divide-slate-100 z-50">
               {searchResults.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => {
-                    moveMapTo(item.lat, item.lng);
-                    setShowSearchResults(false);
-                    setSearchQuery(item.label);
+                  onClick={async () => {
+                    if (item.lat !== 0 || item.lng !== 0) {
+                      moveMapTo(item.lat, item.lng);
+                      setShowSearchResults(false);
+                      setSearchQuery(item.label);
+                    } else {
+                      // Suggestion without pre-computed coords (e.g. from browser ymaps.suggest)
+                      setShowSearchResults(false);
+                      setSearchQuery(item.label);
+                      setIsSearching(true);
+                      try {
+                        if ((window as any).ymaps?.geocode) {
+                          const ymaps = (window as any).ymaps;
+                          const geoRes = await ymaps.geocode(item.city || item.label, { results: 1 });
+                          const first = geoRes.geoObjects.get(0);
+                          if (first) {
+                            const [gLat, gLng] = first.geometry.getCoordinates();
+                            moveMapTo(gLat, gLng);
+                            return;
+                          }
+                        }
+                        const res = await fetch(`/api/geo/search?q=${encodeURIComponent(item.city || item.label)}&locale=${encodeURIComponent(currentLocale)}`);
+                        const data = await res.json();
+                        if (data?.success && data.results?.[0]?.lat) {
+                          moveMapTo(data.results[0].lat, data.results[0].lng);
+                        }
+                      } catch (gErr) {
+                        console.warn('Failed to resolve coordinates for suggestion:', gErr);
+                      } finally {
+                        setIsSearching(false);
+                      }
+                    }
                   }}
                   className="w-full p-2.5 text-left text-xs hover:bg-blue-50/60 flex items-start gap-2 text-slate-800 transition-colors cursor-pointer"
                 >
@@ -622,8 +701,8 @@ export function AddressMapPicker({
           )}
         </div>
 
-        {/* Map Viewport Area */}
-        <div className="relative flex-1 w-full bg-slate-100 min-h-[240px]">
+        {/* Map Viewport Area - Isolated stacking context to prevent map panes and controls from escaping */}
+        <div className="relative flex-1 w-full bg-slate-100 min-h-[240px] z-0 isolate">
           <div ref={mapContainerRef} className="w-full h-full" />
 
           {/* Center Crosshair / Floating Pin hint */}
