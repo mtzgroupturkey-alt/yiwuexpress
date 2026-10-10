@@ -46,6 +46,13 @@ export interface ModernProductData {
   isInStock?: boolean
   minOrderQty?: number
   isFlashSale?: boolean
+  taxRate?: number
+  taxPercent?: number
+  wholesalePriceWithTax?: number
+  rawIkeaPayload?: any
+  category?: string
+  dromkokItemNo?: string
+  ikeaItemNo?: string
 }
 
 interface ModernProductCardProps {
@@ -83,7 +90,52 @@ export function ModernProductCard({
     setMounted(true)
   }, [])
 
-  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false
+  const isWholesaleCustomer = customerView.isWholesale
+  const isUserLoggedIn = mounted
+    ? (isAuthenticated || (!customerView.isGuest && (customerView.isRetail || customerView.isWholesale)))
+    : false
+  const isRetailUserLoggedIn = isUserLoggedIn && customerView.isRetail
+
+  // Pricing calculations
+  const effectiveWholesalePrice = product.wholesalePrice || product.price || 0
+  const displayPrice = isRetailUserLoggedIn ? product.price : effectiveWholesalePrice
+
+  const effectiveTaxRate = (() => {
+    const rawTax =
+      product.taxRate ??
+      product.taxPercent ??
+      (product as any).rawIkeaPayload?.taxRate ??
+      (product as any).rawIkeaPayload?.taxPercent
+    if (rawTax !== undefined && rawTax !== null && !isNaN(Number(rawTax)) && Number(rawTax) > 0) {
+      return Number(rawTax)
+    }
+    return 20 // Standard 20% VAT fallback
+  })()
+
+  const effectiveDisplayPriceWithTax = (() => {
+    if (product.wholesalePriceWithTax && product.wholesalePriceWithTax > 0) {
+      return product.wholesalePriceWithTax
+    }
+    if (displayPrice > 0) {
+      return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100
+    }
+    return null
+  })()
+
+  // Item # formatted as clean number only (e.g. "950.962.59")
+  const rawItemNumber =
+    product.dromkokItemNo ||
+    product.ikeaItemNo ||
+    (product as any).itemNo ||
+    (product as any).articleNumber ||
+    product.sku ||
+    ''
+  const displayItemNumber = rawItemNumber
+    ? rawItemNumber
+        .replace(/^DK-/i, '')
+        .replace(/^[a-zA-Z#:\s-]+/, '')
+        .trim()
+    : null
 
   const translations: Record<string, Record<string, string>> = {
     en: {
@@ -215,12 +267,16 @@ export function ModernProductCard({
 
   const primaryImage = product.images?.[0] || product.image || '/images/product-placeholder.webp'
   const isAvailable = product.isInStock !== undefined ? product.isInStock : (product.stock === undefined || product.stock > 0)
+  const isStockAvailable = product.stock !== undefined ? product.stock > 0 : (product.isInStock !== false)
+  const stockStatusLabel = isStockAvailable
+    ? (activeLocale === 'ru' ? 'В наличии' : activeLocale === 'zh' ? '有现货' : 'In Stock')
+    : (activeLocale === 'ru' ? 'Под заказ' : activeLocale === 'zh' ? '按需预定' : 'By Order')
 
   return (
     <motion.div
       ref={cardRef}
       className={cn(
-        'group relative bg-white dark:bg-[#0d1e32] rounded-2xl overflow-hidden',
+        '@container group relative bg-white dark:bg-[#0d1e32] rounded-2xl overflow-hidden',
         'border border-gray-100 dark:border-white/10',
         'shadow-lg hover:shadow-2xl hover:shadow-[#c9a84c]/20',
         'transition-all duration-300 ease-out flex flex-col',
@@ -329,6 +385,16 @@ export function ModernProductCard({
 
         {/* Badges Stack (Top Left) */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5 items-start">
+          <span
+            className={cn(
+              'text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs',
+              isStockAvailable
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
+            )}
+          >
+            {stockStatusLabel}
+          </span>
           {tagBadge && (
             <div className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold shadow-md backdrop-blur-sm',
@@ -338,7 +404,7 @@ export function ModernProductCard({
               {tagBadge.label}
             </div>
           )}
-          {isOnSale && (
+          {isRetailUserLoggedIn && isOnSale && (
             <div className="bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-md shadow-md">
               -{discountPercent}%
             </div>
@@ -385,18 +451,37 @@ export function ModernProductCard({
       {/* Content Body */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-2.5">
         <div>
-          {/* Supplier / Brand Verified Row */}
-          {(product.supplier || product.brand) && (
-            <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 mb-1">
-              <span className="font-semibold uppercase tracking-wider truncate max-w-[150px]">
-                {product.brand || product.supplier}
+          {/* Category, Item #, Brand & Rating on the right */}
+          <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 mb-1 gap-1.5">
+            <div className="flex items-center gap-1.5 truncate flex-wrap min-w-0">
+              {product.category && (
+                <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 dark:bg-blue-900/40 dark:text-blue-200 px-1.5 py-0.5 rounded truncate max-w-[120px]">
+                  {product.category}
+                </span>
+              )}
+              {displayItemNumber && (
+                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/10 px-1.5 py-0.5 rounded font-mono tracking-tight shrink-0">
+                  {displayItemNumber}
+                </span>
+              )}
+              {(product.brand || product.supplier) && (
+                <span className="font-semibold uppercase tracking-wider truncate max-w-[120px]">
+                  {product.brand || product.supplier}
+                </span>
+              )}
+            </div>
+
+            {/* Rating & Reviews on the Right */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Star className="w-3.5 h-3.5 fill-[#c9a84c] text-[#c9a84c]" />
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                {(product.rating || 4.9).toFixed(1)}
               </span>
-              <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                <Shield className="w-3 h-3" />
-                CE / ISO
+              <span className="text-[10px] text-gray-400 font-mono">
+                ({product.reviewCount || 38})
               </span>
             </div>
-          )}
+          </div>
 
           {/* Product Name Title: Swedish name line 1, English name line 2 */}
           {(() => {
@@ -425,52 +510,53 @@ export function ModernProductCard({
           })()}
         </div>
 
-        {/* Ratings & Reviews */}
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-0.5 text-[#c9a84c]">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={cn(
-                  'w-3.5 h-3.5',
-                  i < Math.floor(product.rating || 5)
-                    ? 'fill-[#c9a84c] text-[#c9a84c]'
-                    : 'text-gray-300 dark:text-gray-600'
-                )}
-              />
-            ))}
-          </div>
-          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-            {(product.rating || 4.9).toFixed(1)}
-          </span>
-          <span className="text-[11px] text-gray-400">
-            ({product.reviewCount || 38})
-          </span>
-        </div>
-
         {/* Pricing Display */}
         <div className="pt-2 border-t border-gray-100 dark:border-white/10 flex items-baseline justify-between gap-2">
           <div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-black text-gray-900 dark:text-[#e5c158]">
-                {formatPrice(product.price)}
-              </span>
-              {isOnSale && product.compareAtPrice && (
-                <span className="text-xs text-gray-400 line-through">
-                  {formatPrice(product.compareAtPrice)}
+            {isRetailUserLoggedIn ? (
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-lg font-black text-gray-900 dark:text-[#e5c158]">
+                  {formatPrice(displayPrice)}
                 </span>
-              )}
-            </div>
+                {isOnSale && product.compareAtPrice && (
+                  <span className="text-xs text-gray-400 line-through">
+                    {formatPrice(product.compareAtPrice)}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <div className="flex flex-col @[220px]:flex-row @[220px]:items-baseline gap-0.5 @[220px]:gap-2">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-tight">
+                      {activeLocale === 'ru' ? 'Без НДС:' : activeLocale === 'zh' ? '未含税：' : 'Excl. TAX:'}
+                    </span>
+                    <span className="text-sm sm:text-base font-black text-gray-900 dark:text-[#e5c158] tracking-tight font-sans">
+                      {formatPrice(displayPrice)}
+                    </span>
+                  </div>
 
-            {product.wholesalePrice && (
-              <div className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold mt-0.5">
-                {t.wholesale}: {formatPrice(product.wholesalePrice)}
+                  {effectiveDisplayPriceWithTax && (
+                    <>
+                      <span className="hidden @[220px]:inline text-gray-300 dark:text-gray-600 text-xs sm:text-sm font-light">|</span>
+
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[10px] sm:text-[11px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-tight">
+                          {activeLocale === 'ru' ? 'С НДС:' : activeLocale === 'zh' ? '含税价：' : 'Incl. TAX:'}
+                        </span>
+                        <span className="text-sm sm:text-base font-black text-purple-900 dark:text-purple-300 tracking-tight font-sans">
+                          {formatPrice(effectiveDisplayPriceWithTax)}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
           {product.minOrderQty && product.minOrderQty > 1 && (
-            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded border border-gray-200 dark:border-white/10">
+            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded border border-gray-200 dark:border-white/10 shrink-0">
               {t.moq}: {product.minOrderQty}
             </span>
           )}
