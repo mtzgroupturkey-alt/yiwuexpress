@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { useAdminAuth } from './contexts/AdminAuthContext'
 import { useAdminLocale } from './contexts/AdminLocaleContext'
+import { useAdminCurrency } from './contexts/AdminCurrencyContext'
 import { useSettings } from '@/components/SettingsProvider'
 
 interface Stats {
@@ -167,6 +168,7 @@ export default function AdminDashboard() {
   const { isAdmin, user } = useAdminAuth()
   const { settings, storeMode } = useSettings()
   const { locale, dict, t } = useAdminLocale()
+  const { formatPrice } = useAdminCurrency()
 
   const companyName = settings?.companyName || 'Global Trade'
 
@@ -309,7 +311,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard
           label={dict.dashboard.totalRevenue}
-          value={`$${totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          value={formatPrice(totalRev)}
           icon={DollarSign}
           iconBg="bg-emerald-50"
           iconColor="text-emerald-600"
@@ -458,7 +460,7 @@ export default function AdminDashboard() {
                     <div className="text-right shrink-0">
                       <StatusBadge status={ord.status} label={t(ord.status)} />
                       <p className="text-xs font-bold text-slate-900 mt-1 tabular-nums">
-                        {ord.total !== undefined ? `$${Number(ord.total).toFixed(2)}` : '—'}
+                        {ord.total !== undefined ? formatPrice(ord.total) : '—'}
                       </p>
                     </div>
                   </div>
