@@ -98,7 +98,7 @@ function PaymentStatusBadge({ status, label }: { status: string; label?: string 
 export default function AdminOrdersPage() {
   const router = useRouter()
   const { locale, dict, t } = useAdminLocale()
-  const { formatPrice } = useAdminCurrency()
+  const { formatPrice, renderPrice } = useAdminCurrency()
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -320,7 +320,7 @@ export default function AdminOrdersPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 font-medium">{dict.dashboard.totalRevenue}</p>
-            <p className="text-lg font-black text-gray-900">{formatPrice(totalRevenue)}</p>
+            <p className="text-lg font-black text-gray-900">{renderPrice(totalRevenue)}</p>
           </div>
         </div>
 
@@ -527,7 +527,7 @@ export default function AdminOrdersPage() {
                       {/* Total */}
                       <td className="py-4 px-4 whitespace-nowrap">
                         <span className="font-bold text-gray-900 text-sm font-mono">
-                          {formatPrice(order.total)}
+                          {renderPrice(order.total)}
                         </span>
                       </td>
 
@@ -579,7 +579,7 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <span className="text-gray-400 block text-[11px]">{dict.orders.totalAmount}</span>
-                    <span className="font-bold text-gray-900 text-sm">{formatPrice(order.total)}</span>
+                    <span className="font-bold text-gray-900 text-sm">{renderPrice(order.total)}</span>
                   </div>
                 </div>
 
