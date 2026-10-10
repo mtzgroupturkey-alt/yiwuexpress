@@ -10,7 +10,7 @@ interface BynSymbolProps {
  * Approved by the National Bank of the Republic of Belarus (NBRB).
  * Stylized Cyrillic letter "Б" with a horizontal strike line through the center.
  */
-export function BynSymbol({ className = 'inline-block w-[0.95em] h-[0.95em] align-[-0.125em]', size }: BynSymbolProps) {
+export function BynSymbol({ className = 'inline-block w-[0.78em] h-[0.78em] shrink-0 align-[-0.08em]', size }: BynSymbolProps) {
   const style = size ? { width: size, height: size } : undefined
 
   return (
