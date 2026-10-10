@@ -36,6 +36,7 @@ export interface AdminCurrencyContextType {
   isLoading: boolean
   setCurrency: (code: string) => void
   formatPrice: (amountInUSD: number, options?: { showSymbol?: boolean; decimalPlaces?: number }) => string
+  renderPrice: (amountInUSD: number, options?: { showSymbol?: boolean; decimalPlaces?: number; className?: string; symbolClassName?: string }) => React.ReactNode
   convertFromUSD: (amountInUSD: number) => number
   convertToUSD: (amountInCurrentCurrency: number) => number
   refreshCurrencies: () => Promise<void>
@@ -160,6 +161,55 @@ export function AdminCurrencyProvider({ children }: { children: React.ReactNode 
     [rate, currentCurrency]
   )
 
+  // 7. Formatter with official JSX SVG symbol for BYN & icons
+  const renderPrice = useCallback(
+    (
+      amountInUSD: number,
+      options?: { showSymbol?: boolean; decimalPlaces?: number; className?: string; symbolClassName?: string }
+    ): React.ReactNode => {
+      if (typeof amountInUSD !== 'number' || isNaN(amountInUSD)) {
+        return <span className={options?.className}>0.00</span>
+      }
+
+      const converted = amountInUSD * rate
+      const decimals = options?.decimalPlaces ?? currentCurrency.decimalPlaces ?? 2
+      const formattedNumber = converted.toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })
+
+      if (options?.showSymbol === false) {
+        return <span className={options?.className}>{formattedNumber}</span>
+      }
+
+      const isByn = currentCurrency.code === 'BYN'
+      const symbolElement = (
+        <CurrencySymbol
+          code={currentCurrency.code}
+          symbol={isByn ? undefined : (currentCurrency.symbol || currentCurrency.code)}
+          className={options?.symbolClassName}
+        />
+      )
+
+      if (currentCurrency.symbolPosition === 'after') {
+        return (
+          <span className={`inline-flex items-center gap-1 ${options?.className || ''}`}>
+            <span>{formattedNumber}</span>
+            {symbolElement}
+          </span>
+        )
+      }
+
+      return (
+        <span className={`inline-flex items-center gap-0.5 ${options?.className || ''}`}>
+          {symbolElement}
+          <span>{formattedNumber}</span>
+        </span>
+      )
+    },
+    [rate, currentCurrency]
+  )
+
   const contextValue = useMemo<AdminCurrencyContextType>(
     () => ({
       currency: currentCurrency.code,
@@ -170,6 +220,7 @@ export function AdminCurrencyProvider({ children }: { children: React.ReactNode 
       isLoading,
       setCurrency,
       formatPrice,
+      renderPrice,
       convertFromUSD,
       convertToUSD,
       refreshCurrencies,
@@ -182,6 +233,7 @@ export function AdminCurrencyProvider({ children }: { children: React.ReactNode 
       isLoading,
       setCurrency,
       formatPrice,
+      renderPrice,
       convertFromUSD,
       convertToUSD,
       refreshCurrencies,
@@ -208,6 +260,7 @@ export function useAdminCurrency(): AdminCurrencyContextType {
       isLoading: false,
       setCurrency: () => {},
       formatPrice: (amount: number) => `$${Number(amount || 0).toFixed(2)}`,
+      renderPrice: (amount: number) => `$${Number(amount || 0).toFixed(2)}`,
       convertFromUSD: (amount: number) => amount,
       convertToUSD: (amount: number) => amount,
       refreshCurrencies: async () => {},
@@ -215,3 +268,6 @@ export function useAdminCurrency(): AdminCurrencyContextType {
   }
   return ctx
 }
+
+export { AdminPrice } from '@/components/admin/AdminPrice'
+
