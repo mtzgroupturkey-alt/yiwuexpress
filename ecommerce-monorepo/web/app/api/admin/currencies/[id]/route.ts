@@ -24,10 +24,12 @@ export async function PUT(
       )
     }
 
-    // Prepare update data
+    // Prepare update data - enforce standard official symbol for BYN
+    const effectiveSymbol = existing.code === 'BYN' ? 'BYN' : symbol
+
     const updateData: any = {
       name,
-      symbol,
+      symbol: effectiveSymbol,
       symbolPosition,
       decimalPlaces,
       isActive,
