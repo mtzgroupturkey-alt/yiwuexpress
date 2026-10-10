@@ -63,15 +63,6 @@ export function ElectronicsProductCard({
         <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-50 mb-3 flex items-center justify-center">
           {/* Status Badges */}
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
-            <span
-              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs ${
-                isStockAvailable
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
-                  : 'bg-amber-100 text-amber-800 border border-amber-200/80'
-              }`}
-            >
-              {stockStatusLabel}
-            </span>
             {isUserLoggedIn && discount && (
               <span className="bg-[#FF4D00] text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs uppercase tracking-wider">
                 -{discount}%
