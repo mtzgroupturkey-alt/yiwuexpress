@@ -52,7 +52,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
   const router = useRouter()
   const queryClient = useQueryClient()
   const { dict, locale, t } = useAdminLocale()
-  const { formatPrice, currency: adminCurrency } = useAdminCurrency()
+  const { formatPrice, renderPrice, currency: adminCurrency } = useAdminCurrency()
   const [editing, setEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'order' | 'shipping'>('order')
   
@@ -404,10 +404,10 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-gray-900">
-                          {formatPrice(item.total)}
+                          {renderPrice(item.total)}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {formatPrice(item.price)}
+                          {renderPrice(item.price)}
                         </div>
                       </div>
                     </div>
@@ -417,25 +417,25 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                 <div className="mt-6 pt-6 border-t space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">{dict.orders.subtotal}</span>
-                    <span className="text-gray-900">{formatPrice(order.subtotal)}</span>
+                    <span className="text-gray-900">{renderPrice(order.subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">{dict.orders.shipping}</span>
-                    <span className="text-gray-900">{formatPrice(order.shippingFee)}</span>
+                    <span className="text-gray-900">{renderPrice(order.shippingFee)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">{dict.orders.tax}</span>
-                    <span className="text-gray-900">{formatPrice(order.tax)}</span>
+                    <span className="text-gray-900">{renderPrice(order.tax)}</span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">{dict.orders.discount}</span>
-                      <span className="text-green-600">-{formatPrice(order.discount)}</span>
+                      <span className="text-green-600">-{renderPrice(order.discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-lg font-bold pt-2 border-t">
                     <span>{dict.orders.totalAmount}</span>
-                    <span>{formatPrice(order.total)}</span>
+                    <span>{renderPrice(order.total)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -477,7 +477,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                   <CardContent className="pt-4 space-y-3 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500">{dict.orders.subtotal}</span>
-                      <span className="font-mono font-semibold text-gray-900">{formatPrice(order.subtotal)}</span>
+                      <span className="font-mono font-semibold text-gray-900">{renderPrice(order.subtotal)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -490,7 +490,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                     {shippingExpense > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Carrier Freight Cost</span>
-                        <span className="font-mono font-semibold text-gray-700">-{formatPrice(shippingExpense)}</span>
+                        <span className="font-mono font-semibold text-gray-700">-{renderPrice(shippingExpense)}</span>
                       </div>
                     )}
 
@@ -501,7 +501,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                       </div>
                       <div className="text-right">
                         <span className={`font-mono font-black text-sm block ${grossProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                          {formatPrice(grossProfit)}
+                          {renderPrice(grossProfit)}
                         </span>
                         <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded-md ${
                           marginPct >= 20
