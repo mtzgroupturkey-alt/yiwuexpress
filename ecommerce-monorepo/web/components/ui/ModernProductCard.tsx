@@ -451,8 +451,8 @@ export function ModernProductCard({
       {/* Content Body */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-2.5">
         <div>
-          {/* Category, Item #, Brand & Rating on the right */}
-          <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 mb-1 gap-1.5">
+          {/* Category, Item # & Brand */}
+          <div className="flex items-center text-[11px] text-gray-500 dark:text-gray-400 mb-1 gap-1.5 flex-wrap">
             <div className="flex items-center gap-1.5 truncate flex-wrap min-w-0">
               {product.category && (
                 <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 dark:bg-blue-900/40 dark:text-blue-200 px-1.5 py-0.5 rounded truncate max-w-[120px]">
@@ -469,17 +469,6 @@ export function ModernProductCard({
                   {product.brand || product.supplier}
                 </span>
               )}
-            </div>
-
-            {/* Rating & Reviews on the Right */}
-            <div className="flex items-center gap-1 shrink-0">
-              <Star className="w-3.5 h-3.5 fill-[#c9a84c] text-[#c9a84c]" />
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                {(product.rating || 4.9).toFixed(1)}
-              </span>
-              <span className="text-[10px] text-gray-400 font-mono">
-                ({product.reviewCount || 38})
-              </span>
             </div>
           </div>
 
@@ -560,6 +549,31 @@ export function ModernProductCard({
               {t.moq}: {product.minOrderQty}
             </span>
           )}
+        </div>
+
+        {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
+        <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-gray-100 dark:border-white/10">
+          <span
+            className={cn(
+              'text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs shrink-0',
+              isStockAvailable
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
+            )}
+          >
+            {stockStatusLabel}
+          </span>
+
+          {/* Rating on right side after prices */}
+          <div className="flex items-center gap-1 shrink-0">
+            <Star className="w-3.5 h-3.5 fill-[#c9a84c] text-[#c9a84c]" />
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+              {(product.rating || 4.9).toFixed(1)}
+            </span>
+            <span className="text-[10px] text-gray-400 font-mono">
+              ({product.reviewCount || 38})
+            </span>
+          </div>
         </div>
 
         {/* Bottom Social Proof Bar */}
