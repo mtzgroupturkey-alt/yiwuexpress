@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { useLocale } from 'next-intl'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { Star, ShoppingCart, Check, Heart, Eye } from 'lucide-react'
 import { ProductItem } from '@/data/products'
@@ -22,6 +23,7 @@ export function ElectronicsProductCard({
   onQuickView,
   onAddToCart
 }: ElectronicsProductCardProps) {
+  const locale = useLocale()
   const { tShop, tBadge, tFlash, tPdp } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const { isAuthenticated } = useAuth()
@@ -49,14 +51,28 @@ export function ElectronicsProductCard({
     setTimeout(() => setIsAdded(false), 1200)
   }
 
+  const isStockAvailable = product.inStock !== false
+  const stockStatusLabel = isStockAvailable
+    ? (locale === 'ru' ? 'В наличии' : locale === 'zh' ? '有现货' : 'In Stock')
+    : (locale === 'ru' ? 'Под заказ' : locale === 'zh' ? '按需预定' : 'By Order')
+
   return (
-    <div className="group relative flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 hover:border-[#FF4D00]/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_24px_rgba(255,77,0,0.12)] transition-all duration-300 hover:-translate-y-1 p-3.5 sm:p-4 h-full">
+    <div className="@container group relative flex flex-col justify-between bg-white rounded-2xl border border-slate-200/90 hover:border-[#FF4D00]/50 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_24px_rgba(255,77,0,0.12)] transition-all duration-300 hover:-translate-y-1 p-3.5 sm:p-4 h-full">
       {/* Top badges & Wishlist */}
       <div>
         <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-50 mb-3 flex items-center justify-center">
           {/* Status Badges */}
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
-            {discount && (
+            <span
+              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs ${
+                isStockAvailable
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
+                  : 'bg-amber-100 text-amber-800 border border-amber-200/80'
+              }`}
+            >
+              {stockStatusLabel}
+            </span>
+            {isUserLoggedIn && discount && (
               <span className="bg-[#FF4D00] text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs uppercase tracking-wider">
                 -{discount}%
               </span>
@@ -116,23 +132,21 @@ export function ElectronicsProductCard({
           )}
         </div>
 
-        {/* Rating & Reviews */}
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <div className="flex items-center text-amber-400">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-3 h-3 ${
-                  i < Math.floor(product.rating)
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'text-slate-200'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-[11px] font-bold text-slate-400 font-mono">
-            {product.rating.toFixed(1)} ({product.reviews})
+        {/* Category & Rating Row on the right */}
+        <div className="flex items-center justify-between text-[11px] gap-1 mb-1.5">
+          <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[120px]">
+            {product.category}
           </span>
+
+          <div className="flex items-center gap-1 shrink-0 text-amber-400">
+            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+            <span className="text-[11px] font-bold text-slate-700 font-mono">
+              {product.rating.toFixed(1)}
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">
+              ({product.reviews})
+            </span>
+          </div>
         </div>
 
         {/* Product Name */}
