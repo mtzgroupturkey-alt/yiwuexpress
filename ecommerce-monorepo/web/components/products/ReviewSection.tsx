@@ -84,13 +84,13 @@ export function ReviewSection({ productId, productName, initialSummary }: Review
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Left: Overall Rating */}
-              <div className="text-center md:text-left">
-                <div className="inline-block">
+              <div className="text-left">
+                <div className="inline-block text-left">
                   <div className="text-5xl font-black text-slate-900 mb-2">
                     {averageRating.toFixed(1)}
                   </div>
                   <ReviewStars rating={averageRating} count={totalReviews} size="lg" />
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="text-xs text-slate-500 mt-2 text-left">
                     {t('basedOnReviews', { n: totalReviews })}
                   </p>
                 </div>
@@ -119,7 +119,7 @@ export function ReviewSection({ productId, productName, initialSummary }: Review
             </div>
 
             {/* Write Review Button */}
-            <div className="mt-6 pt-6 border-t border-slate-100">
+            <div className="mt-6 pt-6 border-t border-slate-100 flex justify-start">
               <button
                 type="button"
                 onClick={() => setShowForm(!showForm)}
@@ -149,19 +149,19 @@ export function ReviewSection({ productId, productName, initialSummary }: Review
       {totalReviews > 0 ? (
         <ReviewList reviews={reviews} />
       ) : !showForm ? (
-        <div className="bg-gradient-to-b from-slate-50/70 via-white to-slate-50/40 border border-slate-200/90 rounded-2xl p-8 sm:p-12 text-center shadow-2xs">
-          <div className="flex items-center justify-center gap-1.5 mb-3">
+        <div className="bg-gradient-to-b from-slate-50/70 via-white to-slate-50/40 border border-slate-200/90 rounded-2xl p-8 sm:p-12 text-left shadow-2xs">
+          <div className="flex items-center justify-start gap-1.5 mb-3">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star key={star} className="w-5 h-5 fill-amber-400 text-amber-400 drop-shadow-xs" />
             ))}
           </div>
-          <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-1.5 tracking-tight">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-1.5 tracking-tight text-left">
             {t('noReviews')}
           </h3>
-          <p className="text-sm text-slate-600 mb-6 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-slate-600 mb-6 max-w-md leading-relaxed text-left">
             {t('beFirst')}
           </p>
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-start mb-8">
             <button
               type="button"
               onClick={() => setShowForm(true)}
@@ -173,7 +173,7 @@ export function ReviewSection({ productId, productName, initialSummary }: Review
           </div>
 
           {/* Trust assurance pills */}
-          <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 font-medium">
+          <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-start gap-4 text-xs text-slate-500 font-medium">
             <span className="inline-flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               {t('verifiedBuyerReviews')}
