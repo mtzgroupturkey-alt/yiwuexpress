@@ -198,8 +198,8 @@ export function MobileProductCard({
       {/* Details */}
       <div className="p-2.5 flex flex-col justify-between flex-1 gap-2">
         <div>
-          {/* Category, Item #, Brand & Rating on the right */}
-          <div className="flex items-center justify-between text-[11px] gap-1 mb-1">
+          {/* Category, Item # & Brand */}
+          <div className="flex items-center text-[11px] gap-1 mb-1">
             <div className="flex items-center gap-1.5 flex-wrap truncate min-w-0">
               {product.category && (
                 <span className="text-[9px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[110px]">
@@ -216,15 +216,6 @@ export function MobileProductCard({
                   {product.brand}
                 </span>
               )}
-            </div>
-
-            {/* Rating stars on the right */}
-            <div className="flex items-center gap-0.5 shrink-0 text-[11px] text-gray-500 dark:text-slate-400">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-              <span className="font-semibold text-gray-700 dark:text-slate-300">
-                {product.rating ? product.rating.toFixed(1) : '4.8'}
-              </span>
-              {product.reviewsCount ? <span className="text-[9px]">({product.reviewsCount})</span> : null}
             </div>
           </div>
           {(() => {
@@ -253,7 +244,7 @@ export function MobileProductCard({
 
         {/* Price & Action Row */}
         <div className="flex items-end justify-between gap-1 pt-1.5 border-t border-gray-100 dark:border-slate-800/80">
-          <div>
+          <div className="flex-1 min-w-0">
             {isRetailUserLoggedIn ? (
               <>
                 <div className="font-extrabold text-sm text-[#00407a] dark:text-[#F5A602]">
@@ -294,6 +285,28 @@ export function MobileProductCard({
                 </div>
               </div>
             )}
+
+            {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
+            <div className="flex items-center justify-between gap-1 mt-1.5 pt-1 border-t border-gray-100 dark:border-slate-800/80">
+              <span
+                className={`px-1.5 py-0.5 rounded-sm font-black text-[9px] uppercase tracking-wider shrink-0 ${
+                  isStockAvailable
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
+                }`}
+              >
+                {stockStatusLabel}
+              </span>
+
+              {/* Rating stars on the right */}
+              <div className="flex items-center gap-0.5 shrink-0 text-[11px] text-gray-500 dark:text-slate-400">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                <span className="font-semibold text-gray-700 dark:text-slate-300">
+                  {product.rating ? product.rating.toFixed(1) : '4.8'}
+                </span>
+                {product.reviewsCount ? <span className="text-[9px]">({product.reviewsCount})</span> : null}
+              </div>
+            </div>
 
             {isWholesaleCustomer && (
               <div className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded mt-0.5 inline-block">
