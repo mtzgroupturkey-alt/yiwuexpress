@@ -183,11 +183,23 @@ export async function GET(request: Request) {
               name: true,
               slug: true,
               parentId: true,
+              translations: {
+                select: {
+                  locale: true,
+                  name: true
+                }
+              },
               parent: {
                 select: {
                   id: true,
                   name: true,
-                  slug: true
+                  slug: true,
+                  translations: {
+                    select: {
+                      locale: true,
+                      name: true
+                    }
+                  }
                 }
               }
             }

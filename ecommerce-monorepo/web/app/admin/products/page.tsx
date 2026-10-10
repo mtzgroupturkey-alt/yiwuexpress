@@ -23,7 +23,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog'
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
-import { localizeProduct } from '@/lib/utils/localize'
+import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
 
 interface Product {
@@ -43,7 +43,16 @@ interface Product {
   isFlashSale: boolean
   translations?: Array<{ locale: string; name: string }> | null
   category?: {
+    id?: string
     name: string
+    slug?: string
+    translations?: Array<{ locale: string; name: string }> | null
+    parent?: {
+      id?: string
+      name: string
+      slug?: string
+      translations?: Array<{ locale: string; name: string }> | null
+    } | null
   } | null
 }
 
@@ -91,7 +100,7 @@ function getProductDisplayTitle(name: string): string {
 
 const SUPPORTED_LOCALES = ['en', 'ru', 'zh'] as const
 
-function TranslationBadges({ product }: { product: Product }) {
+function TranslationBadges({ product, dict }: { product: Product; dict: any }) {
   const present = new Set(
     (product.translations || [])
       .filter((t) => t.name && t.name.trim().length > 0)
@@ -100,19 +109,21 @@ function TranslationBadges({ product }: { product: Product }) {
 
   return (
     <div className="mt-1 flex items-center gap-1">
-      {SUPPORTED_LOCALES.map((locale) => {
-        const has = present.has(locale)
+      {SUPPORTED_LOCALES.map((loc) => {
+        const has = present.has(loc)
+        const readyText = (dict.products?.translationReady || '{locale} translation ready').replace('{locale}', loc.toUpperCase())
+        const missingText = (dict.products?.translationMissing || '{locale} missing').replace('{locale}', loc.toUpperCase())
         return (
           <span
-            key={locale}
-            title={has ? `${locale.toUpperCase()} translation ready` : `${locale.toUpperCase()} missing`}
+            key={loc}
+            title={has ? readyText : missingText}
             className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
               has
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
                 : 'bg-gray-100 text-gray-400 border border-gray-200/50'
             }`}
           >
-            {locale}
+            {loc}
           </span>
         )
       })}
@@ -124,12 +135,14 @@ function ProductThumbnail({
   src,
   alt,
   productId,
-  size = 'md'
+  size = 'md',
+  dict
 }: {
   src?: string | null
   alt: string
   productId?: string
   size?: 'md' | 'lg'
+  dict?: any
 }) {
   const [imgSrc, setImgSrc] = useState<string | null>(src || null)
   const [hasError, setHasError] = useState(false)
@@ -141,6 +154,8 @@ function ProductThumbnail({
 
   const dim = size === 'lg' ? 'w-16 h-16' : 'w-12 h-12'
   const isMissing = !imgSrc || hasError
+  const noImageText = dict?.products?.noImage || 'No image'
+  const noImageTooltip = dict?.products?.noImageTooltip || 'No image uploaded — click to edit and upload'
 
   const thumbnailBox = (
     <div className={`${dim} rounded-xl bg-gray-50 border border-gray-200/80 overflow-hidden shrink-0 relative flex items-center justify-center group/thumb`}>
@@ -161,7 +176,7 @@ function ProductThumbnail({
             className="w-full h-full object-contain p-1 opacity-70"
           />
           <span className="absolute inset-x-0 bottom-0 bg-amber-500/90 text-white text-[8px] font-bold text-center py-0.5 leading-none">
-            No image
+            {noImageText}
           </span>
         </div>
       )}
@@ -172,7 +187,7 @@ function ProductThumbnail({
     return (
       <Link
         href={`/admin/products/${productId}/edit`}
-        title="No image uploaded — click to edit and upload"
+        title={noImageTooltip}
         className="cursor-pointer hover:opacity-90 transition-opacity focus:outline-hidden"
       >
         {thumbnailBox}
@@ -366,7 +381,7 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchCategories()
-  }, [])
+  }, [locale])
 
   useEffect(() => {
     if (filtersLoaded) {
@@ -394,7 +409,7 @@ export default function AdminProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories?includeChildren=true')
+      const response = await fetch(`/api/categories?includeChildren=true&locale=${encodeURIComponent(locale)}`)
       const data = await response.json()
       if (data.success) {
         const cats = data.data || []
@@ -842,7 +857,7 @@ export default function AdminProductsPage() {
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
           <Filter size={12} />
-          Quick:
+          {dict.products?.quickFilters || 'Quick:'}
         </span>
 
         <button
@@ -860,7 +875,7 @@ export default function AdminProductsPage() {
               : 'bg-white text-gray-600 border border-gray-200/80 hover:bg-gray-50'
           }`}
         >
-          All ({totalCount})
+          {(dict.products?.allCount || 'All ({count})').replace('{count}', totalCount.toString())}
         </button>
 
         <button
@@ -876,7 +891,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <Star size={12} className={badgeFilter === 'featured' ? 'fill-white' : 'text-amber-500 fill-amber-500'} />
-          Featured ({featuredCount})
+          {(dict.products?.featuredCount || 'Featured ({count})').replace('{count}', featuredCount.toString())}
         </button>
 
         <button
@@ -892,7 +907,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <Sparkles size={12} className={badgeFilter === 'new_arrival' ? 'text-white' : 'text-indigo-500'} />
-          New Arrivals ({newArrivalCount})
+          {(dict.products?.newArrivalsCount || 'New Arrivals ({count})').replace('{count}', newArrivalCount.toString())}
         </button>
 
         <button
@@ -908,7 +923,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <Zap size={12} className={badgeFilter === 'flash_sale' ? 'text-white fill-white' : 'text-purple-500 fill-purple-500'} />
-          Flash Sale ({flashSaleCount})
+          {(dict.products?.flashSaleCount || 'Flash Sale ({count})').replace('{count}', flashSaleCount.toString())}
         </button>
 
         <button
@@ -924,7 +939,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          Active ({activeCount})
+          {(dict.products?.activeCount || 'Active ({count})').replace('{count}', activeCount.toString())}
         </button>
 
         <button
@@ -940,7 +955,9 @@ export default function AdminProductsPage() {
           }`}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-          Inactive
+          {dict.products?.inactiveCount
+            ? (dict.products.inactiveCount as string).replace('({count})', '').trim()
+            : dict.common.inactive}
         </button>
 
         <button
@@ -956,7 +973,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <AlertTriangle size={12} className={stockFilter === 'low_stock' ? 'text-white' : 'text-red-500'} />
-          Low Stock ({lowStockCount})
+          {(dict.products?.lowStockCount || 'Low Stock ({count})').replace('{count}', lowStockCount.toString())}
         </button>
 
         <button
@@ -972,7 +989,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <XCircle size={12} className={stockFilter === 'out_of_stock' ? 'text-white' : 'text-rose-600'} />
-          Out of Stock ({outOfStockCount})
+          {(dict.products?.outOfStockCount || 'Out of Stock ({count})').replace('{count}', outOfStockCount.toString())}
         </button>
 
         <button
@@ -988,7 +1005,7 @@ export default function AdminProductsPage() {
           }`}
         >
           <ImageIcon size={12} className={imageFilter === 'placeholder' ? 'text-white' : 'text-amber-600'} />
-          Placeholder Image
+          {dict.products?.placeholderImage || 'Placeholder Image'}
         </button>
       </div>
 
@@ -1014,7 +1031,7 @@ export default function AdminProductsPage() {
                 type="button"
                 onClick={() => handleSearchChange('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
-                title="Clear search"
+                title={dict.products?.clearSearch || 'Clear search'}
               >
                 <X size={14} />
               </button>
@@ -1028,6 +1045,9 @@ export default function AdminProductsPage() {
               onChange={handleCategoryChange}
               placeholder={dict.products.filterByCategory}
               searchPlaceholder={dict.products.searchPlaceholder}
+              emptyMessage={dict.categories?.noCategoriesFound || dict.common.noData || 'No categories found'}
+              categoriesCountText={(count) => `${count} ${dict.categories?.title || 'categories'}`}
+              clearSelectionText={dict.common?.reset || 'Clear selection'}
               clearable
               showPath
               showLevelIndicator={false}
@@ -1040,7 +1060,9 @@ export default function AdminProductsPage() {
           <div className="flex flex-wrap gap-2.5 items-center">
             {/* Badge / Collection filter */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-gray-500">Badge:</span>
+              <span className="text-[11px] font-semibold text-gray-500">
+                {dict.products?.featured || 'Badge'}:
+              </span>
               <select
                 value={badgeFilter}
                 onChange={(e) => {
@@ -1049,16 +1071,16 @@ export default function AdminProductsPage() {
                 }}
                 className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="all">All Badges</option>
-                <option value="featured">⭐ Featured / Bestseller</option>
-                <option value="new_arrival">✨ New Arrivals</option>
-                <option value="flash_sale">⚡ Flash Sale</option>
+                <option value="all">{dict.products?.allBadges || 'All Badges'}</option>
+                <option value="featured">{dict.products?.badgeFeatured || '⭐ Featured / Bestseller'}</option>
+                <option value="new_arrival">{dict.products?.badgeNewArrival || '✨ New Arrivals'}</option>
+                <option value="flash_sale">{dict.products?.badgeFlashSale || '⚡ Flash Sale'}</option>
               </select>
             </div>
 
             {/* Status filter */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-gray-500">Status:</span>
+              <span className="text-[11px] font-semibold text-gray-500">{dict.common.status}:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => {
@@ -1067,15 +1089,15 @@ export default function AdminProductsPage() {
                 }}
                 className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="all">All Status</option>
-                <option value="active">🟢 Active Only</option>
-                <option value="inactive">🔴 Inactive Only</option>
+                <option value="all">{dict.products?.allStatus || 'All Status'}</option>
+                <option value="active">{dict.products?.statusActiveOnly || '🟢 Active Only'}</option>
+                <option value="inactive">{dict.products?.statusInactiveOnly || '🔴 Inactive Only'}</option>
               </select>
             </div>
 
             {/* Stock filter */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-gray-500">Stock:</span>
+              <span className="text-[11px] font-semibold text-gray-500">{dict.products.stock}:</span>
               <select
                 value={stockFilter}
                 onChange={(e) => {
@@ -1084,16 +1106,16 @@ export default function AdminProductsPage() {
                 }}
                 className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="all">All Stock</option>
-                <option value="in_stock">✅ In Stock (≥10)</option>
-                <option value="low_stock">⚠️ Low Stock (&lt;10)</option>
-                <option value="out_of_stock">🚫 Out of Stock (0)</option>
+                <option value="all">{dict.products?.allStock || 'All Stock'}</option>
+                <option value="in_stock">{dict.products?.stockInStock || '✅ In Stock (≥10)'}</option>
+                <option value="low_stock">{dict.products?.stockLowStock || '⚠️ Low Stock (<10)'}</option>
+                <option value="out_of_stock">{dict.products?.stockOutOfStock || '🚫 Out of Stock (0)'}</option>
               </select>
             </div>
 
             {/* Photo filter */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-gray-500">Photo:</span>
+              <span className="text-[11px] font-semibold text-gray-500">{dict.common.image}:</span>
               <select
                 value={imageFilter}
                 onChange={(e) => {
@@ -1102,15 +1124,15 @@ export default function AdminProductsPage() {
                 }}
                 className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="all">All Photos</option>
-                <option value="real">📸 Verified Real Photo</option>
-                <option value="placeholder">⚠️ Placeholder / Needs Photo</option>
+                <option value="all">{dict.products?.allPhotos || 'All Photos'}</option>
+                <option value="real">{dict.products?.photoReal || '📸 Verified Real Photo'}</option>
+                <option value="placeholder">{dict.products?.photoPlaceholder || '⚠️ Placeholder / Needs Photo'}</option>
               </select>
             </div>
 
             {/* Sort by */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-gray-500">Sort:</span>
+              <span className="text-[11px] font-semibold text-gray-500">{dict.common.reorder || 'Sort'}:</span>
               <select
                 value={`${sortBy}_${sortOrder}`}
                 onChange={(e) => {
@@ -1121,14 +1143,14 @@ export default function AdminProductsPage() {
                 }}
                 className="h-9 bg-gray-50/80 border border-gray-200 focus:bg-white rounded-xl text-xs px-2.5 font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="createdAt_desc">🕒 Newest First</option>
-                <option value="createdAt_asc">🕒 Oldest First</option>
-                <option value="price_asc">💲 Price: Low to High</option>
-                <option value="price_desc">💲 Price: High to Low</option>
-                <option value="stock_asc">📦 Stock: Low to High</option>
-                <option value="stock_desc">📦 Stock: High to Low</option>
-                <option value="name_asc">🔤 Name: A to Z</option>
-                <option value="updatedAt_desc">🔄 Recently Updated</option>
+                <option value="createdAt_desc">{dict.products?.sortNewest || '🕒 Newest First'}</option>
+                <option value="createdAt_asc">{dict.products?.sortOldest || '🕒 Oldest First'}</option>
+                <option value="price_asc">{dict.products?.sortPriceLow || '💲 Price: Low to High'}</option>
+                <option value="price_desc">{dict.products?.sortPriceHigh || '💲 Price: High to Low'}</option>
+                <option value="stock_asc">{dict.products?.sortStockLow || '📦 Stock: Low to High'}</option>
+                <option value="stock_desc">{dict.products?.sortStockHigh || '📦 Stock: High to Low'}</option>
+                <option value="name_asc">{dict.products?.sortNameAsc || '🔤 Name: A to Z'}</option>
+                <option value="updatedAt_desc">{dict.products?.sortUpdated || '🔄 Recently Updated'}</option>
               </select>
             </div>
           </div>
@@ -1141,7 +1163,7 @@ export default function AdminProductsPage() {
               className="h-9 px-3 rounded-xl text-xs font-semibold text-rose-600 border-rose-200 bg-rose-50/50 hover:bg-rose-100/70 hover:text-rose-700 shrink-0 gap-1"
             >
               <X size={12} />
-              Reset All Filters
+              {dict.products?.resetAllFilters || 'Reset All Filters'}
             </Button>
           )}
         </div>
@@ -1150,16 +1172,20 @@ export default function AdminProductsPage() {
       {/* Active Search & Filter Indicators */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 px-1 text-xs">
-          <span className="text-gray-500 font-semibold text-[11px]">Active Filters ({totalCount} results):</span>
+          <span className="text-gray-500 font-semibold text-[11px]">
+            {(dict.products?.activeFiltersCount || 'Active Filters ({count} results):').replace('{count}', totalCount.toString())}
+          </span>
 
           {debouncedSearch.trim() && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200/60">
-              <span>Search: &ldquo;{debouncedSearch.trim()}&rdquo;</span>
+              <span>
+                {(dict.products?.searchLabel || 'Search: “{query}”').replace('{query}', debouncedSearch.trim())}
+              </span>
               <button
                 type="button"
                 onClick={() => handleSearchChange('')}
                 className="hover:text-blue-900 transition-colors ml-0.5"
-                title="Clear search"
+                title={dict.products?.clearSearch || 'Clear search'}
               >
                 <X size={12} />
               </button>
@@ -1168,12 +1194,12 @@ export default function AdminProductsPage() {
 
           {categoryFilter && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-semibold border border-amber-200/60">
-              <span>Category filtered</span>
+              <span>{dict.products?.categoryFiltered || 'Category filtered'}</span>
               <button
                 type="button"
                 onClick={() => handleCategoryChange(null)}
                 className="hover:text-amber-900 transition-colors ml-0.5"
-                title="Clear category filter"
+                title={dict.products?.clearCategory || 'Clear category filter'}
               >
                 <X size={12} />
               </button>
@@ -1183,13 +1209,20 @@ export default function AdminProductsPage() {
           {badgeFilter !== 'all' && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 font-semibold border border-purple-200/60">
               <span>
-                Badge: {badgeFilter === 'featured' ? '⭐ Featured' : badgeFilter === 'new_arrival' ? '✨ New Arrival' : '⚡ Flash Sale'}
+                {(dict.products?.badgeLabel || 'Badge: {badge}').replace(
+                  '{badge}',
+                  badgeFilter === 'featured'
+                    ? dict.products.featured
+                    : badgeFilter === 'new_arrival'
+                    ? dict.products.newArrival
+                    : dict.products.flashSale
+                )}
               </span>
               <button
                 type="button"
                 onClick={() => { setBadgeFilter('all'); setPage(1); }}
                 className="hover:text-purple-900 transition-colors ml-0.5"
-                title="Remove badge filter"
+                title={dict.products?.removeBadgeFilter || 'Remove badge filter'}
               >
                 <X size={12} />
               </button>
@@ -1198,12 +1231,17 @@ export default function AdminProductsPage() {
 
           {statusFilter !== 'all' && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
-              <span>Status: {statusFilter === 'active' ? '🟢 Active' : '🔴 Inactive'}</span>
+              <span>
+                {(dict.products?.statusLabel || 'Status: {status}').replace(
+                  '{status}',
+                  statusFilter === 'active' ? dict.common.active : dict.common.inactive
+                )}
+              </span>
               <button
                 type="button"
                 onClick={() => { setStatusFilter('all'); setPage(1); }}
                 className="hover:text-emerald-900 transition-colors ml-0.5"
-                title="Remove status filter"
+                title={dict.products?.removeStatusFilter || 'Remove status filter'}
               >
                 <X size={12} />
               </button>
@@ -1213,13 +1251,20 @@ export default function AdminProductsPage() {
           {stockFilter !== 'all' && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-700 font-semibold border border-red-200/60">
               <span>
-                Stock: {stockFilter === 'in_stock' ? 'In Stock (≥10)' : stockFilter === 'low_stock' ? 'Low Stock (<10)' : 'Out of Stock (0)'}
+                {(dict.products?.stockLabel || 'Stock: {stock}').replace(
+                  '{stock}',
+                  stockFilter === 'in_stock'
+                    ? dict.products.inStock
+                    : stockFilter === 'low_stock'
+                    ? (dict.dashboard?.lowStock || 'Low Stock')
+                    : dict.products.outOfStock
+                )}
               </span>
               <button
                 type="button"
                 onClick={() => { setStockFilter('all'); setPage(1); }}
                 className="hover:text-red-900 transition-colors ml-0.5"
-                title="Remove stock filter"
+                title={dict.products?.removeStockFilter || 'Remove stock filter'}
               >
                 <X size={12} />
               </button>
@@ -1228,12 +1273,19 @@ export default function AdminProductsPage() {
 
           {imageFilter !== 'all' && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 font-semibold border border-amber-200/60">
-              <span>Photo: {imageFilter === 'real' ? 'Real Photo' : 'Placeholder Image'}</span>
+              <span>
+                {(dict.products?.photoLabel || 'Photo: {photo}').replace(
+                  '{photo}',
+                  imageFilter === 'real'
+                    ? (dict.products?.photoReal || 'Real Photo')
+                    : (dict.products?.placeholderImage || 'Placeholder Image')
+                )}
+              </span>
               <button
                 type="button"
                 onClick={() => { setImageFilter('all'); setPage(1); }}
                 className="hover:text-amber-950 transition-colors ml-0.5"
-                title="Remove photo filter"
+                title={dict.products?.removePhotoFilter || 'Remove photo filter'}
               >
                 <X size={12} />
               </button>
@@ -1242,12 +1294,16 @@ export default function AdminProductsPage() {
 
           {(sortBy !== 'createdAt' || sortOrder !== 'desc') && (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-200/60">
-              <span>Sort: {sortBy} ({sortOrder})</span>
+              <span>
+                {(dict.products?.sortLabel || 'Sort: {field} ({order})')
+                  .replace('{field}', sortBy)
+                  .replace('{order}', sortOrder)}
+              </span>
               <button
                 type="button"
                 onClick={() => { setSortBy('createdAt'); setSortOrder('desc'); setPage(1); }}
                 className="hover:text-gray-900 transition-colors ml-0.5"
-                title="Reset sort"
+                title={dict.products?.resetSort || 'Reset sort'}
               >
                 <X size={12} />
               </button>
@@ -1259,7 +1315,7 @@ export default function AdminProductsPage() {
             onClick={resetAllFilters}
             className="text-[11px] font-bold text-gray-500 hover:text-gray-800 underline ml-1"
           >
-            Clear all
+            {dict.products?.clearAll || 'Clear all'}
           </button>
         </div>
       )}
@@ -1321,7 +1377,7 @@ export default function AdminProductsPage() {
                       />
                     </th>
                     <th className="py-3.5 px-4">{dict.products.productName}</th>
-                    <th className="py-3.5 px-4">Item #</th>
+                    <th className="py-3.5 px-4">{dict.products?.itemNo || 'Item #'}</th>
                     <th className="py-3.5 px-4">{dict.common.price}</th>
                     <th className="py-3.5 px-4">{dict.products.stock}</th>
                     <th className="py-3.5 px-3 text-center">{dict.products.featured}</th>
@@ -1340,6 +1396,9 @@ export default function AdminProductsPage() {
                     const isSelected = selectedIds.includes(product.id)
                     const swedenName = getProductSwedenName(product)
                     const displayTitle = getProductDisplayTitle(localized.name)
+                    const localizedCategory = product.category
+                      ? localizeCategory(product.category as any, locale)
+                      : null
                     return (
                       <tr key={product.id} className={`hover:bg-blue-50/30 transition-colors group ${isSelected ? 'bg-blue-50/40' : ''}`}>
                         {/* Checkbox */}
@@ -1355,13 +1414,13 @@ export default function AdminProductsPage() {
                         {/* Product Info */}
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3.5">
-                            <ProductThumbnail src={product.thumbnail} alt={localized.name} productId={product.id} />
+                            <ProductThumbnail src={product.thumbnail} alt={localized.name} productId={product.id} dict={dict} />
                             <div className="min-w-0">
                               {swedenName ? (
                                 <div className="flex items-center gap-1.5 mb-1">
                                   <span
                                     className="text-[10px] font-black text-amber-900 bg-amber-50/90 px-1.5 py-0.5 rounded border border-amber-200/70 uppercase tracking-wider inline-flex items-center gap-1"
-                                    title="Swedish series / brand name"
+                                    title={dict.products?.badgeSweTitle || 'Swedish series / brand name'}
                                   >
                                     <span className="text-[9px] font-bold text-amber-700/80">SWE:</span>
                                     <span>{swedenName}</span>
@@ -1375,13 +1434,13 @@ export default function AdminProductsPage() {
                                 {displayTitle}
                               </p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                {product.category && (
+                                {localizedCategory && (
                                   <span className="text-[11px] text-gray-500 font-medium">
-                                    {product.category.name}
+                                    {localizedCategory.name}
                                   </span>
                                 )}
                               </div>
-                              <TranslationBadges product={product} />
+                              <TranslationBadges product={product} dict={dict} />
                             </div>
                           </div>
                         </td>
@@ -1407,7 +1466,7 @@ export default function AdminProductsPage() {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:text-blue-800 p-0.5 hover:bg-blue-50 rounded transition-colors"
-                                  title={`Open original item ${product.ikeaItemNo} on IKEA.com`}
+                                  title={(dict.products?.openIkeaItem || 'Open original item {itemNo} on IKEA.com').replace('{itemNo}', product.ikeaItemNo)}
                                 >
                                   <ExternalLink size={11} />
                                 </a>
@@ -1535,16 +1594,19 @@ export default function AdminProductsPage() {
               const localized = localizeProduct(product, locale)
               const swedenName = getProductSwedenName(product)
               const displayTitle = getProductDisplayTitle(localized.name)
+              const localizedCategory = product.category
+                ? localizeCategory(product.category as any, locale)
+                : null
               return (
                 <div key={product.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                   <div className="flex gap-3.5">
-                    <ProductThumbnail src={product.thumbnail} alt={localized.name} size="lg" productId={product.id} />
+                    <ProductThumbnail src={product.thumbnail} alt={localized.name} size="lg" productId={product.id} dict={dict} />
                     <div className="flex-1 min-w-0">
                       {swedenName ? (
                         <div className="flex items-center gap-1.5 mb-1">
                           <span
                             className="text-[10px] font-black text-amber-900 bg-amber-50/90 px-1.5 py-0.5 rounded border border-amber-200/70 uppercase tracking-wider inline-flex items-center gap-1"
-                            title="Swedish series / brand name"
+                            title={dict.products?.badgeSweTitle || 'Swedish series / brand name'}
                           >
                             <span className="text-[9px] font-bold text-amber-700/80">SWE:</span>
                             <span>{swedenName}</span>
@@ -1570,7 +1632,7 @@ export default function AdminProductsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-blue-600 hover:text-blue-800 p-0.5"
-                              title={`Open original item ${product.ikeaItemNo} on IKEA.com`}
+                              title={(dict.products?.openIkeaItem || 'Open original item {itemNo} on IKEA.com').replace('{itemNo}', product.ikeaItemNo)}
                             >
                               <ExternalLink size={11} />
                             </a>
@@ -1584,7 +1646,12 @@ export default function AdminProductsPage() {
                         <span className="font-bold text-gray-900 text-sm">${Number(product.price).toFixed(2)}</span>
                         <span className="text-[11px] text-gray-500 font-medium">{dict.products.stock}: {product.stock}</span>
                       </div>
-                      <TranslationBadges product={product} />
+                      {localizedCategory && (
+                        <div className="text-[11px] text-gray-500 font-medium mt-1">
+                          {localizedCategory.name}
+                        </div>
+                      )}
+                      <TranslationBadges product={product} dict={dict} />
                     </div>
                   </div>
 
@@ -1650,11 +1717,14 @@ export default function AdminProductsPage() {
               <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500 font-medium">
                 <span>
                   {limit === -1 || totalCount <= limit
-                    ? `Showing all ${totalCount} products`
-                    : `Showing ${(page - 1) * limit + 1}–${Math.min(page * limit, totalCount)} of ${totalCount} products`}
+                    ? (dict.products?.showingAllCount || 'Showing all {count} products').replace('{count}', totalCount.toString())
+                    : (dict.products?.showingRangeCount || 'Showing {from}–{to} of {total} products')
+                        .replace('{from}', ((page - 1) * limit + 1).toString())
+                        .replace('{to}', Math.min(page * limit, totalCount).toString())
+                        .replace('{total}', totalCount.toString())}
                 </span>
                 <div className="flex items-center gap-1.5 border-l border-gray-200 pl-3">
-                  <span className="text-[11px] text-gray-400">Per page:</span>
+                  <span className="text-[11px] text-gray-400">{dict.products?.perPage || 'Per page:'}</span>
                   {[20, 50, 100].map((size) => (
                     <button
                       key={size}
@@ -1684,7 +1754,7 @@ export default function AdminProductsPage() {
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    All
+                    {dict.products?.all || 'All'}
                   </button>
                 </div>
               </div>
@@ -1692,7 +1762,9 @@ export default function AdminProductsPage() {
               {totalPages > 1 && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-400 mr-1">
-                    Page {page} of {totalPages}
+                    {(dict.products?.pageOf || 'Page {page} of {total}')
+                      .replace('{page}', page.toString())
+                      .replace('{total}', totalPages.toString())}
                   </span>
                   <Button
                     variant="outline"

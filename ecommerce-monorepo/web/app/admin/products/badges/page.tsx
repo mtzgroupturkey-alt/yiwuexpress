@@ -828,15 +828,15 @@ export default function ProductBadgesSettingsPage() {
                   </span>
                   <div>
                     <CardTitle className="text-base font-bold text-slate-900">
-                      Product Badges &amp; Signals ON/OFF Manager
+                      {t.demandTitle || 'Product Badges & Signals ON/OFF Manager'}
                     </CardTitle>
                     <CardDescription className="text-xs text-slate-500">
-                      Enable or disable any product detail badge with independent ON/OFF switches, custom text, and instant storefront preview.
+                      {t.demandDesc || 'Enable or disable any product detail badge with independent ON/OFF switches, custom text, and instant storefront preview.'}
                     </CardDescription>
                   </div>
                 </div>
                 <span className="text-xs font-bold text-slate-500">
-                  Editing: {LOCALES.find((l) => l.code === activeLocaleTab)?.label}
+                  {t.editingBadge ? t.editingBadge.replace('{locale}', LOCALES.find((l) => l.code === activeLocaleTab)?.label || '') : `Editing: ${LOCALES.find((l) => l.code === activeLocaleTab)?.label}`}
                 </span>
               </div>
             </CardHeader>
@@ -851,16 +851,16 @@ export default function ProductBadgesSettingsPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-sm text-slate-900">
-                        ⚡ &ldquo;In High Demand&rdquo; Badge
+                        {t.highDemandBadgeTitle || '⚡ "In High Demand" Badge'}
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Green urgency pill badge shown next to category pill in the main buy box.
+                        {t.highDemandBadgeDesc || 'Green urgency pill badge shown next to category pill in the main buy box.'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpHighDemandBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                      {currentValues.pdpHighDemandBadgeEnabled !== 'false' ? 'ON' : 'OFF'}
+                      {currentValues.pdpHighDemandBadgeEnabled !== 'false' ? (t.switchOn || 'ON') : (t.switchOff || 'OFF')}
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input
@@ -876,7 +876,9 @@ export default function ProductBadgesSettingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-amber-200/60">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Minimum Stock Trigger (Units)</Label>
+                    <Label className="text-xs font-semibold text-slate-700">
+                      {t.highDemandThresholdLabel || 'Minimum Stock Trigger (Units)'}
+                    </Label>
                     <Input
                       type="number"
                       min="0"
@@ -885,10 +887,16 @@ export default function ProductBadgesSettingsPage() {
                       placeholder="100"
                       className="rounded-xl text-xs font-bold bg-white"
                     />
-                    <p className="text-[11px] text-slate-500">Only displayed when available stock exceeds this amount.</p>
+                    <p className="text-[11px] text-slate-500">
+                      {t.highDemandThresholdDesc || 'Only displayed when available stock exceeds this amount.'}
+                    </p>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-slate-700">Badge Label ({LOCALES.find((l) => l.code === activeLocaleTab)?.label})</Label>
+                    <Label className="text-xs font-semibold text-slate-700">
+                      {t.highDemandTextLabel
+                        ? t.highDemandTextLabel.replace('{locale}', LOCALES.find((l) => l.code === activeLocaleTab)?.label || '')
+                        : `Badge Label (${LOCALES.find((l) => l.code === activeLocaleTab)?.label})`}
+                    </Label>
                     <Input
                       value={currentValues.pdpHighDemandText || ''}
                       onChange={(e) => updateField('pdpHighDemandText', e.target.value)}
@@ -900,7 +908,9 @@ export default function ProductBadgesSettingsPage() {
 
                 {/* Preview */}
                 <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Preview:</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">
+                    {t.previewLabel || 'Preview:'}
+                  </span>
                   <span className="bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                     COOKWARE &amp; BAKEWARE
                   </span>
@@ -910,7 +920,7 @@ export default function ProductBadgesSettingsPage() {
                     </span>
                   ) : (
                     <span className="text-xs italic text-rose-500">
-                      (Hidden / Disabled)
+                      {t.hiddenOrDisabled || '(Hidden / Disabled)'}
                     </span>
                   )}
                 </div>
@@ -925,16 +935,16 @@ export default function ProductBadgesSettingsPage() {
                     </div>
                     <div>
                       <h3 className="font-bold text-sm text-slate-900">
-                        🚚 Courier Delivery &amp; Live Dispatch Countdown Box
+                        {t.courierBoxTitle || '🚚 Courier Delivery & Live Dispatch Countdown Box'}
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Shows or hides the Courier Delivery timing box (&ldquo;Delivery on 2-3 business days&rdquo; with live order dispatch countdown) on the product details page.
+                        {t.courierBoxDesc || 'Shows or hides the Courier Delivery timing box ("Delivery in 2-3 business days" with live order dispatch countdown) on the product details page.'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                      {currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? 'ON' : 'OFF'}
+                      {currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? (t.switchOn || 'ON') : (t.switchOff || 'OFF')}
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer shrink-0">
                       <input
@@ -951,22 +961,24 @@ export default function ProductBadgesSettingsPage() {
                 {/* Preview */}
                 <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">Preview:</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase mr-1">
+                      {t.previewLabel || 'Preview:'}
+                    </span>
                     {currentValues.pdpCourierDeliveryBadgeEnabled !== 'false' ? (
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
                         <div className="w-6 h-6 rounded-md bg-blue-50 text-[#00407a] flex items-center justify-center">
                           <Truck className="w-3.5 h-3.5" />
                         </div>
                         <span className="font-bold text-slate-900">
-                          {activeLocaleTab === 'ru' ? 'Курьерская доставка' : activeLocaleTab === 'zh' ? '特快专递送达' : 'Courier Delivery'}
+                          {t.courierDeliveryTitle || (activeLocaleTab === 'ru' ? 'Курьерская доставка' : activeLocaleTab === 'zh' ? '特快专递送达' : 'Courier Delivery')}
                         </span>
                         <span className="font-bold text-emerald-600 font-mono">
-                          {activeLocaleTab === 'ru' ? '1 – 3 рабочих дня' : activeLocaleTab === 'zh' ? '1 – 3个工作日' : '1 – 3 business days'}
+                          {t.courierDeliveryTiming || (activeLocaleTab === 'ru' ? '1 – 3 рабочих дня' : activeLocaleTab === 'zh' ? '1 – 3个工作日' : '1 – 3 business days')}
                         </span>
                       </div>
                     ) : (
                       <span className="text-xs italic text-rose-500 font-medium">
-                        (Hidden / Disabled on Product Details Page)
+                        {t.hiddenOnPdp || '(Hidden / Disabled on Product Details Page)'}
                       </span>
                     )}
                   </div>
@@ -978,7 +990,7 @@ export default function ProductBadgesSettingsPage() {
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
                   <ShieldCheck className="w-4 h-4 text-blue-600" />
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    3-Benefit Reassurance Strip Badges
+                    {t.reassuranceStripTitle || '3-Benefit Reassurance Strip Badges'}
                   </h4>
                 </div>
 
@@ -991,7 +1003,9 @@ export default function ProductBadgesSettingsPage() {
                           <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs">
                             <Shield className="w-3.5 h-3.5" />
                           </div>
-                          <span className="font-bold text-xs text-slate-900">Warranty Badge</span>
+                          <span className="font-bold text-xs text-slate-900">
+                            {t.warrantyBadgeCard || 'Warranty Badge'}
+                          </span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer shrink-0">
                           <input
@@ -1005,7 +1019,9 @@ export default function ProductBadgesSettingsPage() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpWarrantyTitle || ''}
                           onChange={(e) => updateField('pdpWarrantyTitle', e.target.value)}
@@ -1014,7 +1030,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-slate-700">Subtitle</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.badgeSubtitleLabel || 'Subtitle'}
+                        </Label>
                         <Input
                           value={currentValues.pdpWarrantySubtitle || ''}
                           onChange={(e) => updateField('pdpWarrantySubtitle', e.target.value)}
@@ -1026,7 +1044,7 @@ export default function ProductBadgesSettingsPage() {
 
                     <div className="pt-2 border-t border-blue-100/80">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpWarrantyBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                        {currentValues.pdpWarrantyBadgeEnabled !== 'false' ? '● Active' : '○ Hidden'}
+                        {currentValues.pdpWarrantyBadgeEnabled !== 'false' ? (t.statusActive || '● Active') : (t.statusHidden || '○ Hidden')}
                       </span>
                     </div>
                   </div>
@@ -1039,7 +1057,9 @@ export default function ProductBadgesSettingsPage() {
                           <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
                             <Truck className="w-3.5 h-3.5" />
                           </div>
-                          <span className="font-bold text-xs text-slate-900">Express Delivery</span>
+                          <span className="font-bold text-xs text-slate-900">
+                            {t.expressDeliveryBadgeCard || 'Express Delivery'}
+                          </span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer shrink-0">
                           <input
@@ -1053,7 +1073,9 @@ export default function ProductBadgesSettingsPage() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpDeliveryTitle || ''}
                           onChange={(e) => updateField('pdpDeliveryTitle', e.target.value)}
@@ -1062,7 +1084,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-slate-700">Subtitle</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.badgeSubtitleLabel || 'Subtitle'}
+                        </Label>
                         <Input
                           value={currentValues.pdpDeliverySubtitle || ''}
                           onChange={(e) => updateField('pdpDeliverySubtitle', e.target.value)}
@@ -1074,7 +1098,7 @@ export default function ProductBadgesSettingsPage() {
 
                     <div className="pt-2 border-t border-emerald-100/80">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpDeliveryBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                        {currentValues.pdpDeliveryBadgeEnabled !== 'false' ? '● Active' : '○ Hidden'}
+                        {currentValues.pdpDeliveryBadgeEnabled !== 'false' ? (t.statusActive || '● Active') : (t.statusHidden || '○ Hidden')}
                       </span>
                     </div>
                   </div>
@@ -1087,7 +1111,9 @@ export default function ProductBadgesSettingsPage() {
                           <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
                             <RefreshCw className="w-3.5 h-3.5" />
                           </div>
-                          <span className="font-bold text-xs text-slate-900">14-Day Returns</span>
+                          <span className="font-bold text-xs text-slate-900">
+                            {t.returnsBadgeCard || '14-Day Returns'}
+                          </span>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer shrink-0">
                           <input
@@ -1101,7 +1127,9 @@ export default function ProductBadgesSettingsPage() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpReturnsTitle || ''}
                           onChange={(e) => updateField('pdpReturnsTitle', e.target.value)}
@@ -1110,7 +1138,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-[11px] font-semibold text-slate-700">Subtitle</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.badgeSubtitleLabel || 'Subtitle'}
+                        </Label>
                         <Input
                           value={currentValues.pdpReturnsSubtitle || ''}
                           onChange={(e) => updateField('pdpReturnsSubtitle', e.target.value)}
@@ -1122,7 +1152,7 @@ export default function ProductBadgesSettingsPage() {
 
                     <div className="pt-2 border-t border-amber-100/80">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${currentValues.pdpReturnsBadgeEnabled !== 'false' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
-                        {currentValues.pdpReturnsBadgeEnabled !== 'false' ? '● Active' : '○ Hidden'}
+                        {currentValues.pdpReturnsBadgeEnabled !== 'false' ? (t.statusActive || '● Active') : (t.statusHidden || '○ Hidden')}
                       </span>
                     </div>
                   </div>
@@ -1134,7 +1164,7 @@ export default function ProductBadgesSettingsPage() {
                 <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
                   <Award className="w-4 h-4 text-indigo-600" />
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                    Factory &amp; Quality Control Trust Badges
+                    {t.factoryTrustSectionTitle || 'Factory & Quality Control Trust Badges'}
                   </h4>
                 </div>
 
@@ -1144,7 +1174,9 @@ export default function ProductBadgesSettingsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Factory className="w-4 h-4 text-blue-600" />
-                        <span className="font-bold text-xs text-slate-900">Direct Verified Factory</span>
+                        <span className="font-bold text-xs text-slate-900">
+                          {t.directVerifiedFactoryCard || 'Direct Verified Factory'}
+                        </span>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
@@ -1158,7 +1190,9 @@ export default function ProductBadgesSettingsPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpFactoryTitle || ''}
                           onChange={(e) => updateField('pdpFactoryTitle', e.target.value)}
@@ -1166,7 +1200,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.descLabel || 'Description'}
+                        </Label>
                         <Input
                           value={currentValues.pdpFactoryDesc || ''}
                           onChange={(e) => updateField('pdpFactoryDesc', e.target.value)}
@@ -1181,7 +1217,9 @@ export default function ProductBadgesSettingsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Award className="w-4 h-4 text-amber-500" />
-                        <span className="font-bold text-xs text-slate-900">Rigorous Quality Inspection</span>
+                        <span className="font-bold text-xs text-slate-900">
+                          {t.rigorousQcCard || 'Rigorous Quality Inspection'}
+                        </span>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
@@ -1195,7 +1233,9 @@ export default function ProductBadgesSettingsPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpQcTitle || ''}
                           onChange={(e) => updateField('pdpQcTitle', e.target.value)}
@@ -1203,7 +1243,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.descLabel || 'Description'}
+                        </Label>
                         <Input
                           value={currentValues.pdpQcDesc || ''}
                           onChange={(e) => updateField('pdpQcDesc', e.target.value)}
@@ -1218,7 +1260,9 @@ export default function ProductBadgesSettingsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Truck className="w-4 h-4 text-blue-500" />
-                        <span className="font-bold text-xs text-slate-900">Door-to-Door Logistics</span>
+                        <span className="font-bold text-xs text-slate-900">
+                          {t.doorToDoorLogisticsCard || 'Door-to-Door Logistics'}
+                        </span>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
@@ -1232,7 +1276,9 @@ export default function ProductBadgesSettingsPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpLogisticsTitle || ''}
                           onChange={(e) => updateField('pdpLogisticsTitle', e.target.value)}
@@ -1240,7 +1286,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.descLabel || 'Description'}
+                        </Label>
                         <Input
                           value={currentValues.pdpLogisticsDesc || ''}
                           onChange={(e) => updateField('pdpLogisticsDesc', e.target.value)}
@@ -1255,7 +1303,9 @@ export default function ProductBadgesSettingsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Lock className="w-4 h-4 text-emerald-500" />
-                        <span className="font-bold text-xs text-slate-900">Trade Assurance Escrow</span>
+                        <span className="font-bold text-xs text-slate-900">
+                          {t.tradeAssuranceEscrowCard || 'Trade Assurance Escrow'}
+                        </span>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input
@@ -1269,7 +1319,9 @@ export default function ProductBadgesSettingsPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Title</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.titleLabel || 'Title'}
+                        </Label>
                         <Input
                           value={currentValues.pdpEscrowTitle || ''}
                           onChange={(e) => updateField('pdpEscrowTitle', e.target.value)}
@@ -1277,7 +1329,9 @@ export default function ProductBadgesSettingsPage() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-700">Description</Label>
+                        <Label className="text-[11px] font-semibold text-slate-700">
+                          {t.descLabel || 'Description'}
+                        </Label>
                         <Input
                           value={currentValues.pdpEscrowDesc || ''}
                           onChange={(e) => updateField('pdpEscrowDesc', e.target.value)}

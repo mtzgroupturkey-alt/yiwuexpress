@@ -103,6 +103,7 @@ const EMPTY_EDITOR_STATE: PageEditorState = {
 
 export default function ContentPagesPage() {
   const { dict, locale: adminLocale } = useAdminLocale()
+  const t = (dict as any)?.contentPages || {}
   const [loading, setLoading] = useState(true)
   const [pages, setPages] = useState<CmsPageItem[]>([])
   const [editorState, setEditorState] = useState<PageEditorState | null>(null)
@@ -120,7 +121,7 @@ export default function ContentPagesPage() {
       }
     } catch (err) {
       console.error('Failed to load CMS pages:', err)
-      toast.error('Failed to load pages')
+      toast.error(t.loadPagesFailedToast || 'Failed to load pages')
     } finally {
       setLoading(false)
     }
@@ -249,18 +250,18 @@ export default function ContentPagesPage() {
     }
 
     setEditorState(nextState)
-    toast.success('Translations generated! Review and click Save Page.')
+    toast.success(t.translationsGeneratedToast || 'Translations generated! Review and click Save Page.')
   }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editorState) return
     if (!editorState.slug.trim()) {
-      toast.error('Slug is required')
+      toast.error(t.slugRequiredToast || 'Slug is required')
       return
     }
     if (!editorState.locales.en.title.trim()) {
-      toast.error('English page title is required')
+      toast.error(t.englishTitleRequiredToast || 'English page title is required')
       return
     }
 
@@ -309,7 +310,7 @@ export default function ContentPagesPage() {
       })
       const json = await res.json()
       if (json.success) {
-        toast.success(`Page "/${editorState.slug}" saved successfully!`)
+        toast.success(t.pageSavedToast ? t.pageSavedToast.replace('{slug}', editorState.slug) : `Page "/${editorState.slug}" saved successfully!`)
         setEditorState(null)
         fetchPages()
       } else {
@@ -354,18 +355,18 @@ export default function ContentPagesPage() {
               <Layers size={20} />
             </span>
             <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-              Dynamic Static Pages & CMS Manager
+              {t.pageTitle || 'Dynamic Static Pages & CMS Manager'}
             </h1>
           </div>
           <p className="text-xs text-gray-500 mt-1 max-w-2xl">
-            Dynamically update page titles, hero headings, subtitles, custom form labels, trust badges, and rich content across all supported languages (EN, RU, ZH).
+            {t.pageSubtitle || 'Dynamically update page titles, hero headings, subtitles, custom form labels, trust badges, and rich content across all supported languages (EN, RU, ZH).'}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={fetchPages} disabled={loading} className="rounded-xl gap-1.5 text-xs">
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Refresh
+            {t.refreshBtn || 'Refresh'}
           </Button>
           <Button
             size="sm"
@@ -373,7 +374,7 @@ export default function ContentPagesPage() {
             className="rounded-xl text-xs gap-1.5 bg-[#00407a] hover:bg-[#003366] text-white shadow-xs"
           >
             <Plus size={14} />
-            Add Custom Page
+            {t.addCustomPageBtn || 'Add Custom Page'}
           </Button>
         </div>
       </div>
@@ -384,20 +385,24 @@ export default function ContentPagesPage() {
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center">
               <div className="w-8 h-8 border-3 border-gray-200 border-t-[#00407a] rounded-full animate-spin" />
-              <p className="text-xs text-gray-400 mt-3 font-medium">Loading managed pages...</p>
+              <p className="text-xs text-gray-400 mt-3 font-medium">
+                {t.loadingPages || 'Loading managed pages...'}
+              </p>
             </div>
           ) : pages.length === 0 ? (
-            <div className="py-16 text-center text-gray-400 text-xs">No pages found. Click &quot;Add Custom Page&quot; to create one.</div>
+            <div className="py-16 text-center text-gray-400 text-xs">
+              {t.noPagesFound || 'No pages found. Click "Add Custom Page" to create one.'}
+            </div>
           ) : (
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-y border-gray-100 bg-gray-50/80 text-gray-500 font-bold uppercase tracking-wider">
-                  <th className="py-3.5 px-5">Page Name & Purpose</th>
-                  <th className="py-3.5 px-4">Storefront URL</th>
-                  <th className="py-3.5 px-4">Available Locales</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Last Updated</th>
-                  <th className="py-3.5 px-5 text-right">Actions</th>
+                  <th className="py-3.5 px-5">{t.thPageName || 'Page Name & Purpose'}</th>
+                  <th className="py-3.5 px-4">{t.thStorefrontUrl || 'Storefront URL'}</th>
+                  <th className="py-3.5 px-4">{t.thAvailableLocales || 'Available Locales'}</th>
+                  <th className="py-3.5 px-4">{t.thStatus || 'Status'}</th>
+                  <th className="py-3.5 px-4">{t.thLastUpdated || 'Last Updated'}</th>
+                  <th className="py-3.5 px-5 text-right">{t.thActions || 'Actions'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -417,19 +422,19 @@ export default function ContentPagesPage() {
                               <span className="font-bold text-gray-900 text-sm">{p.title}</span>
                               {isSpecial && (
                                 <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 font-extrabold px-2 py-0.5 rounded-full">
-                                  CORE B2B PAGE
+                                  {t.coreB2bBadge || 'CORE B2B PAGE'}
                                 </span>
                               )}
                             </div>
                             <p className="text-[11px] text-gray-500 truncate max-w-sm mt-0.5">
-                              {p.subtitle || p.badge || 'Static content page with dynamic controls'}
+                              {p.subtitle || p.badge || (t.staticDefaultDesc || 'Static content page with dynamic controls')}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <Link
-                          href={`/en/${p.slug}`}
+                          href={`/${adminLocale || 'en'}/${p.slug}`}
                           target="_blank"
                           className="font-mono text-blue-600 hover:text-blue-800 flex items-center gap-1 font-semibold group"
                         >
@@ -452,7 +457,7 @@ export default function ContentPagesPage() {
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           p.isPublished ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-500'
                         }`}>
-                          {p.isPublished ? 'Live & Active' : 'Draft'}
+                          {p.isPublished ? (t.liveAndActive || 'Live & Active') : (t.draft || 'Draft')}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-gray-500">
@@ -461,20 +466,20 @@ export default function ContentPagesPage() {
                       <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link
-                            href={`/en/${p.slug}`}
+                            href={`/${adminLocale || 'en'}/${p.slug}`}
                             target="_blank"
                             className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                            title="View Live Page in Storefront"
+                            title={t.viewLivePage || 'View Live Page in Storefront'}
                           >
                             <Eye size={15} />
                           </Link>
                           <Button
                             size="sm"
                             onClick={() => handleOpenEdit(p)}
-                            className="rounded-xl text-xs h-8 px-3 bg-[#00407a] hover:bg-[#003366] text-white flex items-center gap-1.5"
+                            className="rounded-xl text-xs h-8 px-3 bg-[#00407a] hover:bg-[#003366] text-white flex items-center gap-1.5 cursor-pointer"
                           >
                             <Edit size={13} />
-                            <span>Edit Content</span>
+                            <span>{t.editContentBtn || 'Edit Content'}</span>
                           </Button>
                         </div>
                       </td>
@@ -502,14 +507,14 @@ export default function ContentPagesPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-base font-bold text-gray-900">
-                      Edit Page: <span className="text-[#00407a]">/{editorState.slug}</span>
+                      {t.editPageTitle ? t.editPageTitle.replace('{slug}', editorState.slug) : `Edit Page: /${editorState.slug}`}
                     </h2>
                     <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-[#00407a] font-mono font-bold">
-                      Dynamic CMS
+                      {t.dynamicCmsBadge || 'Dynamic CMS'}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Live changes apply to storefront immediately across all locales.
+                    {t.liveChangesNote || 'Live changes apply to storefront immediately across all locales.'}
                   </p>
                 </div>
               </div>
@@ -521,12 +526,14 @@ export default function ContentPagesPage() {
                   className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors"
                 >
                   <Eye size={13} />
-                  <span>View Live ({activeTab.toUpperCase()})</span>
+                  <span>
+                    {t.viewLiveLocale ? t.viewLiveLocale.replace('{locale}', activeTab.toUpperCase()) : `View Live (${activeTab.toUpperCase()})`}
+                  </span>
                 </Link>
                 <button
                   type="button"
                   onClick={() => setEditorState(null)}
-                  className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -536,7 +543,9 @@ export default function ContentPagesPage() {
             {/* Language Switcher Bar with Auto-Translate */}
             <div className="px-6 py-2.5 border-b border-slate-200 bg-white flex flex-wrap items-center justify-between gap-3 shrink-0">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-2">Language:</span>
+                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mr-2">
+                  {t.languageLabel || 'Language:'}
+                </span>
                 {LOCALES.map(({ code, label, flag }) => (
                   <button
                     key={code}
@@ -560,7 +569,7 @@ export default function ContentPagesPage() {
                   sourceFields={getFieldsForTranslation()}
                   onTranslated={handleAutoTranslated}
                   disabled={submitting}
-                  label={`✨ Auto-Translate from ${LOCALES.find(l => l.code === activeTab)?.label.split(' ')[0]}`}
+                  label={t.autoTranslateLabel ? t.autoTranslateLabel.replace('{locale}', LOCALES.find(l => l.code === activeTab)?.label.split(' ')[0] || '') : `✨ Auto-Translate from ${LOCALES.find(l => l.code === activeTab)?.label.split(' ')[0]}`}
                 />
               </div>
             </div>
@@ -576,7 +585,7 @@ export default function ContentPagesPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                1. Page Headings & Titles
+                {t.tabHeadings || '1. Page Headings & Titles'}
               </button>
 
               {editorState.slug === 'register-b2b' && (
@@ -590,7 +599,7 @@ export default function ContentPagesPage() {
                   }`}
                 >
                   <Building2 size={13} className="text-amber-600" />
-                  <span>2. B2B Registration Form Fields</span>
+                  <span>{t.tabB2bFormFields || '2. B2B Registration Form Fields'}</span>
                 </button>
               )}
 
@@ -603,7 +612,7 @@ export default function ContentPagesPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                {editorState.slug === 'register-b2b' ? '3.' : '2.'} SEO Meta Tags
+                {editorState.slug === 'register-b2b' ? '3.' : '2.'} {t.tabSeo || 'SEO Meta Tags'}
               </button>
 
               <button
@@ -615,7 +624,7 @@ export default function ContentPagesPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                {editorState.slug === 'register-b2b' ? '4.' : '3.'} Rich Article Content (WYSIWYG)
+                {editorState.slug === 'register-b2b' ? '4.' : '3.'} {t.tabRichContent || 'Rich Article Content (WYSIWYG)'}
               </button>
             </div>
 
@@ -626,11 +635,11 @@ export default function ContentPagesPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-base">{LOCALES.find(l => l.code === activeTab)?.flag}</span>
                   <span className="font-bold">
-                    Editing language: {LOCALES.find(l => l.code === activeTab)?.label}
+                    {t.editingLanguageBanner ? t.editingLanguageBanner.replace('{label}', LOCALES.find(l => l.code === activeTab)?.label || '') : `Editing language: ${LOCALES.find(l => l.code === activeTab)?.label}`}
                   </span>
                 </div>
                 <span className="text-[11px] text-blue-600">
-                  Switch tabs above to edit Russian or Chinese translations
+                  {t.switchTabsHint || 'Switch tabs above to edit Russian or Chinese translations'}
                 </span>
               </div>
 
@@ -642,7 +651,7 @@ export default function ContentPagesPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-bold text-gray-700 block mb-1">
-                        Page Title / Main Heading <span className="text-red-500">*</span>
+                        {t.labelTitleHeading || 'Page Title / Main Heading'} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -652,12 +661,14 @@ export default function ContentPagesPage() {
                         placeholder="e.g. Apply for B2B Wholesale Account"
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00407a]"
                       />
-                      <p className="text-[11px] text-gray-400 mt-1">Displayed as the main `&lt;h1&gt;` header on the page</p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        {t.hintTitleHeading || 'Displayed as the main <h1> header on the page'}
+                      </p>
                     </div>
 
                     <div>
                       <label className="text-xs font-bold text-gray-700 block mb-1">
-                        Top Badge / Eyebrow Tag
+                        {t.labelEyebrowBadge || 'Top Badge / Eyebrow Tag'}
                       </label>
                       <input
                         type="text"
@@ -666,13 +677,15 @@ export default function ContentPagesPage() {
                         placeholder="e.g. B2B Commercial Registration"
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00407a]"
                       />
-                      <p className="text-[11px] text-gray-400 mt-1">Pill badge shown above the main title</p>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        {t.hintEyebrowBadge || 'Pill badge shown above the main title'}
+                      </p>
                     </div>
                   </div>
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1">
-                      Subtitle / Introduction Description
+                      {t.labelSubtitleDesc || 'Subtitle / Introduction Description'}
                     </label>
                     <textarea
                       rows={2}
@@ -681,14 +694,16 @@ export default function ContentPagesPage() {
                       placeholder="e.g. Register your company to access wholesale catalog pricing and commercial terms"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00407a]"
                     />
-                    <p className="text-[11px] text-gray-400 mt-1">Introductory sentence shown under the title</p>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {t.hintSubtitleDesc || 'Introductory sentence shown under the title'}
+                    </p>
                   </div>
 
                   {activeTab === 'en' && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                       <div>
                         <label className="text-xs font-bold text-gray-700 block mb-1">
-                          Slug URL Route <span className="text-red-500">*</span>
+                          {t.labelSlugRoute || 'Slug URL Route'} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -698,13 +713,19 @@ export default function ContentPagesPage() {
                           placeholder="e.g. register-b2b"
                           className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00407a]"
                         />
-                        <p className="text-[11px] text-gray-400 mt-1">Accessible at: `/{activeTab}/{editorState.slug}`</p>
+                        <p className="text-[11px] text-gray-400 mt-1">
+                          {t.hintSlugRoute ? t.hintSlugRoute.replace('{locale}', activeTab).replace('{slug}', editorState.slug) : `Accessible at: /${activeTab}/${editorState.slug}`}
+                        </p>
                       </div>
 
                       <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100 self-end">
                         <div>
-                          <p className="text-xs font-bold text-gray-800">Publish Status</p>
-                          <p className="text-[11px] text-gray-400">Make visible on storefront</p>
+                          <p className="text-xs font-bold text-gray-800">
+                            {t.labelPublishStatus || 'Publish Status'}
+                          </p>
+                          <p className="text-[11px] text-gray-400">
+                            {t.hintPublishStatus || 'Make visible on storefront'}
+                          </p>
                         </div>
                         <input
                           type="checkbox"
@@ -727,12 +748,14 @@ export default function ContentPagesPage() {
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
                     <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
                       <Layers size={14} className="text-[#00407a]" />
-                      Multi-Step Indicator Titles
+                      {t.stepperSectionTitle || 'Multi-Step Indicator Titles'}
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-gray-700 block mb-1">Step 1 Title</label>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          {t.labelStep1Title || 'Step 1 Title'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.step1Title || ''}
@@ -742,7 +765,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-gray-700 block mb-1">Step 1 Subtitle</label>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          {t.labelStep1Subtitle || 'Step 1 Subtitle'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.step1Subtitle || ''}
@@ -755,7 +780,9 @@ export default function ContentPagesPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-bold text-gray-700 block mb-1">Step 2 Title</label>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          {t.labelStep2Title || 'Step 2 Title'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.step2Title || ''}
@@ -765,7 +792,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-gray-700 block mb-1">Step 2 Subtitle</label>
+                        <label className="text-xs font-bold text-gray-700 block mb-1">
+                          {t.labelStep2Subtitle || 'Step 2 Subtitle'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.step2Subtitle || ''}
@@ -780,12 +809,14 @@ export default function ContentPagesPage() {
                   {/* Field Labels */}
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
                     <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                      Step 1 Form Input Labels & Placeholders
+                      {t.step1InputsTitle || 'Step 1 Form Input Labels & Placeholders'}
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Company Name Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelCompanyName || 'Company Name Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.companyNameLabel || ''}
@@ -795,7 +826,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Tax ID / Registration Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelTaxId || 'Tax ID / Registration Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.taxIdLabel || ''}
@@ -808,7 +841,9 @@ export default function ContentPagesPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Country Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelCountry || 'Country Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.countryLabel || ''}
@@ -818,7 +853,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">City Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelCity || 'City Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.cityLabel || ''}
@@ -828,7 +865,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Registered Address Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelAddress || 'Registered Address Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.addressLabel || ''}
@@ -843,12 +882,14 @@ export default function ContentPagesPage() {
                   {/* Step 2 Inputs & Upload */}
                   <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
                     <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                      Step 2 Contact, License & Action Buttons
+                      {t.step2InputsTitle || 'Step 2 Contact, License & Action Buttons'}
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Contact Person Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelContactName || 'Contact Person Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.contactNameLabel || ''}
@@ -858,7 +899,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Email Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelEmail || 'Email Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.emailLabel || ''}
@@ -868,7 +911,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Phone / WhatsApp Label</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelPhone || 'Phone / WhatsApp Label'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.phoneLabel || ''}
@@ -881,7 +926,9 @@ export default function ContentPagesPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">License Upload Box Title</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelLicenseTitle || 'License Upload Box Title'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.licenseUploadTitle || ''}
@@ -891,7 +938,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">License Upload Format Hint</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelLicenseHint || 'License Upload Format Hint'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.licenseUploadHint || ''}
@@ -904,7 +953,9 @@ export default function ContentPagesPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Continue Button</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelNextButton || 'Continue Button'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.nextButton || ''}
@@ -914,7 +965,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Back Button</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelBackButton || 'Back Button'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.backButton || ''}
@@ -924,7 +977,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Submit Button</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelSubmitButton || 'Submit Button'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.submitButton || ''}
@@ -937,7 +992,9 @@ export default function ContentPagesPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Footer Prompt</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelFooterPrompt || 'Footer Prompt'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.footerPrompt || ''}
@@ -947,7 +1004,9 @@ export default function ContentPagesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs font-semibold text-gray-700 block mb-1">Footer Link Text</label>
+                        <label className="text-xs font-semibold text-gray-700 block mb-1">
+                          {t.labelFooterLink || 'Footer Link Text'}
+                        </label>
                         <input
                           type="text"
                           value={editorState.locales[activeTab].sections?.footerLinkText || ''}
@@ -968,21 +1027,23 @@ export default function ContentPagesPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1">
-                      SEO Meta Title (Browser Tab Title)
+                      {t.labelSeoMetaTitle || 'SEO Meta Title (Browser Tab Title)'}
                     </label>
                     <input
                       type="text"
                       value={editorState.locales[activeTab].metaTitle}
                       onChange={(e) => updateCurrentLocaleField('metaTitle', e.target.value)}
-                      placeholder="e.g. Apply for B2B Wholesale Account | YIWU EXPRESS"
+                      placeholder="e.g. Apply for B2B Wholesale Account | Global Trade"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00407a]"
                     />
-                    <p className="text-[11px] text-gray-400 mt-1">Recommended length: 50-60 characters</p>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {t.hintSeoMetaTitle || 'Recommended length: 50-60 characters'}
+                    </p>
                   </div>
 
                   <div>
                     <label className="text-xs font-bold text-gray-700 block mb-1">
-                      SEO Meta Description
+                      {t.labelSeoMetaDesc || 'SEO Meta Description'}
                     </label>
                     <textarea
                       rows={3}
@@ -991,7 +1052,9 @@ export default function ContentPagesPage() {
                       placeholder="e.g. Register for a corporate business account to access direct factory wholesale pricing, flexible MOQs, and consolidated China export logistics."
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#00407a]"
                     />
-                    <p className="text-[11px] text-gray-400 mt-1">Recommended length: 150-160 characters</p>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {t.hintSeoMetaDesc || 'Recommended length: 150-160 characters'}
+                    </p>
                   </div>
                 </div>
               )}
@@ -1003,10 +1066,10 @@ export default function ContentPagesPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-gray-700 block">
-                      Body Content (Rich Text / Article Guidance)
+                      {t.labelBodyContent || 'Body Content (Rich Text / Article Guidance)'}
                     </label>
                     <span className="text-[11px] text-gray-400">
-                      Renders custom HTML formatted content or terms
+                      {t.hintBodyContent || 'Renders custom HTML formatted content or terms'}
                     </span>
                   </div>
                   <RichTextEditor
@@ -1023,9 +1086,9 @@ export default function ContentPagesPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setEditorState(null)}
-                  className="rounded-xl text-xs"
+                  className="rounded-xl text-xs cursor-pointer"
                 >
-                  Cancel
+                  {t.cancelBtn || 'Cancel'}
                 </Button>
 
                 <div className="flex items-center gap-2">
@@ -1033,10 +1096,10 @@ export default function ContentPagesPage() {
                     type="submit"
                     size="sm"
                     disabled={submitting}
-                    className="bg-[#00407a] hover:bg-[#003366] text-white rounded-xl text-xs font-bold px-5 h-9 flex items-center gap-1.5 shadow-sm"
+                    className="bg-[#00407a] hover:bg-[#003366] text-white rounded-xl text-xs font-bold px-5 h-9 flex items-center gap-1.5 shadow-sm cursor-pointer"
                   >
                     <Save size={14} />
-                    <span>{submitting ? 'Saving Live Changes...' : 'Save Page & Publish'}</span>
+                    <span>{submitting ? (t.savingChangesBtn || 'Saving Live Changes...') : (t.saveAndPublishBtn || 'Save Page & Publish')}</span>
                   </Button>
                 </div>
               </div>

@@ -26,6 +26,9 @@ interface CategoryDropdownProps {
   clearable?: boolean
   showPath?: boolean
   showLevelIndicator?: boolean
+  emptyMessage?: string
+  categoriesCountText?: (count: number) => string
+  clearSelectionText?: string
 }
 
 export function CategoryDropdown({
@@ -34,6 +37,9 @@ export function CategoryDropdown({
   onChange,
   placeholder = 'Select a category',
   searchPlaceholder = 'Search categories...',
+  emptyMessage = 'No categories found',
+  categoriesCountText,
+  clearSelectionText = 'Clear selection',
   className,
   disabled = false,
   required = false,
@@ -212,7 +218,7 @@ export function CategoryDropdown({
           <div className="overflow-y-auto flex-1 p-1">
             {filteredCategories.length === 0 ? (
               <div className="text-center py-4 text-sm text-gray-500">
-                No categories found
+                {emptyMessage}
               </div>
             ) : (
               <CategoryTree
@@ -227,14 +233,18 @@ export function CategoryDropdown({
 
           {/* Footer */}
           <div className="p-2 border-t border-gray-100 flex justify-between text-xs text-gray-400">
-            <span>{totalCategories} {totalCategories === 1 ? 'category' : 'categories'}</span>
+            <span>
+              {categoriesCountText
+                ? categoriesCountText(totalCategories)
+                : `${totalCategories} ${totalCategories === 1 ? 'category' : 'categories'}`}
+            </span>
             {clearable && value && (
               <button
                 type="button"
                 onClick={handleClear}
                 className="text-[#1a3a5c] hover:underline"
               >
-                Clear selection
+                {clearSelectionText}
               </button>
             )}
           </div>
