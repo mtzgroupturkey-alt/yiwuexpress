@@ -132,21 +132,11 @@ export function ElectronicsProductCard({
           )}
         </div>
 
-        {/* Category & Rating Row on the right */}
-        <div className="flex items-center justify-between text-[11px] gap-1 mb-1.5">
-          <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[120px]">
+        {/* Category Row */}
+        <div className="mb-1.5">
+          <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[120px] inline-block">
             {product.category}
           </span>
-
-          <div className="flex items-center gap-1 shrink-0 text-amber-400">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-            <span className="text-[11px] font-bold text-slate-700 font-mono">
-              {product.rating.toFixed(1)}
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono">
-              ({product.reviews})
-            </span>
-          </div>
         </div>
 
         {/* Product Name */}
@@ -187,7 +177,7 @@ export function ElectronicsProductCard({
 
       {/* Pricing & Add to Cart Footer */}
       <div className="pt-2.5 border-t border-slate-100">
-        <div className="flex items-baseline gap-2 mb-2.5">
+        <div className="flex items-baseline gap-2 mb-2">
           <span className="text-lg sm:text-xl font-black font-mono text-slate-950 tracking-tight">
             {formatPrice(product.price)}
           </span>
@@ -196,6 +186,29 @@ export function ElectronicsProductCard({
               {formatPrice(product.oldPrice)}
             </span>
           )}
+        </div>
+
+        {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
+        <div className="flex items-center justify-between gap-1.5 mb-2.5 pt-1.5 border-t border-slate-100">
+          <span
+            className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 shadow-xs ${
+              isStockAvailable
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
+                : 'bg-amber-100 text-amber-800 border border-amber-200/80'
+            }`}
+          >
+            {stockStatusLabel}
+          </span>
+
+          <div className="flex items-center gap-1 shrink-0 text-amber-400">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="text-[11px] font-bold text-slate-700 font-mono">
+              {product.rating.toFixed(1)}
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">
+              ({product.reviews})
+            </span>
+          </div>
         </div>
 
         {/* Add to Cart button - Only shown to authenticated users */}
