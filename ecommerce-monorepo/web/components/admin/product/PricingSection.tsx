@@ -613,7 +613,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               </span>
               <span>{t.section1Title}</span>
             </h3>
-            <p className="text-xs text-gray-500 font-medium">{t.section1Subtitle}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -641,9 +640,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   {currency}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {t.boughtForHelper}
-              </p>
             </div>
 
             {/* Profit per sale preview */}
@@ -691,7 +687,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               </span>
               <span>{t.section2Title}</span>
             </h3>
-            <p className="text-xs text-gray-500 font-medium">{t.section2Subtitle}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -722,9 +717,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   {currency}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {t.retailHelper}
-              </p>
               {errors.retailPrice && (
                 <p className="text-xs text-red-600 font-medium mt-1" role="alert">
                   {errors.retailPrice}
@@ -764,9 +756,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   %
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {t.discountHelper}
-              </p>
               {errors.discountPercent && (
                 <p className="text-xs text-red-600 font-medium mt-1" role="alert">
                   {errors.discountPercent}
@@ -899,9 +888,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
               </span>
               <span>{t.section3Title}</span>
             </h3>
-            <p className="text-xs text-gray-500 font-medium">
-              {t.section3Subtitle}
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -934,9 +920,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   {currency}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {t.wholesaleHelper}
-              </p>
             </div>
 
             {/* Field: Minimum they must buy */}
@@ -966,9 +949,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   {t.minBuyUnit}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {t.minBuyHelper}
-              </p>
             </div>
 
             {/* Field: Wholesale TAX % */}
@@ -1003,9 +983,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   %
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {t.taxHelper}
-              </p>
               {errors.taxPercent && (
                 <p className="text-xs text-red-600 font-medium mt-1" role="alert">
                   {errors.taxPercent}
@@ -1098,11 +1075,6 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
-                {validTax
-                  ? `Calculated automatically with ${taxPercent}% TAX.`
-                  : 'Enter TAX % to calculate wholesale price with tax.'}
-              </p>
             </div>
           </div>
 
