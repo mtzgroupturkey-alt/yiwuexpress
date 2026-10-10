@@ -32,21 +32,21 @@ export function useCustomerView(): CustomerViewResult {
       isGuest: true,
       isRetail: false,
       isWholesale: false,
-      canSeeWholesalePrice: false,
+      canSeeWholesalePrice: true,
       canRequestQuote: false,
       canAddToWholesaleCart: false,
       isLoading: true,
     }
   }
 
-  // 1. Unauthenticated users are always guests (retail view)
+  // 1. Unauthenticated users are guests (B2B storefront: see wholesale prices, not retail)
   if (!isAuthenticated || !user) {
     return {
       view: 'guest',
       isGuest: true,
       isRetail: false,
       isWholesale: false,
-      canSeeWholesalePrice: false,
+      canSeeWholesalePrice: true,
       canRequestQuote: false,
       canAddToWholesaleCart: false,
       isLoading: false,
