@@ -347,8 +347,9 @@ export default function ProductCard({
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
           {/* Category, Item # & Rating on the right */}
-          <div className="flex items-center justify-between text-[11px] mb-1.5 gap-1.5">
-            <div className="flex items-center gap-1.5 flex-wrap truncate min-w-0">
+          {/* Category & Item # */}
+          {(product.category || displayItemNumber) && (
+            <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
               {product.category && (
                 <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
                   {product.category}
@@ -360,18 +361,7 @@ export default function ProductCard({
                 </span>
               )}
             </div>
-
-            {/* Rating & Reviews on the Right */}
-            <div className="flex items-center gap-1 shrink-0">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                {(product.rating || 5).toFixed(1)}
-              </span>
-              <span className="text-[10px] text-gray-400 font-mono">
-                ({product.reviewCount || 12})
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* Product Name: First Swedish name, next line English name */}
           {(() => {
@@ -452,6 +442,30 @@ export default function ProductCard({
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
+          <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-gray-100 dark:border-white/10">
+            <span
+              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 ${
+                isStockAvailable
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
+                  : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
+              }`}
+            >
+              {stockStatusLabel}
+            </span>
+
+            {/* Rating on right side after prices */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                {(product.rating || 5).toFixed(1)}
+              </span>
+              <span className="text-[10px] text-gray-400 font-mono">
+                ({product.reviewCount || 12})
+              </span>
             </div>
           </div>
 
