@@ -9,7 +9,7 @@ import { ShoppingCart, Eye, FileText, Check, Star } from 'lucide-react'
 import { WishlistButton } from './WishlistButton'
 import { useTranslations, useLocale } from 'next-intl'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
-import { useCurrency } from '@/hooks/useCurrency'
+import { useCurrency, PriceFormatted } from '@/hooks/useCurrency'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useSessionMode } from '@/contexts/SessionModeContext'
@@ -403,11 +403,11 @@ export default function ProductCard({
                     </span>
                   )}
                   <span className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${isFlashSaleActive ? 'text-[#DC2626]' : 'text-gray-950 dark:text-white'}`}>
-                    {formatPrice(displayPrice || 0)}
+                    <PriceFormatted amount={displayPrice || 0} />
                   </span>
                   {hasDiscount && (product.compareAtPrice || product.price) && (
                     <span className="text-xs text-gray-400 line-through font-mono">
-                      {formatPrice(product.compareAtPrice || product.price)}
+                      <PriceFormatted amount={product.compareAtPrice || product.price || 0} />
                     </span>
                   )}
                 </div>
@@ -419,7 +419,7 @@ export default function ProductCard({
                         {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
                       </span>
                       <span className="text-base sm:text-lg font-black text-gray-950 dark:text-white tracking-tight font-sans">
-                        {formatPrice(displayPrice || 0)}
+                        <PriceFormatted amount={displayPrice || 0} />
                       </span>
                     </div>
 
@@ -432,7 +432,7 @@ export default function ProductCard({
                             {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
                           </span>
                           <span className="text-base sm:text-lg font-black text-purple-900 dark:text-purple-300 tracking-tight font-sans">
-                            {formatPrice(effectiveDisplayPriceWithTax)}
+                            <PriceFormatted amount={effectiveDisplayPriceWithTax} />
                           </span>
                         </div>
                       </>
