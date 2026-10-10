@@ -185,6 +185,23 @@ export async function PUT(
       productData.rawIkeaPayload = initialRaw
     }
 
+    // Handle nullable / empty string item identifiers properly
+    if ('dromkokItemNo' in productData) {
+      productData.dromkokItemNo = typeof productData.dromkokItemNo === 'string' && productData.dromkokItemNo.trim() !== ''
+        ? productData.dromkokItemNo.trim()
+        : null
+    }
+    if ('ikeaItemNo' in productData) {
+      productData.ikeaItemNo = typeof productData.ikeaItemNo === 'string' && productData.ikeaItemNo.trim() !== ''
+        ? productData.ikeaItemNo.trim()
+        : null
+    }
+    if ('ikeaItemNumber' in productData) {
+      productData.ikeaItemNumber = typeof productData.ikeaItemNumber === 'string' && productData.ikeaItemNumber.trim() !== ''
+        ? productData.ikeaItemNumber.trim()
+        : null
+    }
+
     // Normalize the incoming translations payload into an array of
     // { locale, name, description, metaTitle, metaDescription } rows (en/ru/zh).
     const incomingTranslations: Array<{

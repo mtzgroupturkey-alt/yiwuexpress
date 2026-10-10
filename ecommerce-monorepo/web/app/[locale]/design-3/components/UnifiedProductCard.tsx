@@ -217,17 +217,6 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
       <div>
         <div className="flex items-start justify-between gap-1 mb-2">
           <div className="flex flex-wrap gap-1 items-center">
-            {/* Stock Status Badge */}
-            <span
-              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase ${
-                isStockAvailable
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
-                  : 'bg-amber-100 text-amber-800 border border-amber-200/80'
-              }`}
-            >
-              {stockStatusLabel}
-            </span>
-
             {isRetailUserLoggedIn && product.discountBadge && (
               <motion.span 
                 animate={{ scale: [1, 1.04, 1] }}
@@ -436,8 +425,10 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           </div>
 
           {isWholesaleCustomer ? (
-            <div className="text-[10px] font-bold text-blue-700 font-mono mt-1">
-              {tPdp('wholesaleMoq', { moq })}
+            <div className="mt-1">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-blue-50 text-[#00407a] border border-blue-200/80 text-[10px] font-bold">
+                {tPdp('wholesaleMoq', { moq })}
+              </span>
             </div>
           ) : product.unitPrice ? (
             <div className="text-[10px] text-slate-500 font-medium truncate mt-1">

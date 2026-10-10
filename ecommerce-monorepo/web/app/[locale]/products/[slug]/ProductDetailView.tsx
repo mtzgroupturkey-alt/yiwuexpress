@@ -165,7 +165,6 @@ export default function ProductDetailView({
   const { settings, storeMode: systemStoreMode } = useSettings()
   const { storeMode: ctxStoreMode, storeMode, isWholesale, isRetail, isBoth } = useStoreMode()
   const customerView = useCustomerView()
-  const isWholesaleCustomer = customerView.isWholesale
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)
@@ -355,22 +354,18 @@ export default function ProductDetailView({
   const currentStock = selectedVariant?.stock ?? product.stock
   const currentSku = selectedVariant?.sku ?? product.sku
 
+  const isWholesaleCustomer = isWholesaleActive || !isUserLoggedIn || !customerView.isRetail
+  const isRetailUserLoggedIn = isUserLoggedIn && customerView.isRetail
+
   const effectiveWholesalePrice =
     (selectedVariant as any)?.wholesalePrice ?? product.wholesalePrice ?? currentPrice
 
-  const hasWholesalePrice = Boolean(product.wholesalePrice && product.wholesalePrice > 0)
-  const isWholesalePricing = isWholesaleActive && hasWholesalePrice
+  const displayPrice = isRetailUserLoggedIn ? currentPrice : effectiveWholesalePrice
+  const priceType: 'retail' | 'wholesale' | 'both' = isRetailUserLoggedIn
+    ? 'retail'
+    : 'wholesale'
 
-  const displayPrice = isWholesalePricing ? effectiveWholesalePrice : currentPrice
-  const priceType: 'retail' | 'wholesale' | 'both' = isWholesalePricing
-    ? 'wholesale'
-    : isBoth
-    ? 'both'
-    : 'retail'
-
-  const showOriginalPrice = isWholesalePricing
-    ? null
-    : currentCompareAtPrice && currentCompareAtPrice > displayPrice
+  const showOriginalPrice = isRetailUserLoggedIn && currentCompareAtPrice && currentCompareAtPrice > displayPrice
     ? currentCompareAtPrice
     : null
 
@@ -383,20 +378,18 @@ export default function ProductDetailView({
     if (rawTax !== undefined && rawTax !== null && !isNaN(Number(rawTax)) && Number(rawTax) > 0) {
       return Number(rawTax)
     }
-    return 0
+    return 20 // Standard 20% VAT fallback
   }, [product])
 
   const effectiveDisplayPriceWithTax = useMemo(() => {
-    if (priceType === 'wholesale') {
-      if (product.wholesalePriceWithTax && product.wholesalePriceWithTax > 0) {
-        return product.wholesalePriceWithTax
-      }
-      if (effectiveTaxRate > 0 && displayPrice > 0) {
-        return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100
-      }
+    if (product.wholesalePriceWithTax && product.wholesalePriceWithTax > 0) {
+      return product.wholesalePriceWithTax
+    }
+    if (displayPrice > 0) {
+      return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100
     }
     return null
-  }, [priceType, product.wholesalePriceWithTax, effectiveTaxRate, displayPrice])
+  }, [product.wholesalePriceWithTax, effectiveTaxRate, displayPrice])
   const currentImages = useMemo(() => {
     const list: string[] = []
     // If selected variant has specific photos, show them first
@@ -2016,29 +2009,27 @@ export default function ProductDetailView({
                 <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-3.5">
                   {/* 1. Category, Item # and High Demand / Status Badges */}
                   <div className="flex items-center justify-between gap-2.5 flex-wrap pb-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-sm uppercase tracking-wider shadow-2xs">
+                    <div className="flex items-center gap-2 flex-nowrap shrink-0">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EFF6FF] text-[#00407a] border border-blue-200/80 font-black text-sm uppercase tracking-wider shadow-2xs whitespace-nowrap shrink-0">
                         <Layers className="w-4 h-4 text-[#00407a]" />
                         <span>{localizedCategoryName || 'Cookware & Bakeware'}</span>
                       </span>
 
                       {((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo) && (() => {
-                        const itemCode = ((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)
+                        const rawItemCode = String((selectedVariant as any)?.dromkokItemNo ?? product.dromkokItemNo)
+                        const itemNumberOnly = rawItemCode.replace(/^DK-?/i, '').trim()
                         return (
                           <button
                             type="button"
                             onClick={() => {
-                              navigator.clipboard.writeText(itemCode)
+                              navigator.clipboard.writeText(rawItemCode)
                               setCopiedItemNo(true)
                               setTimeout(() => setCopiedItemNo(false), 2000)
                             }}
-                            title={copiedItemNo ? 'Copied to clipboard!' : 'Click to copy item number'}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 text-sm font-sans transition-colors cursor-pointer group"
+                            title={copiedItemNo ? 'Copied to clipboard!' : `Click to copy: ${rawItemCode}`}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 text-sm font-sans transition-colors cursor-pointer group whitespace-nowrap shrink-0"
                           >
-                            <span className="text-slate-500 font-bold">
-                              {locale === 'ru' ? 'Артикул:' : locale === 'zh' ? '商品编号:' : 'Item #:'}
-                            </span>
-                            <span className="font-extrabold text-slate-900 group-hover:text-[#00407a] tracking-tight">{itemCode}</span>
+                            <span className="font-extrabold text-slate-900 group-hover:text-[#00407a] tracking-tight font-mono">{itemNumberOnly}</span>
                             {copiedItemNo ? (
                               <Check className="w-3.5 h-3.5 text-emerald-600" />
                             ) : (
@@ -2207,7 +2198,7 @@ export default function ProductDetailView({
                     {/* Wholesale Price badge on top */}
                     {priceType === 'wholesale' && (
                       <div className="flex items-center gap-2">
-                        <span className="bg-blue-50 text-[#00407a] border border-blue-200/80 font-black text-xs px-2.5 py-0.5 rounded-md uppercase tracking-wider">
+                        <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-50 text-[#00407a] border border-blue-200/80 font-black text-xs uppercase tracking-wider shadow-2xs">
                           {t('wholesalePrice')}
                         </span>
                       </div>
@@ -2216,23 +2207,23 @@ export default function ProductDetailView({
                     <div className="flex items-baseline justify-between gap-3 flex-wrap">
                       <div className="flex items-baseline gap-2.5 sm:gap-3 flex-wrap">
                         {priceType === 'wholesale' && effectiveDisplayPriceWithTax ? (
-                          <div data-testid="pdp-tax-display" className="flex items-baseline gap-2.5 sm:gap-3 flex-wrap">
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide">
+                          <div data-testid="pdp-tax-display" className="flex items-baseline gap-2 sm:gap-2.5 flex-nowrap whitespace-nowrap">
+                            <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                              <span className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wide whitespace-nowrap">
                                 {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
                               </span>
-                              <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
+                              <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-sans whitespace-nowrap">
                                 {formatPrice(displayPrice)}
                               </span>
                             </div>
 
-                            <span className="text-slate-300 text-2xl font-light">|</span>
+                            <span className="text-slate-300 text-base sm:text-lg font-light shrink-0">|</span>
 
-                            <div className="flex items-baseline gap-1.5">
-                              <span className="text-xs sm:text-sm font-bold text-purple-700 uppercase tracking-wide">
+                            <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+                              <span className="text-xs sm:text-sm font-bold text-purple-700 uppercase tracking-wide whitespace-nowrap">
                                 {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
                               </span>
-                              <span className="text-3xl sm:text-4xl font-black text-purple-900 tracking-tight font-sans">
+                              <span className="text-xl sm:text-2xl font-black text-purple-900 tracking-tight font-sans whitespace-nowrap">
                                 {formatPrice(effectiveDisplayPriceWithTax)}
                               </span>
                             </div>
@@ -2524,10 +2515,10 @@ export default function ProductDetailView({
 
                   {/* 6. Stock Status, Quantity Stepper & Real-time Subtotal */}
                   {(() => {
-                    const stepperMinQty = isWholesaleActive ? (product.minOrderQty || 1) : 1
-                    const stepperMaxQty = isWholesaleActive ? 999999 : (currentStock > 0 ? currentStock : 99)
+                    const stepperMinQty = isWholesaleCustomer ? (product.minOrderQty || 1) : 1
+                    const stepperMaxQty = isWholesaleCustomer ? 999999 : (currentStock > 0 ? currentStock : 99)
                     const subtotal = displayPrice * quantity
-                    const subtotalWithTax = isWholesaleActive && effectiveDisplayPriceWithTax ? effectiveDisplayPriceWithTax * quantity : null
+                    const subtotalWithTax = isWholesaleCustomer && effectiveDisplayPriceWithTax ? effectiveDisplayPriceWithTax * quantity : null
 
                     return (
                       <div className="rounded-2xl p-3.5 bg-slate-50/80 border border-slate-200/80 space-y-3">
@@ -2626,23 +2617,23 @@ export default function ProductDetailView({
 
                             {subtotalWithTax ? (
                               <div className="space-y-1">
-                                <div className="flex items-baseline justify-end gap-2 flex-wrap">
-                                  <div className="flex items-baseline gap-1">
-                                    <span className="text-[11px] font-bold text-slate-500 uppercase">
+                                <div className="flex items-baseline justify-end gap-1.5 sm:gap-2 flex-nowrap whitespace-nowrap">
+                                  <div className="flex items-baseline gap-1 whitespace-nowrap">
+                                    <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase whitespace-nowrap">
                                       {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税:' : 'Excl. TAX:'}
                                     </span>
-                                    <span className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+                                    <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight whitespace-nowrap">
                                       {formatPrice(subtotal)}
                                     </span>
                                   </div>
 
-                                  <span className="text-slate-300 text-base font-light">|</span>
+                                  <span className="text-slate-300 text-xs sm:text-sm font-light shrink-0">|</span>
 
-                                  <div className="flex items-baseline gap-1">
-                                    <span className="text-[11px] font-bold text-purple-700 uppercase">
+                                  <div className="flex items-baseline gap-1 whitespace-nowrap">
+                                    <span className="text-[10px] sm:text-xs font-bold text-purple-700 uppercase whitespace-nowrap">
                                       {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税:' : 'Incl. TAX:'}
                                     </span>
-                                    <span className="text-lg sm:text-2xl font-black text-purple-900 tracking-tight">
+                                    <span className="text-sm sm:text-base font-black text-purple-900 tracking-tight whitespace-nowrap">
                                       {formatPrice(subtotalWithTax)}
                                     </span>
                                   </div>

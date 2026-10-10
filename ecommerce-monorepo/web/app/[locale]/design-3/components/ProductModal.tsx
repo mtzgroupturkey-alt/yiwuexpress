@@ -22,6 +22,8 @@ import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 import { useAuthContext } from '@/components/providers/AuthProvider';
+import { useCustomerView } from '@/hooks/useCustomerView';
+import { useParams } from 'next/navigation';
 
 interface ProductModalProps {
   product: Product | null;
@@ -57,8 +59,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const { addToQuote } = useQuoteCart();
   const { addItem: addInquiryItem } = useWholesaleInquiry();
 
+  const params = useParams();
+  const locale = (params?.locale as string) || 'en';
+  const customerView = useCustomerView();
+  const isUserLoggedIn = mounted ? (isAuthenticated || !customerView.isGuest) : false;
+  const isRetailUserLoggedIn = isUserLoggedIn && customerView.isRetail;
+
   const currentStoreMode = ctxStoreMode || systemStoreMode || 'WHOLESALE';
-  const isWholesaleActive =
+  const isWholesaleActive = !isRetailUserLoggedIn ||
     currentStoreMode === 'WHOLESALE' ||
     (currentStoreMode === 'BOTH' && (sessionMode === 'wholesale' || isWholesaleSession));
 
@@ -66,7 +74,44 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const isInstantWholesale = rfqModel === 'INSTANT';
   const moq = product?.minOrderQty || (product as any)?.moq || settings?.wholesaleDefaultMoq || 1;
   const effectiveWholesalePrice = product?.wholesalePrice || product?.price || 0;
-  const displayPrice = isWholesaleActive ? effectiveWholesalePrice : (product?.price || 0);
+  const displayPrice = isRetailUserLoggedIn ? (product?.price || 0) : effectiveWholesalePrice;
+
+  const effectiveTaxRate = (() => {
+    const rawTax =
+      (product as any)?.taxRate ??
+      (product as any)?.taxPercent ??
+      (product as any)?.rawIkeaPayload?.taxRate ??
+      (product as any)?.rawIkeaPayload?.taxPercent;
+    if (rawTax !== undefined && rawTax !== null && !isNaN(Number(rawTax)) && Number(rawTax) > 0) {
+      return Number(rawTax);
+    }
+    return 20; // Standard 20% VAT fallback
+  })();
+
+  const effectiveDisplayPriceWithTax = (() => {
+    if ((product as any)?.wholesalePriceWithTax && (product as any)?.wholesalePriceWithTax > 0) {
+      return (product as any)?.wholesalePriceWithTax;
+    }
+    if (displayPrice > 0) {
+      return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100;
+    }
+    return null;
+  })();
+
+  // Item # formatted as clean number only (e.g. "950.962.59")
+  const rawItemNumber =
+    product?.dromkokItemNo ||
+    (product as any)?.ikeaItemNo ||
+    (product as any)?.itemNo ||
+    (product as any)?.articleNumber ||
+    product?.sku ||
+    '';
+  const displayItemNumber = rawItemNumber
+    ? rawItemNumber
+        .replace(/^DK-/i, '')
+        .replace(/^[a-zA-Z#:\s-]+/, '')
+        .trim()
+    : null;
 
   const [quantity, setQuantity] = useState(isWholesaleActive ? moq : 1);
   const [added, setAdded] = useState(false);
@@ -144,7 +189,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           {/* Left: Product Image */}
           <div className="p-6 bg-[#F8FAFC] flex flex-col justify-between items-center border-b md:border-b-0 md:border-r border-slate-200">
             <div className="w-full flex justify-between items-center">
-              {product.discountBadge && (
+              {isRetailUserLoggedIn && product.discountBadge && (
                 <span className="bg-[#DC2626] text-white text-xs font-black px-2 py-0.5 rounded-sm">
                   {product.discountBadge}
                 </span>
@@ -187,14 +232,24 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           {/* Right: Details & Purchase */}
           <div className="p-6 flex flex-col justify-between">
             <div>
-              {/* Brand & Category */}
-              <div className="text-xs text-slate-500 font-medium mb-1">
+              {/* Category, Item # & Brand */}
+              <div className="text-xs text-slate-500 font-medium mb-1 flex items-center gap-1.5 flex-wrap">
+                {product.category && (
+                  <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
+                    {product.category}
+                  </span>
+                )}
+                {displayItemNumber && (
+                  <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded font-mono tracking-tight shrink-0">
+                    {displayItemNumber}
+                  </span>
+                )}
                 {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
                   <strong className="text-slate-800 font-bold mr-1">
                     {tOriginAndBrand(product.brand)}
                   </strong>
                 )}
-                {product.originOrType && (
+                {product.originOrType && !product.category && (
                   <span>
                     {product.brand && product.brand.toLowerCase() !== 'official sourcing' ? '• ' : ''}
                     {tOriginAndBrand(product.originOrType)}
@@ -227,26 +282,52 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
               {/* Price */}
               <div className="p-3 bg-[#EFF6FF]/60 rounded-xl border border-blue-100 mb-4">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-slate-900">
-                    {formatPrice(displayPrice)}
-                  </span>
-                  {isWholesaleActive && (
-                    <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
-                      {tPdp('wholesaleMoq', { moq })}
+                {isRetailUserLoggedIn ? (
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-2xl font-black text-slate-900">
+                      {formatPrice(displayPrice)}
                     </span>
-                  )}
-                  {!isWholesaleActive && product.oldPrice && (
-                    <span className="text-sm text-slate-400 line-through font-medium">
-                      {formatPrice(product.oldPrice)}
-                    </span>
-                  )}
-                  {isWholesaleActive && product.wholesalePrice && product.wholesalePrice < product.price && (
-                    <span className="text-sm text-slate-400 line-through font-medium">
-                      {formatPrice(product.price)}
-                    </span>
-                  )}
-                </div>
+                    {product.oldPrice && product.oldPrice > displayPrice && (
+                      <span className="text-sm text-slate-400 line-through font-medium">
+                        {formatPrice(product.oldPrice)}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">
+                          {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
+                        </span>
+                        <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-sans">
+                          {formatPrice(displayPrice)}
+                        </span>
+                      </div>
+
+                      {effectiveDisplayPriceWithTax && (
+                        <>
+                          <span className="text-slate-300 text-sm font-light">|</span>
+
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xs font-bold text-purple-700 uppercase tracking-tight">
+                              {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
+                            </span>
+                            <span className="text-xl sm:text-2xl font-black text-purple-900 tracking-tight font-sans">
+                              {formatPrice(effectiveDisplayPriceWithTax)}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {isWholesaleActive && (
+                  <div className="text-xs font-bold text-blue-700 font-mono mt-1">
+                    {tPdp('wholesaleMoq', { moq })}
+                  </div>
+                )}
                 {product.unitPrice && (
                   <div className="text-xs text-slate-600 mt-0.5 font-medium">
                     {product.unitPrice}

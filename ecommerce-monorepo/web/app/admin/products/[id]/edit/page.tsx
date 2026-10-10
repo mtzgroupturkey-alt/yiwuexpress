@@ -93,6 +93,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const [swedenName, setSwedenName] = useState('')
   const [englishName, setEnglishName] = useState('')
   const [articleNo, setArticleNo] = useState('')
+  const [prvItemNo, setPrvItemNo] = useState('')
   const [productDescription, setProductDescription] = useState('')
 
   const {
@@ -233,6 +234,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
         const rawArt = rawPayload.articleNumber || rawPayload.itemNumber || product.ikeaItemNo || product.ikeaItemNumber || ''
         setArticleNo(rawArt)
+        setPrvItemNo(rawPayload.prvItemNo || rawPayload.previousItemNo || '')
 
         const initialDesc = product.description || rawPayload.productDetails?.description || rawPayload.overview?.summary || ''
         setProductDescription(initialDesc)
@@ -413,6 +415,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         swedenName: finalSwedenName,
         englishName: finalEnglishName,
         articleNumber: articleNo.trim(),
+        prvItemNo: prvItemNo.trim() ? prvItemNo.trim() : null,
         productDetails: {
           ...(currentRaw.productDetails || {}),
           swedenName: finalSwedenName,
@@ -427,10 +430,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
       productData.rawIkeaPayload = updatedRaw
       productData.description = productDescription.trim()
-      if (articleNo.trim()) {
-        productData.ikeaItemNo = articleNo.trim()
-        productData.ikeaItemNumber = articleNo.trim()
-      }
+      productData.ikeaItemNo = articleNo.trim() ? articleNo.trim() : null
+      productData.ikeaItemNumber = articleNo.trim() ? articleNo.trim() : null
       if (translations && translations.en) {
         translations.en.description = productDescription.trim()
       }
@@ -442,6 +443,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             swedenName: finalSwedenName || tabContentPayload.rawIkeaPayload.swedenName,
             englishName: finalEnglishName || tabContentPayload.rawIkeaPayload.englishName,
             articleNumber: articleNo.trim() || tabContentPayload.rawIkeaPayload.articleNumber,
+            prvItemNo: prvItemNo.trim() ? prvItemNo.trim() : null,
             productDetails: {
               ...(tabContentPayload.rawIkeaPayload.productDetails || {}),
               swedenName: finalSwedenName || tabContentPayload.rawIkeaPayload.productDetails?.swedenName,
@@ -457,8 +459,8 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           productData.material = tabContentPayload.material ? tabContentPayload.material.trim() : null
         }
         if (tabContentPayload.ikeaItemNo) {
-          productData.ikeaItemNo = articleNo.trim() || tabContentPayload.ikeaItemNo
-          productData.ikeaItemNumber = articleNo.trim() || tabContentPayload.ikeaItemNo
+          productData.ikeaItemNo = articleNo.trim() ? articleNo.trim() : null
+          productData.ikeaItemNumber = articleNo.trim() ? articleNo.trim() : null
         }
       }
 
@@ -605,21 +607,40 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
 
-              {/* Dromkok Item Identifier */}
-              <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/60 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="dromkokItemNo" className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
-                    Dromkok Item # (Public)
-                  </Label>
-                  <span className="text-[10px] text-slate-500 font-mono">e.g. DK-100.010.87</span>
+              {/* Dromkok Item & Prv Item Identifiers (Side by Side) */}
+              <div className="bg-slate-50/60 p-4 rounded-2xl border border-slate-200/60 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Public Dromkok Item # */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="dromkokItemNo" className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider">
+                        Dromkok Item # (Public)
+                      </Label>
+                      <span className="text-[10px] text-slate-500 font-mono">e.g. DK-100.010.87</span>
+                    </div>
+                    <Input
+                      id="dromkokItemNo"
+                      {...register('dromkokItemNo')}
+                      placeholder="DK-XXX.XXX.XX"
+                      className="rounded-xl bg-white font-mono text-sm border-slate-200 focus:border-blue-500"
+                    />
+                    <p className="text-[11px] text-slate-500">Public customer item number visible on product pages and invoices.</p>
+                  </div>
+
+                  {/* Prv. Item # */}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="prvItemNo" className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
+                      prv. item #
+                    </Label>
+                    <Input
+                      id="prvItemNo"
+                      value={prvItemNo}
+                      onChange={(e) => setPrvItemNo(e.target.value)}
+                      placeholder="XXX.XXX.XX"
+                      className="rounded-xl bg-white font-mono text-sm border-amber-200/80 focus:border-amber-500"
+                    />
+                  </div>
                 </div>
-                <Input
-                  id="dromkokItemNo"
-                  {...register('dromkokItemNo')}
-                  placeholder="DK-XXX.XXX.XX"
-                  className="rounded-xl bg-white font-mono text-sm border-slate-200 focus:border-blue-500"
-                />
-                <p className="text-[11px] text-slate-500">Public customer item number visible on product pages and invoices.</p>
               </div>
 
               <div className="space-y-2">
