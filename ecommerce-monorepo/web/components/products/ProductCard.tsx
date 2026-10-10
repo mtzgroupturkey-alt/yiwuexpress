@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { ProductImage } from '@/components/ui/ProductImage'
 import { ShoppingCart, Eye, FileText, Check, Star } from 'lucide-react'
 import { WishlistButton } from './WishlistButton'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useStoreMode } from '@/contexts/StoreModeContext'
@@ -44,6 +44,10 @@ interface Product {
   reviewCount?: number
   isNew?: boolean
   isFeatured?: boolean
+  sku?: string
+  dromkokItemNo?: string
+  ikeaItemNo?: string
+  brand?: string
 }
 
 interface ProductCardProps {
@@ -56,6 +60,7 @@ export default function ProductCard({
   onAddToCart
 }: ProductCardProps) {
   const t = useTranslations('Product')
+  const locale = useLocale()
   const { tBadge } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const router = useRouter()
@@ -151,14 +156,62 @@ export default function ProductCard({
     (flashEnd === 0 || now < flashEnd) &&
     (product.flashSaleStock == null || product.flashSaleStock > 0)
 
+  const isWholesaleCustomer = isWholesaleActive || !isUserLoggedIn || !isRetailActive
+  const isRetailUserLoggedIn = isUserLoggedIn && isRetailActive
+
+  const effectiveWholesalePrice = product.wholesalePrice || product.price
   const candidatePrice = isFlashSaleActive
     ? product.flashSalePrice!
-    : hasWholesale
-    ? product.wholesalePrice!
-    : product.price
+    : isRetailUserLoggedIn
+    ? product.price
+    : effectiveWholesalePrice
   const displayPrice = candidatePrice
   const priceLabel = hasWholesale && !isFlashSaleActive ? t('from') : ''
-  const hasDiscount = product.compareAtPrice != null && product.compareAtPrice > displayPrice!
+
+  const effectiveTaxRate = (() => {
+    const rawTax =
+      (product as any).taxRate ??
+      (product as any).taxPercent ??
+      (product as any).rawIkeaPayload?.taxRate ??
+      (product as any).rawIkeaPayload?.taxPercent
+    if (rawTax !== undefined && rawTax !== null && !isNaN(Number(rawTax)) && Number(rawTax) > 0) {
+      return Number(rawTax)
+    }
+    return 20 // Standard 20% VAT fallback
+  })()
+
+  const effectiveDisplayPriceWithTax = (() => {
+    if ((product as any).wholesalePriceWithTax && (product as any).wholesalePriceWithTax > 0) {
+      return (product as any).wholesalePriceWithTax
+    }
+    if (displayPrice > 0) {
+      return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100
+    }
+    return null
+  })()
+
+  // Item # formatted as clean number only (e.g. "950.962.59")
+  const rawItemNumber =
+    product.dromkokItemNo ||
+    (product as any).ikeaItemNo ||
+    (product as any).itemNo ||
+    (product as any).articleNumber ||
+    product.sku ||
+    ''
+  const displayItemNumber = rawItemNumber
+    ? rawItemNumber
+        .replace(/^DK-/i, '')
+        .replace(/^[a-zA-Z#:\s-]+/, '')
+        .trim()
+    : null
+
+  const isStockAvailable = product.stock !== undefined ? product.stock > 0 : true
+  const stockStatusLabel = isStockAvailable
+    ? (locale === 'ru' ? 'В наличии' : locale === 'zh' ? '有现货' : 'In Stock')
+    : (locale === 'ru' ? 'Под заказ' : locale === 'zh' ? '按需预定' : 'By Order')
+
+  // Only show discount/crossed out if retail user is logged in
+  const hasDiscount = isRetailUserLoggedIn && product.compareAtPrice != null && product.compareAtPrice > displayPrice!
   const discountPct = hasDiscount ? Math.round(((product.compareAtPrice! - displayPrice!) / product.compareAtPrice!) * 100) : 0
 
   const handleAddToCart = async (e: React.MouseEvent) => {
@@ -206,7 +259,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="group relative bg-white dark:bg-[#0d1e32] rounded-2xl overflow-hidden border border-gray-200/90 dark:border-white/10 hover:border-[#0055A4] dark:hover:border-[#0055A4] shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:scale-[1.015] transition-all duration-300 cursor-pointer flex flex-col h-full"
+      className="@container group relative bg-white dark:bg-[#0d1e32] rounded-2xl overflow-hidden border border-gray-200/90 dark:border-white/10 hover:border-[#0055A4] dark:hover:border-[#0055A4] shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:scale-[1.015] transition-all duration-300 cursor-pointer flex flex-col h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -227,8 +280,17 @@ export default function ProductCard({
           }`}
         />
 
-        {/* Stacked Badges: Discount (red) > New (green) > Wholesale MOQ (blue) */}
+        {/* Stacked Badges: Stock Status > Discount (red) > New (green) > Wholesale MOQ (blue) */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 items-start">
+          <span
+            className={`text-[9px] font-black px-2 py-0.5 rounded-md shadow-xs tracking-wider uppercase ${
+              isStockAvailable
+                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
+                : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
+            }`}
+          >
+            {stockStatusLabel}
+          </span>
           {hasDiscount && (
             <span className="bg-[#DC2626] text-white text-[11px] font-black px-2.5 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
               -{discountPct}%
@@ -284,23 +346,31 @@ export default function ProductCard({
       {/* Product Info Body */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
-          {/* Rating & Reviews */}
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <div className="flex items-center text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i < Math.floor(product.rating || 5)
-                      ? 'fill-amber-400 text-amber-400'
-                      : 'text-gray-200 dark:text-gray-700'
-                  }`}
-                />
-              ))}
+          {/* Category, Item # & Rating on the right */}
+          <div className="flex items-center justify-between text-[11px] mb-1.5 gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap truncate min-w-0">
+              {product.category && (
+                <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
+                  {product.category}
+                </span>
+              )}
+              {displayItemNumber && (
+                <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded font-mono tracking-tight shrink-0">
+                  {displayItemNumber}
+                </span>
+              )}
             </div>
-            <span className="text-[11px] font-bold text-gray-400 font-mono">
-              ({product.reviewCount || 12})
-            </span>
+
+            {/* Rating & Reviews on the Right */}
+            <div className="flex items-center gap-1 shrink-0">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                {(product.rating || 5).toFixed(1)}
+              </span>
+              <span className="text-[10px] text-gray-400 font-mono">
+                ({product.reviewCount || 12})
+              </span>
+            </div>
           </div>
 
           {/* Product Name: First Swedish name, next line English name */}
@@ -334,42 +404,52 @@ export default function ProductCard({
         </div>
 
         <div>
-          {/* Availability Status Tag (emall.by style) */}
-          <div className="flex items-center gap-1.5 mb-2.5">
-            {product.stock !== undefined && product.stock > 0 ? (
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {t('inStock')}
-              </span>
-            ) : (
-              <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
-                {t('outOfStock')}
-              </span>
-            )}
-          </div>
-
-          {/* Price Block: Bold typography + Strikethrough comparison */}
+          {/* Price Block: Stacked on narrow cards (@container < 220px), inline with pipe on wide cards */}
           <div className="pt-2.5 border-t border-gray-100 dark:border-white/10 flex items-baseline justify-between gap-2">
             <div>
-              <div className="flex items-baseline gap-1.5 flex-wrap">
-                {priceLabel && (
-                  <span className="text-xs text-gray-400 font-medium">
-                    {priceLabel}
+              {isRetailUserLoggedIn ? (
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  {priceLabel && (
+                    <span className="text-xs text-gray-400 font-medium">
+                      {priceLabel}
+                    </span>
+                  )}
+                  <span className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${isFlashSaleActive ? 'text-[#DC2626]' : 'text-gray-950 dark:text-white'}`}>
+                    {formatPrice(displayPrice || 0)}
                   </span>
-                )}
-                <span className={`text-xl sm:text-2xl font-black font-mono tracking-tight ${isFlashSaleActive ? 'text-[#DC2626]' : 'text-gray-950 dark:text-white'}`}>
-                  {formatPrice(displayPrice || 0)}
-                </span>
-                {(isFlashSaleActive || hasWholesale || hasDiscount) && (product.compareAtPrice || product.price) && (
-                  <span className="text-xs text-gray-400 line-through font-mono">
-                    {formatPrice(product.compareAtPrice || product.price)}
-                  </span>
-                )}
-              </div>
+                  {hasDiscount && (product.compareAtPrice || product.price) && (
+                    <span className="text-xs text-gray-400 line-through font-mono">
+                      {formatPrice(product.compareAtPrice || product.price)}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-0.5">
+                  <div className="flex flex-col @[220px]:flex-row @[220px]:items-baseline gap-0.5 @[220px]:gap-2">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-500 uppercase tracking-tight">
+                        {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
+                      </span>
+                      <span className="text-base sm:text-lg font-black text-gray-950 dark:text-white tracking-tight font-sans">
+                        {formatPrice(displayPrice || 0)}
+                      </span>
+                    </div>
 
-              {hasWholesale && (
-                <div className="text-[10px] text-[#0055A4] font-bold mt-0.5 font-mono">
-                  {t('wholesalePrice')}: {formatPrice(product.wholesalePrice || 0)}
+                    {effectiveDisplayPriceWithTax && (
+                      <>
+                        <span className="hidden @[220px]:inline text-gray-300 text-xs sm:text-sm font-light">|</span>
+
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-[10px] sm:text-[11px] font-bold text-purple-700 dark:text-purple-400 uppercase tracking-tight">
+                            {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
+                          </span>
+                          <span className="text-base sm:text-lg font-black text-purple-900 dark:text-purple-300 tracking-tight font-sans">
+                            {formatPrice(effectiveDisplayPriceWithTax)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
