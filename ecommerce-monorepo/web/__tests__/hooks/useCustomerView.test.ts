@@ -56,7 +56,7 @@ describe('useCustomerView hook', () => {
     }
   })
 
-  it('Edge Case 1: Guest + storeMode=WHOLESALE -> guest view (cannot see wholesale price)', () => {
+  it('Edge Case 1: Guest + storeMode=WHOLESALE -> guest view (sees wholesale price, not retail)', () => {
     mockAuth.isAuthenticated = false
     mockAuth.user = null
     mockStoreMode.storeMode = 'WHOLESALE'
@@ -64,7 +64,7 @@ describe('useCustomerView hook', () => {
     const { result } = renderHook(() => useCustomerView())
     expect(result.current.view).toBe('guest')
     expect(result.current.isGuest).toBe(true)
-    expect(result.current.canSeeWholesalePrice).toBe(false)
+    expect(result.current.canSeeWholesalePrice).toBe(true)
     expect(result.current.canRequestQuote).toBe(false)
   })
 
