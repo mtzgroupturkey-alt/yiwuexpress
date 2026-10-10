@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useCurrency, type CurrencyItem } from '@/hooks/useCurrency'
 import { ChevronDown, Check, Coins, DollarSign } from 'lucide-react'
+import { CurrencySymbol } from '@/components/ui/CurrencySymbol'
 
 interface CurrencySwitcherProps {
   variant?: 'header-dropdown' | 'footer-dropdown' | 'drawer-radio' | 'simple'
@@ -99,7 +100,9 @@ export function CurrencySwitcher({
                     )}
                   </div>
                   <span className="font-bold">{c.code}</span>
-                  <span className="text-gray-400 dark:text-slate-400">({c.symbol})</span>
+                  <span className="text-gray-400 dark:text-slate-400 flex items-center gap-0.5">
+                    (<CurrencySymbol code={c.code} symbol={c.symbol} className="w-3.5 h-3.5 inline-block" />)
+                  </span>
                 </div>
                 <span className="text-[11px] text-gray-400 dark:text-slate-500 truncate max-w-[110px]">
                   {c.name}
@@ -124,7 +127,9 @@ export function CurrencySwitcher({
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white bg-slate-900/60 border border-slate-700/80 hover:border-slate-600 transition-colors cursor-pointer"
         >
           <DollarSign className="w-3.5 h-3.5 text-slate-400" />
-          <span className="font-bold">{currentCurrency?.symbol || '$'}</span>
+          <span className="font-bold flex items-center">
+            <CurrencySymbol code={displayCode} symbol={currentCurrency?.symbol || '$'} className="w-3.5 h-3.5 inline-block" />
+          </span>
           <span className="uppercase font-bold tracking-wider">{displayCode}</span>
           <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
@@ -148,7 +153,9 @@ export function CurrencySwitcher({
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-5 text-center font-bold text-slate-400">{c.symbol}</span>
+                    <span className="w-5 flex items-center justify-center font-bold text-slate-400">
+                      <CurrencySymbol code={c.code} symbol={c.symbol} className="w-3.5 h-3.5 inline-block" />
+                    </span>
                     <span>{c.code}</span>
                     <span className="text-[10px] text-slate-500 truncate max-w-[90px]">({c.name})</span>
                   </span>
@@ -174,7 +181,7 @@ export function CurrencySwitcher({
         className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200/90 hover:border-slate-300 dark:border-slate-700 transition-colors font-semibold text-slate-700 dark:text-slate-200 text-xs shadow-2xs group"
       >
         <span className="w-4 h-4 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
-          {currentCurrency?.symbol || '$'}
+          <CurrencySymbol code={displayCode} symbol={currentCurrency?.symbol || '$'} className="w-2.5 h-2.5 inline-block" />
         </span>
         <span className="font-extrabold text-[#00407a] dark:text-blue-300 tracking-tight">
           {displayCode}
@@ -206,7 +213,9 @@ export function CurrencySwitcher({
                 }`}
               >
                 <span className="flex items-center gap-2.5">
-                  <span className="w-5 text-center font-bold text-slate-500">{c.symbol}</span>
+                  <span className="w-5 flex items-center justify-center font-bold text-slate-500">
+                    <CurrencySymbol code={c.code} symbol={c.symbol} className="w-3.5 h-3.5 inline-block" />
+                  </span>
                   <span className="font-bold">{c.code}</span>
                   <span className="text-[11px] text-slate-400 truncate max-w-[100px]">({c.name})</span>
                 </span>
