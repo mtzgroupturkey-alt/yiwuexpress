@@ -893,17 +893,12 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Field: Their special price (without TAX) */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label
-                  htmlFor={`${baseId}-wholesalePrice`}
-                  className="block text-xs font-bold text-gray-700 uppercase tracking-wider"
-                >
-                  {t.wholesalePrice}
-                </label>
-                <span className="text-[11px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {t.priceWithoutTaxLabel}
-                </span>
-              </div>
+              <label
+                htmlFor={`${baseId}-wholesalePrice`}
+                className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5"
+              >
+                {t.wholesalePrice}
+              </label>
               <div className="relative">
                 <input
                   id={`${baseId}-wholesalePrice`}
