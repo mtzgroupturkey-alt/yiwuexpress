@@ -189,10 +189,12 @@ export class CurrencyService {
       return formatted
     }
 
+    const symbol = currency.code === 'BYN' ? 'BYN' : currency.symbol
+
     if (currency.symbolPosition === 'before') {
-      return `${currency.symbol}${formatted}`
+      return `${symbol} ${formatted}`.trim()
     } else {
-      return `${formatted}${currency.symbol}`
+      return `${formatted} ${symbol}`.trim()
     }
   }
 
@@ -201,7 +203,7 @@ export class CurrencyService {
    */
   formatAmountSync(
     amount: number,
-    currency: { symbol: string; symbolPosition: string; decimalPlaces: number },
+    currency: { code?: string; symbol: string; symbolPosition: string; decimalPlaces: number },
     options?: { showSymbol?: boolean; decimalPlaces?: number }
   ): string {
     const decimals = options?.decimalPlaces ?? currency.decimalPlaces
@@ -211,10 +213,12 @@ export class CurrencyService {
       return formatted
     }
 
+    const symbol = currency.code === 'BYN' ? 'BYN' : currency.symbol
+
     if (currency.symbolPosition === 'before') {
-      return `${currency.symbol}${formatted}`
+      return `${symbol} ${formatted}`.trim()
     } else {
-      return `${formatted}${currency.symbol}`
+      return `${formatted} ${symbol}`.trim()
     }
   }
 }
