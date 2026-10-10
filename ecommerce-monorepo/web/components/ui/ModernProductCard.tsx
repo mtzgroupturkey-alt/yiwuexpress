@@ -385,16 +385,6 @@ export function ModernProductCard({
 
         {/* Badges Stack (Top Left) */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5 items-start">
-          <span
-            className={cn(
-              'text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs',
-              isStockAvailable
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
-                : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
-            )}
-          >
-            {stockStatusLabel}
-          </span>
           {tagBadge && (
             <div className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold shadow-md backdrop-blur-sm',
