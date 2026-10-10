@@ -12,6 +12,7 @@ import {
   CheckSquare, Square, Trash2, X, Check
 } from 'lucide-react'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { useAdminCurrency } from '../contexts/AdminCurrencyContext'
 
 interface Order {
   id: string
@@ -97,6 +98,7 @@ function PaymentStatusBadge({ status, label }: { status: string; label?: string 
 export default function AdminOrdersPage() {
   const router = useRouter()
   const { locale, dict, t } = useAdminLocale()
+  const { formatPrice } = useAdminCurrency()
   const [orders, setOrders] = useState<Order[]>([])
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
@@ -318,7 +320,7 @@ export default function AdminOrdersPage() {
           </div>
           <div>
             <p className="text-xs text-gray-500 font-medium">{dict.dashboard.totalRevenue}</p>
-            <p className="text-lg font-black text-gray-900">${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-lg font-black text-gray-900">{formatPrice(totalRevenue)}</p>
           </div>
         </div>
 
@@ -525,7 +527,7 @@ export default function AdminOrdersPage() {
                       {/* Total */}
                       <td className="py-4 px-4 whitespace-nowrap">
                         <span className="font-bold text-gray-900 text-sm font-mono">
-                          ${Number(order.total).toFixed(2)}
+                          {formatPrice(order.total)}
                         </span>
                       </td>
 
@@ -577,7 +579,7 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <span className="text-gray-400 block text-[11px]">{dict.orders.totalAmount}</span>
-                    <span className="font-bold text-gray-900 text-sm">${Number(order.total).toFixed(2)}</span>
+                    <span className="font-bold text-gray-900 text-sm">{formatPrice(order.total)}</span>
                   </div>
                 </div>
 
