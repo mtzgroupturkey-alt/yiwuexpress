@@ -107,7 +107,7 @@
 /* --- LOADING TEXT --- */
 .preloader-text {
   margin-top: 28px;
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter), 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 11px;
   letter-spacing: 4px;
   text-transform: uppercase;

@@ -246,7 +246,7 @@ export function TwoRowNavbar() {
                 </div>
               )}
               <div className="flex flex-col">
-                <span className="text-xl md:text-2xl font-black text-[#0055A4] tracking-tight font-['Outfit',sans-serif] leading-tight group-hover:text-[#003d75] transition-colors">
+                <span className="text-xl md:text-2xl font-black text-[#0055A4] tracking-tight font-sans leading-tight group-hover:text-[#003d75] transition-colors">
                   {companyName}
                 </span>
                 {siteTagline ? (
@@ -531,7 +531,7 @@ export function TwoRowNavbar() {
                     {companyName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || 'GT'}
                   </div>
                 )}
-                <span className="text-base md:text-lg font-black text-[#0055A4] tracking-tight font-['Outfit',sans-serif] hidden sm:block">
+                <span className="text-base md:text-lg font-black text-[#0055A4] tracking-tight font-sans hidden sm:block">
                   {companyName}
                 </span>
               </LocaleLink>
@@ -699,7 +699,7 @@ export function TwoRowNavbar() {
             <div className="fixed inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
             <div className="relative w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col z-10 overflow-y-auto">
               <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                <span className="font-black text-[#0055A4] text-lg font-['Outfit',sans-serif]">
+                <span className="font-black text-[#0055A4] text-lg font-sans">
                   {companyName}
                 </span>
                 <button

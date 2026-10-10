@@ -76,7 +76,7 @@ export function MarketplaceTabbedShowcase() {
                 {locale === 'ru' ? 'Витрина маркетплейса' : locale === 'zh' ? '严选好物推荐' : 'Marketplace Showcase'}
               </span>
             </div>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#1a3a5c] tracking-tight font-['Outfit',sans-serif]">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#1a3a5c] tracking-tight font-sans">
               {locale === 'ru' ? 'Популярные предложения' : locale === 'zh' ? '精选工业装备与工具' : 'Curated Industrial Hardware'}
             </h2>
           </div>

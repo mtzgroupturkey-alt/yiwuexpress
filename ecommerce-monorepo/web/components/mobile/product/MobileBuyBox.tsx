@@ -84,7 +84,7 @@ export function MobileBuyBox({
         {/* Total Price Preview */}
         <div className="text-right">
           <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
-            Subtotal
+            {locale === 'zh' ? '订单小计' : locale === 'ru' ? 'Подытог заказа' : 'Subtotal'}
           </p>
           <p className="text-base font-extrabold text-gray-900 dark:text-white">
             {formatPrice(effectivePrice * quantity)}

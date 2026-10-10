@@ -66,7 +66,7 @@ export function MegaMenuDrawer({ isOpen, onClose, categories }: MegaMenuDrawerPr
                     <Layers className="w-5 h-5 text-[#c9a84c]" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-black text-[#1a3a5c] dark:text-white tracking-tight font-['Outfit',sans-serif]">
+                    <h2 className="text-lg font-black text-[#1a3a5c] dark:text-white tracking-tight font-sans">
                       {t('catalog' as any) || (locale === 'ru' ? 'Каталог товаров' : locale === 'zh' ? '商品分类大全' : 'Product Catalog')}
                     </h2>
                     <p className="text-xs text-gray-500 dark:text-gray-400">

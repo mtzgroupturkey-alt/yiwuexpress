@@ -653,9 +653,9 @@ export async function POST(request: Request) {
     const body = await request.json()
 
     // Validate required fields
-    const requiredFields = ['sku', 'name', 'slug', 'price', 'weightKg']
+    const requiredFields = ['sku', 'name', 'slug', 'price']
     for (const field of requiredFields) {
-      if (!body[field]) {
+      if (body[field] === undefined || body[field] === null || body[field] === '') {
         return NextResponse.json(
           { success: false, error: `${field} is required` },
           { status: 400 }
@@ -756,6 +756,10 @@ export async function POST(request: Request) {
     // Generate unique Dromkok Item No if not explicitly provided
     if (!productData.dromkokItemNo) {
       productData.dromkokItemNo = await generateDromkokItemNo(prisma, productData.categoryId)
+    }
+
+    if (productData.weightKg === undefined || productData.weightKg === null || isNaN(productData.weightKg)) {
+      productData.weightKg = 0
     }
 
     // Create product + write all locale rows atomically. If any locale upsert

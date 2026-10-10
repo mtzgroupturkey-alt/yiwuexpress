@@ -318,7 +318,7 @@ export function HeroSlider() {
                 )}
 
                 {/* Big Bold Headline */}
-                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] text-white font-['Outfit',sans-serif]">
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.12] text-white font-sans">
                   {currentSlide.title}
                 </h1>
 

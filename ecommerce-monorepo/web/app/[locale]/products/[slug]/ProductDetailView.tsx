@@ -28,7 +28,7 @@ import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext'
 import { useLocaleNav } from '@/hooks/useLocaleNav'
-import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
+import { localizeProduct, localizeCategory, cleanLocalizedDescription } from '@/lib/utils/localize'
 import {
   getLocalizedOptionLabel,
   getLocalizedColorName,
@@ -804,33 +804,33 @@ export default function ProductDetailView({
   const overviewSummary = useMemo(() => {
     // 1. Prioritize admin's entered description (from translations or product.description)
     if (typeof localized.description === 'string' && localized.description.trim()) {
-      return localized.description
+      return cleanLocalizedDescription(localized.description, locale)
     }
     if (typeof product.description === 'string' && product.description.trim()) {
-      return product.description
+      return cleanLocalizedDescription(product.description, locale)
     }
 
     const localizedIkeaSummary =
       ikeaData?.translations?.[locale]?.overview?.summary ||
       ikeaData?.overview?.translations?.[locale]?.summary
-    if (localizedIkeaSummary) return localizedIkeaSummary
+    if (localizedIkeaSummary) return cleanLocalizedDescription(localizedIkeaSummary, locale)
 
-    if (ikeaData?.overview?.summary) return ikeaData.overview.summary
+    if (ikeaData?.overview?.summary) return cleanLocalizedDescription(ikeaData.overview.summary, locale)
     return t('noDescription')
   }, [ikeaData, localized.description, product.description, locale, t])
 
   const productHeaderDescription = useMemo(() => {
     if (typeof localized.description === 'string' && localized.description.trim()) {
-      return localized.description
+      return cleanLocalizedDescription(localized.description, locale)
     }
     if (typeof product.description === 'string' && product.description.trim()) {
-      return product.description
+      return cleanLocalizedDescription(product.description, locale)
     }
     const localizedIkeaSummary =
       ikeaData?.translations?.[locale]?.overview?.summary ||
       ikeaData?.overview?.translations?.[locale]?.summary
-    if (localizedIkeaSummary) return localizedIkeaSummary
-    if (ikeaData?.overview?.summary) return ikeaData.overview.summary
+    if (localizedIkeaSummary) return cleanLocalizedDescription(localizedIkeaSummary, locale)
+    if (ikeaData?.overview?.summary) return cleanLocalizedDescription(ikeaData.overview.summary, locale)
     return null
   }, [localized.description, product.description, ikeaData, locale])
 
@@ -933,24 +933,46 @@ export default function ProductDetailView({
   const displaySwedenName = displayNames.swedenName
   const displayEnglishName = displayNames.englishName
 
+  const displayLocalizedName = useMemo(() => {
+    // For non-English locales (e.g. ru, zh), prioritize localized product name
+    if (locale !== 'en') {
+      let name = (localized.name || product.name || '').trim()
+      if (displaySwedenName && name) {
+        // Strip trailing or leading Swedish name from line 2 if already rendered in line 1
+        const escSw = displaySwedenName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const endRegex = new RegExp(`\\s*[-–—:]\\s*${escSw}$`, 'i')
+        const startRegex = new RegExp(`^${escSw}\\s*[-–—:]\\s*`, 'i')
+        const stripped = name.replace(endRegex, '').replace(startRegex, '').trim()
+        if (stripped) name = stripped
+      }
+      return name || localized.name || product.name
+    }
+
+    // For English locale:
+    if (displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()) {
+      return displayEnglishName
+    }
+    return localized.name || product.name
+  }, [locale, localized.name, product.name, displaySwedenName, displayEnglishName])
+
   const displayArticleNumber = useMemo(() => {
     return (selectedVariant as any)?.dromkokItemNo || product.dromkokItemNo || (product as any)?.dromkokItemNumber || null
   }, [(selectedVariant as any)?.dromkokItemNo, product.dromkokItemNo, (product as any)?.dromkokItemNumber])
 
   const displayProductDetailsDescription = useMemo(() => {
     if (typeof localized.description === 'string' && localized.description.trim()) {
-      return localized.description
+      return cleanLocalizedDescription(localized.description, locale)
     }
     if (typeof product.description === 'string' && product.description.trim()) {
-      return product.description
+      return cleanLocalizedDescription(product.description, locale)
     }
 
     const locDesc =
       ikeaData?.translations?.[locale]?.productDetails?.description ||
       ikeaData?.productDetails?.translations?.[locale]?.description
-    if (locDesc) return locDesc
+    if (locDesc) return cleanLocalizedDescription(locDesc, locale)
 
-    if (ikeaData?.productDetails?.description) return ikeaData.productDetails.description
+    if (ikeaData?.productDetails?.description) return cleanLocalizedDescription(ikeaData.productDetails.description, locale)
     return overviewSummary || null
   }, [ikeaData, locale, overviewSummary, localized.description, product.description])
 
@@ -1075,16 +1097,16 @@ export default function ProductDetailView({
 
   const effectiveOverviewText = useMemo(() => {
     if (typeof localized.description === 'string' && localized.description.trim()) {
-      return localized.description
+      return cleanLocalizedDescription(localized.description, locale)
     }
     if (ikeaLeadDescription) {
-      return ikeaLeadDescription
+      return cleanLocalizedDescription(ikeaLeadDescription, locale)
     }
     if (typeof product.description === 'string' && product.description.trim()) {
-      return product.description
+      return cleanLocalizedDescription(product.description, locale)
     }
     return overviewSummary || t('noDescription')
-  }, [localized.description, ikeaLeadDescription, product.description, overviewSummary, t])
+  }, [localized.description, ikeaLeadDescription, product.description, overviewSummary, locale, t])
 
   // 2. Intelligent Product Details Parser (cleans concatenated strings, parses Good to know, Materials, Care)
   const parsedProductDetails = useMemo(() => {
@@ -1805,9 +1827,9 @@ export default function ProductDetailView({
         <MobileProductDetailView
           product={mapDbProductToDesign3({
             ...product,
-            name: localized.name || product.name,
+            name: displayLocalizedName,
             swedenName: displaySwedenName || undefined,
-            englishName: (displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()) ? displayEnglishName : undefined,
+            englishName: (locale === 'en' && displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()) ? displayEnglishName : undefined,
             description: productHeaderDescription || localized.description || product.description
           })}
           relatedProducts={relatedProducts.map(mapDbProductToDesign3)}
@@ -1958,9 +1980,9 @@ export default function ProductDetailView({
                               setTimeout(() => setCopiedItemNo(false), 2000)
                             }}
                             title={copiedItemNo ? 'Copied to clipboard!' : 'Click to copy item number'}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 font-mono text-sm font-semibold transition-colors cursor-pointer group"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 text-sm font-sans transition-colors cursor-pointer group"
                           >
-                            <span className="text-slate-400 font-medium">Item #:</span>
+                            <span className="text-slate-500 font-bold">Item #:</span>
                             <span className="font-extrabold text-slate-900 group-hover:text-[#00407a] tracking-tight">{itemCode}</span>
                             {copiedItemNo ? (
                               <Check className="w-3.5 h-3.5 text-emerald-600" />
@@ -2001,11 +2023,9 @@ export default function ProductDetailView({
                       </div>
                     )}
 
-                    {/* Line 2: English Product Name */}
+                    {/* Line 2: Localized Product Name */}
                     <h1 className={`${displaySwedenName ? 'text-lg sm:text-xl font-bold text-slate-800' : 'text-xl sm:text-2xl font-black text-slate-900'} leading-snug tracking-tight`}>
-                      {displayEnglishName && displayEnglishName.toLowerCase() !== displaySwedenName?.toLowerCase()
-                        ? displayEnglishName
-                        : localized.name}
+                      {displayLocalizedName}
                     </h1>
                   </div>
 
@@ -2178,7 +2198,7 @@ export default function ProductDetailView({
                       {priceType !== 'wholesale' && showOriginalPrice && showOriginalPrice > displayPrice && discount > 0 && (
                         <div className="flex items-center gap-1.5">
                           <span className="bg-rose-50 text-rose-700 border border-rose-200 text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                            -{discount}% OFF
+                            {locale === 'ru' ? `-${discount}% СКИДКА` : locale === 'zh' ? `-${discount}% 优惠` : `-${discount}% OFF`}
                           </span>
                         </div>
                       )}
@@ -2484,14 +2504,14 @@ export default function ProductDetailView({
                         <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-200/60">
                           <div className="space-y-1">
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                              Quantity
+                              {locale === 'ru' ? 'Количество' : locale === 'zh' ? '数量' : (t('quantity') || 'Quantity')}
                             </span>
                             <div className="inline-flex items-center border border-slate-300 rounded-xl bg-white shadow-2xs p-0.5">
                               <button
                                 type="button"
                                 onClick={() => handleQuantityChange(-1)}
                                 disabled={quantity <= stepperMinQty}
-                                aria-label="Decrease quantity"
+                                aria-label={locale === 'ru' ? 'Уменьшить количество' : locale === 'zh' ? '减少数量' : 'Decrease quantity'}
                                 className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                               >
                                 <Minus className="w-3.5 h-3.5" />
@@ -2535,7 +2555,7 @@ export default function ProductDetailView({
                                 type="button"
                                 onClick={() => handleQuantityChange(1)}
                                 disabled={quantity >= stepperMaxQty}
-                                aria-label="Increase quantity"
+                                aria-label={locale === 'ru' ? 'Увеличить количество' : locale === 'zh' ? '增加数量' : 'Increase quantity'}
                                 className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center font-bold transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                               >
                                 <Plus className="w-3.5 h-3.5" />
@@ -2545,7 +2565,7 @@ export default function ProductDetailView({
 
                           <div className="text-right space-y-1">
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                              Order Subtotal
+                              {locale === 'ru' ? 'Подытог заказа' : locale === 'zh' ? '订单小计' : (t('orderSubtotal') || 'Order Subtotal')}
                             </span>
 
                             {subtotalWithTax ? (
@@ -2751,9 +2771,9 @@ export default function ProductDetailView({
 
             {/* Quick Article / Item # tag on the right (desktop) */}
             {displayArticleNumber && (
-              <div className="hidden lg:flex items-center gap-2 py-2 pr-2 text-sm text-slate-500">
-                <span className="font-bold uppercase tracking-wider text-xs text-slate-400">Item #:</span>
-                <span className="font-mono font-extrabold text-slate-800 bg-slate-100 px-3 py-1 rounded-md border border-slate-200/80 text-sm">
+              <div className="hidden lg:flex items-center gap-2 py-2 pr-2 text-sm text-slate-500 font-sans">
+                <span className="font-bold uppercase tracking-wider text-xs text-slate-500">Item #:</span>
+                <span className="font-extrabold text-slate-800 bg-slate-100 px-3 py-1 rounded-md border border-slate-200/80 text-sm">
                   {displayArticleNumber}
                 </span>
               </div>
@@ -3192,7 +3212,7 @@ export default function ProductDetailView({
                     <dl className="divide-y divide-slate-100 text-xs sm:text-sm">
                       <div className="flex justify-between py-2.5">
                         <dt className="text-slate-500">{locale === 'ru' ? 'Порт отправления' : locale === 'zh' ? '发货港口' : 'Port of Dispatch'}</dt>
-                        <dd className="font-semibold text-slate-900">{locale === 'ru' ? 'Нинбо / Шанхай / Склад в Иу' : locale === 'zh' ? '宁波港 / 上海港 / 义乌集运中心' : 'Ningbo / Shanghai / Yiwu Hub'}</dd>
+                        <dd className="font-semibold text-slate-900">{locale === 'ru' ? 'Нинбо / Шанхай / Склад в Китае' : locale === 'zh' ? '宁波港 / 上海港 / 中国集运中心' : 'Ningbo / Shanghai / China Hub'}</dd>
                       </div>
                       <div className="flex justify-between py-2.5">
                         <dt className="text-slate-500">{locale === 'ru' ? 'Базис поставки' : locale === 'zh' ? '贸易术语' : 'Supported Incoterms'}</dt>

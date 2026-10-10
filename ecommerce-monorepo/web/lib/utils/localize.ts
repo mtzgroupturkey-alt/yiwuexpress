@@ -102,6 +102,26 @@ export function localizeEntity<
   return out
 }
 
+export function cleanLocalizedDescription(
+  text: string | null | undefined,
+  locale: string
+): string {
+  if (!text) return ''
+  if (locale === 'ru') {
+    const cleaned = text
+      .replace(/^Premium quality\b[\s\S]*?\bengineered with durable components and modern styling[\s\S]*?(?=[А-Яа-яЁё])/i, '')
+      .trim()
+    return cleaned.replace(/^[-–—.:,]+\s*/, '')
+  }
+  if (locale === 'zh') {
+    const cleaned = text
+      .replace(/^Premium quality\b[\s\S]*?\bengineered with durable components and modern styling[\s\S]*?(?=[\u4e00-\u9fa5])/i, '')
+      .trim()
+    return cleaned.replace(/^[-–—.:,]+\s*/, '')
+  }
+  return text
+}
+
 /**
  * Resolve localised copy for a product.
  *
@@ -115,16 +135,16 @@ export function localizeProduct(
   locale: string
 ): LocalizedProduct {
   const name = getLocalField(product.translations, locale, 'name', product.name)
-  const description = getLocalField(product.translations, locale, 'description', product.description)
+  const rawDescription = getLocalField(product.translations, locale, 'description', product.description)
   const metaTitle = getLocalField(product.translations, locale, 'metaTitle', product.metaTitle)
-  const metaDescription = getLocalField(product.translations, locale, 'metaDescription', product.metaDescription)
+  const rawMetaDescription = getLocalField(product.translations, locale, 'metaDescription', product.metaDescription)
 
   return {
     id: product.id,
     name,
-    description,
+    description: cleanLocalizedDescription(rawDescription, locale),
     metaTitle,
-    metaDescription,
+    metaDescription: cleanLocalizedDescription(rawMetaDescription, locale),
     slug: product.slug ?? null
   }
 }

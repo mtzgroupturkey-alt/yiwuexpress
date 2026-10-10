@@ -42,7 +42,7 @@ const productSchema = z.object({
   stock: z.number().int().min(0, 'Stock must be positive'),
   lowStockThreshold: z.number().int().min(0).default(10),
   thumbnail: z.string().optional(),
-  weightKg: z.number().min(0, 'Weight is required'),
+  weightKg: z.number().min(0).default(0),
   hsCode: z.string().optional(),
   countryOfOrigin: z.string().default('China'),
   material: z.string().optional(),
@@ -387,7 +387,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         wholesalePriceWithTax: wholesalePriceWithTax !== '' && !isNaN(parseFloat(wholesalePriceWithTax)) ? parseFloat(wholesalePriceWithTax) : null,
         costPrice: data.costPrice !== undefined && data.costPrice !== null && !isNaN(Number(data.costPrice)) ? parseFloat(data.costPrice.toString()) : null,
         wholesalePrice: data.wholesalePrice !== undefined && data.wholesalePrice !== null && !isNaN(Number(data.wholesalePrice)) ? parseFloat(data.wholesalePrice.toString()) : null,
-        weightKg: parseFloat(data.weightKg.toString()),
+        weightKg: parseFloat((data.weightKg ?? productRawData?.weightKg ?? 0).toString()),
         stock: parseInt(data.stock.toString()),
         lowStockThreshold: parseInt((data.lowStockThreshold ?? 10).toString()),
         minOrderQty: parseInt((data.minOrderQty ?? 1).toString()),
@@ -743,50 +743,6 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                   <Label htmlFor="lowStockThreshold" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.lowStockThreshold}</Label>
                   <Input id="lowStockThreshold" type="number" {...register('lowStockThreshold', { valueAsNumber: true })} className="rounded-xl" />
                 </div>
-              </div>
-            </div>
-
-            {/* Compliance & Shipping */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-6">
-              <h2 className="text-lg font-bold text-[#1a3a5c] border-b pb-3">{dict.products.complianceShipping}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="weightKg" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.weightKg} *</Label>
-                  <Input id="weightKg" type="number" step="0.01" {...register('weightKg', { valueAsNumber: true })} className="rounded-xl" />
-                  {errors.weightKg && <p className="text-red-600 text-sm mt-1">{errors.weightKg.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hsCode" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.hsCode}</Label>
-                  <Input id="hsCode" {...register('hsCode')} className="rounded-xl" />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="countryOfOrigin" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.countryOfOrigin}</Label>
-                  <Input id="countryOfOrigin" {...register('countryOfOrigin')} className="rounded-xl" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="material" className="text-xs font-bold text-gray-700 uppercase tracking-wider">{dict.products.material}</Label>
-                  <Input id="material" {...register('material')} className="rounded-xl" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" {...register('fragile')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.fragile}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" {...register('exportRestricted')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.exportRestricted}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" {...register('dangerousGoods')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.dangerousGoods}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer group">
-                  <input type="checkbox" {...register('batteryIncluded')} className="w-4 h-4 rounded text-[#1a3a5c] focus:ring-[#1a3a5c]" />
-                  <span className="text-sm font-medium group-hover:text-gray-900">{dict.products.batteryIncluded}</span>
-                </label>
               </div>
             </div>
 
