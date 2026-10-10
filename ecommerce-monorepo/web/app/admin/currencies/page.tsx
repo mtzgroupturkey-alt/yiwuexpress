@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { DollarSign, TrendingUp, RefreshCw, Plus, Edit2, Save, X, Calendar, History, Check, AlertCircle, Download, Zap, Trash2 } from 'lucide-react'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { BynSymbol } from '@/components/icons/BynSymbol'
 
 interface Currency {
   id: string
@@ -502,7 +503,11 @@ export default function CurrenciesPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                            {currency.symbol}
+                            {currency.code === 'BYN' ? (
+                              <BynSymbol className="w-5 h-5 text-white" />
+                            ) : (
+                              currency.symbol
+                            )}
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">{currency.name}</p>
@@ -516,7 +521,16 @@ export default function CurrenciesPage() {
                         <span className="font-mono font-semibold text-gray-700">{currency.code}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-gray-600">{currency.symbol} ({currency.symbolPosition})</span>
+                        <div className="flex items-center gap-1.5 text-gray-600">
+                          {currency.code === 'BYN' ? (
+                            <>
+                              <BynSymbol className="w-4 h-4 text-gray-800" />
+                              <span>({currency.symbolPosition})</span>
+                            </>
+                          ) : (
+                            <span>{currency.symbol} ({currency.symbolPosition})</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {isEditing ? (
@@ -777,13 +791,37 @@ export default function CurrenciesPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {dict.currencies.symbol} <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.symbol}
-                  onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="e.g., €"
-                />
+                {formData.code === 'BYN' ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value="BYN"
+                          disabled
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed font-medium"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1.5 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-purple-900 text-sm font-bold shadow-2xs">
+                        <BynSymbol className="w-5 h-5 text-purple-700" />
+                        <span className="text-xs">Preview</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-purple-700 flex items-center gap-1 font-medium">
+                      <span>•</span>
+                      <span>The official BYN symbol (National Bank of Belarus) is applied automatically.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.symbol}
+                    onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="e.g., €"
+                  />
+                )}
               </div>
 
               <div>
@@ -920,13 +958,37 @@ export default function CurrenciesPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {dict.currencies.symbol} <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.symbol}
-                  onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="e.g., €"
-                />
+                {formData.code === 'BYN' ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value="BYN"
+                          disabled
+                          readOnly
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed font-medium"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1.5 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg text-purple-900 text-sm font-bold shadow-2xs">
+                        <BynSymbol className="w-5 h-5 text-purple-700" />
+                        <span className="text-xs">Preview</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-purple-700 flex items-center gap-1 font-medium">
+                      <span>•</span>
+                      <span>The official BYN symbol (National Bank of Belarus) is applied automatically.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.symbol}
+                    onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="e.g., €"
+                  />
+                )}
               </div>
 
               <div>
