@@ -22,9 +22,14 @@ export function CurrencySymbol({
   const isByn = code?.toUpperCase() === 'BYN' || symbol === 'BYN'
 
   if (isByn) {
+    const finalClass = [
+      'inline-block align-[-0.08em]',
+      className && className !== 'inline-block' ? className : 'w-[0.78em] h-[0.78em]',
+    ].filter(Boolean).join(' ')
+
     return (
       <BynSymbol
-        className={className || 'inline-block w-[0.95em] h-[0.95em] align-[-0.125em]'}
+        className={finalClass}
         size={size}
       />
     )
