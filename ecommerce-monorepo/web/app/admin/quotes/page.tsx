@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAdminAuth } from '../contexts/AdminAuthContext'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { useAdminCurrency } from '../contexts/AdminCurrencyContext'
 
 interface QuoteItemSummary {
   id: string
@@ -56,6 +57,7 @@ interface StatusCounts {
 
 export default function AdminQuotesPage() {
   const { dict } = useAdminLocale()
+  const { formatPrice } = useAdminCurrency()
   const { isAdmin, loading: authLoading } = useAdminAuth()
   const [quotes, setQuotes] = useState<QuoteSummary[]>([])
   const [counts, setCounts] = useState<StatusCounts>({
@@ -367,7 +369,7 @@ export default function AdminQuotesPage() {
                       <td className="py-4 px-4 font-bold text-gray-900">
                         {quote.totalAmount ? (
                           <span className="text-emerald-700 font-mono text-sm">
-                            ${quote.totalAmount.toFixed(2)} {quote.currency}
+                            {formatPrice(quote.totalAmount)}
                           </span>
                         ) : (
                           <span className="text-gray-400 italic">Unpriced Draft</span>
