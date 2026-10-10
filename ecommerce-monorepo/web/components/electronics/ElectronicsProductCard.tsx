@@ -7,7 +7,7 @@ import { ProductImage } from '@/components/ui/ProductImage'
 import { Star, ShoppingCart, Check, Heart, Eye } from 'lucide-react'
 import { ProductItem } from '@/data/products'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
-import { useCurrency } from '@/hooks/useCurrency'
+import { useCurrency, PriceFormatted } from '@/hooks/useCurrency'
 import { useAuth } from '@/hooks/useAuth'
 import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useCustomerView } from '@/hooks/useCustomerView'
@@ -176,11 +176,11 @@ export function ElectronicsProductCard({
       <div className="pt-2.5 border-t border-slate-100">
         <div className="flex items-baseline gap-2 mb-2">
           <span className="text-lg sm:text-xl font-black font-mono text-slate-950 tracking-tight">
-            {formatPrice(product.price)}
+            <PriceFormatted amount={product.price} />
           </span>
           {product.oldPrice && (
             <span className="text-xs text-slate-400 line-through font-mono">
-              {formatPrice(product.oldPrice)}
+              <PriceFormatted amount={product.oldPrice} />
             </span>
           )}
         </div>
