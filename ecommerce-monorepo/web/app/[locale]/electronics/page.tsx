@@ -34,8 +34,12 @@ import {
 } from 'lucide-react'
 import { PRODUCTS_DATA, BRANDS, CUSTOMER_REVIEWS, ProductItem } from '@/data/products'
 import { ElectronicsProductCard } from '@/components/electronics/ElectronicsProductCard'
+import { useAuth } from '@/hooks/useAuth'
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 
 export default function ElectronicsStorePage() {
+  const { isAuthenticated } = useAuth()
+  const { openModal: openGuestAuthModal } = useGuestAuthModal()
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
   // Cart state
@@ -64,6 +68,10 @@ export default function ElectronicsStorePage() {
 
   // Add to cart handler
   const handleAddToCart = (product: ProductItem) => {
+    if (!isAuthenticated) {
+      openGuestAuthModal()
+      return
+    }
     setCartItems(prev => {
       const existing = prev.find(item => item.product.id === product.id)
       if (existing) {

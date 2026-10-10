@@ -9,6 +9,7 @@ import { ProductItem } from '@/data/products'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useAuth } from '@/hooks/useAuth'
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { getProductDisplayNames } from '@/lib/utils/productNames'
 
@@ -27,6 +28,7 @@ export function ElectronicsProductCard({
   const { tShop, tBadge, tFlash, tPdp } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const { isAuthenticated } = useAuth()
+  const { openModal: openGuestAuthModal } = useGuestAuthModal()
   const customerView = useCustomerView()
   const [mounted, setMounted] = useState(false)
   const [isAdded, setIsAdded] = useState(false)
@@ -46,6 +48,10 @@ export function ElectronicsProductCard({
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    if (!isUserLoggedIn) {
+      openGuestAuthModal()
+      return
+    }
     setIsAdded(true)
     onAddToCart?.(product)
     setTimeout(() => setIsAdded(false), 1200)
@@ -182,12 +188,18 @@ export function ElectronicsProductCard({
         {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
         <div className="flex items-center justify-between gap-1.5 mb-2.5 pt-1.5 border-t border-slate-100">
           <span
-            className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 shadow-xs ${
+            className={`inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 shadow-xs ${
               isStockAvailable
                 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
                 : 'bg-amber-100 text-amber-800 border border-amber-200/80'
             }`}
           >
+            {isStockAvailable && (
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="dot-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600" />
+              </span>
+            )}
             {stockStatusLabel}
           </span>
 
@@ -202,30 +214,28 @@ export function ElectronicsProductCard({
           </div>
         </div>
 
-        {/* Add to Cart button - Only shown to authenticated users */}
-        {isUserLoggedIn && (
-          <button
-            type="button"
-            onClick={handleAdd}
-            className={`w-full py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98 ${
-              isAdded
-                ? 'bg-emerald-600 text-white'
-                : 'bg-[#FF4D00] hover:bg-[#e04400] text-white hover:shadow-md'
-            }`}
-          >
-            {isAdded ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span>{tPdp('added')}</span>
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="w-4 h-4" />
-                <span>{tFlash('addToCart')}</span>
-              </>
-            )}
-          </button>
-        )}
+        {/* Add to Cart button */}
+        <button
+          type="button"
+          onClick={handleAdd}
+          className={`w-full py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98 ${
+            isAdded
+              ? 'bg-emerald-600 text-white'
+              : 'bg-[#FF4D00] hover:bg-[#e04400] text-white hover:shadow-md'
+          }`}
+        >
+          {isAdded ? (
+            <>
+              <Check className="w-4 h-4" />
+              <span>{tPdp('added')}</span>
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="w-4 h-4" />
+              <span>{tFlash('addToCart')}</span>
+            </>
+          )}
+        </button>
       </div>
     </div>
   )

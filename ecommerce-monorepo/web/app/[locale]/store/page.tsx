@@ -13,6 +13,7 @@ import { mapDbProductToDesign3, mapDbCategoryToDesign3 } from '@/lib/adapters/de
 import { useCart } from '@/components/CartContext';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal';
 import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useSettings } from '@/components/SettingsProvider';
@@ -27,6 +28,7 @@ function StoreCatalogInner() {
   const router = useRouter();
   const locale = useLocale();
   const { isAuthenticated } = useAuth();
+  const { openModal: openGuestAuthModal } = useGuestAuthModal();
   const { refreshCartCount } = useCart();
   const queryClient = useQueryClient();
 
@@ -320,6 +322,11 @@ function StoreCatalogInner() {
     }
 
     // Retail Mode or Instant Wholesale: Add to retail cart
+    if (!isAuthenticated) {
+      openGuestAuthModal();
+      return;
+    }
+
     let savedToBackend = false;
 
     if (cartResponse?.data?.cart) {

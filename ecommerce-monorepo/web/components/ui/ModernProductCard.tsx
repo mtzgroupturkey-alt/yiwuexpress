@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useAuth } from '@/hooks/useAuth'
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { getProductDisplayNames } from '@/lib/utils/productNames'
 
@@ -77,6 +78,7 @@ export function ModernProductCard({
   const { tBadge } = useStorefrontTranslation()
   const { formatPrice } = useCurrency()
   const { isAuthenticated } = useAuth()
+  const { openModal: openGuestAuthModal } = useGuestAuthModal()
   const customerView = useCustomerView()
   const [mounted, setMounted] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -353,19 +355,21 @@ export function ModernProductCard({
               transition={{ duration: 0.2 }}
               className="absolute inset-0 flex items-center justify-center gap-2 p-4 z-20"
             >
-              {isUserLoggedIn && (
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onAddToCart?.(product.id)
-                  }}
-                  className="bg-gradient-to-r from-[#c9a84c] to-[#e5c158] hover:from-[#b8963b] hover:to-[#c9a84c] text-navy-950 font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-[#c9a84c]/30 flex items-center gap-1.5 cursor-pointer"
-                >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  {t.addToCart}
-                </Button>
-              )}
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!isUserLoggedIn) {
+                    openGuestAuthModal()
+                    return
+                  }
+                  onAddToCart?.(product.id)
+                }}
+                className="bg-gradient-to-r from-[#c9a84c] to-[#e5c158] hover:from-[#b8963b] hover:to-[#c9a84c] text-navy-950 font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-[#c9a84c]/30 flex items-center gap-1.5 cursor-pointer"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                {t.addToCart}
+              </Button>
 
               <button
                 onClick={(e) => {
@@ -545,12 +549,18 @@ export function ModernProductCard({
         <div className="flex items-center justify-between gap-1.5 pt-2 border-t border-gray-100 dark:border-white/10">
           <span
             className={cn(
-              'text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs shrink-0',
+              'inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-xs shrink-0',
               isStockAvailable
                 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
                 : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
             )}
           >
+            {isStockAvailable && (
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                <span className="dot-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600" />
+              </span>
+            )}
             {stockStatusLabel}
           </span>
 

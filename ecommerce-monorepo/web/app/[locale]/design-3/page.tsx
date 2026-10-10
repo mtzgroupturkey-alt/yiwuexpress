@@ -40,11 +40,15 @@ import { GROCERY_CATALOG_PRODUCTS } from './data/groceryCatalogData';
 import { Product, CartItem } from './types';
 import { Search, X, CheckCircle2 } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useAuth } from '@/hooks/useAuth';
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal';
 import { MotionReveal } from '@/components/motion/MotionReveal';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 
 export default function App() {
   const { formatPrice } = useCurrency();
+  const { isAuthenticated } = useAuth();
+  const { openModal: openGuestAuthModal } = useGuestAuthModal();
   // 1. Core State
   const [currentView, setCurrentView] = useState<'home' | 'shop' | 'product' | 'checkout'>('home');
   const [selectedProductForPDP, setSelectedProductForPDP] = useState<Product>(PHILIPS_PDP_PRODUCT);
@@ -116,6 +120,10 @@ export default function App() {
 
   // Cart operations
   const handleAddToCart = (product: Product, quantity = 1) => {
+    if (!isAuthenticated) {
+      openGuestAuthModal();
+      return;
+    }
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {

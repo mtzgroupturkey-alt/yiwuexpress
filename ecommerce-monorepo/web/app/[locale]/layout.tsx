@@ -25,6 +25,7 @@ import { PushNotificationPrompt } from '@/components/pwa/PushNotificationPrompt'
 import DynamicFavicon from '@/components/DynamicFavicon'
 import { getServerAuth } from '@/lib/auth/getServerAuth'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { GuestAddToCartModal } from '@/components/auth/GuestAddToCartModal'
 
 export const dynamic = 'force-dynamic'
 
@@ -230,6 +231,7 @@ export default async function LocaleLayout({
               <SessionModeProvider initialMode={resolvedSessionMode}>
                 <WholesaleInquiryProvider>
                   <Providers>
+                    <GuestAddToCartModal />
                     <SettingsProvider initialSettings={serverSettings}>
                       <CurrencyProvider initialCurrency={rawCurrencyCookie}>
                         <LocaleCurrencyAutoDetect />

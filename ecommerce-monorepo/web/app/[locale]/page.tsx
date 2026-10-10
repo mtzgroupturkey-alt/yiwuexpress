@@ -39,6 +39,7 @@ import { useSettings } from '@/components/SettingsProvider';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthContext } from '@/components/providers/AuthProvider';
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal';
 import { useCart } from '@/components/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useLocale } from 'next-intl';
@@ -54,6 +55,7 @@ export default function Home() {
   const { settings } = useSettings();
   const { formatPrice } = useCurrency();
   const { isAuthenticated, user } = useAuthContext();
+  const { openModal: openGuestAuthModal } = useGuestAuthModal();
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { wishlistCount, favoriteIds, favoritesList, toggleWishlist } = useWishlist();
   const { storeMode } = useStoreMode();
@@ -525,6 +527,11 @@ export default function Home() {
         targetPrice: product.wholesalePrice || null,
       });
       showToast(`Added "${product.name.slice(0, 30)}..." to quote request`);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      openGuestAuthModal();
       return;
     }
 

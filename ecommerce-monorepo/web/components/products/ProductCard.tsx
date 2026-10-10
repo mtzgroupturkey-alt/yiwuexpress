@@ -17,6 +17,7 @@ import { useQuoteCart } from '@/components/QuoteCartContext'
 import { useSettings } from '@/components/SettingsProvider'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { useAuth } from '@/hooks/useAuth'
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useCart } from '@/components/CartContext'
 import { getProductDisplayNames } from '@/lib/utils/productNames'
 
@@ -92,8 +93,9 @@ export default function ProductCard({
     canAddToWholesaleCart,
   } = customerView
 
+  const { openModal: openGuestAuthModal } = useGuestAuthModal()
   const isUserLoggedIn = mounted ? (isAuthenticated || (!isGuest && (isRetailActive || isWholesaleActive))) : false
-  const showRetailCart = isUserLoggedIn && !canRequestQuote && !canAddToWholesaleCart
+  const showRetailCart = !canRequestQuote && !canAddToWholesaleCart
   const hasWholesale = Boolean(product.wholesalePrice && isWholesaleActive)
 
   const { refreshCartCount } = useCart()
@@ -217,6 +219,11 @@ export default function ProductCard({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+
+    if (!isUserLoggedIn) {
+      openGuestAuthModal()
+      return
+    }
 
     if (!onAddToCart) return
 
@@ -439,12 +446,18 @@ export default function ProductCard({
           {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
           <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-gray-100 dark:border-white/10">
             <span
-              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 ${
+              className={`inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 ${
                 isStockAvailable
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
                   : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
               }`}
             >
+              {isStockAvailable && (
+                <span className="relative flex h-1.5 w-1.5 shrink-0">
+                  <span className="dot-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600" />
+                </span>
+              )}
               {stockStatusLabel}
             </span>
 

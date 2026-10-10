@@ -12,6 +12,7 @@ import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { useCart } from '@/components/CartContext'
 import { useStoreMode } from '@/contexts/StoreModeContext'
 import { useAuth } from '@/hooks/useAuth'
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useCustomerView } from '@/hooks/useCustomerView'
 
 interface Product {
@@ -61,6 +62,7 @@ export default function ProductGrid({
   const { refreshCartCount } = useCart()
   const { isRetail } = useStoreMode()
   const { isAuthenticated } = useAuth()
+  const { openModal: openGuestAuthModal } = useGuestAuthModal()
   const customerView = useCustomerView()
   const [mounted, setMounted] = useState(false)
   const t = useTranslations('Product')
@@ -88,6 +90,11 @@ export default function ProductGrid({
   }, [])
 
   const handleAddToCart = async (productId: string, quantity = 1, mode: 'RETAIL' | 'WHOLESALE' = 'RETAIL') => {
+    if (!isUserLoggedIn) {
+      openGuestAuthModal()
+      return
+    }
+
     // Use the parent's onAddToCart if provided
     if (onAddToCart) {
       onAddToCart(productId, quantity, mode)
@@ -265,7 +272,7 @@ export default function ProductGrid({
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-3">
-                {isRetail && isUserLoggedIn && (
+                {isRetail && (
                   <button
                     onClick={() => !isSoldOut && handleAddToCart(product.id)}
                     disabled={isSoldOut}

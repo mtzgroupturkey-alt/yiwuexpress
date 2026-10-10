@@ -10,6 +10,7 @@ import { Product } from '@/app/[locale]/design-3/types'
 import { useCurrency } from '@/hooks/useCurrency'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { useAuth } from '@/hooks/useAuth'
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useSettings } from '@/components/SettingsProvider'
 import { getProductDisplayNames } from '@/lib/utils/productNames'
 
@@ -36,6 +37,7 @@ export function MobileProductCard({
   const customerView = useCustomerView()
   const { settings } = useSettings()
   const { isAuthenticated } = useAuth()
+  const { openModal: openGuestAuthModal } = useGuestAuthModal()
   const [mounted, setMounted] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
 
@@ -112,6 +114,10 @@ export function MobileProductCard({
 
   const handleActionClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (!isUserLoggedIn) {
+      openGuestAuthModal()
+      return
+    }
     setJustAdded(true)
     setTimeout(() => setJustAdded(false), 1500)
     if (onAddToCart) {
@@ -280,12 +286,18 @@ export function MobileProductCard({
             {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
             <div className="flex items-center justify-between gap-1 mt-1.5 pt-1 border-t border-gray-100 dark:border-slate-800/80">
               <span
-                className={`px-1.5 py-0.5 rounded-sm font-black text-[9px] uppercase tracking-wider shrink-0 ${
+                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm font-black text-[9px] uppercase tracking-wider shrink-0 ${
                   isStockAvailable
                     ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
                 }`}
               >
+                {isStockAvailable && (
+                  <span className="relative flex h-1.5 w-1.5 shrink-0">
+                    <span className="dot-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600" />
+                  </span>
+                )}
                 {stockStatusLabel}
               </span>
 
@@ -306,29 +318,27 @@ export function MobileProductCard({
             )}
           </div>
 
-          {isUserLoggedIn && (
-            <button
-              type="button"
-              onClick={handleActionClick}
-              aria-label={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
-              title={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
-              className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-85 transition-all duration-150 touch-manipulation cursor-pointer ${
-                justAdded
-                  ? 'bg-emerald-600 shadow-emerald-500/30 shadow-md scale-105'
-                  : isRfqMode
-                  ? 'bg-[#00407a] hover:bg-[#003366]'
-                  : 'bg-primary-600 hover:bg-primary-700'
-              }`}
-            >
-              {justAdded ? (
-                <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
-              ) : isRfqMode ? (
-                <ClipboardList className="w-4 h-4 transition-transform group-hover:scale-110" />
-              ) : (
-                <Plus className="w-4 h-4 transition-transform group-hover:scale-110" />
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleActionClick}
+            aria-label={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
+            title={isRfqMode ? 'Add to RFQ' : 'Add to Cart'}
+            className={`min-w-[40px] min-h-[40px] rounded-xl text-white flex items-center justify-center shadow-xs active:scale-85 transition-all duration-150 touch-manipulation cursor-pointer ${
+              justAdded
+                ? 'bg-emerald-600 shadow-emerald-500/30 shadow-md scale-105'
+                : isRfqMode
+                ? 'bg-[#00407a] hover:bg-[#003366]'
+                : 'bg-primary-600 hover:bg-primary-700'
+            }`}
+          >
+            {justAdded ? (
+              <Check className="w-4 h-4 text-white animate-in zoom-in-50 duration-200" />
+            ) : isRfqMode ? (
+              <ClipboardList className="w-4 h-4 transition-transform group-hover:scale-110" />
+            ) : (
+              <Plus className="w-4 h-4 transition-transform group-hover:scale-110" />
+            )}
+          </button>
         </div>
       </div>
     </div>

@@ -111,7 +111,21 @@
     "signInNow": "Sign in now",
     "resetTitle": "Reset your password",
     "sendReset": "Send reset link",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "guestAddToCart": {
+      "title": "To add items to your cart, please register or sign in",
+      "message": "Create an account or sign in to continue shopping and manage your orders.",
+      "register": "Register",
+      "signIn": "Sign In"
+    }
+  },
+  "auth": {
+    "guestAddToCart": {
+      "title": "To add items to your cart, please register or sign in",
+      "message": "Create an account or sign in to continue shopping and manage your orders.",
+      "register": "Register",
+      "signIn": "Sign In"
+    }
   },
   "Cart": {
     "title": "Your Cart",

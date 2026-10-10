@@ -43,6 +43,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 import { useAuth } from '@/hooks/useAuth';
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
@@ -50,6 +51,7 @@ export function Design3Storefront() {
   const router = useRouter();
   const locale = useLocale();
   const { isAuthenticated } = useAuth();
+  const { openModal: openGuestAuthModal } = useGuestAuthModal();
   const { formatPrice } = useCurrency();
   const { settings } = useSettings();
   // 1. Core State
@@ -119,6 +121,10 @@ export function Design3Storefront() {
 
   // Cart operations
   const handleAddToCart = (product: Product, quantity = 1) => {
+    if (!isAuthenticated) {
+      openGuestAuthModal();
+      return;
+    }
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {

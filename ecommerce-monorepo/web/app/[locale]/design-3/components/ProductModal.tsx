@@ -23,6 +23,7 @@ import { useSessionMode } from '@/contexts/SessionModeContext';
 import { useQuoteCart } from '@/components/QuoteCartContext';
 import { useWholesaleInquiry } from '@/contexts/WholesaleInquiryContext';
 import { useAuthContext } from '@/components/providers/AuthProvider';
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal';
 import { useCustomerView } from '@/hooks/useCustomerView';
 import { useParams } from 'next/navigation';
 
@@ -46,6 +47,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   onViewFullPDP,
 }) => {
   const { isAuthenticated } = useAuthContext();
+  const { openModal: openGuestAuthModal } = useGuestAuthModal();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -152,9 +154,18 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     }
 
     if (isWholesaleActive && isInstantWholesale) {
+      if (!isAuthenticated) {
+        openGuestAuthModal();
+        return;
+      }
       onAddToCart({ ...product, price: effectiveWholesalePrice }, quantity);
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      openGuestAuthModal();
       return;
     }
 

@@ -20,6 +20,7 @@ import { useSettings } from '@/components/SettingsProvider';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthContext } from '@/components/providers/AuthProvider';
+import { useGuestAuthModal } from '@/hooks/useGuestAuthModal';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 import { useCustomerView } from '@/hooks/useCustomerView';
 
@@ -28,6 +29,7 @@ export function Design3LayoutHeader() {
   const router = useRouter();
   const authCtx = useAuthContext();
   const isAuthenticated = authCtx.isAuthenticated;
+  const { openModal: openGuestAuthModal } = useGuestAuthModal();
   const user = authCtx.user;
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { settings } = useSettings();
@@ -247,6 +249,11 @@ export function Design3LayoutHeader() {
   };
 
   const handleAddToCart = async (product: Product) => {
+    if (!isAuthenticated) {
+      openGuestAuthModal();
+      return;
+    }
+
     const moq = Math.max(1, product.minOrderQty || 1);
     let savedToBackend = false;
 

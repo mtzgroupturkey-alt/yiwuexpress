@@ -111,7 +111,21 @@
     "signInNow": "立即登录",
     "resetTitle": "重置您的密码",
     "sendReset": "发送重置链接",
-    "backToLogin": "返回登录"
+    "backToLogin": "返回登录",
+    "guestAddToCart": {
+      "title": "若要将商品加入购物车，请先注册或登录",
+      "message": "创建账户或登录以继续购物并管理您的订单。",
+      "register": "注册",
+      "signIn": "登录"
+    }
+  },
+  "auth": {
+    "guestAddToCart": {
+      "title": "若要将商品加入购物车，请先注册或登录",
+      "message": "创建账户或登录以继续购物并管理您的订单。",
+      "register": "注册",
+      "signIn": "登录"
+    }
   },
   "Cart": {
     "title": "您的购物车",
