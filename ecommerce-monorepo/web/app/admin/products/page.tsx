@@ -25,6 +25,7 @@ import {
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown'
 import { localizeProduct, localizeCategory } from '@/lib/utils/localize'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { useAdminCurrency } from '../contexts/AdminCurrencyContext'
 
 interface Product {
   id: string
@@ -201,6 +202,7 @@ function ProductThumbnail({
 export default function AdminProductsPage() {
   const router = useRouter()
   const { locale, dict, t } = useAdminLocale()
+  const { formatPrice } = useAdminCurrency()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [flatCategories, setFlatCategories] = useState<any[]>([])
@@ -1481,7 +1483,7 @@ export default function AdminProductsPage() {
                         {/* Price */}
                         <td className="py-4 px-4">
                           <span className="font-bold text-gray-900 text-sm">
-                            ${Number(product.price).toFixed(2)}
+                            {formatPrice(product.price)}
                           </span>
                         </td>
 
@@ -1643,7 +1645,7 @@ export default function AdminProductsPage() {
                         ) : null}
                       </div>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className="font-bold text-gray-900 text-sm">${Number(product.price).toFixed(2)}</span>
+                        <span className="font-bold text-gray-900 text-sm">{formatPrice(product.price)}</span>
                         <span className="text-[11px] text-gray-500 font-medium">{dict.products.stock}: {product.stock}</span>
                       </div>
                       {localizedCategory && (
