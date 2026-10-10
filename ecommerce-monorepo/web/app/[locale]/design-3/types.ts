@@ -40,6 +40,7 @@ export interface Product {
   };
   claimedPercent?: number;
   stockLeft?: number;
+  stock?: number;
   image: string;
   images?: string[];
   inStock: boolean;
@@ -65,6 +66,10 @@ export interface Product {
   similarity?: number;
   attributes?: Record<string, any> | null;
   isFeatured?: boolean;
+  rawIkeaPayload?: any;
+  taxRate?: number;
+  taxPercent?: number;
+  wholesalePriceWithTax?: number;
 }
 
 export interface FilterState {

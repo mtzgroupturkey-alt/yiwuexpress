@@ -62,6 +62,7 @@ export function mapDbProductToDesign3(dbItem: any): Product {
       : undefined,
     claimedPercent: dbItem.isFlashSale ? Math.floor(Math.random() * 40) + 50 : undefined,
     stockLeft: stock,
+    stock: stock,
     image: image,
     images: Array.isArray(dbItem.images) && dbItem.images.length > 0
       ? dbItem.images.map((img: string) => normalizeProductImageUrl(img, categoryName, dbItem.name))
@@ -81,6 +82,9 @@ export function mapDbProductToDesign3(dbItem: any): Product {
     ikeaItemNo: dbItem.ikeaItemNo || undefined,
     swedenName: getProductDisplayNames(dbItem).swedenName || undefined,
     englishName: getProductDisplayNames(dbItem).englishName || undefined,
+    rawIkeaPayload: dbItem.rawIkeaPayload || undefined,
+    taxRate: dbItem.taxRate ?? dbItem.taxPercent ?? (dbItem.rawIkeaPayload as any)?.taxRate ?? (dbItem.rawIkeaPayload as any)?.taxPercent ?? undefined,
+    wholesalePriceWithTax: dbItem.wholesalePriceWithTax ?? (dbItem.rawIkeaPayload as any)?.wholesalePriceWithTax ?? undefined,
   };
 }
 

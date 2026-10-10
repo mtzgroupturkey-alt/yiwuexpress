@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -104,15 +104,61 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
   const quoteItem = quoteItems.find((i) => i.productId === product.id);
   const qtyInQuote = quoteItem?.quantity || 0;
 
+  const isWholesaleCustomer = isWholesaleActive || !isUserLoggedIn || !customerView.isRetail;
+  const isRetailUserLoggedIn = isUserLoggedIn && customerView.isRetail;
+
   const effectiveWholesalePrice = product.wholesalePrice || product.price;
-  const displayPrice = isWholesaleActive ? effectiveWholesalePrice : product.price;
-  const showOriginalPrice = isWholesaleActive
-    ? product.wholesalePrice && product.wholesalePrice < product.price
-      ? product.price
-      : product.oldPrice
-    : product.oldPrice;
+  const displayPrice = isRetailUserLoggedIn ? product.price : effectiveWholesalePrice;
+
+  const effectiveTaxRate = useMemo(() => {
+    const rawTax =
+      (product as any).taxRate ??
+      (product as any).taxPercent ??
+      (product as any).rawIkeaPayload?.taxRate ??
+      (product as any).rawIkeaPayload?.taxPercent;
+    if (rawTax !== undefined && rawTax !== null && !isNaN(Number(rawTax)) && Number(rawTax) > 0) {
+      return Number(rawTax);
+    }
+    return 20; // Standard 20% VAT fallback
+  }, [product]);
+
+  const effectiveDisplayPriceWithTax = useMemo(() => {
+    if ((product as any).wholesalePriceWithTax && (product as any).wholesalePriceWithTax > 0) {
+      return (product as any).wholesalePriceWithTax;
+    }
+    if (displayPrice > 0) {
+      return Math.round((displayPrice * (1 + effectiveTaxRate / 100) + Number.EPSILON) * 100) / 100;
+    }
+    return null;
+  }, [product, effectiveTaxRate, displayPrice]);
+
+  // Only show crossed-out retail price if retail user is logged in
+  const showOriginalPrice = isRetailUserLoggedIn && product.oldPrice && product.oldPrice > displayPrice
+    ? product.oldPrice
+    : null;
+
+  const isStockAvailable = product.stock !== undefined ? product.stock > 0 : (product.inStock !== false);
+
+  const stockStatusLabel = isStockAvailable
+    ? (locale === 'ru' ? 'В наличии' : locale === 'zh' ? '有现货' : 'In Stock')
+    : (locale === 'ru' ? 'Под заказ' : locale === 'zh' ? '按需预定' : 'By Order');
 
   const productUrl = `/${locale}/products/${product.slug || product.id}`;
+
+  // Item # formatted as clean number only (e.g. "950.962.59", stripping "DK-", "Item #", etc.)
+  const rawItemNumber =
+    product.dromkokItemNo ||
+    (product as any).ikeaItemNo ||
+    (product as any).itemNo ||
+    (product as any).articleNumber ||
+    product.sku ||
+    '';
+  const displayItemNumber = rawItemNumber
+    ? rawItemNumber
+        .replace(/^DK-/i, '')
+        .replace(/^[a-zA-Z#:\s-]+/, '')
+        .trim()
+    : null;
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -165,13 +211,24 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
     <motion.div 
       whileHover={{ y: -3 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="bg-white border border-slate-200 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between hover:border-blue-300 hover:shadow-[0_8px_24px_rgba(0,64,122,0.08)] transition-shadow duration-300 group relative"
+      className="@container bg-white border border-slate-200 rounded-xl p-3 sm:p-3.5 flex flex-col justify-between hover:border-blue-300 hover:shadow-[0_8px_24px_rgba(0,64,122,0.08)] transition-shadow duration-300 group relative"
     >
       {/* Top Header: Badges & Favorite */}
       <div>
         <div className="flex items-start justify-between gap-1 mb-2">
           <div className="flex flex-wrap gap-1 items-center">
-            {product.discountBadge && (
+            {/* Stock Status Badge */}
+            <span
+              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase ${
+                isStockAvailable
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
+                  : 'bg-amber-100 text-amber-800 border border-amber-200/80'
+              }`}
+            >
+              {stockStatusLabel}
+            </span>
+
+            {isRetailUserLoggedIn && product.discountBadge && (
               <motion.span 
                 animate={{ scale: [1, 1.04, 1] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -257,21 +314,35 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           )}
         </Link>
 
-        {/* Category & Brand */}
-        <div className="text-[11px] text-slate-500 font-medium mb-1 truncate flex items-center gap-1.5">
-          {product.category && (
-            <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
-              {product.category}
-            </span>
-          )}
-          {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
-            <strong className="text-slate-800 font-bold truncate">
-              {tOriginAndBrand(product.brand)}
-            </strong>
-          )}
-          {product.originOrType && !product.category && (
-            <span> • {tOriginAndBrand(product.originOrType)}</span>
-          )}
+        {/* Category, Item #, Brand & Rating */}
+        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-1 gap-1">
+          <div className="truncate flex items-center gap-1.5 min-w-0">
+            {product.category && (
+              <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
+                {product.category}
+              </span>
+            )}
+            {displayItemNumber && (
+              <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded font-mono tracking-tight shrink-0">
+                {displayItemNumber}
+              </span>
+            )}
+            {product.brand && product.brand.toLowerCase() !== 'official sourcing' && (
+              <strong className="text-slate-800 font-bold truncate">
+                {tOriginAndBrand(product.brand)}
+              </strong>
+            )}
+            {product.originOrType && !product.category && (
+              <span> • {tOriginAndBrand(product.originOrType)}</span>
+            )}
+          </div>
+
+          {/* Rating & Reviews on the Right */}
+          <div className="flex items-center gap-1 text-[11px] text-slate-500 shrink-0">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="font-bold text-slate-800">{product.rating}</span>
+            <span className="text-[10px]">({product.reviewsCount})</span>
+          </div>
         </div>
 
         {/* Title: First Swedish name, next line English name */}
@@ -308,26 +379,50 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           );
         })()}
 
-        {/* Rating & Reviews */}
-        <div className="flex items-center gap-1 text-[11px] text-slate-500 mb-2">
-          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-          <span className="font-bold text-slate-800">{product.rating}</span>
-          <span className="text-[10px]">({product.reviewsCount})</span>
-        </div>
-
-        {/* Price Block */}
+        {/* Price Block: Stacked on narrow cards (@container < 220px), inline with pipe on wide cards */}
         <div className="mb-2">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-              {formatPrice(displayPrice)}
-            </span>
-            {showOriginalPrice && (
-              <span className="text-xs text-slate-400 line-through font-medium">
-                {formatPrice(showOriginalPrice)}
+          {isRetailUserLoggedIn ? (
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                {formatPrice(displayPrice)}
               </span>
-            )}
-          </div>
-          {isWholesaleActive ? (
+              {showOriginalPrice && (
+                <span className="text-xs text-slate-400 line-through font-medium">
+                  {formatPrice(showOriginalPrice)}
+                </span>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              <div className="flex flex-col @[220px]:flex-row @[220px]:items-baseline gap-0.5 @[220px]:gap-2">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-tight">
+                    {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
+                  </span>
+                  <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight font-sans">
+                    {formatPrice(displayPrice)}
+                  </span>
+                </div>
+
+                {effectiveDisplayPriceWithTax && (
+                  <>
+                    <span className="hidden @[220px]:inline text-slate-300 text-xs sm:text-sm font-light">|</span>
+
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[10px] sm:text-[11px] font-bold text-purple-700 uppercase tracking-tight">
+                        {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
+                      </span>
+                      <span className="text-sm sm:text-base font-black text-purple-900 tracking-tight font-sans">
+                        {formatPrice(effectiveDisplayPriceWithTax)}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {isWholesaleCustomer ? (
             <div className="text-[10px] font-bold text-blue-700 font-mono mt-0.5">
               {tPdp('wholesaleMoq', { moq })}
             </div>
@@ -339,23 +434,8 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
         </div>
       </div>
 
-      {/* Card Bottom: Stock Progress & Add to Cart */}
+      {/* Card Bottom: Add to Cart */}
       <div className="pt-2 border-t border-slate-100">
-        {/* Stock progress if available */}
-        {product.claimedPercent && (
-          <div className="mb-2.5">
-            <div className="flex justify-between text-[10px] font-medium mb-1">
-              <span className="text-slate-500">{tFlash('claimed', { percent: product.claimedPercent })}</span>
-              <span className="text-red-600 font-bold">{tFlash('left', { count: product.stockLeft })}</span>
-            </div>
-            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="bg-[#F5A602] h-full rounded-full transition-all duration-500"
-                style={{ width: `${product.claimedPercent}%` }}
-              />
-            </div>
-          </div>
-        )}
 
         {/* Cart Button or Rapid Stepper - Only shown for authenticated users */}
         {isUserLoggedIn && (
