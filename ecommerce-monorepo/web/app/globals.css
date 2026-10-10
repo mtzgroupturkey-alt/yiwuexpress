@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "nbrb";
+  src: url("/fonts/nbrb/nbrb.woff2") format("woff2"),
+       url("/fonts/nbrb/nbrb.woff")  format("woff"),
+       url("/fonts/nbrb/nbrb.ttf")   format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+E901, U+0411, U+0042, U+0059, U+004E;
+}
+
+.nbrb-icon {
+  font-family: "nbrb", ui-sans-serif, system-ui, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  display: inline-block;
+}
+
 @layer base {
   * {
     box-sizing: border-box;
