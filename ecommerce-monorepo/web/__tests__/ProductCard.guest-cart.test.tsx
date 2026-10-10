@@ -80,6 +80,7 @@ vi.mock('../components/products/WishlistButton', () => ({
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key === 'addToCart' ? 'Add to Cart' : key,
+  useLocale: () => 'en',
 }))
 
 vi.mock('@/hooks/useStorefrontTranslation', () => ({
