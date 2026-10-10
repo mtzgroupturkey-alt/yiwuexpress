@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
-import { useCurrency } from '@/hooks/useCurrency'
+import { useCurrency, PriceFormatted } from '@/hooks/useCurrency'
 import { useAuth } from '@/hooks/useAuth'
 import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
 import { useCustomerView } from '@/hooks/useCustomerView'
@@ -499,11 +499,11 @@ export function ModernProductCard({
             {isRetailUserLoggedIn ? (
               <div className="flex items-baseline gap-1.5 flex-wrap">
                 <span className="text-lg font-black text-gray-900 dark:text-[#e5c158]">
-                  {formatPrice(displayPrice)}
+                  <PriceFormatted amount={displayPrice} />
                 </span>
                 {isOnSale && product.compareAtPrice && (
                   <span className="text-xs text-gray-400 line-through">
-                    {formatPrice(product.compareAtPrice)}
+                    <PriceFormatted amount={product.compareAtPrice} />
                   </span>
                 )}
               </div>
@@ -515,7 +515,7 @@ export function ModernProductCard({
                       {activeLocale === 'ru' ? 'Без НДС:' : activeLocale === 'zh' ? '未含税：' : 'Excl. TAX:'}
                     </span>
                     <span className="text-sm sm:text-base font-black text-gray-900 dark:text-[#e5c158] tracking-tight font-sans">
-                      {formatPrice(displayPrice)}
+                      <PriceFormatted amount={displayPrice} />
                     </span>
                   </div>
 
@@ -528,7 +528,7 @@ export function ModernProductCard({
                           {activeLocale === 'ru' ? 'С НДС:' : activeLocale === 'zh' ? '含税价：' : 'Incl. TAX:'}
                         </span>
                         <span className="text-sm sm:text-base font-black text-purple-900 dark:text-purple-300 tracking-tight font-sans">
-                          {formatPrice(effectiveDisplayPriceWithTax)}
+                          <PriceFormatted amount={effectiveDisplayPriceWithTax} />
                         </span>
                       </div>
                     </>
