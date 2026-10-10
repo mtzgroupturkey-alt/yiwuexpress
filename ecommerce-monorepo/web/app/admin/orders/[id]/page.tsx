@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAdminLocale } from '../../contexts/AdminLocaleContext'
+import { useAdminCurrency } from '../../contexts/AdminCurrencyContext'
 
 const statusColors: Record<string, 'default' | 'secondary' | 'success' | 'warning' | 'destructive'> = {
   PENDING: 'warning',
@@ -51,6 +52,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
   const router = useRouter()
   const queryClient = useQueryClient()
   const { dict, locale, t } = useAdminLocale()
+  const { formatPrice, currency: adminCurrency } = useAdminCurrency()
   const [editing, setEditing] = useState(false)
   const [activeTab, setActiveTab] = useState<'order' | 'shipping'>('order')
   
@@ -402,10 +404,10 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                       </div>
                       <div className="text-right">
                         <div className="font-semibold text-gray-900">
-                          ${item.total.toFixed(2)}
+                          {formatPrice(item.total)}
                         </div>
                         <div className="text-sm text-gray-600">
-                          ${item.price.toFixed(2)}
+                          {formatPrice(item.price)}
                         </div>
                       </div>
                     </div>
@@ -415,25 +417,25 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                 <div className="mt-6 pt-6 border-t space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">{dict.orders.subtotal}</span>
-                    <span className="text-gray-900">${order.subtotal.toFixed(2)}</span>
+                    <span className="text-gray-900">{formatPrice(order.subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">{dict.orders.shipping}</span>
-                    <span className="text-gray-900">${order.shippingFee.toFixed(2)}</span>
+                    <span className="text-gray-900">{formatPrice(order.shippingFee)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">{dict.orders.tax}</span>
-                    <span className="text-gray-900">${order.tax.toFixed(2)}</span>
+                    <span className="text-gray-900">{formatPrice(order.tax)}</span>
                   </div>
                   {order.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">{dict.orders.discount}</span>
-                      <span className="text-green-600">-${order.discount.toFixed(2)}</span>
+                      <span className="text-green-600">-{formatPrice(order.discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-lg font-bold pt-2 border-t">
                     <span>{dict.orders.totalAmount}</span>
-                    <span>${order.total.toFixed(2)}</span>
+                    <span>{formatPrice(order.total)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -468,27 +470,27 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                         {dict.orders.financialLedger}
                       </span>
                       <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
-                        {order.currency || 'USD'}
+                        {adminCurrency}
                       </span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-3 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500">{dict.orders.subtotal}</span>
-                      <span className="font-mono font-semibold text-gray-900">${order.subtotal.toFixed(2)}</span>
+                      <span className="font-mono font-semibold text-gray-900">{formatPrice(order.subtotal)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500">{dict.orders.cogs}</span>
                       <span className="font-mono font-semibold text-gray-700">
-                        {purchaseCost > 0 ? `-$${purchaseCost.toFixed(2)}` : '—'}
+                        {purchaseCost > 0 ? `-${formatPrice(purchaseCost)}` : '—'}
                       </span>
                     </div>
 
                     {shippingExpense > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Carrier Freight Cost</span>
-                        <span className="font-mono font-semibold text-gray-700">-${shippingExpense.toFixed(2)}</span>
+                        <span className="font-mono font-semibold text-gray-700">-{formatPrice(shippingExpense)}</span>
                       </div>
                     )}
 
@@ -499,7 +501,7 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                       </div>
                       <div className="text-right">
                         <span className={`font-mono font-black text-sm block ${grossProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                          ${grossProfit.toFixed(2)}
+                          {formatPrice(grossProfit)}
                         </span>
                         <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded-md ${
                           marginPct >= 20
