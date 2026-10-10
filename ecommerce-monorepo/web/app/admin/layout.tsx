@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminAuthProvider, useAdminAuth } from './contexts/AdminAuthContext'
 import { AdminLocaleProvider } from './contexts/AdminLocaleContext'
+import { AdminCurrencyProvider } from './contexts/AdminCurrencyContext'
 import { Providers } from '@/components/providers'
 import DynamicFavicon from '@/components/DynamicFavicon'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
@@ -187,7 +188,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <Providers>
       <AdminAuthProvider>
         <AdminLocaleProvider>
-          <AdminLayoutContent>{children}</AdminLayoutContent>
+          <AdminCurrencyProvider>
+            <AdminLayoutContent>{children}</AdminLayoutContent>
+          </AdminCurrencyProvider>
         </AdminLocaleProvider>
       </AdminAuthProvider>
     </Providers>
