@@ -62,7 +62,7 @@ function StatCard({
   manageLabel = 'Manage'
 }: {
   label: string
-  value: string | number
+  value: React.ReactNode
   icon: React.ElementType
   iconBg: string
   iconColor: string
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
   const { isAdmin, user } = useAdminAuth()
   const { settings, storeMode } = useSettings()
   const { locale, dict, t } = useAdminLocale()
-  const { formatPrice } = useAdminCurrency()
+  const { formatPrice, renderPrice } = useAdminCurrency()
 
   const companyName = settings?.companyName || 'Global Trade'
 
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard
           label={dict.dashboard.totalRevenue}
-          value={formatPrice(totalRev)}
+          value={renderPrice(totalRev)}
           icon={DollarSign}
           iconBg="bg-emerald-50"
           iconColor="text-emerald-600"
@@ -460,7 +460,7 @@ export default function AdminDashboard() {
                     <div className="text-right shrink-0">
                       <StatusBadge status={ord.status} label={t(ord.status)} />
                       <p className="text-xs font-bold text-slate-900 mt-1 tabular-nums">
-                        {ord.total !== undefined ? formatPrice(ord.total) : '—'}
+                        {ord.total !== undefined ? renderPrice(ord.total) : '—'}
                       </p>
                     </div>
                   </div>
