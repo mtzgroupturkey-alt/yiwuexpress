@@ -2,15 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import {
-  AlertTriangle,
   RefreshCw,
   Search,
   CheckCircle2,
   XCircle,
   Warehouse as WarehouseIcon,
-  Package,
   ShieldAlert,
   ArrowRight,
+  EyeOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,6 +25,7 @@ export default function LowStockAlertsPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('ACTIVE')
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const fetchAlerts = async () => {
     try {
@@ -33,12 +33,9 @@ export default function LowStockAlertsPage() {
       const params = new URLSearchParams()
       if (statusFilter) params.append('status', statusFilter)
       if (search) params.append('search', search)
-
       const res = await fetch(`/api/admin/inventory/alerts?${params.toString()}`)
       const data = await res.json()
-      if (data.success) {
-        setAlerts(data.data || [])
-      }
+      if (data.success) setAlerts(data.data || [])
     } catch (err) {
       console.error('Failed to load alerts', err)
     } finally {
@@ -46,9 +43,7 @@ export default function LowStockAlertsPage() {
     }
   }
 
-  useEffect(() => {
-    fetchAlerts()
-  }, [statusFilter, search])
+  useEffect(() => { fetchAlerts() }, [statusFilter, search])
 
   const handleScan = async () => {
     try {
@@ -69,30 +64,56 @@ export default function LowStockAlertsPage() {
     }
   }
 
-  const handleResolve = async (id: string, newStatus: 'RESOLVED' | 'IGNORED') => {
+  const handleResolve = async (id: string, newStatus: 'RESOLVED' | 'DISMISSED') => {
     try {
+      setUpdatingId(id)
       const res = await fetch(`/api/admin/inventory/alerts/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       })
       const data = await res.json()
-      if (data.success) {
-        fetchAlerts()
-      }
+      if (data.success) fetchAlerts()
+      else setMessage({ type: 'error', text: data.error || 'Update failed' })
     } catch (err) {
       console.error('Failed to update alert', err)
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  // For virtual alerts: run scan first to persist them, then dismiss
+  const handleVirtualDismiss = async () => {
+    try {
+      setScanning(true)
+      setMessage(null)
+      const res = await fetch('/api/admin/inventory/alerts', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        setMessage({ type: 'success', text: 'Alerts saved. You can now dismiss individual alerts.' })
+        fetchAlerts()
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Scan error' })
+    } finally {
+      setScanning(false)
     }
   }
 
   const getSeverityBadge = (sev: string) => {
     switch (sev) {
-      case 'CRITICAL':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'HIGH':
-        return 'bg-amber-100 text-amber-800 border-amber-200'
-      default:
-        return 'bg-yellow-50 text-yellow-800 border-yellow-200'
+      case 'CRITICAL': return 'bg-red-100 text-red-800 border-red-200'
+      case 'HIGH':     return 'bg-amber-100 text-amber-800 border-amber-200'
+      default:         return 'bg-yellow-50 text-yellow-800 border-yellow-200'
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':    return 'text-amber-600 bg-amber-50 border border-amber-200'
+      case 'RESOLVED':  return 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+      case 'DISMISSED': return 'text-slate-500 bg-slate-100 border border-slate-200'
+      default:          return 'text-gray-500'
     }
   }
 
@@ -109,9 +130,7 @@ export default function LowStockAlertsPage() {
               {dict.inventoryAlerts.activeAlertsBadge.replace('{count}', String(alerts.length))}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
-            {dict.inventoryAlerts.pageSubtitle}
-          </p>
+          <p className="text-sm text-gray-500 mt-1">{dict.inventoryAlerts.pageSubtitle}</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -138,18 +157,15 @@ export default function LowStockAlertsPage() {
         </div>
       </div>
 
+      {/* Message banner */}
       {message && (
-        <div
-          className={`p-4 rounded-xl text-sm flex items-center justify-between ${
-            message.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
-          }`}
-        >
+        <div className={`p-4 rounded-xl text-sm flex items-center justify-between ${
+          message.type === 'success'
+            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+            : 'bg-red-50 text-red-800 border border-red-200'
+        }`}>
           <span>{message.text}</span>
-          <button onClick={() => setMessage(null)} className="text-xs font-bold ml-4">
-            ✕
-          </button>
+          <button onClick={() => setMessage(null)} className="text-xs font-bold ml-4">✕</button>
         </div>
       )}
 
@@ -174,7 +190,7 @@ export default function LowStockAlertsPage() {
           >
             <option value="ACTIVE">{dict.inventoryAlerts.filterActive}</option>
             <option value="RESOLVED">{dict.inventoryAlerts.filterResolved}</option>
-            <option value="IGNORED">{dict.inventoryAlerts.filterIgnored}</option>
+            <option value="DISMISSED">Dismissed</option>
             <option value="ALL">{dict.inventoryAlerts.filterAll}</option>
           </select>
         </div>
@@ -185,7 +201,7 @@ export default function LowStockAlertsPage() {
         <CardContent className="p-0 overflow-x-auto">
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center text-gray-400 text-xs gap-2">
-              <div className="w-8 h-8 border-3 border-gray-200 border-t-amber-600 rounded-full animate-spin"></div>
+              <div className="w-8 h-8 border-2 border-gray-200 border-t-amber-600 rounded-full animate-spin" />
               <span>{dict.inventoryAlerts.checkingThresholds}</span>
             </div>
           ) : alerts.length === 0 ? (
@@ -193,6 +209,15 @@ export default function LowStockAlertsPage() {
               <CheckCircle2 size={36} className="mx-auto text-emerald-500 mb-2" />
               <p className="font-semibold text-gray-700">{dict.inventoryAlerts.allStockHealthy}</p>
               <p className="text-gray-400 mt-1">{dict.inventoryAlerts.noAlertsDesc}</p>
+              <Button
+                size="sm"
+                onClick={handleScan}
+                disabled={scanning}
+                className="mt-4 rounded-xl gap-1.5 text-xs bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                <ShieldAlert size={14} className={scanning ? 'animate-spin' : ''} />
+                {scanning ? dict.inventoryAlerts.scanningStock : dict.inventoryAlerts.scanStockNow}
+              </Button>
             </div>
           ) : (
             <table className="w-full text-left text-xs border-collapse">
@@ -205,73 +230,143 @@ export default function LowStockAlertsPage() {
                   <th className="py-3 px-4">{dict.inventoryAlerts.thThreshold}</th>
                   <th className="py-3 px-4">{dict.common.status}</th>
                   <th className="py-3 px-4">{dict.inventoryAlerts.thTriggeredAt}</th>
-                  <th className="py-3 px-4 text-right">{dict.inventoryAlerts.thActions}</th>
+                  <th className="py-3 px-4 text-right min-w-[200px]">{dict.inventoryAlerts.thActions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {alerts.map((al) => (
-                  <tr key={al.id} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="py-3 px-4">
-                      {(() => {
-                        const sev = al.currentStock <= 0 ? 'CRITICAL' : al.currentStock <= (al.minStock / 2) ? 'HIGH' : 'MEDIUM'
-                        return (
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${getSeverityBadge(sev)}`}>
-                            {sev}
-                          </span>
-                        )
-                      })()}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-gray-900">
-                      <div>
+                {alerts.map((al) => {
+                  const sev = al.currentStock <= 0
+                    ? 'CRITICAL'
+                    : al.currentStock <= al.minStock / 2
+                    ? 'HIGH'
+                    : 'MEDIUM'
+                  const isUpdating = updatingId === al.id
+
+                  return (
+                    <tr key={al.id} className="hover:bg-gray-50/60 transition-colors">
+                      {/* Severity */}
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${getSeverityBadge(sev)}`}>
+                          {sev}
+                        </span>
+                      </td>
+
+                      {/* Product / SKU */}
+                      <td className="py-3 px-4 font-medium text-gray-900">
                         <p className="font-semibold">{al.product?.name}</p>
                         <p className="text-[11px] font-mono text-gray-400">{al.product?.sku}</p>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-1 font-medium text-gray-700">
-                        <WarehouseIcon size={13} className="text-gray-400" />
-                        <span>{al.warehouse?.code}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 font-bold font-mono text-red-600">
-                      {al.currentStock} units
-                    </td>
-                    <td className="py-3 px-4 font-mono text-gray-600">
-                      {al.minStock} units
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`text-[11px] font-semibold ${al.status === 'ACTIVE' ? 'text-amber-600' : 'text-emerald-600'}`}>
-                        {al.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-gray-400">
-                      {new Date(al.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4 text-right space-x-2">
-                      {al.status === 'ACTIVE' && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleResolve(al.id, 'RESOLVED')}
-                            className="h-7 px-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                          >
-                            {dict.inventoryAlerts.btnResolve}
-                          </Button>
-                          <Link href="/admin/purchase-orders/new">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-7 px-2 text-xs font-semibold rounded-lg"
-                            >
-                              PO Reorder <ArrowRight size={11} className="ml-1" />
-                            </Button>
-                          </Link>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      {/* Warehouse */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-1 text-gray-700">
+                          <WarehouseIcon size={13} className="text-gray-400 shrink-0" />
+                          {al.warehouse?.code
+                            ? <span className="font-medium">{al.warehouse.code}</span>
+                            : <span className="text-gray-400 italic">Global</span>
+                          }
+                        </div>
+                      </td>
+
+                      {/* Current Stock */}
+                      <td className="py-3 px-4 font-bold font-mono text-red-600">
+                        {al.currentStock} units
+                      </td>
+
+                      {/* Threshold */}
+                      <td className="py-3 px-4 font-mono text-gray-600">
+                        {al.minStock} units
+                      </td>
+
+                      {/* Status */}
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadge(al.status)}`}>
+                          {al.status}
+                        </span>
+                      </td>
+
+                      {/* Triggered At */}
+                      <td className="py-3 px-4 text-gray-400">
+                        {new Date(al.createdAt).toLocaleDateString()}
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center justify-end gap-1.5 flex-wrap">
+                          {al.status === 'ACTIVE' && !al.isVirtual && (
+                            <>
+                              {/* Resolve */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={isUpdating}
+                                onClick={() => handleResolve(al.id, 'RESOLVED')}
+                                className="h-7 px-2.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 gap-1"
+                              >
+                                <CheckCircle2 size={12} />
+                                {dict.inventoryAlerts.btnResolve}
+                              </Button>
+
+                              {/* Ignore / Dismiss */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={isUpdating}
+                                onClick={() => handleResolve(al.id, 'DISMISSED')}
+                                className="h-7 px-2.5 text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 gap-1"
+                              >
+                                <EyeOff size={12} />
+                                Ignore
+                              </Button>
+
+                              {/* PO Reorder */}
+                              <Link href="/admin/purchase-orders/new">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2.5 text-xs font-semibold rounded-lg gap-1"
+                                >
+                                  Reorder <ArrowRight size={11} />
+                                </Button>
+                              </Link>
+                            </>
+                          )}
+
+                          {/* Virtual alert — needs to be persisted before it can be dismissed */}
+                          {al.isVirtual && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={scanning}
+                                onClick={handleScan}
+                                className="h-7 px-2.5 text-xs font-semibold rounded-lg text-amber-700 border-amber-200 hover:bg-amber-50 gap-1"
+                              >
+                                <ShieldAlert size={12} className={scanning ? 'animate-spin' : ''} />
+                                {scanning ? 'Saving…' : 'Save Alert'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={scanning}
+                                onClick={handleVirtualDismiss}
+                                className="h-7 px-2.5 text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 gap-1"
+                              >
+                                <EyeOff size={12} />
+                                Ignore
+                              </Button>
+                            </>
+                          )}
+
+                          {/* Already resolved/dismissed — show re-activate option */}
+                          {(al.status === 'RESOLVED' || al.status === 'DISMISSED') && !al.isVirtual && (
+                            <span className="text-[11px] text-gray-400 italic px-1">No actions</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           )}
