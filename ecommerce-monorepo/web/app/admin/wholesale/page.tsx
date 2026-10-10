@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Search, Eye, MessageSquare, Download } from 'lucide-react'
 import { useAdminLocale } from '../contexts/AdminLocaleContext'
+import { useAdminCurrency } from '../contexts/AdminCurrencyContext'
 
 interface WholesaleInquiry {
   id: string
@@ -34,6 +35,7 @@ interface WholesaleInquiry {
 export default function AdminWholesalePage() {
   const router = useRouter()
   const { locale, dict, t } = useAdminLocale()
+  const { formatPrice } = useAdminCurrency()
   const [inquiries, setInquiries] = useState<WholesaleInquiry[]>([])
   const [filteredInquiries, setFilteredInquiries] = useState<WholesaleInquiry[]>([])
   const [loading, setLoading] = useState(true)
@@ -279,7 +281,7 @@ export default function AdminWholesalePage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {inquiry.targetPrice ? `$${inquiry.targetPrice.toFixed(2)}` : 'N/A'}
+                        {inquiry.targetPrice ? formatPrice(inquiry.targetPrice) : 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -330,7 +332,7 @@ export default function AdminWholesalePage() {
                     </div>
                     <div>
                       <span className="text-gray-500">Target:</span>{' '}
-                      {inquiry.targetPrice ? `$${inquiry.targetPrice.toFixed(2)}` : 'N/A'}
+                      {inquiry.targetPrice ? formatPrice(inquiry.targetPrice) : 'N/A'}
                     </div>
                     <div className="col-span-2">
                       <span className="text-gray-500">Date:</span>{' '}
