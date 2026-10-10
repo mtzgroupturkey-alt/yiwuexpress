@@ -12,6 +12,7 @@ import { AdminUser } from '@/app/admin/contexts/AdminAuthContext'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
 import { ADMIN_NAV_ITEMS } from './AdminSidebar'
 import { QuickActions } from './QuickActions'
+import { AdminCurrencySwitcher } from './AdminCurrencySwitcher'
 
 export interface AdminHeaderProps {
   companyName: string
@@ -187,6 +188,9 @@ export function AdminHeader({
             ⌘K
           </kbd>
         </button>
+
+        {/* Currency Switcher Dropdown */}
+        <AdminCurrencySwitcher />
 
         {/* Language Switcher Dropdown */}
         <div className="relative" ref={langMenuRef}>
