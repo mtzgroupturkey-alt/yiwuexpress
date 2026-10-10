@@ -21,6 +21,7 @@ import {
   type TranslationPayload
 } from '@/components/admin/ProductTranslationForm'
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext'
+import { useAdminCurrency } from '@/app/admin/contexts/AdminCurrencyContext'
 import { PricingSection, type PricingFormValues } from '@/components/admin/product/PricingSection'
 
 interface MediaItem {
@@ -68,6 +69,7 @@ type ProductForm = z.input<typeof productSchema>
 export default function NewProductPage() {
   const router = useRouter()
   const { dict, locale } = useAdminLocale()
+  const { currency: adminCurrency, convertToUSD } = useAdminCurrency()
   const [categories, setCategories] = useState<any[]>([])
   const [attributeValues, setAttributeValues] = useState<Record<string, any>>({})
   const [attributeTranslations, setAttributeTranslations] = useState<Record<string, Record<string, string>>>({})
@@ -194,37 +196,61 @@ export default function NewProductPage() {
       const images = media.filter(m => m.type === 'image').map(m => m.url)
       const videos = media.filter(m => m.type === 'video').map(m => m.url)
 
+      // Prices in the form are entered in adminCurrency. Always convert to base USD for database storage.
+      const enteredPrice = parseFloat(data.price.toString())
+      const enteredCompareAt = data.compareAtPrice !== undefined && data.compareAtPrice !== null && !isNaN(Number(data.compareAtPrice))
+        ? parseFloat(data.compareAtPrice.toString())
+        : null
+      const enteredCost = data.costPrice !== undefined && data.costPrice !== null && !isNaN(Number(data.costPrice))
+        ? parseFloat(data.costPrice.toString())
+        : null
+      const enteredWholesale = data.wholesalePrice !== undefined && data.wholesalePrice !== null && !isNaN(Number(data.wholesalePrice))
+        ? parseFloat(data.wholesalePrice.toString())
+        : null
+      const enteredPriceWithTax = priceWithTax !== '' && !isNaN(parseFloat(priceWithTax))
+        ? parseFloat(priceWithTax)
+        : null
+      const enteredWholesaleWithTax = wholesalePriceWithTax !== '' && !isNaN(parseFloat(wholesalePriceWithTax))
+        ? parseFloat(wholesalePriceWithTax)
+        : null
+
+      const usdPrice = convertToUSD(enteredPrice)
+      const usdCompareAt = enteredCompareAt !== null ? convertToUSD(enteredCompareAt) : null
+      const usdCost = enteredCost !== null ? convertToUSD(enteredCost) : null
+      const usdWholesale = enteredWholesale !== null ? convertToUSD(enteredWholesale) : null
+      const usdPriceWithTax = enteredPriceWithTax !== null ? convertToUSD(enteredPriceWithTax) : null
+      const usdWholesaleWithTax = enteredWholesaleWithTax !== null ? convertToUSD(enteredWholesaleWithTax) : null
+
       const productData: any = {
         ...data,
         // Dual-write: legacy name/description stay in sync with 'en' translation
-        // (Phase 1 design) so reads that haven't migrated still work.
         name: translations.en.name,
         description: translations.en.description || null,
         translations,
         images,
         videos,
         thumbnail: images[0] || null,
-        price: parseFloat(data.price.toString()),
-        compareAtPrice: data.compareAtPrice !== undefined && data.compareAtPrice !== null && !isNaN(Number(data.compareAtPrice)) ? parseFloat(data.compareAtPrice.toString()) : null,
-        retailPrice: data.compareAtPrice !== undefined && data.compareAtPrice !== null && !isNaN(Number(data.compareAtPrice))
-          ? parseFloat(data.compareAtPrice.toString())
-          : parseFloat(data.price.toString()),
+        price: usdPrice,
+        compareAtPrice: usdCompareAt,
+        retailPrice: usdCompareAt ?? usdPrice,
         discountPercent: data.compareAtPrice && data.price && Number(data.compareAtPrice) > Number(data.price)
           ? Math.round(((Number(data.compareAtPrice) - Number(data.price)) / Number(data.compareAtPrice)) * 10000) / 100
           : null,
-        afterDiscount: parseFloat(data.price.toString()),
+        afterDiscount: usdPrice,
         taxRate: taxPercent !== '' && !isNaN(parseFloat(taxPercent)) ? parseFloat(taxPercent) : null,
         taxPercent: taxPercent !== '' && !isNaN(parseFloat(taxPercent)) ? parseFloat(taxPercent) : null,
-        priceWithTax: priceWithTax !== '' && !isNaN(parseFloat(priceWithTax)) ? parseFloat(priceWithTax) : null,
-        wholesalePriceWithTax: wholesalePriceWithTax !== '' && !isNaN(parseFloat(wholesalePriceWithTax)) ? parseFloat(wholesalePriceWithTax) : null,
-        costPrice: data.costPrice !== undefined && data.costPrice !== null && !isNaN(Number(data.costPrice)) ? parseFloat(data.costPrice.toString()) : null,
-        wholesalePrice: data.wholesalePrice !== undefined && data.wholesalePrice !== null && !isNaN(Number(data.wholesalePrice)) ? parseFloat(data.wholesalePrice.toString()) : null,
+        priceWithTax: usdPriceWithTax,
+        wholesalePriceWithTax: usdWholesaleWithTax,
+        costPrice: usdCost,
+        wholesalePrice: usdWholesale,
         weightKg: parseFloat((data.weightKg ?? 0).toString()),
         stock: parseInt(data.stock.toString()),
         lowStockThreshold: parseInt((data.lowStockThreshold ?? 10).toString()),
         minOrderQty: parseInt((data.minOrderQty ?? 1).toString()),
         isFlashSale: data.isFlashSale,
-        flashSalePrice: data.flashSalePrice !== undefined && data.flashSalePrice !== null && !isNaN(Number(data.flashSalePrice)) ? parseFloat(data.flashSalePrice.toString()) : null,
+        flashSalePrice: data.flashSalePrice !== undefined && data.flashSalePrice !== null && !isNaN(Number(data.flashSalePrice))
+          ? convertToUSD(parseFloat(data.flashSalePrice.toString()))
+          : null,
         flashSaleStart: data.flashSaleStart ? new Date(data.flashSaleStart).toISOString() : null,
         flashSaleEnd: data.flashSaleEnd ? new Date(data.flashSaleEnd).toISOString() : null,
         flashSaleStock: data.flashSaleStock !== undefined && data.flashSaleStock !== null && !isNaN(Number(data.flashSaleStock)) ? parseInt(data.flashSaleStock.toString()) : null,
@@ -467,6 +493,7 @@ export default function NewProductPage() {
             {/* Redesigned Multilingual Pricing Section */}
             <PricingSection
               locale={locale as any}
+              currency={adminCurrency}
               values={{
                 retailPrice: watchedCompareAtPrice !== undefined && watchedCompareAtPrice !== null && !isNaN(Number(watchedCompareAtPrice))
                   ? Number(watchedCompareAtPrice)
