@@ -12,6 +12,7 @@ import {
 } from '@/lib/pricing/calculate';
 import { getPricingWarnings, type PricingLocale } from '@/lib/pricing/schema';
 import { useAdminLocale } from '@/app/admin/contexts/AdminLocaleContext';
+import { CurrencySymbol } from '@/components/ui/CurrencySymbol';
 
 export interface PricingFormValues {
   retailPrice: string | number;
@@ -636,8 +637,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   placeholder="0"
                   className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
-                <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
-                  {currency}
+                <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm flex items-center">
+                  <CurrencySymbol code={currency} className="w-3.5 h-3.5 inline-block" />
                 </span>
               </div>
             </div>
@@ -713,8 +714,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   }`}
                   required
                 />
-                <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
-                  {currency}
+                <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm flex items-center">
+                  <CurrencySymbol code={currency} className="w-3.5 h-3.5 inline-block" />
                 </span>
               </div>
               {errors.retailPrice && (
@@ -785,16 +786,19 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                         placeholder="0"
                         className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-emerald-500 bg-white text-lg font-bold text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
-                      <span className="absolute top-3 right-3 text-xs text-gray-400">
-                        {currency}
+                      <span className="absolute top-3 right-3 text-xs text-gray-400 flex items-center">
+                        <CurrencySymbol code={currency} className="w-3 h-3 inline-block" />
                       </span>
                     </div>
                   ) : (
                     <span
                       data-testid="display-after-discount"
-                      className="text-2xl font-black text-emerald-700 tracking-tight"
+                      className="text-2xl font-black text-emerald-700 tracking-tight inline-flex items-center gap-1"
                     >
-                      {validAfter ? `$${round2(aNum).toFixed(2)}` : validRetail ? `$${round2(rNum).toFixed(2)}` : '$0.00'}
+                      <span>
+                        {validAfter ? round2(aNum).toFixed(2) : validRetail ? round2(rNum).toFixed(2) : '0.00'}
+                      </span>
+                      <CurrencySymbol code={currency} className="w-4 h-4 inline-block text-emerald-700" />
                     </span>
                   )}
                 </div>
@@ -911,8 +915,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                   placeholder="0"
                   className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-gray-200 bg-white hover:border-gray-300 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
                 />
-                <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
-                  {currency}
+                <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm flex items-center">
+                  <CurrencySymbol code={currency} className="w-3.5 h-3.5 inline-block" />
                 </span>
               </div>
             </div>
@@ -1027,8 +1031,8 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                       placeholder="0"
                       className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-purple-500 bg-white text-lg font-bold text-purple-950 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
-                    <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
-                      {currency}
+                    <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm flex items-center">
+                      <CurrencySymbol code={currency} className="w-3.5 h-3.5 inline-block" />
                     </span>
                   </div>
                 ) : (
@@ -1040,10 +1044,10 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                       readOnly
                       value={
                         validWholesale
-                          ? `$${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}`
+                          ? `${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}`
                           : ''
                       }
-                      placeholder={currency === 'USD' ? '$0.00' : '0.00'}
+                      placeholder="0.00"
                       className="w-full min-h-[48px] px-4 py-3 rounded-xl border border-purple-200 bg-purple-50/50 text-base font-bold text-purple-950 placeholder-gray-400 cursor-not-allowed focus:outline-none"
                     />
                     <span
@@ -1051,11 +1055,11 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                       className="sr-only"
                     >
                       {validWholesale
-                        ? `$${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}`
-                        : '$0.00'}
+                        ? `${round2(validTax ? computePriceWithTax(wNum, tNum) : (wholesalePriceWithTax ? parseFloat(wholesalePriceWithTax) : wNum)).toFixed(2)}`
+                        : '0.00'}
                     </span>
-                    <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm">
-                      {currency}
+                    <span className="absolute top-3.5 right-4 text-gray-400 font-medium text-sm flex items-center">
+                      <CurrencySymbol code={currency} className="w-3.5 h-3.5 inline-block" />
                     </span>
                     {validTax && (
                       <span
