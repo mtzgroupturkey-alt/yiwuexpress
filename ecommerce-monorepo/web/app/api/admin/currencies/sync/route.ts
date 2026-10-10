@@ -11,14 +11,13 @@ export async function POST() {
     const result = await exchangeRateService.updateAllRates()
 
     if (result.success) {
-      const apiType = exchangeRateService.hasPaidAPI() ? 'paid API' : 'free API'
-      console.log(`[SYNC] Successfully updated ${result.updated} rates from ${apiType}`)
+      console.log(`[SYNC] Successfully updated ${result.updated} rates from ${result.source}`)
       
       return NextResponse.json({
         success: true,
         message: result.message,
         updated: result.updated,
-        api: apiType
+        source: result.source
       })
     } else {
       console.error('[SYNC] Failed:', result.message)

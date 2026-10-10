@@ -36,13 +36,12 @@ export async function GET(req: NextRequest) {
     const result = await exchangeRateService.updateAllRates()
 
     if (result.success) {
-      const apiType = exchangeRateService.hasPaidAPI() ? 'paid API' : 'FREE API'
-      console.log(`[CRON] Successfully updated ${result.updated} currency rates from ${apiType}`)
+      console.log(`[CRON] Successfully updated ${result.updated} currency rates from ${result.source}`)
       return NextResponse.json({
         success: true,
         message: result.message,
         updated: result.updated,
-        api: apiType,
+        source: result.source,
         timestamp: new Date().toISOString()
       })
     } else {
