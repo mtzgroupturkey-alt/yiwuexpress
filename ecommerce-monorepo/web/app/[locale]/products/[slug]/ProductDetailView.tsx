@@ -2525,7 +2525,7 @@ export default function ProductDetailView({
                         {/* Stock & Limit row */}
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-2">
-                            {currentStock > 0 || isWholesaleActive ? (
+                            {currentStock > 0 ? (
                               <div className="inline-flex items-center gap-1.5 font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-lg text-xs shadow-2xs">
                                 <span className="relative flex h-2 w-2">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -2534,9 +2534,12 @@ export default function ProductDetailView({
                                 <span>{t('inStock')}</span>
                               </div>
                             ) : (
-                              <span className="font-bold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg text-xs shadow-2xs">
-                                {t('outOfStock')}
-                              </span>
+                              <div className="inline-flex items-center gap-1.5 font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg text-xs shadow-2xs">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                </span>
+                                <span>{locale === 'ru' ? 'Под заказ' : locale === 'zh' ? '按需预定' : 'By Order'}</span>
+                              </div>
                             )}
                           </div>
 
@@ -2837,7 +2840,7 @@ export default function ProductDetailView({
           <div className="bg-white rounded-b-2xl border-x border-b border-slate-200/80 p-5 sm:p-8 shadow-xs min-h-[360px]">
             {/* Tab 1: Overview */}
             {activeTab === 'overview' && (
-              <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+              <div className="w-full text-left space-y-8 animate-fade-in">
                 {/* 1. Editorial Story & Lead Description */}
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 via-white to-blue-50/20 border border-slate-200/80 p-6 sm:p-8 shadow-2xs">
                   <div className="flex items-center gap-2 mb-3.5">
@@ -2929,7 +2932,7 @@ export default function ProductDetailView({
 
             {/* Tab 2: Product Details */}
             {activeTab === 'product-details' && (
-              <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+              <div className="w-full text-left space-y-8 animate-fade-in">
                 {/* 1. Key Features — only shown when admin explicitly added bullet points */}
                 {parsedProductDetails.keyFeatures.length > 0 && (
                   <div className="space-y-4">
@@ -2991,14 +2994,14 @@ export default function ProductDetailView({
 
                 {/* Empty state — when admin hasn't filled in any Product Details fields yet */}
                 {parsedProductDetails.keyFeatures.length === 0 && !whatsIncluded && !materials && !careInstructions && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex flex-col items-start justify-center py-12 text-left">
                     <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
                       <FileText className="w-7 h-7 text-slate-300" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-500 mb-1">
+                    <p className="text-sm font-semibold text-slate-500 mb-1 text-left">
                       {locale === 'ru' ? 'Сведения о товаре не заполнены' : locale === 'zh' ? '暂无商品详情' : 'No product details yet'}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 text-left">
                       {locale === 'ru' ? 'Администратор может добавить информацию в панели управления.' : locale === 'zh' ? '管理员可在后台填写商品详细信息。' : 'Admin can add details in the dashboard.'}
                     </p>
                   </div>
@@ -3011,7 +3014,7 @@ export default function ProductDetailView({
 
             {/* Tab 3: Measurements */}
             {activeTab === 'measurements' && (
-              <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+              <div className="w-full text-left space-y-6 animate-fade-in">
                 {/* Section A: Product Dimensions — only shown when dimensions exist */}
                 {dimensionCards.length > 0 && (
                   <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
@@ -3101,19 +3104,19 @@ export default function ProductDetailView({
 
                             <div className="grid grid-cols-3 gap-2">
                               {pkg.width && (
-                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-center">
+                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-left">
                                   <span className="text-[10px] text-slate-400 block font-bold uppercase">{locale === 'ru' ? 'Ширина' : locale === 'zh' ? '宽度' : 'Width'}</span>
                                   <span className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 font-mono">{pkg.width}</span>
                                 </div>
                               )}
                               {pkg.height && (
-                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-center">
+                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-left">
                                   <span className="text-[10px] text-slate-400 block font-bold uppercase">{locale === 'ru' ? 'Высота' : locale === 'zh' ? '高度' : 'Height'}</span>
                                   <span className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 font-mono">{pkg.height}</span>
                                 </div>
                               )}
                               {pkg.length && (
-                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-center">
+                                <div className="bg-white p-2.5 rounded-lg border border-slate-100 text-left">
                                   <span className="text-[10px] text-slate-400 block font-bold uppercase">{locale === 'ru' ? 'Длина' : locale === 'zh' ? '长度' : 'Length'}</span>
                                   <span className="text-xs sm:text-sm font-bold text-slate-900 block mt-0.5 font-mono">{pkg.length}</span>
                                 </div>
@@ -3139,14 +3142,14 @@ export default function ProductDetailView({
 
                 {/* Empty state — when neither dimensions nor packaging are available */}
                 {dimensionCards.length === 0 && (!packagingList || packagingList.length === 0) && (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex flex-col items-start justify-center py-12 text-left">
                     <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
                       <Ruler className="w-7 h-7 text-slate-300" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-500 mb-1">
+                    <p className="text-sm font-semibold text-slate-500 mb-1 text-left">
                       {locale === 'ru' ? 'Размеры не указаны' : locale === 'zh' ? '暂无尺寸规格' : 'No measurements available yet'}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 text-left">
                       {locale === 'ru' ? 'Администратор может добавить информацию в панели управления.' : locale === 'zh' ? '管理员可在后台填写商品尺寸与包装数据。' : 'Admin can add dimensions and packaging details in the dashboard.'}
                     </p>
                   </div>
@@ -3393,7 +3396,7 @@ export default function ProductDetailView({
 
             {/* Tab: Reviews */}
             {activeTab === 'reviews' && (
-              <div className="max-w-4xl mx-auto animate-fade-in">
+              <div className="w-full text-left animate-fade-in">
                 <ReviewSection
                   productId={product.id}
                   productName={localized.name}
