@@ -10,7 +10,8 @@ import {
   Check, 
   Plus, 
   Minus,
-  FileText
+  FileText,
+  Package
 } from 'lucide-react';
 import { Product } from '../types';
 import { ProductImage } from '@/components/ui/ProductImage';
@@ -324,8 +325,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 )}
 
                 {isWholesaleActive && (
-                  <div className="text-xs font-bold text-blue-700 font-mono mt-1">
-                    {tPdp('wholesaleMoq', { moq })}
+                  <div className="mt-1.5">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-[#00407a] border border-blue-200/80 font-bold text-xs shadow-2xs">
+                      <Package className="w-3.5 h-3.5 text-[#00407a] shrink-0" />
+                      <span>{tPdp('wholesaleMoq', { moq })}</span>
+                    </span>
                   </div>
                 )}
                 {product.unitPrice && (
