@@ -1025,8 +1025,10 @@ export default function ProductDetailView({
         if (!hasOnlyShipping) {
           Object.entries(dimObj).forEach(([k, v]) => {
             if (!isShippingKey(k) && v) {
-              const unitStr = dimObj.unit ? ` ${dimObj.unit}` : (typeof v === 'number' ? ' cm' : '')
-              const valStr = typeof v === 'number' && !String(v).includes('cm') ? `${v}${unitStr}` : String(v)
+              const strVal = String(v).trim()
+              const hasUnit = /[a-zA-Zа-яА-Я]/.test(strVal)
+              const unitStr = dimObj.unit ? ` ${dimObj.unit}` : (!hasUnit ? ' cm' : '')
+              const valStr = !hasUnit ? `${strVal}${unitStr}` : strVal
               fallback[k.charAt(0).toUpperCase() + k.slice(1)] = valStr
             }
           })
