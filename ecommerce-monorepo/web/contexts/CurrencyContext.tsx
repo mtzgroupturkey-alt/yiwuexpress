@@ -156,7 +156,12 @@ export function CurrencyProvider({
         return formattedNumber
       }
 
-      const symbol = currentCurrency.symbol || currentCurrency.code
+      let symbol = currentCurrency.symbol || currentCurrency.code
+      if (currentCurrency.code === 'BYN') {
+        // In plain string contexts, guarantee clean "BYN" text fallback (never a broken character)
+        symbol = 'BYN'
+      }
+
       if (currentCurrency.symbolPosition === 'after') {
         return `${formattedNumber} ${symbol}`
       }
