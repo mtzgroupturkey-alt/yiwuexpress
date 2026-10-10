@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { Star, Plus, Heart, Package, ClipboardList, Check } from 'lucide-react'
 import { Product } from '@/app/[locale]/design-3/types'
-import { useCurrency } from '@/hooks/useCurrency'
+import { useCurrency, PriceFormatted } from '@/hooks/useCurrency'
 import { useCustomerView } from '@/hooks/useCustomerView'
 import { useAuth } from '@/hooks/useAuth'
 import { useGuestAuthModal } from '@/hooks/useGuestAuthModal'
@@ -245,11 +245,11 @@ export function MobileProductCard({
             {isRetailUserLoggedIn ? (
               <>
                 <div className="font-extrabold text-sm text-[#00407a] dark:text-[#F5A602]">
-                  {formatPrice(displayPrice)}
+                  <PriceFormatted amount={displayPrice} />
                 </div>
                 {hasDiscount && (
                   <div className="text-[10px] text-gray-400 line-through">
-                    {formatPrice(product.oldPrice!)}
+                    <PriceFormatted amount={product.oldPrice!} />
                   </div>
                 )}
               </>
@@ -261,7 +261,7 @@ export function MobileProductCard({
                       {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
                     </span>
                     <span className="font-black text-xs sm:text-sm text-gray-900 dark:text-white">
-                      {formatPrice(displayPrice)}
+                      <PriceFormatted amount={displayPrice} />
                     </span>
                   </div>
 
@@ -274,7 +274,7 @@ export function MobileProductCard({
                           {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
                         </span>
                         <span className="font-black text-xs sm:text-sm text-purple-900 dark:text-purple-300">
-                          {formatPrice(effectiveDisplayPriceWithTax)}
+                          <PriceFormatted amount={effectiveDisplayPriceWithTax} />
                         </span>
                       </div>
                     </>
