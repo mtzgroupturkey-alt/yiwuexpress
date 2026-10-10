@@ -280,17 +280,8 @@ export default function ProductCard({
           }`}
         />
 
-        {/* Stacked Badges: Stock Status > Discount (red) > New (green) > Wholesale MOQ (blue) */}
+        {/* Stacked Badges: Discount (red) > New (green) > Wholesale MOQ (blue) */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10 items-start">
-          <span
-            className={`text-[9px] font-black px-2 py-0.5 rounded-md shadow-xs tracking-wider uppercase ${
-              isStockAvailable
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
-                : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
-            }`}
-          >
-            {stockStatusLabel}
-          </span>
           {hasDiscount && (
             <span className="bg-[#DC2626] text-white text-[11px] font-black px-2.5 py-0.5 rounded-md shadow-sm uppercase tracking-wider">
               -{discountPct}%
