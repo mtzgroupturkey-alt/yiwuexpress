@@ -150,15 +150,6 @@ export function MobileProductCard({
       <div className="relative w-full aspect-square bg-gray-50/80 dark:bg-slate-900/80 overflow-hidden">
         {/* Top Badges Stack */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
-          <span
-            className={`px-1.5 py-0.5 rounded-sm font-black text-[9px] uppercase tracking-wider shadow-xs ${
-              isStockAvailable
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80 dark:bg-emerald-950/60 dark:text-emerald-300'
-                : 'bg-amber-100 text-amber-800 border border-amber-200/80 dark:bg-amber-950/60 dark:text-amber-300'
-            }`}
-          >
-            {stockStatusLabel}
-          </span>
           {isRetailUserLoggedIn && discountPercent && (
             <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-[10px] shadow-xs tracking-tight flex items-center gap-0.5">
               <span>-{discountPercent}%</span>
