@@ -1748,7 +1748,9 @@ export default function ProductDetailView({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-800 truncate">{localized.name}</p>
-            <p className="text-xs font-black text-slate-900">{formatPrice(currentPrice)}</p>
+            <p className="text-xs font-black text-slate-900">
+              <PriceFormatted amount={currentPrice} />
+            </p>
           </div>
         </div>
 
@@ -1768,7 +1770,9 @@ export default function ProductDetailView({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-800 truncate">{bundleItem.name}</p>
-            <p className="text-xs font-black text-slate-900">{formatPrice(bundleItem.price)}</p>
+            <p className="text-xs font-black text-slate-900">
+              <PriceFormatted amount={bundleItem.price} />
+            </p>
           </div>
         </div>
       </div>
@@ -1777,11 +1781,16 @@ export default function ProductDetailView({
       <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
         <div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-sm font-black text-[#00407a]">{formatPrice(bundleDiscountPrice)}</span>
-            <span className="text-xs text-slate-400 line-through">{formatPrice(bundleTotalPrice)}</span>
+            <span className="text-sm font-black text-[#00407a]">
+              <PriceFormatted amount={bundleDiscountPrice} />
+            </span>
+            <span className="text-xs text-slate-400 line-through">
+              <PriceFormatted amount={bundleTotalPrice} />
+            </span>
           </div>
-          <span className="text-[11px] text-emerald-600 font-bold block">
-            {locale === 'ru' ? `Экономия ${formatPrice(bundleSavings)}` : locale === 'zh' ? `立省 ${formatPrice(bundleSavings)}` : `Save ${formatPrice(bundleSavings)}`}
+          <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+            <span>{locale === 'ru' ? 'Экономия' : locale === 'zh' ? '立省' : 'Save'}</span>
+            <PriceFormatted amount={bundleSavings} />
           </span>
         </div>
 
@@ -2631,7 +2640,7 @@ export default function ProductDetailView({
                                       {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税:' : 'Excl. TAX:'}
                                     </span>
                                     <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight whitespace-nowrap">
-                                      {formatPrice(subtotal)}
+                                      <PriceFormatted amount={subtotal} />
                                     </span>
                                   </div>
 
@@ -2642,14 +2651,14 @@ export default function ProductDetailView({
                                       {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税:' : 'Incl. TAX:'}
                                     </span>
                                     <span className="text-sm sm:text-base font-black text-purple-900 tracking-tight whitespace-nowrap">
-                                      {formatPrice(subtotalWithTax)}
+                                      <PriceFormatted amount={subtotalWithTax} />
                                     </span>
                                   </div>
                                 </div>
                               </div>
                             ) : (
                               <div className="text-xl sm:text-2xl font-black text-[#00407a] tracking-tight leading-none">
-                                {formatPrice(subtotal)}
+                                <PriceFormatted amount={subtotal} />
                               </div>
                             )}
                           </div>
