@@ -627,10 +627,10 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
                     <p className="text-[11px] text-slate-500">Public customer item number visible on product pages and invoices.</p>
                   </div>
 
-                  {/* Prv. Item # */}
+                  {/* Previous Item # */}
                   <div className="space-y-1.5">
                     <Label htmlFor="prvItemNo" className="text-xs font-bold text-amber-900 uppercase tracking-wider block">
-                      prv. item #
+                      Previous Item #
                     </Label>
                     <Input
                       id="prvItemNo"
