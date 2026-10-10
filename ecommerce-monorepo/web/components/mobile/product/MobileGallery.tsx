@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Package, ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react'
 import { normalizeProductImageUrl } from '@/lib/image-utils'
 import { ProductImage } from '@/components/ui/ProductImage'
+import { useLocale } from 'next-intl'
 
 interface MobileGalleryProps {
   images?: string[]
@@ -24,6 +25,7 @@ export function MobileGallery({
   inStock = true,
   className = '',
 }: MobileGalleryProps) {
+  const locale = useLocale()
   const rawList = propImages && propImages.length > 0 ? propImages : [mainImage]
   const images = rawList
     .map((src) => normalizeProductImageUrl(src, undefined, productName))
@@ -56,10 +58,12 @@ export function MobileGallery({
           className={`px-2 py-0.5 rounded-md text-[11px] font-bold shadow-xs ${
             inStock
               ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
-              : 'bg-red-500/15 text-red-700 dark:text-red-300 border border-red-500/30'
+              : 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30'
           }`}
         >
-          {inStock ? 'In Stock · Ready to Ship' : 'Backorder'}
+          {inStock
+            ? (locale === 'ru' ? 'В наличии · Готов к отправке' : locale === 'zh' ? '有现货 · 快速发货' : 'In Stock · Ready to Ship')
+            : (locale === 'ru' ? 'Под заказ' : locale === 'zh' ? '按需预定' : 'By Order')}
         </span>
       </div>
 
