@@ -28,13 +28,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Create currency
+    // Create currency - enforce standard official symbol for BYN
+    const effectiveSymbol = code.toUpperCase() === 'BYN' ? 'BYN' : symbol
+
     const currency = await prisma.currency.create({
       data: {
         code: code.toUpperCase(),
         name,
-        symbol,
-        symbolPosition: symbolPosition || 'before',
+        symbol: effectiveSymbol,
+        symbolPosition: symbolPosition || 'after',
         decimalPlaces: decimalPlaces || 2,
         exchangeRate: exchangeRate || 1,
         exchangeRateUpdatedAt: new Date(),
