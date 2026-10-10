@@ -19,7 +19,7 @@ import {
 import { Product } from '../types';
 import { getProductDisplayNames } from '@/lib/utils/productNames';
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation';
-import { useCurrency } from '@/hooks/useCurrency';
+import { useCurrency, PriceFormatted } from '@/hooks/useCurrency';
 import { useSettings } from '@/components/SettingsProvider';
 import { useStoreMode } from '@/contexts/StoreModeContext';
 import { useSessionMode } from '@/contexts/SessionModeContext';
@@ -366,11 +366,11 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           {isRetailUserLoggedIn ? (
             <div className="flex items-baseline gap-1.5 flex-wrap">
               <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                {formatPrice(displayPrice)}
+                <PriceFormatted amount={displayPrice} />
               </span>
               {showOriginalPrice && (
                 <span className="text-xs text-slate-400 line-through font-medium">
-                  {formatPrice(showOriginalPrice)}
+                  <PriceFormatted amount={showOriginalPrice} />
                 </span>
               )}
             </div>
@@ -382,7 +382,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                     {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
                   </span>
                   <span className="text-sm sm:text-base font-black text-slate-900 tracking-tight font-sans">
-                    {formatPrice(displayPrice)}
+                    <PriceFormatted amount={displayPrice} />
                   </span>
                 </div>
 
@@ -395,7 +395,7 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
                         {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
                       </span>
                       <span className="text-sm sm:text-base font-black text-purple-900 tracking-tight font-sans">
-                        {formatPrice(effectiveDisplayPriceWithTax)}
+                        <PriceFormatted amount={effectiveDisplayPriceWithTax} />
                       </span>
                     </div>
                   </>
@@ -407,12 +407,18 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
           <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-slate-100">
             <span
-              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 ${
+              className={`inline-flex items-center gap-1 text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 ${
                 isStockAvailable
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
                   : 'bg-amber-100 text-amber-800 border border-amber-200/80'
               }`}
             >
+              {isStockAvailable && (
+                <span className="relative flex h-1.5 w-1.5 shrink-0">
+                  <span className="dot-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-600" />
+                </span>
+              )}
               {stockStatusLabel}
             </span>
 
