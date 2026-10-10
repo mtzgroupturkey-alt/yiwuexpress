@@ -314,8 +314,8 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
           )}
         </Link>
 
-        {/* Category, Item #, Brand & Rating */}
-        <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-1 gap-1">
+        {/* Category, Item #, Brand */}
+        <div className="flex items-center text-[11px] text-slate-500 font-medium mb-1 gap-1">
           <div className="truncate flex items-center gap-1.5 min-w-0">
             {product.category && (
               <span className="text-[10px] font-semibold text-[#00407a] bg-blue-50 px-1.5 py-0.5 rounded truncate max-w-[130px]">
@@ -335,13 +335,6 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
             {product.originOrType && !product.category && (
               <span> • {tOriginAndBrand(product.originOrType)}</span>
             )}
-          </div>
-
-          {/* Rating & Reviews on the Right */}
-          <div className="flex items-center gap-1 text-[11px] text-slate-500 shrink-0">
-            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            <span className="font-bold text-slate-800">{product.rating}</span>
-            <span className="text-[10px]">({product.reviewsCount})</span>
           </div>
         </div>
 
@@ -422,12 +415,32 @@ export const UnifiedProductCard: React.FC<UnifiedProductCardProps> = ({
             </div>
           )}
 
+          {/* Stock Status Badge (Left) & Star Rating (Right) on the same line after prices */}
+          <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-slate-100">
+            <span
+              className={`text-[9px] font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shrink-0 ${
+                isStockAvailable
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
+                  : 'bg-amber-100 text-amber-800 border border-amber-200/80'
+              }`}
+            >
+              {stockStatusLabel}
+            </span>
+
+            {/* Rating on right side after prices */}
+            <div className="flex items-center gap-1 text-[11px] text-slate-500 shrink-0">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="font-bold text-slate-800">{product.rating}</span>
+              <span className="text-[10px]">({product.reviewsCount})</span>
+            </div>
+          </div>
+
           {isWholesaleCustomer ? (
-            <div className="text-[10px] font-bold text-blue-700 font-mono mt-0.5">
+            <div className="text-[10px] font-bold text-blue-700 font-mono mt-1">
               {tPdp('wholesaleMoq', { moq })}
             </div>
           ) : product.unitPrice ? (
-            <div className="text-[10px] text-slate-500 font-medium truncate">
+            <div className="text-[10px] text-slate-500 font-medium truncate mt-1">
               {product.unitPrice}
             </div>
           ) : null}
