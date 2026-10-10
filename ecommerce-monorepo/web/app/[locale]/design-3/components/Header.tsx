@@ -682,7 +682,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-2xl font-black tracking-tight text-[#00407a] font-['Inter'] leading-none">
+              <span className="text-xl sm:text-2xl font-black tracking-tight text-[#00407a] font-sans leading-none">
                 {companyName}
               </span>
               {settings?.siteTagline ? (

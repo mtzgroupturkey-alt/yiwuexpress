@@ -1194,17 +1194,68 @@ export default function ProductDetailView({
 
   // 4. Dimension Cards for Measurements Tab — only real data from DB
   const dimensionCards = useMemo(() => {
+    const DIMENSION_LABEL_MAP: Record<string, { ru: string; zh: string }> = {
+      depth: { ru: 'Глубина', zh: '进深' },
+      width: { ru: 'Ширина', zh: '宽度' },
+      height: { ru: 'Высота', zh: '高度' },
+      length: { ru: 'Длина', zh: '长度' },
+      diameter: { ru: 'Диаметр', zh: '直径' },
+      'seat depth': { ru: 'Глубина сиденья', zh: '座深' },
+      'seat width': { ru: 'Ширина сиденья', zh: '座宽' },
+      'seat height': { ru: 'Высота сиденья', zh: '座高' },
+      'cord length': { ru: 'Длина шнура', zh: '电线长度' },
+      'thread count': { ru: 'Плотность нитей', zh: '支数' },
+      dimensions: { ru: 'Размеры', zh: '尺寸' },
+      weight: { ru: 'Вес', zh: '重量' },
+      thickness: { ru: 'Толщина', zh: '厚度' },
+      volume: { ru: 'Объем', zh: '体积' },
+    }
+
+    const localizeLabel = (rawKey: string): string => {
+      const normalized = rawKey.trim().toLowerCase()
+      if (DIMENSION_LABEL_MAP[normalized]) {
+        if (locale === 'ru') return DIMENSION_LABEL_MAP[normalized].ru
+        if (locale === 'zh') return DIMENSION_LABEL_MAP[normalized].zh
+      }
+      return rawKey
+    }
+
+    const localizeValue = (rawVal: string): string => {
+      if (!rawVal) return ''
+      if (locale === 'ru') {
+        return rawVal
+          .replace(/\bcm\b/gi, 'см')
+          .replace(/\bmm\b/gi, 'мм')
+          .replace(/\bm\b/gi, 'м')
+          .replace(/\bkg\b/gi, 'кг')
+          .replace(/\bg\b/gi, 'г')
+      }
+      if (locale === 'zh') {
+        return rawVal
+          .replace(/\bcm\b/gi, '厘米')
+          .replace(/\bmm\b/gi, '毫米')
+          .replace(/\bm\b/gi, '米')
+          .replace(/\bkg\b/gi, '千克')
+          .replace(/\bg\b/gi, '克')
+      }
+      return rawVal
+    }
+
     const cards: Array<{ label: string; value: string }> = []
 
     Object.entries(resolvedDimensions).forEach(([k, v]) => {
-      cards.push({ label: k, value: String(v) })
+      cards.push({
+        label: localizeLabel(k),
+        value: localizeValue(String(v)),
+      })
     })
 
     if (cards.length === 0 && product.dimensions && typeof product.dimensions === 'object') {
       const d = product.dimensions as Record<string, any>
-      if (d.width) cards.push({ label: locale === 'ru' ? 'Ширина' : locale === 'zh' ? '宽度' : 'Width', value: `${d.width} cm` })
-      if (d.depth) cards.push({ label: locale === 'ru' ? 'Глубина' : locale === 'zh' ? '进深' : 'Depth', value: `${d.depth} cm` })
-      if (d.height) cards.push({ label: locale === 'ru' ? 'Высота' : locale === 'zh' ? '高度' : 'Height', value: `${d.height} cm` })
+      const cmUnit = locale === 'ru' ? 'см' : locale === 'zh' ? '厘米' : 'cm'
+      if (d.width) cards.push({ label: locale === 'ru' ? 'Ширина' : locale === 'zh' ? '宽度' : 'Width', value: `${d.width} ${cmUnit}` })
+      if (d.depth) cards.push({ label: locale === 'ru' ? 'Глубина' : locale === 'zh' ? '进深' : 'Depth', value: `${d.depth} ${cmUnit}` })
+      if (d.height) cards.push({ label: locale === 'ru' ? 'Высота' : locale === 'zh' ? '高度' : 'Height', value: `${d.height} ${cmUnit}` })
     }
 
     return cards
@@ -1982,7 +2033,9 @@ export default function ProductDetailView({
                             title={copiedItemNo ? 'Copied to clipboard!' : 'Click to copy item number'}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 border border-slate-200/80 text-sm font-sans transition-colors cursor-pointer group"
                           >
-                            <span className="text-slate-500 font-bold">Item #:</span>
+                            <span className="text-slate-500 font-bold">
+                              {locale === 'ru' ? 'Артикул:' : locale === 'zh' ? '商品编号:' : 'Item #:'}
+                            </span>
                             <span className="font-extrabold text-slate-900 group-hover:text-[#00407a] tracking-tight">{itemCode}</span>
                             {copiedItemNo ? (
                               <Check className="w-3.5 h-3.5 text-emerald-600" />
@@ -2369,7 +2422,8 @@ export default function ProductDetailView({
                               <div className="truncate min-w-0">
                                 <span className="font-semibold text-slate-800 block truncate text-xs">{item.label}</span>
                                 <span className="text-[10px] font-mono text-slate-400">
-                                  Item #: {(product as any).dromkokItemNo || '—'}
+                                  {locale === 'ru' ? 'Артикул: ' : locale === 'zh' ? '商品编号: ' : 'Item #: '}
+                                  {(product as any).dromkokItemNo || '—'}
                                 </span>
                               </div>
 
@@ -2772,7 +2826,9 @@ export default function ProductDetailView({
             {/* Quick Article / Item # tag on the right (desktop) */}
             {displayArticleNumber && (
               <div className="hidden lg:flex items-center gap-2 py-2 pr-2 text-sm text-slate-500 font-sans">
-                <span className="font-bold uppercase tracking-wider text-xs text-slate-500">Item #:</span>
+                <span className="font-bold uppercase tracking-wider text-xs text-slate-500">
+                  {locale === 'ru' ? 'Артикул:' : locale === 'zh' ? '商品编号:' : 'Item #:'}
+                </span>
                 <span className="font-extrabold text-slate-800 bg-slate-100 px-3 py-1 rounded-md border border-slate-200/80 text-sm">
                   {displayArticleNumber}
                 </span>

@@ -14,6 +14,7 @@ import { StickyBuyBar } from '../StickyBuyBar'
 import { ProductCardSkeleton } from '../Skeleton'
 import { useSessionMode } from '@/contexts/SessionModeContext'
 import { useMobile } from '@/components/MobileProvider'
+import { useLocale } from 'next-intl'
 
 export interface MobileProductDetailViewProps {
   product: Product
@@ -70,6 +71,7 @@ export function MobileProductDetailView({
   isLoggedIn = true,
 }: MobileProductDetailViewProps) {
   const { isStandalone } = useMobile()
+  const locale = useLocale()
   const { isWholesaleSession } = useSessionMode()
   const [quantity, setQuantity] = useState(product.moq || 1)
   const [legacySelectedVariant, setLegacySelectedVariant] = useState('default')
@@ -180,7 +182,8 @@ export function MobileProductDetailView({
             {product.category && <span className="font-bold text-slate-700 dark:text-slate-300 text-sm">• {product.category}</span>}
             {product.dromkokItemNo && (
               <span className="font-sans text-slate-500 font-medium text-xs sm:text-sm bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
-                Item #: <span className="text-slate-900 dark:text-white font-extrabold">{product.dromkokItemNo}</span>
+                {locale === 'ru' ? 'Артикул: ' : locale === 'zh' ? '商品编号: ' : 'Item #: '}
+                <span className="text-slate-900 dark:text-white font-extrabold">{product.dromkokItemNo}</span>
               </span>
             )}
           </div>

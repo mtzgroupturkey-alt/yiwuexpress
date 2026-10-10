@@ -176,15 +176,15 @@ export function ReviewSection({ productId, productName, initialSummary }: Review
           <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500 font-medium">
             <span className="inline-flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              Verified Buyer Reviews
+              {t('verifiedBuyerReviews')}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-blue-500" />
-              Transparent Ratings
+              {t('transparentRatings')}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-500" />
-              Community Moderated
+              {t('communityModerated')}
             </span>
           </div>
         </div>
