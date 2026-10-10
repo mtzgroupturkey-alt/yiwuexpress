@@ -57,7 +57,7 @@ interface StatusCounts {
 
 export default function AdminQuotesPage() {
   const { dict } = useAdminLocale()
-  const { formatPrice } = useAdminCurrency()
+  const { formatPrice, renderPrice } = useAdminCurrency()
   const { isAdmin, loading: authLoading } = useAdminAuth()
   const [quotes, setQuotes] = useState<QuoteSummary[]>([])
   const [counts, setCounts] = useState<StatusCounts>({
@@ -369,7 +369,7 @@ export default function AdminQuotesPage() {
                       <td className="py-4 px-4 font-bold text-gray-900">
                         {quote.totalAmount ? (
                           <span className="text-emerald-700 font-mono text-sm">
-                            {formatPrice(quote.totalAmount)}
+                            {renderPrice(quote.totalAmount)}
                           </span>
                         ) : (
                           <span className="text-gray-400 italic">Unpriced Draft</span>
