@@ -37,7 +37,7 @@ import {
   resolveLocalizedAttributeValue,
 } from '@/lib/utils/attributeOptionTranslations'
 import { useTranslations } from 'next-intl'
-import { useCurrency } from '@/hooks/useCurrency'
+import { useCurrency, PriceFormatted } from '@/hooks/useCurrency'
 import { getProductDisplayNames } from '@/lib/utils/productNames'
 import { useStorefrontTranslation } from '@/hooks/useStorefrontTranslation'
 import { StickyBuyBar } from '@/components/mobile/StickyBuyBar'
@@ -2213,7 +2213,7 @@ export default function ProductDetailView({
                                 {locale === 'ru' ? 'Без НДС:' : locale === 'zh' ? '未含税：' : 'Excl. TAX:'}
                               </span>
                               <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-sans whitespace-nowrap">
-                                {formatPrice(displayPrice)}
+                                <PriceFormatted amount={displayPrice} />
                               </span>
                             </div>
 
@@ -2224,19 +2224,19 @@ export default function ProductDetailView({
                                 {locale === 'ru' ? 'С НДС:' : locale === 'zh' ? '含税价：' : 'Incl. TAX:'}
                               </span>
                               <span className="text-xl sm:text-2xl font-black text-purple-900 tracking-tight font-sans whitespace-nowrap">
-                                {formatPrice(effectiveDisplayPriceWithTax)}
+                                <PriceFormatted amount={effectiveDisplayPriceWithTax} />
                               </span>
                             </div>
                           </div>
                         ) : (
                           <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
-                            {formatPrice(displayPrice)}
+                            <PriceFormatted amount={displayPrice} />
                           </span>
                         )}
 
                         {priceType !== 'wholesale' && showOriginalPrice && showOriginalPrice > displayPrice && (
                           <span className="text-base font-semibold text-slate-400 line-through decoration-slate-400">
-                            {formatPrice(showOriginalPrice)}
+                            <PriceFormatted amount={showOriginalPrice} />
                           </span>
                         )}
                       </div>
