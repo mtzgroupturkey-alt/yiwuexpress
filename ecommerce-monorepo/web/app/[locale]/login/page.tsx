@@ -47,10 +47,10 @@ function LoginTabContent() {
                   <Tabs defaultValue="signIn" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 mb-6">
                       <TabsTrigger value="signIn">
-                        {t('tabs.signIn') || 'Sign In'}
+                        {t('retailTabs.signIn') || 'Sign In'}
                       </TabsTrigger>
                       <TabsTrigger value="createAccount">
-                        {t('tabs.createAccount') || 'Create Account'}
+                        {t('retailTabs.createAccount') || 'Create Account'}
                       </TabsTrigger>
                     </TabsList>
 

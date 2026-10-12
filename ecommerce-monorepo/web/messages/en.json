@@ -130,7 +130,15 @@
       "createAccount": "Create Account",
       "signIn": "Sign In"
     },
+    "retailTabs": {
+      "signIn": "Sign In",
+      "createAccount": "Create Account"
+    },
     "orWithEmail": "Or with email",
+    "errors": {
+      "emailReserved": "This email is reserved. Please use a different account.",
+      "useWholesaleLogin": "This email is a wholesale account. Please sign in at /register-b2b."
+    },
     "wholesaleLogin": {
       "title": "Welcome back",
       "subtitle": "Sign in to your wholesale account",

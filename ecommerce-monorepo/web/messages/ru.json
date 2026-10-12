@@ -130,7 +130,15 @@
       "createAccount": "Создать аккаунт",
       "signIn": "Войти"
     },
+    "retailTabs": {
+      "signIn": "Войти",
+      "createAccount": "Создать аккаунт"
+    },
     "orWithEmail": "Или через email",
+    "errors": {
+      "emailReserved": "Этот email зарезервирован. Используйте другой аккаунт.",
+      "useWholesaleLogin": "Этот email — оптовый аккаунт. Войдите на /register-b2b."
+    },
     "wholesaleLogin": {
       "title": "С возвращением",
       "subtitle": "Войдите в свой оптовый аккаунт",

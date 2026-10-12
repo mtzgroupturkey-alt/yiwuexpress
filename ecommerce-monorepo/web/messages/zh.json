@@ -130,7 +130,15 @@
       "createAccount": "创建账户",
       "signIn": "登录"
     },
+    "retailTabs": {
+      "signIn": "登录",
+      "createAccount": "创建账户"
+    },
     "orWithEmail": "或使用邮箱",
+    "errors": {
+      "emailReserved": "此邮箱已被保留，请使用其他账户。",
+      "useWholesaleLogin": "此邮箱为批发账户，请在 /register-b2b 登录。"
+    },
     "wholesaleLogin": {
       "title": "欢迎回来",
       "subtitle": "登录您的批发账户",
