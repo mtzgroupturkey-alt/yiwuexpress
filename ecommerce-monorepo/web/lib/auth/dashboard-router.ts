@@ -7,13 +7,14 @@
  * Admin dashboard is at /admin.
  */
 export function getDashboardForUser(
-  user: { role: string; userType: string },
+  user: { role: string; userType?: string },
   locale: string = 'en'
 ): string {
   if (user.role === 'ADMIN') {
     return '/admin'
   }
-  if (user.userType === 'WHOLESALE' || user.userType === 'BOTH') {
+  const userType = user.userType || 'RETAIL'
+  if (userType === 'WHOLESALE' || userType === 'BOTH') {
     return `/${locale}/business/dashboard`
   }
   // RETAIL (default)

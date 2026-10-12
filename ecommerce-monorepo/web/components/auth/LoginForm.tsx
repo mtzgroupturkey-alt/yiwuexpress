@@ -29,7 +29,7 @@ export function LoginForm({
   const router = useRouter()
   const locale = useLocale()
   const tAuth = useTranslations('auth')
-  const { logout } = useAuth()
+  const { login, logout } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,24 +46,7 @@ export function LoginForm({
     try {
       setIsLoading(true)
 
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(
-          data.error ||
-            tAuth('wholesaleLogin.errors.invalidCredentials') ||
-            'Invalid email or password'
-        )
-      }
-
-      const user = data.user
+      const user = await login(email.trim().toLowerCase(), password)
 
       // If wholesaleOnly, reject non-wholesale accounts and clear the active session
       if (wholesaleOnly) {
