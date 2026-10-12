@@ -87,22 +87,6 @@ export const MemberModal: React.FC<MemberModalProps> = ({
                   <p className="text-[11px] text-blue-300 font-mono mt-0.5">{companyName} ID: #{user.id.slice(-8).toUpperCase()}</p>
                 </div>
               </div>
-
-              {/* Points Balance Tile */}
-              <div className="bg-white/10 backdrop-blur-xs border border-white/20 rounded-xl p-3.5 flex items-center justify-between">
-                <div>
-                  <span className="text-[11px] uppercase tracking-wider text-blue-200 block font-semibold">
-                    {tModals('availablePoints')}
-                  </span>
-                  <div className="text-2xl font-black text-amber-300">
-                    1,280 <span className="text-sm font-semibold text-white">{tModals('pointsUnit')}</span>
-                  </div>
-                </div>
-                <div className="text-right text-xs">
-                  <span className="text-blue-100">{tModals('pointRate', { currency })}</span>
-                  <div className="text-amber-300 font-bold">{tModals('pointsValue', { amount: '1,280.00', currency })}</div>
-                </div>
-              </div>
             </>
           ) : (
             <div className="text-center py-2">
