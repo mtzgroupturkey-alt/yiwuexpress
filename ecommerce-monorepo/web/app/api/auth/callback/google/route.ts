@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOrUpdateWholesaleUser } from '@/lib/auth/oauth-wholesale-handler'
+import { createOrUpdateRetailUser } from '@/lib/auth/oauth-retail-handler'
+import { getDashboardForUser } from '@/lib/auth/dashboard-router'
 import { generateToken, setAuthCookie } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
@@ -67,56 +69,113 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/en/register-b2b?error=no_email`)
     }
 
-    const email = googleUser.email.toLowerCase()
-
-    // 1. Check if this email already exists in the system
+    const email = googleUser.email.toLowerCase().trim()
+    const state = searchParams.get('state') || 'wholesale'
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true, role: true, userType: true, verificationStatus: true },
     })
 
-    // 2. Reject ADMIN emails — never allow OAuth to touch admin accounts
+    // ---- BRANCH BY STATE ----
+
+    if (state === 'retail' || state === 'retail-login') {
+      // RETAIL FLOW
+
+      // Reject ADMIN
+      if (existingUser?.role === 'ADMIN') {
+        console.error('[OAuth Google] Rejected: email belongs to ADMIN (retail flow)')
+        return NextResponse.redirect(`${origin}/en/login?error=email_reserved`)
+      }
+
+      // Reject WHOLESALE / BOTH — they must use the wholesale login
+      if (
+        existingUser?.userType === 'WHOLESALE' ||
+        existingUser?.userType === 'BOTH'
+      ) {
+        console.error('[OAuth Google] Rejected: email is WHOLESALE (retail flow)')
+        return NextResponse.redirect(`${origin}/en/login?error=use_wholesale_login`)
+      }
+
+      // Create or update retail user
+      let user
+      try {
+        user = await createOrUpdateRetailUser({
+          provider: 'google',
+          providerId: googleUser.id,
+          email,
+          name:
+            googleUser.name ||
+            `${googleUser.given_name || ''} ${googleUser.family_name || ''}`.trim() ||
+            googleUser.email.split('@')[0],
+        })
+      } catch (err: any) {
+        const errorCode =
+          err.message === 'email_reserved'
+            ? 'email_reserved'
+            : err.message === 'use_wholesale_login'
+            ? 'use_wholesale_login'
+            : 'oauth_failed'
+        return NextResponse.redirect(`${origin}/en/login?error=${errorCode}`)
+      }
+
+      // Issue session
+      const token = generateToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      })
+
+      // Redirect via helper
+      const target = getDashboardForUser(user, 'en')
+      const response = NextResponse.redirect(`${origin}${target}`)
+      setAuthCookie(response, token)
+      return response
+    }
+
+    // ---- WHOLESALE FLOW (default, backwards compatible) ----
+
+    // Reject ADMIN
     if (existingUser?.role === 'ADMIN') {
-      console.error(
-        `[OAuth Google] Rejected: email ${email} belongs to an ADMIN account`
-      )
-      return NextResponse.redirect(
-        `${origin}/en/register-b2b?error=email_reserved`
-      )
+      console.error('[OAuth Google] Rejected: email belongs to ADMIN (wholesale flow)')
+      return NextResponse.redirect(`${origin}/en/register-b2b?error=email_reserved`)
     }
 
-    // 3. Reject pure RETAIL users — they must use the retail login flow
+    // Reject pure RETAIL
     if (existingUser?.userType === 'RETAIL') {
-      console.error(
-        `[OAuth Google] Rejected: email ${email} is a RETAIL user`
-      )
-      return NextResponse.redirect(
-        `${origin}/en/register-b2b?error=email_exists`
-      )
+      console.error('[OAuth Google] Rejected: email is RETAIL (wholesale flow)')
+      return NextResponse.redirect(`${origin}/en/register-b2b?error=email_exists`)
     }
 
-    // 4. Create/update user via shared helper
-    const user = await createOrUpdateWholesaleUser({
-      provider: 'google',
-      providerId: googleUser.id,
-      email,
-      name:
-        googleUser.name ||
-        `${googleUser.given_name || ''} ${googleUser.family_name || ''}`.trim() ||
-        googleUser.email.split('@')[0],
-      phone: null,
-      country: null,
-      city: null,
-    })
+    // Create or update wholesale user
+    let user
+    try {
+      user = await createOrUpdateWholesaleUser({
+        provider: 'google',
+        providerId: googleUser.id,
+        email,
+        name:
+          googleUser.name ||
+          `${googleUser.given_name || ''} ${googleUser.family_name || ''}`.trim() ||
+          googleUser.email.split('@')[0],
+        phone: null,
+        country: null,
+        city: null,
+      })
+    } catch (err: any) {
+      console.error('[OAuth Google] Wholesale handler failed:', err)
+      return NextResponse.redirect(`${origin}/en/register-b2b?error=oauth_failed`)
+    }
 
-    // 4. Issue session and redirect to dashboard
+    // Issue session
     const token = generateToken({
       userId: user.id,
       email: user.email,
       role: user.role,
     })
 
-    const response = NextResponse.redirect(`${origin}/en/business/dashboard`)
+    // Redirect via helper
+    const target = getDashboardForUser(user, 'en')
+    const response = NextResponse.redirect(`${origin}${target}`)
     setAuthCookie(response, token)
     return response
   } catch (err) {
