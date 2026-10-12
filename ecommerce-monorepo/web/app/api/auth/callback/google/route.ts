@@ -11,13 +11,16 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
+  const state = searchParams.get('state') || 'wholesale'
+  const isRetailFlow = state === 'retail' || state === 'retail-login'
+  const errorBase = isRetailFlow ? `${origin}/en/login` : `${origin}/en/register-b2b`
 
   if (error) {
-    return NextResponse.redirect(`${origin}/en/register-b2b?error=${encodeURIComponent(error)}`)
+    return NextResponse.redirect(`${errorBase}?error=${encodeURIComponent(error)}`)
   }
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/en/register-b2b?error=missing_code`)
+    return NextResponse.redirect(`${errorBase}?error=missing_code`)
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID
@@ -26,7 +29,7 @@ export async function GET(request: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error('[OAuth Google] Missing env vars: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET')
-    return NextResponse.redirect(`${origin}/en/register-b2b?error=server_config`)
+    return NextResponse.redirect(`${errorBase}?error=server_config`)
   }
 
   try {
@@ -46,7 +49,7 @@ export async function GET(request: NextRequest) {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text()
       console.error('[OAuth Google] Token exchange failed:', errText)
-      return NextResponse.redirect(`${origin}/en/register-b2b?error=token_exchange`)
+      return NextResponse.redirect(`${errorBase}?error=token_exchange`)
     }
 
     const tokens = await tokenRes.json()
@@ -60,13 +63,13 @@ export async function GET(request: NextRequest) {
 
     if (!userRes.ok) {
       console.error('[OAuth Google] userinfo failed')
-      return NextResponse.redirect(`${origin}/en/register-b2b?error=userinfo`)
+      return NextResponse.redirect(`${errorBase}?error=userinfo`)
     }
 
     const googleUser = await userRes.json()
 
     if (!googleUser.email) {
-      return NextResponse.redirect(`${origin}/en/register-b2b?error=no_email`)
+      return NextResponse.redirect(`${errorBase}?error=no_email`)
     }
 
     const email = googleUser.email.toLowerCase().trim()
