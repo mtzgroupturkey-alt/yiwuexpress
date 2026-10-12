@@ -34,12 +34,7 @@ export async function createOrUpdateWholesaleUser(
   })
 
   if (existingUser) {
-    // Existing user: mark email verified since confirmed by Google/Apple
-    const newStatus =
-      existingUser.verificationStatus === 'UNVERIFIED'
-        ? 'PENDING'
-        : existingUser.verificationStatus
-
+    // Existing wholesale user: preserve current verificationStatus, ensure verified email and updated login timestamp
     const locationString = payload.country
       ? `${payload.country}${payload.city ? `, ${payload.city}` : ''}`
       : existingUser.country
@@ -47,9 +42,9 @@ export async function createOrUpdateWholesaleUser(
     const updated = await prisma.user.update({
       where: { id: existingUser.id },
       data: {
+        role: 'USER',
+        userType: existingUser.userType === 'BOTH' ? 'BOTH' : 'WHOLESALE',
         isVerified: true,
-        userType: existingUser.userType === 'RETAIL' ? 'BOTH' : existingUser.userType,
-        verificationStatus: newStatus,
         phone: payload.phone || existingUser.phone,
         country: locationString,
         lastLoginAt: new Date(),
@@ -86,6 +81,7 @@ export async function createOrUpdateWholesaleUser(
       userType: 'WHOLESALE',
       isVerified: true,
       verificationStatus: 'PENDING',
+      verifiedAt: null,
       isActive: true,
       lastLoginAt: new Date(),
     },
