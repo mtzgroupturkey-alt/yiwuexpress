@@ -1,20 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 
 interface GoogleButtonProps {
   variant?: 'register' | 'login'
-  onSuccess?: () => void
   disabled?: boolean
 }
 
-export function GoogleButton({ variant = 'register', onSuccess, disabled = false }: GoogleButtonProps) {
+export function GoogleButton({ variant = 'register', disabled = false }: GoogleButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const locale = useLocale()
   const tAuth = useTranslations('Auth')
   const tBusiness = useTranslations('business')
 
@@ -25,54 +21,32 @@ export function GoogleButton({ variant = 'register', onSuccess, disabled = false
       ? `${tAuth('orContinue')} Google`
       : 'Continue with Google'
 
-  const handleClick = async () => {
+  const handleClick = () => {
     try {
       setIsLoading(true)
 
       const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-      if (googleClientId && typeof window !== 'undefined') {
-        const redirectUri = `${window.location.origin}/api/auth/callback/google`
-        const state = variant === 'login' ? 'wholesale-login' : 'wholesale'
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(
-          redirectUri
-        )}&response_type=code&scope=openid%20profile%20email&state=${state}&prompt=select_account`
-        return
-      }
-
-      // Demo/Direct Wholesale OAuth simulation prompt
-      const promptEmail = window.prompt(
-        `Enter your Google account email for wholesale ${variant === 'login' ? 'sign in' : 'registration'}:`,
-        'buyer@example.com'
-      )
-      if (!promptEmail) {
+      if (!googleClientId) {
+        console.error(
+          '[OAuth Google] NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set. ' +
+          'Google sign-in is unavailable.'
+        )
         setIsLoading(false)
+        alert(
+          'Google sign-in is temporarily unavailable. Please try again later ' +
+          'or use email and password.'
+        )
         return
       }
 
-      const res = await fetch('/api/auth/oauth-wholesale', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: 'google',
-          email: promptEmail.trim().toLowerCase(),
-          name: promptEmail.split('@')[0],
-        }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to sign in with Google.')
-      }
-
-      if (onSuccess) {
-        onSuccess()
-      } else {
-        router.push(`/${locale}/business/dashboard`)
-      }
+      const redirectUri = `${window.location.origin}/api/auth/callback/google`
+      const state = variant === 'login' ? 'wholesale-login' : 'wholesale'
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&response_type=code&scope=openid%20profile%20email&state=${state}&prompt=select_account`
     } catch (err: any) {
       console.error('[OAuth Google] Error:', err)
       alert(err.message || 'Google authentication failed.')
-    } finally {
       setIsLoading(false)
     }
   }
