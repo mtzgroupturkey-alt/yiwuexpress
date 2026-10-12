@@ -80,7 +80,7 @@ export default function BusinessDashboardPage() {
 
       // Check userType & verificationStatus
       if (user.userType === 'RETAIL') {
-        router.push(`/${locale}`);
+        router.push('/dashboard');
         return;
       }
 
