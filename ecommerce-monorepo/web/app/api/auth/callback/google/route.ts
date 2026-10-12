@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createOrUpdateWholesaleUser } from '@/lib/auth/oauth-wholesale-handler'
 import { generateToken, setAuthCookie } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,11 +67,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/en/register-b2b?error=no_email`)
     }
 
-    // 3. Create/update user via shared helper
+    const email = googleUser.email.toLowerCase()
+
+    // 1. Check if this email already exists in the system
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, role: true, userType: true, verificationStatus: true },
+    })
+
+    // 2. Reject ADMIN emails — never allow OAuth to touch admin accounts
+    if (existingUser?.role === 'ADMIN') {
+      console.error(
+        `[OAuth Google] Rejected: email ${email} belongs to an ADMIN account`
+      )
+      return NextResponse.redirect(
+        `${origin}/en/register-b2b?error=email_reserved`
+      )
+    }
+
+    // 3. Reject pure RETAIL users — they must use the retail login flow
+    if (existingUser?.userType === 'RETAIL') {
+      console.error(
+        `[OAuth Google] Rejected: email ${email} is a RETAIL user`
+      )
+      return NextResponse.redirect(
+        `${origin}/en/register-b2b?error=email_exists`
+      )
+    }
+
+    // 4. Create/update user via shared helper
     const user = await createOrUpdateWholesaleUser({
       provider: 'google',
       providerId: googleUser.id,
-      email: googleUser.email,
+      email,
       name:
         googleUser.name ||
         `${googleUser.given_name || ''} ${googleUser.family_name || ''}`.trim() ||
