@@ -1,172 +1,108 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter, useSearchParams } from 'next/navigation'
+import React, { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { LocaleLink } from '@/components/LocaleLink'
-import { useLocaleNav } from '@/hooks/useLocaleNav'
 import { useTranslations, useLocale } from 'next-intl'
-import { loginSchema, LoginInput } from '@/lib/validation'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useSettings } from '@/components/SettingsProvider'
-import { useAuth } from '@/hooks/useAuth'
-import { Mail, Lock, Globe, Shield, Clock, BarChart3, AlertCircle } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { GoogleButton } from '@/components/auth/GoogleButton'
+import { LoginForm } from '@/components/auth/LoginForm'
+import { RetailRegisterForm } from '@/components/auth/RetailRegisterForm'
+import { Globe, Shield, BarChart3, Loader2 } from 'lucide-react'
 
-export default function LocalizedLoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+function LoginTabContent() {
+  const searchParams = useSearchParams()
+  const locale = useLocale()
   const { settings } = useSettings()
   const companyName = settings?.companyName || 'Global Trade'
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const navigate = useLocaleNav()
-  const locale = useLocale()
-  const t = useTranslations('Auth')
-  const { login } = useAuth()
+  const tAuth = useTranslations('Auth')
+  const t = useTranslations('auth')
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-  })
-
-  const onSubmit = async (data: LoginInput) => {
-    try {
-      setIsLoading(true)
-      setError('')
-
-      const user = await login(data.email, data.password)
-
-      // Redirect based on role or redirect parameter
-      const redirectUrl = searchParams.get('redirect')
-      if (redirectUrl && redirectUrl !== '/') {
-        window.location.href = redirectUrl
-      } else if (user?.role === 'ADMIN') {
-        window.location.href = '/admin'
-      } else if (user?.role === 'SUPPLIER') {
-        window.location.href = '/dashboard/supplier'
-      } else {
-        // Customer - redirect to dashboard
-        window.location.href = '/dashboard'
-      }
-    } catch (err: any) {
-      setError(err?.message || 'Login failed')
-      setIsLoading(false)
-    }
-  }
+  const redirectParam = searchParams.get('redirect') || ''
 
   return (
     <SharedLayout
-      pageTitle={t('signInTitle')}
-      pageDescription="Access your business account to manage logistics, quotes, and shipments"
+      pageTitle={tAuth('signInTitle')}
+      pageDescription="Access your account to manage orders, tracking, quotes, and shipments"
       breadcrumbs={[
-        { name: t('signIn'), href: '/login' }
+        { name: tAuth('signIn'), href: '/login' }
       ]}
     >
       <div className="bg-gray-50 py-12">
         <main className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-              {/* Login Form */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              {/* Login & Register Tabs Card */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 flex flex-col justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-[#1a3a5c] mb-2">
-                    {t('signInTitle')}
+                    {tAuth('signInTitle')}
                   </h2>
                   <p className="text-sm text-gray-500 mb-6">
-                    Enter your credentials to access your dashboard and quotes
+                    Sign in to your account or register a free account in seconds.
                   </p>
 
-                  {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700 text-sm">
-                      <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
-                      <span>{error}</span>
-                    </div>
-                  )}
+                  <Tabs defaultValue="signIn" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="signIn">
+                        {t('tabs.signIn') || 'Sign In'}
+                      </TabsTrigger>
+                      <TabsTrigger value="createAccount">
+                        {t('tabs.createAccount') || 'Create Account'}
+                      </TabsTrigger>
+                    </TabsList>
 
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                        {t('email')}
-                      </label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                          <Mail className="h-5 w-5" />
+                    {/* Tab 1: Sign In */}
+                    <TabsContent value="signIn" className="space-y-4">
+                      <GoogleButton variant="retail-login" />
+
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-slate-200" />
                         </div>
-                        <input
-                          id="email"
-                          type="email"
-                          {...register('email')}
-                          className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                            errors.email ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-primary-200 focus:border-primary-500'
-                          }`}
-                          placeholder="name@business.com"
-                        />
-                      </div>
-                      {errors.email && (
-                        <p className="mt-1.5 text-xs text-red-600">{errors.email.message}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                          {t('password')}
-                        </label>
-                        <LocaleLink
-                          href="/forgot-password"
-                          className="text-xs text-[#1a3a5c] hover:text-[#c9a84c] font-medium transition-colors"
-                        >
-                          {t('forgotPassword')}
-                        </LocaleLink>
-                      </div>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                          <Lock className="h-5 w-5" />
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-white px-2 text-slate-500">
+                            {t('orWithEmail') || 'Or with email'}
+                          </span>
                         </div>
-                        <input
-                          id="password"
-                          type="password"
-                          {...register('password')}
-                          className={`block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                            errors.password ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-primary-200 focus:border-primary-500'
-                          }`}
-                          placeholder="••••••••"
-                        />
                       </div>
-                      {errors.password && (
-                        <p className="mt-1.5 text-xs text-red-600">{errors.password.message}</p>
-                      )}
-                    </div>
 
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full bg-[#1a3a5c] hover:bg-[#122840] text-white py-3 px-4 rounded-lg font-medium transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          <span>Signing in...</span>
-                        </>
-                      ) : (
-                        <span>{t('signIn')}</span>
-                      )}
-                    </button>
-                  </form>
+                      <LoginForm redirectTo={redirectParam || undefined} />
+                    </TabsContent>
+
+                    {/* Tab 2: Create Account */}
+                    <TabsContent value="createAccount" className="space-y-4">
+                      <GoogleButton variant="retail-register" />
+
+                      <div className="relative my-4">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t border-slate-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-white px-2 text-slate-500">
+                            {t('orWithEmail') || 'Or with email'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <RetailRegisterForm
+                        compact
+                        redirectTo={redirectParam || undefined}
+                      />
+                    </TabsContent>
+                  </Tabs>
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                  <p className="text-sm text-gray-600">
-                    {t('noAccount')}{' '}
+                  <p className="text-xs text-gray-500">
+                    Are you a wholesale or business buyer?{' '}
                     <LocaleLink
-                      href={searchParams.get('redirect') ? `/register?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : '/register'}
+                      href={redirectParam ? `/business/login?redirect=${encodeURIComponent(redirectParam)}` : '/business/login'}
                       className="font-semibold text-[#1a3a5c] hover:text-[#c9a84c] transition-colors"
                     >
-                      {t('registerNow')}
+                      Sign in to B2B Wholesale →
                     </LocaleLink>
                   </p>
                 </div>
@@ -244,5 +180,22 @@ export default function LocalizedLoginPage() {
         </main>
       </div>
     </SharedLayout>
+  )
+}
+
+export default function LocalizedLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 text-[#1a3a5c] animate-spin" />
+            <p className="text-sm font-medium text-slate-500">Loading sign in...</p>
+          </div>
+        </div>
+      }
+    >
+      <LoginTabContent />
+    </Suspense>
   )
 }
