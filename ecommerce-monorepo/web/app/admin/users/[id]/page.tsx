@@ -458,23 +458,41 @@ export default function UserProfilePage() {
                   {user.role}
                 </Badge>
 
-                <Badge className="bg-indigo-50 text-indigo-700 border-indigo-200 font-bold">
-                  {user.userType}
-                </Badge>
+                {/* User Type Badge: Clearly Labeled Retail vs Wholesale vs Both */}
+                {user.userType === 'WHOLESALE' ? (
+                  <Badge className="bg-purple-50 text-purple-700 border-purple-200 font-bold">
+                    Wholesale (B2B)
+                  </Badge>
+                ) : user.userType === 'BOTH' ? (
+                  <Badge className="bg-indigo-50 text-indigo-700 border-indigo-200 font-bold">
+                    Hybrid (Both B2B & B2C)
+                  </Badge>
+                ) : (
+                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 font-bold">
+                    Retail (B2C)
+                  </Badge>
+                )}
 
-                {/* B2B Verification Badge */}
-                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                  user.verificationStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                  user.verificationStatus === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                  user.verificationStatus === 'DOCUMENTS_REQUIRED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                  user.verificationStatus === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                  'bg-gray-100 text-gray-700 border-gray-200'
-                }`}>
-                  {user.verificationStatus === 'APPROVED' ? <CheckCircle2 size={12} /> :
-                   user.verificationStatus === 'PENDING' ? <Clock size={12} /> :
-                   <FileText size={12} />}
-                  B2B {user.verificationStatus}
-                </span>
+                {/* Verification Badge - tailored to userType */}
+                {user.userType === 'RETAIL' ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <CheckCircle2 size={12} />
+                    Verified Retail Customer
+                  </span>
+                ) : (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                    user.verificationStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                    user.verificationStatus === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                    user.verificationStatus === 'DOCUMENTS_REQUIRED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                    user.verificationStatus === 'REJECTED' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                    'bg-gray-100 text-gray-700 border-gray-200'
+                  }`}>
+                    {user.verificationStatus === 'APPROVED' ? <CheckCircle2 size={12} /> :
+                     user.verificationStatus === 'PENDING' ? <Clock size={12} /> :
+                     <FileText size={12} />}
+                    B2B {user.verificationStatus}
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
@@ -516,7 +534,19 @@ export default function UserProfilePage() {
 
           {/* Quick B2B Action Button */}
           <div className="flex items-center gap-2">
-            {user.verificationStatus !== 'APPROVED' ? (
+            {user.userType === 'RETAIL' ? (
+              <Button
+                onClick={() => {
+                  setTargetStatus('APPROVED')
+                  setVerificationModal(true)
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs gap-1.5 shadow-xs font-bold"
+                title="Upgrade this retail consumer to an approved B2B Wholesale account"
+              >
+                <ShieldCheck size={14} />
+                Upgrade to Wholesale (B2B)
+              </Button>
+            ) : user.verificationStatus !== 'APPROVED' ? (
               <Button
                 onClick={() => {
                   setTargetStatus('APPROVED')
@@ -684,7 +714,15 @@ export default function UserProfilePage() {
 
                   <div className="bg-gray-50/80 p-3.5 rounded-xl border border-gray-100">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Purchasing Channel Mode</span>
-                    <p className="text-sm font-bold text-indigo-700 mt-0.5">{user.userType} Buyer</p>
+                    <p className="text-sm font-bold mt-0.5">
+                      {user.userType === 'RETAIL' ? (
+                        <span className="text-emerald-700">Retail Consumer (B2C)</span>
+                      ) : user.userType === 'WHOLESALE' ? (
+                        <span className="text-purple-700">Wholesale Partner (B2B)</span>
+                      ) : (
+                        <span className="text-indigo-700">Hybrid (Both B2B & B2C)</span>
+                      )}
+                    </p>
                   </div>
                 </div>
 
