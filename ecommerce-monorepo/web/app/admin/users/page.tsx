@@ -100,6 +100,7 @@ export default function AdminUsersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState<TabId>('all')
   const [roleFilter, setRoleFilter] = useState('')
+  const [userTypeFilter, setUserTypeFilter] = useState('')
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -162,6 +163,7 @@ export default function AdminUsersPage() {
     country: '',
     phone: '',
     role: 'USER',
+    userType: 'RETAIL',
     permissionRoleId: '',
   })
 
@@ -172,11 +174,12 @@ export default function AdminUsersPage() {
       fetchUsers()
       fetchPermissionRoles()
     }
-  }, [pagination.page, searchTerm, roleFilter, verificationFilter, authLoading, isAdmin])
+  }, [pagination.page, searchTerm, roleFilter, userTypeFilter, verificationFilter, authLoading, isAdmin])
 
   useEffect(() => {
     if (activeTab === 'b2bPending') {
       setRoleFilter('')
+      setUserTypeFilter('')
       setVerificationFilter('PENDING')
     } else {
       const roleMap: Record<TabId, string> = { all: '', admin: 'ADMIN', customer: 'USER', supplier: 'SUPPLIER', b2bPending: '' }
@@ -244,6 +247,7 @@ export default function AdminUsersPage() {
       
       if (searchTerm) params.append('search', searchTerm)
       if (roleFilter) params.append('role', roleFilter)
+      if (userTypeFilter) params.append('userType', userTypeFilter)
       if (verificationFilter) params.append('verificationStatus', verificationFilter)
 
       const response = await fetch(`/api/admin/users?${params}`, {
@@ -463,6 +467,7 @@ export default function AdminUsersPage() {
           country: '',
           phone: '',
           role: 'USER',
+          userType: 'RETAIL',
           permissionRoleId: '',
         })
       } else {
@@ -515,6 +520,7 @@ export default function AdminUsersPage() {
       country: '',
       phone: '',
       role: 'USER',
+      userType: 'RETAIL',
       permissionRoleId: '',
     })
     setShowAddModal(false)
@@ -608,16 +614,34 @@ export default function AdminUsersPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="flex-1 relative w-full">
             <Search size={20} className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
               placeholder={dict.common.search}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+
+          {/* User Type Filter (Retail vs Wholesale) */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <label className="text-xs font-semibold text-gray-500 whitespace-nowrap">Type:</label>
+            <select
+              value={userTypeFilter}
+              onChange={(e) => {
+                setUserTypeFilter(e.target.value)
+                setPagination(prev => ({ ...prev, page: 1 }))
+              }}
+              className="px-3.5 py-2.5 border border-gray-200 rounded-xl text-xs sm:text-sm font-medium bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Account Types</option>
+              <option value="RETAIL">Retail Only (B2C)</option>
+              <option value="WHOLESALE">Wholesale Only (B2B)</option>
+              <option value="BOTH">Hybrid (Both)</option>
+            </select>
           </div>
         </div>
       </div>
@@ -725,9 +749,18 @@ export default function AdminUsersPage() {
                           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${roleColors[user.role as keyof typeof roleColors]?.bg || 'bg-gray-50'} ${roleColors[user.role as keyof typeof roleColors]?.text || 'text-gray-600'} ${roleColors[user.role as keyof typeof roleColors]?.border || 'border-gray-200'}`}>
                             {user.role}
                           </span>
-                          {user.userType && user.userType !== 'RETAIL' && (
+                          {/* User Type Badge: Clearly Labeled Retail vs Wholesale vs Both */}
+                          {user.userType === 'WHOLESALE' ? (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
-                              {user.userType}
+                              Wholesale (B2B)
+                            </span>
+                          ) : user.userType === 'BOTH' ? (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              Hybrid (Both)
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Retail (B2C)
                             </span>
                           )}
                           {user.verificationStatus && user.verificationStatus !== 'UNVERIFIED' && (
@@ -969,17 +1002,32 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.role}</label>
-                  <select
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={addFormData.role}
-                    onChange={(e) => setAddFormData(prev => ({ ...prev, role: e.target.value }))}
-                  >
-                    <option value="USER">User</option>
-                    <option value="SUPPLIER">Supplier</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{dict.users.role}</label>
+                    <select
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      value={addFormData.role}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, role: e.target.value }))}
+                    >
+                      <option value="USER">User</option>
+                      <option value="SUPPLIER">Supplier</option>
+                      <option value="ADMIN">Admin</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+                    <select
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      value={addFormData.userType}
+                      onChange={(e) => setAddFormData(prev => ({ ...prev, userType: e.target.value }))}
+                    >
+                      <option value="RETAIL">Retail Customer (B2C)</option>
+                      <option value="WHOLESALE">Wholesale Buyer (B2B)</option>
+                      <option value="BOTH">Hybrid (Both)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>

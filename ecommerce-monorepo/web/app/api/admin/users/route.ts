@@ -10,6 +10,7 @@ const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   role: z.enum(['USER', 'SUPPLIER', 'ADMIN']),
+  userType: z.enum(['RETAIL', 'WHOLESALE', 'BOTH']).optional(),
   phone: z.string().optional(),
   country: z.string().optional(),
   // Profile & Business fields
@@ -36,6 +37,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
     const role = searchParams.get('role') || ''
+    const userType = searchParams.get('userType') || ''
     const verificationStatus = searchParams.get('verificationStatus') || ''
 
     const where: any = {}
@@ -49,6 +51,10 @@ export async function GET(request: NextRequest) {
     
     if (role) {
       where.role = role
+    }
+
+    if (userType) {
+      where.userType = userType
     }
 
     if (verificationStatus) {
@@ -223,6 +229,10 @@ export async function POST(request: NextRequest) {
           email: validatedData.email,
           password: hashedPassword,
           role: validatedData.role,
+          userType: validatedData.userType || (validatedData.role === 'ADMIN' ? 'BOTH' : 'RETAIL'),
+          companyName: validatedData.companyName,
+          businessType: validatedData.businessType,
+          taxId: validatedData.taxId,
           phone: validatedData.phone,
           country: validatedData.country,
           isActive: true,
@@ -234,6 +244,7 @@ export async function POST(request: NextRequest) {
           name: true,
           email: true,
           role: true,
+          userType: true,
           profilePhoto: true,
           // NO PASSWORD
         },

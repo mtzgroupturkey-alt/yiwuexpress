@@ -28,9 +28,10 @@ export function Design3LayoutHeader() {
   const locale = useLocale();
   const router = useRouter();
   const authCtx = useAuthContext();
-  const isAuthenticated = authCtx.isAuthenticated;
+  const storeAuth = useAuth();
+  const isAuthenticated = authCtx.isAuthenticated || storeAuth.isAuthenticated;
+  const user = authCtx.user || storeAuth.user;
   const { openModal: openGuestAuthModal } = useGuestAuthModal();
-  const user = authCtx.user;
   const { cartCount: realCartCount, refreshCartCount } = useCart();
   const { settings } = useSettings();
   const { isWholesale: isWholesaleActive } = useCustomerView();

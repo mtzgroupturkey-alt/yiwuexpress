@@ -508,6 +508,16 @@ export async function DELETE(
         })
       }
 
+      // Clean up non-cascading foreign keys to prevent constraint violations
+      await tx.emailLog.deleteMany({ where: { userId: params.id } })
+      await tx.activityLog.deleteMany({ where: { userId: params.id } })
+      await tx.wholesaleInquiry.deleteMany({ where: { userId: params.id } })
+      await tx.purchaseOrder.updateMany({
+        where: { targetCustomerId: params.id },
+        data: { targetCustomerId: null },
+      })
+      await tx.return.deleteMany({ where: { userId: params.id } })
+
       // Delete user (cascades to related records)
       await tx.user.delete({
         where: { id: params.id },

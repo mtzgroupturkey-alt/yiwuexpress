@@ -9,6 +9,7 @@ import { Design3LayoutHeader } from '@/components/layout/Design3LayoutHeader'
 import { Design3LayoutFooter } from '@/components/layout/Design3LayoutFooter'
 import { Container } from '@/components/design-system/Container'
 import { Providers } from '@/components/providers'
+import { AuthProvider } from '@/components/providers/AuthProvider'
 import { SettingsProvider } from '@/components/SettingsProvider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { BackToTop } from '@/components/ui/BackToTop'
@@ -116,131 +117,161 @@ export default function DashboardLayout({
     breadcrumbs.push({ name, href: accumulatedPath })
   }
 
+  const isWholesaleUser = Boolean(
+    user && (user.userType === 'WHOLESALE' || user.userType === 'BOTH')
+  )
+
   return (
     <NextIntlClientProvider locale={activeLocale} messages={MESSAGES[activeLocale]}>
-      <StoreModeProvider>
-        <SessionModeProvider>
-          <WholesaleInquiryProvider>
-            <Providers>
-              <SettingsProvider>
-                <CurrencyProvider>
-                  <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative w-full overflow-x-hidden" lang={activeLocale}>
-                    {/* Modern Design-3 Header with Live Search, Mega-Menu, Cart Drawer & User Menu */}
-                    <Design3LayoutHeader />
+      <AuthProvider>
+        <StoreModeProvider>
+          <SessionModeProvider>
+            <WholesaleInquiryProvider>
+              <Providers>
+                <SettingsProvider>
+                  <CurrencyProvider>
+                    <div className="min-h-screen bg-[#F8FAFC] flex flex-col relative w-full overflow-x-hidden" lang={activeLocale}>
+                      {/* Modern Design-3 Header with Live Search, Mega-Menu, Cart Drawer & User Menu */}
+                      <Design3LayoutHeader />
 
-                    {/* Customer Portal Hero & Unified Account Bar */}
-                    <div className="bg-white border-b border-slate-200/90 shadow-2xs">
-                      <Container className="pt-4 pb-2">
-                        {/* Clean Breadcrumb Trail */}
-                        <nav aria-label="Breadcrumb" className="mb-4">
-                          <ol className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap font-medium">
-                            {breadcrumbs.map((crumb, idx) => (
-                              <li key={crumb.href || idx} className="flex items-center gap-1.5">
-                                {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
-                                {idx === breadcrumbs.length - 1 ? (
-                                  <span className="font-bold text-slate-900">{crumb.name}</span>
-                                ) : (
-                                  <Link href={crumb.href} className="hover:text-[#00407a] transition-colors">
-                                    {crumb.name}
-                                  </Link>
-                                )}
-                              </li>
-                            ))}
-                          </ol>
-                        </nav>
-
-                        {/* Customer Profile Identity Card */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
-                          <div className="flex items-center gap-3.5">
-                            {/* Avatar */}
-                            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#00407a] to-[#003366] text-white font-black text-lg flex items-center justify-center shadow-xs border-2 border-white ring-2 ring-[#00407a]/20 shrink-0">
-                              {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                                  {user?.name || dashboardLabels.customerAccount}
-                                </h1>
-                                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                                  {dashboardLabels.verifiedBuyer}
-                                </span>
-                              </div>
-                              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
-                                <span>{user?.email}</span>
-                                <span className="text-slate-300">•</span>
-                                <span className="font-mono text-slate-400">ID: #CUST-{user?.id ? user.id.slice(-6).toUpperCase() : 'PORTAL'}</span>
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Quick Action Badges */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl px-3 py-1.5 text-xs text-amber-800 font-bold flex items-center gap-1.5 shadow-2xs">
-                              <span>🪙</span>
-                              <span>{dashboardLabels.tradeLoyaltyMember}</span>
-                            </div>
-                            <Link
-                              href="/store"
-                              className="bg-[#00407a] hover:bg-[#003366] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                              <span>{dashboardLabels.exploreCatalog}</span>
-                            </Link>
-                          </div>
-                        </div>
-
-                        {/* Integrated Sub-Navigation Tabs */}
-                        <div className="border-t border-slate-100 pt-2.5 pb-2.5 overflow-x-auto scrollbar-none">
-                          <nav className="flex items-center space-x-1 sm:space-x-1.5" aria-label="Dashboard Tabs">
-                            {[
-                              { href: '/dashboard', label: activeLocale === 'ru' ? 'Обзор' : activeLocale === 'zh' ? '账户概览' : 'Overview', icon: LayoutDashboard },
-                              { href: '/dashboard/orders', label: activeLocale === 'ru' ? 'Мои заказы' : activeLocale === 'zh' ? '我的订单' : 'My Orders', icon: Package },
-                              { href: '/dashboard/quotes', label: activeLocale === 'ru' ? 'Заявки и КП' : activeLocale === 'zh' ? '询价与报价' : 'Quotes & RFQs', icon: FileText },
-                              { href: '/dashboard/wishlist', label: activeLocale === 'ru' ? 'Избранное' : activeLocale === 'zh' ? '收藏夹' : 'Wishlist', icon: Heart },
-                              { href: '/dashboard/addresses', label: activeLocale === 'ru' ? 'Адреса' : activeLocale === 'zh' ? '收货地址' : 'Addresses', icon: MapPin },
-                              { href: '/dashboard/profile', label: activeLocale === 'ru' ? 'Профиль' : activeLocale === 'zh' ? '个人资料' : 'Profile', icon: User },
-                              { href: '/dashboard/settings', label: activeLocale === 'ru' ? 'Настройки' : activeLocale === 'zh' ? '账户设置' : 'Settings', icon: Settings },
-                            ].map((tab) => {
-                              const isActive = tab.href === '/dashboard' ? currentPath === '/dashboard' : currentPath.startsWith(tab.href)
-                              const Icon = tab.icon
-                              return (
-                                <Link
-                                  key={tab.href}
-                                  href={tab.href}
-                                  className={`whitespace-nowrap px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
-                                    isActive
-                                      ? 'bg-[#00407a] text-white shadow-2xs'
-                                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                                  }`}
-                                >
-                                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                                  <span>{tab.label}</span>
-                                </Link>
-                              )
-                            })}
+                      {/* Customer Portal Hero & Unified Account Bar */}
+                      <div className="bg-white border-b border-slate-200/90 shadow-2xs">
+                        <Container className="pt-4 pb-2">
+                          {/* Clean Breadcrumb Trail */}
+                          <nav aria-label="Breadcrumb" className="mb-4">
+                            <ol className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap font-medium">
+                              {breadcrumbs.map((crumb, idx) => (
+                                <li key={crumb.href || idx} className="flex items-center gap-1.5">
+                                  {idx > 0 && <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                                  {idx === breadcrumbs.length - 1 ? (
+                                    <span className="font-bold text-slate-900">{crumb.name}</span>
+                                  ) : (
+                                    <Link href={crumb.href} className="hover:text-[#00407a] transition-colors">
+                                      {crumb.name}
+                                    </Link>
+                                  )}
+                                </li>
+                              ))}
+                            </ol>
                           </nav>
-                        </div>
-                      </Container>
+
+                          {/* Customer Profile Identity Card */}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4">
+                            <div className="flex items-center gap-3.5">
+                              {/* Avatar */}
+                              <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-[#00407a] to-[#003366] text-white font-black text-lg flex items-center justify-center shadow-xs border-2 border-white ring-2 ring-[#00407a]/20 shrink-0">
+                                {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                                    {user?.name || dashboardLabels.customerAccount}
+                                  </h1>
+                                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                    {isWholesaleUser
+                                      ? dashboardLabels.verifiedBuyer || 'Verified Buyer'
+                                      : activeLocale === 'ru'
+                                      ? 'Розничный покупатель'
+                                      : activeLocale === 'zh'
+                                      ? '零售客户'
+                                      : 'Personal Account'}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
+                                  <span>{user?.email}</span>
+                                  <span className="text-slate-300">•</span>
+                                  <span className="font-mono text-slate-400">ID: #CUST-{user?.id ? user.id.slice(-6).toUpperCase() : 'PORTAL'}</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Quick Action Badges */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {isWholesaleUser ? (
+                                <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl px-3 py-1.5 text-xs text-amber-800 font-bold flex items-center gap-1.5 shadow-2xs">
+                                  <span>🪙</span>
+                                  <span>{dashboardLabels.tradeLoyaltyMember}</span>
+                                </div>
+                              ) : (
+                                <Link
+                                  href={`/${activeLocale}/register-b2b`}
+                                  className="bg-amber-50/80 hover:bg-amber-100/90 border border-amber-200 rounded-xl px-3 py-1.5 text-xs text-amber-900 font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
+                                >
+                                  <span>🏢</span>
+                                  <span>
+                                    {activeLocale === 'ru'
+                                      ? 'Стать оптовым клиентом'
+                                      : activeLocale === 'zh'
+                                      ? '申请批发企业账户'
+                                      : 'Upgrade to Wholesale'}
+                                  </span>
+                                </Link>
+                              )}
+                              <Link
+                                href="/store"
+                                className="bg-[#00407a] hover:bg-[#003366] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                <span>{dashboardLabels.exploreCatalog}</span>
+                              </Link>
+                            </div>
+                          </div>
+
+                          {/* Integrated Sub-Navigation Tabs */}
+                          <div className="border-t border-slate-100 pt-2.5 pb-2.5 overflow-x-auto scrollbar-none">
+                            <nav className="flex items-center space-x-1 sm:space-x-1.5" aria-label="Dashboard Tabs">
+                              {[
+                                { href: '/dashboard', label: activeLocale === 'ru' ? 'Обзор' : activeLocale === 'zh' ? '账户概览' : 'Overview', icon: LayoutDashboard },
+                                { href: '/dashboard/orders', label: activeLocale === 'ru' ? 'Мои заказы' : activeLocale === 'zh' ? '我的订单' : 'My Orders', icon: Package },
+                                ...(isWholesaleUser
+                                  ? [{ href: '/dashboard/quotes', label: activeLocale === 'ru' ? 'Заявки и КП' : activeLocale === 'zh' ? '询价与报价' : 'Quotes & RFQs', icon: FileText }]
+                                  : []),
+                                { href: '/dashboard/wishlist', label: activeLocale === 'ru' ? 'Избранное' : activeLocale === 'zh' ? '收藏夹' : 'Wishlist', icon: Heart },
+                                { href: '/dashboard/addresses', label: activeLocale === 'ru' ? 'Адреса' : activeLocale === 'zh' ? '收货地址' : 'Addresses', icon: MapPin },
+                                { href: '/dashboard/profile', label: activeLocale === 'ru' ? 'Профиль' : activeLocale === 'zh' ? '个人资料' : 'Profile', icon: User },
+                                { href: '/dashboard/settings', label: activeLocale === 'ru' ? 'Настройки' : activeLocale === 'zh' ? '账户设置' : 'Settings', icon: Settings },
+                              ].map((tab) => {
+                                const isActive = tab.href === '/dashboard' ? currentPath === '/dashboard' : currentPath.startsWith(tab.href)
+                                const Icon = tab.icon
+                                return (
+                                  <Link
+                                    key={tab.href}
+                                    href={tab.href}
+                                    className={`whitespace-nowrap px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer ${
+                                      isActive
+                                        ? 'bg-[#00407a] text-white shadow-2xs'
+                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                                    <span>{tab.label}</span>
+                                  </Link>
+                                )
+                              })}
+                            </nav>
+                          </div>
+                        </Container>
+                      </div>
+
+                      {/* Main Content */}
+                      <main className="flex-1 bg-[#F8FAFC]">
+                        {children}
+                      </main>
+
+                      {/* Modern Design-3 Footer */}
+                      <Design3LayoutFooter />
+
+                      {/* Back to Top */}
+                      <BackToTop />
                     </div>
-
-                    {/* Main Content */}
-                    <main className="flex-1 bg-[#F8FAFC]">
-                      {children}
-                    </main>
-
-                    {/* Modern Design-3 Footer */}
-                    <Design3LayoutFooter />
-
-                    {/* Back to Top */}
-                    <BackToTop />
-                  </div>
-                </CurrencyProvider>
-              </SettingsProvider>
-            </Providers>
-          </WholesaleInquiryProvider>
-        </SessionModeProvider>
-      </StoreModeProvider>
+                  </CurrencyProvider>
+                </SettingsProvider>
+              </Providers>
+            </WholesaleInquiryProvider>
+          </SessionModeProvider>
+        </StoreModeProvider>
+      </AuthProvider>
     </NextIntlClientProvider>
   )
 }
