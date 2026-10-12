@@ -351,26 +351,24 @@ export default function CurrenciesPage() {
             <Plus size={18} />
             <span>{dict.currencies.addCurrency}</span>
           </button>
-          {apiConfigured && (
-            <button
-              onClick={handleSyncRates}
-              disabled={syncing}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Sync rates from exchangerate-api.com"
-            >
-              {syncing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>{dict.currencies.syncing}</span>
-                </>
-              ) : (
-                <>
-                  <Zap size={18} />
-                  <span>{dict.currencies.syncRates}</span>
-                </>
-              )}
-            </button>
-          )}
+          <button
+            onClick={handleSyncRates}
+            disabled={syncing}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+            title="Update Rates Now from National Bank of the Republic of Belarus (NBRB)"
+          >
+            {syncing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>{dict.currencies.syncing || 'Updating...'}</span>
+              </>
+            ) : (
+              <>
+                <Zap size={18} />
+                <span>Update Rates Now</span>
+              </>
+            )}
+          </button>
           <button
             onClick={() => {
               loadCurrencies()
@@ -728,18 +726,10 @@ export default function CurrenciesPage() {
                 <span className="text-blue-400 mt-0.5">•</span>
                 <span>Base currency rate is always 1.0 and cannot be changed.</span>
               </li>
-              {apiConfigured && (
-                <li className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">✓</span>
-                  <span><strong>Auto-sync enabled:</strong> Click "Sync Rates" to fetch latest rates from exchangerate-api.com instantly.</span>
-                </li>
-              )}
-              {!apiConfigured && (
-                <li className="flex items-start gap-2">
-                  <span className="text-orange-400 mt-0.5">⚠</span>
-                  <span><strong>API not configured:</strong> Add EXCHANGE_RATE_API_KEY to .env.local to enable automatic rate updates.</span>
-                </li>
-              )}
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 mt-0.5">✓</span>
+                <span><strong>Official NBRB Integration:</strong> Rates are automatically fetched from the National Bank of the Republic of Belarus (NBRB) API with scale normalization (USD, EUR, RUB, CNY, BYN, etc.). Click <strong>"Update Rates Now"</strong> anytime for an immediate sync.</span>
+              </li>
             </ul>
           </div>
         </div>
