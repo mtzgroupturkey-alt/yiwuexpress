@@ -542,3 +542,47 @@ export async function sendB2BRejectionEmail(params: {
   }
 }
 
+// Send wholesale email verification link
+export async function sendEmailVerificationLink(params: {
+  to: string
+  name: string
+  verificationUrl: string
+  locale?: string
+}) {
+  const companyName = await getCompanyName()
+  const subject = `Verify Your Email Address - ${companyName}`
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: #00407a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="margin: 0; font-size: 22px;">${companyName}</h1>
+      </div>
+      <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #0f172a; margin-top: 0;">Verify Your Email Address</h2>
+        <p>Hi ${params.name || 'there'},</p>
+        <p>Thank you for registering your Wholesale account on ${companyName}. Please verify your email address to activate your registration and submit your account for compliance review.</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="${params.verificationUrl}" style="background: #00407a; color: white; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 8px; display: inline-block;">
+            Verify Email Address
+          </a>
+        </p>
+        <p><strong>This verification link expires in 24 hours.</strong></p>
+        <p style="font-size: 13px; color: #64748b;">Or copy and paste this URL into your browser:</p>
+        <p style="word-break: break-all; font-size: 12px; color: #00407a;">${params.verificationUrl}</p>
+      </div>
+    </div>
+  `
+
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || `"${companyName}" <noreply@dromkok.com>`,
+      to: params.to,
+      subject,
+      html,
+    })
+    return { success: true }
+  } catch (error) {
+    console.error('Email verification sending error:', error)
+    return { success: false, error }
+  }
+}
+

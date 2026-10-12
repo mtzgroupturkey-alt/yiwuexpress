@@ -23,7 +23,7 @@ export function BulkWholesaleBanner() {
     ctaCatalog: string
   }> = {
     en: {
-      badge: 'B2B Wholesale & Factory Direct Sourcing',
+      badge: 'Wholesale & Factory Direct Sourcing',
       title: 'Equip Your Facility with Factory-Direct Machinery & Tools',
       description: 'Need customized industrial equipment, OEM/ODM private labeling, or bulk volume pricing? Submit an instant Request for Quotation (RFQ) and receive verified manufacturer pricing within 24 hours.',
       tier: 'Tiered Volume Discounts',
@@ -33,7 +33,7 @@ export function BulkWholesaleBanner() {
       ctaCatalog: 'Browse Full Product Catalog'
     },
     ru: {
-      badge: 'Оптовые B2B поставки напрямую с заводов',
+      badge: 'Оптовые поставки напрямую с заводов',
       title: 'Оснастите производство станками и инструментами от производителей',
       description: 'Требуется оборудование под заказ, OEM/ODM производство или оптовые скидки? Отправьте запрос на расчет (RFQ) и получите цены от проверенных заводов в течение 24 часов.',
       tier: 'Скидки от объема заказа',
@@ -43,7 +43,7 @@ export function BulkWholesaleBanner() {
       ctaCatalog: 'Каталог всех товаров'
     },
     zh: {
-      badge: 'B2B源头工厂直供与大宗批发采购',
+      badge: '源头工厂直供与大宗批发采购',
       title: '一站式采购工业级机械设备与专业五金工具',
       description: '需要定制工业装备、OEM/ODM贴牌或集装箱批量采购？立即提交大宗采购询价单（RFQ），24小时内获取认证源头工厂底价与交期方案。',
       tier: '阶梯批量采购折扣',

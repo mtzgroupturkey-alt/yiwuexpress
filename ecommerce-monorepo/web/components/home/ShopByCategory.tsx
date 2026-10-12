@@ -232,7 +232,7 @@ const CATEGORIES_DATA: Record<string, CategoryItem[]> = {
     },
     {
       id: 'wholesale',
-      label: 'Прямой опт B2B',
+      label: 'Прямой опт',
       image: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=400&h=400&q=80',
       icon: Package,
       href: '/wholesale',

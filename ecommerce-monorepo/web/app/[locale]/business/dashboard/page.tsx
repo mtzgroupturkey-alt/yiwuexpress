@@ -144,7 +144,7 @@ export default function BusinessDashboardPage() {
   }
 
   return (
-    <SharedLayout pageTitle={`B2B Wholesale Portal | ${companyName}`}>
+    <SharedLayout pageTitle={`Wholesale Portal | ${companyName}`}>
       <div className="min-h-screen bg-slate-50/70 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1440px] mx-auto space-y-6">
           {/* =========================================================================

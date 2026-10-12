@@ -252,7 +252,7 @@ export default function CheckoutPage() {
           </div>
           <h1 className="text-xl font-bold text-slate-900">Wholesale Quotes</h1>
           <p className="text-sm text-slate-600">
-            Wholesale and B2B orders use the Quote Request workflow. Redirecting you to your Quote Cart...
+            Wholesale orders use the Quote Request workflow. Redirecting you to your Quote Cart...
           </p>
           <Button
             onClick={() => navigate('/quote-cart')}

@@ -57,7 +57,7 @@ export function MarketplaceTabbedShowcase() {
     },
     {
       id: 'wholesale',
-      label: locale === 'ru' ? 'Прямой Опт' : locale === 'zh' ? '工厂集采' : 'Factory B2B',
+      label: locale === 'ru' ? 'Прямой Опт' : locale === 'zh' ? '工厂集采' : 'Factory Wholesale',
       icon: Factory,
       color: 'text-purple-500',
       badge: 'MOQ',

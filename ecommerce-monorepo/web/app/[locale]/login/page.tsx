@@ -176,7 +176,7 @@ export default function LocalizedLoginPage() {
               <div className="bg-gradient-to-br from-[#1a3a5c] to-[#0f243a] text-white rounded-2xl p-8 flex flex-col justify-between shadow-lg">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#c9a84c] text-xs font-semibold uppercase tracking-wider mb-6">
-                    ✦ Verified B2B Sourcing
+                    ✦ Verified Wholesale Sourcing
                   </div>
                   <h3 className="text-2xl font-bold mb-4">
                     Why Trade with {companyName}?

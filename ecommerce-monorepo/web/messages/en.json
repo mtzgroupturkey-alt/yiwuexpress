@@ -293,7 +293,7 @@
       "banner1": "Modern Furniture Collection",
       "banner2": "Professional Kitchenware",
       "searchPlaceholder": "Search home furniture & kitchenware...",
-      "corporateB2B": "Corporate (B2B)",
+      "corporateB2B": "Corporate Wholesale",
       "freeHotline": "Free hotline",
       "selectLanguage": "Select Language",
       "catalog": "Catalog",
@@ -526,14 +526,14 @@
   "Wholesale": {
     "breadcrumb": "Wholesale",
     "pageTitle": "Wholesale Inquiry",
-    "pageDescription": "Looking to purchase in bulk? Submit your wholesale inquiry and our B2B team will provide you with competitive pricing",
+    "pageDescription": "Looking to purchase in bulk? Submit your wholesale inquiry and our wholesale team will provide you with competitive pricing",
     "success": {
       "pageTitle": "Inquiry Submitted Successfully!",
       "pageDescription": "Thank you for your wholesale inquiry",
       "title": "Inquiry Submitted Successfully!",
       "description": "Thank you for your wholesale inquiry. Our team will review your request and contact you within 24-48 hours.",
       "whatNext": "What happens next?",
-      "step1": "Our B2B team will review your inquiry and product requirements",
+      "step1": "Our wholesale team will review your inquiry and product requirements",
       "step2": "We'll prepare a detailed quotation with pricing and terms",
       "step3": "You'll receive a personalized quote via email",
       "step4": "We can discuss and negotiate terms to meet your needs",
@@ -592,7 +592,7 @@
       "point2": "Competitive bulk pricing and flexible MOQ",
       "point3": "Quality inspection and export documentation",
       "point4": "Global shipping and customs clearance support",
-      "point5": "Dedicated account manager for B2B customers"
+      "point5": "Dedicated account manager for wholesale customers"
     },
     "submitting": "Submitting Inquiry...",
     "submit": "Submit Wholesale Inquiry",
@@ -1210,7 +1210,7 @@
     "products": "Products"
   },
   "Quotes": {
-    "pageTitle": "B2B Service Quotations",
+    "pageTitle": "Wholesale Quotations",
     "pageDescription": "Request wholesale prices for shipping, warehousing, customs documentation, and supplier sourcing.",
     "breadcrumb": "Quotes",
     "authRequiredTitle": "Business Authorization Required",
@@ -2061,34 +2061,41 @@
       "managerDesc": "Personal multilingual trade representative to coordinate sourcing and logistics."
     },
     "cta": {
-      "apply": "Apply for B2B Account",
+      "apply": "Apply for Wholesale Account",
       "signIn": "Already have an account? Sign in"
     },
     "register": {
-      "title": "Apply for B2B Account",
-      "subtitle": "Register your company to access wholesale catalog pricing and commercial terms",
-      "step1": "Business Information",
-      "step2": "Account & Credentials",
-      "companyName": "Company Name",
-      "taxId": "Tax ID / Registration Number",
-      "businessType": "Business Type",
+      "title": "Apply for Wholesale Account",
+      "subtitle": "Register to access factory-direct wholesale pricing and volume quotations",
+      "firstName": "First Name",
+      "lastName": "Last Name",
       "country": "Country",
       "city": "City",
-      "address": "Registered Address",
-      "contactName": "Contact Person Full Name",
       "email": "Business Email Address",
       "phone": "Phone / WhatsApp",
       "password": "Password",
       "confirmPassword": "Confirm Password",
+      "submit": "Register Wholesale Account",
+      "continueGoogle": "Continue with Google",
+      "continueApple": "Continue with Apple",
+      "orEmail": "Or register with work email",
+      "securityVerification": "Security Verification",
+      "verifiedSuccessTitle": "Check Your Email",
+      "verifiedSuccessBody": "We've sent a verification link to {email}. Please click the link to activate your account and access wholesale features.",
+      "resendEmail": "Resend Verification Email",
+      "companyName": "Company Name",
+      "taxId": "Tax ID / Registration Number",
+      "businessType": "Business Type",
+      "address": "Registered Address",
+      "contactName": "Contact Person Full Name",
       "license": "Business License / Registration Document (PDF, JPG, PNG up to 5MB)",
       "notes": "Additional Sourcing Notes or Requirements (Optional)",
-      "submit": "Submit B2B Application",
       "back": "Back",
-      "next": "Continue to Account Info"
+      "next": "Continue"
     },
     "pending": {
       "title": "Your Application is Under Review",
-      "body": "Thank you for applying for a B2B wholesale account. Our compliance and trade operations team will review your business credentials within 24 hours.",
+      "body": "Thank you for applying for a wholesale account. Our compliance and trade operations team will review your business credentials within 24 hours.",
       "contactSupport": "Need urgent onboarding? Contact support",
       "signOut": "Sign Out"
     },
@@ -2098,7 +2105,7 @@
       "reapply": "Submit New Application"
     },
     "dashboard": {
-      "welcome": "Welcome to B2B Wholesale Portal",
+      "welcome": "Welcome to Wholesale Portal",
       "stats": {
         "orders": "Commercial Orders",
         "quotes": "Active Quotes",

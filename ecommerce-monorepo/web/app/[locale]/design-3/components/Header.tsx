@@ -134,11 +134,6 @@ export const WholesaleCtaButton: React.FC<WholesaleCtaButtonProps> = ({
       </span>
 
       <span className="relative drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]">{resolvedLabel}</span>
-
-      {/* Mini PRO/B2B indicator pill */}
-      <span className="relative ml-0.5 px-1.5 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-extrabold tracking-normal leading-none shadow-xs group-hover:bg-amber-300 transition-colors">
-        B2B
-      </span>
     </Link>
   );
 };

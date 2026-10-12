@@ -128,10 +128,10 @@ export function MobileHero({
           : 'Wholesale MOQ Discounts',
       title:
         locale === 'zh'
-          ? 'B2B批发询价通道'
+          ? '批发询价通道'
           : locale === 'ru'
           ? 'Запрос цен и оптовые квоты'
-          : 'Wholesale & B2B Volume Pricing',
+          : 'Wholesale Volume Pricing',
       subtitle:
         locale === 'zh'
           ? '支持定制开模、样品寄送与全流程专业品控把关'

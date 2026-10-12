@@ -36,7 +36,7 @@ const DEFAULT_PAYMENT_METHODS: PaymentMethodOption[] = [
   {
     id: 'bank_transfer',
     name: 'Telegraphic Wire Transfer (T/T)',
-    description: 'Direct B2B commercial invoice for international banking',
+    description: 'Commercial invoice for international banking',
     iconType: 'bank',
   },
   {

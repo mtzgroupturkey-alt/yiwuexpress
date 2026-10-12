@@ -22,7 +22,7 @@ export function PromoTickerStrip() {
         title: 'Бесплатная сборка контейнера',
         subtitle: 'Консолидация грузов на складе в Китае',
         link: '/wholesale',
-        badge: 'B2B ОПТ',
+        badge: 'ОПТ',
         color: 'from-[#0055A4] to-blue-700'
       },
       {
@@ -62,7 +62,7 @@ export function PromoTickerStrip() {
       {
         icon: Tag,
         title: 'Tiered Bulk Pricing Available',
-        subtitle: 'Lower pricing for verified B2B buyers',
+        subtitle: 'Lower pricing for verified wholesale buyers',
         link: '/quotes',
         badge: 'VOLUME TIER',
         color: 'from-amber-600 to-orange-700'

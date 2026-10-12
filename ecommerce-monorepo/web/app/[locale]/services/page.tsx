@@ -112,7 +112,7 @@ export default function ServicesPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-[#F5A602]/20 border border-[#F5A602]/40 text-[#F5A602] text-xs font-black uppercase tracking-wider mb-3 shadow-2xs">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{locale === 'ru' ? 'Комплексные B2B услуги в Китае' : locale === 'zh' ? '全链路跨境采购与供应链' : 'China B2B Trade & Logistics Solutions'}</span>
+                <span>{locale === 'ru' ? 'Комплексные оптовые услуги в Китае' : locale === 'zh' ? '全链路跨境采购与供应链' : 'China Trade & Logistics Solutions'}</span>
               </div>
 
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight mb-4">

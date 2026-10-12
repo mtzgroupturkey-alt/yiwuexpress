@@ -240,7 +240,7 @@ export default function QuoteCartPage() {
                     {t('productsInQuote')} ({quoteCount} {t('itemsCount')}, {totalUnits} {t('totalUnits')})
                   </span>
                   <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
-                    ✦ B2B Wholesale
+                    ✦ Wholesale
                   </span>
                 </div>
 

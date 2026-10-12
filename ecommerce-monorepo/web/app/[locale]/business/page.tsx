@@ -41,7 +41,7 @@ export default function BusinessLandingPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 bg-amber-400/15 border border-amber-300/30 text-amber-300 text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-full mb-6 backdrop-blur-xs">
                 <Sparkles className="w-3.5 h-3.5 fill-amber-300" />
-                <span>B2B Wholesale & Procurement Portal</span>
+                <span>Wholesale & Procurement Portal</span>
               </div>
 
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight mb-5">

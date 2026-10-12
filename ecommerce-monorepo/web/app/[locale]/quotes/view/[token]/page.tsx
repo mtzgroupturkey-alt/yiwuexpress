@@ -364,7 +364,7 @@ export default function PublicQuoteViewPage({ params }: { params: { token: strin
             {/* Customer Information */}
             <div className="space-y-1.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Prepared For:</span>
-              <p className="font-bold text-gray-900 text-sm">{quote.guestCompany || quote.guestName || 'B2B Client'}</p>
+              <p className="font-bold text-gray-900 text-sm">{quote.guestCompany || quote.guestName || 'Wholesale Client'}</p>
               <p className="text-gray-600">Contact: {quote.guestName}</p>
               <p className="text-gray-600">Email: {quote.guestEmail}</p>
               {quote.guestPhone && <p className="text-gray-600">Phone: {quote.guestPhone}</p>}

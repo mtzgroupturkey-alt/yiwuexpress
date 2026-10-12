@@ -2409,7 +2409,7 @@ export default function ProductDetailView({
                           </div>
                         </div>
                         <span className="border border-blue-300 text-[#00407a] bg-blue-50 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
-                          B2B
+                          Wholesale
                         </span>
                       </div>
 
@@ -3207,13 +3207,13 @@ export default function ProductDetailView({
               </div>
             )}
 
-            {/* Tab 3: Packaging & B2B Logistics */}
+            {/* Tab 3: Packaging & Logistics */}
             {activeTab === 'logistics' && (
               <div className="space-y-6 animate-fade-in">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
                     <Box className="w-5 h-5 text-blue-600" />
-                    {locale === 'ru' ? 'Упаковка и B2B логистика' : locale === 'zh' ? '包装规格与物流运输' : 'Packaging & B2B Logistics'}
+                    {locale === 'ru' ? 'Упаковка и логистика' : locale === 'zh' ? '包装规格与物流运输' : 'Packaging & Logistics'}
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500">
                     {locale === 'ru'

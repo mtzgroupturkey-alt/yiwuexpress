@@ -73,7 +73,7 @@ export function MobileCartPage({
                 ? '当前处于批发大宗采购模式'
                 : locale === 'ru'
                 ? 'Активен режим оптовых заказов'
-                : 'B2B Wholesale Mode is Active'}
+                : 'Wholesale Mode is Active'}
             </p>
           </div>
           {onSwitchToQuoteCart && (

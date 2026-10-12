@@ -43,7 +43,7 @@ export function MobilePromoBanner({
                 ? '专属企业采购服务'
                 : locale === 'ru'
                 ? 'Оптовые закупки под ключ'
-                : 'B2B Sourcing Concierge'}
+                : 'Sourcing Concierge'}
             </span>
           </div>
 

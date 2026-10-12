@@ -362,8 +362,8 @@ export function MobileDrawer({
                           <ArrowLeftRight className="w-4 h-4 text-primary-600 dark:text-primary-400" />
                           <span className="font-semibold text-xs text-gray-700 dark:text-slate-300">
                             {isWholesaleSession
-                              ? (locale === 'zh' ? '批发/B2B模式' : locale === 'ru' ? 'Оптовый режим B2B' : 'Wholesale / B2B Mode')
-                              : (locale === 'zh' ? '零售/B2C模式' : locale === 'ru' ? 'Розничный режим B2C' : 'Retail / B2C Mode')}
+                              ? (locale === 'zh' ? '批发模式' : locale === 'ru' ? 'Оптовый режим' : 'Wholesale Mode')
+                              : (locale === 'zh' ? '零售模式' : locale === 'ru' ? 'Розничный режим' : 'Retail Mode')}
                           </span>
                         </div>
                         <button

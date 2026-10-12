@@ -179,7 +179,7 @@ export default function CartPage() {
 
     const handleCheckout = () => {
       if (isWholesaleActive && !isInstantWholesale) {
-        alert('Wholesale orders must be submitted via the B2B Quote Cart.')
+        alert('Wholesale orders must be submitted via the Wholesale Quote Cart.')
         navigate('/quote-cart')
         return
       }

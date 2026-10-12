@@ -309,7 +309,7 @@ export default function ContactPage() {
                     </span>
                   ) : (
                     <span className="text-sm font-bold text-slate-900 block truncate">
-                      {locale === 'ru' ? 'Онлайн-консультант' : locale === 'zh' ? '专属外贸顾问' : 'B2B Trade Concierge'}
+                      {locale === 'ru' ? 'Онлайн-консультант' : locale === 'zh' ? '专属外贸顾问' : 'Trade Concierge'}
                     </span>
                   )}
                   <span className="text-[11px] text-slate-500">
@@ -621,7 +621,7 @@ export default function ContactPage() {
                 <div className="rounded-2xl p-5 bg-gradient-to-br from-slate-900 to-[#00407a] text-white shadow-sm border border-slate-800 space-y-3.5">
                   <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
                     <ShieldCheck className="w-4 h-4" />
-                    <span>{locale === 'ru' ? 'Гарантии B2B сделок' : locale === 'zh' ? '大宗贸易双重保障' : 'B2B Trade Guarantee'}</span>
+                    <span>{locale === 'ru' ? 'Гарантии оптовых сделок' : locale === 'zh' ? '大宗贸易双重保障' : 'Trade Guarantee'}</span>
                   </div>
                   <h4 className="text-base font-black tracking-tight leading-snug">
                     {locale === 'ru'

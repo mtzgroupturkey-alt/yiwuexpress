@@ -349,7 +349,7 @@ export function MobileHeader({
                 >
                   <Building2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span className="hidden min-[380px]:inline">FOR BUSINESS</span>
-                  <span className="min-[380px]:hidden">B2B</span>
+                  <span className="min-[380px]:hidden">WHOLESALE</span>
                 </LocaleLink>
 
                 <LocaleLink

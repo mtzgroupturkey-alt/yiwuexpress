@@ -188,7 +188,7 @@ export default function QuotesPage() {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-900">Customer Portal: Quotes & RFQs</h4>
-                <p className="text-xs text-slate-500">Track and manage formal wholesale B2B quotes with milestone escrow in your customer portal.</p>
+                <p className="text-xs text-slate-500">Track and manage formal wholesale quotes with milestone escrow in your customer portal.</p>
               </div>
             </div>
             <LocaleLink

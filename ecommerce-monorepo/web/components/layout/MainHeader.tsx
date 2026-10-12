@@ -255,8 +255,8 @@ export function MainHeader() {
                   type="button"
                   onClick={toggleSessionMode}
                   className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-gray-600 hover:text-[#1a3a5c] hover:bg-gray-50 rounded-lg transition-colors duration-200 text-sm font-semibold"
-                  aria-label={isWholesaleSession ? 'Switch to Retail / B2C' : 'Switch to Wholesale / B2B'}
-                  title={isWholesaleSession ? 'Switch to Retail / B2C' : 'Switch to Wholesale / B2B'}
+                  aria-label={isWholesaleSession ? 'Switch to Retail' : 'Switch to Wholesale'}
+                  title={isWholesaleSession ? 'Switch to Retail' : 'Switch to Wholesale'}
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5" />
                   {isWholesaleSession ? 'Retail' : 'Wholesale'}

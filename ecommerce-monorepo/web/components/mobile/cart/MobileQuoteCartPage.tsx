@@ -132,7 +132,7 @@ export function MobileQuoteCartPage({
             <div className="flex items-center gap-2 min-w-0">
               <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse shrink-0" />
               <span className="text-xs font-bold text-blue-950 dark:text-blue-100 truncate">
-                B2B Wholesale RFQ
+                Wholesale RFQ
               </span>
               <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-white/80 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-700 shrink-0">
                 {quoteCount} {locale === 'zh' ? '款' : 'Items'} · {totalUnits} {locale === 'zh' ? '件' : 'Units'}

@@ -322,7 +322,7 @@ export default function Footer() {
                 <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Mastercard</span>
                 <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Белкарт</span>
                 <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">МИР</span>
-                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Безнал B2B</span>
+                <span className="px-2 py-1 bg-slate-900 border border-slate-800 text-[10px] font-bold text-slate-300 rounded">Безналичный расчет</span>
               </div>
             </div>
           </div>

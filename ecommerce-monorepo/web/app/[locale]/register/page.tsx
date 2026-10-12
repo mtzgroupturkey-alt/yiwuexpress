@@ -222,7 +222,7 @@ function RegisterFormContent() {
               className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium text-xs sm:text-sm transition-all text-center group"
             >
               <Building2 className="w-4 h-4 text-slate-400 group-hover:text-[#00407a]" />
-              <span>Wholesale & B2B</span>
+              <span>Wholesale</span>
               <span className="hidden sm:inline-block bg-slate-100 group-hover:bg-slate-200 text-slate-600 text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wider font-semibold">
                 Business
               </span>
@@ -600,13 +600,13 @@ function RegisterFormContent() {
                       Buying for a Business or Store?
                     </h4>
                     <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                      If you need bulk container shipments, custom OEM branding, factory audits, or tax invoices, register as a B2B partner instead.
+                      If you need bulk container shipments, custom OEM branding, factory audits, or tax invoices, register as a wholesale partner instead.
                     </p>
                     <Link
                       href={businessRegisterHref}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#00407a] hover:underline mt-2.5"
                     >
-                      <span>Apply for Wholesale B2B Account</span>
+                      <span>Apply for Wholesale Account</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>

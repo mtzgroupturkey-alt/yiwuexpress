@@ -36,7 +36,7 @@ const DEFAULT_CATEGORIES: Record<string, QuickCategoryItem[]> = {
   ],
   en: [
     { id: 'deals', label: 'Flash Deals', icon: '🔥', href: '/store?onSale=true', highlighted: 'deals' },
-    { id: 'wholesale', label: 'B2B Wholesale', icon: '📦', href: '/wholesale', highlighted: 'wholesale' },
+    { id: 'wholesale', label: 'Wholesale', icon: '📦', href: '/wholesale', highlighted: 'wholesale' },
     { id: 'cnc', label: 'CNC Machinery', icon: '⚙️', href: '/store?category=cnc-machinery' },
     { id: 'tools', label: 'Power Tools', icon: '🔌', href: '/store?category=power-tools' },
     { id: 'welding', label: 'Welding Gear', icon: '⚡', href: '/store?category=welding-equipment' },
