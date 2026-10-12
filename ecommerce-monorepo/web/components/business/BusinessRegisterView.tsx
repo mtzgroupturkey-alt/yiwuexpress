@@ -9,6 +9,8 @@ import { useCompanyName } from '@/hooks/useCompanyName'
 import { CaptchaWidget } from '@/components/ui/CaptchaWidget'
 import type { DynamicPageContent } from '@/lib/contentPages'
 import { GoogleButton } from '@/components/auth/GoogleButton'
+import { LoginForm } from '@/components/auth/LoginForm'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   Building2,
   User,
@@ -63,6 +65,7 @@ export function BusinessRegisterView({ initialContent }: BusinessRegisterViewPro
   const router = useRouter()
   const companyName = useCompanyName()
   const t = useTranslations('business')
+  const tAuth = useTranslations('auth')
 
   // Dynamic content passed from server
   const content = initialContent
@@ -294,45 +297,56 @@ export function BusinessRegisterView({ initialContent }: BusinessRegisterViewPro
                 </div>
               </div>
             ) : (
-              <div>
-                {/* Method 1 & 2: Social OAuth Sign-In (Requirement #1: Google & Apple) */}
-                <div className="space-y-3 mb-6">
-                  <div className={`grid gap-3 ${ENABLE_APPLE_SIGN_IN ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
-                    {/* Sign in with Google */}
-                    <GoogleButton variant="register" disabled={isOAuthLoading !== null || isLoading} />
+              <Tabs defaultValue="register" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="register">
+                    {tAuth('tabs.createAccount') || 'Create Account'}
+                  </TabsTrigger>
+                  <TabsTrigger value="signIn">
+                    {tAuth('tabs.signIn') || 'Sign In'}
+                  </TabsTrigger>
+                </TabsList>
 
-                    {/* Sign in with Apple (Temporarily disabled - keep code for future re-enablement) */}
-                    {ENABLE_APPLE_SIGN_IN && (
-                      <button
-                        type="button"
-                        disabled={isOAuthLoading !== null || isLoading}
-                        onClick={handleAppleSignIn}
-                        className="flex items-center justify-center gap-2.5 px-4 py-2.5 bg-black hover:bg-slate-900 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-2xs disabled:opacity-50 cursor-pointer active:scale-98"
-                      >
-                        {isOAuthLoading === 'apple' ? (
-                          <Loader2 className="w-4 h-4 animate-spin text-white" />
-                        ) : (
-                          <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 170 170">
-                            <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.7-7.94-12.02-14.58-6.19-9.52-11.08-20.48-14.67-32.88-3.59-12.4-5.39-24.12-5.39-35.16 0-14.69 3.59-27.18 10.77-37.47 7.18-10.29 16.27-15.54 27.27-15.76 4.79 0 10.15 1.34 16.08 4.02 5.93 2.68 9.77 4.07 11.52 4.17 1.41 0 5.43-1.47 12.06-4.41 6.63-2.94 12.18-4.23 16.66-3.87 12.73.65 22.86 5.56 30.38 14.73-11.08 6.74-16.52 16.08-16.32 28.02.22 9.57 3.91 17.5 11.08 23.8 7.18 6.31 15.65 9.89 25.43 10.76-2.18 6.96-5.02 14.37-8.52 22.25zM119.22 31.84c0-7.39 2.68-14.45 8.04-21.19 5.36-6.74 12.06-10.65 20.1-11.74.22 1.3.33 2.39.33 3.26 0 7.39-2.83 14.67-8.49 21.84-5.66 7.17-12.4 11.1-20.22 11.8-0.22-1.3-.34-2.29-.34-3.02z" />
-                          </svg>
-                        )}
-                        <span>{t('register.continueApple')}</span>
-                      </button>
-                    )}
-                  </div>
+                {/* Tab 1: Create Account */}
+                <TabsContent value="register" className="space-y-5">
+                  {/* Method 1 & 2: Social OAuth Sign-In (Requirement #1: Google & Apple) */}
+                  <div className="space-y-3 mb-6">
+                    <div className={`grid gap-3 ${ENABLE_APPLE_SIGN_IN ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                      {/* Sign in with Google */}
+                      <GoogleButton variant="register" disabled={isOAuthLoading !== null || isLoading} />
 
-                  {/* Divider */}
-                  <div className="relative py-2">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-200" />
+                      {/* Sign in with Apple (Temporarily disabled - keep code for future re-enablement) */}
+                      {ENABLE_APPLE_SIGN_IN && (
+                        <button
+                          type="button"
+                          disabled={isOAuthLoading !== null || isLoading}
+                          onClick={handleAppleSignIn}
+                          className="flex items-center justify-center gap-2.5 px-4 py-2.5 bg-black hover:bg-slate-900 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-2xs disabled:opacity-50 cursor-pointer active:scale-98"
+                        >
+                          {isOAuthLoading === 'apple' ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                          ) : (
+                            <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 170 170">
+                              <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.7-7.94-12.02-14.58-6.19-9.52-11.08-20.48-14.67-32.88-3.59-12.4-5.39-24.12-5.39-35.16 0-14.69 3.59-27.18 10.77-37.47 7.18-10.29 16.27-15.54 27.27-15.76 4.79 0 10.15 1.34 16.08 4.02 5.93 2.68 9.77 4.07 11.52 4.17 1.41 0 5.43-1.47 12.06-4.41 6.63-2.94 12.18-4.23 16.66-3.87 12.73.65 22.86 5.56 30.38 14.73-11.08 6.74-16.52 16.08-16.32 28.02.22 9.57 3.91 17.5 11.08 23.8 7.18 6.31 15.65 9.89 25.43 10.76-2.18 6.96-5.02 14.37-8.52 22.25zM119.22 31.84c0-7.39 2.68-14.45 8.04-21.19 5.36-6.74 12.06-10.65 20.1-11.74.22 1.3.33 2.39.33 3.26 0 7.39-2.83 14.67-8.49 21.84-5.66 7.17-12.4 11.1-20.22 11.8-0.22-1.3-.34-2.29-.34-3.02z" />
+                            </svg>
+                          )}
+                          <span>{t('register.continueApple')}</span>
+                        </button>
+                      )}
                     </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-3 text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
-                        {t('register.orEmail')}
-                      </span>
+
+                    {/* Divider */}
+                    <div className="relative py-2">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200" />
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="bg-white px-3 text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                          {tAuth('orWithEmail') || t('register.orEmail')}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
                 {/* Error Banner */}
                 {errorMessage && (
@@ -555,7 +569,34 @@ export function BusinessRegisterView({ initialContent }: BusinessRegisterViewPro
                     </button>
                   </div>
                 </form>
-              </div>
+                </TabsContent>
+
+                {/* Tab 2: Sign In */}
+                <TabsContent value="signIn" className="space-y-5">
+                  <div className="space-y-3 mb-6">
+                    {/* Google OAuth Login */}
+                    <GoogleButton variant="login" />
+
+                    {/* Divider */}
+                    <div className="relative py-2">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-200" />
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="bg-white px-3 text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                          {tAuth('orWithEmail') || t('register.orEmail')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Wholesale-only Login Form */}
+                  <LoginForm
+                    wholesaleOnly
+                    redirectTo={`/${locale}/business/dashboard`}
+                  />
+                </TabsContent>
+              </Tabs>
             )}
           </div>
 
