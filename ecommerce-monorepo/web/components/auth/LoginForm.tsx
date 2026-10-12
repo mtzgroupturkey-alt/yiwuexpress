@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useLocale, useTranslations } from 'next-intl'
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { getDashboardForUser } from '@/lib/auth/dashboard-router'
 
 export interface LoginFormProps {
   redirectTo?: string
@@ -89,10 +90,9 @@ export function LoginForm({
 
       if (onSuccess) {
         onSuccess()
-      } else if (redirectTo) {
-        router.push(redirectTo)
       } else {
-        router.push(`/${locale}/business/dashboard`)
+        const target = redirectTo || getDashboardForUser(user, locale)
+        router.push(target)
       }
     } catch (err: any) {
       console.error('[LoginForm] Login error:', err)
