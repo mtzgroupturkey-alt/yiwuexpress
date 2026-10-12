@@ -125,6 +125,26 @@
       "message": "Create an account or sign in to continue shopping and manage your orders.",
       "register": "Register",
       "signIn": "Sign In"
+    },
+    "tabs": {
+      "createAccount": "Create Account",
+      "signIn": "Sign In"
+    },
+    "orWithEmail": "Or with email",
+    "wholesaleLogin": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your wholesale account",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In",
+      "signingIn": "Signing in...",
+      "forgotPassword": "Forgot password?",
+      "errors": {
+        "invalidCredentials": "Invalid email or password",
+        "notWholesale": "This login is for wholesale accounts only. Retail customers should sign in at /login.",
+        "isAdmin": "Admin accounts must sign in at /auth/login.",
+        "serverError": "Something went wrong. Please try again."
+      }
     }
   },
   "Cart": {

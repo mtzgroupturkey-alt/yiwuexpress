@@ -125,6 +125,26 @@
       "message": "创建账户或登录以继续购物并管理您的订单。",
       "register": "注册",
       "signIn": "登录"
+    },
+    "tabs": {
+      "createAccount": "创建账户",
+      "signIn": "登录"
+    },
+    "orWithEmail": "或使用邮箱",
+    "wholesaleLogin": {
+      "title": "欢迎回来",
+      "subtitle": "登录您的批发账户",
+      "email": "邮箱",
+      "password": "密码",
+      "submit": "登录",
+      "signingIn": "登录中...",
+      "forgotPassword": "忘记密码？",
+      "errors": {
+        "invalidCredentials": "邮箱或密码错误",
+        "notWholesale": "此登录仅限批发账户。零售客户请前往 /login 登录。",
+        "isAdmin": "管理员账户请前往 /auth/login 登录。",
+        "serverError": "出错了，请重试。"
+      }
     }
   },
   "Cart": {

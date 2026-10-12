@@ -125,6 +125,26 @@
       "message": "Создайте аккаунт или войдите, чтобы продолжить покупки и оформлять заказы.",
       "register": "Регистрация",
       "signIn": "Войти"
+    },
+    "tabs": {
+      "createAccount": "Создать аккаунт",
+      "signIn": "Войти"
+    },
+    "orWithEmail": "Или через email",
+    "wholesaleLogin": {
+      "title": "С возвращением",
+      "subtitle": "Войдите в свой оптовый аккаунт",
+      "email": "Email",
+      "password": "Пароль",
+      "submit": "Войти",
+      "signingIn": "Вход...",
+      "forgotPassword": "Забыли пароль?",
+      "errors": {
+        "invalidCredentials": "Неверный email или пароль",
+        "notWholesale": "Этот вход только для оптовых аккаунтов. Розничные клиенты должны войти на /login.",
+        "isAdmin": "Администраторы должны войти на /auth/login.",
+        "serverError": "Что-то пошло не так. Попробуйте ещё раз."
+      }
     }
   },
   "Cart": {
