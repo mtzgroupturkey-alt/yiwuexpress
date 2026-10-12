@@ -4,9 +4,18 @@ import React, { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 
+export type GoogleButtonVariant = 'register' | 'login' | 'retail-register' | 'retail-login'
+
 interface GoogleButtonProps {
-  variant?: 'register' | 'login'
+  variant?: GoogleButtonVariant
   disabled?: boolean
+}
+
+const STATE_MAP: Record<GoogleButtonVariant, string> = {
+  register: 'wholesale',
+  login: 'wholesale-login',
+  'retail-register': 'retail',
+  'retail-login': 'retail-login',
 }
 
 export function GoogleButton({ variant = 'register', disabled = false }: GoogleButtonProps) {
@@ -15,7 +24,7 @@ export function GoogleButton({ variant = 'register', disabled = false }: GoogleB
   const tBusiness = useTranslations('business')
 
   const label =
-    variant === 'register'
+    variant === 'register' || variant === 'retail-register'
       ? tBusiness('register.continueGoogle') || 'Continue with Google'
       : tAuth('orContinue')
       ? `${tAuth('orContinue')} Google`
@@ -40,7 +49,7 @@ export function GoogleButton({ variant = 'register', disabled = false }: GoogleB
       }
 
       const redirectUri = `${window.location.origin}/api/auth/callback/google`
-      const state = variant === 'login' ? 'wholesale-login' : 'wholesale'
+      const state = STATE_MAP[variant]
       window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(
         redirectUri
       )}&response_type=code&scope=openid%20profile%20email&state=${state}&prompt=select_account`
