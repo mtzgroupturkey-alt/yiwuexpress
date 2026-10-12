@@ -104,6 +104,12 @@ export default function CustomerDashboardPage() {
         router.push('/dashboard/supplier')
         return
       }
+      // Wholesale & BOTH accounts must be routed to the Wholesale Business Portal
+      // TODO: detect locale from NEXT_LOCALE cookie for non-en locales
+      if (user.userType === 'WHOLESALE' || user.userType === 'BOTH') {
+        router.push('/en/business/dashboard')
+        return
+      }
 
       loadData()
     }
