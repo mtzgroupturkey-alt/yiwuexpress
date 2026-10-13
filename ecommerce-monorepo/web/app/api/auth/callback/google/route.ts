@@ -43,9 +43,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${errorBase}?error=server_config`)
   }
 
+  // Support proxy for servers behind Great Firewall (e.g., in Mainland China)
+  const proxyBase = process.env.GOOGLE_OAUTH_PROXY_URL?.replace(/\/+$/, '') || ''
+  const tokenEndpoint = proxyBase ? `${proxyBase}/token` : 'https://oauth2.googleapis.com/token'
+  const userinfoEndpoint = proxyBase ? `${proxyBase}/userinfo` : 'https://www.googleapis.com/oauth2/v2/userinfo'
+
   try {
     // 1. Exchange code for tokens
-    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    const tokenRes = await fetch(tokenEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -67,10 +72,9 @@ export async function GET(request: NextRequest) {
     const accessToken = tokens.access_token as string
 
     // 2. Fetch user info
-    const userRes = await fetch(
-      'https://www.googleapis.com/oauth2/v2/userinfo',
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    )
+    const userRes = await fetch(userinfoEndpoint, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    })
 
     if (!userRes.ok) {
       console.error('[OAuth Google] userinfo failed')
