@@ -59,18 +59,71 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // Helper to force IPv4 and prevent Linux IPv6 routing timeouts
+  async function fetchIPv4(urlStr: string, options: { method?: string; headers?: Record<string, string>; body?: string } = {}) {
+    const https = await import('https')
+    const http = await import('http')
+    const url = new URL(urlStr)
+    const isHttps = url.protocol === 'https:'
+    const client = isHttps ? https : http
+
+    return new Promise<{ ok: boolean; status: number; text: () => Promise<string>; json: () => Promise<any> }>((resolve, reject) => {
+      const req = client.request(
+        url,
+        {
+          method: options.method || 'GET',
+          headers: options.headers || {},
+          family: 4, // FORCE IPv4 to avoid broken IPv6 routes on server
+          timeout: 20000,
+        },
+        (res) => {
+          let data = ''
+          res.on('data', (chunk) => {
+            data += chunk
+          })
+          res.on('end', () => {
+            resolve({
+              ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
+              status: res.statusCode || 500,
+              text: async () => data,
+              json: async () => JSON.parse(data),
+            })
+          })
+        }
+      )
+
+      req.on('timeout', () => {
+        req.destroy(new Error('Connection timed out after 20s'))
+      })
+
+      req.on('error', (err) => {
+        reject(err)
+      })
+
+      if (options.body) {
+        req.write(options.body)
+      }
+      req.end()
+    })
+  }
+
   try {
     // 1. Exchange code for tokens
-    const tokenRes = await fetch(tokenEndpoint, {
+    const postBody = new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+    }).toString()
+
+    const tokenRes = await fetchIPv4(tokenEndpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-      }),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postBody).toString(),
+      },
+      body: postBody,
     })
 
     if (!tokenRes.ok) {
@@ -83,8 +136,8 @@ export async function GET(request: NextRequest) {
     const accessToken = tokens.access_token as string
 
     // 2. Fetch user info
-    const userRes = await fetch(userinfoEndpoint, {
-      headers: { Authorization: `Bearer ${accessToken}` }
+    const userRes = await fetchIPv4(userinfoEndpoint, {
+      headers: { Authorization: `Bearer ${accessToken}` },
     })
 
     if (!userRes.ok) {
