@@ -50,8 +50,15 @@ function VerifyEmailContent() {
     verify()
   }, [token, email])
 
+  const isRetail = userData?.userType === 'RETAIL'
+  const pageTitle = isRetail
+    ? `Verify Account | ${companyName}`
+    : userData?.userType === 'WHOLESALE'
+    ? `Verify Wholesale Account | ${companyName}`
+    : `Verify Email | ${companyName}`
+
   return (
-    <SharedLayout pageTitle={`Verify Wholesale Account | ${companyName}`}>
+    <SharedLayout pageTitle={pageTitle}>
       <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-10 text-center">
           {isLoading ? (
@@ -63,7 +70,7 @@ function VerifyEmailContent() {
                 Verifying Your Email...
               </h2>
               <p className="text-xs text-slate-500">
-                Please wait while we confirm your wholesale account credentials.
+                Please wait while we confirm your account credentials.
               </p>
             </div>
           ) : isSuccess ? (
