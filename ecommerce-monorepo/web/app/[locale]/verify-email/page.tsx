@@ -87,30 +87,7 @@ function VerifyEmailContent() {
                 Verification Successful!
               </h1>
 
-              {userData?.userType === 'RETAIL' ? (
-                <>
-                  <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                    Your email has been verified and your account is now fully active. You can now browse products and place orders.
-                  </p>
-
-                  <div className="flex flex-col gap-3">
-                    <Link
-                      href={`/${locale}`}
-                      className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
-                    >
-                      <span>Start Shopping</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-
-                    <Link
-                      href={`/${locale}/profile`}
-                      className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
-                    >
-                      Go to Account Profile
-                    </Link>
-                  </div>
-                </>
-              ) : (
+              {userData?.userType === 'WHOLESALE' ? (
                 <>
                   <p className="text-sm text-slate-600 leading-relaxed mb-6">
                     Your email has been verified. Your wholesale application is currently in{' '}
@@ -143,6 +120,29 @@ function VerifyEmailContent() {
                       className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
                     >
                       View Application Status
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                    Your email has been verified and your account is now fully active. You can start shopping right away!
+                  </p>
+
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href={`/${locale}`}
+                      className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <span>Start Shopping</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+
+                    <Link
+                      href={`/${locale}/profile`}
+                      className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
+                    >
+                      Go to Account Profile
                     </Link>
                   </div>
                 </>
