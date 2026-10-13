@@ -2,7 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Forced ping animation — overrides prefers-reduced-motion */
+/* Forced spin & ping animation — overrides prefers-reduced-motion */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin,
+.lucide-spin,
+[data-lucide="loader-2"],
+[data-lucide="loader"],
+svg.animate-spin {
+  animation: spin 1s linear infinite !important;
+  transform-origin: center center !important;
+  display: inline-block !important;
+}
+
 @keyframes dot-ping {
   0% {
     transform: scale(1);
@@ -105,9 +124,9 @@
     scrollbar-width: none;
   }
 
-  /* Accessibility: Respect prefers-reduced-motion */
+  /* Accessibility: Respect prefers-reduced-motion except for essential loading spinners */
   @media (prefers-reduced-motion: reduce) {
-    *,
+    *:not(.animate-spin):not(.dot-ping):not(.lucide-spin):not([data-lucide="loader-2"]):not([data-lucide="loader"]),
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
