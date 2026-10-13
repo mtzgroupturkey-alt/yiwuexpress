@@ -99,7 +99,7 @@ function LoginTabContent() {
                   <p className="text-xs text-gray-500">
                     Are you a wholesale or business buyer?{' '}
                     <LocaleLink
-                      href={redirectParam ? `/business/login?redirect=${encodeURIComponent(redirectParam)}` : '/business/login'}
+                      href={redirectParam ? `/register-b2b?tab=login&redirect=${encodeURIComponent(redirectParam)}` : '/register-b2b?tab=login'}
                       className="font-semibold text-[#1a3a5c] hover:text-[#c9a84c] transition-colors"
                     >
                       Sign in to B2B Wholesale →

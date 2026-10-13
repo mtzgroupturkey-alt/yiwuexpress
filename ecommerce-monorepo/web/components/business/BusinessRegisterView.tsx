@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useCompanyName } from '@/hooks/useCompanyName'
@@ -66,6 +66,18 @@ export function BusinessRegisterView({ initialContent }: BusinessRegisterViewPro
   const companyName = useCompanyName()
   const t = useTranslations('business')
   const tAuth = useTranslations('auth')
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get('tab') === 'login' || searchParams.get('tab') === 'signIn' ? 'signIn' : 'register'
+  const [activeTab, setActiveTab] = useState<'register' | 'signIn'>(initialTab)
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam === 'login' || tabParam === 'signIn') {
+      setActiveTab('signIn')
+    } else if (tabParam === 'register') {
+      setActiveTab('register')
+    }
+  }, [searchParams])
 
   // Dynamic content passed from server
   const content = initialContent
@@ -297,7 +309,12 @@ export function BusinessRegisterView({ initialContent }: BusinessRegisterViewPro
                 </div>
               </div>
             ) : (
-              <Tabs defaultValue="register" className="w-full">
+              <Tabs
+                defaultValue="register"
+                value={activeTab}
+                onValueChange={(val) => setActiveTab(val as 'register' | 'signIn')}
+                className="w-full"
+              >
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="register">
                     {tAuth('tabs.createAccount') || 'Create Account'}
@@ -593,7 +610,7 @@ export function BusinessRegisterView({ initialContent }: BusinessRegisterViewPro
                   {/* Wholesale-only Login Form */}
                   <LoginForm
                     wholesaleOnly
-                    redirectTo={`/${locale}/business/dashboard`}
+                    redirectTo={searchParams.get('redirect') || `/${locale}/business/dashboard`}
                   />
                 </TabsContent>
               </Tabs>

@@ -19,13 +19,13 @@ const useTabsContext = () => {
 }
 
 export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
-  defaultValue: string
+  defaultValue?: string
   value?: string
   onValueChange?: (value: string) => void
 }
 
 const Tabs = React.forwardRef<HTMLDivElement, TabsProps>(
-  ({ defaultValue, value: controlledValue, onValueChange, children, className, ...props }, ref) => {
+  ({ defaultValue = '', value: controlledValue, onValueChange, children, className, ...props }, ref) => {
     const [internalValue, setInternalValue] = React.useState(defaultValue)
     const value = controlledValue ?? internalValue
     const setValue = onValueChange ?? setInternalValue
