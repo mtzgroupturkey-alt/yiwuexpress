@@ -36,9 +36,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Already verified
+    // Already verified - still ensure user gets logged in if visiting link
     if (user.isVerified) {
-      return NextResponse.json({
+      const authToken = generateToken({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
+
+      const response = NextResponse.json({
         success: true,
         alreadyVerified: true,
         message: 'Your email address is already verified.',
@@ -46,10 +52,14 @@ export async function GET(request: NextRequest) {
           id: user.id,
           email: user.email,
           name: user.name,
+          role: user.role,
           userType: user.userType,
           verificationStatus: user.verificationStatus,
         },
       });
+
+      setAuthCookie(response, authToken);
+      return response;
     }
 
     // Check token match & expiry

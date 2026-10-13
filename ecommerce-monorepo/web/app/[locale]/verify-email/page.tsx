@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useLocale } from 'next-intl'
 import { SharedLayout } from '@/components/layout/SharedLayout'
 import { useCompanyName } from '@/hooks/useCompanyName'
+import { useAuth } from '@/hooks/useAuth'
 import { CheckCircle2, AlertCircle, Loader2, ArrowRight, ShieldCheck, Mail } from 'lucide-react'
 
 function VerifyEmailContent() {
@@ -13,6 +14,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const locale = useLocale()
   const companyName = useCompanyName()
+  const { checkAuth } = useAuth()
 
   const token = searchParams.get('token')
   const email = searchParams.get('email')
@@ -31,7 +33,9 @@ function VerifyEmailContent() {
 
     const verify = async () => {
       try {
-        const res = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`)
+        const res = await fetch(`/api/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`, {
+          credentials: 'include',
+        })
         const data = await res.json()
 
         if (!res.ok || !data.success) {
@@ -40,6 +44,13 @@ function VerifyEmailContent() {
 
         setIsSuccess(true)
         setUserData(data.user)
+
+        // Refresh client auth state so header immediately reflects logged in user
+        try {
+          await checkAuth()
+        } catch {
+          // ignore background auth sync error
+        }
       } catch (err: any) {
         setErrorMessage(err.message || 'Failed to verify email address.')
       } finally {
@@ -48,7 +59,7 @@ function VerifyEmailContent() {
     }
 
     verify()
-  }, [token, email])
+  }, [token, email, checkAuth])
 
   const isRetail = userData?.userType === 'RETAIL'
   const pageTitle = isRetail
