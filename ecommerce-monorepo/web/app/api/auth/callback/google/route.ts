@@ -193,7 +193,8 @@ export async function GET(request: NextRequest) {
     setAuthCookie(response, token)
   } catch (err: any) {
     console.error('[OAuth Google] Unexpected error:', err)
-    const errMessage = encodeURIComponent(err?.message || 'unexpected')
+    const errDetail = err?.cause ? `${err.message} (${err.cause?.code || err.cause?.message || ''})` : (err?.message || 'unexpected')
+    const errMessage = encodeURIComponent(errDetail)
     return NextResponse.redirect(`${origin}/en/register-b2b?error=unexpected&detail=${errMessage}`)
   }
 }
