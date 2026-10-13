@@ -45,8 +45,19 @@ export async function GET(request: NextRequest) {
 
   // Support proxy for servers behind Great Firewall (e.g., in Mainland China)
   const proxyBase = process.env.GOOGLE_OAUTH_PROXY_URL?.replace(/\/+$/, '') || ''
-  const tokenEndpoint = proxyBase ? `${proxyBase}/token` : 'https://oauth2.googleapis.com/token'
-  const userinfoEndpoint = proxyBase ? `${proxyBase}/userinfo` : 'https://www.googleapis.com/oauth2/v2/userinfo'
+  let tokenEndpoint = 'https://oauth2.googleapis.com/token'
+  let userinfoEndpoint = 'https://www.googleapis.com/oauth2/v2/userinfo'
+
+  if (proxyBase) {
+    if (proxyBase.includes('.php')) {
+      const sep = proxyBase.includes('?') ? '&' : '?'
+      tokenEndpoint = `${proxyBase}${sep}action=token`
+      userinfoEndpoint = `${proxyBase}${sep}action=userinfo`
+    } else {
+      tokenEndpoint = `${proxyBase}/token`
+      userinfoEndpoint = `${proxyBase}/userinfo`
+    }
+  }
 
   try {
     // 1. Exchange code for tokens
