@@ -120,6 +120,9 @@ export function RetailRegisterForm({
 
   const passwordsMatch = formData.password.length > 0 && formData.password === formData.confirmPassword
 
+  const [isSuccessSubmitted, setIsSuccessSubmitted] = useState(false)
+  const [submittedEmail, setSubmittedEmail] = useState('')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -150,28 +153,63 @@ export function RetailRegisterForm({
     }
 
     try {
-      await registerUser({
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-        phone: formData.phone.trim() || undefined,
-        country: formData.country || undefined,
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          phone: formData.phone.trim() || undefined,
+          country: formData.country || undefined,
+          locale: locale || 'en',
+        }),
       })
 
-      if (onSuccess) {
-        onSuccess()
-      } else if (redirectTo) {
-        window.location.href = redirectTo
-      } else if (redirectParam) {
-        const target = redirectParam.startsWith('/') ? redirectParam : `/${redirectParam}`
-        window.location.href = target
-      } else {
-        window.location.href = `/${locale}`
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed. Please check your information and try again.')
       }
+
+      setSubmittedEmail(formData.email.trim().toLowerCase())
+      setIsSuccessSubmitted(true)
     } catch (err: any) {
       console.error('Registration failed:', err)
       setError(err.message || 'Registration failed. Please check your information and try again.')
     }
+  }
+
+  if (isSuccessSubmitted) {
+    return (
+      <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-6 sm:p-8 text-center animate-fade-in">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-4">
+          <Mail className="w-7 h-7" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-900 mb-2">Check Your Email</h3>
+        <p className="text-sm text-slate-600 mb-4 max-w-md mx-auto leading-relaxed">
+          We&apos;ve sent a verification link to <strong className="text-slate-900">{submittedEmail}</strong>. Please click the link to activate your account and start shopping.
+        </p>
+
+        <div className="p-4 bg-white/80 border border-emerald-200/80 rounded-xl text-xs text-slate-600 text-left mb-6 space-y-1.5 max-w-sm mx-auto">
+          <div className="font-semibold text-slate-800">Quick steps:</div>
+          <div>1. Open your email inbox (check Spam if needed).</div>
+          <div>2. Click the <strong>Verify Email Address</strong> button.</div>
+          <div>3. You will be automatically signed in to your account.</div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setIsSuccessSubmitted(false)
+            setError('')
+          }}
+          className="text-xs font-semibold text-slate-500 hover:text-slate-800 underline"
+        >
+          Use a different email address
+        </button>
+      </div>
+    )
   }
 
   return (

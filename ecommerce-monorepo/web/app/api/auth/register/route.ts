@@ -1,18 +1,18 @@
-export const dynamic = 'force-dynamic';
+import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
-import { hashPassword, generateToken, setAuthCookie } from '@/lib/auth'
+import { hashPassword } from '@/lib/auth'
 import { registerRateLimit } from '@/lib/rate-limit'
-import { sendWelcomeEmail } from '@/lib/email'
+import { sendEmailVerificationLink } from '@/lib/email'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'), // Increased from 6 to 8
+  email: z.string().email('Invalid email address').toLowerCase(),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
   phone: z.string().optional(),
   country: z.string().optional(),
-  // Explicitly define role to strip it - any client-sent role is ignored
+  locale: z.string().optional().default('en'),
   role: z.string().optional(),
 })
 
@@ -33,9 +33,45 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      // Generic error message to prevent account enumeration
+      // If user exists and is unverified, allow updating password and re-sending verification email
+      if (!existingUser.isVerified && existingUser.userType === 'RETAIL') {
+        const rawVerificationToken = crypto.randomBytes(32).toString('hex')
+        const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        const hashedPassword = await hashPassword(validatedData.password)
+
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            name: validatedData.name,
+            password: hashedPassword,
+            phone: validatedData.phone || existingUser.phone,
+            country: validatedData.country || existingUser.country,
+            resetToken: rawVerificationToken,
+            resetTokenExpiry: tokenExpires,
+          },
+        })
+
+        const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+        const verificationUrl = `${appUrl}/${validatedData.locale}/verify-email?token=${rawVerificationToken}&email=${encodeURIComponent(existingUser.email)}`
+
+        sendEmailVerificationLink({
+          to: existingUser.email,
+          name: validatedData.name,
+          verificationUrl,
+          locale: validatedData.locale,
+          accountType: 'retail',
+        }).catch((err) => console.error('Failed to send verification email:', err))
+
+        return NextResponse.json({
+          success: true,
+          requiresEmailVerification: true,
+          message: 'Verification email resent. Please check your inbox to activate your account.',
+          email: existingUser.email,
+        })
+      }
+
       return NextResponse.json(
-        { error: 'Unable to register with this email' },
+        { error: 'An account with this email address already exists. Please sign in.' },
         { status: 400 }
       )
     }
@@ -43,8 +79,11 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(validatedData.password)
 
-    // Create customer user (public registration)
-    // SECURITY: Always set role to 'USER', ignoring any client-sent role
+    // Generate secure email verification token
+    const rawVerificationToken = crypto.randomBytes(32).toString('hex')
+    const tokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    // Create unverified retail customer
     const user = await prisma.user.create({
       data: {
         email: validatedData.email,
@@ -52,51 +91,45 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         phone: validatedData.phone,
         country: validatedData.country,
-        role: 'USER', // HARDCODED - never trust client input for role
-        isVerified: false, // Set to false - email verification required
+        role: 'USER',
+        userType: 'RETAIL',
+        isVerified: false,
+        resetToken: rawVerificationToken,
+        resetTokenExpiry: tokenExpires,
         isActive: true,
       },
       select: {
         id: true,
         email: true,
         name: true,
-        phone: true,
-        country: true,
         role: true,
-        isActive: true,
         isVerified: true,
         userType: true,
-        verificationStatus: true,
-        // DO NOT SELECT PASSWORD
       },
     })
 
-    // Generate JWT token
-    const token = generateToken({
-      userId: user.id,
+    // Build verification URL
+    const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const verificationUrl = `${appUrl}/${validatedData.locale}/verify-email?token=${rawVerificationToken}&email=${encodeURIComponent(user.email)}`
+
+    // Send verification email (non-blocking)
+    sendEmailVerificationLink({
+      to: user.email,
+      name: user.name,
+      verificationUrl,
+      locale: validatedData.locale,
+      accountType: 'retail',
+    }).catch((err) => console.error('Failed to send verification email:', err))
+
+    return NextResponse.json({
+      success: true,
+      requiresEmailVerification: true,
+      message: 'Account created successfully! Please check your email to activate your account.',
       email: user.email,
-      role: user.role,
     })
-
-    // Create response with httpOnly cookie
-    const response = NextResponse.json({
-      user,
-      message: 'Account created successfully. Welcome to Global Trade!',
-      // NO TOKEN IN RESPONSE BODY - only in httpOnly cookie
-    })
-
-    // Set httpOnly cookie
-    setAuthCookie(response, token)
-
-    // Send welcome email (non-blocking)
-    sendWelcomeEmail(user.email, { name: user.name }).catch((err) =>
-      console.error('Failed to send welcome email:', err)
-    )
-
-    return response
   } catch (error) {
     console.error('Registration error:', error)
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid input', details: error.errors },

@@ -83,13 +83,19 @@ export async function GET(request: NextRequest) {
       role: updatedUser.role,
     });
 
+    const isRetail = updatedUser.userType === 'RETAIL';
+    const message = isRetail
+      ? 'Email successfully verified! Your account is now active.'
+      : 'Email successfully verified! Your wholesale account is under compliance review.';
+
     const response = NextResponse.json({
       success: true,
-      message: 'Email successfully verified! Your wholesale account is under compliance review.',
+      message,
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
         name: updatedUser.name,
+        userType: updatedUser.userType,
         verificationStatus: updatedUser.verificationStatus,
       },
     });

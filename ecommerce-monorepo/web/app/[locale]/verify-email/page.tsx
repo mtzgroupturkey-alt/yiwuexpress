@@ -80,39 +80,66 @@ function VerifyEmailContent() {
                 Verification Successful!
               </h1>
 
-              <p className="text-sm text-slate-600 leading-relaxed mb-6">
-                Your email has been verified. Your wholesale application is currently in{' '}
-                <span className="font-bold text-amber-700">Pending Review</span> by our compliance team.
-              </p>
+              {userData?.userType === 'RETAIL' ? (
+                <>
+                  <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                    Your email has been verified and your account is now fully active. You can now browse products and place orders.
+                  </p>
 
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-600 text-left mb-6 space-y-2">
-                <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
-                  Next Steps:
-                </div>
-                <div>
-                  • <strong>Complete Profile:</strong> Add your Company Name, Tax ID, and business details.
-                </div>
-                <div>
-                  • <strong>Admin Approval:</strong> Once approved, you will unlock volume wholesale discounts and RFQ quotes.
-                </div>
-              </div>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href={`/${locale}`}
+                      className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <span>Start Shopping</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
 
-              <div className="flex flex-col gap-3">
-                <Link
-                  href={`/${locale}/profile`}
-                  className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
-                >
-                  <span>Complete Business Profile</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                    <Link
+                      href={`/${locale}/profile`}
+                      className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
+                    >
+                      Go to Account Profile
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                    Your email has been verified. Your wholesale application is currently in{' '}
+                    <span className="font-bold text-amber-700">Pending Review</span> by our compliance team.
+                  </p>
 
-                <Link
-                  href={`/${locale}/business/pending`}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
-                >
-                  View Application Status
-                </Link>
-              </div>
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-600 text-left mb-6 space-y-2">
+                    <div className="font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                      Next Steps:
+                    </div>
+                    <div>
+                      • <strong>Complete Profile:</strong> Add your Company Name, Tax ID, and business details.
+                    </div>
+                    <div>
+                      • <strong>Admin Approval:</strong> Once approved, you will unlock volume wholesale discounts and RFQ quotes.
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href={`/${locale}/profile`}
+                      className="w-full bg-[#00407a] hover:bg-[#003366] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <span>Complete Business Profile</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+
+                    <Link
+                      href={`/${locale}/business/pending`}
+                      className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-all text-center"
+                    >
+                      View Application Status
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div>

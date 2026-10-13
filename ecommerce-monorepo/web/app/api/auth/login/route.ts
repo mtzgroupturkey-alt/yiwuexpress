@@ -140,6 +140,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Require email verification for normal users
+    if (activeUser.role === 'USER' && !activeUser.isVerified) {
+      return NextResponse.json(
+        {
+          error: 'Please verify your email address to activate your account. Check your inbox for the verification link.',
+          unverified: true,
+          email: activeUser.email,
+        },
+        { status: 403 }
+      );
+    }
+
     // Generate JWT token
     const token = generateToken({
       userId: activeUser.id,

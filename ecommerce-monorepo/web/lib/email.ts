@@ -543,15 +543,20 @@ export async function sendB2BRejectionEmail(params: {
   }
 }
 
-// Send wholesale email verification link
+// Send email verification link (Retail or Wholesale)
 export async function sendEmailVerificationLink(params: {
   to: string
   name: string
   verificationUrl: string
   locale?: string
+  accountType?: 'wholesale' | 'retail'
 }) {
   const companyName = await getCompanyName()
+  const isWholesale = params.accountType !== 'retail'
   const subject = `Verify Your Email Address - ${companyName}`
+  const introText = isWholesale
+    ? `Thank you for registering your Wholesale account on ${companyName}. Please verify your email address to activate your registration and submit your account for compliance review.`
+    : `Thank you for creating an account on ${companyName}. Please verify your email address to activate your account and access all shopping features.`
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: #00407a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
@@ -560,7 +565,7 @@ export async function sendEmailVerificationLink(params: {
       <div style="background: #f9f9f9; padding: 30px; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
         <h2 style="color: #0f172a; margin-top: 0;">Verify Your Email Address</h2>
         <p>Hi ${params.name || 'there'},</p>
-        <p>Thank you for registering your Wholesale account on ${companyName}. Please verify your email address to activate your registration and submit your account for compliance review.</p>
+        <p>${introText}</p>
         <p style="text-align: center; margin: 30px 0;">
           <a href="${params.verificationUrl}" style="background: #00407a; color: white; font-weight: bold; text-decoration: none; padding: 14px 28px; border-radius: 8px; display: inline-block;">
             Verify Email Address
