@@ -8,115 +8,135 @@ import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const code = searchParams.get('code')
-  const error = searchParams.get('error')
-  const rawState = searchParams.get('state') || 'wholesale'
-  let state = rawState
-  let redirectUriFromState: string | null = null
-
-  if (rawState.includes('__r_')) {
-    const parts = rawState.split('__r_')
-    state = parts[0]
-    redirectUriFromState = decodeURIComponent(parts[1])
-  }
-
-  // Resolve public origin properly behind reverse proxy (Nginx)
-  const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host')
-  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
   let origin = 'https://www.dromkok.com'
-  if (forwardedHost && !forwardedHost.includes('0.0.0.0')) {
-    origin = `${forwardedProto}://${forwardedHost}`
-  } else if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('0.0.0.0')) {
-    origin = process.env.NEXT_PUBLIC_API_URL
-  }
-
-  const isRetailFlow = state === 'retail' || state === 'retail-login'
-  const errorBase = isRetailFlow ? `${origin}/en/login` : `${origin}/en/register-b2b`
-
-  if (error) {
-    return NextResponse.redirect(`${errorBase}?error=${encodeURIComponent(error)}`)
-  }
-
-  if (!code) {
-    return NextResponse.redirect(`${errorBase}?error=missing_code`)
-  }
-
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-  // Google OAuth requires the redirect_uri in the token exchange to be IDENTICAL character-for-character
-  const redirectUri = redirectUriFromState || `${origin}/api/auth/callback/google`
-
-  if (!clientId || !clientSecret) {
-    console.error('[OAuth Google] Missing env vars: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET')
-    return NextResponse.redirect(`${errorBase}?error=server_config`)
-  }
-
-  // Support proxy for servers behind Great Firewall (e.g., in Mainland China)
-  const proxyBase = process.env.GOOGLE_OAUTH_PROXY_URL?.replace(/\/+$/, '') || ''
-  let tokenEndpoint = 'https://oauth2.googleapis.com/token'
-  let userinfoEndpoint = 'https://www.googleapis.com/oauth2/v2/userinfo'
-
-  if (proxyBase) {
-    if (proxyBase.includes('.php')) {
-      const sep = proxyBase.includes('?') ? '&' : '?'
-      tokenEndpoint = `${proxyBase}${sep}action=token`
-      userinfoEndpoint = `${proxyBase}${sep}action=userinfo`
-    } else {
-      tokenEndpoint = `${proxyBase}/token`
-      userinfoEndpoint = `${proxyBase}/userinfo`
-    }
-  }
-
-  // Helper to force IPv4 and prevent Linux IPv6 routing timeouts
-  async function fetchIPv4(urlStr: string, options: { method?: string; headers?: Record<string, string>; body?: string } = {}) {
-    const https = await import('https')
-    const http = await import('http')
-    const url = new URL(urlStr)
-    const isHttps = url.protocol === 'https:'
-    const client = isHttps ? https : http
-
-    return new Promise<{ ok: boolean; status: number; text: () => Promise<string>; json: () => Promise<any> }>((resolve, reject) => {
-      const req = client.request(
-        url,
-        {
-          method: options.method || 'GET',
-          headers: options.headers || {},
-          family: 4, // FORCE IPv4 to avoid broken IPv6 routes on server
-          timeout: 20000,
-        },
-        (res) => {
-          let data = ''
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-          res.on('end', () => {
-            resolve({
-              ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
-              status: res.statusCode || 500,
-              text: async () => data,
-              json: async () => JSON.parse(data),
-            })
-          })
-        }
-      )
-
-      req.on('timeout', () => {
-        req.destroy(new Error('Connection timed out after 20s'))
-      })
-
-      req.on('error', (err) => {
-        reject(err)
-      })
-
-      if (options.body) {
-        req.write(options.body)
-      }
-      req.end()
-    })
-  }
+  let isRetailFlow = false
+  let errorBase = 'https://www.dromkok.com/en/login'
 
   try {
+    const { searchParams } = new URL(request.url)
+    const code = searchParams.get('code')
+    const error = searchParams.get('error')
+    const rawState = searchParams.get('state') || 'wholesale'
+    let state = rawState
+    let redirectUriFromState: string | null = null
+
+    if (rawState.includes('__r_')) {
+      const parts = rawState.split('__r_')
+      state = parts[0]
+      let candidate = parts.slice(1).join('__r_')
+      // Repeatedly decode in case of double-encoding
+      while (candidate.includes('%')) {
+        try {
+          const decoded = decodeURIComponent(candidate)
+          if (decoded === candidate) break
+          candidate = decoded
+        } catch {
+          break
+        }
+      }
+      redirectUriFromState = candidate
+    }
+
+    // Resolve public origin properly behind reverse proxy (Nginx)
+    const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host')
+    const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+    if (forwardedHost && !forwardedHost.includes('0.0.0.0')) {
+      origin = `${forwardedProto}://${forwardedHost}`
+    } else if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('0.0.0.0')) {
+      origin = process.env.NEXT_PUBLIC_API_URL
+    }
+
+    isRetailFlow = state === 'retail' || state === 'retail-login'
+    errorBase = isRetailFlow ? `${origin}/en/login` : `${origin}/en/register-b2b`
+
+    if (error) {
+      return NextResponse.redirect(`${errorBase}?error=${encodeURIComponent(error)}`)
+    }
+
+    if (!code) {
+      return NextResponse.redirect(`${errorBase}?error=missing_code`)
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+    // Google OAuth requires the redirect_uri in the token exchange to be IDENTICAL character-for-character
+    const redirectUri = redirectUriFromState || `${origin}/api/auth/callback/google`
+
+    if (!clientId || !clientSecret) {
+      console.error('[OAuth Google] Missing env vars: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET')
+      return NextResponse.redirect(`${errorBase}?error=server_config`)
+    }
+
+    // Support proxy for servers behind Great Firewall (e.g., in Mainland China)
+    const proxyBase = process.env.GOOGLE_OAUTH_PROXY_URL?.replace(/\/+$/, '') || ''
+    let tokenEndpoint = 'https://oauth2.googleapis.com/token'
+    let userinfoEndpoint = 'https://www.googleapis.com/oauth2/v2/userinfo'
+
+    if (proxyBase) {
+      if (proxyBase.includes('.php')) {
+        const sep = proxyBase.includes('?') ? '&' : '?'
+        tokenEndpoint = `${proxyBase}${sep}action=token`
+        userinfoEndpoint = `${proxyBase}${sep}action=userinfo`
+      } else {
+        tokenEndpoint = `${proxyBase}/token`
+        userinfoEndpoint = `${proxyBase}/userinfo`
+      }
+    }
+
+    // Helper to force IPv4 and prevent Linux IPv6 routing timeouts
+    async function fetchIPv4(urlStr: string, options: { method?: string; headers?: Record<string, string>; body?: string } = {}) {
+      const https = await import('https')
+      const http = await import('http')
+      const url = new URL(urlStr)
+      const isHttps = url.protocol === 'https:'
+      const client = isHttps ? https : http
+
+      return new Promise<{ ok: boolean; status: number; text: () => Promise<string>; json: () => Promise<any> }>((resolve, reject) => {
+        const req = client.request(
+          url,
+          {
+            method: options.method || 'GET',
+            headers: options.headers || {},
+            family: 4, // FORCE IPv4 to avoid broken IPv6 routes on server
+            timeout: 20000,
+          },
+          (res) => {
+            let data = ''
+            res.on('data', (chunk) => {
+              data += chunk
+            })
+            res.on('end', () => {
+              resolve({
+                ok: (res.statusCode || 500) >= 200 && (res.statusCode || 500) < 300,
+                status: res.statusCode || 500,
+                text: async () => data,
+                json: async () => {
+                  try {
+                    return JSON.parse(data)
+                  } catch {
+                    return { raw: data }
+                  }
+                },
+              })
+            })
+          }
+        )
+
+        req.on('timeout', () => {
+          req.destroy(new Error('Connection timed out after 20s'))
+        })
+
+        req.on('error', (err) => {
+          reject(err)
+        })
+
+        if (options.body) {
+          req.write(options.body)
+        }
+        req.end()
+      })
+    }
+
     // 1. Exchange code for tokens
     const postBody = new URLSearchParams({
       code,
@@ -145,6 +165,11 @@ export async function GET(request: NextRequest) {
     const tokens = await tokenRes.json()
     const accessToken = tokens.access_token as string
 
+    if (!accessToken) {
+      console.error('[OAuth Google] No access_token returned:', tokens)
+      return NextResponse.redirect(`${errorBase}?error=token_exchange&detail=no_token`)
+    }
+
     // 2. Fetch user info
     const userRes = await fetchIPv4(userinfoEndpoint, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -161,8 +186,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${errorBase}?error=no_email`)
     }
 
-    const email = googleUser.email.toLowerCase().trim()
-    const state = searchParams.get('state') || 'wholesale'
+    const email = (googleUser.email as string).toLowerCase().trim()
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true, role: true, userType: true, verificationStatus: true },
@@ -170,7 +194,7 @@ export async function GET(request: NextRequest) {
 
     // ---- BRANCH BY STATE ----
 
-    if (state === 'retail' || state === 'retail-login') {
+    if (isRetailFlow) {
       // RETAIL FLOW
 
       // Reject ADMIN
@@ -269,10 +293,11 @@ export async function GET(request: NextRequest) {
     const target = getDashboardForUser(user, 'en')
     const response = NextResponse.redirect(`${origin}${target}`)
     setAuthCookie(response, token)
+    return response
   } catch (err: any) {
     console.error('[OAuth Google] Unexpected error:', err)
     const errDetail = err?.cause ? `${err.message} (${err.cause?.code || err.cause?.message || ''})` : (err?.message || 'unexpected')
     const errMessage = encodeURIComponent(errDetail)
-    return NextResponse.redirect(`${origin}/en/register-b2b?error=unexpected&detail=${errMessage}`)
+    return NextResponse.redirect(`${errorBase}?error=unexpected&detail=${errMessage}`)
   }
 }
