@@ -49,10 +49,11 @@ export function GoogleButton({ variant = 'register', disabled = false }: GoogleB
       }
 
       const redirectUri = `${window.location.origin}/api/auth/callback/google`
-      const state = STATE_MAP[variant]
+      const baseState = STATE_MAP[variant]
+      const state = `${baseState}__r_${encodeURIComponent(redirectUri)}`
       window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(
         redirectUri
-      )}&response_type=code&scope=openid%20profile%20email&state=${state}&prompt=select_account`
+      )}&response_type=code&scope=openid%20profile%20email&state=${encodeURIComponent(state)}&prompt=select_account`
     } catch (err: any) {
       console.error('[OAuth Google] Error:', err)
       alert(err.message || 'Google authentication failed.')

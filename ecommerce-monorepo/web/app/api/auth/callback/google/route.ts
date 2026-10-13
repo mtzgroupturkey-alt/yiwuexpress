@@ -11,7 +11,15 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
-  const state = searchParams.get('state') || 'wholesale'
+  const rawState = searchParams.get('state') || 'wholesale'
+  let state = rawState
+  let redirectUriFromState: string | null = null
+
+  if (rawState.includes('__r_')) {
+    const parts = rawState.split('__r_')
+    state = parts[0]
+    redirectUriFromState = decodeURIComponent(parts[1])
+  }
 
   // Resolve public origin properly behind reverse proxy (Nginx)
   const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host')
@@ -36,7 +44,8 @@ export async function GET(request: NextRequest) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-  const redirectUri = `${origin}/api/auth/callback/google`
+  // Google OAuth requires the redirect_uri in the token exchange to be IDENTICAL character-for-character
+  const redirectUri = redirectUriFromState || `${origin}/api/auth/callback/google`
 
   if (!clientId || !clientSecret) {
     console.error('[OAuth Google] Missing env vars: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET')
