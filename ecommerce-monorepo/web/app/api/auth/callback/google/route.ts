@@ -129,7 +129,8 @@ export async function GET(request: NextRequest) {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text()
       console.error('[OAuth Google] Token exchange failed:', errText)
-      return NextResponse.redirect(`${errorBase}?error=token_exchange`)
+      const errDetail = encodeURIComponent(errText.substring(0, 300))
+      return NextResponse.redirect(`${errorBase}?error=token_exchange&detail=${errDetail}`)
     }
 
     const tokens = await tokenRes.json()
