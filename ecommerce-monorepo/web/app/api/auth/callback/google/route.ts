@@ -8,10 +8,21 @@ import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url)
+  const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
   const state = searchParams.get('state') || 'wholesale'
+
+  // Resolve public origin properly behind reverse proxy (Nginx)
+  const forwardedHost = request.headers.get('x-forwarded-host') || request.headers.get('host')
+  const forwardedProto = request.headers.get('x-forwarded-proto') || 'https'
+  let origin = 'https://www.dromkok.com'
+  if (forwardedHost && !forwardedHost.includes('0.0.0.0')) {
+    origin = `${forwardedProto}://${forwardedHost}`
+  } else if (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.includes('0.0.0.0')) {
+    origin = process.env.NEXT_PUBLIC_API_URL
+  }
+
   const isRetailFlow = state === 'retail' || state === 'retail-login'
   const errorBase = isRetailFlow ? `${origin}/en/login` : `${origin}/en/register-b2b`
 
@@ -180,9 +191,9 @@ export async function GET(request: NextRequest) {
     const target = getDashboardForUser(user, 'en')
     const response = NextResponse.redirect(`${origin}${target}`)
     setAuthCookie(response, token)
-    return response
-  } catch (err) {
+  } catch (err: any) {
     console.error('[OAuth Google] Unexpected error:', err)
-    return NextResponse.redirect(`${origin}/en/register-b2b?error=unexpected`)
+    const errMessage = encodeURIComponent(err?.message || 'unexpected')
+    return NextResponse.redirect(`${origin}/en/register-b2b?error=unexpected&detail=${errMessage}`)
   }
 }
