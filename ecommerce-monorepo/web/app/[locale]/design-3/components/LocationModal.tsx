@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import { AddressMapPicker, StructuredAddress } from '@/components/address/AddressMapPicker';
 import { isCoordinateAddress, cleanAddressDisplay } from '@/lib/geo/coordinateResolver';
+import { getCountryName } from '@/lib/countries';
 
 export interface UserAddressOption {
   id: string;
@@ -78,7 +79,8 @@ export const LocationModal: React.FC<LocationModalProps> = ({
       return cleanAddressDisplay(raw, locale);
     }
     if (addr.city && addr.country) {
-      return `${addr.city}, ${addr.country}`;
+      const country = getCountryName(addr.country) || addr.country;
+      return `${addr.city}, ${country}`;
     }
     return cleanAddressDisplay(addr.city || addr.country || addr.addressLine1, locale);
   };

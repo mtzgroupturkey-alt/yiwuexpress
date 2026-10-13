@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSettings } from '@/components/SettingsProvider';
 import { UserAddressOption } from '@/app/[locale]/design-3/components/LocationModal';
 import { isCoordinateAddress, cleanAddressDisplay } from '@/lib/geo/coordinateResolver';
+import { getCountryName } from '@/lib/countries';
 
 export const DELIVERY_LOCATION_KEY = 'delivery_location';
 export const DELIVERY_LOCATION_CUSTOM_SET_KEY = 'delivery_location_user_selected';
@@ -149,65 +150,59 @@ export function useDeliveryLocation() {
 
   // Fetch logged in user's saved addresses
   const fetchUserAddresses = useCallback(async () => {
-    if (!isAuthenticated || !isInitialized) {
-      setDbAddresses([]);
-      return;
-    }
     try {
       const res = await fetch('/api/addresses', { credentials: 'include' });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setDbAddresses([]);
+        return;
+      }
       const data = await res.json();
-      const addrs: UserAddressOption[] = (data.data || []).map((a: any) => ({
+      const rawList = Array.isArray(data.data) ? data.data : [];
+      const addrs: UserAddressOption[] = rawList.map((a: any) => ({
         id: a.id,
         city: a.city,
         country: a.country,
-        addressLine1: a.addressLine1,
-        isDefault: a.isDefault,
+        addressLine1: a.addressLine1 || a.addressLine || '',
+        isDefault: Boolean(a.isDefault),
         label: a.label ?? null,
       }));
       setDbAddresses(addrs);
 
-      // If user has a default address, prioritize it unless user explicitly picked a custom one
-      const isCustomSet = (() => {
+      // If user is logged in and has addresses in DB:
+      // ALWAYS prioritize user's default address (or first saved address) on top bar
+      if (addrs.length > 0) {
+        // Clear any old guest localStorage addresses so they never pollute the authenticated user's view
         try {
-          return localStorage.getItem(DELIVERY_LOCATION_CUSTOM_SET_KEY) === 'true';
-        } catch {
-          return false;
-        }
-      })();
+          localStorage.removeItem(DELIVERY_SAVED_ADDRESSES_KEY);
+        } catch {}
+        setLocalSavedAddresses([]);
 
-      if (!isCustomSet && addrs.length > 0) {
         const defaultAddr = addrs.find((a) => a.isDefault) ?? addrs[0];
-        const locStr = [defaultAddr.city, defaultAddr.country].filter(Boolean).join(', ');
+        const countryName = getCountryName(defaultAddr.country) || defaultAddr.country;
+        const locStr = [defaultAddr.city, countryName].filter(Boolean).join(', ');
         if (locStr) {
           setDeliveryAddress(locStr);
           try {
             localStorage.setItem(DELIVERY_LOCATION_KEY, locStr);
+            localStorage.setItem(DELIVERY_LOCATION_CUSTOM_SET_KEY, 'true');
+            window.dispatchEvent(new CustomEvent('delivery-location-updated', { detail: locStr }));
           } catch {}
         }
       }
     } catch (err) {
       console.error('Failed to fetch user addresses:', err);
     }
-  }, [isAuthenticated, isInitialized]);
+  }, []);
 
-  // Combined list of addresses: DB addresses followed by local saved ones (deduped)
+  // List of addresses:
+  // For authenticated users: ONLY show their registered DB addresses!
+  // For guests / visitors: show their locally saved recent addresses.
   const userAddresses: UserAddressOption[] = useMemo(() => {
-    const list: UserAddressOption[] = [...dbAddresses];
-    const seen = new Set(
-      dbAddresses.map((a) => `${a.city}|${a.country}|${a.addressLine1}`.toLowerCase().trim())
-    );
-
-    for (const localAddr of localSavedAddresses) {
-      const key = `${localAddr.city}|${localAddr.country}|${localAddr.addressLine1}`.toLowerCase().trim();
-      if (!seen.has(key)) {
-        seen.add(key);
-        list.push(localAddr);
-      }
+    if (isAuthenticated || dbAddresses.length > 0) {
+      return dbAddresses;
     }
-
-    return list;
-  }, [dbAddresses, localSavedAddresses]);
+    return localSavedAddresses;
+  }, [isAuthenticated, dbAddresses, localSavedAddresses]);
 
   // Initial load effect (Local storage -> IP location resolution)
   useEffect(() => {
@@ -224,26 +219,22 @@ export function useDeliveryLocation() {
 
       // If saved location contains coordinate floats, auto-heal it into text!
       if (savedLocation && isCoordinateAddress(savedLocation)) {
-        const cleaned = cleanAddressDisplay(savedLocation, 'ru');
+        const cleaned = cleanAddressDisplay(savedLocation, 'en');
         savedLocation = cleaned;
         try {
           localStorage.setItem(DELIVERY_LOCATION_KEY, cleaned);
         } catch {}
       }
 
-      // If user already manually selected an address, honor it immediately
+      // If user already manually selected an address, honor it initially
       if (savedLocation && isExplicitlySet) {
         if (isMounted) setDeliveryAddress(savedLocation);
-        return;
-      }
-
-      // If saved location exists and is a valid specific place, keep it as initial state
-      if (savedLocation && savedLocation !== 'Worldwide Shipping' && savedLocation !== settings?.companyAddress) {
+      } else if (savedLocation && savedLocation !== 'Worldwide Shipping' && savedLocation !== settings?.companyAddress) {
         if (isMounted) setDeliveryAddress(savedLocation);
       }
 
-      // If not explicitly set by the user, query IP geolocation for a real default location
-      if (!isExplicitlySet) {
+      // If user is NOT logged in or location is not explicitly set, detect location via IP address
+      if (!isAuthenticated && (!isExplicitlySet || !savedLocation || savedLocation === 'Worldwide Shipping' || savedLocation === settings?.companyAddress)) {
         setIsGeoLoading(true);
         try {
           const res = await fetch('/api/geo/ip');
@@ -298,12 +289,37 @@ export function useDeliveryLocation() {
       window.removeEventListener('delivery-location-updated', handleUpdate);
       window.removeEventListener('delivery-saved-addresses-updated', handleSavedAddressesUpdate);
     };
-  }, [settings?.companyAddress, loadLocalSavedAddresses]);
+  }, [settings?.companyAddress, loadLocalSavedAddresses, isAuthenticated]);
 
+  // Whenever auth status or initialized changes:
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserAddresses();
+    } else if (isInitialized && !isAuthenticated) {
+      // Logged out: clear user addresses and re-resolve via IP
+      setDbAddresses([]);
+      fetch('/api/geo/ip')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.formatted) {
+            setDeliveryAddress(data.formatted);
+            try {
+              localStorage.setItem(DELIVERY_LOCATION_KEY, data.formatted);
+              localStorage.removeItem(DELIVERY_LOCATION_CUSTOM_SET_KEY);
+              window.dispatchEvent(new CustomEvent('delivery-location-updated', { detail: data.formatted }));
+            } catch {}
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isAuthenticated, isInitialized, fetchUserAddresses]);
+
+  // Initial fetch on mount
   useEffect(() => {
     fetchUserAddresses();
   }, [fetchUserAddresses]);
 
+  // Re-fetch whenever addresses are added, modified, or set as default
   useEffect(() => {
     const handler = () => fetchUserAddresses();
     window.addEventListener('addresses-updated', handler);

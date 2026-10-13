@@ -152,6 +152,11 @@ export function RetailRegisterForm({
       return
     }
 
+    if (formData.phone && formData.phone.includes('@')) {
+      setError('Please enter a valid phone number (not an email address)')
+      return
+    }
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',

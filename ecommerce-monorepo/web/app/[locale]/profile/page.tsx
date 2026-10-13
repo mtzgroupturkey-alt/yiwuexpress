@@ -38,12 +38,14 @@ import {
   Plus
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { getCountryName } from '@/lib/countries'
 
 interface SavedAddress {
   id: string
   fullName: string
   phone: string
   addressLine1?: string
+  addressLine2?: string | null
   addressLine?: string
   city: string
   state?: string | null
@@ -136,10 +138,14 @@ export default function ProfilePage() {
       }
       const json = await res.json()
       const user = json.user || json.data
-      setUserData(user)
+      const validPhone = user?.phone && !user.phone.includes('@') ? user.phone : ''
+      setUserData({
+        ...user,
+        phone: validPhone,
+      })
       setFormData({
         name: user?.name || '',
-        phone: user?.phone || '',
+        phone: validPhone,
         companyName: user?.companyName || '',
         businessType: user?.businessType || 'OTHER',
         taxId: user?.taxId || '',
@@ -169,6 +175,36 @@ export default function ProfilePage() {
       console.error('Error fetching addresses:', err)
     } finally {
       setLoadingAddresses(false)
+    }
+  }
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const addr = addresses.find((a) => a.id === id)
+      if (!addr) return
+      const res = await fetch('/api/addresses', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          id,
+          fullName: addr.fullName,
+          phone: addr.phone,
+          addressLine1: addr.addressLine1 || addr.addressLine,
+          addressLine2: addr.addressLine2,
+          city: addr.city,
+          state: addr.state,
+          postalCode: addr.postalCode,
+          country: addr.country,
+          isDefault: true,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to update default address')
+      toast.success('Default delivery address updated')
+      await fetchUserAddresses()
+      window.dispatchEvent(new CustomEvent('addresses-updated'))
+    } catch (err: any) {
+      toast.error(err.message || 'Error updating default address')
     }
   }
 
@@ -255,6 +291,10 @@ export default function ProfilePage() {
   // Handle Form Submit
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (formData.phone && formData.phone.includes('@')) {
+      toast.error('Please enter a valid phone number (not an email address)')
+      return
+    }
     setIsSaving(true)
     try {
       const res = await fetch('/api/auth/me', {
@@ -443,21 +483,23 @@ export default function ProfilePage() {
                       </p>
                     )}
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 text-xs text-slate-500 pt-1">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-3.5 h-3.5 text-slate-400" />
-                        {userData?.email}
-                      </span>
-                      {userData?.phone && (
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          {userData.phone}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs text-slate-500 pt-1.5">
+                      {userData?.email && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200/70 font-medium text-slate-700">
+                          <Mail className="w-3.5 h-3.5 text-[#00407a]" />
+                          <span>{userData.email}</span>
+                        </span>
+                      )}
+                      {userData?.phone && !userData.phone.includes('@') && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200/70 font-medium text-slate-700">
+                          <Phone className="w-3.5 h-3.5 text-[#00407a]" />
+                          <span>{userData.phone}</span>
                         </span>
                       )}
                       {userData?.createdAt && (
-                        <span className="flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200/70 text-slate-600">
                           <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                          Member since {new Date(userData.createdAt).toLocaleDateString()}
+                          <span>Member since {new Date(userData.createdAt).toLocaleDateString()}</span>
                         </span>
                       )}
                     </div>
@@ -700,7 +742,8 @@ export default function ProfilePage() {
                         <div className="relative">
                           <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                           <input
-                            type="text"
+                            type="tel"
+                            autoComplete="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             placeholder="+1 234 567 8900"
@@ -710,7 +753,7 @@ export default function ProfilePage() {
                       ) : (
                         <div className="py-2.5 px-3.5 bg-slate-50 rounded-xl border border-slate-100 text-sm font-bold text-slate-900 flex items-center gap-2.5">
                           <Phone className="w-4 h-4 text-[#00407a]" />
-                          <span>{userData?.phone || 'Not provided'}</span>
+                          <span>{userData?.phone && !userData.phone.includes('@') ? userData.phone : 'Not provided'}</span>
                         </div>
                       )}
                     </div>
@@ -860,13 +903,22 @@ export default function ProfilePage() {
                     Manage destination addresses used for direct checkout and wholesale freight routing.
                   </p>
                 </div>
-                <Link
-                  href={`/${locale}/checkout`}
-                  className="px-4 py-2 bg-[#00407a] hover:bg-[#003366] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add in Checkout</span>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/dashboard/addresses"
+                    className="px-3.5 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition-all shadow-2xs flex items-center gap-1.5"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="hidden sm:inline">Manage All</span>
+                  </Link>
+                  <Link
+                    href={`/${locale}/checkout`}
+                    className="px-4 py-2 bg-[#00407a] hover:bg-[#003366] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add in Checkout</span>
+                  </Link>
+                </div>
               </div>
 
               {loadingAddresses ? (
@@ -899,10 +951,19 @@ export default function ProfilePage() {
                         <span className="text-xs font-bold text-slate-900 truncate">
                           {addr.fullName}
                         </span>
-                        {addr.isDefault && (
-                          <span className="text-[10px] font-black bg-[#00407a] text-white px-2 py-0.5 rounded-full">
+                        {addr.isDefault ? (
+                          <span className="text-[10px] font-black bg-[#00407a] text-white px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                            <Check className="w-3 h-3" />
                             Default
                           </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetDefaultAddress(addr.id)}
+                            className="text-[11px] font-bold text-[#00407a] hover:text-[#00274d] hover:underline cursor-pointer transition-colors"
+                          >
+                            Set as Default
+                          </button>
                         )}
                       </div>
 
@@ -915,7 +976,7 @@ export default function ProfilePage() {
                           {addr.city}
                           {addr.state ? `, ${addr.state}` : ''} {addr.postalCode}
                         </p>
-                        <p className="font-semibold text-slate-700">{addr.country}</p>
+                        <p className="font-semibold text-slate-700">{getCountryName(addr.country) || addr.country}</p>
                         {addr.phone && (
                           <p className="pt-2 text-[11px] text-slate-500 flex items-center gap-1">
                             <Phone className="w-3 h-3 text-slate-400" />

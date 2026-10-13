@@ -256,3 +256,16 @@ export function formatLocationString(country: string, city?: string): string {
   return `${city.trim()}, ${country.trim()}`;
 }
 
+/**
+ * Resolves country code (e.g. 'BY', 'RU', 'CN', 'US') to full country name ('Belarus', 'Russia', etc.)
+ */
+export function getCountryName(codeOrName: string): string {
+  if (!codeOrName) return '';
+  const normalized = codeOrName.trim().toLowerCase();
+  const found = COUNTRIES.find(
+    (c) => c.code.toLowerCase() === normalized || c.name.toLowerCase() === normalized
+  );
+  return found ? found.name : codeOrName;
+}
+
+

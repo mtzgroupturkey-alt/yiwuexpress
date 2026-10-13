@@ -885,6 +885,39 @@ export function cleanAddressDisplay(
 
   const trimmed = rawAddress.trim();
   if (!isCoordinateAddress(trimmed)) {
+    const parts = trimmed.split(',').map((p) => p.trim());
+    if (parts.length === 2) {
+      const city = parts[0];
+      const countryCodeOrName = parts[1];
+      const normLoc = locale.startsWith('ru') ? 'ru' : locale.startsWith('zh') ? 'zh' : 'en';
+      
+      const bound = REGION_BOUNDS.find(
+        (b) =>
+          b.code.toUpperCase() === countryCodeOrName.toUpperCase() ||
+          b.country.en.toLowerCase() === countryCodeOrName.toLowerCase() ||
+          b.country.ru.toLowerCase() === countryCodeOrName.toLowerCase() ||
+          b.name.en.toLowerCase() === city.toLowerCase() ||
+          b.name.ru.toLowerCase() === city.toLowerCase()
+      );
+      if (bound) {
+        const locCity =
+          bound.name.en.toLowerCase() === city.toLowerCase() ||
+          bound.name.ru.toLowerCase() === city.toLowerCase()
+            ? bound.name[normLoc]
+            : city;
+        const locCountry = bound.country[normLoc] || bound.country.en;
+        return `${locCity}, ${locCountry}`;
+      }
+      
+      // If 2-letter ISO code (e.g. 'BY', 'RU', 'KZ')
+      if (countryCodeOrName.length === 2) {
+        const byCode = REGION_BOUNDS.find((b) => b.code.toUpperCase() === countryCodeOrName.toUpperCase());
+        if (byCode) {
+          return `${city}, ${byCode.country[normLoc] || byCode.country.en}`;
+        }
+      }
+      return `${city}, ${countryCodeOrName}`;
+    }
     return trimmed;
   }
 

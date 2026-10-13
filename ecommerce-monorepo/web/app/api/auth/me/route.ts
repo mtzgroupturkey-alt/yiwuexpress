@@ -6,7 +6,13 @@ import { z } from 'zod'
 
 const updateProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().optional().nullable(),
+  phone: z
+    .string()
+    .optional()
+    .nullable()
+    .refine((val) => !val || !val.includes('@'), {
+      message: 'Phone number cannot be an email address',
+    }),
   country: z.string().optional().nullable(),
   profilePhoto: z.string().optional().nullable(),
   companyName: z.string().optional().nullable(),
